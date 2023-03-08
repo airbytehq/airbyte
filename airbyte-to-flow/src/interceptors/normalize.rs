@@ -1,22 +1,34 @@
 use json::schema::formats::Format;
 use json::validator::ValidationResult;
 use regex::Regex;
+use serde::Deserialize;
 
-use crate::errors::Error;
+#[derive(Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct NormalizationEntry {
+    pub pointer: String,
+    pub normalization: Normalization,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Normalization {
+    DatetimeToDate,
+}
 
 pub fn normalize_doc(
     doc: &mut serde_json::Value,
-    _json_schema: &Option<serde_json::Value>,
-) -> Result<(), Error> {
-    // TODO: We should more intelligently use the schema to do normalization. I'm not going to take
-    // the time to figure that out right now, so for now we are just handling the specific case in
-    // https://github.com/estuary/airbyte/issues/123 with the field hs_latest_source_timestamp.
-    normalize_datetime_to_date(
-        doc,
-        doc::Pointer::from_str("/properties/hs_latest_source_timestamp"),
-    );
-
-    Ok(())
+    normalizations: &Option<Vec<NormalizationEntry>>,
+) {
+    normalizations.as_ref().map(|entries| {
+        for entry in entries {
+            match entry.normalization {
+                Normalization::DatetimeToDate => {
+                    normalize_datetime_to_date(doc, doc::Pointer::from_str(&entry.pointer))
+                }
+            }
+        }
+    });
 }
 
 lazy_static::lazy_static! {
@@ -93,8 +105,13 @@ mod tests {
             ),
         ];
 
+        let normalizations = Some(vec![NormalizationEntry {
+            pointer: "/properties/hs_latest_source_timestamp".to_string(),
+            normalization: Normalization::DatetimeToDate,
+        }]);
+
         for mut case in cases {
-            normalize_doc(&mut case.0, &None).unwrap();
+            normalize_doc(&mut case.0, &normalizations);
             assert_eq!(case.0, case.1);
         }
     }

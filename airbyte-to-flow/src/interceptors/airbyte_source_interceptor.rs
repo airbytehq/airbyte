@@ -35,12 +35,13 @@ use tempfile::{Builder, TempDir};
 use json_patch::merge;
 
 use super::fix_document_schema::fix_document_schema_keys;
-use super::normalize::normalize_doc;
+use super::normalize::{normalize_doc, NormalizationEntry};
 use super::remap::remap;
 
 const CONFIG_FILE_NAME: &str = "config.json";
 const CATALOG_FILE_NAME: &str = "catalog.json";
 const STATE_FILE_NAME: &str = "state.json";
+const NORMALIZATIONS_FILE_NAME: &str = "normalize.json";
 
 const SPEC_PATCH_FILE_NAME: &str = "spec.patch.json";
 const SPEC_MAP_FILE_NAME: &str = "spec.map.json";
@@ -426,6 +427,7 @@ impl AirbyteSourceInterceptor {
 
     fn adapt_pull_response_stream(
         &mut self,
+        normalizations: Option<Vec<NormalizationEntry>>,
         stream_to_binding: Arc<Mutex<HashMap<String, IndexedBinding>>>,
         in_stream: InterceptorStream,
     ) -> InterceptorStream {
@@ -440,8 +442,8 @@ impl AirbyteSourceInterceptor {
         // Then stream airbyte messages converted to the native protocol.
         let airbyte_message_stream = Box::pin(stream_airbyte_responses(in_stream));
         let airbyte_message_stream = stream::try_unfold(
-            (stream_to_binding, airbyte_message_stream),
-            |(stb, mut stream)| async move {
+            (stream_to_binding, airbyte_message_stream, normalizations),
+            |(stb, mut stream, normalizations)| async move {
                 let message = match stream.next().await {
                     Some(m) => m?,
                     None => {
@@ -456,14 +458,17 @@ impl AirbyteSourceInterceptor {
                         rfc7396_merge_patch: state.merge.unwrap_or(false),
                     });
 
-                    Ok(Some((encode_message(&resp)?, (stb, stream))))
+                    Ok(Some((
+                        encode_message(&resp)?,
+                        (stb, stream, normalizations),
+                    )))
                 } else if let Some(mut record) = message.record {
                     let stream_to_binding = stb.lock().await;
                     let binding = stream_to_binding
                         .get(&record.stream)
                         .ok_or(Error::DanglingConnectorRecord(record.stream))?;
 
-                    normalize_doc(&mut record.data, &binding.1)?;
+                    normalize_doc(&mut record.data, &normalizations);
 
                     let arena = sj::to_string(&record.data)?.as_bytes().to_vec();
                     let arena_len: u32 = arena.len() as u32;
@@ -476,7 +481,10 @@ impl AirbyteSourceInterceptor {
                         }],
                     });
                     drop(stream_to_binding);
-                    Ok(Some((encode_message(&resp)?, (stb, stream))))
+                    Ok(Some((
+                        encode_message(&resp)?,
+                        (stb, stream, normalizations),
+                    )))
                 } else {
                     Err(Error::InvalidPullResponse)
                 }
@@ -575,7 +583,16 @@ impl AirbyteSourceInterceptor {
                 Ok(self.adapt_apply_response_stream(in_stream))
             }
             FlowCaptureOperation::Pull => {
-                Ok(self.adapt_pull_response_stream(Arc::clone(&self.stream_to_binding), in_stream))
+                let normalizations = std::fs::read_to_string(NORMALIZATIONS_FILE_NAME)
+                    .ok()
+                    .map(|p| sj::from_str::<Vec<NormalizationEntry>>(&p))
+                    .transpose()?;
+
+                Ok(self.adapt_pull_response_stream(
+                    normalizations,
+                    Arc::clone(&self.stream_to_binding),
+                    in_stream,
+                ))
             }
         }
     }
