@@ -47,7 +47,9 @@ const RightPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>
     <>
       {width < 350 ? (
         <div className={classNames(styles.rightPanelContainer, styles.lightOverlay)}>
-          <h2 className={styles.rotatedHeader}>Setup Guide</h2>
+          <h2 className={styles.rotatedHeader}>
+            <FormattedMessage id="form.setupGuide" />
+          </h2>
         </div>
       ) : (
         <div className={styles.rightPanelContainer}>{children}</div>

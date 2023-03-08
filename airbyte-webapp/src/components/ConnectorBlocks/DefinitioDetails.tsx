@@ -39,8 +39,8 @@ const Text = styled.div`
 `;
 
 const ImageBox = styled.div`
-  width: 126px;
-  height: 126px;
+  width: 106px;
+  height: 106px;
   background: #ffffff;
   box-shadow: 0px 10px 12px rgba(74, 74, 87, 0.1);
   border-radius: 18px;
