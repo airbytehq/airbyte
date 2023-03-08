@@ -17,7 +17,7 @@ To set up the Square source connector with Airbyte, you'll need to create your S
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, enter the name for the Square connector and select **Square** from the Source type dropdown.
 4. Choose authentication method:

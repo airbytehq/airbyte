@@ -62,7 +62,8 @@ This mode is also excluded from the Cloud variant of this connector.
 The OSS and Cloud variants have the same version number. The Cloud variant was initially released at version `1.0.0`.
 
 | Version | Date       | Pull request                                                                                                      | Notes                                                                                                 |
-| ------- | ---------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+|---------|------------| ----------------------------------------------------------------------------------------------------------------- |-------------------------------------------------------------------------------------------------------|
+| 2.1.4   | 2023-03-01 | [23656](https://github.com/airbytehq/airbyte/pull/23656)                                                          | Add speed benchmark mode to e2e test                                                                  |
 | 2.1.3   | 2022-08-25 | [15591](https://github.com/airbytehq/airbyte/pull/15591)                                                          | Declare supported sync modes in catalogs                                                              |
 | 2.1.1   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864)                                                          | Updated stacktrace format for any trace message errors                                                |
 | 2.1.0   | 2021-02-12 | [\#10298](https://github.com/airbytehq/airbyte/pull/10298)                                                        | Support stream duplication to quickly create a multi-stream catalog.                                  |

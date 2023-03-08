@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -52,6 +52,9 @@ class SourceAmazonAds(AbstractSource):
         if not config.get("region"):
             source_spec = self.spec(logging.getLogger("airbyte"))
             config["region"] = source_spec.connectionSpecification["properties"]["region"]["default"]
+        if not config.get("look_back_window"):
+            source_spec = self.spec(logging.getLogger("airbyte"))
+            config["look_back_window"] = source_spec.connectionSpecification["properties"]["look_back_window"]["default"]
         return config
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:

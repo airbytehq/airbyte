@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC
@@ -8,7 +8,6 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import NoAuth, Oauth2Authenticator
 
 PIPEDRIVE_URL_BASE = "https://api.pipedrive.com/v1/"
 
@@ -19,13 +18,8 @@ class PipedriveStream(HttpStream, ABC):
     data_field = "data"
     page_size = 50
 
-    def __init__(self, authenticator, replication_start_date=None, **kwargs):
-        if isinstance(authenticator, Oauth2Authenticator):
-            super().__init__(authenticator=authenticator, **kwargs)
-        else:
-            super().__init__(**kwargs)
-            self._api_token = authenticator["api_token"]
-
+    def __init__(self, replication_start_date=None, **kwargs):
+        super().__init__(**kwargs)
         self._replication_start_date = replication_start_date
 
     @property
@@ -63,13 +57,12 @@ class PipedriveStream(HttpStream, ABC):
         next_page_token = next_page_token or {}
         params = {"limit": self.page_size, **next_page_token}
 
-        if isinstance(self.authenticator, NoAuth):
-            params["api_token"] = self._api_token
-
         replication_start_date = self._replication_start_date
         if replication_start_date:
-            if stream_state.get(self.cursor_field):
-                replication_start_date = max(pendulum.parse(stream_state[self.cursor_field]), replication_start_date)
+            cursor_value = stream_state.get(self.cursor_field)
+            if cursor_value:
+                cursor_value = pendulum.parse(cursor_value)
+                replication_start_date = max(replication_start_date, cursor_value)
 
             params.update(
                 {
@@ -77,7 +70,6 @@ class PipedriveStream(HttpStream, ABC):
                     "since_timestamp": replication_start_date.strftime("%Y-%m-%d %H:%M:%S"),
                 }
             )
-
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
