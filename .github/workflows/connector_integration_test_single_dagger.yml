@@ -39,7 +39,7 @@ jobs:
           github-token: ${{ env.PAT }}
           ec2-instance-type: "c5.9xlarge" # https://aws.amazon.com/ec2/instance-types/
   launch_connector_tests:
-    timeout-minutes: 120
+    timeout-minutes: 240
     needs: start-runner
     runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
     env:
