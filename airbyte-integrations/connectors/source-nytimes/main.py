@@ -11,4 +11,3 @@ from source_nytimes import SourceNytimes
 if __name__ == "__main__":
     source = SourceNytimes()
     launch(source, sys.argv[1:])
-    print("modify")
