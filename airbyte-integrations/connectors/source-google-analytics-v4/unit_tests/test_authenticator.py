@@ -4,7 +4,7 @@
 
 import requests
 from freezegun import freeze_time
-from source_google_analytics_data_api.authenticator import GoogleServiceKeyAuthenticator
+from source_google_analytics_v4.authenticator import GoogleServiceKeyAuthenticator
 
 
 @freeze_time("2023-01-01 00:00:00")

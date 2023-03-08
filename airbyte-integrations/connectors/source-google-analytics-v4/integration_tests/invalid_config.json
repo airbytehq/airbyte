@@ -1,10 +1,9 @@
 {
-  "credentials": {
-    "auth_type": "Service",
-    "credentials_json": "None"
-  },
-  "view_id": "211669975",
-  "start_date": "2021-02-11",
-  "window_in_days": 1,
-  "custom_reports": "[{\"name\": \"users_per_day\", \"dimensions\": [\"ga:date\"], \"metrics\": [\"ga:users\", \"ga:newUsers\"]}, {\"name\": \"sessions_per_country_day\", \"dimensions\": [\"ga:date\", \"ga:country\"], \"metrics\": [\"ga:sessions\", \"ga:sessionsPerUser\", \"ga:avgSessionDuration\"]}]"
+  "property_id": "1",
+  "json_credentials": "wrong",
+  "report_name": "crash_report",
+  "dimensions": "date, operatingSystem, streamId",
+  "metrics": "crashAffectedUsers, crashFreeUsersRate, totalUsers",
+  "date_ranges_start_date": "30daysAgo",
+  "date_ranges_end_date": "yesterday"
 }

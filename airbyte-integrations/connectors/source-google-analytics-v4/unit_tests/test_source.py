@@ -9,7 +9,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
-from source_google_analytics_data_api import SourceGoogleAnalyticsDataApi
+from source_google_analytics_v4 import SourceGoogleAnalyticsDataApi
 
 json_credentials = """
 {

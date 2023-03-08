@@ -1,7 +1,7 @@
-# Google Analytics Data Api Source
+# Google Analytics V4 Source
 
-This is the repository for the Google Analytics Data Api source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/google-analytics-data-api).
+This is the repository for the Google Analytics V4 source connector, written in Python.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/google-analytics-v4).
 
 ## Local development
 
@@ -30,18 +30,20 @@ If this is mumbo jumbo to you, don't worry about it, just put your deps in `setu
 should work as you expect.
 
 #### Building via Gradle
-From the Airbyte repository root, run:
+You can also build the connector in Gradle. This is typically used in CI and not needed for your development workflow.
+
+To build using Gradle, from the Airbyte repository root, run:
 ```
-./gradlew :airbyte-integrations:connectors:source-google-analytics-data-api:build
+./gradlew :airbyte-integrations:connectors:source-google-analytics-v4:build
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/google-analytics-data-api)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_google_analytics_data_api/spec.{yaml,json}` file.
-Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/google-analytics-v4)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_google_analytics_ua/spec.json` file.
+Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source google-analytics-data-api test creds`
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source google-analytics-v4 test creds`
 and place them into `secrets/config.json`.
 
 ### Locally running the connector
@@ -57,12 +59,12 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/source-google-analytics-data-api:dev
+docker build . -t airbyte/source-google-analytics-v4:dev
 ```
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-google-analytics-data-api:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-google-analytics-v4:airbyteDocker
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
@@ -70,16 +72,16 @@ the Dockerfile.
 #### Run
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/source-google-analytics-data-api:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-google-analytics-data-api:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-google-analytics-data-api:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-google-analytics-data-api:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm airbyte/source-google-analytics-v4:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-google-analytics-v4:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-google-analytics-v4:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-google-analytics-v4:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 ## Testing
-   Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
+Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 First install test dependencies into your virtual environment:
 ```
-pip install .[tests]
+pip install '.[tests]'
 ```
 ### Unit Tests
 To run unit tests locally, from the connector directory run:
@@ -107,11 +109,11 @@ To run your integration tests with docker
 All commands should be run from airbyte project root.
 To run unit tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-google-analytics-data-api:unitTest
+./gradlew :airbyte-integrations:connectors:source-google-analytics-v4:unitTest
 ```
 To run acceptance and custom integration tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-google-analytics-data-api:integrationTest
+./gradlew :airbyte-integrations:connectors:source-google-analytics-v4:integrationTest
 ```
 
 ## Dependency Management

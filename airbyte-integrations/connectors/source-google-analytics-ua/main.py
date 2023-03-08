@@ -6,8 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_google_analytics_data_api import SourceGoogleAnalyticsDataApi
+from source_google_analytics_ua import SourceGoogleAnalyticsUA
 
 if __name__ == "__main__":
-    source = SourceGoogleAnalyticsDataApi()
+    source = SourceGoogleAnalyticsUA()
     launch(source, sys.argv[1:])

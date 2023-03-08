@@ -10,7 +10,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from freezegun import freeze_time
-from source_google_analytics_data_api.source import GoogleAnalyticsDataApiBaseStream
+from source_google_analytics_v4.source import GoogleAnalyticsDataApiBaseStream
 
 from .utils import read_incremental
 

@@ -2,85 +2,89 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "ga_date": "2050-05-01" },
-      "stream_descriptor": { "name": "website_overview" }
+      "stream_descriptor": {
+        "name": "daily_active_users"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "ga_date": "2050-05-01" },
-      "stream_descriptor": { "name": "traffic_sources" }
+      "stream_descriptor": {
+        "name": "weekly_active_users"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "ga_date": "2050-05-01" },
-      "stream_descriptor": { "name": "pages" }
+      "stream_descriptor": {
+        "name": "four_weekly_active_users"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "ga_date": "2050-05-01" },
-      "stream_descriptor": { "name": "locations" }
+      "stream_descriptor": {
+        "name": "devices"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "ga_date": "2050-05-01" },
-      "stream_descriptor": { "name": "monthly_active_users" }
+      "stream_descriptor": {
+        "name": "locations"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "ga_date": "2050-05-01" },
-      "stream_descriptor": { "name": "four_weekly_active_users" }
+      "stream_descriptor": {
+        "name": "pages"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "ga_date": "2050-05-01" },
-      "stream_descriptor": { "name": "two_weekly_active_users" }
+      "stream_descriptor": {
+        "name": "traffic_sources"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "ga_date": "2050-05-01" },
-      "stream_descriptor": { "name": "weekly_active_users" }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "ga_date": "2050-05-01" },
-      "stream_descriptor": { "name": "daily_active_users" }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "ga_date": "2050-05-01" },
-      "stream_descriptor": { "name": "devices" }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "ga_date": "2050-05-01" },
-      "stream_descriptor": { "name": "users_per_day" }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "ga_date": "2050-05-01" },
-      "stream_descriptor": { "name": "new_users_per_day" }
+      "stream_descriptor": {
+        "name": "website_overview"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
     }
   }
 ]
