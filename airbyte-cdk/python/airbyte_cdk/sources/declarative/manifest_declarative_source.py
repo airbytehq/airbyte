@@ -145,9 +145,9 @@ class ManifestDeclarativeSource(DeclarativeSource):
             raise ValidationError("Validation against json schema defined in declarative_component_schema.yaml schema failed") from e
 
         cdk_version = metadata.version("airbyte_cdk")
-        cdk_major, cdk_minor, cdk_patch = (int(part) for part in cdk_version.split("."))
+        cdk_major, cdk_minor, cdk_patch = self._get_version_parts(cdk_version, "airbyte-cdk")
         manifest_version = self._source_config.get("version")
-        manifest_major, manifest_minor, manifest_patch = self._get_version_parts(manifest_version)
+        manifest_major, manifest_minor, manifest_patch = self._get_version_parts(manifest_version, "manifest")
 
         if cdk_major < manifest_major or (cdk_major == manifest_major and cdk_minor < manifest_minor):
             raise ValidationError(
@@ -162,13 +162,13 @@ class ManifestDeclarativeSource(DeclarativeSource):
             )
 
     @staticmethod
-    def _get_version_parts(version: str) -> (int, int, int):
+    def _get_version_parts(version: str, version_type: str) -> (int, int, int):
         """
         Takes a semantic version represented as a string and splits it into a tuple of its major, minor, and patch versions.
         """
         version_parts = re.split(r"\.", version)
         if len(version_parts) != 3 or not all([part.isdigit() for part in version_parts]):
-            raise ValidationError(f"The manifest version {version} specified is not a valid version format (ex. 1.2.3)")
+            raise ValidationError(f"The {version_type} version {version} specified is not a valid version format (ex. 1.2.3)")
         return (int(part) for part in version_parts)
 
     def _stream_configs(self, manifest: Mapping[str, Any]):

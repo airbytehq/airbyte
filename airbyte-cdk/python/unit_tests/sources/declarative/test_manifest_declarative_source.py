@@ -451,6 +451,7 @@ class TestManifestDeclarativeSource:
             pytest.param("0.29.0", "0.invalid.0", ValidationError, id="manifest_version_has_invalid_minor_format"),
             pytest.param("0.29.0", "0.29.0.1", ValidationError, id="manifest_version_has_extra_version_parts"),
             pytest.param("0.29.0", "5.0", ValidationError, id="manifest_version_has_too_few_version_parts"),
+            pytest.param("0.29.0:dev", "0.29.0", ValidationError, id="manifest_version_has_extra_release"),
         ],
     )
     @patch("importlib.metadata.version")
