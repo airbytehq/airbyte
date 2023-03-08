@@ -50,7 +50,7 @@ const Container = styled.div`
 `;
 
 const TabContainer = styled.div`
-  margin: 20px 20px 40px 0;
+  margin: 20px 20px 20px 0;
 `;
 
 const TableContainer = styled.div`

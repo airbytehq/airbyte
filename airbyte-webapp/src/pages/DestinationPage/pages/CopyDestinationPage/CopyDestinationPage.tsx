@@ -14,9 +14,9 @@ import DestinationCopy from "./components/DestinationCopy";
 
 const Container = styled.div`
   padding: 0px 0px 0px 70px;
-  width: 100%;
-  height: calc(100% - 80px);
-  box-sizing: border-box;
+  // width: 100%;
+  // height: calc(100vh - 70px);
+  // box-sizing: border-box;
 `;
 
 const CopyDestinationPage: React.FC = () => {
@@ -39,8 +39,9 @@ const CopyDestinationPage: React.FC = () => {
   return (
     <>
       <ConnectionStep lightMode type="destination" />
-      <Container>
-        <ConnectorDocumentationWrapper>
+
+      <ConnectorDocumentationWrapper>
+        <Container>
           {currentStep === CreateStepTypes.TEST_CONNECTION && (
             <TestConnection
               isLoading={loadingStatus}
@@ -78,8 +79,8 @@ const CopyDestinationPage: React.FC = () => {
               }}
             />
           )}
-        </ConnectorDocumentationWrapper>
-      </Container>
+        </Container>
+      </ConnectorDocumentationWrapper>
     </>
   );
 };

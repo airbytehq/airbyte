@@ -13,7 +13,7 @@ export const ButtonRows = styled.div<{
   display: flex;
   justify-content: space-around;
   align-items: center;
-  width: ${({ full }) => (full ? "100%" : "50%")};
+  width: ${({ full }) => (full ? "100%" : "40%")};
   margin-left: auto;
   margin-right: auto;
   margin-top: ${({ top }) => (top ? top : 100)}px;

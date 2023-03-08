@@ -6,10 +6,6 @@
   position: relative;
 }
 
-.pageContainer {
-  height: 100%;
-}
-
 /*
 * This eliminates flickering scrollbars when resizing using the reflex splitter.
 * See more details in https://github.com/airbytehq/airbyte/pull/15996#issuecomment-1229019827
@@ -62,12 +58,6 @@
 .rotatedHeader {
   transform: rotate(-90deg);
   white-space: nowrap;
-}
-
-.panelGrabber {
-  height: 100vh;
-  padding: 6px;
-  display: flex;
 }
 
 .grabberHandleIcon {

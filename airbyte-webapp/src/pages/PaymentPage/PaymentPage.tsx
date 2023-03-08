@@ -5,6 +5,7 @@ import HeadTitle from "components/HeadTitle";
 import MainPageWithScroll from "components/MainPageWithScroll";
 
 import { useUser } from "core/AuthContext";
+import { getPaymentStatus, PAYMENT_STATUS } from "core/Constants/statuses";
 import { GetUpgradeSubscriptionDetail } from "core/domain/payment";
 import { ProductItem } from "core/domain/product";
 import useRouter from "hooks/useRouter";
@@ -45,7 +46,7 @@ const PaymentPage: React.FC = () => {
   const authService = useAuthenticationService();
   const { onCreateSubscriptionURL, onGetUpgradeSubscription, onUpgradeSubscription } = useAsyncAction();
 
-  const { updateUserStatus } = useUser();
+  const { updateUserStatus, user } = useUser();
   const userPlanDetail = useUserPlanDetail();
   const { selectedProduct } = userPlanDetail;
   const packagesDetail = usePackagesDetail();
@@ -66,7 +67,10 @@ const PaymentPage: React.FC = () => {
 
   const onSelectPlan = useCallback(async () => {
     setPaymentLoading(true);
-    if (selectedProduct) {
+    if (
+      getPaymentStatus(user.status) === PAYMENT_STATUS.Subscription ||
+      getPaymentStatus(user.status) === PAYMENT_STATUS.Pause_Subscription
+    ) {
       onGetUpgradeSubscription({ productItemId: product?.id as string })
         .then((response: any) => {
           const detail: GetUpgradeSubscriptionDetail = response?.data;

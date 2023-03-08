@@ -33,8 +33,10 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
-#### 2023.03.06
+#### 2023.03.08
 1. Overall size improvements
+#### 2023.03.07
+1. Bugfix:Table&page scroll style
 #### 2023.03.06
 1. New UI content update
 2. Bugfix:Table&page scroll style

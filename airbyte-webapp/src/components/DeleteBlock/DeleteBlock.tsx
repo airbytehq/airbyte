@@ -14,7 +14,7 @@ interface IProps {
 
 const Title = styled.div`
   font-weight: 500;
-  font-size: 20px;
+  font-size: 18px;
   line-height: 30px;
   color: #27272a;
 `;
@@ -34,7 +34,7 @@ const DeleteButton = styled(Button)`
   background: #ff5454;
   border-radius: 6px;
   border-color: #ff5454;
-  font-size: 16px;
+  font-size: 14px;
   color: #ffffff;
 `;
 
