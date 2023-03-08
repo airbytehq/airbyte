@@ -59,9 +59,7 @@ definitions:
       record_selector:
         type: RecordSelector
         extractor:
-          type: CustomRecordExtractor
-          field_path: "/data/boards/*/items/*"
-          class_name: "source_monday.DpathStringExtractor"
+          field_path: [ "data", "boards", "*", "items", "*" ]
       paginator:
         $ref: "#/definitions/default_paginator"
         pagination_strategy:
