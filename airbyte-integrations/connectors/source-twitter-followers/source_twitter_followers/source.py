@@ -4,6 +4,7 @@
 
 import datetime
 import time
+import json
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -145,6 +146,70 @@ class Followers(TwitterFollowersStream):
         return "/1.1/followers/ids.json"
 
 
+class TwitterTweetMetrics(TwitterFollowersStream):
+    primary_key = "metrics"
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
+        should return "customers". Required.
+        """
+        user_result = requests.get(f'{self.url_base}/2/users/by?usernames={self.screen_name}', headers=self.auth.get_auth_header())
+        user_result = json.loads(user_result.text)
+        user_id = user_result['data'][0]['id']
+        return f'/2/users/{user_id}/tweets'
+
+    def request_params(
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+
+        print("request_params \n", type(next_page_token), next_page_token)
+        if not next_page_token:
+            return {'tweet.fields': 'public_metrics,created_at'}
+        else:
+            return {'tweet.fields': 'public_metrics,created_at', "pagination_token": next_page_token["pagination_token"]}
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        result = response.json()
+        meta = result['meta']
+
+        # api 限制 15 calls/min,所以要sleep 一下
+        if 'next_token' in meta.keys():
+            print("next_page_token find next page,sleep 10 seconds!")
+            time.sleep(10)
+            return {"pagination_token": meta["next_token"]}
+        else:
+            return None
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        result = response.json()
+
+        if not 'data' in result.keys():
+            return []
+
+        tweet_list = result['data']
+
+        count_result = []
+        for tweet_detail in tweet_list:
+            public_metrics = tweet_detail['public_metrics']
+            count_result.append({
+                'id': tweet_detail['id'],
+                'handler': self.screen_name,
+                'timestamp': self.job_time,
+                'tweet_time': tweet_detail['created_at'],
+                'text': tweet_detail['text'],
+                'retweet_count': public_metrics['retweet_count'],
+                'reply_count': public_metrics['reply_count'],
+                'like_count': public_metrics['like_count'],
+                'quote_count': public_metrics['quote_count'],
+                'impression_count': public_metrics['impression_count']
+            })
+        print(count_result)
+        return count_result
+
+
 # # Basic incremental stream
 # class IncrementalTwitterFollowersStream(TwitterFollowersStream, ABC):
 #     """
@@ -247,4 +312,4 @@ class SourceTwitterFollowers(AbstractSource):
         print("config \n", config)
         auth = TokenAuthenticator(token=config["api_key"])  # Oauth2Authenticator is also available if you need oauth support
         print("auth \n", auth.get_auth_header())
-        return [Followers(authenticator=auth, config=config)]
+        return [Followers(authenticator=auth, config=config), TwitterTweetMetrics(authenticator=auth, config=config)]
