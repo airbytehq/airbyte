@@ -5,6 +5,9 @@
     "id": {
       "type": ["null", "string"]
     },
+    "handler": {
+      "type": ["null", "string"]
+    },
     "retweet_count": {
       "type": ["null", "number"]
     },

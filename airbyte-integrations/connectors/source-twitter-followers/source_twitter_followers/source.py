@@ -196,6 +196,7 @@ class TwitterTweetMetrics(TwitterFollowersStream):
             public_metrics = tweet_detail['public_metrics']
             count_result.append({
                 'id': tweet_detail['id'],
+                'handler': self.screen_name,
                 'text': tweet_detail['text'],
                 'retweet_count': public_metrics['retweet_count'],
                 'reply_count': public_metrics['reply_count'],
