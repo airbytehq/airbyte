@@ -87,9 +87,14 @@ class IncrementalZohoCrmStream(ZohoCrmStream):
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
             current_cursor_value = datetime.datetime.fromisoformat(self.state[self.cursor_field])
-            latest_cursor_value = datetime.datetime.fromisoformat(record[self.cursor_field])
+            latest_cursor_value = datetime.datetime.fromisoformat(record[self.cursor_field]) if record.get(self.cursor_field) else None
+            if not latest_cursor_value:
+                self.logger.warning(f"Record in stream {self.primary_key} missing cursor field '{self.cursor_field}', it won't get synced")
+                continue
+
             new_cursor_value = max(latest_cursor_value, current_cursor_value)
             self.state = {self.cursor_field: new_cursor_value.isoformat("T", "seconds")}
+
             yield record
 
     def request_headers(
