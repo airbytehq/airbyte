@@ -1,0 +1,37 @@
+documentationUrl: https://developer.walmart.com/api/us/mp/auth
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Walmart Marketing Spec
+  type: object
+  required:
+    - api_keys
+    - merchant
+    - createdStartDate
+    - WM_MARKET
+  properties:
+    # "TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.":
+    api_keys:
+      title: API Keys
+      type: string
+      description: Base64 encoding of a JSON with the client id and client secret from Walmart Account
+      example: 'JSON example: {"client_id": "123456", "client_secret": "12345678"} | Base64 example: eyJwdWJsaWNfa2V5IjogIjEyMzQ1NiIsICJwcml2YXRlX2tleSI6ICIxMjM0NTY3OCJ9'
+      airbyte_secret: true
+      order: 0
+    merchant:
+      title: Merchant Code
+      type: string
+      description: "Merchant code with 5 characters length"
+      order: 1
+      examples:
+        - "BRXYZ"
+        - "MXABC"
+    createdStartDate:
+      title: Start Date (YYYY-MM-DD format)
+      type: string
+      description: "Start replication date"
+      order: 2
+    WM_MARKET:
+      title: Market Country Code
+      type: string
+      description: "Two letter country code where the account get it's data from"
+      order: 2

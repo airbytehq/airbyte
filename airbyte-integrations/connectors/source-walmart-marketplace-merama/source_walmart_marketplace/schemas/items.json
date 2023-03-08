@@ -1,0 +1,70 @@
+{
+    "type": "object",
+    "required": [
+        "api_keys",
+        "merchant",
+        "WM_MARKET"
+    ],
+    "properties": {
+        "data": {
+            "type": [
+                "null",
+                "object"
+            ]
+        },
+        "merchant": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "source": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "type": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "timeline": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "created_at": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "updated_at": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "timestamp": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "sensible": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        }
+    }
+}
