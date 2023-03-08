@@ -113,6 +113,13 @@ class Files(PipedriveStream):
     """
 
 
+class Filters(PipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/Filters#getFilters
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
+
+
 class LeadLabels(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/LeadLabels#getLeadLabels"""
 
