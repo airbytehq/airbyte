@@ -28,7 +28,7 @@ class SourceTenkft(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         args = self.connector_config(config)
-        return [Users(**args)]
+        return [Users(**args), Projects(**args), ProjectAssignments(**args)]
 
     def connector_config(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         return {
@@ -47,6 +47,8 @@ class TenkftAuthenticator(requests.auth.AuthBase):
 
 # Basic full refresh stream
 class TenkftStream(HttpStream):
+    primary_key: Optional[str] = id
+
     @property
     def url_base(self) -> str:
         return "https://api.rm.smartsheet.com"
@@ -70,7 +72,7 @@ class TenkftStream(HttpStream):
         yield {}
 
 
-class UsersTenkftStream(TenkftStream):
+class ApiTenkftStream(TenkftStream):
     @property
     def url_base(self) -> str:
         return f"{super().url_base}/api/v1/"
@@ -83,8 +85,31 @@ class UsersTenkftStream(TenkftStream):
         return None
 
 
-class Users(UsersTenkftStream):
-    primary_key: Optional[str] = id
+class Users(ApiTenkftStream):
+    """
+    API docs: https://10kft.github.io/10kft-api/#users
+    """
 
     def path(self, **kwargs) -> str:
         return "users"
+
+
+class Projects(ApiTenkftStream):
+    """
+    API docs: https://10kft.github.io/10kft-api/#list-projects
+    """
+
+    def path(self, **kwargs) -> str:
+        return "projects"
+
+
+class ProjectAssignments(ApiTenkftStream):
+    """
+    API docs: https://10kft.github.io/10kft-api/#list-all-assignments
+    """
+
+    name = "project_assignments"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        project_id = stream_slice["project_id"]
+        return f"projects/{project_id}/assignments"
