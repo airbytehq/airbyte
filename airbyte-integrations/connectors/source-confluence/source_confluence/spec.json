@@ -10,7 +10,7 @@
       "api_token": {
         "title": "API Token",
         "type": "string",
-        "description": "Please follow the Jira confluence for generating an API token <a href=\"https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/\">generating an API token</a>.",
+        "description": "Please follow the Jira confluence for generating an API token: <a href=\"https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/\">generating an API token</a>.",
         "airbyte_secret": true
       },
       "domain_name": {
