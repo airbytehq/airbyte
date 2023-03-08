@@ -21,7 +21,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/airtable
   icon: airtable.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
   allowedHosts:
     hosts:
       - api.airtable.com
