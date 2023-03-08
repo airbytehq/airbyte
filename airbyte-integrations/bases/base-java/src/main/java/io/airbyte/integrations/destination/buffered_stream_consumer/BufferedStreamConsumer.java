@@ -11,8 +11,6 @@ import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.Configs;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DefaultDestStateLifecycleManager;
@@ -95,7 +93,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private boolean hasClosed;
 
   private Instant nextFlushDeadline;
-  private Duration BUFFER_FLUSH_FREQUENCY = Duration.ofMinutes(15);
+  private final Duration BUFFER_FLUSH_FREQUENCY;
 
   public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
                                 final VoidCallable onStart,
@@ -103,17 +101,13 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
                                 final CheckedConsumer<Boolean, Exception> onClose,
                                 final ConfiguredAirbyteCatalog catalog,
                                 final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord) {
-    this.outputRecordCollector = outputRecordCollector;
-    this.hasStarted = false;
-    this.hasClosed = false;
-    this.onStart = onStart;
-    this.onClose = onClose;
-    this.catalog = catalog;
-    this.streamNames = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
-    this.isValidRecord = isValidRecord;
-    this.streamToIgnoredRecordCount = new HashMap<>();
-    this.bufferingStrategy = bufferingStrategy;
-    this.stateManager = new DefaultDestStateLifecycleManager();
+    this(outputRecordCollector,
+        onStart,
+        bufferingStrategy,
+        onClose,
+        catalog,
+        isValidRecord,
+        Duration.ofMinutes(15));
   }
 
   /*
