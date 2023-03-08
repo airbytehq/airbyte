@@ -290,7 +290,7 @@
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift
-  dockerImageTag: 0.3.56
+  dockerImageTag: 0.4.0
   documentationUrl: https://docs.airbyte.com/integrations/destinations/redshift
   icon: redshift.svg
   normalizationConfig:
@@ -433,7 +433,7 @@
 - name: Teradata Vantage
   destinationDefinitionId: 58e6f9da-904e-11ed-a1eb-0242ac120002
   dockerRepository: airbyte/destination-teradata
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   icon: teradata.svg
   documentationUrl: https://docs.airbyte.io/integrations/destinations/teradata
   releaseStage: alpha

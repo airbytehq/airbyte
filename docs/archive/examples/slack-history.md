@@ -53,7 +53,7 @@ Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000/
 
 ### b. Set Up Airbyte’s Slack Source Connector
 
-In the Airbyte UI, select Slack from the dropdown. We provide step-by-step instructions for setting up the Slack source in Airbyte [here](https://docs.airbyte.io/integrations/sources/slack#setup-guide). These will walk you through how to complete the form on this page.
+In the Airbyte UI, select Slack from the dropdown. We provide step-by-step instructions for setting up the Slack source in Airbyte [here](https://docs.airbyte.com/integrations/sources/slack#setup-guide). These will walk you through how to complete the form on this page.
 
 ![](../../.gitbook/assets/slack-history-setup-wizard.png)
 
