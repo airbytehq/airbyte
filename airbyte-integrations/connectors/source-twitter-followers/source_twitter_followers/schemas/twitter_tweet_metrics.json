@@ -8,6 +8,9 @@
     "handler": {
       "type": ["null", "string"]
     },
+    "text": {
+      "type": ["null", "string"]
+    },
     "timestamp": {
       "type": "string",
       "format": "date-time",
