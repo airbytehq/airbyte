@@ -9,6 +9,11 @@ on:
   pull_request:
     paths:
       - "airbyte-integrations/connectors/**"
+  push:
+    paths:
+      - "airbyte-integrations/connectors/**"
+    branches:
+      - "master"
 jobs:
   start-runner:
     name: "Connectors Integration Test: Start Build EC2 Runner"
@@ -43,13 +48,14 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: "us-east-2"
       TEST_REPORTS_BUCKET_NAME: "airbyte-connector-build-status"
+      CI_GIT_REVISION: ${{ github.sha }}
     steps:
+      # TODO: Airbyte checkout should ideally be not necessary but the ci_connector_ops utils need an active git repo...
       - name: Checkout Airbyte repo
         uses: actions/checkout@v3
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
-          fetch-depth: 0
       - name: Extract branch name
         shell: bash
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
