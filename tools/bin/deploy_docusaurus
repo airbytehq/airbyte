@@ -130,7 +130,8 @@ git add CNAME
 # Skip pre-commit hooks fire_elmo.jpg
 PRE_COMMIT_ALLOW_NO_CONFIG=1 git commit --message "Adds CNAME to deploy for $revision"
 
-git push
+# These are raw static files, we aren't trying to resolve conflicts
+git push --force
 
 # non functional. for debugging
 git rev-parse --abbrev-ref HEAD
