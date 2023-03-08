@@ -140,15 +140,19 @@ jobs:
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "RUN_RESULT<<$EOF" >> $GITHUB_OUTPUT
           echo $RUN_RESULT >> $GITHUB_OUTPUT
-          echo $EOF >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT
           echo "gh output: $GITHUB_OUTPUT"
       - name: Link comment to workflow run
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           reactions: '+1'
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            > Result: ```${{ steps.prepare-images.outputs.RUN_RESULT }}```
+            **Edit:**-----------------------
+            ## Performance test Result: 
+            ```
+            ${{ steps.prepare-images.outputs.RUN_RESULT }}
+            ```
       # need to add credentials here
   # In case of self-hosted EC2 errors, remove this block.
   stop-test-runner:
