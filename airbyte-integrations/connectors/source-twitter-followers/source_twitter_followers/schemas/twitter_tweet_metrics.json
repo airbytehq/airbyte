@@ -8,6 +8,16 @@
     "handler": {
       "type": ["null", "string"]
     },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "tweet_time": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
     "retweet_count": {
       "type": ["null", "number"]
     },

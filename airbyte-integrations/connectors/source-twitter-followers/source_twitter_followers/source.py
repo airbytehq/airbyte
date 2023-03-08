@@ -167,9 +167,9 @@ class TwitterTweetMetrics(TwitterFollowersStream):
 
         print("request_params \n", type(next_page_token), next_page_token)
         if not next_page_token:
-            return {'tweet.fields': 'public_metrics'}
+            return {'tweet.fields': 'public_metrics,created_at'}
         else:
-            return {'tweet.fields': 'public_metrics', "pagination_token": next_page_token["pagination_token"]}
+            return {'tweet.fields': 'public_metrics,created_at', "pagination_token": next_page_token["pagination_token"]}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         result = response.json()
@@ -197,6 +197,8 @@ class TwitterTweetMetrics(TwitterFollowersStream):
             count_result.append({
                 'id': tweet_detail['id'],
                 'handler': self.screen_name,
+                'timestamp': self.job_time,
+                'tweet_time': tweet_detail['created_at'],
                 'text': tweet_detail['text'],
                 'retweet_count': public_metrics['retweet_count'],
                 'reply_count': public_metrics['reply_count'],
