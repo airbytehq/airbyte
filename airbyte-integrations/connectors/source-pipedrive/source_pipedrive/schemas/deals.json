@@ -162,8 +162,7 @@
       "type": ["null", "string"]
     },
     "rotten_time": {
-      "type": ["null", "string"],
-      "format": "time"
+      "type": ["null", "string"]
     },
     "owner_name": {
       "type": ["null", "string"]
