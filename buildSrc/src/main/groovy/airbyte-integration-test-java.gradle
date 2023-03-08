@@ -47,7 +47,7 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
 
             //This allows to set up a `gradle.properties` file inside the connector folder to reduce number of threads and reduce parallelization.
             //Specially useful for connectors that shares resources (like Redshift or Snowflake).
-            ext.numThreads = project.hasProperty('numberThreads') ? project.getProperty('numberThreads') : Runtime.runtime.availableProcessors() ?: 1
+            ext.numberThreads = project.hasProperty('numberThreads') ? project.getProperty('numberThreads') : Runtime.runtime.availableProcessors() ?: 1
             maxHeapSize = '3g'
             maxParallelForks = numberThreads
 
