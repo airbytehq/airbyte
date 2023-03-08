@@ -2309,9 +2309,6 @@
   icon: firebolt.svg
   sourceType: database
   releaseStage: alpha
-  allowedHosts:
-    hosts:
-      - "${host}"
 - name: Elasticsearch
   sourceDefinitionId: 7cf88806-25f5-4e1a-b422-b2fa9e1b0090
   dockerRepository: airbyte/source-elasticsearch
