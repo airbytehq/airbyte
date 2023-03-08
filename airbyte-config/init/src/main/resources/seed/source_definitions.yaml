@@ -279,7 +279,7 @@
 - name: ClickHouse
   sourceDefinitionId: bad83517-5e54-4a3d-9b53-63e85fbd4d7c
   dockerRepository: airbyte/source-clickhouse
-  dockerImageTag: 0.1.15
+  dockerImageTag: 0.1.16
   documentationUrl: https://docs.airbyte.com/integrations/sources/clickhouse
   icon: clickhouse.svg
   sourceType: database
@@ -318,7 +318,7 @@
 - name: Cockroachdb
   sourceDefinitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
   dockerRepository: airbyte/source-cockroachdb
-  dockerImageTag: 0.1.19
+  dockerImageTag: 0.1.20
   documentationUrl: https://docs.airbyte.com/integrations/sources/cockroachdb
   icon: cockroachdb.svg
   sourceType: database
@@ -878,7 +878,7 @@
 - name: IBM Db2
   sourceDefinitionId: 447e0381-3780-4b46-bb62-00a4e3c8b8e2
   dockerRepository: airbyte/source-db2
-  dockerImageTag: 0.1.17
+  dockerImageTag: 0.1.18
   documentationUrl: https://docs.airbyte.com/integrations/sources/db2
   icon: db2.svg
   sourceType: database
@@ -1299,7 +1299,7 @@
 - name: Oracle DB
   sourceDefinitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
   dockerRepository: airbyte/source-oracle
-  dockerImageTag: 0.3.22
+  dockerImageTag: 0.3.23
   documentationUrl: https://docs.airbyte.com/integrations/sources/oracle
   icon: oracle.svg
   sourceType: database
@@ -1827,7 +1827,7 @@
 - name: Snowflake
   sourceDefinitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
   dockerRepository: airbyte/source-snowflake
-  dockerImageTag: 0.1.30
+  dockerImageTag: 0.1.31
   documentationUrl: https://docs.airbyte.com/integrations/sources/snowflake
   icon: snowflake.svg
   sourceType: database
@@ -1935,7 +1935,7 @@
 - name: TiDB
   sourceDefinitionId: 0dad1a35-ccf8-4d03-b73e-6788c00b13ae
   dockerRepository: airbyte/source-tidb
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/tidb
   icon: tidb.svg
   sourceType: database
