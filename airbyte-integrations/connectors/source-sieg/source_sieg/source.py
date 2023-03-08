@@ -36,7 +36,7 @@ class BaseClass(HttpStream):
         self.take = 1
         self.skip = 0
         self.downloadevent = False
-        self.threads_quantity = 32
+        self.threads_quantity = 64
         self.max_skip = 1000000
 
     @abstractmethod
@@ -161,23 +161,32 @@ class BaseClass(HttpStream):
     def chunker_list(self, list, size):
         return (list[i::size] for i in range(size))
 
+    def make_request(self,url,payload,headers):
+        response = requests.request("POST", url=url, data=payload, headers=headers)
+        return response
+
     def read_invoice(self, item_list, skips_list):
         for skip in skips_list:
-            logger.info(f'--- Running {self.xmltype} --- Skip: {skip}')
+            logger.info(f'--- Running {self.class_identifier} --- Skip: {skip}')
 
             payload = json.dumps(self.get_payload_skip(skip))
             headers = self.get_headers()
             url = self.get_url()
 
-            response = requests.request("POST", url=url, data=payload, headers=headers)
+            response = self.make_request(url=url,payload=payload,headers=headers)
 
-            if response.json()['xmls']:
-                invoice = self.format_response(response.json())
-            else:
-                logger.info('--- Breaking Thread')
-                break
-
-            item_list.append(invoice)
+            try:
+                if response.json()['xmls']:
+                    invoice = self.format_response(response.json())
+                else:
+                    logger.info('--- Breaking Thread')
+                    break
+                
+                item_list.append(invoice)
+            except:
+                logger.info('--- Empity Response')
+                self.read_invoice(item_list, skips_list)
+                
     
     def parse_response(
         self,
@@ -212,6 +221,7 @@ class BaseClass(HttpStream):
 class Nfe(BaseClass):
     xmltype = "nfe"
     downloadevent = False
+    class_identifier = "NFe"
 
     def get_created_at(self, xml_item):
         try:
@@ -262,6 +272,7 @@ class Nfe(BaseClass):
 class Cte(BaseClass):
     xmltype = "cte"
     downloadevent = False
+    class_identifier = "CTe"
 
     def get_created_at(self, xml_item):
         try:
@@ -305,6 +316,7 @@ class Cte(BaseClass):
 class NfeEvents(Nfe):
     xmltype = "nfe"
     downloadevent = True
+    class_identifier = "Evento_NFe"
 
     def get_invoice_type(self, xml_item):
         return "evento_nfe"
@@ -312,6 +324,7 @@ class NfeEvents(Nfe):
 class CteEvents(Cte):
     xmltype = "cte"
     downloadevent = True
+    class_identifier = "Evento_CTe"
 
     def get_invoice_type(self, xml_item):
         return "evento_cte"
