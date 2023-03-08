@@ -121,6 +121,8 @@ class BaseClass(HttpStream):
 
         merchant = self.get_merchant_uid(cnpjs)
 
+        logger.info(f"Collected Invoice: {invoice_id}")
+
         invoice = {
             "data": xml_item,
             "merchant": merchant,
