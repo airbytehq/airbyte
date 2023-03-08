@@ -176,8 +176,17 @@ async def run_connectors_test_pipelines(test_contexts: List[ConnectorTestContext
     default="origin/master",
     type=str,
 )
+@click.option("--gha-workflow-run-id", help="[CI Only] The run id of the GitHub action workflow", default=None, type=str)
 @click.pass_context
-def connectors_ci(ctx: click.Context, use_remote_secrets: str, is_local: bool, git_branch: str, git_revision: str, diffed_branch: str):
+def connectors_ci(
+    ctx: click.Context,
+    use_remote_secrets: str,
+    is_local: bool,
+    git_branch: str,
+    git_revision: str,
+    diffed_branch: str,
+    gha_workflow_run_id: str,
+):
     """A command group to gather all the connectors-ci command"""
     if not (os.getcwd().endswith("/airbyte") and Path(".git").is_dir()):
         raise click.ClickException("You need to run this command from the airbyte repository root.")
@@ -195,6 +204,7 @@ def connectors_ci(ctx: click.Context, use_remote_secrets: str, is_local: bool, g
     ctx.obj["git_branch"] = git_branch
     ctx.obj["git_revision"] = git_revision
     ctx.obj["modified_files"] = get_modified_files(git_revision, diffed_branch, is_local)
+    ctx.obj["gha_workflow_run_id"] = gha_workflow_run_id
 
 
 @connectors_ci.command()

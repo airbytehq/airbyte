@@ -87,6 +87,7 @@ class ConnectorTestReport:
                 "run_duration": self.run_duration,
                 "success": self.success,
                 "failed_step": [failed_step_result.step.name for failed_step_result in self.failed_steps],
+                "gha_workflow_run_url": f"https://github.com/airbytehq/airbyte/actions/runs/{self.connector_test_context.gha_workflow_run_id}",
             }
         )
 
