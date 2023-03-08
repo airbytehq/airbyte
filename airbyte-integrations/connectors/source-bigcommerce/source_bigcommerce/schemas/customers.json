@@ -20,6 +20,9 @@
     "registration_ip_address": {
       "type": ["null", "string"]
     },
+    "notes": {
+      "type": ["null", "string"]
+    },
     "tax_exempt_category": {
       "type": ["null", "string"]
     },
