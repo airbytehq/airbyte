@@ -13,6 +13,7 @@ import click
 import dagger
 from ci_connector_ops.pipelines.actions import builds, environments, remote_storage, secrets, tests
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
+from ci_connector_ops.pipelines.github import send_commit_status_check
 from ci_connector_ops.pipelines.models import ConnectorTestReport, Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.utils import (
     DAGGER_CONFIG,
@@ -84,6 +85,14 @@ async def teardown(test_context: ConnectorTestContext, test_report: ConnectorTes
         s3_reports_path_root = "python-poc/tests/history/"
         s3_key = s3_reports_path_root + suffix
         await remote_storage.upload_to_s3(teardown_pipeline, str(local_report_path), s3_key, os.environ["TEST_REPORTS_BUCKET_NAME"])
+    if not test_context.is_local:
+        send_commit_status_check(
+            test_context.git_revision,
+            "success" if test_report.success else "failure",
+            test_context.gha_workflow_run_url,
+            f"Finished tests for {test_context.connector.technical_name}",
+            "ci_connector_ops",
+        )
     return test_context
 
 
@@ -159,6 +168,14 @@ async def run_connectors_test_pipelines(test_contexts: List[ConnectorTestContext
                 if test_context.connector.language in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
                     test_context.dagger_client = dagger_client.pipeline(f"{test_context.connector.technical_name} - Test Pipeline")
                     tg.start_soon(run, test_context)
+                    if not test_context.is_local:
+                        send_commit_status_check(
+                            test_context.git_revision,
+                            "pending",
+                            test_context.gha_workflow_run_url,
+                            f"Starting tests for {test_context.connector.technical_name}",
+                            "ci_connector_ops",
+                        )
                 else:
                     logger.warning(
                         f"Not running test pipeline for {test_context.connector.technical_name} as it's not a Python or Low code connector"
@@ -177,6 +194,7 @@ async def run_connectors_test_pipelines(test_contexts: List[ConnectorTestContext
     type=str,
 )
 @click.option("--gha-workflow-run-id", help="[CI Only] The run id of the GitHub action workflow", default=None, type=str)
+@click.option("--github-access-token", default=None, envvar="CI_GITHUB_ACCESS_TOKEN")
 @click.pass_context
 def connectors_ci(
     ctx: click.Context,
@@ -186,6 +204,7 @@ def connectors_ci(
     git_revision: str,
     diffed_branch: str,
     gha_workflow_run_id: str,
+    github_access_token: str,
 ):
     """A command group to gather all the connectors-ci command"""
     if not (os.getcwd().endswith("/airbyte") and Path(".git").is_dir()):
@@ -205,6 +224,10 @@ def connectors_ci(
     ctx.obj["git_revision"] = git_revision
     ctx.obj["modified_files"] = get_modified_files(git_revision, diffed_branch, is_local)
     ctx.obj["gha_workflow_run_id"] = gha_workflow_run_id
+    ctx.obj["gha_workflow_run_url"] = f"https://github.com/airbytehq/airbyte/actions/runs/{gha_workflow_run_id}"
+    if not is_local and github_access_token is not None:
+        os.environ["CI_GITHUB_ACCESS_TOKEN"] = github_access_token
+        send_commit_status_check(git_revision, "pending", ctx.obj["gha_workflow_run_url"], "Starting connectors-ci", "ci_connector_ops")
 
 
 @connectors_ci.command()
@@ -247,7 +270,14 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
         logger.warning("No connector test will run according to your inputs.")
         sys.exit(0)
     connectors_tests_contexts = [
-        ConnectorTestContext(connector, ctx.obj["is_local"], ctx.obj["git_branch"], ctx.obj["git_revision"], ctx.obj["use_remote_secrets"])
+        ConnectorTestContext(
+            connector,
+            ctx.obj["is_local"],
+            ctx.obj["git_branch"],
+            ctx.obj["git_revision"],
+            ctx.obj["use_remote_secrets"],
+            gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
+        )
         for connector in connectors_under_test
     ]
     try:

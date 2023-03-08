@@ -23,7 +23,7 @@ class ConnectorTestContext:
     # Set default connector_acceptance_test_image to dev as its currently patched in this branch to support Dagger
     connector_acceptance_test_image: str = "airbyte/connector-acceptance-test:dev"
     created_at: datetime = field(default_factory=datetime.utcnow)
-    gha_workflow_run_id: str = None
+    gha_workflow_run_url: str = None
 
     @property
     def is_ci(self):
