@@ -135,7 +135,7 @@ jobs:
           kubectl logs --follow $POD
           echo "reading end of log"
           kubectl logs --tail=5 $POD
-#          RUN_RESULT=$(kubectl logs --tail=5 $POD 2>&1)
+          # RUN_RESULT=$(kubectl logs --tail=5 $POD 2>&1)
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "RUN_RESULT<<$EOF" >> $GITHUB_OUTPUT
           kubectl logs --tail=5 $POD | while read line ; do echo $line >> $GITHUB_OUTPUT ; done 
