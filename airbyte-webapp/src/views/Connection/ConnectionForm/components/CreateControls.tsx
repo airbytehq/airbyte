@@ -2,7 +2,8 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button, Spinner, StatusIcon } from "components";
+import { Spinner, StatusIcon } from "components";
+import { BigButton, ButtonRows } from "components/base/Button/BigButton";
 
 interface CreateControlsProps {
   isSubmitting: boolean;
@@ -60,36 +61,36 @@ const ErrorText = styled.div`
   max-width: 400px;
 `;
 
-const SubmitButton = styled(Button)`
-  // margin-left: auto;
-  width: 264px;
-  height: 68px;
-  border-radius: 6px;
-  font-weight: 500;
-  font-size: 18px;
-  line-height: 22px;
-`;
+// const SubmitButton = styled(Button)`
+//   // margin-left: auto;
+//   width: 264px;
+//   height: 68px;
+//   border-radius: 6px;
+//   font-weight: 500;
+//   font-size: 18px;
+//   line-height: 22px;
+// `;
 
-const BackButton = styled(Button)`
-  // margin-left: auto;
-  width: 264px;
-  height: 68px;
-  border-radius: 6px;
-  font-weight: 500;
-  font-size: 18px;
-  line-height: 22px;
-  background: #fff;
-  color: #6b6b6f;
-  border-color: #d1d5db;
-`;
+// const BackButton = styled(Button)`
+//   // margin-left: auto;
+//   width: 264px;
+//   height: 68px;
+//   border-radius: 6px;
+//   font-weight: 500;
+//   font-size: 18px;
+//   line-height: 22px;
+//   background: #fff;
+//   color: #6b6b6f;
+//   border-color: #d1d5db;
+// `;
 
-const ButtonRows = styled.div`
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  margin-top: 40px;
-  width: 100%;
-`;
+// const ButtonRows = styled.div`
+//   display: flex;
+//   justify-content: space-around;
+//   align-items: center;
+//   margin-top: 40px;
+//   width: 100%;
+// `;
 
 const CreateControls: React.FC<CreateControlsProps> = ({ isSubmitting, errorMessage, isValid, onBack }) => {
   if (isSubmitting) {
@@ -115,13 +116,13 @@ const CreateControls: React.FC<CreateControlsProps> = ({ isSubmitting, errorMess
       ) : (
         <div />
       )}
-      <ButtonRows>
-        <BackButton type="button" onClick={onBack}>
+      <ButtonRows top="40" bottom="20">
+        <BigButton type="button" onClick={onBack} secondary>
           <FormattedMessage id="form.button.back" />
-        </BackButton>
-        <SubmitButton type="submit" disabled={isSubmitting || !isValid}>
+        </BigButton>
+        <BigButton type="submit" disabled={isSubmitting || !isValid}>
           <FormattedMessage id="form.button.finishSetup" />
-        </SubmitButton>
+        </BigButton>
       </ButtonRows>
     </ButtonContainer>
   );

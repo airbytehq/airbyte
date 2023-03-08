@@ -25,22 +25,22 @@ const Content = styled.div`
 
 const Title = styled.div`
   font-weight: 700;
-  font-size: 28px;
+  font-size: 20px;
   line-height: 30px;
 `;
 
 const Text = styled.div`
   font-weight: 400;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 22px;
   color: #6b6b6f;
-  margin-top: 28px;
+  margin-top: 20px;
   max-width: 432px;
 `;
 
 const ImageBox = styled.div`
-  width: 126px;
-  height: 126px;
+  width: 106px;
+  height: 106px;
   background: #ffffff;
   box-shadow: 0px 10px 12px rgba(74, 74, 87, 0.1);
   border-radius: 18px;

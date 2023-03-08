@@ -4,7 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 
-import { ControlLabels, DropDown, DropDownRow, H3, Input } from "components"; // Card
+import { ControlLabels, DropDown, DropDownRow, H4, Input } from "components"; // Card
 import { FormChangeTracker } from "components/FormChangeTracker";
 
 import {
@@ -84,7 +84,7 @@ interface SectionProps {
 
 const ConfigurationsLabel = styled.div`
   font-weight: 700;
-  font-size: 24px;
+  font-size: 20px;
   line-height: 30px;
   margin-bottom: 4px;
 `;
@@ -94,7 +94,7 @@ const ConfigurationsLabel = styled.div`
 //   display: inline;
 // `;
 
-const SectionTitle = styled(H3)`
+const SectionTitle = styled(H4)`
   margin-bottom: 30px;
 `;
 

@@ -23,11 +23,11 @@ import { useDocumentationPanelContext } from "./DocumentationPanelContext";
 // }
 
 const PageContainer = styled.div`
-  height: calc(100% - 80px);
+  height: calc(100% - 70px);
 `;
 
 const PnelGrabber = styled.div`
-  height: calc(100vh - 80px);
+  height: calc(100vh - 70px);
   padding: 6px;
   display: flex;
 `;
@@ -72,7 +72,9 @@ const RightPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>
     <>
       {width < 350 ? (
         <div className={classNames(styles.rightPanelContainer, styles.lightOverlay)}>
-          <h2 className={styles.rotatedHeader}>Setup Guide</h2>
+          <h2 className={styles.rotatedHeader}>
+            <FormattedMessage id="form.setupGuide" />
+          </h2>
         </div>
       ) : (
         <div className={styles.rightPanelContainer}>{children}</div>

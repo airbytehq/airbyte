@@ -2,7 +2,8 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button, LoadingButton } from "components";
+// import {  LoadingButton } from "components";
+import { BigButton, ButtonRows } from "components/base/Button/BigButton";
 
 interface EditControlProps {
   isSubmitting: boolean;
@@ -24,36 +25,36 @@ const Buttons = styled.div`
   // margin-top: 16px;
 `;
 
-const ButtonRows = styled.div`
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  margin-top: 40px;
-  width: 100%;
-`;
+// const ButtonRows = styled.div`
+//   display: flex;
+//   justify-content: space-around;
+//   align-items: center;
+//   margin-top: 40px;
+//   width: 100%;
+// `;
 
-const ControlButton = styled(LoadingButton)`
-  // margin-left: 10px;
-  width: 264px;
-  height: 68px;
-  border-radius: 6px;
-  font-weight: 500;
-  font-size: 18px;
-  line-height: 22px;
-`;
+// const ControlButton = styled(LoadingButton)`
+//   // margin-left: 10px;
+//   width: 264px;
+//   height: 68px;
+//   border-radius: 6px;
+//   font-weight: 500;
+//   font-size: 18px;
+//   line-height: 22px;
+// `;
 
-const BackButton = styled(Button)`
-  // margin-left: auto;
-  width: 264px;
-  height: 68px;
-  border-radius: 6px;
-  font-weight: 500;
-  font-size: 18px;
-  line-height: 22px;
-  background: #fff;
-  color: #6b6b6f;
-  border-color: #d1d5db;
-`;
+// const BackButton = styled(Button)`
+//   // margin-left: auto;
+//   width: 264px;
+//   height: 68px;
+//   border-radius: 6px;
+//   font-weight: 500;
+//   font-size: 18px;
+//   line-height: 22px;
+//   background: #fff;
+//   color: #6b6b6f;
+//   border-color: #d1d5db;
+// `;
 
 const Success = styled.span`
   color: ${({ theme }) => theme.successColor};
@@ -98,21 +99,21 @@ const EditControls: React.FC<EditControlProps> = ({
       <Buttons>
         <div>{showStatusMessage()}</div>
         <ButtonRows>
-          <BackButton
+          <BigButton
             type="button"
             secondary
             // disabled={isSubmitting || (!dirty && !enableControls)}
             onClick={onBack}
           >
             <FormattedMessage id="form.button.back" />
-          </BackButton>
-          <ControlButton
+          </BigButton>
+          <BigButton
             type="submit"
             isLoading={isSubmitting}
             disabled={submitDisabled || isSubmitting || (!dirty && !enableControls)}
           >
             <FormattedMessage id="form.saveChanges" />
-          </ControlButton>
+          </BigButton>
         </ButtonRows>
       </Buttons>
     </>

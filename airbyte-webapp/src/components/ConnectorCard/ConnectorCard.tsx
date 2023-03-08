@@ -31,8 +31,8 @@ const Details = styled.div`
 `;
 
 const EntityIcon = styled.div`
-  width: 126px;
-  height: 126px;
+  width: 86px;
+  height: 86px;
   box-shadow: 0px 10px 12px rgba(74, 74, 87, 0.1);
   border-radius: 18px;
   padding: 6px;
@@ -40,7 +40,7 @@ const EntityIcon = styled.div`
 `;
 
 const ConnectionName = styled.div`
-  font-size: 24px;
+  font-size: 16px;
   text-align: left;
   margin-right: 10px;
   font-weight: 500;

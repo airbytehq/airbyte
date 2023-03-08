@@ -13,8 +13,8 @@ const ButtonBox = styled(Button)<{ disabled?: boolean }>`
   align-items: center;
   justify-content: center;
   border: 1px solid #d1d5db;
-  width: 168px;
-  height: 46px;
+  width: 152px;
+  height: 40px;
   border-radius: 6px;
   margin-top: 36px;
   color: ${({ theme, disabled }) => (disabled ? theme.grey300 : theme.black300)};

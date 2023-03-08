@@ -12,25 +12,27 @@
 
     .titleText {
       font-weight: 500;
-      font-size: 24px;
+      font-size: 20px;
       line-height: 30px;
     }
 
     .actions {
       display: flex;
+      margin-right: 28px;
 
       .resetButton,
       .cancelButton {
         display: flex;
         align-items: center;
         justify-content: center;
+        padding: 6px 0;
       }
 
       .resetButton {
         margin-right: 10px;
-        width: 168px;
-        height: 46px;
-        font-size: 16px;
+        width: 148px;
+        height: 40px;
+        font-size: 15px;
         border: 1px solid colors.$borderColor;
         border-radius: 6px;
       }
@@ -39,9 +41,9 @@
         border: 1px solid colors.$borderColor;
         background-color: colors.$white;
         color: #999;
-        width: 168px;
-        height: 46px;
-        font-size: 16px;
+        width: 148px;
+        height: 40px;
+        font-size: 15px;
         border-radius: 6px;
 
         .iconXmark {

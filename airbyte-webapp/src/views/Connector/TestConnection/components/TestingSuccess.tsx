@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 const Text = styled.div`
-  font-size: 36px;
+  font-size: 28px;
   line-height: 58px;
   margin-bottom: 120px;
 `;

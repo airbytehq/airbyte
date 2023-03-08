@@ -41,7 +41,7 @@ export const CircleNumber = styled.div<{
   height: 34px;
   border: 2px solid ${({ theme, isActive }) => (isActive ? theme.primaryColor : " #d1d5db")};
   border-radius: 20px;
-  margin-right: 16px;
+  margin-right: 12px;
 `;
 
 export const StepLine = styled.div<{
@@ -56,7 +56,7 @@ const Image = styled.img`
   width: 36px;
   height: 36px;
   display: inline-block;
-  margin-right: 16px;
+  margin-right: 12px;
 `;
 
 const StepBox: React.FC<StepProps> = ({ name, id, isActive, onClick, stepNumber, lightMode, currentStepNumber }) => {

@@ -26,7 +26,7 @@ interface IProps {
 // `;
 
 const FormTitle = styled.div`
-  font-size: 24px;
+  font-size: 20px;
   line-height: 30px;
   color: #27272a;
   font-weight: 500;
