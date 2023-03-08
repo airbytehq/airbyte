@@ -37,7 +37,7 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ env.PAT }}
-          ec2-instance-type: "c5.4xlarge" # https://aws.amazon.com/ec2/instance-types/
+          ec2-instance-type: "c5.8xlarge" # https://aws.amazon.com/ec2/instance-types/
   launch_connector_tests:
     timeout-minutes: 120
     needs: start-runner
