@@ -150,6 +150,7 @@ jobs:
             ```
             ${{ steps.prepare-images.outputs.RUN_RESULT }}
             ```
+            ### This run was XX% faster:rocket: than baseline on `master`.
       # need to add credentials here
   # In case of self-hosted EC2 errors, remove this block.
   stop-test-runner:
