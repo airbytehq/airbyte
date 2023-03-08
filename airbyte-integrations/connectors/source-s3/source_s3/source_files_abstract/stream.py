@@ -13,6 +13,7 @@ from functools import lru_cache
 from traceback import format_exc
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
+import pytz
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.models.airbyte_protocol import SyncMode
@@ -428,11 +429,17 @@ class IncrementalFileStream(FileStream, ABC):
         return False
 
     def _get_datetime_from_stream_state(self, stream_state: Mapping[str, Any] = None) -> datetime:
-        """if no state, we default to 1970-01-01 in order to pick up all files present."""
+        """
+        Returns the datetime from the stream state.
+
+        If there is no state, defaults to 1970-01-01 in order to pick up all files present.
+        The datetime object is localized to UTC to match the timezone of the last_modified attribute of objects in S3.
+        """
         if stream_state is not None and self.cursor_field in stream_state.keys():
-            return datetime.strptime(stream_state[self.cursor_field], self.datetime_format_string)
+            state_datetime = datetime.strptime(stream_state[self.cursor_field], self.datetime_format_string)
         else:
-            return datetime.strptime("1970-01-01T00:00:00Z", self.datetime_format_string)
+            state_datetime = datetime.strptime("1970-01-01T00:00:00Z", self.datetime_format_string)
+        return pytz.utc.localize(state_datetime)
 
     def get_updated_history(self, current_stream_state, latest_record_datetime, latest_record, current_parsed_datetime, state_date):
         """
@@ -485,9 +492,9 @@ class IncrementalFileStream(FileStream, ABC):
         """
         state_dict: Dict[str, Any] = {}
         current_parsed_datetime = self._get_datetime_from_stream_state(current_stream_state)
-        latest_record_datetime = datetime.strptime(
+        latest_record_datetime = pytz.utc.localize(datetime.strptime(
             latest_record.get(self.cursor_field, "1970-01-01T00:00:00Z"), self.datetime_format_string
-        )
+        ))
         state_dict[self.cursor_field] = datetime.strftime(max(current_parsed_datetime, latest_record_datetime), self.datetime_format_string)
 
         state_dict["schema"] = self._get_schema_map()
