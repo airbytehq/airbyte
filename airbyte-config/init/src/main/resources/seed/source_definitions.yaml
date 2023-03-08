@@ -1997,6 +1997,7 @@
   dockerRepository: airbyte/source-unleash
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/unleash
+  icon: unleash.svg
   sourceType: api
   releaseStage: alpha
 - name: US Census
