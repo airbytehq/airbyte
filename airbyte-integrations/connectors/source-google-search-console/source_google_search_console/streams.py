@@ -94,7 +94,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
     data_field = "rows"
     start_row = 0
     dimensions = []
-    search_types = ["web", "news", "image", "video"]
+    search_types = ["web", "news", "image", "video", "discover", "googleNews"]
     range_of_days = 3
 
     def path(
@@ -117,9 +117,9 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
-        The `stream_slices` implements iterator functionality for `site_urls` and `searchType`. The user can pass many `site_url`,
-        and we have to process all of them, we can also pass the` searchType` parameter in the `request body` to get data using some`
-        searchType` value from [` web`, `news `,` image`, `video`]. It's just a double nested loop with a yield statement.
+        The `stream_slices` implements iterator functionality for `site_urls` and `type`. The user can pass many `site_url`,
+        and we have to process all of them, we can also pass the `type` parameter in the `request body` to get data using some`
+        `type` value from [` web`, `news `,` image`, `video`, `discover`, `googleNews`]. It's just a double nested loop with a yield statement.
         """
 
         for site_url in self._site_urls:
@@ -173,7 +173,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         2. The `endDate` is retrieved from the `config.json`.
         3. The `sizes` parameter is used to group the result by some dimension.
         The following dimensions are available: `date`, `country`, `page`, `device`, `query`.
-        4. For the `searchType` check the paragraph stream_slices method.
+        4. For the `type` check the paragraph stream_slices method.
         5. For the `startRow` and `rowLimit` check next_page_token method.
         """
 
@@ -181,7 +181,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
             "startDate": stream_slice["start_date"],
             "endDate": stream_slice["end_date"],
             "dimensions": self.dimensions,
-            "searchType": stream_slice.get("search_type"),
+            "type": stream_slice.get("search_type"),
             "aggregationType": "auto",
             "startRow": self.start_row,
             "rowLimit": ROW_LIMIT,
@@ -235,7 +235,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
     ) -> Mapping[str, Any]:
         """
         With the existing nested loop implementation, we have to store a `cursor_field` for each `site_url`
-        and `searchType`. This functionality is placed in `get_update_state`.
+        and `type`. This functionality is placed in `get_update_state`.
 
         {
           "stream": {
@@ -243,13 +243,17 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
               "web": {"date": "2022-01-03"},
               "news": {"date": "2022-01-03"},
               "image": {"date": "2022-01-03"},
-              "video": {"date": "2022-01-03"}
+              "video": {"date": "2022-01-03"},
+              "discover": {"date": "2022-01-03"},
+              "googleNews": {"date": "2022-01-03"}
             },
             "https://domain2.com": {
               "web": {"date": "2022-01-03"},
               "news": {"date": "2022-01-03"},
               "image": {"date": "2022-01-03"},
-              "video": {"date": "2022-01-03"}
+              "video": {"date": "2022-01-03"},
+              "discover": {"date": "2022-01-03"},
+              "googleNews": {"date": "2022-01-03"}
             },
             "date": "2022-01-03",
           }
@@ -266,7 +270,9 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
             latest_benchmark = max(latest_benchmark, value)
         current_stream_state.setdefault(site_url, {}).setdefault(search_type, {})[self.cursor_field] = latest_benchmark
 
-        # we need to get the max date over all searchTypes but the current acceptance test YAML format doesn't
+        # we need to get the max date over all t
+        
+        ypes but the current acceptance test YAML format doesn't
         # support that
         current_stream_state[self.cursor_field] = current_stream_state[site_url][search_type][self.cursor_field]
 
