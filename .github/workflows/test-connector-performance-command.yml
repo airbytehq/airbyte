@@ -138,7 +138,9 @@ jobs:
           export RUN_RESULT=$(kubectl logs --tail=1 $POD 2>&1)
           echo "run result is $RUN_RESULT"
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "$EOF\nRUN_RESULT=$RUN_RESULT\n$EOF" >> $GITHUB_OUTPUT
+          echo "RUN_RESULT<<$EOF" >> $GITHUB_OUTPUT
+          echo $RUN_RESULT >> $GITHUB_OUTPUT
+          echo $EOF >> $GITHUB_OUTPUT
       - name: Link comment to workflow run
         uses: peter-evans/create-or-update-comment@v1
         with:
