@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.jdbc.copy.azure;
 
 import com.azure.storage.blob.specialized.SpecializedBlobClientBuilder;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
@@ -21,7 +21,7 @@ public abstract class AzureBlobStorageStreamCopierFactory implements StreamCopie
                              AzureBlobStorageConfig azureBlobConfig,
                              String stagingFolder,
                              ConfiguredAirbyteStream configuredStream,
-                             ExtendedNameTransformer nameTransformer,
+                             StandardNameTransformer nameTransformer,
                              JdbcDatabase db,
                              SqlOperations sqlOperations) {
     try {
@@ -48,7 +48,7 @@ public abstract class AzureBlobStorageStreamCopierFactory implements StreamCopie
                                       SpecializedBlobClientBuilder specializedBlobClientBuilder,
                                       JdbcDatabase db,
                                       AzureBlobStorageConfig azureBlobConfig,
-                                      ExtendedNameTransformer nameTransformer,
+                                      StandardNameTransformer nameTransformer,
                                       SqlOperations sqlOperations)
       throws Exception;
 
