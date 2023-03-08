@@ -236,7 +236,10 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
     else:
         logger.warning("No connector test will run according to your inputs.")
         sys.exit(0)
-    connectors_tests_contexts = [ConnectorTestContext(connector, **ctx.obj) for connector in connectors_under_test]
+    connectors_tests_contexts = [
+        ConnectorTestContext(connector, ctx.obj["is_local"], ctx.obj["git_branch"], ctx.obj["git_revision"], ctx.obj["use_remote_secrets"])
+        for connector in connectors_under_test
+    ]
     try:
         anyio.run(run_connectors_test_pipelines, connectors_tests_contexts)
     except dagger.DaggerError as e:

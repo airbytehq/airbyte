@@ -5,7 +5,7 @@ on:
     inputs:
       test-connectors-options:
         description: "Options to pass to the 'connectors-ci test-connectors' command"
-        default: "--diffed-branch=refs/remotes/origin/master --modified"
+        default: "--modified"
   pull_request:
     paths:
       - "airbyte-integrations/connectors/**"
