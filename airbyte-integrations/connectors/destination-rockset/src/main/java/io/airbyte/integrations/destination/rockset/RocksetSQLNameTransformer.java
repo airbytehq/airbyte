@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.destination.rockset;
 
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 
-public class RocksetSQLNameTransformer extends ExtendedNameTransformer {
+public class RocksetSQLNameTransformer extends StandardNameTransformer {
 
   @Override
   public String convertStreamName(String input) {
