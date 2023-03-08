@@ -258,6 +258,7 @@ def test_send_request__retries_on_expired_token(config_oauth):
     stream = MyTestExactSyncStream(config_oauth)
     stream._send = MagicMock(side_effect=MyTestRequestException("Forbidden", response=response_mock))
     stream._is_token_expired = MagicMock(return_value=True)
+    stream._single_refresh_token_authenticator = MagicMock()
 
     stream._send_request(request_mock, request_kwargs)
 
