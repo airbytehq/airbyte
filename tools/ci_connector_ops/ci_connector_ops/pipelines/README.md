@@ -45,27 +45,33 @@ connectors-ci --use-remote-secrets=False
 ### **Run the pipelines for a specific connectors**
 (source-pokeapi does not require GSM access)
 ```bash
-connectors-ci test-connectors source-pokeapi
+connectors-ci test-connectors --name=source-pokeapi
 ```
 
 ### **Run the pipeline for multiple connectors**
 
 ```bash
-connectors-ci test-connectors source-pokeapi source-openweather
+connectors-ci test-connectors --name=source-pokeapi --name=source-openweather
 ```
+### **Run the pipeline for generally available connectors**
+
+```bash
+connectors-ci test-connectors --release-stage=generally_available
+```
+
 
 ### **Run the pipeline for the connectors you changed on the branch**
 
 ```bash
 touch airbyte-integrations/connectors/source-pokeapi/random_file_addition.txt
-connectors-ci test-all-modified-connectors #the source-pokeapi pipeline should run
+connectors-ci test-connectors --modified #the source-pokeapi pipeline should run
 ```
 
 ### Local VS. CI
 The default behavior of the CLI is to run in a local context.
 You can tell the CLI that it is running in a CI context with the following flag:
 ```bash
-connectors-ci --is-local=False
+connectors-ci --is-ci
 ```
 
 The main differences are that:
