@@ -135,20 +135,21 @@ jobs:
           kubectl logs --follow $POD
           echo "reading end of log"
           kubectl logs --tail=5 $POD
-          export RUN_RESULT=$(kubectl logs --tail=5 $POD 2>&1)
+          RUN_RESULT=$(kubectl logs --tail=5 $POD 2>&1)
+          RUN_RESULT="${RUN_RESULT//'%'/'%25'}"
+          RUN_RESULT="${RUN_RESULT//$'\n'/'%0A'}"
+          RUN_RESULT="${RUN_RESULT//$'\r'/'%0D'}"
           echo "run result is $RUN_RESULT"
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "RUN_RESULT<<$EOF" >> $GITHUB_OUTPUT
           echo $RUN_RESULT >> $GITHUB_OUTPUT
           echo "$EOF" >> $GITHUB_OUTPUT
-          echo "gh output: $GITHUB_OUTPUT"
       - name: Link comment to workflow run
         uses: peter-evans/create-or-update-comment@v2
         with:
           reactions: '+1'
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            **Edit:**-----------------------
             ## Performance test Result: 
             ```
             ${{ steps.prepare-images.outputs.RUN_RESULT }}
