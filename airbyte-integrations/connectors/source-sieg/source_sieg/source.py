@@ -187,7 +187,8 @@ class BaseClass(HttpStream):
                 item_list.append(invoice)
             except:
                 logger.info('--- Empity Response')
-                self.read_invoice(item_list, skips_list)
+                new_list = [x for x in skips_list if x >= skip]
+                self.read_invoice(item_list, new_list)
                 
     
     def parse_response(
