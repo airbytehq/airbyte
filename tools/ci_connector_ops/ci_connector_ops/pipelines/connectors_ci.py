@@ -90,6 +90,7 @@ async def teardown(test_context: ConnectorTestContext, test_report: ConnectorTes
             test_context.git_revision,
             "success" if test_report.success else "failure",
             test_context.gha_workflow_run_url,
+            f"{test_context.connector.technical_name} tests",
             f"Finished tests for {test_context.connector.technical_name}",
         )
     return test_context
@@ -172,6 +173,7 @@ async def run_connectors_test_pipelines(test_contexts: List[ConnectorTestContext
                             test_context.git_revision,
                             "pending",
                             test_context.gha_workflow_run_url,
+                            f"{test_context.connector.technical_name} tests",
                             f"Running tests for {test_context.connector.technical_name}",
                         )
                 else:
@@ -225,7 +227,7 @@ def connectors_ci(
     ctx.obj["gha_workflow_run_url"] = f"https://github.com/airbytehq/airbyte/actions/runs/{gha_workflow_run_id}"
     if not is_local and github_access_token is not None:
         os.environ["CI_GITHUB_ACCESS_TOKEN"] = github_access_token
-        send_commit_status_check(git_revision, "pending", ctx.obj["gha_workflow_run_url"], "Starting connectors-ci")
+        send_commit_status_check(git_revision, "pending", ctx.obj["gha_workflow_run_url"], "Connectors CI", "Starting connectors-ci")
 
 
 @connectors_ci.command()
