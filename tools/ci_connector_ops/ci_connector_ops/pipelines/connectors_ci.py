@@ -30,6 +30,7 @@ REQUIRED_ENV_VARS_FOR_CI = [
     "AWS_SECRET_ACCESS_KEY",
     "AWS_DEFAULT_REGION",
     "TEST_REPORTS_BUCKET_NAME",
+    "CI_GITHUB_ACCESS_TOKEN",
 ]
 
 logging.basicConfig(level=logging.INFO)
@@ -225,9 +226,7 @@ def connectors_ci(
     ctx.obj["modified_files"] = get_modified_files(git_revision, diffed_branch, is_local)
     ctx.obj["gha_workflow_run_id"] = gha_workflow_run_id
     ctx.obj["gha_workflow_run_url"] = f"https://github.com/airbytehq/airbyte/actions/runs/{gha_workflow_run_id}"
-    if not is_local and github_access_token is not None:
-        os.environ["CI_GITHUB_ACCESS_TOKEN"] = github_access_token
-        send_commit_status_check(git_revision, "pending", ctx.obj["gha_workflow_run_url"], "Connectors CI", "Starting connectors-ci")
+    os.environ["CI_GITHUB_ACCESS_TOKEN"] = github_access_token
 
 
 @connectors_ci.command()
