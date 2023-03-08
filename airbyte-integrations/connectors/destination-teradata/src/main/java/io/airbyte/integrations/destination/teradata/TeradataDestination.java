@@ -24,51 +24,26 @@ import java.util.Optional;
 
 public class TeradataDestination extends AbstractJdbcDestination implements Destination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TeradataDestination.class);
-  /**
-   * Teradata JDBC driver
-   */
-  public static final String DRIVER_CLASS = "com.teradata.jdbc.TeraDriver";
-  /**
-   * Default schema name
-   */
-  public static final String DEFAULT_SCHEMA_NAME = "def_airbyte_db";
-  public static final String PARAM_MODE = "mode";
-  public static final String PARAM_SSL = "ssl";
-  public static final String PARAM_SSL_MODE = "ssl_mode";
-  public static final String PARAM_SSLMODE = "sslmode";
-  public static final String PARAM_SSLCA = "sslca";
-  public static final String REQUIRE = "require";
+    private static final Logger LOGGER = LoggerFactory.getLogger(TeradataDestination.class);
+    /**
+     * Teradata JDBC driver
+     */
+    public static final String DRIVER_CLASS = "com.teradata.jdbc.TeraDriver";
+    /**
+     * Default schema name
+     */
+    public static final String DEFAULT_SCHEMA_NAME = "def_airbyte_db";
+    public static final String PARAM_MODE = "mode";
+    public static final String PARAM_SSL = "ssl";
+    public static final String PARAM_SSL_MODE = "ssl_mode";
+    public static final String PARAM_SSLMODE = "sslmode";
+    public static final String PARAM_SSLCA = "sslca";
+    public static final String REQUIRE = "require";
 
-  private static final String CA_CERTIFICATE = "ca.pem";
+    private static final String CA_CERTIFICATE = "ca.pem";
 
-  public static void main(String[] args) throws Exception {
-    new IntegrationRunner(new TeradataDestination()).run(args);
-  }
-
-  public TeradataDestination() {
-    super(DRIVER_CLASS, new StandardNameTransformer(), new TeradataSqlOperations());
-  }
-
-  @Override
-  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
-    return Collections.emptyMap();
-  }
-
-  @Override
-  public JsonNode toJdbcConfig(final JsonNode config) {
-    final String schema = Optional.ofNullable(config.get(JdbcUtils.SCHEMA_KEY)).map(JsonNode::asText).orElse(DEFAULT_SCHEMA_NAME);
-
-    final String jdbcUrl = String.format("jdbc:teradata://%s/",
-        config.get(JdbcUtils.HOST_KEY).asText());
-
-    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
-        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl)
-        .put(JdbcUtils.SCHEMA_KEY, schema);
-
-    if (config.has(JdbcUtils.PASSWORD_KEY)) {
-      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+    public static void main(String[] args) throws Exception {
+      new IntegrationRunner(new TeradataDestination()).run(args);
     }
 
     public TeradataDestination() {
