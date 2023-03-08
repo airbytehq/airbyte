@@ -803,7 +803,7 @@
 - name: Greenhouse
   sourceDefinitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
   dockerRepository: airbyte/source-greenhouse
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.3.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/greenhouse
   icon: greenhouse.svg
   sourceType: api
@@ -1171,11 +1171,14 @@
 - name: Monday
   sourceDefinitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
   dockerRepository: airbyte/source-monday
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/monday
   icon: monday.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - "api.monday.com"
 - name: MongoDb
   sourceDefinitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
   dockerRepository: airbyte/source-mongodb-v2
@@ -1851,11 +1854,15 @@
 - name: Square
   sourceDefinitionId: 77225a51-cd15-4a13-af02-65816bd0ecf4
   dockerRepository: airbyte/source-square
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/square
   icon: square.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - "connect.squareupsandbox.com"
+      - "connect.squareup.com"
 - sourceDefinitionId: 7a4327c4-315a-11ec-8d3d-0242ac130003
   name: Strava
   dockerRepository: airbyte/source-strava
@@ -1921,11 +1928,14 @@
 - name: Tempo
   sourceDefinitionId: d1aa448b-7c54-498e-ad95-263cbebcd2db
   dockerRepository: airbyte/source-tempo
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.3.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/tempo
   icon: tempo.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - api.tempo.io
 - name: TiDB
   sourceDefinitionId: 0dad1a35-ccf8-4d03-b73e-6788c00b13ae
   dockerRepository: airbyte/source-tidb
@@ -2248,11 +2258,14 @@
 - name: Zenloop
   sourceDefinitionId: f1e4c7f6-db5c-4035-981f-d35ab4998794
   dockerRepository: airbyte/source-zenloop
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.com/integrations/sources/zenloop
   icon: zenloop.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - api.zenloop.com
 - sourceDefinitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
   name: Sentry
   dockerRepository: airbyte/source-sentry
