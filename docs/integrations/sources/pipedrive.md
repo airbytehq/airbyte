@@ -80,6 +80,8 @@ Apart from `Fields` streams, all other streams support incremental.
 
 * [Organizations](https://developers.pipedrive.com/docs/api/v1/Organizations#getOrganizations)
 
+* [PermissionSets](https://developers.pipedrive.com/docs/api/v1/PermissionSets#getPermissionSets)
+
 * [PersonFields](https://developers.pipedrive.com/docs/api/v1/PersonFields#getPersonFields)
 
 * [Persons](https://developers.pipedrive.com/docs/api/v1/Persons#getPersons)

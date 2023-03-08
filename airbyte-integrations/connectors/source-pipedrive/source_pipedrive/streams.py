@@ -161,6 +161,10 @@ class OrganizationFields(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/OrganizationFields#getOrganizationFields"""
 
 
+class PermissionSets(PipedriveStream):
+    """https://developers.pipedrive.com/docs/api/v1/PermissionSets#getPermissionSets"""
+
+
 class Persons(PipedriveStream):
     """
     API docs: https://developers.pipedrive.com/docs/api/v1/Persons#getPersons,
