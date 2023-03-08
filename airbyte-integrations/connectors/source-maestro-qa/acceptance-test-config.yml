@@ -1,0 +1,29 @@
+connector_image: airbyte/source-maestro-qa:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_maestro_qa/spec.yaml"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        ignored_fields:
+          total_scores:
+            - name: "last_synced_at"
+              bypass_reason: "The field is not available in the API."
+
+  incremental:
+    bypass_reason: "Incremental uses cursor that's not available in records."
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

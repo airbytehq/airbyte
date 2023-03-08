@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "gradable_id": {
+      "type": ["null", "string"]
+    },
+    "csat_score": {
+      "type": ["null", "string"]
+    },
+    "csat_comment": {
+      "type": ["null", "string"]
+    },
+    "ticket_created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "source": {
+      "type": ["null", "string"]
+    }
+  }
+}

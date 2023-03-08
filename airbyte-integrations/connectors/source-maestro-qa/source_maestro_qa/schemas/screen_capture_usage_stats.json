@@ -1,0 +1,18 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "agentId": {
+        "type": ["string", "null"]
+      },
+      "numberExpectedRecordings": {
+        "type": ["integer", "null"]
+      },
+      "numberRecordings": {
+        "type": ["integer", "null"]
+      },
+      "percentRecorded": {
+        "type": ["integer", "null"]
+      }
+    }
+}

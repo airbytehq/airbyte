@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "group_name": {
+      "type": ["string", "null"]
+    },
+    "group_id": {
+      "type": ["string", "null"]
+    },
+    "agent_name": {
+      "type": ["string", "null"]
+    },
+    "agent_email": {
+      "type": ["string", "null"]
+    },
+    "agent_ids": {
+      "type": ["string", "null"]
+    },
+    "available": {
+      "type": ["string", "null"]
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "activity_id": {
+      "type": ["null", "string"]
+    },
+    "time_stamp": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "user_email": {
+      "type": ["null", "string"]
+    },
+    "item_type": {
+      "type": ["null", "string"]
+    },
+    "action_type": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "ip_address": {
+      "type": ["null", "string"]
+    }
+  }
+}

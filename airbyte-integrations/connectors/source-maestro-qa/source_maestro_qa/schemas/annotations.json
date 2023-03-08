@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "gradable_id": {
+      "type": ["null", "string"]
+    },
+    "agent_id": {
+      "type": ["null", "string"]
+    },
+    "agent_name": {
+      "type": ["null", "string"]
+    },
+    "agent_email": {
+      "type": ["null", "string"]
+    },
+    "rubric_id": {
+      "type": ["null", "string"]
+    },
+    "rubric_name": {
+      "type": ["null", "string"]
+    },
+    "question_id": {
+      "type": ["null", "string"]
+    },
+    "question": {
+      "type": ["null", "string"]
+    },
+    "annotation_id": {
+      "type": ["null", "string"]
+    },
+    "selected_text": {
+      "type": ["null", "string"]
+    },
+    "comment": {
+      "type": ["null", "string"]
+    },
+    "date_graded": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "grader": {
+      "type": ["null", "string"]
+    },
+    "grade_type": {
+      "type": ["null", "string"]
+    },
+    "ticket_created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "section_id": {
+      "type": ["null", "string"]
+    },
+    "section_name": {
+      "type": ["null", "string"]
+    },
+    "date_reported_as": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "source": {
+      "type": ["null", "string"]
+    }
+  }
+}

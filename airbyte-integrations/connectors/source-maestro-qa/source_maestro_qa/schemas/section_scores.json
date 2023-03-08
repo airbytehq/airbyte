@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "gradable_id": {
+      "type": ["null", "string"]
+    },
+    "agent_id": {
+      "type": ["null", "string"]
+    },
+    "agent_name": {
+      "type": ["null", "string"]
+    },
+    "agent_email": {
+      "type": ["null", "string"]
+    },
+    "rubric_id": {
+      "type": ["null", "string"]
+    },
+    "rubric_name": {
+      "type": ["null", "string"]
+    },
+    "section_id": {
+      "type": ["null", "string"]
+    },
+    "section_name": {
+      "type": ["null", "string"]
+    },
+    "section_score": {
+      "type": ["null", "string"]
+    },
+    "max_section_score": {
+      "type": ["null", "string"]
+    },
+    "date_graded": {
+      "type": ["null", "string"]
+    },
+    "grader": {
+      "type": ["null", "string"]
+    },
+    "grade_type": {
+      "type": ["null", "string"]
+    },
+    "ticket_created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "date_reported_as": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "source": {
+      "type": ["null", "string"]
+    },
+    "section_weight": {
+      "type": ["null", "string"]
+    },
+    "alignment_score": {
+      "type": ["null", "string"]
+    },
+    "target_answer_id": {
+      "type": ["null", "string"]
+    },
+    "original_grader": {
+      "type": ["null", "string"]
+    }
+  }
+}
