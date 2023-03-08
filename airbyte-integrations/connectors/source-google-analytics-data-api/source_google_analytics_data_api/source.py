@@ -137,9 +137,13 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
     _record_date_format = "%Y%m%d"
     primary_key = "uuid"
-    cursor_field = "date"
+    cursor_field = None
 
     metadata = MetadataDescriptor()
+
+    def __init__(self, *args, config: Mapping[str, Any], **kwargs):
+        self.cursor_field = "date" if "date" in config.get("dimensions") else []
+        super().__init__(*args, config=config, **kwargs)
 
     @staticmethod
     def add_primary_key() -> dict:
@@ -298,10 +302,11 @@ class GoogleAnalyticsDataApiMetadataStream(GoogleAnalyticsDataApiAbstractStream)
 class SourceGoogleAnalyticsDataApi(AbstractSource):
     def _validate_and_transform(self, config: Mapping[str, Any], report_names: Set[str]):
         if "custom_reports" in config:
-            try:
-                config["custom_reports"] = json.loads(config["custom_reports"])
-            except ValueError:
-                raise ConfigurationError("custom_reports is not valid JSON")
+            if isinstance(config["custom_reports"], str):
+                try:
+                    config["custom_reports"] = json.loads(config["custom_reports"])
+                except ValueError:
+                    raise ConfigurationError("custom_reports is not valid JSON")
         else:
             config["custom_reports"] = []
 
@@ -318,11 +323,6 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         if existing_names:
             existing_names = ", ".join(existing_names)
             raise ConfigurationError(f"custom_reports: {existing_names} already exist as a default report(s).")
-
-        for report in config["custom_reports"]:
-            # "date" dimension is mandatory because it's cursor_field
-            if "date" not in report["dimensions"]:
-                report["dimensions"].append("date")
 
         if "credentials_json" in config["credentials"]:
             try:
@@ -371,16 +371,20 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             if invalid_metrics:
                 invalid_metrics = ", ".join(invalid_metrics)
                 return False, f"custom_reports: invalid metric(s): {invalid_metrics} for the custom report: {report['name']}"
+            report_stream = self.instantiate_report_class(report, config)
+            # check if custom_report dimensions + metrics can be combined and report generated
+            stream_slice = next(report_stream.stream_slices(sync_mode=SyncMode.full_refresh))
+            next(report_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         reports = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/default_reports.json"))
         config = self._validate_and_transform(config, report_names={r["name"] for r in reports})
         config["authenticator"] = self.get_authenticator(config)
+        return [self.instantiate_report_class(report, config) for report in reports + config["custom_reports"]]
 
-        return [
-            type(report["name"], (GoogleAnalyticsDataApiBaseStream,), {})(
+    @staticmethod
+    def instantiate_report_class(report: dict, config: Mapping[str, Any]) -> GoogleAnalyticsDataApiBaseStream:
+        return type(report["name"], (GoogleAnalyticsDataApiBaseStream, ), {})(
                 config=dict(**config, metrics=report["metrics"], dimensions=report["dimensions"]), authenticator=config["authenticator"]
             )
-            for report in reports + config["custom_reports"]
-        ]
