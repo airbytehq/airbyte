@@ -201,6 +201,10 @@ class Products(PipedriveStream):
     """
 
 
+class ProductFields(PipedriveStream):
+    """https://developers.pipedrive.com/docs/api/v1/ProductFields#getProductFields"""
+
+
 class Roles(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/Roles#getRoles"""
 
