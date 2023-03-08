@@ -1,0 +1,6 @@
+[
+    {
+        "pointer": "/properties/hs_latest_source_timestamp",
+        "normalization": "datetime_to_date"
+    }
+]
