@@ -76,7 +76,7 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
     avroConfig.setBoolean(WRITE_OLD_LIST_STRUCTURE, false);
     parquetWriter = AvroParquetWriter.<Record>builder(HadoopOutputFile
         .fromPath(new org.apache.hadoop.fs.Path(bufferFile.toUri()), avroConfig))
-        .withConf(avroConfig)
+        .withConf(avroConfig) // yes, this should be here despite the fact we pass this config above in path
         .withSchema(schema)
         .withCompressionCodec(formatConfig.getCompressionCodec())
         .withRowGroupSize(formatConfig.getBlockSize())

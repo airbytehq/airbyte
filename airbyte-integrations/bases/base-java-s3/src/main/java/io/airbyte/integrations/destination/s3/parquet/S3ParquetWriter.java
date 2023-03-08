@@ -73,7 +73,7 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
     final Configuration hadoopConfig = getHadoopConfig(config);
     hadoopConfig.setBoolean(WRITE_OLD_LIST_STRUCTURE, false);
     this.parquetWriter = AvroParquetWriter.<Record>builder(HadoopOutputFile.fromPath(path, hadoopConfig))
-        .withConf(hadoopConfig)
+        .withConf(hadoopConfig) // yes, this should be here despite the fact we pass this config above in path
         .withSchema(schema)
         .withCompressionCodec(formatConfig.getCompressionCodec())
         .withRowGroupSize(formatConfig.getBlockSize())
