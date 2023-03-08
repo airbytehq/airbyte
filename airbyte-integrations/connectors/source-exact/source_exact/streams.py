@@ -100,7 +100,6 @@ class ExactStream(HttpStream, IncrementalMixin):
         division = str(stream_slice["division"])
         state = self._state_per_division[division]
         cursor_value = state.get(self.cursor_field)
-        # cursor_value = 14295497502 - 1000000000 # TODO: REMOVE! crm/accounts: "state": {"type": "STREAM", "stream": {"stream_descriptor": {"name": "sync_crm_accounts"}, "stream_state": {"3031683": {"Timestamp": 14295497502}}}, "data": {"sync_crm_accounts": {"3031683": {"Timestamp": 14295497502}}}}}
 
         if cursor_value:
             if self.cursor_field == "Timestamp":
@@ -111,7 +110,8 @@ class ExactStream(HttpStream, IncrementalMixin):
                 # the API's local timezone (CET +1h in winter and +2h in summer) without timezone info.
                 # More details about the API's timezone: see _parse_item.
 
-                # TODO: validate that cursor_field always has nothing, +00:00 or Z at the end (valid UTC timestamp)
+                if not pendulum.parse(cursor_value).timezone_name in ["UTC", "+00:00"]:
+                    self.logger.warning(f"The value of the cursor field 'Modified' is not detected as a UTC timestamp: {cursor_value}. This might lead to an incorrect $filter clause and unexpected records. ")
 
                 tz_cet = pendulum.timezone("CET")
                 utc_timestamp = pendulum.parse(cursor_value)

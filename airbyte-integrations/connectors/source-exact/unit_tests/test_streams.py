@@ -97,7 +97,7 @@ def test_request_params_with_sync_stream(config_oauth: dict, next_page_token, cu
         (None, "2022-12-12T00:00:00+00:00", {"$filter": "Modified gt datetime'2022-12-12T01:00:00'", "$orderby": "Modified asc", "$select": "ID,Modified",}),
         # Test if resilient to other types of formatting
         (None, "2022-12-12T00:00:00Z", {"$filter": "Modified gt datetime'2022-12-12T01:00:00'", "$orderby": "Modified asc", "$select": "ID,Modified"}),
-        # Should not happen: input is a timestamp not in UTC!
+        # Should not happen: input is a timestamp not in UTC! A warning is logged.
         (None, "2022-12-12T00:00:00+01:00", {"$filter": "Modified gt datetime'2022-12-12T00:00:00'", "$orderby": "Modified asc", "$select": "ID,Modified"}),
         # Test if UTC is correctly handled in summer time
         (None, "2022-06-12T00:00:00+00:00", {"$filter": "Modified gt datetime'2022-06-12T02:00:00'", "$orderby": "Modified asc", "$select": "ID,Modified"}),
