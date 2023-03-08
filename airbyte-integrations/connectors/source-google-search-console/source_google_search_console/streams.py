@@ -270,9 +270,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
             latest_benchmark = max(latest_benchmark, value)
         current_stream_state.setdefault(site_url, {}).setdefault(search_type, {})[self.cursor_field] = latest_benchmark
 
-        # we need to get the max date over all t
-        
-        ypes but the current acceptance test YAML format doesn't
+        # we need to get the max date over all types but the current acceptance test YAML format doesn't
         # support that
         current_stream_state[self.cursor_field] = current_stream_state[site_url][search_type][self.cursor_field]
 
