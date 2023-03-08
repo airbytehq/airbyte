@@ -108,21 +108,21 @@ The Pipedrive connector will gracefully handle rate limits. For more information
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                      |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------|
-| 0.1.16  | 2023-03-08 | [23789](https://github.com/airbytehq/airbyte/pull/23789) | Add 9 streams: ActivityTypes, Currencies, Files, Filters, LeadLabels, Notes, PermissionSets, Products, Roles |
-| 0.1.15  | 2023-03-02 | [23705](https://github.com/airbytehq/airbyte/pull/23705) | Disable OAuth                                                                                                |
-| 0.1.14  | 2023-03-01 | [23539](https://github.com/airbytehq/airbyte/pull/23539) | Fix schema for "activities", "check" works if empty "deals"                                                  |
-| 0.1.13  | 2022-09-16 | [16799](https://github.com/airbytehq/airbyte/pull/16799) | Migrate to per-stream state                                                                                  |
-| 0.1.12  | 2022-05-12 | [12806](https://github.com/airbytehq/airbyte/pull/12806) | Remove date-time format from schemas                                                                         |
-| 0.1.10  | 2022-04-26 | [11870](https://github.com/airbytehq/airbyte/pull/11870) | Add 3 streams: DealFields, OrganizationFields and PersonFields                                               |
-| 0.1.9   | 2021-12-07 | [8582](https://github.com/airbytehq/airbyte/pull/8582)   | Update connector fields title/description                                                                    |
-| 0.1.8   | 2021-11-16 | [7875](https://github.com/airbytehq/airbyte/pull/7875)   | Extend schema for "persons" stream                                                                           |
-| 0.1.7   | 2021-11-15 | [7968](https://github.com/airbytehq/airbyte/pull/7968)   | Update oAuth flow config                                                                                     |
-| 0.1.6   | 2021-10-05 | [6821](https://github.com/airbytehq/airbyte/pull/6821)   | Add OAuth support                                                                                            |
-| 0.1.5   | 2021-09-27 | [6441](https://github.com/airbytehq/airbyte/pull/6441)   | Fix normalization error                                                                                      |
-| 0.1.4   | 2021-08-26 | [5943](https://github.com/airbytehq/airbyte/pull/5943)   | Add organizations stream                                                                                     |
-| 0.1.3   | 2021-08-26 | [5642](https://github.com/airbytehq/airbyte/pull/5642)   | Remove date-time from deals stream                                                                           |
-| 0.1.2   | 2021-07-23 | [4912](https://github.com/airbytehq/airbyte/pull/4912)   | Update money type to support floating point                                                                  |
-| 0.1.1   | 2021-07-19 | [4686](https://github.com/airbytehq/airbyte/pull/4686)   | Update spec.json                                                                                             |
-| 0.1.0   | 2021-07-19 | [4686](https://github.com/airbytehq/airbyte/pull/4686)   | 🎉 New source: Pipedrive connector                                                                           |
+| Version | Date       | Pull Request                                             | Subject                                                        |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
+| 0.1.16  | 2023-03-08 | [23789](https://github.com/airbytehq/airbyte/pull/23789) | Add 10 new streams                                             |
+| 0.1.15  | 2023-03-02 | [23705](https://github.com/airbytehq/airbyte/pull/23705) | Disable OAuth                                                  |
+| 0.1.14  | 2023-03-01 | [23539](https://github.com/airbytehq/airbyte/pull/23539) | Fix schema for "activities", "check" works if empty "deals"    |
+| 0.1.13  | 2022-09-16 | [16799](https://github.com/airbytehq/airbyte/pull/16799) | Migrate to per-stream state                                    |
+| 0.1.12  | 2022-05-12 | [12806](https://github.com/airbytehq/airbyte/pull/12806) | Remove date-time format from schemas                           |
+| 0.1.10  | 2022-04-26 | [11870](https://github.com/airbytehq/airbyte/pull/11870) | Add 3 streams: DealFields, OrganizationFields and PersonFields |
+| 0.1.9   | 2021-12-07 | [8582](https://github.com/airbytehq/airbyte/pull/8582)   | Update connector fields title/description                      |
+| 0.1.8   | 2021-11-16 | [7875](https://github.com/airbytehq/airbyte/pull/7875)   | Extend schema for "persons" stream                             |
+| 0.1.7   | 2021-11-15 | [7968](https://github.com/airbytehq/airbyte/pull/7968)   | Update oAuth flow config                                       |
+| 0.1.6   | 2021-10-05 | [6821](https://github.com/airbytehq/airbyte/pull/6821)   | Add OAuth support                                              |
+| 0.1.5   | 2021-09-27 | [6441](https://github.com/airbytehq/airbyte/pull/6441)   | Fix normalization error                                        |
+| 0.1.4   | 2021-08-26 | [5943](https://github.com/airbytehq/airbyte/pull/5943)   | Add organizations stream                                       |
+| 0.1.3   | 2021-08-26 | [5642](https://github.com/airbytehq/airbyte/pull/5642)   | Remove date-time from deals stream                             |
+| 0.1.2   | 2021-07-23 | [4912](https://github.com/airbytehq/airbyte/pull/4912)   | Update money type to support floating point                    |
+| 0.1.1   | 2021-07-19 | [4686](https://github.com/airbytehq/airbyte/pull/4686)   | Update spec.json                                               |
+| 0.1.0   | 2021-07-19 | [4686](https://github.com/airbytehq/airbyte/pull/4686)   | 🎉 New source: Pipedrive connector                             |
