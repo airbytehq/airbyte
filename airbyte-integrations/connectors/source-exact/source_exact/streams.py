@@ -105,16 +105,20 @@ class ExactStream(HttpStream, IncrementalMixin):
             if self.cursor_field == "Timestamp":
                 params["$filter"] = f"Timestamp gt {cursor_value}L"
             elif self.cursor_field == "Modified":
-                # value is a timestamp stored as string in UTC e.g., 2022-12-12T00:00:00.00000+00:00 (see _parse_item)
+                # cursor_value is a timestamp stored as string in real UTC e.g., 2022-12-12T00:00:00.00000+00:00 (see _parse_item)
                 # The Exact API (OData format) doesn't accept timezone info. Instead, we parse the timestamp into
-                # the API's local timezone (CET) without timezone info.
+                # the API's local timezone (CET +1h in winter and +2h in summer) without timezone info.
+                # More details about the API's timezone: see _parse_item.
+
+                if not pendulum.parse(cursor_value).timezone_name in ["UTC", "+00:00"]:
+                    self.logger.warning(f"The value of the cursor field 'Modified' is not detected as a UTC timestamp: {cursor_value}. This might lead to an incorrect $filter clause and unexpected records. ")
 
                 tz_cet = pendulum.timezone("CET")
-                timestamp = pendulum.parse(cursor_value)
-                timestamp = tz_cet.convert(timestamp)
-                timestamp_str = timestamp.isoformat().split("+")[0]
+                utc_timestamp = pendulum.parse(cursor_value)
+                cet_timestamp = tz_cet.convert(utc_timestamp)
+                cet_timestamp_str = cet_timestamp.isoformat().split("+")[0]
 
-                params["$filter"] = f"Modified gt datetime'{timestamp_str}'"
+                params["$filter"] = f"Modified gt datetime'{cet_timestamp_str}'"
             else:
                 raise RuntimeError(f"Source not capable of incremental syncing with cursor field '{self.cursor_field}'")
 
@@ -189,7 +193,6 @@ class ExactStream(HttpStream, IncrementalMixin):
         property_type_lookup = {k: next(x for x in v["type"] if x != "null") for k, v in self.get_json_schema()["properties"].items()}
 
         regex_timestamp = re.compile(r"^\/Date\((\d+)\)\/$")
-        tz_utc = pendulum.timezone("UTC")
 
         def parse_value(key, value):
             if isinstance(value, dict):
@@ -200,14 +203,23 @@ class ExactStream(HttpStream, IncrementalMixin):
 
             if isinstance(value, str):
                 # Exact returns timestamps in following format: /Date(1672531200000)/ (OData date format).
-                # The value is in seconds since Epoch (UNIX time). Note, the time is in CET and not in GMT/UTC.
-                # https://support.exactonline.com/community/s/knowledge-base#All-All-DNO-Content-faq-rest-api
+                # The value is in seconds since Epoch (UNIX time) format. However NOTE that the time is in Dutch timezone:
+                # - CET (UTC+01.00) in the winter
+                # - CET (UTC+02.00) in the summer
+                # The `pendulum.from_timestamp(x, 'CET')` takes into account both summer and winter time.
+                # A timestamp x in the winter is read as UTC+01.00 and a timestamp x in the summer is read as UTC+02.00.
+                #
+                # Exact API docs: https://support.exactonline.com/community/s/knowledge-base#All-All-DNO-Content-faq-rest-api
                 match_timestamp = regex_timestamp.match(value)
                 if match_timestamp:
-                    unix_seconds = int(match_timestamp.group(1)) / 1000
+                    cet_unix_seconds = int(match_timestamp.group(1)) / 1000
+                    cet_offset = pendulum.from_timestamp(cet_unix_seconds, 'CET').offset # either 3600 or 7200
 
-                    timestamp = pendulum.from_timestamp(unix_seconds, "CET")
-                    timestamp = tz_utc.convert(timestamp)
+                    # Convert CET (+1 or +2) to UTC
+                    utc_unix_seconds = cet_unix_seconds - cet_offset
+                    
+                    # Create timestamp in UTC
+                    timestamp = pendulum.from_timestamp(utc_unix_seconds)
 
                     return timestamp.isoformat()
 
