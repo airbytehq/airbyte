@@ -7,7 +7,7 @@ import { Separator } from "components/Separator";
 
 import { useUser } from "core/AuthContext";
 import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
-import { getStatusAgainstStatusNumber, STATUSES } from "core/Constants/statuses";
+import { getPaymentStatus, PAYMENT_STATUS } from "core/Constants/statuses";
 import useRouter from "hooks/useRouter";
 import { UnauthorizedModal } from "pages/ConnectionPage/pages/AllConnectionsPage/components/UnauthorizedModal";
 import { RoutePaths } from "pages/routePaths";
@@ -52,7 +52,7 @@ export const UpgradePlanBar: React.FC = () => {
 
   const isUpgradePlanBar = (): boolean => {
     let showUpgradePlanBar = false;
-    if (getStatusAgainstStatusNumber(user.status) === STATUSES.Free_Trial) {
+    if (getPaymentStatus(user.status) === PAYMENT_STATUS.Free_Trial) {
       if (!pathname.split("/").includes(RoutePaths.Payment)) {
         showUpgradePlanBar = true;
       }
