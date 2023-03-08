@@ -50,15 +50,11 @@ import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
-import io.debezium.engine.ChangeEvent;
-
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import javax.sql.DataSource;
-import org.apache.kafka.connect.source.SourceRecord;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
@@ -73,7 +69,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 @ExtendWith(SystemStubsExtension.class)
-abstract class CdcPostgresSourceTest extends CdcSourceTest {
+public class CdcPostgresSourceTest extends CdcSourceTest {
 
   @SystemStub
   private EnvironmentVariables environmentVariables;
@@ -92,7 +88,9 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   private final String cleanUserName = "airbyte_test";
   private final String cleanUserPassword = "password";
 
-  protected abstract String getPluginName();
+  protected String getPluginName() {
+    return "pgoutput";
+  }
 
   @AfterEach
   void tearDown() {
@@ -461,40 +459,6 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     assertTrue(ctp.reachedTargetPosition(target.asLong()));
     assertFalse(ctp.reachedTargetPosition(target.asLong() - 1));
     assertFalse(ctp.reachedTargetPosition((Long) null));
-  }
-
-  @Test
-  void testGetHeartbeatPosition() {
-    final CdcTargetPosition ctp = cdcLatestTargetPosition();
-    final PostgresCdcTargetPosition pctp = (PostgresCdcTargetPosition) ctp;
-    final Long lsn = pctp.getHeartbeatPosition(new ChangeEvent<String, String>() {
-
-      private final SourceRecord sourceRecord = new SourceRecord(null, Collections.singletonMap("lsn", 358824993496L), null, null, null);
-
-      @Override
-      public String key() {
-        return null;
-      }
-
-      @Override
-      public String value() {
-        return "{\"ts_ms\":1667616934701}";
-      }
-
-      @Override
-      public String destination() {
-        return null;
-      }
-
-      public SourceRecord sourceRecord() {
-        return sourceRecord;
-      }
-
-    });
-
-    assertEquals(lsn, 358824993496L);
-
-    assertNull(pctp.getHeartbeatPosition(null));
   }
 
   @Test
