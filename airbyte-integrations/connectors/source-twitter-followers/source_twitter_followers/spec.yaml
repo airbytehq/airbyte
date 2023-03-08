@@ -21,7 +21,7 @@ connectionSpecification:
         - twitterdev
     page_size:
       title: Page Size
-      description: The size of per pagels
+      description: The size of per page
 
       type: integer
       default: 5000
