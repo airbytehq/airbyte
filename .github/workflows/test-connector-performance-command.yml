@@ -135,12 +135,9 @@ jobs:
           kubectl logs --follow $POD
           echo "reading end of log"
           kubectl logs --tail=5 $POD
-          RUN_RESULT=$(kubectl logs --tail=5 $POD 2>&1)
-          echo "run result is $RUN_RESULT"
+#          RUN_RESULT=$(kubectl logs --tail=5 $POD 2>&1)
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "RUN_RESULT<<$EOF" >> $GITHUB_OUTPUT
-          echo "aaa" >> $GITHUB_OUTPUT
-          echo "bbb" >> $GITHUB_OUTPUT
           kubectl logs --tail=5 $POD | while read line ; do echo $line >> $GITHUB_OUTPUT ; done 
           echo "$EOF" >> $GITHUB_OUTPUT
       - name: Link comment to workflow run
