@@ -6,6 +6,7 @@ import logging
 import os
 from dataclasses import dataclass
 from enum import Enum
+from functools import cached_property
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
@@ -13,6 +14,11 @@ import git
 import requests
 import yaml
 from ci_credentials import SecretsManager
+
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
 
 AIRBYTE_REPO = git.Repo(search_parent_directories=True)
 
@@ -46,7 +52,7 @@ class ConnectorVersionNotFound(Exception):
 
 def read_definitions(definitions_file_path: str) -> Dict:
     with open(definitions_file_path) as definitions_file:
-        return yaml.safe_load(definitions_file)
+        return yaml.load(definitions_file, Loader=Loader)
 
 
 def get_connector_name_from_path(path):
@@ -75,10 +81,10 @@ def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_acceptance_test_config_paths}
 
 
-class ConnectorLanguage(Enum):
-    PYTHON = 1
-    JAVA = 2
-    LOW_CODE = 3
+class ConnectorLanguage(str, Enum):
+    PYTHON = "python"
+    JAVA = "java"
+    LOW_CODE = "low-code"
 
 
 class ConnectorLanguageError(Exception):
@@ -126,10 +132,14 @@ class Connector:
             return ConnectorLanguage.LOW_CODE
         if Path(self.code_directory / "setup.py").is_file():
             return ConnectorLanguage.PYTHON
-        with open(self.code_directory / "Dockerfile") as dockerfile:
-            if "FROM airbyte/integration-base-java" in dockerfile.read():
-                return ConnectorLanguage.JAVA
-        raise ConnectorLanguageError(f"We could not infer {self.technical_name} connector language")
+        try:
+            with open(self.code_directory / "Dockerfile") as dockerfile:
+                if "FROM airbyte/integration-base-java" in dockerfile.read():
+                    return ConnectorLanguage.JAVA
+        except FileNotFoundError:
+            pass
+        return None
+        # raise ConnectorLanguageError(f"We could not infer {self.technical_name} connector language")
 
     @property
     def version(self) -> str:
@@ -144,7 +154,7 @@ class Connector:
             """
         )
 
-    @property
+    @cached_property
     def definition(self) -> Optional[dict]:
         """Find a connector definition from the catalog.
         Returns:
@@ -154,7 +164,7 @@ class Connector:
             definition_type = self.technical_name.split("-")[0]
             assert definition_type in ["source", "destination"]
         except AssertionError:
-            raise Exception(f"Could not determine the definition type for {self.technical_name}.")
+            return None
         definitions = read_definitions(DEFINITIONS_FILE_PATH[definition_type])
         for definition in definitions:
             if definition["dockerRepository"].replace(f"{AIRBYTE_DOCKER_REPO}/", "") == self.technical_name:
@@ -212,3 +222,8 @@ def get_changed_connectors_between_branches(branch_a: str, branch_b: str) -> Set
     }
     AIRBYTE_REPO.git.checkout(original_branch)
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_source_connector_files}
+
+
+def get_all_released_connectors() -> Set:
+    all_definitions = OSS_CATALOG["sources"] + OSS_CATALOG["destinations"]
+    return {Connector(definition["dockerRepository"].replace("airbyte/", "")) for definition in all_definitions}

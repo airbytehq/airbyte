@@ -3,16 +3,10 @@ name: POC Connectors CI - test pipeline
 on:
   workflow_dispatch:
     inputs:
-      connectors_under_test:
-        description: "List of connectors to tests"
-      test_modified_connectors:
-        description: "Test only modified connectors on the current branch"
-        type: boolean
-        default: false
+      test-connectors-options:
+        description: "Options to pass to the 'connectors-ci test-connectors' command"
+        default: "--diffed-branch=refs/remotes/origin/master --modified"
   pull_request:
-    paths:
-      - "airbyte-integrations/connectors/**"
-  push:
     paths:
       - "airbyte-integrations/connectors/**"
 jobs:
@@ -50,16 +44,12 @@ jobs:
       AWS_DEFAULT_REGION: "us-east-2"
       TEST_REPORTS_BUCKET_NAME: "airbyte-connector-build-status"
     steps:
-      - name: Checkout master
-        uses: actions/checkout@v3
-        with:
-          repository: ${{ github.event.inputs.repo }}
-          ref: master
-      - name: Checkout current branch
+      - name: Checkout Airbyte repo
         uses: actions/checkout@v3
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
+          fetch-depth: 0
       - name: Extract branch name
         shell: bash
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
@@ -69,15 +59,10 @@ jobs:
         with:
           python-version: "3.10"
       - name: Install ci-connector-ops package
-        run: pip install --quiet -e ./tools/ci_connector_ops
-      - name: Run connectors-ci for specific connectors
-        if: "${{ github.event.inputs.connectors_under_test != '' }}"
-        run: connectors-ci --is-local=False test-connectors ${{ github.event.inputs.connectors_under_test }}
-        env:
-          CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
-      - name: Run connectors-ci for modified connectors
-        if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event.inputs.test_modified_connectors == 'true'
-        run: connectors-ci --is-local=False test-all-modified-connectors --diffed-branch=refs/remotes/origin/master
+        # TODO update the git url before merge
+        run: pip install --quiet 'git+https://github.com/airbytehq/airbyte.git@augustin/poc/ci-in-python#subdirectory=tools/ci_connector_ops'
+      - name: Run connectors-ci test-connectors
+        run: connectors-ci --is-ci test-connectors ${{ github.event.inputs.test-connectors-options }}
         env:
           CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
   stop-runner:

@@ -6,7 +6,7 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 
 import anyio
 import click
@@ -15,7 +15,7 @@ from ci_connector_ops.pipelines.actions import builds, environments, remote_stor
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.pipelines.models import ConnectorTestReport, Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.utils import get_current_git_branch, get_current_git_revision
-from ci_connector_ops.utils import Connector, ConnectorLanguage, get_changed_connectors_between_branches
+from ci_connector_ops.utils import ConnectorLanguage, get_all_released_connectors, get_changed_connectors_between_branches
 
 REQUIRED_ENV_VARS_FOR_CI = [
     "GCP_GSM_CREDENTIALS",
@@ -162,7 +162,7 @@ async def run_connectors_test_pipelines(test_contexts: List[ConnectorTestContext
 
 @click.group()
 @click.option("--use-remote-secrets", default=True)
-@click.option("--is-local", default=True)
+@click.option("--is-local/--is-ci", default=True)
 @click.option("--git-branch", default=lambda: get_current_git_branch(), envvar="CI_GIT_BRANCH")
 @click.option("--git-revision", default=lambda: get_current_git_revision(), envvar="CI_GIT_REVISION")
 @click.pass_context
@@ -186,44 +186,63 @@ def connectors_ci(ctx: click.Context, use_remote_secrets: str, is_local: bool, g
 
 
 @connectors_ci.command()
-@click.argument("connector_name", nargs=-1)
+@click.option(
+    "--name", "names", multiple=True, help="Only test a specific connector. Use its technical name. e.g source-pokeapi.", type=str
+)
+@click.option("--language", "languages", multiple=True, help="Filter connectors to test by language.", type=click.Choice(ConnectorLanguage))
+@click.option(
+    "--release-stage",
+    "release_stages",
+    multiple=True,
+    help="Filter connectors to test by release stage.",
+    type=click.Choice(["alpha", "beta", "generally_available"]),
+)
+@click.option("--modified/--not-modified", help="Only test modified connectors in the current branch.", default=False, type=bool)
+@click.option(
+    "--diffed-branch",
+    help="Branch to which the git diff will happen to detect new or modified connectors",
+    default="origin/master",
+    type=str,
+)
 @click.pass_context
-def test_connectors(ctx: click.Context, connector_name: str):
+def test_connectors(
+    ctx: click.Context,
+    names: Tuple[str],
+    languages: Tuple[ConnectorLanguage],
+    release_stages: Tuple[str],
+    modified: bool,
+    diffed_branch: str,
+):
     """Runs a CI pipeline the connector passed as CLI argument.
 
     Args:
         ctx (click.Context): The click context.
         connector_name (str): The connector technical name. E.G. source-pokeapi
     """
-    connectors_tests_contexts = [ConnectorTestContext(Connector(cn), **ctx.obj) for cn in connector_name]
+    connectors_under_test = get_all_released_connectors()
+    modified_connectors = get_changed_connectors_between_branches(ctx.obj["git_branch"], diffed_branch)
+    if modified:
+        connectors_under_test = modified_connectors
+    else:
+        connectors_under_test.update(modified_connectors)
+    if names:
+        connectors_under_test = {connector for connector in connectors_under_test if connector.technical_name in names}
+    if languages:
+        connectors_under_test = {connector for connector in connectors_under_test if connector.language in languages}
+    if release_stages:
+        connectors_under_test = {connector for connector in connectors_under_test if connector.release_stage in release_stages}
+    connectors_under_test_names = [c.technical_name for c in connectors_under_test]
+    if connectors_under_test_names:
+        logger.info(f"Will run test pipeline for the following connectors: {', '.join(connectors_under_test_names)}")
+    else:
+        logger.warning("No connector test will run according to your inputs.")
+        sys.exit(0)
+    connectors_tests_contexts = [ConnectorTestContext(connector, **ctx.obj) for connector in connectors_under_test]
     try:
         anyio.run(run_connectors_test_pipelines, connectors_tests_contexts)
     except dagger.DaggerError as e:
         logger.error(str(e))
         sys.exit(1)
-
-
-@connectors_ci.command()
-@click.pass_context
-@click.option("--diffed-branch", default="master")
-def test_all_modified_connectors(ctx: click.Context, diffed_branch: str):
-    """Launches a CI pipeline for all the connectors that got modified compared to the DIFFED_BRANCH environment variable.
-
-    Args:
-        ctx (click.Context): The click context.
-    """
-    connectors_tests_contexts = []
-    for changed_connector in get_changed_connectors_between_branches(ctx.obj["git_branch"], diffed_branch):
-        connectors_tests_contexts.append(ConnectorTestContext(changed_connector, **ctx.obj))
-        logger.info(f"Will run test pipeline for {changed_connector.technical_name}")
-    if connectors_tests_contexts:
-        try:
-            anyio.run(run_connectors_test_pipelines, connectors_tests_contexts)
-        except dagger.DaggerError as e:
-            logger.error(str(e))
-            sys.exit(1)
-    else:
-        logger.info(f"No connector modified after comparing the current branch with {os.environ['DIFFED_BRANCH']}")
 
 
 if __name__ == "__main__":
