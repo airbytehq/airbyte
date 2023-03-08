@@ -185,7 +185,8 @@ public class IntegrationRunner {
   }
 
   private void handleRunInternalException(final IntegrationConfig parsed, final Exception e) throws Exception {
-    // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An attempt is made to
+    // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An attempt is made
+    // to
     // find the root exception that corresponds to a configuration error. If that does not exist, we
     // just return the original exception.
     final Throwable rootThrowable = ConnectorExceptionUtil.getRootConfigError(e);
