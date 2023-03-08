@@ -2,11 +2,23 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import re
+import sys
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Set
 
-from ci_connector_ops.utils import AIRBYTE_REPO, Connector
-from dagger import Container, QueryError
+import anyio
+import git
+from ci_connector_ops.utils import (
+    AIRBYTE_REPO,
+    DESTINATION_CONNECTOR_PATH_PREFIX,
+    SOURCE_CONNECTOR_PATH_PREFIX,
+    Connector,
+    get_connector_name_from_path,
+)
+from dagger import Config, Connection, Container, QueryError
+
+DAGGER_CONFIG = Config(log_output=sys.stderr)
+AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
 
 
 # This utils will probably be redundant once https://github.com/dagger/dagger/issues/3764 is implemented
@@ -112,3 +124,37 @@ def get_current_git_branch() -> str:
 
 def get_current_git_revision() -> str:
     return AIRBYTE_REPO.head.object.hexsha
+
+
+async def get_modified_files_remote(current_git_revision: str, diffed_branch: str = "origin/master") -> Set[str]:
+    async with Connection(DAGGER_CONFIG) as dagger_client:
+        modified_files = await (
+            dagger_client.container()
+            .from_("alpine/git:latest")
+            .with_workdir("/repo")
+            .with_exec(["clone", AIRBYTE_REPO_URL, "."])
+            .with_exec(["diff", "--diff-filter=MA", "--name-only", f"{diffed_branch}...{current_git_revision}"])
+            .stdout()
+        )
+    return set(modified_files.split("\n"))
+
+
+def get_modified_files_local(current_git_revision: str, diffed_branch: str = "master") -> Set[str]:
+    airbyte_repo = git.Repo()
+    modified_files = airbyte_repo.git.diff("--diff-filter=MA", "--name-only", f"{diffed_branch}...{current_git_revision}").split("\n")
+    return set(modified_files)
+
+
+def get_modified_files(current_git_revision: str, diffed_branch: str, is_local: bool = True) -> Set[str]:
+    if is_local:
+        return get_modified_files_local(current_git_revision, diffed_branch)
+    else:
+        return anyio.run(get_modified_files_remote, current_git_revision, diffed_branch)
+
+
+def get_modified_connectors(modified_files: Set[str]) -> Set[Connector]:
+    modified_connectors = []
+    for file_path in modified_files:
+        if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) or file_path.startswith(DESTINATION_CONNECTOR_PATH_PREFIX):
+            modified_connectors.append(Connector(get_connector_name_from_path(file_path)))
+    return set(modified_connectors)

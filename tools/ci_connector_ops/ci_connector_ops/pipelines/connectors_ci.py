@@ -14,8 +14,14 @@ import dagger
 from ci_connector_ops.pipelines.actions import builds, environments, remote_storage, secrets, tests
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.pipelines.models import ConnectorTestReport, Step, StepResult, StepStatus
-from ci_connector_ops.pipelines.utils import get_current_git_branch, get_current_git_revision
-from ci_connector_ops.utils import ConnectorLanguage, get_all_released_connectors, get_changed_connectors_between_branches
+from ci_connector_ops.pipelines.utils import (
+    DAGGER_CONFIG,
+    get_current_git_branch,
+    get_current_git_revision,
+    get_modified_connectors,
+    get_modified_files,
+)
+from ci_connector_ops.utils import ConnectorLanguage, get_all_released_connectors
 
 REQUIRED_ENV_VARS_FOR_CI = [
     "GCP_GSM_CREDENTIALS",
@@ -145,9 +151,8 @@ async def run_connectors_test_pipelines(test_contexts: List[ConnectorTestContext
     Args:
         test_contexts (List[ConnectorTestContext]): List of connector test contexts for which a CI pipeline needs to be run.
     """
-    config = dagger.Config(log_output=sys.stderr)
 
-    async with dagger.Connection(config) as dagger_client:
+    async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         async with anyio.create_task_group() as tg:
             for test_context in test_contexts:
                 # We scoped this POC only for python and low-code connectors
@@ -165,8 +170,14 @@ async def run_connectors_test_pipelines(test_contexts: List[ConnectorTestContext
 @click.option("--is-local/--is-ci", default=True)
 @click.option("--git-branch", default=lambda: get_current_git_branch(), envvar="CI_GIT_BRANCH")
 @click.option("--git-revision", default=lambda: get_current_git_revision(), envvar="CI_GIT_REVISION")
+@click.option(
+    "--diffed-branch",
+    help="Branch to which the git diff will happen to detect new or modified connectors",
+    default="origin/master",
+    type=str,
+)
 @click.pass_context
-def connectors_ci(ctx: click.Context, use_remote_secrets: str, is_local: bool, git_branch: str, git_revision: str):
+def connectors_ci(ctx: click.Context, use_remote_secrets: str, is_local: bool, git_branch: str, git_revision: str, diffed_branch: str):
     """A command group to gather all the connectors-ci command"""
     if not (os.getcwd().endswith("/airbyte") and Path(".git").is_dir()):
         raise click.ClickException("You need to run this command from the airbyte repository root.")
@@ -183,6 +194,7 @@ def connectors_ci(ctx: click.Context, use_remote_secrets: str, is_local: bool, g
     ctx.obj["is_local"] = is_local
     ctx.obj["git_branch"] = git_branch
     ctx.obj["git_revision"] = git_revision
+    ctx.obj["modified_files"] = get_modified_files(git_revision, diffed_branch, is_local)
 
 
 @connectors_ci.command()
@@ -198,21 +210,8 @@ def connectors_ci(ctx: click.Context, use_remote_secrets: str, is_local: bool, g
     type=click.Choice(["alpha", "beta", "generally_available"]),
 )
 @click.option("--modified/--not-modified", help="Only test modified connectors in the current branch.", default=False, type=bool)
-@click.option(
-    "--diffed-branch",
-    help="Branch to which the git diff will happen to detect new or modified connectors",
-    default="origin/master",
-    type=str,
-)
 @click.pass_context
-def test_connectors(
-    ctx: click.Context,
-    names: Tuple[str],
-    languages: Tuple[ConnectorLanguage],
-    release_stages: Tuple[str],
-    modified: bool,
-    diffed_branch: str,
-):
+def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[ConnectorLanguage], release_stages: Tuple[str], modified: bool):
     """Runs a CI pipeline the connector passed as CLI argument.
 
     Args:
@@ -220,7 +219,7 @@ def test_connectors(
         connector_name (str): The connector technical name. E.G. source-pokeapi
     """
     connectors_under_test = get_all_released_connectors()
-    modified_connectors = get_changed_connectors_between_branches(ctx.obj["git_branch"], diffed_branch)
+    modified_connectors = get_modified_connectors(ctx.obj["modified_files"])
     if modified:
         connectors_under_test = modified_connectors
     else:

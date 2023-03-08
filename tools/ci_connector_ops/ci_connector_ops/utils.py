@@ -21,12 +21,11 @@ except ImportError:
     from yaml import Loader
 
 AIRBYTE_REPO = git.Repo(search_parent_directories=True)
-
-
 DIFFED_BRANCH = os.environ.get("DIFFED_BRANCH", "origin/master")
 OSS_CATALOG_URL = "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/oss_catalog.json"
 CONNECTOR_PATH_PREFIX = "airbyte-integrations/connectors"
 SOURCE_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/source-"
+DESTINATION_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/destination-"
 ACCEPTANCE_TEST_CONFIG_FILE_NAME = "acceptance-test-config.yml"
 AIRBYTE_DOCKER_REPO = "airbyte"
 SOURCE_DEFINITIONS_FILE_PATH = "airbyte-config/init/src/main/resources/seed/source_definitions.yaml"
@@ -209,18 +208,6 @@ def get_changed_connectors() -> Set[Connector]:
         for file_path in AIRBYTE_REPO.git.diff("--name-only", DIFFED_BRANCH).split("\n")
         if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX)
     }
-    return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_source_connector_files}
-
-
-def get_changed_connectors_between_branches(branch_a: str, branch_b: str) -> Set[Connector]:
-    original_branch = AIRBYTE_REPO.active_branch.name
-    AIRBYTE_REPO.git.checkout(branch_a)
-    changed_source_connector_files = {
-        file_path
-        for file_path in AIRBYTE_REPO.git.diff("--diff-filter=MA", "--name-only", branch_b + "...").split("\n")
-        if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX)
-    }
-    AIRBYTE_REPO.git.checkout(original_branch)
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_source_connector_files}
 
 
