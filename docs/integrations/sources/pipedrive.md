@@ -72,6 +72,8 @@ Apart from `Fields` streams, all other streams support incremental.
 
 * [Files](https://developers.pipedrive.com/docs/api/v1/Files#getFiles)
 
+* [LeadLabels](https://developers.pipedrive.com/docs/api/v1/LeadLabels#getLeadLabels)
+
 * [Leads](https://developers.pipedrive.com/docs/api/v1/Leads#getLeads)
 
 * [Notes](https://developers.pipedrive.com/docs/api/v1/Notes#getNotes)

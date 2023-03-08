@@ -70,3 +70,6 @@
 {"stream":"permission_sets","data":{"id":"79b42bf0-fb6d-11eb-a18f-a7e2db4435cf","name":"Deals admin","assignment_count":1,"app":"sales","type":"admin"},"emitted_at":1678262143618}
 {"stream":"permission_sets","data":{"id":"79b42bf1-fb6d-11eb-a18f-a7e2db4435cf","name":"Deals regular user","assignment_count":0,"app":"sales","type":"regular"},"emitted_at":1678262143619}
 {"stream":"permission_sets","data":{"id":"fa17fff0-db56-11ec-93f1-e9cfc58fcd59","name":"Global admin","assignment_count":1,"app":"global","type":"admin"},"emitted_at":1678262143619}
+{"stream":"lead_labels","data":{"id":"aecece60-c069-11eb-93bf-b59c4f1731e6","name":"Hot","color":"red","add_time":"2021-05-29T10:36:10.182Z","update_time":"2021-05-29T10:36:10.182Z"},"emitted_at":1678263248121}
+{"stream":"lead_labels","data":{"id":"aecece61-c069-11eb-93bf-b59c4f1731e6","name":"Warm","color":"yellow","add_time":"2021-05-29T10:36:10.182Z","update_time":"2021-05-29T10:36:10.182Z"},"emitted_at":1678263248122}
+{"stream":"lead_labels","data":{"id":"aecece62-c069-11eb-93bf-b59c4f1731e6","name":"Cold","color":"blue","add_time":"2021-05-29T10:36:10.182Z","update_time":"2021-05-29T10:36:10.182Z"},"emitted_at":1678263248122}

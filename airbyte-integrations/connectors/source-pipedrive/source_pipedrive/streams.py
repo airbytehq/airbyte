@@ -113,6 +113,10 @@ class Files(PipedriveStream):
     """
 
 
+class LeadLabels(PipedriveStream):
+    """https://developers.pipedrive.com/docs/api/v1/LeadLabels#getLeadLabels"""
+
+
 class Leads(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/Leads#getLeads"""
 
