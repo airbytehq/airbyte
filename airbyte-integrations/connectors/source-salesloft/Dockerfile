@@ -34,5 +34,5 @@ COPY source_salesloft ./source_salesloft
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.3
+LABEL io.airbyte.version=0.1.6
 LABEL io.airbyte.name=airbyte/source-salesloft

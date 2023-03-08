@@ -2,6 +2,10 @@
 
 Airbyte’s low-code framework enables you to build source connectors for REST APIs via a [connector builder UI](connector-builder-ui.md) or by modifying boilerplate YAML files via terminal or text editor.
 
+:::info 
+Developer updates will be announced via our #using-the-cdk Slack channel. If you are using the CDK, please join to stay up to date on changes and issues. 
+:::
+
 :::caution
 The low-code framework is in [alpha](https://docs.airbyte.com/project-overview/product-release-stages/#alpha), which means it’s still in active development and may include backward-incompatible changes. Share feedback and requests with us on our [Slack channel](https://slack.airbyte.com/) or email us at [feedback@airbyte.io](mailto:feedback@airbyte.io)
 :::
