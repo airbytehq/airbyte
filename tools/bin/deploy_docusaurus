@@ -136,7 +136,7 @@ git push --force
 # non functional. for debugging
 git rev-parse --abbrev-ref HEAD
 
-git co -
+git checkout -
 
 set +o xtrace
 echo -e "$blue_text""Script exiting 0 GREAT SUCCESS!!!?""$default_text"
