@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.30.1
+Releasing using the new release flow. No change to the CDK per se
+
 ## 0.30.0
 OAuth: retry refresh access token requests
 
