@@ -6,7 +6,7 @@ This page provides guidance on how to manage notifications for Airbyte Cloud, al
 
 To set up Webhook notifications:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings**.
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Settings**.
 
 2. Click **Notifications**.
 
