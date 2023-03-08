@@ -16,27 +16,27 @@ class ConvexClient:
 
     def batch_write(self, records: List[Mapping[str, Any]]) -> requests.Response:
         """
-        See Convex docs: https://docs.convex.dev/http-api/#post-apiingressairbyte_ingress
+        See Convex docs: https://docs.convex.dev/http-api/#post-apistreaming_importimport_airbyte_records
         """
         request_body = {"streams": self.stream_metadata, "messages": records}
-        return self._request("POST", endpoint="airbyte_ingress", json=request_body)
+        return self._request("POST", endpoint="import_airbyte_records", json=request_body)
 
     def delete(self, keys: List[str]) -> requests.Response:
         """
-        See Convex docs: https://docs.convex.dev/http-api/#put-apiingressclear_tables
+        See Convex docs: https://docs.convex.dev/http-api/#put-apistreaming_importclear_tables
         """
         request_body = {"tableNames": keys}
         return self._request("PUT", endpoint="clear_tables", json=request_body)
 
     def add_primary_key_indexes(self, indexes: Mapping[str, List[List[str]]]) -> requests.Response:
         """
-        See Convex docs: https://docs.convex.dev/http-api/#put-apiingressadd_primary_key_indexes
+        See Convex docs: https://docs.convex.dev/http-api/#put-apistreaming_importadd_primary_key_indexes
         """
         return self._request("PUT", "add_primary_key_indexes", json={"indexes": indexes})
 
     def primary_key_indexes_ready(self, tables: List[str]) -> requests.Response:
         """
-        See Convex docs: https://docs.convex.dev/http-api/#get-apiingressprimary_key_indexes_ready
+        See Convex docs: https://docs.convex.dev/http-api/#get-apistreaming_importprimary_key_indexes_ready
         """
         return self._request("GET", "primary_key_indexes_ready", json={"tables": tables})
 
@@ -49,10 +49,10 @@ class ConvexClient:
         endpoint: str,
         json: Mapping[str, Any],
     ) -> requests.Response:
-        url = f"{self.deployment_url}/api/ingress/{endpoint}"
+        url = f"{self.deployment_url}/api/streaming_import/{endpoint}"
         headers = {
             "Accept": "application/json",
-            "Convex-Client": "ingress-0.1.0",
+            "Convex-Client": "streaming-import-0.1.0",
             **self._get_auth_headers(),
         }
 

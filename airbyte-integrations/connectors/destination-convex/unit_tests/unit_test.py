@@ -80,13 +80,13 @@ def record(stream: str, str_value: str, int_value: int) -> AirbyteMessage:
 
 
 def setup_responses(config):
-    responses.add(responses.PUT, f"{config['deployment_url']}/api/ingress/clear_tables", status=200)
-    responses.add(responses.POST, f"{config['deployment_url']}/api/ingress/airbyte_ingress", status=200)
+    responses.add(responses.PUT, f"{config['deployment_url']}/api/streaming_import/clear_tables", status=200)
+    responses.add(responses.POST, f"{config['deployment_url']}/api/streaming_import/import_airbyte_records", status=200)
     responses.add(responses.GET, f"{config['deployment_url']}/version", status=200)
-    responses.add(responses.PUT, f"{config['deployment_url']}/api/ingress/add_primary_key_indexes", status=200)
+    responses.add(responses.PUT, f"{config['deployment_url']}/api/streaming_import/add_primary_key_indexes", status=200)
     responses.add(
         responses.GET,
-        f"{config['deployment_url']}/api/ingress/primary_key_indexes_ready",
+        f"{config['deployment_url']}/api/streaming_import/primary_key_indexes_ready",
         status=200,
         json={"indexesReady": True},
     )
