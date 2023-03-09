@@ -85,7 +85,7 @@ To set up Facebook Marketing as a source in Airbyte Open Source:
 
 The Facebook Marketing source connector supports the following sync modes:
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 * [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 * [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (except for the AdCreatives and AdAccount tables)
 * [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history) (except for the AdCreatives and AdAccount tables)
