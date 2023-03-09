@@ -18,7 +18,7 @@ import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import java.nio.file.Files;
@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TeradataDestinationAcceptanceTest.class);
-    private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+    private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
     private JsonNode configJson;
     private JdbcDatabase database;
