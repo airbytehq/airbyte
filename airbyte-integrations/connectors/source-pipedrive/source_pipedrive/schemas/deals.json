@@ -33,7 +33,9 @@
       "type": ["null", "string"]
     },
     "update_time": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "stage_change_time": {
       "type": ["null", "string"]
