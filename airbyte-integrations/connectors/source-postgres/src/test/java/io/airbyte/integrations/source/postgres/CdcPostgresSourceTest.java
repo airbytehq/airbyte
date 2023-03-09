@@ -208,7 +208,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     final AirbyteConnectionStatus status = source.check(test_config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertEquals(String.format(ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE,
-            String.format(PostgresReplicationConnection.REPLICATION_PRIVILEGE_ERROR_MESSAGE, test_config.get("username").asText())),
+        String.format(PostgresReplicationConnection.REPLICATION_PRIVILEGE_ERROR_MESSAGE, test_config.get("username").asText())),
         status.getMessage());
   }
 
