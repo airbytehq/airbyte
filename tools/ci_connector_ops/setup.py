@@ -16,6 +16,7 @@ MAIN_REQUIREMENTS = [
     "docker~=6.0.0",
     "PyGithub~=1.58.0",
     "rich",
+    "asyncer",
 ]
 
 

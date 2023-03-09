@@ -11,6 +11,7 @@ from typing import List, Tuple
 import anyio
 import click
 import dagger
+from asyncer import asyncify
 from ci_connector_ops.pipelines.actions import environments, remote_storage, secrets, tests
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext, ContextState
 from ci_connector_ops.pipelines.github import update_commit_status_check
@@ -53,7 +54,8 @@ async def setup(test_context: ConnectorTestContext) -> ConnectorTestContext:
     test_context.secrets_dir = await secrets.get_connector_secret_dir(test_context)
     test_context.updated_secrets_dir = None
     test_context.state = ContextState.INITIALIZED
-    update_commit_status_check(test_context)
+    async with anyio.create_task_group() as tg:
+        tg.start_soon(asyncify(update_commit_status_check), test_context)
     return test_context
 
 
@@ -91,7 +93,8 @@ async def teardown(test_context: ConnectorTestContext, test_report: ConnectorTes
         s3_reports_path_root = "python-poc/tests/history/"
         s3_key = s3_reports_path_root + suffix
         await remote_storage.upload_to_s3(teardown_pipeline, str(local_report_path), s3_key, os.environ["TEST_REPORTS_BUCKET_NAME"])
-    update_commit_status_check(test_context, test_report)
+    async with anyio.create_task_group() as tg:
+        tg.start_soon(asyncify(update_commit_status_check), test_context, test_report)
     return test_context
 
 
@@ -108,7 +111,8 @@ async def run(test_context: ConnectorTestContext) -> ConnectorTestReport:
     test_context = await setup(test_context)
     try:
         test_context.state = ContextState.RUNNING
-        update_commit_status_check(test_context)
+        async with anyio.create_task_group() as tg:
+            tg.start_soon(asyncify(update_commit_status_check), test_context)
         qa_checks_results_future = asyncio.create_task(tests.run_qa_checks(test_context))
         connector_source_code = await environments.with_airbyte_connector(test_context, install=False)
         connector_under_test = await environments.with_airbyte_connector(test_context)
