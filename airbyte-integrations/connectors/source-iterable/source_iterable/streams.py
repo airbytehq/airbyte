@@ -31,9 +31,6 @@ class IterableStream(HttpStream, ABC):
     # in case we get a 401 error (api token disabled or deleted) on a stream slice, do not make further requests within the current stream
     # to prevent 429 error on other streams
     ignore_further_slices = False
-    # Hardcode the value because it is not returned from the API
-    BACKOFF_TIME_CONSTANT = 10.0
-    # define date-time fields with potential wrong format
 
     url_base = "https://api.iterable.com/api/"
     primary_key = "id"
@@ -41,6 +38,15 @@ class IterableStream(HttpStream, ABC):
     def __init__(self, authenticator):
         self._cred = authenticator
         super().__init__(authenticator)
+
+    @property
+    def retry_factor(self) -> int:
+        return 20
+
+    # With factor 20 it would be from 20 to 400 seconds delay
+    @property
+    def max_retries(self) -> Union[int, None]:
+        return 10
 
     @property
     @abstractmethod
@@ -61,9 +67,6 @@ class IterableStream(HttpStream, ABC):
             return False
         return True
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        return self.BACKOFF_TIME_CONSTANT
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
         Iterable API does not support pagination
@@ -80,8 +83,16 @@ class IterableStream(HttpStream, ABC):
             yield record
 
     def should_retry(self, response: requests.Response) -> bool:
+        # check the authentication
         if not self.check_unauthorized_key(response):
             return False
+        # retry on generic error 500 meaning
+        if response.status_code == 500:
+            if response.json().get("code") == "GenericError" and "Please try again later" in response.json().get("msg"):
+                self.logger.warn(f"Generic Server Error occured for stream: `{self.name}`.")
+                setattr(self, "raise_on_http_errors", False)
+                return True
+        # all other cases
         return super().should_retry(response)
 
     def read_records(
@@ -119,24 +130,6 @@ class IterableExportStream(IterableStream, ABC):
 
     def path(self, **kwargs) -> str:
         return "export/data.json"
-
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        # Use default exponential backoff
-        return None
-
-    # For python backoff package expo backoff delays calculated according to formula:
-    # delay = factor * base ** n where base is 2
-    # With default factor equal to 5 and 5 retries delays would be 5, 10, 20, 40 and 80 seconds.
-    # For exports stream there is a limit of 4 requests per minute.
-    # Tune up factor and retries to send a lot of excessive requests before timeout exceed.
-    @property
-    def retry_factor(self) -> int:
-        return 20
-
-    # With factor 20 it woud be 20, 40, 80 and 160 seconds delays.
-    @property
-    def max_retries(self) -> Union[int, None]:
-        return 4
 
     @staticmethod
     def _field_to_datetime(value: Union[int, str]) -> pendulum.datetime:
@@ -260,14 +253,14 @@ class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
 
     In case of slice processing request failed with ChunkedEncodingError (which
     means that API server closed connection cause of request takes to much
-    time) make CHUNKED_ENCODING_ERROR_RETRIES (3) retries each time reducing
+    time) make CHUNKED_ENCODING_ERROR_RETRIES (6) retries each time reducing
     slice length.
 
     See AdjustableSliceGenerator description for more details on next slice length adjustment alghorithm.
     """
 
     _adjustable_generator: AdjustableSliceGenerator = None
-    CHUNKED_ENCODING_ERROR_RETRIES = 3
+    CHUNKED_ENCODING_ERROR_RETRIES = 6
 
     def stream_slices(
         self,
@@ -329,6 +322,8 @@ class ListUsers(IterableStream):
     primary_key = "listId"
     data_field = "getUsers"
     name = "list_users"
+    # enable caching, because this stream used by other ones
+    use_cache = True
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"lists/{self.data_field}?listId={stream_slice['list_id']}"
