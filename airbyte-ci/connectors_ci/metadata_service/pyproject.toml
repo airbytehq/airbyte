@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "metadata-service"
+version = "0.1.0"
+description = ""
+authors = ["Ben Church <ben@airbyte.io>"]
+readme = "README.md"
+packages = [{include = "metadata_service"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+dagit = "^1.1.21"
+dagster = "^1.1.21"
+dagster-pydantic = "^0.1.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
