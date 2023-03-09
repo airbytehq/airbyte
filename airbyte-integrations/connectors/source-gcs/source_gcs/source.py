@@ -55,7 +55,12 @@ class SourceGCS(Source):
     ) -> Generator[AirbyteMessage, None, None]:
         logger.info("Start reading")
         blobs = get_gcs_blobs(config)
-        for blob in blobs:
+        
+        # Read only selected stream(s)
+        selected_streams = [configged_stream.stream.name for configged_stream in catalog.streams]
+        selected_blobs = [blob for blob in blobs if get_stream_name(blob) in selected_streams]
+        
+        for blob in selected_blobs:
             logger.info(blob.name)
             df = read_csv_file(blob)
             stream_name = get_stream_name(blob)
