@@ -203,7 +203,7 @@ class ReportsMixin(ABC):
     def request_params(
         self, stream_state: Mapping[str, Any] = None, account_id: str = None, **kwargs: Mapping[str, Any]
     ) -> Mapping[str, Any]:
-        start_date = self._get_start_date(stream_state, account_id)
+        start_date = self.get_start_date(stream_state, account_id)
 
         reporting_service = self.client.get_service("ReportingService")
         request_time_zone = reporting_service.factory.create("ReportTimeZone")
@@ -224,7 +224,7 @@ class ReportsMixin(ABC):
             "timeout_in_milliseconds": self.timeout,
         }
 
-    def _get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
+    def get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
         if not stream_state or not account_id or not stream_state.get(account_id, {}).get(self.cursor_field):
             start_date = self.client.reports_start_date
         else:
@@ -345,7 +345,7 @@ class ReportsMixin(ABC):
 
 class PerformanceReportsMixin(ReportsMixin):
 
-    def _get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
+    def get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
         if not stream_state or not account_id or not stream_state.get(account_id, {}).get(self.cursor_field):
             start_date = self.client.reports_start_date.subtract(days=self.config["lookback_window"])
         else:
