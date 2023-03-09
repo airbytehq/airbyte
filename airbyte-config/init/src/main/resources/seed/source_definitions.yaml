@@ -45,11 +45,15 @@
 - name: AlloyDB for PostgreSQL
   sourceDefinitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
   dockerRepository: airbyte/source-alloydb
-  dockerImageTag: 2.0.0
+  dockerImageTag: 2.0.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
   icon: alloydb.svg
   sourceType: database
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "${host}"
+      - "${tunnel_method.tunnel_host}"
 - name: AWS CloudTrail
   sourceDefinitionId: 6ff047c0-f5d5-4ce5-8c81-204a830fa7e1
   dockerRepository: airbyte/source-aws-cloudtrail
@@ -276,11 +280,15 @@
 - name: ClickHouse
   sourceDefinitionId: bad83517-5e54-4a3d-9b53-63e85fbd4d7c
   dockerRepository: airbyte/source-clickhouse
-  dockerImageTag: 0.1.15
+  dockerImageTag: 0.1.16
   documentationUrl: https://docs.airbyte.com/integrations/sources/clickhouse
   icon: clickhouse.svg
   sourceType: database
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${host}"
+      - "${tunnel_method.tunnel_host}"
 - name: ClickUp
   sourceDefinitionId: 311a7a27-3fb5-4f7e-8265-5e4afe258b66
   dockerRepository: airbyte/source-clickup-api
@@ -311,11 +319,14 @@
 - name: Cockroachdb
   sourceDefinitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
   dockerRepository: airbyte/source-cockroachdb
-  dockerImageTag: 0.1.19
+  dockerImageTag: 0.1.20
   documentationUrl: https://docs.airbyte.com/integrations/sources/cockroachdb
   icon: cockroachdb.svg
   sourceType: database
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${host}"
 - name: Coda
   sourceDefinitionId: 27f910fd-f832-4b2e-bcfd-6ab342e434d8
   dockerRepository: airbyte/source-coda
@@ -359,11 +370,14 @@
 - name: Confluence
   sourceDefinitionId: cf40a7f8-71f8-45ce-a7fa-fca053e4028c
   dockerRepository: airbyte/source-confluence
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/confluence
   icon: confluence.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${subdomain}.atlassian.net"
 - name: ConvertKit
   sourceDefinitionId: be9ee02f-6efe-4970-979b-95f797a37188
   dockerRepository: airbyte/source-convertkit
@@ -473,11 +487,14 @@
 - name: Drift
   sourceDefinitionId: 445831eb-78db-4b1f-8f1f-0d96ad8739e2
   dockerRepository: airbyte/source-drift
-  dockerImageTag: 0.2.5
+  dockerImageTag: 0.2.6
   documentationUrl: https://docs.airbyte.com/integrations/sources/drift
   icon: drift.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - driftapi.com
 - name: DV 360
   sourceDefinitionId: 1356e1d9-977f-4057-ad4b-65f25329cf61
   dockerRepository: airbyte/source-dv-360
@@ -763,6 +780,9 @@
   icon: googlesearchconsole.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "*.googleapis.com"
 - name: Google Sheets
   sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
   dockerRepository: airbyte/source-google-sheets
@@ -793,7 +813,7 @@
 - name: Greenhouse
   sourceDefinitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
   dockerRepository: airbyte/source-greenhouse
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.3.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/greenhouse
   icon: greenhouse.svg
   sourceType: api
@@ -865,11 +885,14 @@
 - name: IBM Db2
   sourceDefinitionId: 447e0381-3780-4b46-bb62-00a4e3c8b8e2
   dockerRepository: airbyte/source-db2
-  dockerImageTag: 0.1.17
+  dockerImageTag: 0.1.18
   documentationUrl: https://docs.airbyte.com/integrations/sources/db2
   icon: db2.svg
   sourceType: database
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${host}"
 - name: Insightly
   sourceDefinitionId: 38f84314-fe6a-4257-97be-a8dcd942d693
   dockerRepository: airbyte/source-insightly
@@ -1158,11 +1181,14 @@
 - name: Monday
   sourceDefinitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
   dockerRepository: airbyte/source-monday
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/monday
   icon: monday.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - "api.monday.com"
 - name: MongoDb
   sourceDefinitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
   dockerRepository: airbyte/source-mongodb-v2
@@ -1283,11 +1309,15 @@
 - name: Oracle DB
   sourceDefinitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
   dockerRepository: airbyte/source-oracle
-  dockerImageTag: 0.3.22
+  dockerImageTag: 0.3.23
   documentationUrl: https://docs.airbyte.com/integrations/sources/oracle
   icon: oracle.svg
   sourceType: database
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${host}"
+      - "${tunnel_method.tunnel_host}"
 - name: Orb
   sourceDefinitionId: 7f0455fb-4518-4ec0-b7a3-d808bf8081cc
   dockerRepository: airbyte/source-orb
@@ -1394,7 +1424,7 @@
 - name: Pipedrive
   sourceDefinitionId: d8286229-c680-4063-8c59-23b9b391c700
   dockerRepository: airbyte/source-pipedrive
-  dockerImageTag: 0.1.15
+  dockerImageTag: 0.1.16
   documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
   icon: pipedrive.svg
   sourceType: api
@@ -1663,7 +1693,7 @@
 - name: SalesLoft
   sourceDefinitionId: 41991d12-d4b5-439e-afd0-260a31d4c53f
   dockerRepository: airbyte/source-salesloft
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesloft
   icon: salesloft.svg
   sourceType: api
@@ -1804,11 +1834,14 @@
 - name: Snowflake
   sourceDefinitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
   dockerRepository: airbyte/source-snowflake
-  dockerImageTag: 0.1.30
+  dockerImageTag: 0.1.31
   documentationUrl: https://docs.airbyte.com/integrations/sources/snowflake
   icon: snowflake.svg
   sourceType: database
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${host}"
 - name: Sonar Cloud
   sourceDefinitionId: 3ab1d7d0-1577-4ab9-bcc4-1ff6a4c2c9f2
   dockerRepository: airbyte/source-sonar-cloud
@@ -1831,11 +1864,15 @@
 - name: Square
   sourceDefinitionId: 77225a51-cd15-4a13-af02-65816bd0ecf4
   dockerRepository: airbyte/source-square
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/square
   icon: square.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - "connect.squareupsandbox.com"
+      - "connect.squareup.com"
 - sourceDefinitionId: 7a4327c4-315a-11ec-8d3d-0242ac130003
   name: Strava
   dockerRepository: airbyte/source-strava
@@ -1901,19 +1938,26 @@
 - name: Tempo
   sourceDefinitionId: d1aa448b-7c54-498e-ad95-263cbebcd2db
   dockerRepository: airbyte/source-tempo
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.3.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/tempo
   icon: tempo.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - api.tempo.io
 - name: TiDB
   sourceDefinitionId: 0dad1a35-ccf8-4d03-b73e-6788c00b13ae
   dockerRepository: airbyte/source-tidb
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/tidb
   icon: tidb.svg
   sourceType: database
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${host}"
+      - "${tunnel_method.tunnel_host}"
 - name: TikTok Marketing
   sourceDefinitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
   dockerRepository: airbyte/source-tiktok-marketing
@@ -2004,11 +2048,11 @@
 - name: Twitter
   sourceDefinitionId: d7fd4f40-5e5a-4b8b-918f-a73077f8c131
   dockerRepository: airbyte/source-twitter
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/twitter
   icon: twitter.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
   allowedHosts:
     hosts:
       - api.twitter.com
@@ -2224,11 +2268,14 @@
 - name: Zenloop
   sourceDefinitionId: f1e4c7f6-db5c-4035-981f-d35ab4998794
   dockerRepository: airbyte/source-zenloop
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.com/integrations/sources/zenloop
   icon: zenloop.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - api.zenloop.com
 - sourceDefinitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
   name: Sentry
   dockerRepository: airbyte/source-sentry

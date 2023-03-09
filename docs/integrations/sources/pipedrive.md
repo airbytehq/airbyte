@@ -62,21 +62,43 @@ Apart from `Fields` streams, all other streams support incremental.
 
 * [ActivityFields](https://developers.pipedrive.com/docs/api/v1/ActivityFields#getActivityFields)
 
+* [ActivityTypes](https://developers.pipedrive.com/docs/api/v1/ActivityTypes#getActivityTypes)
+
+* [Currencies](https://developers.pipedrive.com/docs/api/v1/Currencies#getCurrencies)
+
 * [DealFields](https://developers.pipedrive.com/docs/api/v1/DealFields#getDealFields)
+
+* [DealProducts](https://developers.pipedrive.com/docs/api/v1/Deals#getDealProducts)
 
 * [Deals](https://developers.pipedrive.com/docs/api/v1/Deals#getDeals)
 
+* [Files](https://developers.pipedrive.com/docs/api/v1/Files#getFiles)
+
+* [Filters](https://developers.pipedrive.com/docs/api/v1/Filters#getFilters)
+
+* [LeadLabels](https://developers.pipedrive.com/docs/api/v1/LeadLabels#getLeadLabels)
+
 * [Leads](https://developers.pipedrive.com/docs/api/v1/Leads#getLeads)
+
+* [Notes](https://developers.pipedrive.com/docs/api/v1/Notes#getNotes)
 
 * [OrganizationFields](https://developers.pipedrive.com/docs/api/v1/OrganizationFields#getOrganizationFields)
 
 * [Organizations](https://developers.pipedrive.com/docs/api/v1/Organizations#getOrganizations)
+
+* [PermissionSets](https://developers.pipedrive.com/docs/api/v1/PermissionSets#getPermissionSets)
 
 * [PersonFields](https://developers.pipedrive.com/docs/api/v1/PersonFields#getPersonFields)
 
 * [Persons](https://developers.pipedrive.com/docs/api/v1/Persons#getPersons)
 
 * [Pipelines](https://developers.pipedrive.com/docs/api/v1/Pipelines#getPipelines)
+
+* [ProductFields](https://developers.pipedrive.com/docs/api/v1/ProductFields#getProductFields)
+
+* [Products](https://developers.pipedrive.com/docs/api/v1/Products#getProducts)
+
+* [Roles](https://developers.pipedrive.com/docs/api/v1/Roles#getRoles)
 
 * [Stages](https://developers.pipedrive.com/docs/api/v1/Stages#getStages)
 
@@ -90,6 +112,7 @@ The Pipedrive connector will gracefully handle rate limits. For more information
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
+| 0.1.16  | 2023-03-08 | [23789](https://github.com/airbytehq/airbyte/pull/23789) | Add 11 new streams                                             |
 | 0.1.15  | 2023-03-02 | [23705](https://github.com/airbytehq/airbyte/pull/23705) | Disable OAuth                                                  |
 | 0.1.14  | 2023-03-01 | [23539](https://github.com/airbytehq/airbyte/pull/23539) | Fix schema for "activities", "check" works if empty "deals"    |
 | 0.1.13  | 2022-09-16 | [16799](https://github.com/airbytehq/airbyte/pull/16799) | Migrate to per-stream state                                    |
