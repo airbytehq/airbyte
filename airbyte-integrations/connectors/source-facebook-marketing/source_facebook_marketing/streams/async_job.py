@@ -205,7 +205,7 @@ class InsightAsyncJob(AsyncJob):
             "until": self._interval.end.to_date_string(),
         }
 
-        self._edge_object = edge_object
+        self.edge_object = edge_object
         self._job: Optional[AdReportRun] = None
         self._start_time = None
         self._finish_time = None
@@ -213,11 +213,11 @@ class InsightAsyncJob(AsyncJob):
 
     def split_job(self) -> List["AsyncJob"]:
         """Split existing job in few smaller ones grouped by ParentAsyncJob class."""
-        if isinstance(self._edge_object, AdAccount):
+        if isinstance(self.edge_object, AdAccount):
             return self._split_by_edge_class(Campaign)
-        elif isinstance(self._edge_object, Campaign):
+        elif isinstance(self.edge_object, Campaign):
             return self._split_by_edge_class(AdSet)
-        elif isinstance(self._edge_object, AdSet):
+        elif isinstance(self.edge_object, AdSet):
             return self._split_by_edge_class(Ad)
         raise ValueError("The job is already splitted to the smallest size.")
 
@@ -247,7 +247,7 @@ class InsightAsyncJob(AsyncJob):
         params.update(fields=[pk_name], level=level)
         params["time_range"].update(since=new_start.to_date_string())
         params.pop("time_increment")  # query all days
-        result = self._edge_object.get_insights(params=params)
+        result = self.edge_object.get_insights(params=params)
         ids = set(row[pk_name] for row in result)
         logger.info(f"Got {len(ids)} {pk_name}s for period {self._interval}: {ids}")
 
@@ -259,7 +259,7 @@ class InsightAsyncJob(AsyncJob):
         if self._job:
             raise RuntimeError(f"{self}: Incorrect usage of start - the job already started, use restart instead")
 
-        self._job = self._edge_object.get_insights(params=self._params, is_async=True)
+        self._job = self.edge_object.get_insights(params=self._params, is_async=True)
         self._start_time = pendulum.now()
         self._attempt_number += 1
         logger.info(f"{self}: created AdReportRun")
@@ -362,4 +362,4 @@ class InsightAsyncJob(AsyncJob):
         """String representation of the job wrapper."""
         job_id = self._job["report_run_id"] if self._job else "<None>"
         breakdowns = self._params["breakdowns"]
-        return f"InsightAsyncJob(id={job_id}, {self._edge_object}, time_range={self._interval}, breakdowns={breakdowns})"
+        return f"InsightAsyncJob(id={job_id}, {self.edge_object}, time_range={self._interval}, breakdowns={breakdowns})"

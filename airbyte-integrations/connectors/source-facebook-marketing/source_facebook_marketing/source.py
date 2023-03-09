@@ -57,7 +57,7 @@ class SourceFacebookMarketing(AbstractSource):
             return False, "end_date must be equal or after start_date."
 
         try:
-            api = API(account_id=config.account_id, access_token=config.access_token)
+            api = API(account_id=config.account_id, access_token=config.access_token, google_service_account=config.google_service_account)
             logger.info(f"{len(api.accounts)} accounts selected: {sorted([int(account.get('account_id')) for account in api.accounts], reverse=True)}")
             return True, None
         except requests.exceptions.RequestException as e:
@@ -73,7 +73,7 @@ class SourceFacebookMarketing(AbstractSource):
         config.start_date = validate_start_date(config.start_date)
         config.end_date = validate_end_date(config.start_date, config.end_date)
 
-        api = API(account_id=config.account_id, access_token=config.access_token)
+        api = API(account_id=config.account_id, access_token=config.access_token, google_service_account=config.google_service_account)
 
         insights_args = dict(
             api=api, start_date=config.start_date, end_date=config.end_date, insights_lookback_window=config.insights_lookback_window

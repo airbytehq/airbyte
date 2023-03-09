@@ -10,12 +10,13 @@ MAIN_REQUIREMENTS = [
     "cached_property==1.5.2",
     "facebook_business==15.0.0",
     "pendulum>=2,<3",
+    "google-cloud-bigquery==3.6.0"
 ]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
     "pytest-mock~=3.6",
-    "requests_mock~=1.8",
+    "requests_mock~=1.8"
 ]
 
 setup(

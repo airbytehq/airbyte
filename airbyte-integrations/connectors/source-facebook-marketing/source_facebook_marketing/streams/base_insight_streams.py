@@ -13,7 +13,7 @@ from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.utils import AirbyteTracedException
 from cached_property import cached_property
 from facebook_business.exceptions import FacebookBadObjectError
-from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
+from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob, ParentAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
 
 from .base_streams import FBMarketingIncrementalStream
@@ -114,7 +114,7 @@ class AdsInsights(FBMarketingIncrementalStream):
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
         job = stream_slice["insight_job"]
-        account_id = job._edge_object.get("account_id")
+
         try:
             for obj in job.get_result():
                 yield obj.export_all_data()
@@ -124,6 +124,22 @@ class AdsInsights(FBMarketingIncrementalStream):
                         f"Please try again later",
                 failure_type=FailureType.system_error,
             ) from e
+
+
+        # job = InsightAsyncJob(api=job._api, interval=job.interval, edge_object=job.edge_object, params=job._params)
+        # job = ParentAsyncJob(jobs=[job], api=job._api, interval=job.interval)
+        if type(job) != ParentAsyncJob:
+            account_id = job.edge_object.get("account_id")
+        else:
+            # TODO: At this point we would sometimes get ParentAsyncJob. Should not happen. To debug.
+            # In the meantime we get the account ID of the 1st job
+            self.logger.error("This job {} has no edge_object. It is of type {}".format(str(job), str(type(job))))
+            if type(job) == ParentAsyncJob:
+                self.logger.error("This group of jobs has the following jobs : ")
+                for j in job._jobs:
+                    self.logger.error(str(j))
+            self.logger.error("We will select the account ID of the first job of the list of jobs")
+            account_id = job._jobs[0].edge_object.get("account_id")
 
         self._completed_slices[account_id] = self._completed_slices.get(account_id, set())
         self._completed_slices[account_id].add(job.interval.start)

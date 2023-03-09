@@ -137,6 +137,13 @@ class ConnectorConfig(BaseConfig):
         airbyte_secret=True,
     )
 
+    google_service_account: str = Field(
+        title="Google Service Account",
+        order=3,
+        description="Service account to connect to BigQuery for fetching list of accounts",
+        airbyte_secret=True
+    )
+
     include_deleted: bool = Field(
         title="Include Deleted",
         order=4,
