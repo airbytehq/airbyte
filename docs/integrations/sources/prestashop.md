@@ -19,7 +19,7 @@ This page contains the setup guide and reference information for the PrestaShop 
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **PrestaShop** from the Source type dropdown and enter a name for this connector.
 4. Enter the **Access Key** that you obtained.
@@ -104,6 +104,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 | Version | Date       | Pull Request                                              | Subject                                              |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------------- |
+| 0.3.1   | 2023-02-13 | [22905](https://github.com/airbytehq/airbyte/pull/22905) | Specified date formatting in specification |
 | 0.3.0   | 2022-11-08 | [#18927](https://github.com/airbytehq/airbyte/pull/18927) | Migrate connector from Alpha (Python) to Beta (YAML) |
 | 0.2.0   | 2022-10-31 | [#18599](https://github.com/airbytehq/airbyte/pull/18599) | Only https scheme is allowed                         |
 | 0.1.0   | 2021-07-02 | [#4465](https://github.com/airbytehq/airbyte/pull/4465)   | Initial implementation                               |
