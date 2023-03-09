@@ -10,14 +10,43 @@ connectionSpecification:
       type: string
       description: API Key for accessing the 10kft API.
       airbyte_secret: true
+      order: 1
     per_page:
       type: integer
       description: Number of records to fetch per API request.
       default: 100
       minimum: 1
       maximum: 1000
+      order: 2
     page:
       type: integer
       description: The page number of results to fetch.
       default: 1
       minimum: 1
+      order: 3
+    start_date:
+      title: Start date
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      description: >-
+        UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will
+        not be replicated. This just applies to Incremental syncs.
+      type: string
+      examples:
+        - "2022-10-01T00:00:00Z"
+      order: 4
+    end_date:
+      title: End date
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      description: >-
+        UTC date and time in the format 2017-01-25T00:00:00Z. Data after this date will 
+        not be replicated. An empty value will represent the current datetime for each 
+        execution. This just applies to Incremental syncs.
+      examples:
+        - "2022-10-01T00:00:00Z"
+      type: string
+      order: 5
+    query:
+      title: Query
+      description: The search query. This just applies to Incremental syncs. If empty, it'll collect all data.
+      type: string
+      order: 6
