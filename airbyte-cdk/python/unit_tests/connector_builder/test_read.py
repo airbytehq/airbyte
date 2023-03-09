@@ -83,28 +83,28 @@ def test_read_stream():
     response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}', "http_method": "GET"}
     expected_schema = {"$schema": "http://json-schema.org/schema#", "properties": {"name": {"type": "string"}}, "type": "object"}
     expected_pages = [
-        StreamReadPages(
-            request=HttpRequest(
-                url="https://demonslayers.com/api/v1/hashiras",
-                parameters={"era": ["taisho"]},
-                headers={"Content-Type": "application/json"},
-                body={"custom": "field"},
-                http_method="GET",
-            ),
-            response=HttpResponse(status=200, headers={"field": "value"}, body='{"name": "field"}'),
-            records=[{"name": "Shinobu Kocho"}, {"name": "Muichiro Tokito"}],
-        ),
-        StreamReadPages(
-            request=HttpRequest(
-                url="https://demonslayers.com/api/v1/hashiras",
-                parameters={"era": ["taisho"]},
-                headers={"Content-Type": "application/json"},
-                body={"custom": "field"},
-                http_method="GET",
-            ),
-            response=HttpResponse(status=200, headers={"field": "value"}, body='{"name": "field"}'),
-            records=[{"name": "Mitsuri Kanroji"}],
-        ),
+        {
+            "request":{
+                "url":"https://demonslayers.com/api/v1/hashiras",
+                "parameters":{"era": ["taisho"]},
+                "headers": {"Content-Type": "application/json"},
+                "body":{"custom": "field"},
+                "http_method":"GET",
+            },
+            "response":{"status":200, "headers":{"field": "value"}, "body":'{"name": "field"}'},
+            "records":[{"name": "Shinobu Kocho"}, {"name": "Muichiro Tokito"}],
+        },
+        {
+            "request":{
+                "url": "https://demonslayers.com/api/v1/hashiras",
+                "parameters": {"era": ["taisho"]},
+                "headers": {"Content-Type": "application/json"},
+                "body":{"custom": "field"},
+                "http_method":"GET",
+            },
+            "response":{"status": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'},
+            "records":[{"name": "Mitsuri Kanroji"}],
+        },
     ]
 
     mock_source = make_mock_source(
@@ -126,7 +126,6 @@ def test_read_stream():
     record = actual_response.record
     stream_read_object: StreamRead = StreamRead(**record.data)
     stream_read_object.slices = [StreamReadSlicesInner(**s) for s in stream_read_object.slices]
-    print(stream_read_object)
     assert stream_read_object.inferred_schema == expected_schema
 
     single_slice = stream_read_object.slices[0]

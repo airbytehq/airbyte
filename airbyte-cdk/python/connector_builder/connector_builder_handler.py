@@ -10,6 +10,7 @@ from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from dataclasses import asdict, dataclass
+from copy import deepcopy
 import json
 from json import JSONDecodeError
 from typing import Any, Dict, Iterable, Iterator, Optional, Union
@@ -190,6 +191,7 @@ class ConnectorBuilderHandler:
             elif message.type == Type.LOG:
                 yield message.log
             elif message.type == Type.RECORD:
+                print(f"record! {message.record.data}")
                 current_page_records.append(message.record.data)
                 records_count += 1
                 schema_inferrer.accumulate(message.record)
@@ -211,7 +213,7 @@ class ConnectorBuilderHandler:
             raise ValueError("Every message grouping should have at least one request and response")
 
         current_slice_pages.append(
-            StreamReadPages(request=current_page_request, response=current_page_response, records=current_page_records)
+            StreamReadPages(request=current_page_request, response=current_page_response, records=deepcopy(current_page_records))
         )
         current_page_records.clear()
 
