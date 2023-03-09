@@ -38,18 +38,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ env.PAT }}
           ec2-instance-type: "c5.9xlarge" # https://aws.amazon.com/ec2/instance-types/
-  launch_connector_tests:
+  connectors_ci:
+    name: Connectors CI
     timeout-minutes: 240
     needs: start-runner
     runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
     env:
-      GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_REGION: "us-east-2"
-      TEST_REPORTS_BUCKET_NAME: "airbyte-connector-build-status"
-      CI_GIT_REVISION: ${{ github.sha }}
-      CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
     steps:
       # TODO: Airbyte checkout should ideally be not necessary but the ci_connector_ops utils need an active git repo...
       - name: Checkout Airbyte repo
@@ -72,12 +66,19 @@ jobs:
         run: connectors-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} test-connectors ${{ github.event.inputs.test-connectors-options }}
         env:
           CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "us-east-2"
+          TEST_REPORTS_BUCKET_NAME: "airbyte-connector-build-status"
+          CI_GIT_REVISION: ${{ github.sha }}
+          CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
   stop-runner:
     name: "Connectors Integration Test: Stop Build EC2 Runner"
     timeout-minutes: 10
     needs:
       - start-runner # required to get output from the start-runner job
-      - launch_connector_tests # required to wait when the main job is done
+      - connectors_ci # required to wait when the main job is done
     runs-on: ubuntu-latest
     # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
     # Thus, we check for skipped here.
