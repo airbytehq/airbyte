@@ -8,7 +8,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator, Oauth2Authenticator
 
-from .streams import Applications, Interviews, Notes, Offers, Opportunities, Referrals, Users
+from .streams import Applications, ArchiveReasons, Interviews, Notes, Offers, Opportunities, Postings, Referrals, Sources, Stages, Users
 
 
 def _auth_from_config(config):
@@ -60,10 +60,14 @@ class SourceLeverHiring(AbstractSource):
         }
         return [
             Applications(**stream_params_with_start_date),
+            ArchiveReasons(**full_refresh_params),
             Interviews(**stream_params_with_start_date),
             Notes(**stream_params_with_start_date),
             Offers(**stream_params_with_start_date),
             Opportunities(**stream_params_with_start_date),
+            Postings(**full_refresh_params),
             Referrals(**stream_params_with_start_date),
-            Users(**full_refresh_params),
+            Users(**full_refresh_params),            
+            Sources(**full_refresh_params),
+            Stages(**full_refresh_params),
         ]
