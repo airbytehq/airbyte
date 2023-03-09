@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from logging import Logger
 
+from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL
 from ci_connector_ops.utils import Connector
 from dagger import Client, Directory
 
@@ -30,7 +31,7 @@ class ConnectorTestContext:
 
     @property
     def repo(self):
-        return self.dagger_client.git("https://github.com/airbytehq/airbyte.git", keep_git_dir=True)
+        return self.dagger_client.git(AIRBYTE_REPO_URL, keep_git_dir=True)
 
     def get_repo_dir(self, subdir=".", exclude=None, include=None) -> Directory:
         if self.is_local:

@@ -6,6 +6,7 @@
 
 import datetime
 
+import anyio
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from dagger import Directory
@@ -69,5 +70,7 @@ async def get_connector_secret_dir(context: ConnectorTestContext) -> Directory:
     if context.use_remote_secrets:
         secrets_dir = await download(context)
     else:
+        local_secrets_dir = anyio.Path(context.connector.code_directory) / "secrets"
+        await local_secrets_dir.mkdir(exist_ok=True)
         secrets_dir = context.get_connector_dir(include=["secrets"]).directory("secrets")
     return secrets_dir
