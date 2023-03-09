@@ -3,11 +3,20 @@
 #
 from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
 from logging import Logger
 
 from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL
 from ci_connector_ops.utils import Connector
 from dagger import Client, Directory
+
+
+class ContextState(Enum):
+    CREATED = "created"
+    INITIALIZED = "initialized"
+    RUNNING = "running"
+    FAILED = "failed"
+    FINISHED = "finished"
 
 
 @dataclass()
@@ -16,6 +25,7 @@ class ConnectorTestContext:
     It should only be mutated on setup of the pipeline, not during its run.
     """
 
+    state: ContextState
     connector: Connector
     is_local: bool
     git_branch: str

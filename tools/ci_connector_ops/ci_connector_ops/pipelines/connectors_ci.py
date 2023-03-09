@@ -12,8 +12,8 @@ import anyio
 import click
 import dagger
 from ci_connector_ops.pipelines.actions import environments, remote_storage, secrets, tests
-from ci_connector_ops.pipelines.contexts import ConnectorTestContext
-from ci_connector_ops.pipelines.github import send_commit_status_check
+from ci_connector_ops.pipelines.contexts import ConnectorTestContext, ContextState
+from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.models import ConnectorTestReport, Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.utils import (
     DAGGER_CONFIG,
@@ -50,6 +50,8 @@ async def setup(test_context: ConnectorTestContext) -> ConnectorTestContext:
     test_context.logger = logging.getLogger(main_pipeline_name)
     test_context.secrets_dir = await secrets.get_connector_secret_dir(test_context)
     test_context.updated_secrets_dir = None
+    test_context.state = ContextState.INITIALIZED
+    update_commit_status_check(test_context)
     return test_context
 
 
@@ -82,18 +84,11 @@ async def teardown(test_context: ConnectorTestContext, test_report: ConnectorTes
     local_report_path = Path(local_test_reports_path_root + suffix)
     local_report_path.parents[0].mkdir(parents=True, exist_ok=True)
     local_report_path.write_text(test_report.to_json())
-    if test_report.should_be_saved:
+    if test_context.state.FINISHED and test_report.should_be_saved:
         s3_reports_path_root = "python-poc/tests/history/"
         s3_key = s3_reports_path_root + suffix
         await remote_storage.upload_to_s3(teardown_pipeline, str(local_report_path), s3_key, os.environ["TEST_REPORTS_BUCKET_NAME"])
-    if not test_context.is_local:
-        send_commit_status_check(
-            test_context.git_revision,
-            "success" if test_report.success else "failure",
-            test_context.gha_workflow_run_url,
-            f"{test_context.connector.technical_name} tests",
-            f"Finished tests for {test_context.connector.technical_name}",
-        )
+    update_commit_status_check(test_context, test_report)
     return test_context
 
 
@@ -108,42 +103,52 @@ async def run(test_context: ConnectorTestContext) -> ConnectorTestReport:
         ConnectorTestReport: The test reports holding tests results.
     """
     test_context = await setup(test_context)
-    qa_checks_results_future = asyncio.create_task(tests.run_qa_checks(test_context))
-    connector_source_code = await environments.with_airbyte_connector(test_context, install=False)
-    connector_under_test = await environments.with_airbyte_connector(test_context)
+    try:
+        test_context.state = ContextState.RUNNING
+        update_commit_status_check(test_context)
+        qa_checks_results_future = asyncio.create_task(tests.run_qa_checks(test_context))
+        connector_source_code = await environments.with_airbyte_connector(test_context, install=False)
+        connector_under_test = await environments.with_airbyte_connector(test_context)
 
-    code_format_checks_results_future = asyncio.create_task(tests.code_format_checks(connector_source_code))
-    unit_tests_results, connector_under_test_exit_code = await asyncio.gather(
-        tests.run_unit_tests(connector_under_test), connector_under_test.exit_code()
-    )
-
-    package_install_result = StepResult(Step.PACKAGE_INSTALL, StepStatus.from_exit_code(connector_under_test_exit_code))
-
-    if unit_tests_results.status is StepStatus.SUCCESS:
-        integration_test_future = asyncio.create_task(tests.run_integration_tests(connector_under_test))
-        acceptance_tests_results, test_context.updated_secrets_dir = await tests.run_acceptance_tests(
-            test_context,
+        code_format_checks_results_future = asyncio.create_task(tests.code_format_checks(connector_source_code))
+        unit_tests_results, connector_under_test_exit_code = await asyncio.gather(
+            tests.run_unit_tests(connector_under_test), connector_under_test.exit_code()
         )
 
-        integration_tests_result = await integration_test_future
+        package_install_result = StepResult(Step.PACKAGE_INSTALL, StepStatus.from_exit_code(connector_under_test_exit_code))
 
-    else:
-        integration_tests_result = StepResult(Step.INTEGRATION_TESTS, StepStatus.SKIPPED, stdout="Skipped because unit tests failed")
-        acceptance_tests_results = StepResult(Step.ACCEPTANCE_TESTS, StepStatus.SKIPPED, stdout="Skipped because unit tests failed")
+        if unit_tests_results.status is StepStatus.SUCCESS:
+            integration_test_future = asyncio.create_task(tests.run_integration_tests(connector_under_test))
+            acceptance_tests_results, test_context.updated_secrets_dir = await tests.run_acceptance_tests(
+                test_context,
+            )
 
-    test_report = ConnectorTestReport(
-        test_context,
-        steps_results=[
-            package_install_result,
-            await code_format_checks_results_future,
-            unit_tests_results,
-            integration_tests_result,
-            acceptance_tests_results,
-            await qa_checks_results_future,
-        ],
-    )
+            integration_tests_result = await integration_test_future
+
+        else:
+            integration_tests_result = StepResult(Step.INTEGRATION_TESTS, StepStatus.SKIPPED, stdout="Skipped because unit tests failed")
+            acceptance_tests_results = StepResult(Step.ACCEPTANCE_TESTS, StepStatus.SKIPPED, stdout="Skipped because unit tests failed")
+
+        test_report = ConnectorTestReport(
+            test_context,
+            steps_results=[
+                package_install_result,
+                await code_format_checks_results_future,
+                unit_tests_results,
+                integration_tests_result,
+                acceptance_tests_results,
+                await qa_checks_results_future,
+            ],
+        )
+
+        test_context.state = ContextState.FINISHED
+
+    except Exception as e:
+        test_context.state = ContextState.FAILED
+        test_context.logger.error(str(e))
 
     await teardown(test_context, test_report)
+
     return test_report
 
 
@@ -161,14 +166,6 @@ async def run_connectors_test_pipelines(test_contexts: List[ConnectorTestContext
                 if test_context.connector.language in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
                     test_context.dagger_client = dagger_client.pipeline(f"{test_context.connector.technical_name} - Test Pipeline")
                     tg.start_soon(run, test_context)
-                    if not test_context.is_local:
-                        send_commit_status_check(
-                            test_context.git_revision,
-                            "pending",
-                            test_context.gha_workflow_run_url,
-                            f"{test_context.connector.technical_name} tests",
-                            f"Running tests for {test_context.connector.technical_name}",
-                        )
                 else:
                     logger.warning(
                         f"Not running test pipeline for {test_context.connector.technical_name} as it's not a Python or Low code connector",
@@ -259,6 +256,7 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
         sys.exit(0)
     connectors_tests_contexts = [
         ConnectorTestContext(
+            ContextState.CREATED,
             connector,
             ctx.obj["is_local"],
             ctx.obj["git_branch"],
