@@ -63,7 +63,7 @@ If the Airbyte service is down and we need to start it up again. Follow the next
     2. Destroy the current stack: `cdk destroy --exclusively AirbyteStack --context config=datascience`
     3. Recreate the the stack: `cdk deploy --exclusively AirbyteStack --context config=datascience`
 2. Go to the EC2 instance and copy the Public IPv4 DNS of the recently created EC2 instance.
-3. Copy the IPv4 DNS in the SERVER variable in the Makefile in the root of this repo.
+3. Paste the IPv4 DNS in the SERVER variable in the Makefile in the root of this repo.
 4. Make sure that you have the `airyte.pem` key in your ssh folder.
 5. From the root of this repo run `make disaster_recovery`. It will take some minutes to run all the commands.
 6. From the root of this repo run `make forward_ec2_port`. Now the Airbyte instance shoudl be accesible in `http://localhost:8000/`.
