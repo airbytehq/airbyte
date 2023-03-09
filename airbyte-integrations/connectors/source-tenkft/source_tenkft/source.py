@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
@@ -28,7 +29,7 @@ class SourceTenkft(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         args = self.connector_config(config)
-        return [Users(**args), Projects(**args), ProjectAssignments(**args)]
+        return [Users(**args), Projects(**args), ProjectAssignments(**args), BillRates(**args)]
 
     def connector_config(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         return {
@@ -46,8 +47,9 @@ class TenkftAuthenticator(requests.auth.AuthBase):
 
 
 # Basic full refresh stream
-class TenkftStream(HttpStream):
+class TenkftStream(HttpStream, ABC):
     primary_key: Optional[str] = id
+    parse_response_root: Optional[str] = None
 
     @property
     def url_base(self) -> str:
@@ -69,10 +71,11 @@ class TenkftStream(HttpStream):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield {}
+        response_json = response.json()
+        yield response_json
 
 
-class ApiTenkftStream(TenkftStream):
+class ApiTenkftStream(TenkftStream, ABC):
     @property
     def url_base(self) -> str:
         return f"{super().url_base}/api/v1/"
@@ -113,3 +116,15 @@ class ProjectAssignments(ApiTenkftStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         project_id = stream_slice["project_id"]
         return f"projects/{project_id}/assignments"
+
+
+class BillRates(ApiTenkftStream):
+    """
+    API docs: https://10kft.github.io/10kft-api/#bill-rates
+    """
+
+    name = "bill_rates"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        project_id = stream_slice["project_id"]
+        return f"projects/{project_id}/bill_rates"

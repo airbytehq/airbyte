@@ -33,8 +33,9 @@ def test_next_page_token(patch_base_class):
 
 def test_parse_response(patch_base_class):
     stream = TenkftStream()
-    inputs = {"response": MagicMock()}
-    expected_parsed_object = {}
+    mock_response = MagicMock()
+    inputs = {"response": mock_response}
+    expected_parsed_object = mock_response.json()
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
