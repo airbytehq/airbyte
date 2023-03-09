@@ -2854,7 +2854,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-confluence:0.1.1"
+- dockerImage: "airbyte/source-confluence:0.1.2"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -2865,19 +2865,23 @@
       - "api_token"
       - "domain_name"
       - "email"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         api_token:
+          title: "API Token"
           type: "string"
           description: "Please follow the Jira confluence for generating an API token:\
-            \ https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/"
+            \ <a href=\"https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/\"\
+            >generating an API token</a>."
           airbyte_secret: true
         domain_name:
+          title: "Domain name"
           type: "string"
           description: "Your Confluence domain name"
           examples:
           - "example.atlassian.net"
         email:
+          title: "Email"
           type: "string"
           description: "Your Confluence login email"
           examples:
