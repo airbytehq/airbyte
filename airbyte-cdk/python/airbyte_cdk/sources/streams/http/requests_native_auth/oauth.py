@@ -234,6 +234,6 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         response_json = self._get_refresh_access_token_response()
         return (
             response_json[self.get_access_token_name()],
-            response_json[self.get_expires_in_name()],
+            int(response_json[self.get_expires_in_name()]),
             response_json[self.get_refresh_token_name()],
         )
