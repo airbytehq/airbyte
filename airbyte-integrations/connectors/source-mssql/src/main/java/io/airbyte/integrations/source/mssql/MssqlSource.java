@@ -15,6 +15,7 @@ import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
@@ -62,7 +63,12 @@ import org.slf4j.LoggerFactory;
 public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlSource.class);
-
+  public static final String NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY =
+      """
+        SELECT t1.allowNulls & t2.hasNulls AS %s
+        FROM (SELECT CAST(COLUMNPROPERTY(OBJECT_ID('%s.%s'), '%s', 'AllowsNull') AS BIT) AS allowNulls) AS t1
+        CROSS APPLY (SELECT CAST(IIF(EXISTS(SELECT TOP 1 1 FROM %s.%s WHERE %s IS NULL), 1, 0) AS BIT) AS hasNulls) AS t2
+      """;
   static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.getDriverClassName();
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
@@ -230,6 +236,24 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       LOGGER.info("No schemas explicitly set on UI to process, so will process all of existing schemas in DB");
       return internals;
     }
+  }
+
+  @Override
+  protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName)
+      throws SQLException {
+    ;
+    final String resultColName = "nullValue";
+
+    final String query = String.format(NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY,
+        resultColName, schema, tableName, columnName, schema, tableName, columnName);
+
+    LOGGER.debug("null value query: {}", query);
+    final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(query),
+        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+    Preconditions.checkState(jsonNodes.size() == 1);
+    final boolean nullValExist = jsonNodes.get(0).get(resultColName).booleanValue();
+    LOGGER.debug("null value exist: {}", nullValExist);
+    return !nullValExist;
   }
 
   private boolean isTableInRequestedSchema(final TableInfo<CommonField<JDBCType>> tableInfo) {

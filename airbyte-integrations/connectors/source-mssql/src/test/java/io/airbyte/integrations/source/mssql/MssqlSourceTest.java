@@ -4,14 +4,18 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
@@ -20,6 +24,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.SQLException;
 import java.util.List;
@@ -101,6 +106,23 @@ class MssqlSourceTest {
 
     final AirbyteCatalog actual = new MssqlSource().discover(config);
     assertEquals(CATALOG, actual);
+  }
+
+  @Test
+  public void testTableWithNullCursorValueShouldThrowException() throws SQLException {
+    try (final DSLContext dslContext = getDslContext(configWithoutDbName)) {
+      final Database database = getDatabase(dslContext);
+      database.query(ctx -> {
+        ctx.fetch(String.format("USE %s;", config.get(JdbcUtils.DATABASE_KEY)));
+        ctx.execute("INSERT INTO id_and_name(id) VALUES (7), (8), (NULL)");
+        return null;
+      });
+      final ConfiguredAirbyteCatalog catalog = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
+      final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new MssqlSource().read(config, catalog, null)));
+      assertThat(throwable).isInstanceOf(ConfigErrorException.class)
+          .hasMessageContaining(
+              "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='test.null_cursor_table', cursorColumnName='id', cursorSqlType=INT, cause=Cursor column contains NULL value}");
+    }
   }
 
   private JsonNode getConfig(final MSSQLServerContainer<?> db) {
