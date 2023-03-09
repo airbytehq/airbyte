@@ -5,6 +5,7 @@
 
 import json
 import requests
+from urllib.parse import parse_qs, urlparse
 from abc import ABC
 from datetime import datetime
 from typing import Dict, Generator
@@ -20,6 +21,7 @@ from .helpers import Helpers
 
 class KoboToolStream(HttpStream):
     primary_key = None
+    PAGINATION_LIMIT = 30000
 
     def __init__(self, config: Mapping[str, Any], form_id, schema, **kwargs):
         super().__init__()
@@ -54,10 +56,21 @@ class KoboToolStream(HttpStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        return {}
+
+        params = {"start": 0, "limit": self.PAGINATION_LIMIT}
+        if next_page_token:
+            params.update(next_page_token)
+
+        return params
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
+        json_response: Mapping[str, str] = response.json()
+        next = json_response.get('next')
+        params = None
+        if next is not None:
+            parsed_url = urlparse(next)
+            params = dict(parse_qs(parsed_url.query))
+        return params
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "data.json"
