@@ -37,10 +37,10 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ env.PAT }}
-          ec2-instance-type: "c5.9xlarge" # https://aws.amazon.com/ec2/instance-types/
+          ec2-instance-type: "c5.2xlarge" # https://aws.amazon.com/ec2/instance-types/
   connectors_ci:
     name: Connectors CI
-    timeout-minutes: 240
+    timeout-minutes: 120
     needs: start-runner
     runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
     steps:

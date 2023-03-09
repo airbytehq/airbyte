@@ -76,10 +76,12 @@ async def teardown(test_context: ConnectorTestContext, test_report: ConnectorTes
             test_context.connector,
         )
 
+    if test_report is None:
+        logger.error("No test report was provided. This is probably due to an upstream error")
+        return test_context
     test_report.print()
     test_context.logger.info(test_report.to_json())
     local_test_reports_path_root = "tools/ci_connector_ops/test_reports/"
-
     connector_name = test_report.connector_test_context.connector.technical_name
     connector_version = test_report.connector_test_context.connector.version
     git_revision = test_report.connector_test_context.git_revision
@@ -108,6 +110,7 @@ async def run(test_context: ConnectorTestContext) -> ConnectorTestReport:
         ConnectorTestReport: The test reports holding tests results.
     """
     test_context = await setup(test_context)
+    test_report = None
     try:
         test_context.state = ContextState.RUNNING
         async with anyio.create_task_group() as tg:
