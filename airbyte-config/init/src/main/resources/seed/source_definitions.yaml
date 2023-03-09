@@ -503,6 +503,10 @@
   icon: exchangeratesapi.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${subdomain}.apilayer.com"
+      - apilayer.com
 - name: Everhour
   sourceDefinitionId: 6babfc42-c734-4ef6-a817-6eca15f0f9b7
   dockerRepository: airbyte/everhour
