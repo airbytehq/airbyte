@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "duckdb"]  # duckdb added manually to dockerfile due to lots of errors
+MAIN_REQUIREMENTS = ["airbyte-cdk", "duckdb==0.7.1"]
 
 TEST_REQUIREMENTS = ["pytest~=6.1"]
 
