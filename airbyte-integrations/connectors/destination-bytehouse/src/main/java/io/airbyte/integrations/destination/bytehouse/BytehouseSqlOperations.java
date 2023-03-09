@@ -4,21 +4,18 @@
 
 package io.airbyte.integrations.destination.bytehouse;
 
-import com.bytedance.bytehouse.jdbc.ByteHouseConnection;
-import com.bytedance.bytehouse.jdbc.statement.ByteHouseStatement;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BytehouseSqlOperations extends JdbcSqlOperations {
 
@@ -55,7 +52,6 @@ public class BytehouseSqlOperations extends JdbcSqlOperations {
 
   @Override
   public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
-    // Note: ClickHouse does not support multi query
     for (final String query : queries) {
       database.execute(query);
     }
@@ -80,8 +76,6 @@ public class BytehouseSqlOperations extends JdbcSqlOperations {
         tmpFile = Files.createTempFile(tmpTableName + "-", ".tmp").toFile();
         writeBatchToFile(tmpFile, records);
 
-        final ByteHouseConnection conn = connection.unwrap(ByteHouseConnection.class);
-        final ByteHouseStatement sth = (ByteHouseStatement) conn.createStatement();
         try (Statement stmt = connection.createStatement()) {
           final String insertSql = String.format("INSERT INTO %s.%s FORMAT csv INFILE '%s'", schemaName, tmpTableName, tmpFile.getAbsolutePath());
           stmt.executeUpdate(insertSql);
@@ -99,6 +93,7 @@ public class BytehouseSqlOperations extends JdbcSqlOperations {
         } catch (final IOException e) {
           if (primaryException != null)
             e.addSuppressed(primaryException);
+
           throw new RuntimeException(e);
         }
       }

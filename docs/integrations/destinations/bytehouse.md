@@ -1,6 +1,5 @@
 # Bytehouse
 
-TODO: update this doc
 
 ## Sync overview
 
