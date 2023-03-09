@@ -179,7 +179,7 @@ public class DestinationHandler {
       }
 
       if (destinationCloneConfiguration.getConnectionConfiguration() != null) {
-        destinationCreate.connectionConfiguration(destinationCloneConfiguration.getConnectionConfiguration());
+        destinationCreate.connectionConfiguration(configurationUpdate.destination(destinationCloneRequestBody.getDestinationCloneId(),destinationName, destinationCloneConfiguration.getConnectionConfiguration()).getConfiguration());
       }
     }
 
