@@ -163,7 +163,7 @@ class SourceLiverpool(AbstractSource):
         try:
             auth = NoAuth()
             start_date = datetime.strptime(config['start_date'], '%d/%m/%Y')
-            stream = Orders(authenticator=auth, config=config, start_date=start_date)
+            stream = Offers(authenticator=auth, config=config)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
             return True, None
