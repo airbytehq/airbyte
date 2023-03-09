@@ -13,6 +13,7 @@ A Google Cloud account with [Viewer permissions](https://support.google.com/anal
 <!-- env:cloud -->
 **For Airbyte Cloud:**
 
+
 To set up Google Analytics 4 as a source in Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
