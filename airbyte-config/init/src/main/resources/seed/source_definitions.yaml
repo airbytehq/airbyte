@@ -45,11 +45,15 @@
 - name: AlloyDB for PostgreSQL
   sourceDefinitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
   dockerRepository: airbyte/source-alloydb
-  dockerImageTag: 2.0.0
+  dockerImageTag: 2.0.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
   icon: alloydb.svg
   sourceType: database
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "${host}"
+      - "${tunnel_method.tunnel_host}"
 - name: AWS CloudTrail
   sourceDefinitionId: 6ff047c0-f5d5-4ce5-8c81-204a830fa7e1
   dockerRepository: airbyte/source-aws-cloudtrail
@@ -366,11 +370,14 @@
 - name: Confluence
   sourceDefinitionId: cf40a7f8-71f8-45ce-a7fa-fca053e4028c
   dockerRepository: airbyte/source-confluence
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/confluence
   icon: confluence.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${subdomain}.atlassian.net"
 - name: ConvertKit
   sourceDefinitionId: be9ee02f-6efe-4970-979b-95f797a37188
   dockerRepository: airbyte/source-convertkit
@@ -480,11 +487,14 @@
 - name: Drift
   sourceDefinitionId: 445831eb-78db-4b1f-8f1f-0d96ad8739e2
   dockerRepository: airbyte/source-drift
-  dockerImageTag: 0.2.5
+  dockerImageTag: 0.2.6
   documentationUrl: https://docs.airbyte.com/integrations/sources/drift
   icon: drift.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - driftapi.com
 - name: DV 360
   sourceDefinitionId: 1356e1d9-977f-4057-ad4b-65f25329cf61
   dockerRepository: airbyte/source-dv-360
@@ -1414,7 +1424,7 @@
 - name: Pipedrive
   sourceDefinitionId: d8286229-c680-4063-8c59-23b9b391c700
   dockerRepository: airbyte/source-pipedrive
-  dockerImageTag: 0.1.15
+  dockerImageTag: 0.1.16
   documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
   icon: pipedrive.svg
   sourceType: api
