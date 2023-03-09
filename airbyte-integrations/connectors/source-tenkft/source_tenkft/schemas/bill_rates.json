@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "number"
+    },
+    "bill_rate_id": {
+      "type": "number"
+    },
+    "discipline_id": {
+      "type": "number"
+    },
+    "role_id": {
+      "type": "number"
+    },
+    "assignable_id": {
+      "type": "number"
+    },
+    "user_id": {
+      "type": "number"
+    },
+    "rate": {
+      "type": "number"
+    },
+    "starts_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ends_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "startdate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "enddate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

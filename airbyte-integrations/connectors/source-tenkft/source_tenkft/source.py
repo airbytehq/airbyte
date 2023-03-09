@@ -2,13 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from datetime import datetime
+from typing import Any, List, Mapping, Tuple
 
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http import HttpStream
+from pydantic.datetime_parse import timedelta
+from source_tenkft.streams import BillRates, ProjectAssignments, Projects, Users
 
 
 # Source
@@ -28,11 +30,14 @@ class SourceTenkft(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         args = self.connector_config(config)
-        return [Users(**args), Projects(**args), ProjectAssignments(**args)]
+        return [Users(**args), Projects(**args), ProjectAssignments(**args), BillRates(**args)]
 
     def connector_config(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         return {
             "authenticator": self._get_authenticator(config),
+            "start_date": config.get("start_date", datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")),
+            "end_date": config.get("end_date", (datetime.now() + timedelta(seconds=1)).strftime("%Y-%m-%dT%H:%M:%SZ")),
+            "query": config.get("query", ""),
         }
 
 
@@ -43,73 +48,3 @@ class TenkftAuthenticator(requests.auth.AuthBase):
     def __call__(self, r):
         r.headers["auth"] = self.api_key
         return r
-
-
-# Basic full refresh stream
-class TenkftStream(HttpStream):
-    primary_key: Optional[str] = id
-
-    @property
-    def url_base(self) -> str:
-        return "https://api.rm.smartsheet.com"
-
-    def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        return {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        }
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        params = {"per_page": 100}
-        return params
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield {}
-
-
-class ApiTenkftStream(TenkftStream):
-    @property
-    def url_base(self) -> str:
-        return f"{super().url_base}/api/v1/"
-
-    @property
-    def http_method(self) -> str:
-        return "GET"
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
-
-
-class Users(ApiTenkftStream):
-    """
-    API docs: https://10kft.github.io/10kft-api/#users
-    """
-
-    def path(self, **kwargs) -> str:
-        return "users"
-
-
-class Projects(ApiTenkftStream):
-    """
-    API docs: https://10kft.github.io/10kft-api/#list-projects
-    """
-
-    def path(self, **kwargs) -> str:
-        return "projects"
-
-
-class ProjectAssignments(ApiTenkftStream):
-    """
-    API docs: https://10kft.github.io/10kft-api/#list-all-assignments
-    """
-
-    name = "project_assignments"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
-        project_id = stream_slice["project_id"]
-        return f"projects/{project_id}/assignments"
