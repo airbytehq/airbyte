@@ -3249,7 +3249,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-drift:0.2.5"
+- dockerImage: "airbyte/source-drift:0.2.6"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/drift"
     connectionSpecification:
@@ -3274,9 +3274,6 @@
               credentials:
                 type: "string"
                 const: "oauth2.0"
-                enum:
-                - "oauth2.0"
-                default: "oauth2.0"
                 order: 0
               client_id:
                 type: "string"
@@ -3307,9 +3304,6 @@
               credentials:
                 type: "string"
                 const: "access_token"
-                enum:
-                - "access_token"
-                default: "access_token"
                 order: 0
               access_token:
                 type: "string"
