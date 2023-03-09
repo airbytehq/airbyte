@@ -370,7 +370,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:2.0.0"
+- dockerImage: "airbyte/source-alloydb:2.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -2854,7 +2854,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-confluence:0.1.1"
+- dockerImage: "airbyte/source-confluence:0.1.2"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -2865,19 +2865,23 @@
       - "api_token"
       - "domain_name"
       - "email"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         api_token:
+          title: "API Token"
           type: "string"
           description: "Please follow the Jira confluence for generating an API token:\
-            \ https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/"
+            \ <a href=\"https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/\"\
+            >generating an API token</a>."
           airbyte_secret: true
         domain_name:
+          title: "Domain name"
           type: "string"
           description: "Your Confluence domain name"
           examples:
           - "example.atlassian.net"
         email:
+          title: "Email"
           type: "string"
           description: "Your Confluence login email"
           examples:
@@ -3249,7 +3253,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-drift:0.2.5"
+- dockerImage: "airbyte/source-drift:0.2.6"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/drift"
     connectionSpecification:
@@ -3274,9 +3278,6 @@
               credentials:
                 type: "string"
                 const: "oauth2.0"
-                enum:
-                - "oauth2.0"
-                default: "oauth2.0"
                 order: 0
               client_id:
                 type: "string"
@@ -3307,9 +3308,6 @@
               credentials:
                 type: "string"
                 const: "access_token"
-                enum:
-                - "access_token"
-                default: "access_token"
                 order: 0
               access_token:
                 type: "string"
@@ -6297,7 +6295,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-greenhouse:0.3.0"
+- dockerImage: "airbyte/source-greenhouse:0.3.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/greenhouse"
     connectionSpecification:
@@ -8937,7 +8935,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-monday:0.2.2"
+- dockerImage: "airbyte/source-monday:0.2.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/monday"
     connectionSpecification:
@@ -11309,7 +11307,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-pipedrive:0.1.15"
+- dockerImage: "airbyte/source-pipedrive:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pipedrive"
     connectionSpecification:
@@ -14374,7 +14372,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-square:0.2.0"
+- dockerImage: "airbyte/source-square:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/square"
     connectionSpecification:
@@ -14955,7 +14953,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tempo:0.3.0"
+- dockerImage: "airbyte/source-tempo:0.3.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/"
     connectionSpecification:
@@ -16919,7 +16917,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-zenloop:0.1.5"
+- dockerImage: "airbyte/source-zenloop:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zenloop"
     connectionSpecification:
