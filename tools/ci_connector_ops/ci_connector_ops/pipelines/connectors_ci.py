@@ -171,15 +171,15 @@ async def run_connectors_test_pipelines(test_contexts: List[ConnectorTestContext
                         )
                 else:
                     logger.warning(
-                        f"Not running test pipeline for {test_context.connector.technical_name} as it's not a Python or Low code connector"
+                        f"Not running test pipeline for {test_context.connector.technical_name} as it's not a Python or Low code connector",
                     )
 
 
 @click.group()
 @click.option("--use-remote-secrets", default=True)
 @click.option("--is-local/--is-ci", default=True)
-@click.option("--git-branch", default=lambda: get_current_git_branch(), envvar="CI_GIT_BRANCH")
-@click.option("--git-revision", default=lambda: get_current_git_revision(), envvar="CI_GIT_REVISION")
+@click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
+@click.option("--git-revision", default=get_current_git_revision, envvar="CI_GIT_REVISION")
 @click.option(
     "--diffed-branch",
     help="Branch to which the git diff will happen to detect new or modified connectors",
@@ -187,7 +187,6 @@ async def run_connectors_test_pipelines(test_contexts: List[ConnectorTestContext
     type=str,
 )
 @click.option("--gha-workflow-run-id", help="[CI Only] The run id of the GitHub action workflow", default=None, type=str)
-@click.option("--github-access-token", default=None, envvar="CI_GITHUB_ACCESS_TOKEN")
 @click.pass_context
 def connectors_ci(
     ctx: click.Context,
@@ -197,7 +196,6 @@ def connectors_ci(
     git_revision: str,
     diffed_branch: str,
     gha_workflow_run_id: str,
-    github_access_token: str,
 ):
     """A command group to gather all the connectors-ci command"""
     if not (os.getcwd().endswith("/airbyte") and Path(".git").is_dir()):
@@ -255,9 +253,9 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
         connectors_under_test = {connector for connector in connectors_under_test if connector.release_stage in release_stages}
     connectors_under_test_names = [c.technical_name for c in connectors_under_test]
     if connectors_under_test_names:
-        logger.info(f"Will run test pipeline for the following connectors: {', '.join(connectors_under_test_names)}")
+        click.secho(f"Will run test pipeline for the following connectors: {', '.join(connectors_under_test_names)}.", fg="green")
     else:
-        logger.warning("No connector test will run according to your inputs.")
+        click.secho("No connector test will run according to your inputs.", fg="yellow")
         sys.exit(0)
     connectors_tests_contexts = [
         ConnectorTestContext(
@@ -273,8 +271,7 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
     try:
         anyio.run(run_connectors_test_pipelines, connectors_tests_contexts)
     except dagger.DaggerError as e:
-        logger.error(str(e))
-        sys.exit(1)
+        click.secho(str(e), err=True, fg="red")
 
 
 if __name__ == "__main__":
