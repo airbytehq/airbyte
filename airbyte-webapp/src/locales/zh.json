@@ -490,6 +490,10 @@
   "settings.language.btnText": "更改",
   "settings.accountSetting.notifications": "通知",
   "settings.accountSetting.password": "密码",
+  "settings.logout.modal.title": "退出登录？",
+  "settings.logout.modal.content": "  您确定要退出吗？",
+  "settings.logout.modal.confirmText": "登出",
+
   "payment.tabTitle": "付款",
   "plan.type.heading": "方案类型",
   "plan.endsOn.heading": "结束于",

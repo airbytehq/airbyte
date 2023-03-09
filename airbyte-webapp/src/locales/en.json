@@ -490,6 +490,10 @@
   "settings.language.btnText": "Change",
   "settings.accountSetting.notifications": "Notifications",
   "settings.accountSetting.password": "Password",
+  "settings.logout.modal.title": "Sign out?",
+  "settings.logout.modal.content": "Are you sure you want to sign out?",
+  "settings.logout.modal.confirmText": "Sign out",
+
   "payment.tabTitle": "Payment",
   "plan.type.heading": "Plan type",
   "plan.endsOn.heading": "Ends on",
