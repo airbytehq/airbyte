@@ -17,8 +17,11 @@ An API key is required. See the [Tenkft Authentication API section](https://10kf
 3. On the Set up the source page, enter the name for the Tenkft connector and select **Tenkft** from the Source type dropdown.
 4. Enter your `api_key` - Tenkft API key.
 5. Enter your `per_page` - Optional. It should not exceed 1000 rows.
-6. Enter your `page` - Optional.
-7. Click **Set up source**.
+6. Enter your `page` - Optional. Number of Pages.
+7. Enter your `start_date` - Optional. Start date to filter records when collecting data.
+8. Enter your `end_date` - Optional. End date to filter records when collecting data.
+9. Enter your `query` - Optional. Type your query to filter records when collecting data.
+10. Click **Set up source**.
 
 ### For Airbyte OSS:
 
@@ -26,8 +29,11 @@ An API key is required. See the [Tenkft Authentication API section](https://10kf
 2. Set the name for your source. 
 3. Enter your `api_key` - Tenkft API key. 
 4. Enter your `per_page` - Optional. It should not exceed 1000 rows.
-5. Enter your `page` - Optional.
-6. Click **Set up source**.
+5. Enter your `page` - Optional. Number of Pages.
+6. Enter your `start_date` - Optional. Start date to filter records when collecting data.
+7. Enter your `end_date` - Optional. End date to filter records when collecting data.
+8. Enter your `query` - Optional. Type your query to filter records when collecting data. 
+9. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -43,3 +49,4 @@ The Tenkft source connector supports the following [sync modes](https://docs.air
 * [Users](https://10kft.github.io/10kft-api/#users)
 * [Projects](https://10kft.github.io/10kft-api/#list-projects)
 * [ProjectAssignments](https://10kft.github.io/10kft-api/#list-all-assignments)
+* [BillRates](https://10kft.github.io/10kft-api/#bill-rates)
