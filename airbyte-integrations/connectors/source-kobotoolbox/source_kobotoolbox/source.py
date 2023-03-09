@@ -65,10 +65,10 @@ class KoboToolStream(HttpStream):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         json_response: Mapping[str, str] = response.json()
-        next = json_response.get('next')
+        next_url = json_response.get('next')
         params = None
-        if next is not None:
-            parsed_url = urlparse(next)
+        if next_url is not None:
+            parsed_url = urlparse(next_url)
             params = dict(parse_qs(parsed_url.query))
         return params
 
