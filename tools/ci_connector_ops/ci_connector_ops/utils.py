@@ -14,12 +14,15 @@ import git
 import requests
 import yaml
 from ci_credentials import SecretsManager
+from rich.console import Console
 
 try:
     from yaml import CLoader as Loader
+# Some environments do not have a system C Yaml loader
 except ImportError:
     from yaml import Loader
 
+console = Console()
 AIRBYTE_REPO = git.Repo(search_parent_directories=True)
 DIFFED_BRANCH = os.environ.get("DIFFED_BRANCH", "origin/master")
 OSS_CATALOG_URL = "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/oss_catalog.json"

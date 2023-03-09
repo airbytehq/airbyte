@@ -23,6 +23,7 @@ from ci_connector_ops.pipelines.utils import (
     get_modified_files,
 )
 from ci_connector_ops.utils import ConnectorLanguage, get_all_released_connectors
+from rich.logging import RichHandler
 
 REQUIRED_ENV_VARS_FOR_CI = [
     "GCP_GSM_CREDENTIALS",
@@ -33,7 +34,8 @@ REQUIRED_ENV_VARS_FOR_CI = [
     "CI_GITHUB_ACCESS_TOKEN",
 ]
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format="%(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
+
 logger = logging.getLogger(__name__)
 
 
@@ -73,7 +75,8 @@ async def teardown(test_context: ConnectorTestContext, test_report: ConnectorTes
             test_context.updated_secrets_dir,
         )
 
-    test_context.logger.info(str(test_report))
+    test_report.print()
+    test_context.logger.info(test_report.to_json())
     local_test_reports_path_root = "tools/ci_connector_ops/test_reports/"
 
     connector_name = test_report.connector_test_context.connector.technical_name

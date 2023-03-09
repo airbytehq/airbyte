@@ -15,9 +15,8 @@ MAIN_REQUIREMENTS = [
     "dagger-io==0.4.0",
     "docker~=6.0.0",
     "PyGithub~=1.58.0",
+    "rich",
 ]
-
-# git+https://github.com/sipsma/dagger.git@priv#subdirectory=sdk/python
 
 
 def local_pkg(name: str) -> str:

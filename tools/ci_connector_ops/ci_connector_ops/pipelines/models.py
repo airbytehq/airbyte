@@ -8,7 +8,13 @@ from enum import Enum
 from typing import List, Optional, Union
 
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
+from ci_connector_ops.utils import console
 from dagger import Client, Container
+from rich.console import Group
+from rich.panel import Panel
+from rich.style import Style
+from rich.table import Table
+from rich.text import Text
 
 
 class Step(Enum):
@@ -25,9 +31,9 @@ class Step(Enum):
 
 
 class StepStatus(Enum):
-    SUCCESS = "🟢 — Successful"
-    FAILURE = "🔴 - Failed"
-    SKIPPED = "🟡 - Skipped"
+    SUCCESS = "Successful"
+    FAILURE = "Failed"
+    SKIPPED = "Skipped"
 
     def from_exit_code(exit_code: int):
         if exit_code == 0:
@@ -39,6 +45,14 @@ class StepStatus(Enum):
             return StepStatus.SKIPPED
         else:
             raise ValueError(f"No step status is mapped to exit code {exit_code}")
+
+    def get_rich_style(self) -> Style:
+        if self is StepStatus.SUCCESS:
+            return Style(color="green")
+        if self is StepStatus.FAILURE:
+            return Style(color="red", bold=True)
+        if self is StepStatus.SKIPPED:
+            return Style(color="yellow")
 
     def __str__(self) -> str:
         return self.value
@@ -91,10 +105,34 @@ class ConnectorTestReport:
             }
         )
 
-    def __str__(self) -> str:
-        nice_output = f"\n{self.connector_test_context.connector.technical_name.upper()} - TEST RESULTS\n"
-        nice_output += "\n".join([str(sr) for sr in self.steps_results]) + "\n"
-        nice_output += f"Total duration: {round(self.run_duration)} seconds"
-        for failed_step in self.failed_steps:
-            nice_output += f"{failed_step.step.value} FAILURES:\n{failed_step.stderr}"
-        return nice_output
+    def print(self):
+        connector_name = self.connector_test_context.connector.technical_name
+        main_panel_title = Text(f"{connector_name.upper()} - TEST RESULTS")
+        main_panel_title.stylize(Style(color="blue", bold=True))
+        duration_subtitle = Text(f"⏲️  Total pipeline duration for {connector_name}: {round(self.run_duration)} seconds")
+        step_results_table = Table(title="Steps results")
+        step_results_table.add_column("Step")
+        step_results_table.add_column("Result")
+        step_results_table.add_column("Finished after")
+
+        for step_result in self.steps_results:
+            step = Text(step_result.step.value)
+            step.stylize(step_result.status.get_rich_style())
+            result = Text(step_result.status.value)
+            result.stylize(step_result.status.get_rich_style())
+            step_results_table.add_row(step, result, str(round((self.created_at - step_result.created_at).total_seconds())) + "s")
+
+        to_render = [step_results_table]
+        if self.failed_steps:
+            sub_panels = []
+            for failed_step in self.failed_steps:
+                errors = Text(failed_step.stderr)
+                panel_title = Text(f"{connector_name} {failed_step.step.value.lower()} failures")
+                panel_title.stylize(Style(color="red", bold=True))
+                sub_panel = Panel(errors, title=panel_title)
+                sub_panels.append(sub_panel)
+            failures_group = Group(*sub_panels)
+            to_render.append(failures_group)
+
+        main_panel = Panel(Group(*to_render), title=main_panel_title, subtitle=duration_subtitle)
+        console.print(main_panel)
