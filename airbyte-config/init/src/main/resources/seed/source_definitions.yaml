@@ -585,7 +585,7 @@
 - name: File (CSV, JSON, Excel, Feather, Parquet)
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   dockerRepository: airbyte/source-file
-  dockerImageTag: 0.2.33
+  dockerImageTag: 0.2.34
   documentationUrl: https://docs.airbyte.com/integrations/sources/file
   icon: file.svg
   sourceType: file

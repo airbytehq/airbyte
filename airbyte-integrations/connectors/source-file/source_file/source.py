@@ -112,9 +112,7 @@ class SourceFile(Source):
                 list(client.streams)
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except (TypeError, ValueError, ConfigurationError) as err:
-            reason = (
-                f"Failed to load {source_url}\n Please check File Format and Reader Options are set correctly. \n{repr(err)}"
-            )
+            reason = f"Failed to load {source_url}\n Please check File Format and Reader Options are set correctly. \n{repr(err)}"
             logger.error(reason)
             return AirbyteConnectionStatus(status=Status.FAILED, message=reason)
         except Exception as err:
