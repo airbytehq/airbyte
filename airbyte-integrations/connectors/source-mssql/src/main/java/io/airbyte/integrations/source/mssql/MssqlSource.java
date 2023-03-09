@@ -67,7 +67,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final String NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY =
       """
          SELECT
-            (SELECT CAST(IIF(EXISTS(SELECT TOP 1 1 FROM FROM "%s"."%s" WHERE "%s" IS NULL), 1, 0) AS BIT) AS hasNulls
+            (SELECT CAST(IIF(EXISTS(SELECT TOP 1 1 FROM "%s"."%s" WHERE "%s" IS NULL), 1, 0) AS BIT) AS hasNulls
             FROM (
             SELECT CAST(COLUMNPROPERTY(OBJECT_ID('%s.%s'), '%s', 'AllowsNull') AS BIT) AS allowNulls) AS t1
             WHERE t1.allowNulls = 1
