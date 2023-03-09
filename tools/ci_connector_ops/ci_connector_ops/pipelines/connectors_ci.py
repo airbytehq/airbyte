@@ -74,7 +74,6 @@ async def teardown(test_context: ConnectorTestContext, test_report: ConnectorTes
         await secrets.upload(
             teardown_pipeline,
             test_context.connector,
-            test_context.updated_secrets_dir,
         )
 
     test_report.print()
