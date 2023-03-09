@@ -6,7 +6,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_tenkft.source import TenkftStream
+from source_tenkft.streams import TenkftStream
 
 
 @pytest.fixture

@@ -5,7 +5,7 @@
 
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_tenkft.source import TenkftStream
+from source_tenkft.streams import TenkftStream
 
 
 @fixture
