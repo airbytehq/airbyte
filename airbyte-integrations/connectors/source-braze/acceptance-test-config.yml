@@ -1,0 +1,49 @@
+# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-braze:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_braze/spec.yaml"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.1.0"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: kpi_daily_new_users
+            bypass_reason: "no data"
+          - name: events_analytics
+            bypass_reason: "no data"
+          - name: kpi_daily_app_uninstalls
+            bypass_reason: "no data"
+          - name: kpi_daily_active_users
+            bypass_reason: "no data"
+        expect_records:
+          # `cards_analytics` stream records are not included to `expected_records.jsonl`
+          # This stream returns summary by given `ending_at` date + `length`, and so
+          # as `ending_at` date depends on a day when tests run, we lose previous records in current response and tests fail.
+          path: "integration_tests/expected_records.jsonl"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
+  incremental:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

@@ -1,0 +1,19 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  background-color: colors.$grey-100;
+  border-radius: variables.$border-radius-pill;
+  text-transform: uppercase;
+  font-size: 10px;
+  line-height: initial;
+  color: colors.$dark-blue-500;
+  font-weight: 600;
+
+  &--small {
+    font-size: 8px;
+  }
+}

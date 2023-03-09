@@ -17,6 +17,10 @@ global:
   secrets: {}
   env_vars: {}
   extraContainers: []
+  ## extraSelectorLables [object] - use to specify own additional selector labels for deployment
+  extraSelectorLabels: {}
+  ## extraLabels [object] - use to specify own additional labels for deployment
+  extraLabels: {}
 
 
 enabled: true
@@ -174,3 +178,8 @@ extraVolumes: []
 #   DATABASE_PASSWORD: 12345
 #   DATABASE_USER: airbyte
 env_vars: {}
+
+## extraSelectorLables [object] - use to specify own additional selector labels for deployment
+extraSelectorLabels: {}
+## extraLabels [object] - use to specify own additional labels for deployment
+extraLabels: {}

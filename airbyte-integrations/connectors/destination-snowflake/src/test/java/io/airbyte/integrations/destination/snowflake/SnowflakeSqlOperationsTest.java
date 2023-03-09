@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -18,7 +19,12 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import net.snowflake.client.jdbc.SnowflakeSQLException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mockito;
 
 class SnowflakeSqlOperationsTest {
 
@@ -51,6 +57,26 @@ class SnowflakeSqlOperationsTest {
   void insertRecordsInternal() throws SQLException {
     snowflakeSqlOperations.insertRecordsInternal(db, List.of(new AirbyteRecordMessage()), SCHEMA_NAME, TABLE_NAME);
     verify(db, times(1)).execute(any(CheckedConsumer.class));
+  }
+
+  @ParameterizedTest
+  @CsvSource({"TEST,false", "but current role has no privileges on it,true"})
+  public void testCreateSchemaIfNotExists(final String message, final boolean shouldCapture) {
+    final JdbcDatabase db = Mockito.mock(JdbcDatabase.class);
+    final var schemaName = "foo";
+    try {
+      Mockito.doThrow(new SnowflakeSQLException(message)).when(db).execute(Mockito.anyString());
+    } catch (Exception e) {
+      // This would not be expected, but the `execute` method above will flag as an unhandled exception
+      assert false;
+    }
+    Exception exception = Assertions.assertThrows(Exception.class, () -> snowflakeSqlOperations.createSchemaIfNotExists(db, schemaName));
+    if (shouldCapture) {
+      Assertions.assertInstanceOf(ConfigErrorException.class, exception);
+    } else {
+      Assertions.assertInstanceOf(SnowflakeSQLException.class, exception);
+      Assertions.assertEquals(exception.getMessage(), message);
+    }
   }
 
 }

@@ -16,22 +16,6 @@ will result in
 3
 ```
 
-If the component is a mapping with a "class_name" field,
-an object of type "class_name" will be instantiated by passing the mapping's other fields to the constructor
-
-```yaml
-my_component:
-  class_name: "fully_qualified.class_name"
-  a_parameter: 3
-  another_parameter: "hello"
-```
-
-will result in
-
-```
-fully_qualified.class_name(a_parameter=3, another_parameter="hello")
-```
-
 If the component definition is a mapping with a "type" field,
 the factory will lookup the [CLASS_TYPES_REGISTRY](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/parsers/class_types_registry.py) and replace the "type" field by "class_name" -> CLASS_TYPES_REGISTRY[type]
 and instantiate the object from the resulting mapping
@@ -258,7 +242,7 @@ Additional information on jinja templating can be found at [https://jinja.pallet
 
 ## Component schema reference
 
-A JSON schema representation of the relationships between the components that can be used in the YAML configuration can be found [here](./source_schema.yaml).
+A JSON schema representation of the relationships between the components that can be used in the YAML configuration can be found [here](../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml).
 
 ## Custom components
 
@@ -291,10 +275,11 @@ class MyPaginationStrategy(PaginationStrategy):
     pass
 ```
 
-This class can then be referred from the yaml file using its fully qualified class name:
+This class can then be referred from the yaml file by specifying the type of custom component and using its fully qualified class name:
 
 ```yaml
 pagination_strategy:
+  type: "CustomPaginationStrategy"
   class_name: "my_connector_module.MyPaginationStrategy"
   my_field: "hello world"
 ```
@@ -314,4 +299,4 @@ pagination_strategy:
 
 - [Record selector](./understanding-the-yaml-file/record-selector.md)
 - [Stream slicers](./understanding-the-yaml-file/stream-slicers.md)
-- [Source schema](./source_schema.yaml)
+- [Source schema](../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml)

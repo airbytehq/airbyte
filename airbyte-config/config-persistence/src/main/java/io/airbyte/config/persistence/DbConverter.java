@@ -17,7 +17,9 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
+import io.airbyte.config.ActorCatalogWithUpdatedAt;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
+import io.airbyte.config.AllowedHosts;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.FieldSelectionData;
@@ -159,7 +161,10 @@ public class DbConverter {
             : record.get(ACTOR_DEFINITION.RELEASE_DATE).toString())
         .withResourceRequirements(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS) == null
             ? null
-            : Jsons.deserialize(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS).data(), ActorDefinitionResourceRequirements.class));
+            : Jsons.deserialize(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS).data(), ActorDefinitionResourceRequirements.class))
+        .withAllowedHosts(record.get(ACTOR_DEFINITION.ALLOWED_HOSTS) == null
+            ? null
+            : Jsons.deserialize(record.get(ACTOR_DEFINITION.ALLOWED_HOSTS).data(), AllowedHosts.class));
   }
 
   public static StandardDestinationDefinition buildStandardDestinationDefinition(final Record record) {
@@ -192,7 +197,10 @@ public class DbConverter {
                     : null)
         .withResourceRequirements(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS) == null
             ? null
-            : Jsons.deserialize(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS).data(), ActorDefinitionResourceRequirements.class));
+            : Jsons.deserialize(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS).data(), ActorDefinitionResourceRequirements.class))
+        .withAllowedHosts(record.get(ACTOR_DEFINITION.ALLOWED_HOSTS) == null
+            ? null
+            : Jsons.deserialize(record.get(ACTOR_DEFINITION.ALLOWED_HOSTS).data(), AllowedHosts.class));
   }
 
   public static DestinationOAuthParameter buildDestinationOAuthParameter(final Record record) {
@@ -216,6 +224,14 @@ public class DbConverter {
         .withId(record.get(ACTOR_CATALOG.ID))
         .withCatalog(Jsons.deserialize(record.get(ACTOR_CATALOG.CATALOG).toString()))
         .withCatalogHash(record.get(ACTOR_CATALOG.CATALOG_HASH));
+  }
+
+  public static ActorCatalogWithUpdatedAt buildActorCatalogWithUpdatedAt(final Record record) {
+    return new ActorCatalogWithUpdatedAt()
+        .withId(record.get(ACTOR_CATALOG.ID))
+        .withCatalog(Jsons.deserialize(record.get(ACTOR_CATALOG.CATALOG).toString()))
+        .withCatalogHash(record.get(ACTOR_CATALOG.CATALOG_HASH))
+        .withUpdatedAt(record.get(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC));
   }
 
   public static ActorCatalogFetchEvent buildActorCatalogFetchEvent(final Record record) {

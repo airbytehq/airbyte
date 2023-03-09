@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
@@ -18,7 +18,6 @@ export const CreateDestinationPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.DESTINATION_NEW);
 
   const navigate = useNavigate();
-  const [successRequest, setSuccessRequest] = useState(false);
   const { destinationDefinitions } = useDestinationDefinitionList();
   const { mutateAsync: createDestination } = useCreateDestination();
 
@@ -32,9 +31,7 @@ export const CreateDestinationPage: React.FC = () => {
       values,
       destinationConnector: connector,
     });
-    setSuccessRequest(true);
     setTimeout(() => {
-      setSuccessRequest(false);
       navigate(`../${result.destinationId}`);
     }, 2000);
   };
@@ -45,11 +42,7 @@ export const CreateDestinationPage: React.FC = () => {
       <ConnectorDocumentationWrapper>
         <PageHeader title={null} middleTitleBlock={<FormattedMessage id="destinations.newDestinationTitle" />} />
         <FormPageContent>
-          <DestinationForm
-            onSubmit={onSubmitDestinationForm}
-            destinationDefinitions={destinationDefinitions}
-            hasSuccess={successRequest}
-          />
+          <DestinationForm onSubmit={onSubmitDestinationForm} destinationDefinitions={destinationDefinitions} />
           <CloudInviteUsersHint connectorType="destination" />
         </FormPageContent>
       </ConnectorDocumentationWrapper>

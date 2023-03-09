@@ -16,17 +16,18 @@ import io.airbyte.protocol.models.StreamDescriptor;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import javax.annotation.Nullable;
 
 public interface JobCreator {
 
   /**
-   *
    * @param source db model representing where data comes from
    * @param destination db model representing where data goes
    * @param standardSync sync options
    * @param sourceDockerImage docker image to use for the source
    * @param destinationDockerImage docker image to use for the destination
+   * @param workspaceId
    * @return the new job if no other conflicting job was running, otherwise empty
    * @throws IOException if something wrong happens
    */
@@ -40,7 +41,8 @@ public interface JobCreator {
                                List<StandardSyncOperation> standardSyncOperations,
                                @Nullable JsonNode webhookOperationConfigs,
                                StandardSourceDefinition sourceDefinition,
-                               StandardDestinationDefinition destinationDefinition)
+                               StandardDestinationDefinition destinationDefinition,
+                               UUID workspaceId)
       throws IOException;
 
   /**

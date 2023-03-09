@@ -3,6 +3,6 @@
 #
 
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
-from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever, SimpleRetrieverTestReadDecorator
 
-__all__ = ["Retriever", "SimpleRetriever"]
+__all__ = ["Retriever", "SimpleRetriever", "SimpleRetrieverTestReadDecorator"]

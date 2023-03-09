@@ -25,7 +25,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         expect_records:
-          path: "integration_tests/expected_records.txt"
+          path: "integration_tests/expected_records.jsonl"
           extra_fields: no
           exact_order: no
           extra_records: yes
@@ -40,6 +40,22 @@ acceptance_tests:
             bypass_reason: "unable to populate"
           - name: voicemail_tasks
             bypass_reason: "unable to populate"
+          - name: leads
+            bypass_reason: "unable to test due to fast-changing data"
+          - name: events
+            bypass_reason: "unable to test due to fast-changing data"
+          - name: users
+            bypass_reason: "unable to test due to fast-changing data"
+          - name: contacts
+            bypass_reason: "unable to test due to fast-changing data"
+          - name: google_connected_accounts
+            bypass_reason: "unable to test due to fast-changing data"
+          - name: custom_email_connected_accounts
+            bypass_reason: "unable to test due to fast-changing data"
+          - name: zoom_connected_accounts
+            bypass_reason: "unable to test due to fast-changing data"
+          - name: email_bulk_actions
+            bypass_reason: "unable to test due to fast-changing data"
   incremental:
     tests:
       - config_path: "secrets/config.json"

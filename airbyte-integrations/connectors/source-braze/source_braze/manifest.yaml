@@ -1,0 +1,322 @@
+version: "0.1.0"
+
+definitions:
+  # ----- Selector -----
+  base_selector:
+    extractor:
+      field_pointer: ["data"]
+  list_selector:
+    extractor:
+      field_pointer: ["{{ options['name'] }}"]
+
+  # ----- Requester -----
+  requester:
+    url_base: "{{ config['url'] }}"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+
+  # ----- Retriever -----
+  list_retriever:
+    record_selector:
+      $ref: "*ref(definitions.list_selector)"
+    paginator:
+      type: DefaultPaginator
+      url_base: "{{ config['url'] }}"
+      pagination_strategy:
+        type: PageIncrement
+        page_size: 2
+      page_token_option:
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      $ref: "*ref(definitions.requester)"
+      request_options_provider:
+        request_parameters:
+          last_edit.time[gt]: "{{ config['start_date'] }}"
+
+  # ----- Stream bases -----
+  list_stream:
+    retriever:
+      $ref: "*ref(definitions.list_retriever)"
+
+  # ----- Parent streams -----
+  campaigns_stream:
+    $ref: "*ref(definitions.list_stream)"
+    $options:
+      name: "campaigns"
+      primary_key: "id"
+      path: "/campaigns/list"
+  canvases_stream:
+    $ref: "*ref(definitions.list_stream)"
+    $options:
+      name: "canvases"
+      primary_key: "id"
+      path: "/canvas/list"
+  cards_stream:
+    $ref: "*ref(definitions.list_stream)"
+    $options:
+      name: "cards"
+      primary_key: "id"
+      path: "/feed/list"
+  segments_stream:
+    $ref: "*ref(definitions.list_stream)"
+    $options:
+      name: "segments"
+      primary_key: "id"
+      path: "/segments/list"
+  custom_events_stream:
+    $ref: "*ref(definitions.list_stream)"
+    transformations:
+      - class_name: "source_braze.TransformToRecordComponent"
+        fields:
+          - path: ["event_name"]
+            value: "{{ record }}"
+    $options:
+      name: "events"
+      path: "/events/list"
+
+  # ----- Slicers -----
+  datetime_100d_slicer:
+    class_name: "source_braze.DatetimeStreamSlicerComponent"
+    cursor_field: "time"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      datetime: "{{ today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+    end_time_option:
+      field_name: "ending_at"
+      inject_into: "request_parameter"
+    step_option:
+      field_name: "length"
+      inject_into: "request_parameter"
+    datetime_format: "%Y-%m-%d"
+    step: "P100D"
+    cursor_granularity: "P1D"
+
+  datetime_14d_slicer:
+    $ref: "*ref(definitions.datetime_100d_slicer)"
+    step: "P14D"
+
+  # ----- Sliced streams -----
+  sliced_retriever:
+    record_selector:
+      $ref: "*ref(definitions.base_selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+    stream_slicer:
+      $ref: "*ref(definitions.datetime_100d_slicer)"
+
+  kpi_daily_new_users_stream:
+    retriever:
+      $ref: "*ref(definitions.sliced_retriever)"
+    stream_cursor_field: "time"
+    $options:
+      name: "kpi_daily_new_users"
+      path: "/kpi/new_users/data_series"
+  kpi_daily_active_users_stream:
+    retriever:
+      $ref: "*ref(definitions.sliced_retriever)"
+    stream_cursor_field: "time"
+    $options:
+      name: "kpi_daily_active_users"
+      path: "/kpi/dau/data_series"
+  kpi_daily_app_uninstalls_stream:
+    retriever:
+      $ref: "*ref(definitions.sliced_retriever)"
+    stream_cursor_field: "time"
+    $options:
+      name: "kpi_daily_app_uninstalls"
+      path: "/kpi/uninstalls/data_series"
+
+  # ----- Sliced sub-streams -----
+  campaigns_analytics_substream_config:
+    retriever:
+      $ref: "*ref(definitions.sliced_retriever)"
+      stream_slicer:
+        type: CartesianProductStreamSlicer
+        stream_slicers:
+          - type: SubstreamSlicer
+            parent_stream_configs:
+              - stream: "*ref(definitions.campaigns_stream)"
+                parent_key: "id"
+                stream_slice_field: "campaign_id"
+                request_option:
+                  field_name: "campaign_id"
+                  inject_into: "request_parameter"
+          - "*ref(definitions.datetime_100d_slicer)"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["campaign_id"]
+            value: "{{ stream_slice.campaign_id }}"
+    stream_cursor_field: "time"
+  canvases_analytics_substream_config:
+    retriever:
+      $ref: "*ref(definitions.sliced_retriever)"
+      record_selector:
+        extractor:
+          field_pointer: ["data", "stats"]
+      stream_slicer:
+        type: CartesianProductStreamSlicer
+        stream_slicers:
+          - type: SubstreamSlicer
+            parent_stream_configs:
+              - stream: "*ref(definitions.canvases_stream)"
+                parent_key: "id"
+                stream_slice_field: "canvas_id"
+                request_option:
+                  field_name: "canvas_id"
+                  inject_into: "request_parameter"
+          - "*ref(definitions.datetime_14d_slicer)"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["canvas_id"]
+            value: "{{ stream_slice.canvas_id }}"
+    stream_cursor_field: "time"
+  cards_analytics_substream_config:
+    retriever:
+      $ref: "*ref(definitions.sliced_retriever)"
+      stream_slicer:
+        type: CartesianProductStreamSlicer
+        stream_slicers:
+          - type: SubstreamSlicer
+            parent_stream_configs:
+              - stream: "*ref(definitions.cards_stream)"
+                parent_key: "id"
+                stream_slice_field: "card_id"
+                request_option:
+                  field_name: "card_id"
+                  inject_into: "request_parameter"
+          - "*ref(definitions.datetime_100d_slicer)"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["card_id"]
+            value: "{{ stream_slice.card_id }}"
+    stream_cursor_field: "time"
+  segments_analytics_substream_config:
+    retriever:
+      $ref: "*ref(definitions.sliced_retriever)"
+      stream_slicer:
+        type: CartesianProductStreamSlicer
+        stream_slicers:
+          - type: SubstreamSlicer
+            parent_stream_configs:
+              - stream: "*ref(definitions.segments_stream)"
+                parent_key: "id"
+                stream_slice_field: "segment_id"
+                request_option:
+                  field_name: "segment_id"
+                  inject_into: "request_parameter"
+          - "*ref(definitions.datetime_100d_slicer)"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["segment_id"]
+            value: "{{ stream_slice.segment_id }}"
+    stream_cursor_field: "time"
+  events_analytics_substream_config:
+    retriever:
+      $ref: "*ref(definitions.sliced_retriever)"
+      requester:
+        $ref: "*ref(definitions.sliced_retriever.requester)"
+        request_options_provider:
+          request_parameters:
+            unit: "day"
+      stream_slicer:
+        type: CartesianProductStreamSlicer
+        stream_slicers:
+          - type: SubstreamSlicer
+            parent_stream_configs:
+              - stream: "*ref(definitions.custom_events_stream)"
+                parent_key: "event_name"
+                stream_slice_field: "event"
+                request_option:
+                  field_name: "event"
+                  inject_into: "request_parameter"
+          - "*ref(definitions.datetime_100d_slicer)"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["event_id"]
+            value: "{{ stream_slice.event }}"
+    stream_cursor_field: "time"
+
+  campaigns_analytics_stream:
+    $ref: "*ref(definitions.campaigns_analytics_substream_config)"
+    $options:
+      name: "campaigns_analytics"
+      path: "/campaigns/data_series"
+  canvases_analytics_stream:
+    $ref: "*ref(definitions.canvases_analytics_substream_config)"
+    $options:
+      name: "canvases_analytics"
+      path: "/canvas/data_series"
+  cards_analytics_stream:
+    $ref: "*ref(definitions.cards_analytics_substream_config)"
+    $options:
+      name: "cards_analytics"
+      path: "/feed/data_series"
+  segments_analytics_stream:
+    $ref: "*ref(definitions.segments_analytics_substream_config)"
+    $options:
+      name: "segments_analytics"
+      path: "/segments/data_series"
+  events_analytics_stream:
+    $ref: "*ref(definitions.events_analytics_substream_config)"
+    $options:
+      name: "events_analytics"
+      path: "/events/data_series"
+
+streams:
+  - "*ref(definitions.campaigns_stream)"
+  - "*ref(definitions.campaigns_analytics_stream)"
+  - "*ref(definitions.canvases_stream)"
+  - "*ref(definitions.canvases_analytics_stream)"
+  - "*ref(definitions.custom_events_stream)"
+  - "*ref(definitions.events_analytics_stream)"
+  - "*ref(definitions.kpi_daily_new_users_stream)"
+  - "*ref(definitions.kpi_daily_active_users_stream)"
+  - "*ref(definitions.kpi_daily_app_uninstalls_stream)"
+  - "*ref(definitions.cards_stream)"
+  - "*ref(definitions.cards_analytics_stream)"
+  - "*ref(definitions.segments_stream)"
+  - "*ref(definitions.segments_analytics_stream)"
+
+check:
+  stream_names:
+    - "campaigns"
+
+spec:
+  documentation_url: https://docs.airbyte.com/integrations/sources/braze
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Braze Spec
+    type: object
+    additionalProperties: true
+    required:
+      - url
+      - api_key
+      - start_date
+    properties:
+      url:
+        type: string
+        title: URL
+        description: Braze REST API endpoint
+      api_key:
+        type: string
+        title: Rest API Key
+        airbyte_secret: true
+        description: Braze REST API key
+      start_date:
+        type: string
+        format: date
+        title: Start date
+        description: Rows after this date will be synced

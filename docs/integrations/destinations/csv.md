@@ -1,4 +1,4 @@
-# CSV Destination
+# CSV 
 
 The Airbyte Destination for CSV files.
 

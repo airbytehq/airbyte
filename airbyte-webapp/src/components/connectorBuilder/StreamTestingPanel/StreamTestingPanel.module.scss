@@ -15,8 +15,6 @@ $buttonHeight: 36px;
   position: absolute;
   top: variables.$spacing-lg;
   left: variables.$spacing-lg;
-  height: $buttonHeight;
-  width: $buttonHeight;
 }
 
 .streamSelector {
@@ -39,6 +37,9 @@ $buttonHeight: 36px;
   gap: variables.$spacing-md;
   background-color: colors.$blue-50;
   border-radius: variables.$border-radius-sm;
+
+  // leave room for config button
+  margin-top: 50px;
 }
 
 .loadingSpinner {

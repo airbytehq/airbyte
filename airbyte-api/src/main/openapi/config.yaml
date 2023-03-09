@@ -599,6 +599,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/sources/most_recent_source_actor_catalog:
+    post:
+      tags:
+        - source
+      summary: Get most recent ActorCatalog for source
+      operationId: getMostRecentSourceActorCatalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActorCatalogWithUpdatedAt"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/sources/search:
     post:
       tags:
@@ -731,6 +754,27 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+
+  /v1/sources/write_discover_catalog_result:
+    post:
+      tags:
+        - source
+        - internal
+      summary: Should only called from worker, to write result from discover activity back to DB.
+      operationId: writeDiscoverCatalogResult
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceDiscoverSchemaWriteRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful Operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiscoverCatalogResult"
   /v1/destination_definitions/update:
     post:
       tags:
@@ -1771,7 +1815,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+              $ref: "#/components/schemas/WebBackendConnectionListRequestBody"
         required: true
       responses:
         "200":
@@ -1962,6 +2006,28 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/JobInfoRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/jobs/get_last_replication_job:
+    post:
+      tags:
+        - jobs
+      operationId: getLastReplicationJob
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobOptionalRead"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -2667,6 +2733,8 @@ components:
         - connectionConfiguration
         - workspaceId
       properties:
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
         sourceDefinitionId:
           $ref: "#/components/schemas/SourceDefinitionId"
         connectionConfiguration:
@@ -2738,6 +2806,24 @@ components:
           type: string
         icon:
           type: string
+    SourceSnippetRead:
+      type: object
+      required:
+        - sourceId
+        - name
+        - sourceDefinitionId
+        - sourceName
+      properties:
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        name:
+          type: string
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+        sourceName:
+          type: string
+        icon:
+          type: string
     SourceReadList:
       type: object
       required:
@@ -2747,6 +2833,21 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SourceRead"
+    SourceDiscoverSchemaWriteRequestBody:
+      description: to write this requested object to database.
+      type: object
+      required:
+        - catalog
+      properties:
+        catalog:
+          $ref: "#/components/schemas/AirbyteCatalog"
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        connectorVersion:
+          type: string
+        configurationHash:
+          type: string
+
     SourceDiscoverSchemaRead:
       description: Returns the results of a discover catalog job. If the job was not successful, the catalog field will not be present. jobInfo will aways be present and its status be used to determine if the job was successful or not.
       type: object
@@ -2835,6 +2936,8 @@ components:
         - dockerRepository
         - dockerImageTag
         - documentationUrl
+        - supportsDbt
+        - normalizationConfig
       properties:
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
@@ -2860,6 +2963,12 @@ components:
           format: date
         resourceRequirements:
           $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
+        supportsDbt:
+          type: boolean
+          description: an optional flag indicating whether DBT is used in the normalization. If the flag value is NULL - DBT is not used.
+        normalizationConfig:
+          $ref: "#/components/schemas/NormalizationDestinationDefinitionConfig"
+
     DestinationDefinitionReadList:
       type: object
       required:
@@ -2934,10 +3043,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DestinationSyncMode"
-        supportsDbt:
-          type: boolean
-        supportsNormalization:
-          type: boolean
     # DESTINATION
     DestinationId:
       type: string
@@ -2959,6 +3064,8 @@ components:
         - destinationDefinitionId
         - connectionConfiguration
       properties:
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
         connectionConfiguration:
@@ -3031,6 +3138,24 @@ components:
           $ref: "#/components/schemas/DestinationConfiguration"
         name:
           type: string
+        destinationName:
+          type: string
+        icon:
+          type: string
+    DestinationSnippetRead:
+      type: object
+      required:
+        - destinationId
+        - name
+        - destinationDefinitionId
+        - destinationName
+      properties:
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        name:
+          type: string
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
         destinationName:
           type: string
         icon:
@@ -3656,6 +3781,16 @@ components:
       properties:
         logType:
           $ref: "#/components/schemas/LogType"
+    # ACTOR CATALOG
+    ActorCatalogWithUpdatedAt:
+      description: A source actor catalog with the timestamp it was mostly recently updated
+      type: object
+      properties:
+        updatedAt:
+          type: integer
+          format: int64
+        catalog:
+          type: object
     # SCHEMA CATALOG
     AirbyteCatalog:
       description: describes the available schema (catalog).
@@ -3830,6 +3965,9 @@ components:
         updatedAt:
           type: integer
           format: int64
+        startedAt:
+          type: integer
+          format: int64
         status:
           $ref: "#/components/schemas/JobStatus"
         resetConfig:
@@ -3970,6 +4108,8 @@ components:
       properties:
         streamName:
           type: string
+        streamNamespace:
+          type: string
         stats:
           $ref: "#/components/schemas/AttemptStats"
     AttemptFailureSummary:
@@ -4063,6 +4203,11 @@ components:
       properties:
         job:
           $ref: "#/components/schemas/JobRead"
+    JobOptionalRead:
+      type: object
+      properties:
+        job:
+          $ref: "#/components/schemas/JobRead"
     JobDebugInfoRead:
       type: object
       required:
@@ -4121,6 +4266,9 @@ components:
           format: int64
         succeeded:
           type: boolean
+        connectorConfigurationUpdated:
+          type: boolean
+          default: false
         logs:
           $ref: "#/components/schemas/LogRead"
     Pagination:
@@ -4295,6 +4443,27 @@ components:
           type: array
           items:
             "$ref": "#/components/schemas/JobTypeResourceLimit"
+    NormalizationDestinationDefinitionConfig:
+      description: describes a normalization config for destination definition
+      type: object
+      required:
+        - supported
+      additionalProperties: false
+      properties:
+        supported:
+          type: boolean
+          description: whether the destination definition supports normalization.
+          default: false
+        normalizationRepository:
+          type: string
+          description: a field indicating the name of the repository to be used for normalization. If the value of the flag is NULL - normalization is not used.
+        normalizationTag:
+          type: string
+          description: a field indicating the tag of the docker repository to be used for normalization.
+        normalizationIntegrationType:
+          type: string
+          description: a field indicating the type of integration dialect to use for normalization.
+
     JobTypeResourceLimit:
       description: sets resource requirements for a specific job type for an actor definition. these values override the default, if both are set.
       type: object
@@ -4622,14 +4791,27 @@ components:
           type: integer
         sourceDefinitions:
           type: integer
+    WebBackendConnectionListRequestBody:
+      type: object
+      required:
+        - workspaceId
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        sourceId:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceId"
+        destinationId:
+          type: array
+          items:
+            $ref: "#/components/schemas/DestinationId"
     WebBackendConnectionListItem:
       type: object
       description: Information about a connection that shows up in the connection list view.
       required:
         - connectionId
         - name
-        - sourceId
-        - destinationId
         - source
         - destination
         - status
@@ -4640,10 +4822,6 @@ components:
           $ref: "#/components/schemas/ConnectionId"
         name:
           type: string
-        sourceId:
-          $ref: "#/components/schemas/SourceId"
-        destinationId:
-          $ref: "#/components/schemas/DestinationId"
         scheduleType:
           $ref: "#/components/schemas/ConnectionScheduleType"
         scheduleData:
@@ -4651,9 +4829,9 @@ components:
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         source:
-          $ref: "#/components/schemas/SourceRead"
+          $ref: "#/components/schemas/SourceSnippetRead"
         destination:
-          $ref: "#/components/schemas/DestinationRead"
+          $ref: "#/components/schemas/DestinationSnippetRead"
         latestSyncJobCreatedAt:
           $ref: "#/components/schemas/JobCreatedAt"
         latestSyncJobStatus:
@@ -4851,6 +5029,14 @@ components:
       properties:
         succeeded:
           type: boolean
+    DiscoverCatalogResult:
+      type: object
+      required:
+        - catalogId
+      properties:
+        catalogId:
+          type: string
+          format: uuid
     AttemptNormalizationStatusReadList:
       type: object
       properties:

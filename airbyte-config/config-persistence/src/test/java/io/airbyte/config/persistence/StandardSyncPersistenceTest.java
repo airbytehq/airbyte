@@ -237,7 +237,8 @@ class StandardSyncPersistenceTest extends BaseConfigDatabaseTest {
         .select(CONNECTION.ID, CONNECTION.UNSUPPORTED_PROTOCOL_VERSION)
         .from(CONNECTION)
         .where(CONNECTION.ID.in(standardSync.stream().map(StandardSync::getConnectionId).toList()))
-        .fetchStream())
+        .fetch())
+        .stream()
         .map(r -> new StandardSyncProtocolVersionFlag(r.get(CONNECTION.ID), r.get(CONNECTION.UNSUPPORTED_PROTOCOL_VERSION)))
         .collect(Collectors.toSet());
   }

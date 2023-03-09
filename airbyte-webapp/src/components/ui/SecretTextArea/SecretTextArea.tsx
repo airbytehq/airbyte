@@ -5,8 +5,8 @@ import { useMemo, useRef } from "react";
 import { FormattedMessage } from "react-intl";
 import { useToggle, useUpdateEffect } from "react-use";
 
-import { TextInputContainer, TextInputContainerProps } from "../TextInputContainer";
 import styles from "./SecretTextArea.module.scss";
+import { TextInputContainer, TextInputContainerProps } from "../TextInputContainer";
 
 interface SecretTextAreaProps
   extends Omit<TextInputContainerProps, "onFocus" | "onBlur">,

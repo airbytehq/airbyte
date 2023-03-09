@@ -78,17 +78,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
   }
 
   @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
-
-  @Override
   protected boolean implementsNamespaces() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
     return true;
   }
 

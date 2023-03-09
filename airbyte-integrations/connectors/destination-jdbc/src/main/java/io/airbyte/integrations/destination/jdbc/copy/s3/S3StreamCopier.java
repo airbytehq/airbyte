@@ -189,7 +189,7 @@ public abstract class S3StreamCopier implements StreamCopier {
       queries.append(sqlOperations.truncateTableQuery(db, schemaName, destTableName));
       LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.", destTableName, schemaName);
     }
-    queries.append(sqlOperations.copyTableQuery(db, schemaName, tmpTableName, destTableName));
+    queries.append(sqlOperations.insertTableQuery(db, schemaName, tmpTableName, destTableName));
     return queries.toString();
   }
 

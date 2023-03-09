@@ -12,6 +12,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 import com.fasterxml.jackson.databind.JsonNode;
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
 import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
@@ -29,6 +30,7 @@ import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.general.DefaultCheckConnectionWorker;
+import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
@@ -44,6 +46,7 @@ import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
 
 @Singleton
 @Requires(env = WorkerMode.CONTROL_PLANE)
@@ -59,6 +62,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
   private final String airbyteVersion;
   private final AirbyteMessageSerDeProvider serDeProvider;
   private final AirbyteMessageVersionedMigratorFactory migratorFactory;
+  private final FeatureFlags featureFlags;
 
   public CheckConnectionActivityImpl(@Named("checkWorkerConfigs") final WorkerConfigs workerConfigs,
                                      @Named("checkProcessFactory") final ProcessFactory processFactory,
@@ -69,7 +73,8 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
                                      final AirbyteApiClient airbyteApiClient,
                                      @Value("${airbyte.version}") final String airbyteVersion,
                                      final AirbyteMessageSerDeProvider serDeProvider,
-                                     final AirbyteMessageVersionedMigratorFactory migratorFactory) {
+                                     final AirbyteMessageVersionedMigratorFactory migratorFactory,
+                                     final FeatureFlags featureFlags) {
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.workspaceRoot = workspaceRoot;
@@ -80,6 +85,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     this.airbyteVersion = airbyteVersion;
     this.serDeProvider = serDeProvider;
     this.migratorFactory = migratorFactory;
+    this.featureFlags = featureFlags;
   }
 
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
@@ -88,9 +94,12 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     ApmTraceUtils
         .addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, args.getJobRunConfig().getAttemptId(), JOB_ID_KEY, args.getJobRunConfig().getJobId(),
             DOCKER_IMAGE_KEY, args.getLauncherConfig().getDockerImage()));
-    final JsonNode fullConfig = secretsHydrator.hydrate(args.getConnectionConfiguration().getConnectionConfiguration());
+    final StandardCheckConnectionInput rawInput = args.getConnectionConfiguration();
+    final JsonNode fullConfig = secretsHydrator.hydrate(rawInput.getConnectionConfiguration());
 
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
+        .withActorId(rawInput.getActorId())
+        .withActorType(rawInput.getActorType())
         .withConnectionConfiguration(fullConfig);
 
     final ActivityExecutionContext context = Activity.getExecutionContext();
@@ -131,12 +140,19 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
           launcherConfig.getDockerImage(),
           processFactory,
           workerConfigs.getResourceRequirements(),
-          launcherConfig.getIsCustomConnector());
+          launcherConfig.getAllowedHosts(),
+          launcherConfig.getIsCustomConnector(),
+          featureFlags);
+
+      final ConnectorConfigUpdater connectorConfigUpdater = new ConnectorConfigUpdater(
+          airbyteApiClient.getSourceApi(),
+          airbyteApiClient.getDestinationApi());
+
       final AirbyteStreamFactory streamFactory = launcherConfig.getProtocolVersion() != null
-          ? new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, launcherConfig.getProtocolVersion())
+          ? new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, launcherConfig.getProtocolVersion(), Optional.empty())
           : new DefaultAirbyteStreamFactory();
 
-      return new DefaultCheckConnectionWorker(integrationLauncher, streamFactory);
+      return new DefaultCheckConnectionWorker(integrationLauncher, connectorConfigUpdater, streamFactory);
     };
   }
 

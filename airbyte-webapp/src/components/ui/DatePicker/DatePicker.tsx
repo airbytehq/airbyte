@@ -7,9 +7,9 @@ import ReactDatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useIntl } from "react-intl";
 
+import styles from "./DatePicker.module.scss";
 import { Button } from "../Button";
 import { Input } from "../Input";
-import styles from "./DatePicker.module.scss";
 
 /**
  * Converts a UTC string into a JS Date object with the same local time
@@ -162,3 +162,5 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     </div>
   );
 };
+
+export default DatePicker;

@@ -1,0 +1,9 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.errorContent {
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-lg;
+  align-items: flex-end;
+}

@@ -97,7 +97,7 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
                                                       final JdbcDatabase database,
                                                       final NamingConventionTransformer nameTransformer)
       throws Exception {
-    AbstractJdbcDestination.attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, getSqlOperations());
+    AbstractJdbcDestination.attemptTableOperations(outputSchema, database, nameTransformer, getSqlOperations(), true);
   }
 
 }

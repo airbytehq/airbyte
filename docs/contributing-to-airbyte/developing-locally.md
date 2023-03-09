@@ -73,7 +73,7 @@ These instructions explain how to run a version of Airbyte that you are developi
 
 ```bash
 SUB_BUILD=PLATFORM ./gradlew build
-VERSION=dev docker-compose up
+VERSION=dev docker compose up
 ```
 
 The build will take a few minutes. Once it completes, Airbyte compiled at current git revision will be running in `dev` mode in your environment.
@@ -88,7 +88,7 @@ These instructions explain how to run a version of an Airbyte connector that you
 
 ```bash
 SUB_BUILD=PLATFORM ./gradlew build
-VERSION=dev docker-compose up
+VERSION=dev docker compose up
 ```
 
 - Then, build the connector image:
@@ -169,7 +169,7 @@ Note: If you are contributing a Python file without imports or function definiti
 - Spin up Airbyte locally so the UI can make requests against the local API.
 
 ```bash
-BASIC_AUTH_USERNAME="" BASIC_AUTH_PASSWORD="" docker-compose up
+BASIC_AUTH_USERNAME="" BASIC_AUTH_PASSWORD="" docker compose up
 ```
 
 Note: [basic auth](https://docs.airbyte.com/operator-guides/security#network-security) must be disabled by setting `BASIC_AUTH_USERNAME` and `BASIC_AUTH_PASSWORD` to empty values, otherwise requests from the development server will fail against the local API.
@@ -192,8 +192,8 @@ The Configuration API caches connector specifications. This is done to avoid nee
 2. Restart the server by running the following commands:
 
 ```bash
-VERSION=dev docker-compose down -v
-VERSION=dev docker-compose up
+VERSION=dev docker compose down -v
+VERSION=dev docker compose up
 ```
 
 ### Resetting the Airbyte developer environment
@@ -203,7 +203,7 @@ Sometimes you'll want to reset the data in your local environment. One common ca
 - Delete the datastore volumes in docker
 
   ```bash
-    VERSION=dev docker-compose down -v
+    VERSION=dev docker compose down -v
   ```
 
 - Remove the data on disk
@@ -217,7 +217,7 @@ Sometimes you'll want to reset the data in your local environment. One common ca
 
   ```bash
    SUB_BUILD=PLATFORM ./gradlew clean build
-   VERSION=dev docker-compose up -V
+   VERSION=dev docker compose up -V
   ```
 
 While not as common as the above steps, you may also get into a position where want to erase all of the data on your local docker server. This is useful if you've been modifying image tags while developing.
@@ -257,4 +257,4 @@ env JAVA_HOME=/usr/lib/jvm/java-14-openjdk ./gradlew  :airbyte-integrations:conn
 
 ### Inspecting the messages passed between connectors
 
-You can enable `LOG_CONNECTOR_MESSAGES=true` to log the messages the Airbyte platform receives from the source and destination when debugging locally. e.g. `LOG_CONNECTOR_MESSAGES=true VERSION=dev docker-compose up`
+You can enable `LOG_CONNECTOR_MESSAGES=true` to log the messages the Airbyte platform receives from the source and destination when debugging locally. e.g. `LOG_CONNECTOR_MESSAGES=true VERSION=dev docker compose up`

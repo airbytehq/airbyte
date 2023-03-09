@@ -15,4 +15,4 @@ WARNING: Do not modify this file.
 # Declarative Source
 class SourceWaiteraid(YamlDeclarativeSource):
     def __init__(self):
-        super().__init__(**{"path_to_yaml": "waiteraid.yaml"})
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})

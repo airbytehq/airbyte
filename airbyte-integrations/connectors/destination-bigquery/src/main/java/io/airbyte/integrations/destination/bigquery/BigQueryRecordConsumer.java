@@ -19,6 +19,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Record Consumer used for STANDARD INSERTS
+ */
 public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryRecordConsumer.class);
@@ -41,6 +44,15 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     // todo (cgardens) - move contents of #write into this method.
   }
 
+  /**
+   * Processes STATE and RECORD {@link AirbyteMessage} with all else logged as unexpected
+   *
+   * <li>For STATE messages emit messages back to the platform</li>
+   * <li>For RECORD messages upload message to associated Airbyte Stream. This means that RECORDS will
+   * be associated with their respective streams when more than one record exists</li>
+   *
+   * @param message {@link AirbyteMessage} to be processed
+   */
   @Override
   public void acceptTracked(final AirbyteMessage message) {
     if (message.getType() == Type.STATE) {
@@ -56,6 +68,12 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     }
   }
 
+  /**
+   * Processes {@link io.airbyte.protocol.models.AirbyteRecordMessage} by writing Airbyte stream data
+   * to Big Query Writer
+   *
+   * @param message record to be written
+   */
   private void processRecord(final AirbyteMessage message) {
     final var pair = AirbyteStreamNameNamespacePair.fromRecordMessage(message.getRecord());
     uploaderMap.get(pair).upload(message);

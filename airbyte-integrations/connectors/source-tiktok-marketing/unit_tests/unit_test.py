@@ -16,7 +16,7 @@ from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffExcept
 from source_tiktok_marketing import SourceTiktokMarketing
 from source_tiktok_marketing.streams import Ads, Advertisers, JsonUpdatedState
 
-SANDBOX_CONFIG_FILE = "secrets/config.json"
+SANDBOX_CONFIG_FILE = "secrets/sandbox_config.json"
 PROD_CONFIG_FILE = "secrets/prod_config.json"
 
 
@@ -134,8 +134,8 @@ def test_random_items(prepared_prod_args):
 @pytest.mark.parametrize(
     "config, stream_len",
     [
-        (PROD_CONFIG_FILE, 26),
-        (SANDBOX_CONFIG_FILE, 19),
+        (PROD_CONFIG_FILE, 22),
+        (SANDBOX_CONFIG_FILE, 16),
     ],
 )
 def test_source_streams(config, stream_len):

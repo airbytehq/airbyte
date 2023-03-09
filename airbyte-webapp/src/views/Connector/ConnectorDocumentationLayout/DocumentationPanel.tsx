@@ -33,7 +33,6 @@ export const DocumentationPanel: React.FC = () => {
   const { setDocumentationPanelOpen, documentationUrl } = useDocumentationPanelContext();
   const { data: docs, isLoading, error } = useDocumentation(documentationUrl);
 
-  // @ts-expect-error rehype-slug currently has type conflicts due to duplicate vfile dependencies
   const urlReplacerPlugin: PluggableList = useMemo<PluggableList>(() => {
     const sanitizeLinks = (url: Url, element: Element) => {
       // Relative URLs pointing to another place within the documentation.

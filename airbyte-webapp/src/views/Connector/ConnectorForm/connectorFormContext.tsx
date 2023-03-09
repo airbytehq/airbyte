@@ -2,19 +2,20 @@ import { useFormikContext } from "formik";
 import React, { useContext, useMemo } from "react";
 import { AnySchema } from "yup";
 
-import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
-import { WidgetConfigMap } from "core/form/types";
+import {
+  ConnectorDefinition,
+  ConnectorDefinitionSpecification,
+  SourceDefinitionSpecificationDraft,
+} from "core/domain/connector";
 
 import { ConnectorFormValues } from "./types";
 
 interface ConnectorFormContext {
   formType: "source" | "destination";
   getValues: <T = unknown>(values: ConnectorFormValues<T>) => ConnectorFormValues<T>;
-  widgetsInfo: WidgetConfigMap;
-  setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
   resetConnectorForm: () => void;
-  selectedConnectorDefinition: ConnectorDefinition;
-  selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification;
+  selectedConnectorDefinition?: ConnectorDefinition;
+  selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification | SourceDefinitionSpecificationDraft;
   isEditMode?: boolean;
   validationSchema: AnySchema;
   connectorId?: string;
@@ -31,14 +32,11 @@ export const useConnectorForm = (): ConnectorFormContext => {
 };
 
 interface ConnectorFormContextProviderProps {
-  selectedConnectorDefinition: ConnectorDefinition;
-  widgetsInfo: WidgetConfigMap;
-  setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
-  resetUiWidgetsInfo: () => void;
+  selectedConnectorDefinition?: ConnectorDefinition;
   formType: "source" | "destination";
   isEditMode?: boolean;
   getValues: <T = unknown>(values: ConnectorFormValues<T>) => ConnectorFormValues<T>;
-  selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification;
+  selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification | SourceDefinitionSpecificationDraft;
   validationSchema: AnySchema;
   connectorId?: string;
 }
@@ -46,9 +44,6 @@ interface ConnectorFormContextProviderProps {
 export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<ConnectorFormContextProviderProps>> = ({
   selectedConnectorDefinition,
   children,
-  widgetsInfo,
-  setUiWidgetsInfo,
-  resetUiWidgetsInfo,
   selectedConnectorDefinitionSpecification,
   getValues,
   formType,
@@ -60,9 +55,7 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
 
   const ctx = useMemo<ConnectorFormContext>(() => {
     const context: ConnectorFormContext = {
-      widgetsInfo,
       getValues,
-      setUiWidgetsInfo,
       selectedConnectorDefinition,
       selectedConnectorDefinitionSpecification,
       formType,
@@ -71,14 +64,11 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
       connectorId,
       resetConnectorForm: () => {
         resetForm();
-        resetUiWidgetsInfo();
       },
     };
     return context;
   }, [
-    widgetsInfo,
     getValues,
-    setUiWidgetsInfo,
     selectedConnectorDefinition,
     selectedConnectorDefinitionSpecification,
     formType,
@@ -86,7 +76,6 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
     isEditMode,
     connectorId,
     resetForm,
-    resetUiWidgetsInfo,
   ]);
 
   return <connectorFormContext.Provider value={ctx}>{children}</connectorFormContext.Provider>;

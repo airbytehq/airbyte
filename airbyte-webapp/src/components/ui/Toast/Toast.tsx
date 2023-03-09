@@ -6,8 +6,8 @@ import React from "react";
 import { CrossIcon } from "components/icons/CrossIcon";
 import { Text } from "components/ui/Text";
 
-import { Button } from "../Button";
 import styles from "./Toast.module.scss";
+import { Button } from "../Button";
 
 export const enum ToastType {
   WARNING = "warning",

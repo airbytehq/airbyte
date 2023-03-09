@@ -12,13 +12,13 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -28,7 +28,7 @@ public abstract class AbstractSshMySqlSourceAcceptanceTest extends SourceAccepta
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
 
-  private JsonNode config;
+  protected static JsonNode config;
 
   public abstract Path getConfigFilePath();
 

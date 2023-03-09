@@ -1,0 +1,12 @@
+@use "scss/variables";
+
+.connectionFormContainer {
+  width: 100%;
+  padding: 0 variables.$spacing-xl;
+
+  > form {
+    display: flex;
+    flex-direction: column;
+    gap: variables.$spacing-md;
+  }
+}

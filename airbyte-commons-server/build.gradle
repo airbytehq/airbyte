@@ -1,0 +1,69 @@
+plugins {
+    id "java-library"
+}
+
+dependencies {
+    annotationProcessor platform(libs.micronaut.bom)
+    annotationProcessor libs.bundles.micronaut.annotation.processor
+    annotationProcessor libs.micronaut.jaxrs.processor
+
+    implementation platform(libs.micronaut.bom)
+    implementation libs.bundles.micronaut
+    implementation libs.micronaut.jaxrs.server
+
+    // Ensure that the versions defined in deps.toml are used
+    // instead of versions from transitive dependencies
+    implementation(libs.flyway.core) {
+        force = true
+    }
+    implementation(libs.s3) {
+        // Force to avoid updated version brought in transitively from Micronaut 3.8+
+        // that is incompatible with our current Helm setup
+        force = true
+    }
+    implementation(libs.aws.java.sdk.s3) {
+        // Force to avoid updated version brought in transitively from Micronaut 3.8+
+        // that is incompatible with our current Helm setup
+        force = true
+    }
+
+    implementation project(':airbyte-analytics')
+    implementation project(':airbyte-api')
+    implementation project(':airbyte-commons-docker')
+    implementation project(':airbyte-commons-temporal')
+    implementation project(':airbyte-commons-worker')
+    implementation project(':airbyte-config:init')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config:config-persistence')
+    implementation project(':airbyte-config:specs')
+    implementation project(':airbyte-metrics:metrics-lib')
+    implementation project(':airbyte-db:db-lib')
+    implementation project(":airbyte-json-validation")
+    implementation project(':airbyte-notification')
+    implementation project(':airbyte-oauth')
+    implementation project(':airbyte-protocol:protocol-models')
+    implementation project(':airbyte-persistence:job-persistence')
+
+    implementation 'com.github.slugify:slugify:2.4'
+    implementation 'commons-cli:commons-cli:1.4'
+    implementation libs.temporal.sdk
+    implementation 'org.apache.cxf:cxf-core:3.4.2'
+    implementation 'org.eclipse.jetty:jetty-server:9.4.31.v20200723'
+    implementation 'org.eclipse.jetty:jetty-servlet:9.4.31.v20200723'
+    implementation 'org.glassfish.jaxb:jaxb-runtime:3.0.2'
+    implementation 'org.glassfish.jersey.containers:jersey-container-servlet'
+    implementation 'org.glassfish.jersey.inject:jersey-hk2'
+    implementation 'org.glassfish.jersey.media:jersey-media-json-jackson'
+    implementation 'org.glassfish.jersey.ext:jersey-bean-validation'
+    implementation 'org.quartz-scheduler:quartz:2.3.2'
+    implementation 'io.sentry:sentry:6.3.1'
+    implementation 'io.swagger:swagger-annotations:1.6.2'
+
+    testImplementation project(':airbyte-test-utils')
+    testImplementation libs.postgresql
+    testImplementation libs.platform.testcontainers.postgresql
+    testImplementation 'com.squareup.okhttp3:mockwebserver:4.9.1'
+    testImplementation 'org.mockito:mockito-inline:4.7.0'
+}
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

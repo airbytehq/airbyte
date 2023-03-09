@@ -15,4 +15,4 @@ WARNING: Do not modify this file.
 # Declarative Source
 class SourceMailjetSms(YamlDeclarativeSource):
     def __init__(self):
-        super().__init__(**{"path_to_yaml": "mailjet_sms.yaml"})
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})

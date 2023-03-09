@@ -4,12 +4,10 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 
-import { Label, LabeledInput, LabeledSwitch } from "components";
+import { LabeledInput } from "components";
 import { Button } from "components/ui/Button";
-import { InfoTooltip } from "components/ui/Tooltip";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
-import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import {
   useRemoveCloudWorkspace,
@@ -19,15 +17,6 @@ import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponen
 import { useInvalidateWorkspace, useWorkspaceService } from "services/workspaces/WorkspacesService";
 
 import styles from "./WorkspaceSettingsView.module.scss";
-
-const AdvancedModeSwitchLabel = () => (
-  <>
-    <FormattedMessage id="settings.generalSettings.form.advancedMode.switchLabel" />
-    <InfoTooltip>
-      <FormattedMessage id="settings.generalSettings.form.advancedMode.tooltip" />
-    </InfoTooltip>
-  </>
-);
 
 const ValidationSchema = yup.object().shape({
   name: yup.string().required("form.empty.error"),
@@ -41,7 +30,6 @@ export const WorkspaceSettingsView: React.FC = () => {
   const { mutateAsync: removeCloudWorkspace, isLoading: isRemovingCloudWorkspace } = useRemoveCloudWorkspace();
   const { mutateAsync: updateCloudWorkspace } = useUpdateCloudWorkspace();
   const invalidateWorkspace = useInvalidateWorkspace(workspace.workspaceId);
-  const [isAdvancedMode, setAdvancedMode] = useAdvancedModeSetting();
 
   return (
     <>
@@ -58,11 +46,9 @@ export const WorkspaceSettingsView: React.FC = () => {
         <Formik
           initialValues={{
             name: workspace.name,
-            advancedMode: isAdvancedMode,
           }}
           onSubmit={async (payload) => {
             const { workspaceId } = workspace;
-            setAdvancedMode(payload.advancedMode);
             await updateCloudWorkspace({
               workspaceId,
               name: payload.name,
@@ -72,7 +58,7 @@ export const WorkspaceSettingsView: React.FC = () => {
           enableReinitialize
           validationSchema={ValidationSchema}
         >
-          {({ dirty, isSubmitting, resetForm, isValid, setFieldValue }) => (
+          {({ dirty, isSubmitting, resetForm, isValid }) => (
             <Form>
               <Content>
                 <Field name="name">
@@ -86,18 +72,6 @@ export const WorkspaceSettingsView: React.FC = () => {
                       type="text"
                       error={!!meta.error && meta.touched}
                       message={meta.touched && meta.error && formatMessage({ id: meta.error })}
-                    />
-                  )}
-                </Field>
-                <Label className={styles.formItem}>
-                  <FormattedMessage id="settings.generalSettings.form.advancedMode.label" />
-                </Label>
-                <Field name="advancedMode">
-                  {({ field }: FieldProps<boolean>) => (
-                    <LabeledSwitch
-                      label={<AdvancedModeSwitchLabel />}
-                      checked={field.value}
-                      onChange={() => setFieldValue(field.name, !field.value)}
                     />
                   )}
                 </Field>

@@ -1,55 +1,38 @@
 import isEqual from "lodash/isEqual";
 import React, { useCallback } from "react";
 
-import { SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
-import { AirbyteStreamConfiguration, SelectedFieldInfo } from "core/request/AirbyteClient";
+import { SyncSchemaField } from "core/domain/catalog";
+import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
 
 import { FieldHeader } from "./FieldHeader";
 import { FieldRow } from "./FieldRow";
-import { pathDisplayName } from "./PathPopout";
+import { IndexerType, pathDisplayName } from "./PathPopout";
 import styles from "./StreamFieldTable.module.scss";
 import { TreeRowWrapper } from "./TreeRowWrapper";
 
 interface StreamFieldTableProps {
   config: AirbyteStreamConfiguration | undefined;
   onCursorSelect: (cursorPath: string[]) => void;
-  onFirstFieldDeselected: (fieldName: string[]) => void;
   onPkSelect: (pkPath: string[]) => void;
-  onSelectedFieldsUpdate: (selectedFields: SelectedFieldInfo[]) => void;
-  onAllFieldsSelected: () => void;
-  shouldDefineCursor: boolean;
-  shouldDefinePk: boolean;
+  handleFieldToggle: (fieldPath: string[], isSelected: boolean) => void;
+  cursorIndexerType: IndexerType;
+  primaryKeyIndexerType: IndexerType;
   syncSchemaFields: SyncSchemaField[];
-  numberOfSelectableFields: number;
+  shouldDefinePrimaryKey: boolean;
+  shouldDefineCursor: boolean;
 }
 
 export const StreamFieldTable: React.FC<StreamFieldTableProps> = ({
   config,
   onCursorSelect,
-  onFirstFieldDeselected,
   onPkSelect,
-  onSelectedFieldsUpdate,
-  onAllFieldsSelected,
-  shouldDefineCursor,
-  shouldDefinePk,
+  handleFieldToggle,
+  cursorIndexerType,
+  primaryKeyIndexerType,
   syncSchemaFields,
-  numberOfSelectableFields,
+  shouldDefinePrimaryKey,
+  shouldDefineCursor,
 }) => {
-  const handleFieldToggle = (fieldPath: string[], isSelected: boolean) => {
-    const previouslySelectedFields = config?.selectedFields || [];
-
-    if (!config?.fieldSelectionEnabled && !isSelected) {
-      onFirstFieldDeselected(fieldPath);
-    } else if (isSelected && previouslySelectedFields.length === numberOfSelectableFields - 1) {
-      // In this case we are selecting the only unselected field
-      onAllFieldsSelected();
-    } else if (isSelected) {
-      onSelectedFieldsUpdate([...previouslySelectedFields, { fieldPath }]);
-    } else {
-      onSelectedFieldsUpdate(previouslySelectedFields.filter((f) => !isEqual(f.fieldPath, fieldPath)) || []);
-    }
-  };
-
   const isFieldSelected = useCallback(
     (field: SyncSchemaField): boolean => {
       // All fields are implicitly selected if field selection is disabled
@@ -57,7 +40,7 @@ export const StreamFieldTable: React.FC<StreamFieldTableProps> = ({
         return true;
       }
 
-      // path[0] is the top-level field name for all nested fields
+      // Nested fields cannot currently be individually deselected, so we can just check whether the top-level field has been selected
       return !!config?.selectedFields?.find((f) => isEqual(f.fieldPath, [field.path[0]]));
     },
     [config]
@@ -74,12 +57,14 @@ export const StreamFieldTable: React.FC<StreamFieldTableProps> = ({
             <FieldRow
               field={field}
               config={config}
-              isPrimaryKeyEnabled={shouldDefinePk && SyncSchemaFieldObject.isPrimitive(field)}
-              isCursorEnabled={shouldDefineCursor && SyncSchemaFieldObject.isPrimitive(field)}
+              cursorIndexerType={cursorIndexerType}
+              primaryKeyIndexerType={primaryKeyIndexerType}
               onPrimaryKeyChange={onPkSelect}
               onCursorChange={onCursorSelect}
               onToggleFieldSelected={handleFieldToggle}
               isSelected={isFieldSelected(field)}
+              shouldDefinePrimaryKey={shouldDefinePrimaryKey}
+              shouldDefineCursor={shouldDefineCursor}
             />
           </TreeRowWrapper>
         ))}

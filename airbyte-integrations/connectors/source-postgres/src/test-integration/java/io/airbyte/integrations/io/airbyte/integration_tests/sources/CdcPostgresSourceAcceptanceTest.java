@@ -19,6 +19,8 @@ import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.util.HostPortResolver;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
@@ -26,8 +28,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.HashMap;
 import java.util.List;
@@ -182,20 +182,20 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    STREAM_NAME,
-                    NAMESPACE,
-                    Field.of("id", JsonSchemaType.INTEGER)
-                    /*no name field */)
+                STREAM_NAME,
+                NAMESPACE,
+                Field.of("id", JsonSchemaType.INTEGER)
+            /* no name field */)
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("name"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    STREAM_NAME2,
-                    NAMESPACE,
-                    /* no id field */
-                    Field.of("name", JsonSchemaType.STRING))
+                STREAM_NAME2,
+                NAMESPACE,
+                /* no id field */
+                Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
@@ -230,7 +230,8 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
     assertTrue(records.stream()
         .filter(r -> {
           return r.getStream().equals(stream)
-              && r.getData().get(field) != null;})
+              && r.getData().get(field) != null;
+        })
         .collect(Collectors.toList())
         .isEmpty(), "Records contain unselected columns [%s:%s]".formatted(stream, field));
   }

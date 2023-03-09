@@ -8,19 +8,19 @@ import { ButtonProps } from "./types";
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
   const {
+    full = false,
+    size = "xs",
+    iconPosition = "left",
+    variant = "primary",
     children,
     className,
-    clickable,
-    full,
     icon,
-    iconPosition,
     isLoading,
-    size,
-    variant,
-    wasActive,
     width,
+    disabled,
     ...buttonProps
   } = props;
+
   const buttonStyles = {
     [styles.full]: full,
     [styles.isLoading]: isLoading,
@@ -34,15 +34,15 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>((props, r
     [styles.typeSecondary]: variant === "secondary",
     [styles.typeDark]: variant === "dark",
   };
-  const widthStyle: { width?: string } = {};
-  if (width) {
-    widthStyle.width = `${width}px`;
-  }
+
+  const widthStyle: React.CSSProperties = width ? { width: `${width}px` } : {};
+
   return (
     <button
       ref={ref}
       style={widthStyle}
       className={classNames(styles.button, className, buttonStyles)}
+      disabled={disabled || isLoading}
       {...buttonProps}
     >
       {isLoading && (
@@ -75,10 +75,3 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>((props, r
     </button>
   );
 });
-
-Button.defaultProps = {
-  full: false,
-  size: "xs",
-  variant: "primary",
-  iconPosition: "left",
-};

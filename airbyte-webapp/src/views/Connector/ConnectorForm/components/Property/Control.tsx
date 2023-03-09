@@ -1,7 +1,6 @@
 import { Field, useField } from "formik";
-import React from "react";
+import React, { useCallback } from "react";
 
-import { DatePicker } from "components/ui/DatePicker";
 import { DropDown } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
 import { Multiselect } from "components/ui/Multiselect";
@@ -14,6 +13,8 @@ import { isDefined } from "utils/common";
 
 import SecretConfirmationControl from "./SecretConfirmationControl";
 
+const DatePicker = React.lazy(() => import("components/ui/DatePicker"));
+
 interface ControlProps {
   property: FormBaseItem;
   name: string;
@@ -24,6 +25,19 @@ interface ControlProps {
 export const Control: React.FC<ControlProps> = ({ property, name, disabled, error }) => {
   const [field, meta, helpers] = useField(name);
   const useDatepickerExperiment = useExperiment("connector.form.useDatepicker", true);
+
+  const onChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      field.onChange(e);
+      if (!property.default && e.target.value === "") {
+        // in case the input is not required and the user deleted their value, reset to undefined to avoid sending
+        // an empty string which might fail connector validation.
+        // Do not do this if there's a default value, formik will fill it in when casting.
+        helpers.setValue(undefined);
+      }
+    },
+    [field, helpers, property.default]
+  );
 
   if (property.type === "array" && !property.enum) {
     return (
@@ -68,7 +82,14 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
         withTime={property.format === "date-time"}
         onChange={(value) => {
           helpers.setTouched(true);
-          helpers.setValue(value);
+          if (!property.default && value === "") {
+            // in case the input is not required and the user deleted their value, reset to undefined to avoid sending
+            // an empty string which might fail connector validation.
+            // Do not do this if there's a default value, formik will fill it in when casting.
+            helpers.setValue(undefined);
+          } else {
+            helpers.setValue(value);
+          }
         }}
         value={field.value}
         disabled={disabled}
@@ -93,7 +114,17 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
       />
     );
   } else if (property.multiline && !property.isSecret) {
-    return <TextArea {...field} autoComplete="off" value={value ?? ""} rows={3} disabled={disabled} error={error} />;
+    return (
+      <TextArea
+        {...field}
+        onChange={onChange}
+        autoComplete="off"
+        value={value ?? ""}
+        rows={3}
+        disabled={disabled}
+        error={error}
+      />
+    );
   } else if (property.isSecret) {
     const isFormInEditMode = isDefined(meta.initialValue);
     return (
@@ -103,14 +134,16 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
         showButtons={isFormInEditMode}
         disabled={disabled}
         error={error}
+        onChange={onChange}
       />
     );
   }
-  const inputType = property.type === "integer" ? "number" : "text";
+  const inputType = property.type === "integer" || property.type === "number" ? "number" : "text";
 
   return (
     <Input
       {...field}
+      onChange={onChange}
       placeholder={inputType === "number" ? property.default?.toString() : undefined}
       autoComplete="off"
       type={inputType}

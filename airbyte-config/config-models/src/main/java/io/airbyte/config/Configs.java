@@ -740,6 +740,10 @@ public interface Configs {
 
   boolean getAutoDetectSchema();
 
+  boolean getApplyFieldSelection();
+
+  String getFieldSelectionWorkspaces();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING

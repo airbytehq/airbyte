@@ -10,6 +10,10 @@ $icon-size: 15px;
   align-items: center;
   overflow: hidden;
   scrollbar-gutter: stable;
+
+  &.newTableContainer {
+    overflow: unset;
+  }
 }
 
 .connector {
@@ -22,20 +26,23 @@ $icon-size: 15px;
 }
 
 .source {
-  flex: 7.3 0 0;
-  min-width: 0;
+  // A hard-coded px is bad, but it works.
+  // Ideally this table will be converted away from div's and
+  // flexbox into react-table and this will go away.
+  flex: 2 1 547px;
+}
+
+.destinationSection {
+  display: flex;
+  flex: 1 1 120px;
+  align-items: center;
 }
 
 .destination {
-  flex: 2 0 0;
-  min-width: 0;
-}
-
-.icon {
-  width: $icon-size;
-  height: $icon-size;
+  display: flex;
+  flex: 2 1 217px;
 }
 
 .arrowContainer {
-  width: 20px;
+  flex: 1 0 20px;
 }

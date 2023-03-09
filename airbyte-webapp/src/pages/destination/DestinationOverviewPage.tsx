@@ -12,35 +12,30 @@ import { useGetDestination } from "hooks/services/useDestinationHook";
 import { useSourceList } from "hooks/services/useSourceHook";
 import { DestinationPaths } from "pages/routePaths";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
-import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
-import { getIcon } from "utils/imageUtils";
 
 export const DestinationOverviewPage = () => {
   const params = useParams() as { "*": StepsTypes | ""; id: string };
-  const { sources } = useSourceList();
   const navigate = useNavigate();
+
   const destination = useGetDestination(params.id);
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
-  const { connections } = useConnectionList();
-  const { sourceDefinitions } = useSourceDefinitionList();
+  // We load only connections attached to this destination to be shown in the connections grid
+  const { connections } = useConnectionList({ destinationId: [destination.destinationId] });
 
-  const connectionsWithDestination = connections.filter(
-    (connectionItem) => connectionItem.destinationId === destination.destinationId
-  );
-
-  const sourceDropdownOptions: DropdownMenuOptionType[] = useMemo(
+  // We load all sources so the add source button has a pre-filled list of options.
+  const { sources } = useSourceList();
+  const sourceDropdownOptions = useMemo<DropdownMenuOptionType[]>(
     () =>
-      sources.map((item) => {
-        const sourceDef = sourceDefinitions.find((sd) => sd.sourceDefinitionId === item.sourceDefinitionId);
+      sources.map((source) => {
         return {
           as: "button",
-          icon: <ConnectorIcon icon={sourceDef?.icon} />,
+          icon: <ConnectorIcon icon={source.icon} />,
           iconPosition: "right",
-          displayName: item.name,
-          value: item.sourceId,
+          displayName: source.name,
+          value: source.sourceId,
         };
       }),
-    [sources, sourceDefinitions]
+    [sources]
   );
 
   const onSelect = (data: DropdownMenuOptionType) => {
@@ -64,14 +59,16 @@ export const DestinationOverviewPage = () => {
         onSelect={onSelect}
         entityName={destination.name}
         entity={destination.destinationName}
-        entityIcon={destinationDefinition.icon ? getIcon(destinationDefinition.icon) : null}
+        entityIcon={destination.icon}
         releaseStage={destinationDefinition.releaseStage}
       />
-      {connectionsWithDestination.length ? (
-        <DestinationConnectionTable connections={connectionsWithDestination} />
+      {connections.length ? (
+        <DestinationConnectionTable connections={connections} />
       ) : (
         <Placeholder resource={ResourceTypes.Sources} />
       )}
     </>
   );
 };
+
+export default DestinationOverviewPage;

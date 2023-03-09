@@ -7,7 +7,8 @@ BUCKET=airbyte-connector-build-status
 CONNECTOR=$1
 REPOSITORY=$2
 RUN_ID=$3
-OUTCOME=$4
+TEST_OUTCOME=$4
+QA_CHECKS_OUTCOME=$5
 
 BUCKET_WRITE_ROOT=/tmp/bucket_write_root
 LAST_TEN_ROOT=/tmp/last_ten_root
@@ -22,6 +23,10 @@ function write_job_log() {
   mkdir -p tests/history/"$CONNECTOR"
   LINK=https://github.com/$REPOSITORY/actions/runs/$RUN_ID
   TIMESTAMP="$(date +%s)"
+  OUTCOME=failure
+  if [ "$TEST_OUTCOME" = "success" ] && [ "$QA_CHECKS_OUTCOME" = "success" ]; then
+    OUTCOME=success
+  fi
   echo "{ \"link\": \"$LINK\", \"outcome\": \"$OUTCOME\" }" > tests/history/"$CONNECTOR"/"$TIMESTAMP".json
   aws s3 sync "$BUCKET_WRITE_ROOT"/tests/history/"$CONNECTOR"/ s3://"$BUCKET"/tests/history/"$CONNECTOR"/
 }

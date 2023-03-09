@@ -3,7 +3,7 @@ import withMock from "storybook-addon-mock";
 
 import { Card } from "components/ui/Card";
 
-import { ConnectorSpecification } from "core/domain/connector";
+import { ConnectorDefinitionSpecification, ConnectorSpecification } from "core/domain/connector";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
 
 import { ConnectorForm } from "./ConnectorForm";
@@ -46,13 +46,11 @@ export default {
 } as ComponentMeta<typeof ConnectorForm>;
 
 const Template: ComponentStory<typeof ConnectorForm> = (args) => {
+  const selectedSpecification = args.selectedConnectorDefinitionSpecification as ConnectorDefinitionSpecification;
   // Hack to allow devs to not specify sourceDefinitionId
-  if (
-    args.selectedConnectorDefinitionSpecification &&
-    !ConnectorSpecification.id(args.selectedConnectorDefinitionSpecification)
-  ) {
-    if (isSourceDefinitionSpecification(args.selectedConnectorDefinitionSpecification)) {
-      args.selectedConnectorDefinitionSpecification.sourceDefinitionId = TempConnector.sourceDefinitionId;
+  if (!ConnectorSpecification.id(selectedSpecification)) {
+    if (isSourceDefinitionSpecification(selectedSpecification)) {
+      selectedSpecification.sourceDefinitionId = TempConnector.sourceDefinitionId;
     }
   }
 

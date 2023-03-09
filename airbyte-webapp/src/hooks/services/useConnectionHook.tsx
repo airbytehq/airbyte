@@ -8,6 +8,8 @@ import { WebBackendConnectionService } from "core/domain/connection";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
 import { useInitService } from "services/useInitService";
 
+import { useAnalyticsService } from "./Analytics";
+import { useCurrentWorkspace } from "./useWorkspace";
 import { useConfig } from "../../config";
 import {
   ConnectionScheduleData,
@@ -19,6 +21,7 @@ import {
   SourceDefinitionRead,
   SourceRead,
   WebBackendConnectionListItem,
+  WebBackendConnectionListRequestBody,
   WebBackendConnectionRead,
   WebBackendConnectionReadList,
   WebBackendConnectionUpdate,
@@ -26,13 +29,10 @@ import {
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
-import { useAnalyticsService } from "./Analytics";
-import { useCurrentWorkspace } from "./useWorkspace";
 
 export const connectionsKeys = {
   all: [SCOPE_WORKSPACE, "connections"] as const,
-  lists: () => [...connectionsKeys.all, "list"] as const,
-  list: (filters: string) => [...connectionsKeys.lists(), { filters }] as const,
+  lists: (sourceOrDestinationIds: string[] = []) => [...connectionsKeys.all, "list", ...sourceOrDestinationIds],
   detail: (connectionId: string) => [...connectionsKeys.all, "details", connectionId] as const,
   getState: (connectionId: string) => [...connectionsKeys.all, "getState", connectionId] as const,
 };
@@ -236,11 +236,13 @@ export const useRemoveConnectionsFromList = (): ((connectionIds: string[]) => vo
   );
 };
 
-const useConnectionList = () => {
+const useConnectionList = (payload: Pick<WebBackendConnectionListRequestBody, "destinationId" | "sourceId"> = {}) => {
   const workspace = useCurrentWorkspace();
   const service = useWebConnectionService();
 
-  return useSuspenseQuery(connectionsKeys.lists(), () => service.list(workspace.workspaceId));
+  return useSuspenseQuery(connectionsKeys.lists(payload.destinationId ?? payload.sourceId), () =>
+    service.list({ ...payload, workspaceId: workspace.workspaceId })
+  );
 };
 
 const useGetConnectionState = (connectionId: string) => {

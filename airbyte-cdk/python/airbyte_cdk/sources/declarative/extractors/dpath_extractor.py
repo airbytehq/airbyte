@@ -70,7 +70,10 @@ class DpathExtractor(RecordExtractor, JsonSchemaMixin):
             extracted = response_body
         else:
             pointer = [pointer.eval(self.config) for pointer in self.field_pointer]
-            extracted = dpath.util.get(response_body, pointer, default=[])
+            if "*" in pointer:
+                extracted = dpath.util.values(response_body, pointer)
+            else:
+                extracted = dpath.util.get(response_body, pointer, default=[])
         if isinstance(extracted, list):
             return extracted
         elif extracted:

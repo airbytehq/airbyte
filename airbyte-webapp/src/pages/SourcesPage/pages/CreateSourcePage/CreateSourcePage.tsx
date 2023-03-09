@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
@@ -18,7 +18,6 @@ import { SourceForm } from "./components/SourceForm";
 const CreateSourcePage: React.FC = () => {
   useTrackPage(PageTrackingCodes.SOURCE_NEW);
   const navigate = useNavigate();
-  const [successRequest, setSuccessRequest] = useState(false);
 
   const { sourceDefinitions } = useSourceDefinitionList();
   const { mutateAsync: createSource } = useCreateSource();
@@ -34,9 +33,7 @@ const CreateSourcePage: React.FC = () => {
       throw new Error("No Connector Found");
     }
     const result = await createSource({ values, sourceConnector: connector });
-    setSuccessRequest(true);
     setTimeout(() => {
-      setSuccessRequest(false);
       navigate(`../${result.sourceId}`);
     }, 2000);
   };
@@ -47,7 +44,7 @@ const CreateSourcePage: React.FC = () => {
       <ConnectorDocumentationWrapper>
         <PageHeader title={null} middleTitleBlock={<FormattedMessage id="sources.newSourceTitle" />} />
         <FormPageContent>
-          <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} hasSuccess={successRequest} />
+          <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} />
           <CloudInviteUsersHint connectorType="source" />
         </FormPageContent>
       </ConnectorDocumentationWrapper>

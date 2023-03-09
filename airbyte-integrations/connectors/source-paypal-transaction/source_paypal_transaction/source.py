@@ -265,8 +265,7 @@ class PaypalTransactionStream(HttpStream, ABC):
         slice_start_date = self.start_date
 
         if stream_state:
-            # if stream_state_date is in the future (for example during tests) then reset it to maximum_allowed_start_date:
-            stream_state_date = min(isoparse(stream_state.get("date")), self.maximum_allowed_start_date)
+            stream_state_date = isoparse(stream_state.get("date"))
 
             # slice_start_date should be the most recent date:
             slice_start_date = max(slice_start_date, stream_state_date)

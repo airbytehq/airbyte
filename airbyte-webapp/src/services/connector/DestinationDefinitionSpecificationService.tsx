@@ -7,9 +7,9 @@ import { useInitService } from "services/useInitService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
 
+import { useSuspenseQuery } from "./useSuspenseQuery";
 import { DestinationDefinitionSpecificationRead } from "../../core/request/AirbyteClient";
 import { SCOPE_WORKSPACE } from "../Scope";
-import { useSuspenseQuery } from "./useSuspenseQuery";
 
 export const destinationDefinitionSpecificationKeys = {
   all: [SCOPE_WORKSPACE, "destinationDefinitionSpecification"] as const,

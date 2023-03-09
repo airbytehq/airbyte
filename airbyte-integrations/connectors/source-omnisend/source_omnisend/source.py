@@ -15,4 +15,4 @@ WARNING: Do not modify this file.
 # Declarative Source
 class SourceOmnisend(YamlDeclarativeSource):
     def __init__(self):
-        super().__init__(**{"path_to_yaml": "omnisend.yaml"})
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})

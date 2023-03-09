@@ -4,19 +4,22 @@
 .tabList {
   flex: 0 0 auto;
   display: flex;
+  overflow-y: auto;
+  margin-bottom: variables.$spacing-sm;
 }
 
 .tab {
-  flex: 1;
+  flex-grow: 1;
+  flex-shrink: 0;
   background-color: transparent;
   border: 0;
+  white-space: nowrap;
 }
 
 .tabTitle {
   border-bottom: variables.$border-thin solid colors.$grey-50;
   color: colors.$grey-300;
   font-weight: 500;
-  font-size: 10px;
   cursor: pointer;
   padding: 3px;
 }
@@ -34,4 +37,9 @@
 .tabPanel {
   max-height: 100%;
   overflow-y: auto;
+
+  > pre {
+    margin: 0;
+    padding: 0;
+  }
 }

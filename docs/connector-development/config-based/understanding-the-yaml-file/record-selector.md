@@ -22,6 +22,7 @@ Schema:
 ```
 
 The current record extraction implementation uses [dpath](https://pypi.org/project/dpath/) to select records from the json-decoded HTTP response.
+For nested structures `*` can be used to iterate over array elements.
 Schema:
 
 ```yaml
@@ -137,6 +138,50 @@ and a selector
 selector:
   extractor:
     field_pointer: [ "data", "records" ]
+```
+
+The selected records will be
+
+```json
+[
+  {
+    "id": 1
+  },
+  {
+    "id": 2
+  }
+]
+```
+
+### Selecting fields nested in arrays
+
+Given a response body of the form
+
+```json
+
+{
+  "data": [
+    {
+      "record": {
+        "id": "1"
+      }
+    },
+    {
+      "record": {
+        "id": "2"
+      }
+    }
+  ]
+}
+
+```
+
+and a selector
+
+```yaml
+selector:
+  extractor:
+    field_pointer: [ "data", "*", "record" ]
 ```
 
 The selected records will be

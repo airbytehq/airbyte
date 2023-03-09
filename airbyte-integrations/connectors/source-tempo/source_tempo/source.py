@@ -14,4 +14,4 @@ WARNING: Do not modify this file.
 # Declarative Source
 class SourceTempo(YamlDeclarativeSource):
     def __init__(self):
-        super().__init__(path_to_yaml="tempo.yaml")
+        super().__init__(path_to_yaml="manifest.yaml")

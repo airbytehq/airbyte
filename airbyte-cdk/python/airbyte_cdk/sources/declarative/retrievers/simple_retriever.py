@@ -5,6 +5,8 @@
 import json
 import logging
 from dataclasses import InitVar, dataclass, field
+from itertools import islice
+from json import JSONDecodeError
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
@@ -367,7 +369,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         stream_slice = stream_slice or {}  # None-check
         self.paginator.reset()
         records_generator = self._read_pages(
-            self.parse_records_and_emit_request_and_responses,
+            self._parse_records_and_emit_request_and_responses,
             stream_slice,
             stream_state,
         )
@@ -405,23 +407,64 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         """State setter, accept state serialized by state getter."""
         self.stream_slicer.update_cursor(value)
 
-    def parse_records_and_emit_request_and_responses(self, request, response, stream_slice, stream_state) -> Iterable[StreamData]:
+    def _parse_records_and_emit_request_and_responses(self, request, response, stream_slice, stream_state) -> Iterable[StreamData]:
         # Only emit requests and responses when running in debug mode
         if self.logger.isEnabledFor(logging.DEBUG):
-            yield self._create_trace_message_from_request(request)
-            yield self._create_trace_message_from_response(response)
+            yield _prepared_request_to_airbyte_message(request)
+            yield _response_to_airbyte_message(response)
         # Not great to need to call _read_pages which is a private method
         # A better approach would be to extract the HTTP client from the HttpStream and call it directly from the HttpRequester
         yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
 
-    def _create_trace_message_from_request(self, request: requests.PreparedRequest):
-        # FIXME: this should return some sort of trace message
-        request_dict = {"url": request.url, "http_method": request.method, "headers": dict(request.headers), "body": request.body}
-        log_message = filter_secrets(f"request:{json.dumps(request_dict)}")
-        return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=log_message))
 
-    def _create_trace_message_from_response(self, response: requests.Response):
-        # FIXME: this should return some sort of trace message
-        response_dict = {"body": response.text, "headers": dict(response.headers), "status_code": response.status_code}
-        log_message = filter_secrets(f"response:{json.dumps(response_dict)}")
-        return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=log_message))
+@dataclass
+class SimpleRetrieverTestReadDecorator(SimpleRetriever):
+    """
+    In some cases, we want to limit the number of requests that are made to the backend source. This class allows for limiting the number of
+    slices that are queried throughout a read command.
+    """
+
+    maximum_number_of_slices: int = 5
+
+    def __post_init__(self, options: Mapping[str, Any]):
+        super().__post_init__(options)
+        if self.maximum_number_of_slices and self.maximum_number_of_slices < 1:
+            raise ValueError(
+                f"The maximum number of slices on a test read needs to be strictly positive. Got {self.maximum_number_of_slices}"
+            )
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Optional[StreamState] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        return islice(super().stream_slices(sync_mode=sync_mode, stream_state=stream_state), self.maximum_number_of_slices)
+
+
+def _prepared_request_to_airbyte_message(request: requests.PreparedRequest) -> AirbyteMessage:
+    # FIXME: this should return some sort of trace message
+    request_dict = {
+        "url": request.url,
+        "http_method": request.method,
+        "headers": dict(request.headers),
+        "body": _body_binary_string_to_dict(request.body),
+    }
+    log_message = filter_secrets(f"request:{json.dumps(request_dict)}")
+    return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=log_message))
+
+
+def _body_binary_string_to_dict(body_str: str) -> Optional[Mapping[str, str]]:
+    if body_str:
+        if isinstance(body_str, (bytes, bytearray)):
+            body_str = body_str.decode()
+        try:
+            return json.loads(body_str)
+        except JSONDecodeError:
+            return {k: v for k, v in [s.split("=") for s in body_str.split("&")]}
+    else:
+        return None
+
+
+def _response_to_airbyte_message(response: requests.Response) -> AirbyteMessage:
+    # FIXME: this should return some sort of trace message
+    response_dict = {"body": response.text, "headers": dict(response.headers), "status_code": response.status_code}
+    log_message = filter_secrets(f"response:{json.dumps(response_dict)}")
+    return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=log_message))

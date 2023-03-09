@@ -4,10 +4,10 @@ import { SchemaChange } from "core/request/AirbyteClient";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 
 export const useSchemaChanges = (schemaChange: SchemaChange) => {
-  const allowAutoDetectSchemaChanges = useFeature(FeatureItem.AllowAutoDetectSchemaChanges);
+  const allowAutoDetectSchema = useFeature(FeatureItem.AllowAutoDetectSchema);
 
   return useMemo(() => {
-    const hasSchemaChanges = allowAutoDetectSchemaChanges && schemaChange !== SchemaChange.no_change;
+    const hasSchemaChanges = allowAutoDetectSchema && schemaChange !== SchemaChange.no_change;
     const hasBreakingSchemaChange = hasSchemaChanges && schemaChange === SchemaChange.breaking;
     const hasNonBreakingSchemaChange = hasSchemaChanges && schemaChange === SchemaChange.non_breaking;
 
@@ -17,5 +17,5 @@ export const useSchemaChanges = (schemaChange: SchemaChange) => {
       hasBreakingSchemaChange,
       hasNonBreakingSchemaChange,
     };
-  }, [allowAutoDetectSchemaChanges, schemaChange]);
+  }, [allowAutoDetectSchema, schemaChange]);
 };

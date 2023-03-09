@@ -5,7 +5,7 @@
 import datetime
 import urllib
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
@@ -91,7 +91,7 @@ class SendgridStreamOffsetPagination(SendgridStream):
 class SendgridStreamIncrementalMixin(HttpStream, ABC):
     cursor_field = "created"
 
-    def __init__(self, start_time: Optional[Union[int, str]], **kwargs):
+    def __init__(self, start_time: Optional[str], **kwargs):
         super().__init__(**kwargs)
         self._start_time = start_time or 0
         if isinstance(self._start_time, str):

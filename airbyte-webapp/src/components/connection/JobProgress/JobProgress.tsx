@@ -3,11 +3,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { getJobStatus } from "components/JobItem/JobItem";
+import { JobsWithJobs } from "components/JobItem/types";
+import { getJobStatus } from "components/JobItem/utils";
 import { Text } from "components/ui/Text";
 
 import { AttemptRead, AttemptStatus, SynchronousJobRead } from "core/request/AirbyteClient";
-import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
 import { formatBytes } from "utils/numberHelper";
 
 import styles from "./JobProgress.module.scss";

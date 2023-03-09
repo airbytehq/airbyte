@@ -1,0 +1,167 @@
+version: "0.1.0"
+
+definitions:
+  schema_loader:
+    file_path: "./source_posthog/schemas/{{ options['name'] }}.json"
+
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_pointer: ["results"]
+
+  requester:
+    type: HttpRequester
+    name: "{{ options['name'] }}"
+    url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+
+  retriever:
+    type: SimpleRetriever
+    name: "{{ options['name'] }}"
+    primary_key: "{{ options['primary_key'] }}"
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: "DefaultPaginator"
+      url_base: "*ref(definitions.requester.url_base)"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "limit"
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 100
+      page_token_option:
+        field_name: "offset"
+        inject_into: "request_parameter"
+
+  base_stream:
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+
+  projects_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "projects"
+      path: "projects"
+
+  base_slicing_stream:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/projects/{{ stream_slice.id }}/{{ options['name'] }}"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.projects_stream)"
+            parent_key: id
+            stream_slice_field: id
+
+  cohorts_stream:
+    $ref: "*ref(definitions.base_slicing_stream)"
+    $options:
+      name: "cohorts"
+      path: "cohorts"
+
+  feature_flags_stream:
+    $ref: "*ref(definitions.base_slicing_stream)"
+    $options:
+      name: "feature_flags"
+      path: "feature_flags"
+
+  persons_stream:
+    $ref: "*ref(definitions.base_slicing_stream)"
+    $options:
+      name: "persons"
+      path: "persons"
+
+  annotations_stream:
+    $ref: "*ref(definitions.base_slicing_stream)"
+    $options:
+      name: "annotations"
+      path: "annotations"
+
+  insights_stream:
+    $ref: "*ref(definitions.base_slicing_stream)"
+    $options:
+      name: "insights"
+      path: "insights"
+
+  events_stream:
+    $options:
+      name: "events"
+      path: "events"
+    primary_key: "id"
+    stream_cursor_field: "timestamp"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      class_name: source_posthog.components.EventsSimpleRetriever
+      name: "{{ options['name'] }}"
+      primary_key: "{{ options['primary_key'] }}"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/projects/{{ stream_slice.project_id }}/{{ options['name'] }}/"
+      stream_slicer:
+        type: CustomStreamSlicer
+        class_name: source_posthog.components.EventsCartesianProductStreamSlicer
+        stream_slicers:
+          - type: SubstreamSlicer
+            parent_stream_configs:
+              - stream: "*ref(definitions.projects_stream)"
+                parent_key: "id"
+                stream_slice_field: "project_id"
+          - type: DatetimeStreamSlicer
+            start_datetime:
+              datetime: "{{ config['start_date'] }}"
+              datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+            end_datetime:
+              datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
+              datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+            datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+            cursor_granularity: "PT0.000001S"
+            step: "P30D"
+            cursor_field: timestamp
+            start_time_option:
+              field_name: after
+              inject_into: request_parameter
+            end_time_option:
+              field_name: before
+              inject_into: request_parameter
+      paginator:
+        type: "DefaultPaginator"
+        url_base: "*ref(definitions.requester.url_base)"
+        page_size_option:
+          inject_into: "request_parameter"
+          field_name: "limit"
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ response['next'] }}"
+          page_size: 100
+        page_token_option:
+          inject_into: "path"
+
+streams:
+  - "*ref(definitions.projects_stream)"
+  - "*ref(definitions.cohorts_stream)"
+  - "*ref(definitions.feature_flags_stream)"
+  - "*ref(definitions.persons_stream)"
+  - "*ref(definitions.events_stream)"
+  - "*ref(definitions.annotations_stream)"
+  - "*ref(definitions.insights_stream)"
+
+check:
+  type: CheckStream
+  stream_names: ["projects"]

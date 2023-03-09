@@ -35,6 +35,7 @@ exports[`<BulkEditPanel /> should render 1`] = `
             class="<removed-for-snapshot-test>"
           >
             <input
+              aria-checked="false"
               class="<removed-for-snapshot-test>"
               type="checkbox"
               value=""
@@ -83,6 +84,7 @@ exports[`<BulkEditPanel /> should render 1`] = `
                   >
                     <span
                       class="<removed-for-snapshot-test>"
+                      data-type="text"
                     />
                   </div>
                   <svg
@@ -145,7 +147,10 @@ exports[`<BulkEditPanel /> should render 1`] = `
                   >
                     <span
                       class="<removed-for-snapshot-test>"
-                    />
+                      data-type="text"
+                    >
+                      Not available
+                    </span>
                   </div>
                   <svg
                     aria-hidden="true"
@@ -207,7 +212,10 @@ exports[`<BulkEditPanel /> should render 1`] = `
                   >
                     <span
                       class="<removed-for-snapshot-test>"
-                    />
+                      data-type="text"
+                    >
+                      Not available
+                    </span>
                   </div>
                   <svg
                     aria-hidden="true"

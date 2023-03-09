@@ -5,6 +5,10 @@ plugins {
     id 'com.github.eirnym.js2p' version '1.0'
 }
 
+dependencies {
+    implementation project(path: ':airbyte-config:config-models')
+}
+
 jsonSchema2Pojo {
     sourceType = SourceType.YAMLSCHEMA
     source = files("${sourceSets.main.output.resourcesDir}/workers_models")

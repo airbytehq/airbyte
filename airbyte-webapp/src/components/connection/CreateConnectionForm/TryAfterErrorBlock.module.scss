@@ -1,0 +1,14 @@
+@use "scss/variables";
+
+.container {
+  padding: 40px;
+  text-align: center;
+}
+
+.message {
+  padding: variables.$spacing-lg 0 variables.$spacing-md;
+}
+
+.retryButton {
+  min-width: 239px;
+}

@@ -10,51 +10,35 @@ import { FeatureItem, FeatureSet, useFeatureService } from "hooks/services/Featu
 import { useApiHealthPoll } from "hooks/services/Health";
 import { useQuery } from "hooks/useQuery";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
-import { Auth } from "packages/cloud/views/auth";
-import { CreditsPage } from "packages/cloud/views/credits";
-import MainView from "packages/cloud/views/layout/MainView";
-import { WorkspacesPage } from "packages/cloud/views/workspaces";
-import ConnectionPage from "pages/ConnectionPage";
-import CreationFormPage from "pages/ConnectionPage/pages/CreationFormPage";
-import { AllDestinationsPage } from "pages/destination/AllDestinationsPage";
-import CreateDestinationPage from "pages/destination/CreateDestinationPage";
-import { DestinationItemPage } from "pages/destination/DestinationItemPage";
-import { DestinationOverviewPage } from "pages/destination/DestinationOverviewPage";
-import { DestinationSettingsPage } from "pages/destination/DestinationSettingsPage";
-import SourcesPage from "pages/SourcesPage";
-import { SpeakeasyRedirectPage } from "pages/SpeakeasyRedirectPage";
 import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspaces/WorkspacesService";
 import { setSegmentAnonymousId, useGetSegmentAnonymousId } from "utils/crossDomainUtils";
 import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
-import { RoutePaths, DestinationPaths } from "../../pages/routePaths";
+import { CloudRoutes } from "./cloudRoutePaths";
 import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
 import { LDExperimentServiceProvider } from "./services/thirdParty/launchdarkly";
 import { useGetCloudWorkspace } from "./services/workspaces/CloudWorkspacesService";
-import { DefaultView } from "./views/DefaultView";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
-import { CloudSettingsPage } from "./views/settings/CloudSettingsPage";
+import { RoutePaths, DestinationPaths } from "../../pages/routePaths";
 
-export const CloudRoutes = {
-  Root: "/",
-  AuthFlow: "/auth_flow",
+const MainView = React.lazy(() => import("packages/cloud/views/layout/MainView"));
+const WorkspacesPage = React.lazy(() => import("packages/cloud/views/workspaces"));
+const Auth = React.lazy(() => import("packages/cloud/views/auth"));
+const CreditsPage = React.lazy(() => import("packages/cloud/views/credits"));
 
-  Metrics: "metrics",
-  SelectWorkspace: "workspaces",
-  Credits: "credits",
+const ConnectionsRoutes = React.lazy(() => import("pages/connections/ConnectionsRoutes"));
+const CreateConnectionPage = React.lazy(() => import("pages/connections/CreateConnectionPage"));
+const AllDestinationsPage = React.lazy(() => import("pages/destination/AllDestinationsPage"));
+const CreateDestinationPage = React.lazy(() => import("pages/destination/CreateDestinationPage"));
+const DestinationItemPage = React.lazy(() => import("pages/destination/DestinationItemPage"));
+const DestinationOverviewPage = React.lazy(() => import("pages/destination/DestinationOverviewPage"));
+const DestinationSettingsPage = React.lazy(() => import("pages/destination/DestinationSettingsPage"));
+const SourcesPage = React.lazy(() => import("pages/SourcesPage"));
+const SpeakeasyRedirectPage = React.lazy(() => import("pages/SpeakeasyRedirectPage"));
 
-  // Auth routes
-  Signup: "/signup",
-  Login: "/login",
-  ResetPassword: "/reset-password",
-
-  // Firebase action routes
-  // These URLs come from Firebase emails, and all have the same
-  // action URL ("/verify-email") with different "mode" parameter
-  // TODO: use a better action URL in Firebase email template
-  FirebaseAction: "/verify-email",
-} as const;
+const CloudSettingsPage = React.lazy(() => import("./views/settings/CloudSettingsPage"));
+const DefaultView = React.lazy(() => import("./views/DefaultView"));
 
 const MainRoutes: React.FC = () => {
   const { setWorkspaceFeatures } = useFeatureService();
@@ -88,14 +72,14 @@ const MainRoutes: React.FC = () => {
         <Route path={RoutePaths.Destination}>
           <Route index element={<AllDestinationsPage />} />
           <Route path={DestinationPaths.NewDestination} element={<CreateDestinationPage />} />
-          <Route path={DestinationPaths.NewConnection} element={<CreationFormPage />} />
+          <Route path={DestinationPaths.NewConnection} element={<CreateConnectionPage />} />
           <Route path={DestinationPaths.Root} element={<DestinationItemPage />}>
             <Route path={DestinationPaths.Settings} element={<DestinationSettingsPage />} />
             <Route index element={<DestinationOverviewPage />} />
           </Route>
         </Route>
         <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
-        <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
+        <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionsRoutes />} />
         <Route path={`${RoutePaths.Settings}/*`} element={<CloudSettingsPage />} />
         <Route path={CloudRoutes.Credits} element={<CreditsPage />} />
         <Route path="*" element={<Navigate to={RoutePaths.Connections} replace />} />

@@ -167,7 +167,6 @@ const RequestConnectorModal: React.FC<RequestConnectorModalProps> = ({
           className={styles.requestButton}
           // type="submit"
           onClick={handleSubmit}
-          wasActive={hasFeedback}
         >
           {hasFeedback ? <FormattedMessage id="connector.requested" /> : <FormattedMessage id="connector.request" />}
         </Button>

@@ -17,7 +17,6 @@ const StyledButton = styled.button<ButtonProps>`
   line-height: 15px;
   outline: none;
   padding: 0 10px 0 0;
-  pointer-events: ${(props) => (props.wasActive && !props.clickable ? "none" : "all")};
   text-align: center;
   text-decoration: none;
   width: ${(props) => (props.full ? "100%" : "auto")};

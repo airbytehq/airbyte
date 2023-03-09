@@ -91,17 +91,17 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
       }
 
       // convert to java types that will convert into reasonable json.
-      setJsonField(queryContext, i, jsonNode);
+      copyToJsonField(queryContext, i, jsonNode);
     }
 
     return jsonNode;
   }
 
   @Override
-  public void setStatementField(final PreparedStatement preparedStatement,
-                                final int parameterIndex,
-                                final PostgresType cursorFieldType,
-                                final String value)
+  public void setCursorField(final PreparedStatement preparedStatement,
+                             final int parameterIndex,
+                             final PostgresType cursorFieldType,
+                             final String value)
       throws SQLException {
     switch (cursorFieldType) {
 
@@ -158,23 +158,12 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   }
 
   @Override
-  protected void setTime(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    try {
-      preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
-    } catch (final DateTimeParseException e) {
-      // attempt to parse the datetime with timezone. This can be caused by schema created with an older
-      // version of the connector
-      preparedStatement.setObject(parameterIndex, OffsetTime.parse(value));
-    }
-  }
-
-  @Override
   protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     preparedStatement.setObject(parameterIndex, LocalDate.parse(value));
   }
 
   @Override
-  public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final PgResultSetMetaData metadata = (PgResultSetMetaData) resultSet.getMetaData();
     final String columnName = metadata.getColumnName(colIndex);
     final String columnTypeName = metadata.getColumnTypeName(colIndex).toLowerCase();
@@ -384,22 +373,12 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   }
 
   @Override
-  protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DateTimeConverter.convertToDate(getObject(resultSet, index, LocalDate.class)));
-  }
-
-  @Override
-  protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime.class)));
-  }
-
-  @Override
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     node.put(columnName, DateTimeConverter.convertToTimestamp(resultSet.getTimestamp(index)));
   }
 
   @Override
-  public PostgresType getFieldType(final JsonNode field) {
+  public PostgresType getDatabaseFieldType(final JsonNode field) {
     try {
       final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText().toLowerCase();
       // Postgres boolean is mapped to JDBCType.BIT, but should be BOOLEAN
@@ -446,7 +425,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   }
 
   @Override
-  public JsonSchemaType getJsonType(final PostgresType jdbcType) {
+  public JsonSchemaType getAirbyteType(final PostgresType jdbcType) {
     return switch (jdbcType) {
       case BOOLEAN -> JsonSchemaType.BOOLEAN;
       case TINYINT, SMALLINT, INTEGER, BIGINT -> JsonSchemaType.INTEGER;

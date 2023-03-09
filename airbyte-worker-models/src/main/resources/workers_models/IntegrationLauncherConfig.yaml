@@ -28,3 +28,6 @@ properties:
     existingJavaType: io.airbyte.commons.version.Version
   isCustomConnector:
     type: boolean
+  allowedHosts:
+    type: object
+    existingJavaType: io.airbyte.config.AllowedHosts

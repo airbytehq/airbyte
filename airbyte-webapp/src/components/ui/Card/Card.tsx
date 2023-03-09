@@ -4,8 +4,8 @@ import React from "react";
 import { H5 } from "components/base/Titles";
 import { Text } from "components/ui/Text";
 
-import { InfoTooltip } from "../Tooltip";
 import styles from "./Card.module.scss";
+import { InfoTooltip } from "../Tooltip";
 
 export interface CardProps {
   title?: React.ReactNode;

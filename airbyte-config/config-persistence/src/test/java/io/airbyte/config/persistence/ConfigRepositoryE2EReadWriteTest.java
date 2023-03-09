@@ -31,6 +31,7 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigRepository.DestinationAndDefinition;
 import io.airbyte.config.persistence.ConfigRepository.SourceAndDefinition;
+import io.airbyte.config.persistence.ConfigRepository.StandardSyncQuery;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -188,7 +189,45 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
   @Test
   void testListWorkspaceStandardSyncAll() throws IOException {
     final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 4);
-    final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId(), true);
+    final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(
+        MockData.standardWorkspaces().get(0).getWorkspaceId(), true);
+
+    assertSyncsMatch(expectedSyncs, actualSyncs);
+  }
+
+  @Test
+  void testListWorkspaceStandardSyncWithAllFiltering() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final StandardSyncQuery query = new StandardSyncQuery(workspaceId, List.of(MockData.SOURCE_ID_1), List.of(MockData.DESTINATION_ID_1), false);
+    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 3).stream()
+        .filter(sync -> query.destinationId().contains(sync.getDestinationId()))
+        .filter(sync -> query.sourceId().contains(sync.getSourceId()))
+        .toList();
+    final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(query);
+
+    assertSyncsMatch(expectedSyncs, actualSyncs);
+  }
+
+  @Test
+  void testListWorkspaceStandardSyncDestinationFiltering() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final StandardSyncQuery query = new StandardSyncQuery(workspaceId, null, List.of(MockData.DESTINATION_ID_1), false);
+    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 3).stream()
+        .filter(sync -> query.destinationId().contains(sync.getDestinationId()))
+        .toList();
+    final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(query);
+
+    assertSyncsMatch(expectedSyncs, actualSyncs);
+  }
+
+  @Test
+  void testListWorkspaceStandardSyncSourceFiltering() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final StandardSyncQuery query = new StandardSyncQuery(workspaceId, List.of(MockData.SOURCE_ID_2), null, false);
+    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 3).stream()
+        .filter(sync -> query.sourceId().contains(sync.getSourceId()))
+        .toList();
+    final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(query);
 
     assertSyncsMatch(expectedSyncs, actualSyncs);
   }
@@ -525,6 +564,13 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
           fetchEvent2.getActorId(),
           fetchEvent2.getActorCatalogId(),
           now);
+      // Insert a second identical copy to verify that the query can handle duplicates since the records
+      // are not guaranteed to be unique.
+      insertCatalogFetchEvent(
+          ctx,
+          fetchEvent2.getActorId(),
+          fetchEvent2.getActorCatalogId(),
+          now);
 
       return null;
     });
@@ -548,6 +594,40 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
           actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorCatalogId(),
           actorCatalogFetchEvent.getCreatedAt()));
 
+      return null;
+    });
+
+    final Map<UUID, ActorCatalogFetchEvent> result =
+        configRepository.getMostRecentActorCatalogFetchEventForSources(List.of(MockData.SOURCE_ID_1,
+            MockData.SOURCE_ID_2));
+
+    assertEquals(MockData.ACTOR_CATALOG_ID_1, result.get(MockData.SOURCE_ID_1).getActorCatalogId());
+    assertEquals(MockData.ACTOR_CATALOG_ID_3, result.get(MockData.SOURCE_ID_2).getActorCatalogId());
+    assertEquals(0, configRepository.getMostRecentActorCatalogFetchEventForSources(Collections.emptyList()).size());
+  }
+
+  @Test
+  void testGetMostRecentActorCatalogFetchEventWithDuplicates() throws SQLException, IOException {
+    // Tests that we can handle two fetch events in the db with the same actor id, actor catalog id, and
+    // timestamp e.g., from duplicate discoveries.
+    for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
+      writeActorCatalog(database, Collections.singletonList(actorCatalog));
+    }
+
+    database.transaction(ctx -> {
+      // Insert the fetch events twice.
+      MockData.actorCatalogFetchEventsForAggregationTest().forEach(actorCatalogFetchEvent -> {
+        insertCatalogFetchEvent(
+            ctx,
+            actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorId(),
+            actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorCatalogId(),
+            actorCatalogFetchEvent.getCreatedAt());
+        insertCatalogFetchEvent(
+            ctx,
+            actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorId(),
+            actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorCatalogId(),
+            actorCatalogFetchEvent.getCreatedAt());
+      });
       return null;
     });
 

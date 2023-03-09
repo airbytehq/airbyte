@@ -15,4 +15,4 @@ WARNING: Do not modify this file.
 # Declarative Source
 class SourcePexelsApi(YamlDeclarativeSource):
     def __init__(self):
-        super().__init__(**{"path_to_yaml": "pexels_api.yaml"})
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})

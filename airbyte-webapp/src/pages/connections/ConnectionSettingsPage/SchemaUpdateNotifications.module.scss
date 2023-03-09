@@ -1,0 +1,8 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.container {
+  display: flex;
+  align-items: center;
+  margin-bottom: variables.$spacing-md;
+}

@@ -29,9 +29,26 @@ public class RelationalDbQueryUtils {
     return joiner.toString();
   }
 
-  public static String getFullTableName(final String nameSpace, final String tableName, final String quoteString) {
+  /**
+   * @return fully qualified table name with the schema (if a schema exists) in quotes.
+   */
+  public static String getFullyQualifiedTableNameWithQuoting(final String nameSpace, final String tableName, final String quoteString) {
     return (nameSpace == null || nameSpace.isEmpty() ? getIdentifierWithQuoting(tableName, quoteString)
         : getIdentifierWithQuoting(nameSpace, quoteString) + "." + getIdentifierWithQuoting(tableName, quoteString));
+  }
+
+  /**
+   * @return fully qualified table name with the schema (if a schema exists) without quotes.
+   */
+  public static String getFullyQualifiedTableName(final String schemaName, final String tableName) {
+    return schemaName != null ? schemaName + "." + tableName : tableName;
+  }
+
+  /**
+   * @return the input identifier with quotes.
+   */
+  public static String enquoteIdentifier(final String identifier, final String quoteString) {
+    return quoteString + identifier + quoteString;
   }
 
   public static <Database extends SqlDatabase> AutoCloseableIterator<JsonNode> queryTable(final Database database, final String sqlQuery) {

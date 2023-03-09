@@ -17,7 +17,7 @@ tests:
       empty_streams: ["lists", "campaigns"]
       timeout_seconds: 3600
       expect_records:
-        path: "integration_tests/expected_records.txt"
+        path: "integration_tests/expected_records.jsonl"
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/incremental_catalog.json"

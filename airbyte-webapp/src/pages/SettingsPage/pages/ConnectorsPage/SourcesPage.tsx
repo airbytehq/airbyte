@@ -1,10 +1,10 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { useAsyncFn } from "react-use";
 
 import { SourceDefinitionRead } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
-import useConnector from "hooks/services/useConnector";
+import { useGetConnectorsOutOfDate, useUpdateSourceDefinitions } from "hooks/services/useConnector";
 import { useSourceList } from "hooks/services/useSourceHook";
 import { useSourceDefinitionList, useUpdateSourceDefinition } from "services/connector/SourceDefinitionService";
 
@@ -13,34 +13,41 @@ import ConnectorsView from "./components/ConnectorsView";
 const SourcesPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.SETTINGS_SOURCE);
 
-  const [isUpdateSuccess, setIsUpdateSucces] = useState(false);
+  const [isUpdateSuccess, setIsUpdateSuccess] = useState(false);
   const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
+  const feedbackListRef = useRef(feedbackList);
+  feedbackListRef.current = feedbackList;
 
   const { formatMessage } = useIntl();
   const { sources } = useSourceList();
   const { sourceDefinitions } = useSourceDefinitionList();
 
   const { mutateAsync: updateSourceDefinition } = useUpdateSourceDefinition();
+  const [updatingDefinitionId, setUpdatingDefinitionId] = useState<string>();
 
-  const { hasNewSourceVersion, updateAllSourceVersions } = useConnector();
+  const { hasNewSourceVersion } = useGetConnectorsOutOfDate();
+  const { updateAllSourceVersions } = useUpdateSourceDefinitions();
 
   const onUpdateVersion = useCallback(
     async ({ id, version }: { id: string; version: string }) => {
       try {
+        setUpdatingDefinitionId(id);
         await updateSourceDefinition({
           sourceDefinitionId: id,
           dockerImageTag: version,
         });
-        setFeedbackList({ ...feedbackList, [id]: "success" });
+        setFeedbackList({ ...feedbackListRef.current, [id]: "success" });
       } catch (e) {
         const messageId = e.status === 422 ? "form.imageCannotFound" : "form.someError";
         setFeedbackList({
-          ...feedbackList,
+          ...feedbackListRef.current,
           [id]: formatMessage({ id: messageId }),
         });
+      } finally {
+        setUpdatingDefinitionId(undefined);
       }
     },
-    [feedbackList, formatMessage, updateSourceDefinition]
+    [formatMessage, updateSourceDefinition]
   );
 
   const usedSourcesDefinitions: SourceDefinitionRead[] = useMemo(() => {
@@ -59,11 +66,11 @@ const SourcesPage: React.FC = () => {
   }, [sources, sourceDefinitions]);
 
   const [{ loading, error }, onUpdate] = useAsyncFn(async () => {
-    setIsUpdateSucces(false);
+    setIsUpdateSuccess(false);
     await updateAllSourceVersions();
-    setIsUpdateSucces(true);
+    setIsUpdateSuccess(true);
     setTimeout(() => {
-      setIsUpdateSucces(false);
+      setIsUpdateSuccess(false);
     }, 2000);
   }, [updateAllSourceVersions]);
 
@@ -71,6 +78,7 @@ const SourcesPage: React.FC = () => {
     <ConnectorsView
       type="sources"
       loading={loading}
+      updatingDefinitionId={updatingDefinitionId}
       error={error}
       isUpdateSuccess={isUpdateSuccess}
       hasNewConnectorVersion={hasNewSourceVersion}

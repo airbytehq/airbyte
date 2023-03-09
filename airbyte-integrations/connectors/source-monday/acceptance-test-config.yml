@@ -30,7 +30,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config_api_token.json"
         expect_records:
-          path: "integration_tests/expected_records.txt"
+          path: "integration_tests/expected_records.jsonl"
           extra_fields: no
           exact_order: no
           extra_records: yes
@@ -39,7 +39,7 @@ acceptance_tests:
             bypass_reason: "unable to populate"
       - config_path: "secrets/config_oauth.json"
         expect_records:
-          path: "integration_tests/expected_records.txt"
+          path: "integration_tests/expected_records.jsonl"
           extra_fields: no
           exact_order: no
           extra_records: yes

@@ -66,11 +66,6 @@ public class ElasticsearchStrictEncryptDestinationAcceptanceTest extends Destina
   }
 
   @Override
-  protected boolean supportsNormalization() {
-    return false;
-  }
-
-  @Override
   protected boolean supportBasicDataTypeTest() {
     return true;
   }

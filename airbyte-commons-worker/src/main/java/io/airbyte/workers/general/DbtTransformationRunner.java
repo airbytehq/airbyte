@@ -4,6 +4,11 @@
 
 package io.airbyte.workers.general;
 
+import static io.airbyte.workers.process.Metadata.CUSTOM_STEP;
+import static io.airbyte.workers.process.Metadata.JOB_TYPE_KEY;
+import static io.airbyte.workers.process.Metadata.SYNC_JOB;
+import static io.airbyte.workers.process.Metadata.SYNC_STEP_KEY;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
@@ -17,7 +22,6 @@ import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.normalization.NormalizationRunner;
-import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -93,7 +97,7 @@ public class DbtTransformationRunner implements AutoCloseable {
       Collections.addAll(dbtArguments, Commandline.translateCommandline(dbtConfig.getDbtArguments()));
       process =
           processFactory.create(
-              AirbyteIntegrationLauncher.CUSTOM_STEP,
+              CUSTOM_STEP,
               jobId,
               attempt,
               jobRoot,
@@ -103,8 +107,8 @@ public class DbtTransformationRunner implements AutoCloseable {
               files,
               "/bin/bash",
               resourceRequirements,
-              Map.of(AirbyteIntegrationLauncher.JOB_TYPE, AirbyteIntegrationLauncher.SYNC_JOB, AirbyteIntegrationLauncher.SYNC_STEP,
-                  AirbyteIntegrationLauncher.CUSTOM_STEP),
+              null,
+              Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, CUSTOM_STEP),
               Collections.emptyMap(),
               Collections.emptyMap(),
               dbtArguments.toArray(new String[0]));

@@ -2,13 +2,13 @@ import React, { useMemo } from "react";
 
 import { FormBlock } from "core/form/types";
 
-import { useAuthentication } from "../../useAuthentication";
-import { OrderComparator } from "../../utils";
 import { ArraySection } from "./ArraySection";
 import { AuthSection } from "./auth/AuthSection";
 import { ConditionSection } from "./ConditionSection";
 import { PropertySection } from "./PropertySection";
 import { SectionContainer } from "./SectionContainer";
+import { useAuthentication } from "../../useAuthentication";
+import { OrderComparator } from "../../utils";
 
 interface FormNodeProps {
   sectionPath: string;

@@ -4,7 +4,7 @@
  */
 
 export enum FeatureItem {
-  AllowAutoDetectSchemaChanges = "ALLOW_AUTO_DETECT_SCHEMA_CHANGES",
+  AllowAutoDetectSchema = "ALLOW_AUTO_DETECT_SCHEMA",
   AllowUploadCustomImage = "ALLOW_UPLOAD_CUSTOM_IMAGE",
   AllowCustomDBT = "ALLOW_CUSTOM_DBT",
   AllowDBTCloudIntegration = "ALLOW_DBT_CLOUD_INTEGRATION",
@@ -13,6 +13,7 @@ export enum FeatureItem {
   AllowSync = "ALLOW_SYNC",
   AllowChangeDataGeographies = "ALLOW_CHANGE_DATA_GEOGRAPHIES",
   AllowSyncSubOneHourCronExpressions = "ALLOW_SYNC_SUB_ONE_HOUR_CRON_EXPRESSIONS",
+  FreeConnectorProgram = "FREE_CONNECTOR_PROGRAM",
 }
 
 export type FeatureSet = Partial<Record<FeatureItem, boolean>>;

@@ -7,7 +7,7 @@ import { Text } from "components/ui/Text";
 import { StreamReadLogsItem } from "core/request/ConnectorBuilderClient";
 
 import styles from "./LogsDisplay.module.scss";
-import { formatJson } from "./utils";
+import { formatJson } from "../utils";
 
 interface LogsDisplayProps {
   logs: StreamReadLogsItem[];

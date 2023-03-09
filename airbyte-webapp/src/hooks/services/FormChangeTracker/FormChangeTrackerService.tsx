@@ -4,8 +4,8 @@ import React, { useCallback } from "react";
 
 import { useBlocker } from "hooks/router/useBlocker";
 
-import { useConfirmationModalService } from "../ConfirmationModal";
 import { useFormChangeTrackerService } from "./hooks";
+import { useConfirmationModalService } from "../ConfirmationModal";
 
 export const FormChangeTrackerService: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const { hasFormChanges, clearAllFormChanges } = useFormChangeTrackerService();

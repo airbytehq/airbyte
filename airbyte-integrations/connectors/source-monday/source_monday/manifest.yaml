@@ -1,0 +1,105 @@
+version: "0.1.0"
+
+definitions:
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_monday/schemas/{{ options['name'] }}.json"
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_pointer:
+        - "data"
+        - "{{ options['name'] }}"
+  requester:
+    url_base: "https://api.monday.com/v2"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['credentials']['api_token'] if config['credentials']['auth_type'] == 'api_token' else config['credentials']['access_token'] if config['credentials']['auth_type'] == 'oauth2.0' else config.get('api_token', '') }}"
+    request_options_provider:
+      type: CustomRequestOptionsProvider
+      class_name: "source_monday.GraphQLRequestOptionsProvider"
+      limit: "{{ options['items_per_page'] }}"
+    error_handler:
+      response_filters:
+        - predicate: "{{ 'error_code' in response and response['error_code'] == 'ComplexityException' }}"
+          action: RETRY
+      backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 60
+  default_paginator:
+    type: "DefaultPaginator"
+    url_base: "https://api.monday.com/v2"
+    pagination_strategy:
+      type: "PageIncrement"
+      start_from_page: 1
+      page_size: 100
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    requester:
+      $ref: "*ref(definitions.requester)"
+    paginator:
+      $ref: "*ref(definitions.default_paginator)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    primary_key: "id"
+  base_nopagination_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      paginator:
+        type: NoPagination
+  items_stream:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          field_pointer: "/data/boards/*/items/*"
+          class_name: "source_monday.DpathStringExtractor"
+      paginator:
+        $ref: "*ref(definitions.default_paginator)"
+        pagination_strategy:
+          $ref: "*ref(definitions.default_paginator.pagination_strategy)"
+          page_size: 1
+    $options:
+      name: "items"
+      path: ""
+      items_per_page: 1
+  boards_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "boards"
+      path: ""
+  teams_stream:
+    $ref: "*ref(definitions.base_nopagination_stream)"
+    $options:
+      name: "teams"
+      path: ""
+  updates_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "updates"
+      path: ""
+  users_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "users"
+      path: ""
+
+streams:
+  - "*ref(definitions.items_stream)"
+  - "*ref(definitions.boards_stream)"
+  - "*ref(definitions.teams_stream)"
+  - "*ref(definitions.updates_stream)"
+  - "*ref(definitions.users_stream)"
+
+check:
+  stream_names:
+    - "users"

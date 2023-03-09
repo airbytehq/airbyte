@@ -1,4 +1,5 @@
 import { theme } from "theme";
+
 interface ModificationIconProps {
   color?: string;
 }

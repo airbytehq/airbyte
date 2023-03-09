@@ -23,7 +23,6 @@ export const Markdown: React.FC<MarkdownProps> = ({ content, className, rehypePl
       linkTarget={(href) => (href.startsWith("#") ? undefined : "_blank")}
       className={classNames(styles.markdown, className)}
       skipHtml
-      // @ts-expect-error remarkFrontmatter currently has type conflicts due to duplicate vfile dependencies
       // This is not actually causing any issues, but requires to disable TS on this for now.
       remarkPlugins={[remarkDirective, remarkAdmonitionsPlugin, remarkFrontmatter, remarkGfm]}
       rehypePlugins={rehypePlugins}

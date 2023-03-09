@@ -1,0 +1,75 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer:
+        - "{{ options['name'] }}"
+  requester:
+    url_base: "https://taskrouter.twilio.com"
+    http_method: "GET"
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['account_sid'] }}"
+      password: "{{ config['auth_token'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    requester:
+      $ref: "*ref(definitions.requester)"
+  default_paginator:
+    type: "DefaultPaginator"
+    page_size_option:
+      inject_into: "request_parameter"
+      field_name: "PageSize"
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{response['meta']['next_page_url']}}"
+      page_size: 50
+    page_token_option:
+      inject_into: "path"
+    url_base: "https://taskrouter.twilio.com"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  base_stream_with_pagination:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      paginator:
+        $ref: "*ref(definitions.default_paginator)"
+  workspaces_stream:
+    $ref: "*ref(definitions.base_stream_with_pagination)"
+    $options:
+      name: "workspaces"
+      path: "/v1/Workspaces"
+      primary_key: "sid"
+
+  workspace_stream_slicer:
+    type: SubstreamSlicer
+    parent_stream_configs:
+      - stream: "*ref(definitions.workspaces_stream)"
+        parent_key: sid
+        stream_slice_field: id
+
+  workers_stream:
+    $ref: "*ref(definitions.base_stream_with_pagination)"
+    $options:
+      name: "workers"
+      primary_key: "sid"
+      path: "/v1/Workspaces/{{ stream_slice.id }}/Workers"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+      paginator:
+        $ref: "*ref(definitions.default_paginator)"
+      stream_slicer:
+        $ref: "*ref(definitions.workspace_stream_slicer)"
+
+streams:
+  - "*ref(definitions.workspaces_stream)"
+  - "*ref(definitions.workers_stream)"
+
+check:
+  stream_names:
+    - "workspaces"

@@ -158,18 +158,23 @@ class SourceTiktokMarketing(AbstractSource):
 
             # 2. Basic report streams:
             reports = [AdsReports, AdGroupsReports, CampaignsReports]
+            audience_reports = [AdsAudienceReports, AdGroupAudienceReports, CampaignsAudienceReportsByCountry]
             if is_production:
                 # 2.1 streams work only in prod env
-                reports.extend([AdvertisersReports, AdvertisersAudienceReports])
+                reports.append(AdvertisersReports)
+                audience_reports.append(AdvertisersAudienceReports)
 
             for Report in reports:
                 for Granularity in [Hourly, Daily, Lifetime]:
                     streams.append(get_report_stream(Report, Granularity)(**args))
 
             # 3. Audience report streams:
-            # Audience report supports lifetime metrics only at the ADVERTISER level (see 2.1).
-            for Report in [AdsAudienceReports, AdGroupAudienceReports, CampaignsAudienceReportsByCountry]:
-                for Granularity in [Hourly, Daily]:
-                    streams.append(get_report_stream(Report, Granularity)(**args))
+            for Report in audience_reports:
+                # As per TikTok's documentation, audience reports only support daily (not hourly) time dimension for metrics
+                streams.append(get_report_stream(Report, Daily)(**args))
+
+                # Audience report supports lifetime metrics only at the ADVERTISER level (see 2.1).
+                if Report == AdvertisersAudienceReports:
+                    streams.append(get_report_stream(Report, Lifetime)(**args))
 
         return streams

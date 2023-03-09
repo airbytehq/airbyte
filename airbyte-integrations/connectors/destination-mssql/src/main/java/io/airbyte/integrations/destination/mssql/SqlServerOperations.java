@@ -87,7 +87,7 @@ public class SqlServerOperations implements SqlOperations {
   }
 
   @Override
-  public String copyTableQuery(final JdbcDatabase database,
+  public String insertTableQuery(final JdbcDatabase database,
                                final String schemaName,
                                final String sourceTableName,
                                final String destinationTableName) {

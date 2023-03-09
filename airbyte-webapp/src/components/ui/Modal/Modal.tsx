@@ -2,9 +2,9 @@ import { Dialog } from "@headlessui/react";
 import classNames from "classnames";
 import React, { useState } from "react";
 
+import styles from "./Modal.module.scss";
 import { Card } from "../Card";
 import { Overlay } from "../Overlay";
-import styles from "./Modal.module.scss";
 
 export interface ModalProps {
   title?: string | React.ReactNode;

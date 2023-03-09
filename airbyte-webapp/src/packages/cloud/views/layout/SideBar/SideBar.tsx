@@ -4,18 +4,19 @@ import { faDesktop } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React from "react";
-import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { NavLink } from "react-router-dom";
 
 import { Link } from "components";
 import { CreditsIcon } from "components/icons/CreditsIcon";
 import { DocsIcon } from "components/icons/DocsIcon";
+import { Indicator } from "components/Indicator/Indicator";
 import { DropdownMenu, DropdownMenuOptionType } from "components/ui/DropdownMenu";
 import { Text } from "components/ui/Text";
 
 import { FeatureItem, IfFeatureEnabled } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import { CloudRoutes } from "packages/cloud/cloudRoutePaths";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
@@ -30,8 +31,9 @@ import StatusIcon from "views/layout/SideBar/components/StatusIcon";
 import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
 import { useCalculateSidebarStyles } from "views/layout/SideBar/SideBar";
 
-import { RoutePaths } from "../../../../../pages/routePaths";
 import styles from "./SideBar.module.scss";
+import { RoutePaths } from "../../../../../pages/routePaths";
+import { LOW_BALANCE_CREDIT_TRESHOLD } from "../../credits/CreditsPage/components/LowCreditBalanceHint/LowCreditBalanceHint";
 
 const SideBar: React.FC = () => {
   const navLinkClassName = useCalculateSidebarStyles();
@@ -82,11 +84,14 @@ const SideBar: React.FC = () => {
         </ul>
       </div>
       <ul className={styles.menu}>
-        <li>
+        <li className={styles.creditsButton}>
           <NavLink className={navLinkClassName} to={CloudRoutes.Credits}>
+            {cloudWorkspace.remainingCredits <= LOW_BALANCE_CREDIT_TRESHOLD && (
+              <Indicator className={styles.lowBalanceIndicator} />
+            )}
             <CreditsIcon />
             <Text className={styles.text} size="sm">
-              <FormattedNumber value={cloudWorkspace.remainingCredits} />
+              <FormattedMessage id="sidebar.credits" />
             </Text>
           </NavLink>
         </li>

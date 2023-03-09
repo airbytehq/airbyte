@@ -84,11 +84,6 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
-  protected boolean supportsDBT() {
-    return false;
-  }
-
-  @Override
   protected TestDataComparator getTestDataComparator() {
     return new OracleTestDataComparator();
   }

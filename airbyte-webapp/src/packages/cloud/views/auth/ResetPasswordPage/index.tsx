@@ -1,3 +1,3 @@
 import ResetPasswordPage from "./ResetPasswordPage";
 
-export { ResetPasswordPage };
+export default ResetPasswordPage;

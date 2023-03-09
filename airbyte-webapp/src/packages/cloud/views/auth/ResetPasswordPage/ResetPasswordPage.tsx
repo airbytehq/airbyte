@@ -10,9 +10,9 @@ import { ToastType } from "components/ui/Toast";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
+import { CloudRoutes } from "packages/cloud/cloudRoutePaths";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
-import { CloudRoutes } from "../../../cloudRoutes";
 import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
 import { FormTitle } from "../components/FormTitle";
 

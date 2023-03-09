@@ -3,6 +3,7 @@ import { JSONSchema7 } from "json-schema";
 import { useCallback, useMemo } from "react";
 
 import { ConnectorSpecification } from "core/domain/connector";
+import { isSourceDefinitionSpecificationDraft } from "core/domain/connector/source";
 import { useAppMonitoringService } from "hooks/services/AppMonitoringService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 
@@ -155,7 +156,10 @@ export const useAuthentication = (): AuthenticationHook => {
         console.error(`getValues in useAuthentication failed.`, e);
         trackError(e, {
           id: "useAuthentication.getValues",
-          connector: connectorSpec ? ConnectorSpecification.id(connectorSpec) : null,
+          connector:
+            connectorSpec && !isSourceDefinitionSpecificationDraft(connectorSpec)
+              ? ConnectorSpecification.id(connectorSpec)
+              : null,
         });
         return values;
       }
@@ -178,7 +182,7 @@ export const useAuthentication = (): AuthenticationHook => {
   const implicitAuthFieldPaths = useMemo(
     () => [
       // Fields from `advancedAuth` connectors
-      ...(advancedAuth
+      ...(advancedAuth && !isSourceDefinitionSpecificationDraft(connectorSpec)
         ? Object.values(serverProvidedOauthPaths(connectorSpec)).map((f) =>
             makeConnectionConfigurationPath(f.path_in_connector_config)
           )

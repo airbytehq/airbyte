@@ -63,6 +63,8 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   private final String secretName;
   private final String secretMountPath;
   private final String googleApplicationCredentials;
+  private final String dataPlaneCredsSecretName;
+  private final String dataPlaneCredsSecretMountPath;
   private final AtomicReference<Optional<Integer>> cachedExitValue;
   private final Map<String, String> environmentVariables;
   private final Integer serverPort;
@@ -73,6 +75,8 @@ public class AsyncOrchestratorPodProcess implements KubePod {
                                      final KubernetesClient kubernetesClient,
                                      final String secretName,
                                      final String secretMountPath,
+                                     final String dataPlaneCredsSecretName,
+                                     final String dataPlaneCredsSecretMountPath,
                                      final String googleApplicationCredentials,
                                      final Map<String, String> environmentVariables,
                                      final Integer serverPort) {
@@ -81,6 +85,8 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     this.kubernetesClient = kubernetesClient;
     this.secretName = secretName;
     this.secretMountPath = secretMountPath;
+    this.dataPlaneCredsSecretName = dataPlaneCredsSecretName;
+    this.dataPlaneCredsSecretMountPath = dataPlaneCredsSecretMountPath;
     this.googleApplicationCredentials = googleApplicationCredentials;
     this.cachedExitValue = new AtomicReference<>(Optional.empty());
     this.environmentVariables = environmentVariables;
@@ -348,6 +354,21 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
       envVars.add(new EnvVar(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, googleApplicationCredentials, null));
 
+    }
+
+    if (StringUtils.isNotEmpty(dataPlaneCredsSecretName) && StringUtils.isNotEmpty(dataPlaneCredsSecretMountPath)) {
+      volumes.add(new VolumeBuilder()
+          .withName("airbyte-dataplane-creds")
+          .withSecret(new SecretVolumeSourceBuilder()
+              .withSecretName(dataPlaneCredsSecretName)
+              .withDefaultMode(420)
+              .build())
+          .build());
+
+      volumeMounts.add(new VolumeMountBuilder()
+          .withName("airbyte-dataplane-creds")
+          .withMountPath(dataPlaneCredsSecretMountPath)
+          .build());
     }
 
     // Copy all additionally provided environment variables

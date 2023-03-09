@@ -544,6 +544,10 @@ class TestStreamConnection(GoogleAnalyticsV4Stream):
         end_date = pendulum.now().date()
         return [{"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date)}]
 
+    def parse_response(self, response: requests.Response, **kwargs: Any) -> Iterable[Mapping]:
+        res = response.json()
+        return res.get("reports", {})[0].get("data")
+
 
 class SourceGoogleAnalyticsV4(AbstractSource):
     """Google Analytics lets you analyze data about customer engagement with your website or application."""

@@ -8,7 +8,7 @@ export enum CreditStatus {
 export interface CloudWorkspace {
   name: string;
   workspaceId: string;
-  billingUserId: string;
+  creatorUserId: string;
   remainingCredits: number;
   creditStatus?: CreditStatus;
   lastCreditPurchaseIncrementTimestamp?: number | null;

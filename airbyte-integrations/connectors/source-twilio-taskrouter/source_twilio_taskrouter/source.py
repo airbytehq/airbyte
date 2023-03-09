@@ -15,4 +15,4 @@ WARNING: Do not modify this file.
 # Declarative Source
 class SourceTwilioTaskrouter(YamlDeclarativeSource):
     def __init__(self):
-        super().__init__(**{"path_to_yaml": "twilio_taskrouter.yaml"})
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})

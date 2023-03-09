@@ -9,15 +9,14 @@ import { LabeledInput, Link } from "components";
 import { Button } from "components/ui/Button";
 
 import { useExperiment } from "hooks/services/Experiment";
-import { SignupSourceDropdown } from "packages/cloud/components/experiments/SignupSourceDropdown";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { isGdprCountry } from "utils/dataPrivacy";
 import { links } from "utils/links";
 
+import styles from "./SignupForm.module.scss";
 import CheckBoxControl from "../../components/CheckBoxControl";
 import { BottomBlock, FieldItem, RowFieldItem } from "../../components/FormComponents";
-import styles from "./SignupForm.module.scss";
 
 interface FormValues {
   name: string;
@@ -115,24 +114,15 @@ export const PasswordField: React.FC<{ label?: React.ReactNode }> = ({ label }) 
   );
 };
 
-export const NewsField: React.FC = () => {
-  const { formatMessage } = useIntl();
-  return (
-    <Field name="news">
-      {({ field, meta }: FieldProps<string>) => (
-        <MarginBlock>
-          <CheckBoxControl
-            {...field}
-            checked={!!field.value}
-            checkbox
-            label={<FormattedMessage id="login.subscribe" />}
-            message={meta.touched && meta.error && formatMessage({ id: meta.error })}
-          />
-        </MarginBlock>
-      )}
-    </Field>
-  );
-};
+export const NewsField: React.FC = () => (
+  <Field name="news">
+    {({ field }: FieldProps<string>) => (
+      <MarginBlock>
+        <CheckBoxControl {...field} checked={!!field.value} label={<FormattedMessage id="login.subscribe" />} />
+      </MarginBlock>
+    )}
+  </Field>
+);
 
 export const Disclaimer: React.FC = () => {
   return (
@@ -181,7 +171,6 @@ export const SignupForm: React.FC = () => {
 
   const showName = !useExperiment("authPage.signup.hideName", false);
   const showCompanyName = !useExperiment("authPage.signup.hideCompanyName", false);
-  const showSourceSelector = useExperiment("authPage.signup.sourceSelector", false);
 
   const validationSchema = useMemo(() => {
     const shape = {
@@ -225,20 +214,13 @@ export const SignupForm: React.FC = () => {
       validateOnBlur
       validateOnChange
     >
-      {({ isValid, isSubmitting, status, values }) => (
+      {({ isValid, isSubmitting, status }) => (
         <Form>
           {(showName || showCompanyName) && (
             <RowFieldItem>
               {showName && <NameField />}
               {showCompanyName && <CompanyNameField />}
             </RowFieldItem>
-          )}
-
-          {/* exp-select-source-signup */}
-          {showSourceSelector && (
-            <FieldItem>
-              <SignupSourceDropdown disabled={isSubmitting} email={values.email} />
-            </FieldItem>
           )}
           <FieldItem>
             <EmailField />

@@ -4,9 +4,7 @@ import styled from "styled-components";
 import { CheckBox } from "components/ui/CheckBox";
 
 type IProps = {
-  message?: React.ReactNode;
   label?: React.ReactNode;
-  checkbox?: boolean;
 } & React.InputHTMLAttributes<HTMLInputElement>;
 
 const ToggleContainer = styled.div`

@@ -158,6 +158,36 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: AUTO_DETECT_SCHEMA
+            - name: WORKER_LOGS_STORAGE_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: WORKER_LOGS_STORAGE_TYPE
+            - name: WORKER_STATE_STORAGE_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: WORKER_STATE_STORAGE_TYPE
+            - name: STATE_STORAGE_MINIO_BUCKET_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: STATE_STORAGE_MINIO_BUCKET_NAME
+            - name: STATE_STORAGE_MINIO_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: STATE_STORAGE_MINIO_ENDPOINT
+            - name: STATE_STORAGE_MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: airbyte-secrets
+                  key: STATE_STORAGE_MINIO_ACCESS_KEY
+            - name: STATE_STORAGE_MINIO_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: airbyte-secrets
+                  key: STATE_STORAGE_MINIO_SECRET_ACCESS_KEY
           ports:
             - containerPort: 8001
           volumeMounts:

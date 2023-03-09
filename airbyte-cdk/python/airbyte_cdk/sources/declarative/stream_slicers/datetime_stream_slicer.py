@@ -3,7 +3,6 @@
 #
 
 import datetime
-import re
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, Mapping, Optional, Union
 
@@ -16,7 +15,7 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from dataclasses_jsonschema import JsonSchemaMixin
-from dateutil.relativedelta import relativedelta
+from isodate import Duration, parse_duration
 
 
 @dataclass
@@ -27,16 +26,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     Given a start time, end time, a step function, and an optional lookback window,
     the stream slicer will partition the date range from start time - lookback window to end time.
 
-    The step function is defined as a string of the form:
-    `"<number><unit>"`
-
-    where unit can be one of
-    - years, y
-    - months, m
-    - weeks, w
-    - days, d
-
-    For example, "1d" will produce windows of 1 day, and "2w" windows of 2 weeks.
+    The step function is defined as a string of the form ISO8601 duration
 
     The timestamp format accepts the same format codes as datetime.strfptime, which are
     all the format codes required by the 1989 C standard.
@@ -45,15 +35,16 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     Attributes:
         start_datetime (Union[MinMaxDatetime, str]): the datetime that determines the earliest record that should be synced
         end_datetime (Union[MinMaxDatetime, str]): the datetime that determines the last record that should be synced
-        step (str): size of the timewindow
+        step (str): size of the timewindow (ISO8601 duration)
         cursor_field (Union[InterpolatedString, str]): record's cursor field
         datetime_format (str): format of the datetime
+        cursor_granularity (str): smallest increment the datetime_format has (ISO 8601 duration) that will be used to ensure that the start of a slice does not overlap with the end of the previous one
         config (Config): connection config
         start_time_option (Optional[RequestOption]): request option for start time
         end_time_option (Optional[RequestOption]): request option for end time
         stream_state_field_start (Optional[str]): stream slice start time field
         stream_state_field_end (Optional[str]): stream slice end time field
-        lookback_window (Optional[InterpolatedString]): how many days before start_datetime to read data for
+        lookback_window (Optional[InterpolatedString]): how many days before start_datetime to read data for (ISO8601 duration)
     """
 
     start_datetime: Union[MinMaxDatetime, str]
@@ -61,6 +52,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     step: str
     cursor_field: Union[InterpolatedString, str]
     datetime_format: str
+    cursor_granularity: str
     config: Config
     options: InitVar[Mapping[str, Any]]
     _cursor: dict = field(repr=False, default=None)  # tracks current datetime
@@ -70,10 +62,6 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     stream_state_field_start: Optional[str] = None
     stream_state_field_end: Optional[str] = None
     lookback_window: Optional[Union[InterpolatedString, str]] = None
-
-    timedelta_regex = re.compile(
-        r"((?P<years>[\.\d]+?)y)?" r"((?P<months>[\.\d]+?)m)?" r"((?P<weeks>[\.\d]+?)w)?" r"((?P<days>[\.\d]+?)d)?$"
-    )
 
     def __post_init__(self, options: Mapping[str, Any]):
         if not isinstance(self.start_datetime, MinMaxDatetime):
@@ -85,7 +73,9 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         self._interpolation = JinjaInterpolation()
 
         self._step = self._parse_timedelta(self.step)
+        self._cursor_granularity = self._parse_timedelta(self.cursor_granularity)
         self.cursor_field = InterpolatedString.create(self.cursor_field, options=options)
+        self.lookback_window = InterpolatedString.create(self.lookback_window, options=options)
         self.stream_slice_field_start = InterpolatedString.create(self.stream_state_field_start or "start_time", options=options)
         self.stream_slice_field_end = InterpolatedString.create(self.stream_state_field_end or "end_time", options=options)
         self._parser = DatetimeParser()
@@ -134,7 +124,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         """
         Partition the daterange into slices of size = step.
 
-        The start of the window is the minimum datetime between start_datetime - looback_window and the stream_state's datetime
+        The start of the window is the minimum datetime between start_datetime - lookback_window and the stream_state's datetime
         The end of the window is the minimum datetime between the start of the window and end_datetime.
 
         :param sync_mode:
@@ -144,7 +134,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_state = stream_state or {}
         kwargs = {"stream_state": stream_state}
         end_datetime = min(self.end_datetime.get_datetime(self.config, **kwargs), datetime.datetime.now(tz=self._timezone))
-        lookback_delta = self._parse_timedelta(self.lookback_window.eval(self.config, **kwargs) if self.lookback_window else "0d")
+        lookback_delta = self._parse_timedelta(self.lookback_window.eval(self.config, **kwargs) if self.lookback_window else "P0D")
 
         earliest_possible_start_datetime = min(self.start_datetime.get_datetime(self.config, **kwargs), end_datetime)
         cursor_datetime = self._calculate_cursor_datetime_from_state(stream_state)
@@ -154,18 +144,18 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
 
     def _calculate_cursor_datetime_from_state(self, stream_state: Mapping[str, Any]) -> datetime.datetime:
         if self.cursor_field.eval(self.config, stream_state=stream_state) in stream_state:
-            return self.parse_date(stream_state[self.cursor_field.eval(self.config)]) + datetime.timedelta(days=1)
+            return self.parse_date(stream_state[self.cursor_field.eval(self.config)])
         return datetime.datetime.min.replace(tzinfo=datetime.timezone.utc)
 
     def _format_datetime(self, dt: datetime.datetime):
         return self._parser.format(dt, self.datetime_format)
 
-    def _partition_daterange(self, start, end, step: datetime.timedelta):
+    def _partition_daterange(self, start: datetime.datetime, end: datetime.datetime, step: Union[datetime.timedelta, Duration]):
         start_field = self.stream_slice_field_start.eval(self.config)
         end_field = self.stream_slice_field_end.eval(self.config)
         dates = []
         while start <= end:
-            end_date = self._get_date(start + step - datetime.timedelta(days=1), end, min)
+            end_date = self._get_date(start + step - self._cursor_granularity, end, min)
             dates.append({start_field: self._format_datetime(start), end_field: self._format_datetime(end_date)})
             start += step
         return dates
@@ -178,19 +168,13 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         return self._parser.parse(date, self.datetime_format, self._timezone)
 
     @classmethod
-    def _parse_timedelta(cls, time_str):
+    def _parse_timedelta(cls, time_str) -> Union[datetime.timedelta, Duration]:
         """
-        Parse a time string e.g. (2h13m) into a timedelta object.
-        Modified from virhilo's answer at https://stackoverflow.com/a/4628148/851699
-        :param time_str: A string identifying a duration. (eg. 2h13m)
-        :return relativedelta: A relativedelta object
+        :return Parses an ISO 8601 durations into datetime.timedelta or Duration objects.
         """
-        parts = cls.timedelta_regex.match(time_str)
-
-        assert parts is not None
-
-        time_params = {name: float(param) for name, param in parts.groupdict().items() if param}
-        return relativedelta(**time_params)
+        if not time_str:
+            return datetime.timedelta(0)
+        return parse_duration(time_str)
 
     def get_request_params(
         self,

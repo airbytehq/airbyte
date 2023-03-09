@@ -1,17 +1,19 @@
 import { useFormikContext, setIn, useField } from "formik";
+import clone from "lodash/clone";
+import get from "lodash/get";
 import React, { useCallback, useMemo } from "react";
 
 import GroupControls from "components/GroupControls";
 import { DropDown, DropDownOptionDataItem } from "components/ui/DropDown";
 
-import { FormBlock, FormConditionItem } from "core/form/types";
-import { isDefined } from "utils/common";
+import { FormConditionItem } from "core/form/types";
 
-import { useConnectorForm } from "../../connectorFormContext";
-import { ConnectorFormValues } from "../../types";
+import styles from "./ConditionSection.module.scss";
 import { FormSection } from "./FormSection";
 import { GroupLabel } from "./GroupLabel";
 import { SectionContainer } from "./SectionContainer";
+import { ConnectorFormValues } from "../../types";
+import { setDefaultValues } from "../../useBuildForm";
 
 interface ConditionSectionProps {
   formField: FormConditionItem;
@@ -23,41 +25,37 @@ interface ConditionSectionProps {
  * ConditionSection is responsible for handling oneOf sections of form
  */
 export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, path, disabled }) => {
-  const { widgetsInfo, setUiWidgetsInfo } = useConnectorForm();
   const { values, setValues } = useFormikContext<ConnectorFormValues>();
 
   const [, meta] = useField(path);
 
-  const currentlySelectedCondition = widgetsInfo[formField.path]?.selectedItem;
+  // the value at selectionPath determines which condition is selected
+  const currentSelectionValue = get(values, formField.selectionPath);
+  let currentlySelectedCondition: number | undefined = formField.selectionConstValues.indexOf(currentSelectionValue);
+  if (currentlySelectedCondition === -1) {
+    // there should always be a matching condition, but in some edge cases
+    // (e.g. breaking changes in specs) it's possible to have no matching value.
+    currentlySelectedCondition = undefined;
+  }
 
   const onOptionChange = useCallback(
     (selectedItem: DropDownOptionDataItem) => {
-      const newSelectedPath = formField.conditions[selectedItem.value];
+      const newSelectedFormBlock = formField.conditions[selectedItem.value];
 
-      const newValues =
-        newSelectedPath._type === "formGroup"
-          ? newSelectedPath.properties?.reduce(
-              (acc: ConnectorFormValues, property: FormBlock) =>
-                property._type === "formItem" && isDefined(property.const)
-                  ? setIn(acc, property.path, property.const)
-                  : acc,
-              values
-            )
-          : values;
+      const conditionValues = clone(get(values, path) || {});
+      conditionValues[formField.selectionKey] = formField.selectionConstValues[selectedItem.value];
+      setDefaultValues(newSelectedFormBlock, conditionValues, { respectExistingValues: true });
 
-      setUiWidgetsInfo(formField.path, {
-        selectedItem: selectedItem.value,
-      });
-      setValues(newValues);
+      setValues(setIn(values, path, conditionValues));
     },
-    [values, formField.conditions, setValues, setUiWidgetsInfo, formField.path]
+    [formField.conditions, formField.selectionKey, formField.selectionConstValues, values, path, setValues]
   );
 
   const options = useMemo(
     () =>
-      Object.keys(formField.conditions).map((dataItem) => ({
-        label: dataItem,
-        value: dataItem,
+      formField.conditions.map((condition, index) => ({
+        label: condition.title,
+        value: index,
       })),
     [formField.conditions]
   );
@@ -67,7 +65,7 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
       <GroupControls
         key={`form-field-group-${formField.fieldKey}`}
         label={<GroupLabel formField={formField} />}
-        dropdown={
+        control={
           <DropDown
             options={options}
             onChange={onOptionChange}
@@ -77,13 +75,17 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
             error={typeof meta.error === "string" && !!meta.error}
           />
         }
+        controlClassName={styles.dropdown}
       >
-        <FormSection
-          blocks={formField.conditions[currentlySelectedCondition]}
-          path={path}
-          disabled={disabled}
-          skipAppend
-        />
+        {/* currentlySelectedCondition is only falsy if a malformed config is loaded which doesn't have a valid value for the const selection key. In this case, render the selection group as empty. */}
+        {typeof currentlySelectedCondition !== "undefined" && (
+          <FormSection
+            blocks={formField.conditions[currentlySelectedCondition]}
+            path={path}
+            disabled={disabled}
+            skipAppend
+          />
+        )}
       </GroupControls>
     </SectionContainer>
   );

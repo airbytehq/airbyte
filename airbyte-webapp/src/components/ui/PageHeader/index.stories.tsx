@@ -2,8 +2,8 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import { Button } from "../Button";
 import { PageHeader } from "./PageHeader";
+import { Button } from "../Button";
 
 export default {
   title: "UI/PageHeader",

@@ -1,0 +1,59 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "{{ config['base_url']}}/api/v3"
+    http_method: "GET"
+    request_options_provider:
+      request_body_json:
+        Content-Type: "application/json"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: Authorization
+      api_token: "_dremio{{ config['api_key'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  catalogs_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "catalogs"
+      path: "/catalog"
+
+streams:
+  - "*ref(definitions.catalogs_stream)"
+
+check:
+  type: CheckStream
+  stream_names: ["catalogs"]
+
+spec:
+  documentation_url: "https://docs.airbyte.com/integrations/sources/dremio"
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Dremio Spec
+    type: object
+    additionalProperties: true
+    required:
+      - api_key
+      - base_url
+    properties:
+      api_key:
+        type: string
+        description: "API Key that is generated when you authenticate to Dremio API"
+        airbyte_secret: true
+      base_url:
+        type: string
+        description: "URL of your Dremio instance"
+        # pattern: "^https://" # temporary solution, till we have a stable sandbox with HTTPS
+        default: "https://app.dremio.cloud"

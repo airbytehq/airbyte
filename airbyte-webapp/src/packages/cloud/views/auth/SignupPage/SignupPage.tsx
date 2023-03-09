@@ -7,11 +7,11 @@ import { Heading } from "components/ui/Heading";
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useExperiment } from "hooks/services/Experiment";
 
-import { OAuthLogin } from "../OAuthLogin";
 import { Separator } from "./components/Separator";
 import { Disclaimer, SignupForm } from "./components/SignupForm";
 import SpecialBlock from "./components/SpecialBlock";
 import styles from "./SignupPage.module.scss";
+import { OAuthLogin } from "../OAuthLogin";
 
 interface SignupPageProps {
   highlightStyle?: React.CSSProperties;

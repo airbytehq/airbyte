@@ -44,18 +44,9 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends JdbcDestination
     return "airbyte/destination-mysql-strict-encrypt:dev";
   }
 
-  @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
 
   @Override
   protected boolean implementsNamespaces() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
     return true;
   }
 

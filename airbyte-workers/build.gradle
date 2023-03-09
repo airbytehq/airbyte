@@ -25,6 +25,16 @@ dependencies {
     implementation (libs.jooq) {
         force = true
     }
+    implementation(libs.s3) {
+        // Force to avoid updated version brought in transitively from Micronaut 3.8+
+        // that is incompatible with our current Helm setup
+        force = true
+    }
+    implementation(libs.aws.java.sdk.s3) {
+        // Force to avoid updated version brought in transitively from Micronaut 3.8+
+        // that is incompatible with our current Helm setup
+        force = true
+    }
 
     implementation 'com.google.auth:google-auth-library-oauth2-http:1.4.0'
     implementation 'com.auth0:java-jwt:3.19.2'
@@ -120,6 +130,7 @@ task cloudStorageIntegrationTest(type: Test) {
     }
 }
 
+// Duplicated in :airbyte-container-orchestrator, eventually, this should be handled in :airbyte-protocol
 task generateWellKnownTypes() {
     doLast {
         def wellKnownTypesYaml = project(':airbyte-protocol').file('protocol-models/src/main/resources/airbyte_protocol/well_known_types.yaml').text
@@ -133,6 +144,7 @@ task generateWellKnownTypes() {
 
 tasks.named("buildDockerImage") {
     dependsOn copyGeneratedTar
+    dependsOn generateWellKnownTypes
 }
 
 // Ideally, we would have buildDockerImage depend on generateWellKnownTypes

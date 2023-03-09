@@ -17,13 +17,13 @@ import { Text } from "components/ui/Text";
 import { ToastType } from "components/ui/Toast";
 import { Tooltip } from "components/ui/Tooltip";
 
+import { useNotificationService } from "hooks/services/Notification";
 import useWorkspace, { WebhookPayload } from "hooks/services/useWorkspace";
 import { links } from "utils/links";
 
-import { useNotificationService } from "../../../../../hooks/services/Notification";
-import { Content, SettingsCard } from "../../SettingsComponents";
 import help from "./help.png";
 import styles from "./WebHookForm.module.scss";
+import { Content, SettingsCard } from "../../SettingsComponents";
 
 const enum WebhookAction {
   Test = "test",
@@ -76,18 +76,22 @@ export const WebHookForm: React.FC<WebHookFormProps> = ({ webhook }) => {
       }
     }
     if (action === WebhookAction.Save) {
-      switch (await testWebhookAction(data)) {
-        case true: {
-          await updateWebhook(data);
-          break;
-        }
-        case false: {
-          registerNotification({
-            id: "settings.webhook.save.failed",
-            text: formatMessage({ id: "settings.webhook.save.failed" }),
-            type: ToastType.ERROR,
-          });
-          break;
+      if (data.webhook === "") {
+        await updateWebhook(data);
+      } else {
+        switch (await testWebhookAction(data)) {
+          case true: {
+            await updateWebhook(data);
+            break;
+          }
+          case false: {
+            registerNotification({
+              id: "settings.webhook.save.failed",
+              text: formatMessage({ id: "settings.webhook.save.failed" }),
+              type: ToastType.ERROR,
+            });
+            break;
+          }
         }
       }
     }

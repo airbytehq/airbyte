@@ -4,18 +4,19 @@
 
 package io.airbyte.workers.process;
 
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.CHECK_JOB;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.DISCOVER_JOB;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.JOB_TYPE;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.READ_STEP;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.SPEC_JOB;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.SYNC_JOB;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.SYNC_STEP;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.WRITE_STEP;
+import static io.airbyte.workers.process.Metadata.CHECK_JOB;
+import static io.airbyte.workers.process.Metadata.DISCOVER_JOB;
+import static io.airbyte.workers.process.Metadata.JOB_TYPE_KEY;
+import static io.airbyte.workers.process.Metadata.READ_STEP;
+import static io.airbyte.workers.process.Metadata.SPEC_JOB;
+import static io.airbyte.workers.process.Metadata.SYNC_JOB;
+import static io.airbyte.workers.process.Metadata.SYNC_STEP_KEY;
+import static io.airbyte.workers.process.Metadata.WRITE_STEP;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.workers.WorkerConfigs;
@@ -49,12 +50,16 @@ class AirbyteIntegrationLauncherTest {
       CONFIG, "{}",
       CATALOG, "{}",
       "state", "{}");
+
+  private static final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
   private static final Map<String, String> JOB_METADATA = Map.of(
       WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, FAKE_IMAGE,
       WorkerEnvConstants.WORKER_JOB_ID, JOB_ID,
       WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(JOB_ATTEMPT),
-      EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(new EnvVariableFeatureFlags().useStreamCapableState()),
-      EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(new EnvVariableFeatureFlags().autoDetectSchema()));
+      EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(featureFlags.useStreamCapableState()),
+      EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(featureFlags.autoDetectSchema()),
+      EnvVariableFeatureFlags.APPLY_FIELD_SELECTION, String.valueOf(featureFlags.applyFieldSelection()),
+      EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, featureFlags.fieldSelectionWorkspaces());
 
   private WorkerConfigs workerConfigs;
   @Mock
@@ -64,7 +69,8 @@ class AirbyteIntegrationLauncherTest {
   @BeforeEach
   void setUp() {
     workerConfigs = new WorkerConfigs(new EnvConfigs());
-    launcher = new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, FAKE_IMAGE, processFactory, workerConfigs.getResourceRequirements(), false);
+    launcher = new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, FAKE_IMAGE, processFactory, workerConfigs.getResourceRequirements(), null, false,
+        featureFlags);
   }
 
   @Test
@@ -72,7 +78,7 @@ class AirbyteIntegrationLauncherTest {
     launcher.spec(JOB_ROOT);
 
     Mockito.verify(processFactory).create(SPEC_JOB, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, false, Collections.emptyMap(), null,
-        workerConfigs.getResourceRequirements(), Map.of(AirbyteIntegrationLauncher.JOB_TYPE, AirbyteIntegrationLauncher.SPEC_JOB), JOB_METADATA,
+        workerConfigs.getResourceRequirements(), null, Map.of(JOB_TYPE_KEY, SPEC_JOB), JOB_METADATA,
         Map.of(),
         "spec");
   }
@@ -83,7 +89,8 @@ class AirbyteIntegrationLauncherTest {
 
     Mockito.verify(processFactory).create(CHECK_JOB, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, false, CONFIG_FILES, null,
         workerConfigs.getResourceRequirements(),
-        Map.of(JOB_TYPE, CHECK_JOB),
+        null,
+        Map.of(JOB_TYPE_KEY, CHECK_JOB),
         JOB_METADATA,
         Map.of(),
         "check",
@@ -96,7 +103,8 @@ class AirbyteIntegrationLauncherTest {
 
     Mockito.verify(processFactory).create(DISCOVER_JOB, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, false, CONFIG_FILES, null,
         workerConfigs.getResourceRequirements(),
-        Map.of(JOB_TYPE, DISCOVER_JOB),
+        null,
+        Map.of(JOB_TYPE_KEY, DISCOVER_JOB),
         JOB_METADATA,
         Map.of(),
         "discover",
@@ -109,7 +117,8 @@ class AirbyteIntegrationLauncherTest {
 
     Mockito.verify(processFactory).create(READ_STEP, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, false, CONFIG_CATALOG_STATE_FILES, null,
         workerConfigs.getResourceRequirements(),
-        Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, READ_STEP),
+        null,
+        Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, READ_STEP),
         JOB_METADATA,
         Map.of(),
         Lists.newArrayList(
@@ -125,7 +134,8 @@ class AirbyteIntegrationLauncherTest {
 
     Mockito.verify(processFactory).create(WRITE_STEP, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, true, CONFIG_CATALOG_FILES, null,
         workerConfigs.getResourceRequirements(),
-        Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, WRITE_STEP),
+        null,
+        Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, WRITE_STEP),
         JOB_METADATA,
         Map.of(),
         "write",

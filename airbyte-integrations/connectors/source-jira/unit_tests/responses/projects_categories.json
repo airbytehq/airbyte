@@ -1,0 +1,14 @@
+[
+  {
+    "self": "https://airbyteio.atlassian.net/rest/api/3/projectCategory/10000",
+    "id": "10000",
+    "description": "Category 1",
+    "name": "Category 1"
+  },
+  {
+    "self": "https://airbyteio.atlassian.net/rest/api/3/projectCategory/10001",
+    "id": "10001",
+    "description": "Category 2",
+    "name": "Category 2"
+  }
+]

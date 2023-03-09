@@ -8,7 +8,13 @@ import yaml
 
 import pytest
 
-from ci_connector_ops import sat_config_checks
+from ci_connector_ops import sat_config_checks, utils
+
+
+@pytest.fixture
+def mock_diffed_branched(mocker):
+    mocker.patch.object(sat_config_checks.utils, "DIFFED_BRANCH", utils.AIRBYTE_REPO.active_branch)
+    return utils.AIRBYTE_REPO.active_branch
 
 @pytest.fixture
 def pokeapi_acceptance_test_config_path():
@@ -61,7 +67,7 @@ def ga_connector_file_change_expected_team(tmp_path, ga_connector_file):
 
 @pytest.fixture
 def ga_connector_backward_compatibility_file_change(tmp_path, ga_connector_file):
-    expected_teams = list(sat_config_checks.GA_CONNECTOR_REVIEWERS) + [{"any-of": list(sat_config_checks.BACKWARD_COMPATIBILITY_REVIEWERS)}]
+    expected_teams = [{"any-of": list(sat_config_checks.BACKWARD_COMPATIBILITY_REVIEWERS)}]
     backup_path = tmp_path / "ga_acceptance_test_config.backup"
     shutil.copyfile(ga_connector_file, backup_path)
     with open(ga_connector_file, "a") as ga_acceptance_test_config_file:
@@ -71,7 +77,7 @@ def ga_connector_backward_compatibility_file_change(tmp_path, ga_connector_file)
 
 @pytest.fixture
 def ga_connector_test_strictness_level_file_change(tmp_path, ga_connector_file):
-    expected_teams = list(sat_config_checks.GA_CONNECTOR_REVIEWERS) + [{"any-of": list(sat_config_checks.TEST_STRICTNESS_LEVEL_REVIEWERS)}]
+    expected_teams = [{"any-of": list(sat_config_checks.TEST_STRICTNESS_LEVEL_REVIEWERS)}]
     backup_path = tmp_path / "ga_acceptance_test_config.backup"
     shutil.copyfile(ga_connector_file, backup_path)
     with open(ga_connector_file, "a") as ga_acceptance_test_config_file:
@@ -88,24 +94,24 @@ def check_review_requirements_file_contains_expected_teams(capsys, expected_team
         requirements = yaml.safe_load(requirements_file)
     assert requirements[0]["teams"] == expected_teams
 
-def test_find_mandatory_reviewers_backward_compatibility(capsys, not_ga_backward_compatibility_change_expected_team):
+def test_find_mandatory_reviewers_backward_compatibility(mock_diffed_branched, capsys, not_ga_backward_compatibility_change_expected_team):
     check_review_requirements_file_contains_expected_teams(capsys, not_ga_backward_compatibility_change_expected_team)
 
     
-def test_find_mandatory_reviewers_test_strictness_level(capsys, not_ga_test_strictness_level_change_expected_team):
+def test_find_mandatory_reviewers_test_strictness_level(mock_diffed_branched, capsys, not_ga_test_strictness_level_change_expected_team):
     check_review_requirements_file_contains_expected_teams(capsys, not_ga_test_strictness_level_change_expected_team)
 
     
-def test_find_mandatory_reviewers_ga(capsys, ga_connector_file_change_expected_team):
+def test_find_mandatory_reviewers_ga(mock_diffed_branched, capsys, ga_connector_file_change_expected_team):
     check_review_requirements_file_contains_expected_teams(capsys, ga_connector_file_change_expected_team)
 
-def test_find_mandatory_reviewers_ga_backward_compatibility(capsys, ga_connector_backward_compatibility_file_change):
+def test_find_mandatory_reviewers_ga_backward_compatibility(mock_diffed_branched, capsys, ga_connector_backward_compatibility_file_change):
     check_review_requirements_file_contains_expected_teams(capsys, ga_connector_backward_compatibility_file_change)
 
-def test_find_mandatory_reviewers_ga_test_strictness_level(capsys, ga_connector_test_strictness_level_file_change):
+def test_find_mandatory_reviewers_ga_test_strictness_level(mock_diffed_branched, capsys, ga_connector_test_strictness_level_file_change):
     check_review_requirements_file_contains_expected_teams(capsys, ga_connector_test_strictness_level_file_change)
 
-def test_find_mandatory_reviewers_no_tracked_changed(capsys, not_ga_not_tracked_change_expected_team):
+def test_find_mandatory_reviewers_no_tracked_changed(mock_diffed_branched, capsys, not_ga_not_tracked_change_expected_team):
     sat_config_checks.write_review_requirements_file()
     captured = capsys.readouterr()
     assert captured.out.split("\n")[0].split("=")[-1] == "false"

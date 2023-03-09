@@ -22,11 +22,20 @@
         "type": "string",
         "order": 1
       },
+      "replication_end_date": {
+        "title": "End Date",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data after this date will not be replicated.",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "examples": ["2017-01-25T00:00:00Z"],
+        "type": "string",
+        "airbyte_hidden": true,
+        "order": 2
+      },
       "credentials": {
         "title": "Authentication mechanism",
         "description": "Choose how to authenticate to Harvest.",
         "type": "object",
-        "order": 2,
+        "order": 3,
         "oneOf": [
           {
             "type": "object",

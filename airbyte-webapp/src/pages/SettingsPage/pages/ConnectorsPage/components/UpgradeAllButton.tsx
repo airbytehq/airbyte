@@ -35,9 +35,10 @@ interface UpdateAllButtonProps {
   isLoading: boolean;
   hasError: boolean;
   hasSuccess: boolean;
+  disabled: boolean;
 }
 
-const UpgradeAllButton: React.FC<UpdateAllButtonProps> = ({ onUpdate, isLoading, hasError, hasSuccess }) => {
+const UpgradeAllButton: React.FC<UpdateAllButtonProps> = ({ onUpdate, isLoading, hasError, hasSuccess, disabled }) => {
   return (
     <UpdateButtonContent>
       {hasError && (
@@ -50,7 +51,7 @@ const UpgradeAllButton: React.FC<UpdateAllButtonProps> = ({ onUpdate, isLoading,
         className={styles.updateButton}
         onClick={onUpdate}
         isLoading={isLoading}
-        wasActive={hasSuccess}
+        disabled={disabled}
         icon={hasSuccess ? undefined : <TryArrow icon={faRedoAlt} />}
       >
         {hasSuccess ? <FormattedMessage id="admin.upgraded" /> : <FormattedMessage id="admin.upgradeAll" />}
