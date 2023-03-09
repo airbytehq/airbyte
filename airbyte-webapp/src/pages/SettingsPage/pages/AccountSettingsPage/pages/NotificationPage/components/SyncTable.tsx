@@ -4,7 +4,7 @@ import { FormattedMessage } from "react-intl";
 import { Row, Cell } from "components";
 import { Separator } from "components/Separator";
 
-import { NotificationItem } from "core/request/DaspireClient";
+import { EditNotificationBody, NotificationItem } from "core/request/DaspireClient";
 
 import { NotificationFlag } from "./NotificationFlag";
 import { FirstHeaderText, HeaderText, BodyRow, FirstCellFlexValue, BodyCell } from "./StyledTable";
@@ -12,9 +12,10 @@ import { FirstHeaderText, HeaderText, BodyRow, FirstCellFlexValue, BodyCell } fr
 interface IProps {
   syncFail: NotificationItem;
   syncSuccess: NotificationItem;
+  updateNotificationSetting: (editNotificationBody: EditNotificationBody) => void;
 }
 
-export const SyncTable: React.FC<IProps> = ({ syncFail, syncSuccess }) => {
+export const SyncTable: React.FC<IProps> = ({ syncFail, syncSuccess, updateNotificationSetting }) => {
   return (
     <>
       {/* Table Header Row */}
@@ -34,10 +35,28 @@ export const SyncTable: React.FC<IProps> = ({ syncFail, syncSuccess }) => {
           </HeaderText>
         </Cell>
         <BodyCell>
-          <NotificationFlag isActive={syncFail.emailFlag} />
+          <NotificationFlag
+            isActive={syncFail.emailFlag}
+            onClick={() => {
+              updateNotificationSetting({
+                id: syncFail.id,
+                emailFlag: !syncFail.emailFlag,
+                appsFlag: syncFail.appsFlag,
+              });
+            }}
+          />
         </BodyCell>
         <BodyCell>
-          <NotificationFlag isActive={syncFail.appsFlag} />
+          <NotificationFlag
+            isActive={syncFail.appsFlag}
+            onClick={() => {
+              updateNotificationSetting({
+                id: syncFail.id,
+                emailFlag: syncFail.emailFlag,
+                appsFlag: !syncFail.appsFlag,
+              });
+            }}
+          />
         </BodyCell>
       </BodyRow>
       <BodyRow>
@@ -47,10 +66,28 @@ export const SyncTable: React.FC<IProps> = ({ syncFail, syncSuccess }) => {
           </HeaderText>
         </Cell>
         <BodyCell>
-          <NotificationFlag isActive={syncSuccess.emailFlag} />
+          <NotificationFlag
+            isActive={syncSuccess.emailFlag}
+            onClick={() => {
+              updateNotificationSetting({
+                id: syncSuccess.id,
+                emailFlag: !syncSuccess.emailFlag,
+                appsFlag: syncSuccess.appsFlag,
+              });
+            }}
+          />
         </BodyCell>
         <BodyCell>
-          <NotificationFlag isActive={syncSuccess.appsFlag} />
+          <NotificationFlag
+            isActive={syncSuccess.appsFlag}
+            onClick={() => {
+              updateNotificationSetting({
+                id: syncSuccess.id,
+                emailFlag: syncSuccess.emailFlag,
+                appsFlag: !syncSuccess.appsFlag,
+              });
+            }}
+          />
         </BodyCell>
       </BodyRow>
     </>

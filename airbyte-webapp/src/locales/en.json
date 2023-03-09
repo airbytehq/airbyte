@@ -492,6 +492,7 @@
   "usageTable.cell.inApp": "In app",
   "usageTable.cell.limit": "When usage exceeds",
   "usageTable.cell.addBtn.text": "Add more",
+  "usageTable.cell.removeBtn.text": "Remove",
   "syncTable.cell.status": "Sync status",
   "syncTable.cell.fail": "When sync fails",
   "syncTable.cell.success": "When sync succeeds",

@@ -2,7 +2,7 @@ import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 import {
   getNotificationSetting,
   SaveNotificationUsageBody,
-  saveNotificationUsageSetting,
+  createNotificationUsageSetting,
   EditNotificationBody,
   editNotificationSetting,
   deleteNotificationSetting,
@@ -13,8 +13,8 @@ export class NotificationService extends AirbyteRequestService {
     return getNotificationSetting(this.requestOptions);
   }
 
-  public saveUsage(notificationUsage: SaveNotificationUsageBody) {
-    return saveNotificationUsageSetting(notificationUsage, this.requestOptions);
+  public createUsage(notificationUsage: SaveNotificationUsageBody) {
+    return createNotificationUsageSetting(notificationUsage, this.requestOptions);
   }
 
   public edit(editNotificationBody: EditNotificationBody) {

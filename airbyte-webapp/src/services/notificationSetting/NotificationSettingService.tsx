@@ -1,8 +1,8 @@
-import { useMutation } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 
 import { useUser } from "core/AuthContext";
 import { NotificationService } from "core/domain/notificationSetting/notificationSettingService";
-import { EditNotificationBody, SaveNotificationUsageBody } from "core/request/DaspireClient";
+import { EditNotificationBody, NotificationSetting, SaveNotificationUsageBody } from "core/request/DaspireClient";
 import { useSuspenseQuery } from "services/connector/useSuspenseQuery";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 
@@ -29,35 +29,65 @@ export const useNotificationSetting = () => {
   return useSuspenseQuery(notificationSettingKeys.get(), () => service.get()).data;
 };
 
-export const useSaveNotificationSetting = () => {
+export const useCreateNotificationSetting = () => {
   const service = useNotificationSettingApiService();
+  const queryClient = useQueryClient();
 
-  return useMutation((notificationUsage: SaveNotificationUsageBody) => service.saveUsage(notificationUsage));
+  return useMutation({
+    mutationFn: (notificationUsage: SaveNotificationUsageBody) => service.createUsage(notificationUsage),
+    onSuccess(data) {
+      queryClient.setQueryData(notificationSettingKeys.get(), (setting: any) => {
+        const { usageList, syncFail, syncSuccess }: NotificationSetting = setting.data;
+        return { data: { usageList: [data.data, ...usageList], syncFail, syncSuccess } };
+      });
+    },
+  });
 };
 
 export const useUpdateNotificationSetting = () => {
   const service = useNotificationSettingApiService();
 
-  return useMutation((editNotificationBody: EditNotificationBody) => service.edit(editNotificationBody));
+  return useMutation({
+    mutationFn: (editNotificationBody: EditNotificationBody) => service.edit(editNotificationBody),
+    onSuccess(data, variables) {
+      console.log("data", data);
+      console.log("variables", variables);
+    },
+  });
 };
 
 export const useDeleteNotificationSetting = () => {
   const service = useNotificationSettingApiService();
+  const queryClient = useQueryClient();
 
-  return useMutation((notificationSettingId: string) => service.delete(notificationSettingId));
+  return useMutation({
+    mutationFn: (notificationSettingId: string) => service.delete(notificationSettingId),
+    onSuccess(_, variables) {
+      queryClient.setQueryData(notificationSettingKeys.get(), (setting: any) => {
+        const { usageList, syncFail, syncSuccess }: NotificationSetting = setting.data;
+        return {
+          data: {
+            usageList: usageList.filter((usageItem) => usageItem.id !== variables),
+            syncFail,
+            syncSuccess,
+          },
+        };
+      });
+    },
+  });
 };
 
 export const useAsyncActions = (): {
-  onSaveNotificationSetting: (notificationUsage: SaveNotificationUsageBody) => Promise<any>;
+  onCreateNotificationSetting: (notificationUsage: SaveNotificationUsageBody) => Promise<any>;
   onUpdateNotificationSetting: (editNotificationBody: EditNotificationBody) => Promise<any>;
   onDeleteNotificationSetting: (notificationSettingId: string) => Promise<any>;
 } => {
-  const { mutateAsync: saveNotificationSetting } = useSaveNotificationSetting();
+  const { mutateAsync: createNotificationSetting } = useCreateNotificationSetting();
   const { mutateAsync: updateNotificationSetting } = useUpdateNotificationSetting();
   const { mutateAsync: deleteNotificationSetting } = useDeleteNotificationSetting();
 
-  const onSaveNotificationSetting = async (notificationUsage: SaveNotificationUsageBody) => {
-    return await saveNotificationSetting(notificationUsage);
+  const onCreateNotificationSetting = async (notificationUsage: SaveNotificationUsageBody) => {
+    return await createNotificationSetting(notificationUsage);
   };
 
   const onUpdateNotificationSetting = async (editNotificationBody: EditNotificationBody) => {
@@ -69,7 +99,7 @@ export const useAsyncActions = (): {
   };
 
   return {
-    onSaveNotificationSetting,
+    onCreateNotificationSetting,
     onUpdateNotificationSetting,
     onDeleteNotificationSetting,
   };

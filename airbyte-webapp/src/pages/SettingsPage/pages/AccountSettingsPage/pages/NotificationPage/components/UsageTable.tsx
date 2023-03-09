@@ -4,16 +4,24 @@ import { FormattedMessage } from "react-intl";
 import { Row, Cell } from "components";
 import { Separator } from "components/Separator";
 
-import { NotificationItem } from "core/request/DaspireClient";
+import { EditNotificationBody, NotificationItem } from "core/request/DaspireClient";
 
 import { FirstHeaderText, HeaderText, FirstCellFlexValue, BodyCell } from "./StyledTable";
 import { UsageTableRow } from "./UsageTableRow";
 
 interface IProps {
   usageList: NotificationItem[];
+  createNotificationSetting: () => void;
+  updateNotificationSetting: (data: EditNotificationBody) => void;
+  deleteNotificationSetting: (notificationSettingId: string) => void;
 }
 
-export const UsageTable: React.FC<IProps> = ({ usageList }) => {
+export const UsageTable: React.FC<IProps> = ({
+  usageList,
+  createNotificationSetting,
+  updateNotificationSetting,
+  deleteNotificationSetting,
+}) => {
   return (
     <>
       {/* Table Header Row */}
@@ -34,11 +42,21 @@ export const UsageTable: React.FC<IProps> = ({ usageList }) => {
           </HeaderText>
         </BodyCell>
       </Row>
-      <Separator />
       {/* Table Body Rows */}
-      {usageList.map((usageItem, index) => (
-        <UsageTableRow usageItem={usageItem} index={index} />
-      ))}
+      {usageList
+        .slice(0)
+        .reverse()
+        .map((usageItem) => (
+          <>
+            <Separator />
+            <UsageTableRow
+              usageItem={usageItem}
+              createNotificationSetting={createNotificationSetting}
+              updateNotificationSetting={updateNotificationSetting}
+              deleteNotificationSetting={deleteNotificationSetting}
+            />
+          </>
+        ))}
     </>
   );
 };

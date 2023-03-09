@@ -42,6 +42,7 @@ export interface NotificationItem {
   value: number;
   emailFlag: boolean;
   appsFlag: boolean;
+  defaultFlag?: boolean;
 }
 
 export interface NotificationSetting {
@@ -310,7 +311,7 @@ export const getNotificationSetting = (options?: SecondParameter<typeof apiOverr
   );
 };
 
-export const saveNotificationUsageSetting = (
+export const createNotificationUsageSetting = (
   saveNotificationUsageBody: SaveNotificationUsageBody,
   options?: SecondParameter<typeof apiOverride>
 ) => {

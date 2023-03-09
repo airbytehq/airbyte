@@ -5,15 +5,17 @@ import styled from "styled-components";
 import { Row, DropDown, DropDownRow, Button } from "components";
 import { Tooltip } from "components/base/Tooltip";
 
-import { NotificationItem } from "core/request/DaspireClient";
+import { EditNotificationBody, NotificationItem } from "core/request/DaspireClient";
 
-import { AddIcon } from "../icons";
+import { AddIcon, RemoveIcon } from "../icons";
 import { NotificationFlag } from "./NotificationFlag";
 import { FirstCellFlexValue, FirstCell, BodyCell } from "./StyledTable";
 
 interface IProps {
   usageItem: NotificationItem;
-  index?: number;
+  createNotificationSetting: () => void;
+  updateNotificationSetting: (data: EditNotificationBody) => void;
+  deleteNotificationSetting: (notificationSettingId: string) => void;
 }
 
 const DDContainer = styled.div`
@@ -42,7 +44,12 @@ export const UsageOptions: DropDownRow.IDataItem[] = [
   { label: "100%", value: 1.0 },
 ];
 
-export const UsageTableRow: React.FC<IProps> = ({ usageItem, index }) => {
+export const UsageTableRow: React.FC<IProps> = ({
+  usageItem,
+  createNotificationSetting,
+  updateNotificationSetting,
+  deleteNotificationSetting,
+}) => {
   return (
     <Row>
       <FirstCell flex={FirstCellFlexValue}>
@@ -56,10 +63,10 @@ export const UsageTableRow: React.FC<IProps> = ({ usageItem, index }) => {
             onChange={(option: DropDownRow.IDataItem) => console.log(option.value)}
           />
         </DDContainer>
-        {index === 0 && (
+        {usageItem?.defaultFlag && (
           <Tooltip
             control={
-              <AddRemoveBtn>
+              <AddRemoveBtn onClick={createNotificationSetting}>
                 <AddIcon />
               </AddRemoveBtn>
             }
@@ -68,12 +75,42 @@ export const UsageTableRow: React.FC<IProps> = ({ usageItem, index }) => {
             <FormattedMessage id="usageTable.cell.addBtn.text" />
           </Tooltip>
         )}
+        {!usageItem?.defaultFlag && (
+          <Tooltip
+            control={
+              <AddRemoveBtn onClick={() => deleteNotificationSetting(usageItem.id)}>
+                <RemoveIcon />
+              </AddRemoveBtn>
+            }
+            placement="top"
+          >
+            <FormattedMessage id="usageTable.cell.removeBtn.text" />
+          </Tooltip>
+        )}
       </FirstCell>
       <BodyCell>
-        <NotificationFlag isActive={usageItem.emailFlag} />
+        <NotificationFlag
+          isActive={usageItem.emailFlag}
+          onClick={() => {
+            updateNotificationSetting({
+              id: usageItem.id,
+              emailFlag: !usageItem.emailFlag,
+              appsFlag: usageItem.appsFlag,
+            });
+          }}
+        />
       </BodyCell>
       <BodyCell>
-        <NotificationFlag isActive={usageItem.appsFlag} />
+        <NotificationFlag
+          isActive={usageItem.appsFlag}
+          onClick={() => {
+            updateNotificationSetting({
+              id: usageItem.id,
+              emailFlag: usageItem.emailFlag,
+              appsFlag: !usageItem.appsFlag,
+            });
+          }}
+        />
       </BodyCell>
     </Row>
   );
