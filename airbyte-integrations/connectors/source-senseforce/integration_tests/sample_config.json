@@ -1,7 +1,0 @@
-{
-  "access_token": "somekey",
-  "backend_url": "https://galaxyapi.senseforce.io",
-  "dataset_id": "8f418098-ca28-4df5-9498-0df9fe78eda7",
-  "start_date": "2020-07-22",
-  "slice_range": 1
-}

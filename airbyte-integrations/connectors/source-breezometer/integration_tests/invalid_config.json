@@ -1,9 +1,0 @@
-{
-  "api_key": "<invalid_api_key>",
-  "latitude": "54.675003",
-  "longitude": "-113.550282",
-  "days_to_forecast": 5,
-  "hours_to_forecast": 900,
-  "historic_hours": -1,
-  "radius": 10
-}

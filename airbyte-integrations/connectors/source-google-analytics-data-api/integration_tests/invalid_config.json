@@ -1,9 +1,0 @@
-{
-  "property_id": "1",
-  "json_credentials": "wrong",
-  "report_name": "crash_report",
-  "dimensions": "date, operatingSystem, streamId",
-  "metrics": "crashAffectedUsers, crashFreeUsersRate, totalUsers",
-  "date_ranges_start_date": "30daysAgo",
-  "date_ranges_end_date": "yesterday"
-}

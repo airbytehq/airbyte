@@ -1,7 +1,0 @@
-{
-  "api_token": "invalid_token",
-  "ingest_start": "2022-07-07",
-  "metrics": ["installs", "clicks"],
-  "dimensions": ["app", "network"],
-  "additional_metrics": []
-}

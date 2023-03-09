@@ -1,6 +1,0 @@
-{
-  "credentials": {
-    "credentials_json": "<The contents of the JSON service account key>",
-    "email": "test@test.test"
-  }
-}

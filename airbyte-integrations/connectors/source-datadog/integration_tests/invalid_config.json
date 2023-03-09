@@ -1,7 +1,0 @@
-{
-  "api_key": "<api_key>",
-  "application_key": "<api_key>",
-  "query": "sample query",
-  "limit": 100,
-  "start_date": "2222-10-10T00:00:00Z"
-}

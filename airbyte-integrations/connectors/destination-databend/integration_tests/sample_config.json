@@ -1,9 +1,0 @@
-{
-  "protocol" : "https",
-  "host" : "tnc7yee14--xxxx.ch.datafusecloud.com",
-  "port" : 443,
-  "username" : "username",
-  "password" : "password",
-  "database" : "default",
-  "table" : "default"
-}

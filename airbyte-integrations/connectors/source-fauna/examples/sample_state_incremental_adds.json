@@ -1,8 +1,0 @@
-{
-  "foo": {
-    "add_remove_cursor": {
-      "ts": 1657661332900000,
-      "after": "{\"ts\":1657661332900000,\"action\":\"add\",\"document\":{\"@ref\":{\"id\":\"337014929909350912\",\"collection\":{\"@ref\":{\"id\":\"foo\",\"collection\":{\"@ref\":{\"id\":\"collections\"}}}}}}}"
-    }
-  }
-}

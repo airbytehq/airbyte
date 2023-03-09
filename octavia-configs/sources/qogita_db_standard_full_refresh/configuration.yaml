@@ -5,7 +5,7 @@ definition_image: airbyte/source-postgres
 definition_version: 1.0.44
 configuration:
   ssl: false
-  host: prod-qogita-db.cluster-cuepgogvu0rp.eu-central-1.rds.amazonaws.com
+  host: prod-qogita-db.cluster-ro-cuepgogvu0rp.eu-central-1.rds.amazonaws.com
   port: 5432
   schemas:
   - public

@@ -1,7 +1,0 @@
-*
-!Dockerfile
-!Dockerfile.test
-!main.py
-!source_paypal_transaction
-!setup.py
-!secrets
