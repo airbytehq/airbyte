@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.redshift;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -8,8 +12,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 /*
- * SshPasswordRedshiftStagingDestinationAcceptanceTest runs basic Redshift Destination Tests using the S3 Staging
- * mechanism for upload of data and "password" authentication for the SSH bastion configuration.
+ * SshPasswordRedshiftStagingDestinationAcceptanceTest runs basic Redshift Destination Tests using
+ * the S3 Staging mechanism for upload of data and "password" authentication for the SSH bastion
+ * configuration.
  */
 public class SshPasswordRedshiftStagingDestinationAcceptanceTest extends SshRedshiftDestinationBaseAcceptanceTest {
 
@@ -24,4 +29,5 @@ public class SshPasswordRedshiftStagingDestinationAcceptanceTest extends SshReds
     final String configAsString = IOs.readFile(configPath);
     return Jsons.deserialize(configAsString);
   }
+
 }
