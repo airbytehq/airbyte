@@ -9,12 +9,11 @@ from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.connector import BaseConnector
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
-from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from connector_builder import connector_builder_handler
 
 
-def create_source(config: Mapping[str, Any]) -> DeclarativeSource:
+def create_source(config: Mapping[str, Any]) -> ManifestDeclarativeSource:
     manifest = config.get("__injected_declarative_manifest")
     return ManifestDeclarativeSource(manifest)
 
@@ -42,14 +41,14 @@ def preparse(args: List[str]) -> Tuple[str, str]:
     return parsed.command, parsed.config
 
 
-def handle_connector_builder_request(source: DeclarativeSource, config: Mapping[str, Any]):
+def handle_connector_builder_request(source: ManifestDeclarativeSource, config: Mapping[str, Any]):
     command = config.get("__command")
     if command == "resolve_manifest":
         return connector_builder_handler.resolve_manifest(source)
     raise ValueError(f"Unrecognized command {command}.")
 
 
-def handle_connector_request(source: DeclarativeSource, args: List[str]):
+def handle_connector_request(source: ManifestDeclarativeSource, args: List[str]):
     # Verify that the correct args are present for the production codepaths.
     AirbyteEntrypoint.parse_args(args)
     launch(source, sys.argv[1:])
@@ -59,7 +58,7 @@ def handle_request(args: List[str]):
     config = get_config_from_args(args)
     source = create_source(config)
     if "__command" in config:
-        handle_connector_builder_request(source, config)
+        print(handle_connector_builder_request(source, config))
     else:
         handle_connector_request(source, args)
 

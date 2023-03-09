@@ -164,7 +164,8 @@ def test_resolve_manifest():
         ],
         "check": {"type": "CheckStream", "stream_names": ["lists"]},
     }
-    assert resolved_manifest.data["manifest"] == expected_resolved_manifest
+    assert resolved_manifest.record.data["manifest"] == expected_resolved_manifest
+    assert resolved_manifest.record.stream == "resolve_manifest"
 
 
 def test_resolve_manifest_error_returns_error_response():
