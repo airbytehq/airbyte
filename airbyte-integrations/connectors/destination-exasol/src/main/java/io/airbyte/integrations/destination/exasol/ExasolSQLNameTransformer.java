@@ -1,13 +1,14 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.exasol;
 
 import io.airbyte.commons.text.Names;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 
-public class ExasolSQLNameTransformer extends ExtendedNameTransformer {
+public class ExasolSQLNameTransformer extends StandardNameTransformer {
+
   @Override
   public String applyDefaultCase(final String input) {
     return input.toUpperCase();
