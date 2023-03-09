@@ -70,9 +70,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This class contains helper functions and boilerplate for implementing a source connector for a DB
- * source of both non-relational and relational type. NOTE : This class is a fork of AbstractDbSource
- * for the interim. We will eventually remove this and AbstractDbSource, but to not introduce any
- * breaking changes this will be done in a piece by piece fashion.
+ * source of both non-relational and relational type. NOTE : This class is a fork of
+ * AbstractDbSource for the interim. We will eventually remove this and AbstractDbSource, but to not
+ * introduce any breaking changes this will be done in a piece by piece fashion.
  */
 public abstract class AbstractJdbcBaseSource<DataType, Database extends AbstractDatabase> extends
     BaseConnector implements Source, AutoCloseable {
@@ -146,8 +146,8 @@ public abstract class AbstractJdbcBaseSource<DataType, Database extends Abstract
    */
   @Override
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog,
-      final JsonNode state)
+                                                    final ConfiguredAirbyteCatalog catalog,
+                                                    final JsonNode state)
       throws Exception {
     final StateManager stateManager =
         StateManagerFactory.createStateManager(getSupportedStateType(config),
@@ -189,7 +189,7 @@ public abstract class AbstractJdbcBaseSource<DataType, Database extends Abstract
   // in case of user manually modified source table schema but did not refresh it and save into the
   // catalog - it can lead to sync failure. This method compare actual schema vs catalog schema
   private void logSourceSchemaChange(final Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo,
-      final ConfiguredAirbyteCatalog catalog) {
+                                     final ConfiguredAirbyteCatalog catalog) {
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
       final String fullyQualifiedTableName = getFullyQualifiedTableName(stream.getNamespace(),
@@ -217,9 +217,9 @@ public abstract class AbstractJdbcBaseSource<DataType, Database extends Abstract
   }
 
   private void validateCursorFieldForIncrementalTables(
-      final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
-      final ConfiguredAirbyteCatalog catalog,
-      final Database database)
+                                                       final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
+                                                       final ConfiguredAirbyteCatalog catalog,
+                                                       final Database database)
       throws SQLException {
     final List<InvalidCursorInfo> tablesWithInvalidCursor = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
@@ -286,7 +286,7 @@ public abstract class AbstractJdbcBaseSource<DataType, Database extends Abstract
    * @param database database
    */
   protected void estimateFullRefreshSyncSize(final Database database,
-      final ConfiguredAirbyteStream configuredAirbyteStream) {
+                                             final ConfiguredAirbyteStream configuredAirbyteStream) {
     /* no-op */
   }
 
@@ -297,14 +297,14 @@ public abstract class AbstractJdbcBaseSource<DataType, Database extends Abstract
    * @param database database
    */
   protected void estimateIncrementalSyncSize(final Database database,
-      final ConfiguredAirbyteStream configuredAirbyteStream,
-      final CursorInfo cursorInfo,
-      final DataType dataType) {
+                                             final ConfiguredAirbyteStream configuredAirbyteStream,
+                                             final CursorInfo cursorInfo,
+                                             final DataType dataType) {
     /* no-op */
   }
 
   private List<TableInfo<CommonField<DataType>>> discoverWithoutSystemTables(
-      final Database database)
+                                                                             final Database database)
       throws Exception {
     final Set<String> systemNameSpaces = getExcludedInternalNameSpaces();
     final Set<String> systemViews = getExcludedViews();
@@ -316,11 +316,11 @@ public abstract class AbstractJdbcBaseSource<DataType, Database extends Abstract
   }
 
   private List<AutoCloseableIterator<AirbyteMessage>> getFullRefreshIterators(
-      final Database database,
-      final ConfiguredAirbyteCatalog catalog,
-      final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
-      final StateManager stateManager,
-      final Instant emittedAt) {
+                                                                              final Database database,
+                                                                              final ConfiguredAirbyteCatalog catalog,
+                                                                              final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
+                                                                              final StateManager stateManager,
+                                                                              final Instant emittedAt) {
     return getSelectedIterators(
         database,
         catalog,
@@ -331,11 +331,11 @@ public abstract class AbstractJdbcBaseSource<DataType, Database extends Abstract
   }
 
   protected List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
-      final Database database,
-      final ConfiguredAirbyteCatalog catalog,
-      final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
-      final StateManager stateManager,
-      final Instant emittedAt) {
+                                                                                final Database database,
+                                                                                final ConfiguredAirbyteCatalog catalog,
+                                                                                final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
+                                                                                final StateManager stateManager,
+                                                                                final Instant emittedAt) {
     return getSelectedIterators(
         database,
         catalog,
@@ -357,12 +357,12 @@ public abstract class AbstractJdbcBaseSource<DataType, Database extends Abstract
    * @return List of AirbyteMessageIterators containing all iterators for a catalog
    */
   private List<AutoCloseableIterator<AirbyteMessage>> getSelectedIterators(
-      final Database database,
-      final ConfiguredAirbyteCatalog catalog,
-      final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
-      final StateManager stateManager,
-      final Instant emittedAt,
-      final Predicate<ConfiguredAirbyteStream> selector) {
+                                                                           final Database database,
+                                                                           final ConfiguredAirbyteCatalog catalog,
+                                                                           final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
+                                                                           final StateManager stateManager,
+                                                                           final Instant emittedAt,
+                                                                           final Predicate<ConfiguredAirbyteStream> selector) {
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       if (selector.test(airbyteStream)) {
@@ -401,10 +401,10 @@ public abstract class AbstractJdbcBaseSource<DataType, Database extends Abstract
    * @return
    */
   private AutoCloseableIterator<AirbyteMessage> createReadIterator(final Database database,
-      final ConfiguredAirbyteStream airbyteStream,
-      final TableInfo<CommonField<DataType>> table,
-      final StateManager stateManager,
-      final Instant emittedAt) {
+                                                                   final ConfiguredAirbyteStream airbyteStream,
+                                                                   final TableInfo<CommonField<DataType>> table,
+                                                                   final StateManager stateManager,
+                                                                   final Instant emittedAt) {
     final String streamName = airbyteStream.getStream().getName();
     final String namespace = airbyteStream.getStream().getNamespace();
     final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamName,
@@ -485,11 +485,11 @@ public abstract class AbstractJdbcBaseSource<DataType, Database extends Abstract
    * @return AirbyteMessage Iterator that
    */
   private AutoCloseableIterator<AirbyteMessage> getIncrementalStream(final Database database,
-      final ConfiguredAirbyteStream airbyteStream,
-      final List<String> selectedDatabaseFields,
-      final TableInfo<CommonField<DataType>> table,
-      final CursorInfo cursorInfo,
-      final Instant emittedAt) {
+                                                                     final ConfiguredAirbyteStream airbyteStream,
+                                                                     final List<String> selectedDatabaseFields,
+                                                                     final TableInfo<CommonField<DataType>> table,
+                                                                     final CursorInfo cursorInfo,
+                                                                     final Instant emittedAt) {
     final String streamName = airbyteStream.getStream().getName();
     final String namespace = airbyteStream.getStream().getNamespace();
     final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
@@ -528,11 +528,11 @@ public abstract class AbstractJdbcBaseSource<DataType, Database extends Abstract
    * @return AirbyteMessageIterator with all records for a database source
    */
   private AutoCloseableIterator<AirbyteMessage> getFullRefreshStream(final Database database,
-      final String streamName,
-      final String namespace,
-      final List<String> selectedDatabaseFields,
-      final TableInfo<CommonField<DataType>> table,
-      final Instant emittedAt) {
+                                                                     final String streamName,
+                                                                     final String namespace,
+                                                                     final List<String> selectedDatabaseFields,
+                                                                     final TableInfo<CommonField<DataType>> table,
+                                                                     final Instant emittedAt) {
     final AutoCloseableIterator<JsonNode> queryStream =
         queryTableFullRefresh(database, selectedDatabaseFields, table.getNameSpace(),
             table.getName());
@@ -544,10 +544,10 @@ public abstract class AbstractJdbcBaseSource<DataType, Database extends Abstract
   }
 
   private AutoCloseableIterator<AirbyteMessage> getMessageIterator(
-      final AutoCloseableIterator<JsonNode> recordIterator,
-      final String streamName,
-      final String namespace,
-      final long emittedAt) {
+                                                                   final AutoCloseableIterator<JsonNode> recordIterator,
+                                                                   final String streamName,
+                                                                   final String namespace,
+                                                                   final long emittedAt) {
     return AutoCloseableIterators.transform(recordIterator, r -> new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
@@ -604,8 +604,8 @@ public abstract class AbstractJdbcBaseSource<DataType, Database extends Abstract
   }
 
   private void assertColumnsWithSameNameAreSame(final String nameSpace,
-      final String tableName,
-      final List<CommonField<DataType>> columns) {
+                                                final String tableName,
+                                                final List<CommonField<DataType>> columns) {
     columns.stream()
         .collect(Collectors.groupingBy(CommonField<DataType>::getName))
         .values()
@@ -631,7 +631,7 @@ public abstract class AbstractJdbcBaseSource<DataType, Database extends Abstract
    *         owner).
    */
   protected <T> Set<T> getPrivilegesTableForCurrentUser(final JdbcDatabase database,
-      final String schema)
+                                                        final String schema)
       throws SQLException {
     return Collections.emptySet();
   }
@@ -694,7 +694,7 @@ public abstract class AbstractJdbcBaseSource<DataType, Database extends Abstract
    * @throws Exception access to the database might lead to an exceptions.
    */
   protected abstract List<TableInfo<CommonField<DataType>>> discoverInternal(
-      final Database database)
+                                                                             final Database database)
       throws Exception;
 
   /**
@@ -706,8 +706,8 @@ public abstract class AbstractJdbcBaseSource<DataType, Database extends Abstract
    * @throws Exception - access to the database might lead to exceptions.
    */
   protected abstract List<TableInfo<CommonField<DataType>>> discoverInternal(
-      final Database database,
-      String schema)
+                                                                             final Database database,
+                                                                             String schema)
       throws Exception;
 
   /**
@@ -719,7 +719,7 @@ public abstract class AbstractJdbcBaseSource<DataType, Database extends Abstract
    * @return map of namespace.table and primary key fields.
    */
   protected abstract Map<String, List<String>> discoverPrimaryKeys(Database database,
-      List<TableInfo<CommonField<DataType>>> tableInfos);
+                                                                   List<TableInfo<CommonField<DataType>>> tableInfos);
 
   /**
    * Returns quote symbol of the database
@@ -738,9 +738,9 @@ public abstract class AbstractJdbcBaseSource<DataType, Database extends Abstract
    * @return iterator with read data
    */
   protected abstract AutoCloseableIterator<JsonNode> queryTableFullRefresh(final Database database,
-      final List<String> columnNames,
-      final String schemaName,
-      final String tableName);
+                                                                           final List<String> columnNames,
+                                                                           final String schemaName,
+                                                                           final String tableName);
 
   /**
    * Read incremental data from a table. Incremental read should return only records where cursor
@@ -751,11 +751,11 @@ public abstract class AbstractJdbcBaseSource<DataType, Database extends Abstract
    * @return iterator with read data
    */
   protected abstract AutoCloseableIterator<JsonNode> queryTableIncremental(Database database,
-      List<String> columnNames,
-      String schemaName,
-      String tableName,
-      CursorInfo cursorInfo,
-      DataType cursorFieldType);
+                                                                           List<String> columnNames,
+                                                                           String schemaName,
+                                                                           String tableName,
+                                                                           CursorInfo cursorInfo,
+                                                                           DataType cursorFieldType);
 
   /**
    * When larger than 0, the incremental iterator will emit intermediate state for every N records.
@@ -779,7 +779,7 @@ public abstract class AbstractJdbcBaseSource<DataType, Database extends Abstract
    * @return The deserialized object representation of the state.
    */
   protected List<AirbyteStateMessage> deserializeInitialState(final JsonNode initialStateJson,
-      final JsonNode config) {
+                                                              final JsonNode config) {
     final Optional<StateWrapper> typedState = StateMessageHelper.getTypedState(initialStateJson,
         featureFlags.useStreamCapableState());
     return typedState.map((state) -> {
