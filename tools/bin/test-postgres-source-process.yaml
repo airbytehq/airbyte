@@ -8,7 +8,7 @@ spec:
   containers:
   - name: main
     # image: airbyte/source-postgres:dev
-    image: rodireich/perftestrepo:14
+    image: rodireich/perftestrepo:15
     # imagePullPolicy: Never
     #image: airbyte/source-postgres-private-test:final-1
     # command: ["/bin/sh", "-c"]
