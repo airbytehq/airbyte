@@ -10,7 +10,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
-from .schemas import Application, BaseSchemaModel, Interview, Note, Offer, Opportunity, Referral, User
+from .schemas import Application, ArchiveReason, BaseSchemaModel, Interview, Note, Offer, Opportunity, Posting, Referral, Source, Stage, User
 
 
 class LeverHiringStream(HttpStream, ABC):
@@ -88,15 +88,6 @@ class Opportunities(IncrementalLeverHiringStream):
     base_params = {"include": "followers", "confidentiality": "all"}
 
 
-class Users(LeverHiringStream):
-    """
-    Users stream: https://hire.lever.co/developer/documentation#list-all-users
-    """
-
-    schema = User
-    base_params = {"includeDeactivated": True}
-
-
 class OpportynityChildStream(LeverHiringStream, ABC):
     def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
@@ -118,6 +109,14 @@ class Applications(OpportynityChildStream):
     """
 
     schema = Application
+
+
+class ArchiveReasons(LeverHiringStream):
+    """
+    Archive Reasons stream: https://hire.lever.co/developer/documentation#archive-reasons
+    """
+
+    schema = ArchiveReason
 
 
 class Interviews(OpportynityChildStream):
@@ -144,9 +143,42 @@ class Offers(OpportynityChildStream):
     schema = Offer
 
 
+class Postings(LeverHiringStream):
+    """
+    Postings stream: https://hire.lever.co/developer/documentation#postings
+    """
+
+    schema = Posting
+
+
 class Referrals(OpportynityChildStream):
     """
     Referrals stream: https://hire.lever.co/developer/documentation#list-all-referrals
     """
 
     schema = Referral
+
+
+class Sources(LeverHiringStream):
+    """
+    Postings stream: https://hire.lever.co/developer/documentation#sources
+    """
+
+    schema = Source
+
+
+class Stages(LeverHiringStream):
+    """
+    Stages stream: https://hire.lever.co/developer/documentation#stages
+    """
+
+    schema = Stage
+
+
+class Users(LeverHiringStream):
+    """
+    Users stream: https://hire.lever.co/developer/documentation#list-all-users
+    """
+
+    schema = User
+    base_params = {"includeDeactivated": True}
