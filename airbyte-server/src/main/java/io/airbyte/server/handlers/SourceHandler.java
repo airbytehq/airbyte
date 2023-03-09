@@ -145,7 +145,7 @@ public class SourceHandler {
       }
 
       if (sourceCloneConfiguration.getConnectionConfiguration() != null) {
-        sourceCreate.connectionConfiguration(sourceCloneConfiguration.getConnectionConfiguration());
+        sourceCreate.connectionConfiguration(configurationUpdate.source(sourceCloneRequestBody.getSourceCloneId(),sourceName, sourceCloneConfiguration.getConnectionConfiguration()).getConfiguration());
       }
     }
 
