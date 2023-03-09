@@ -148,7 +148,7 @@
   "connectorForm.authenticate.succeeded": "身份验证成功！",
   "connectorForm.authenticate.required": "需要身份验证",
   "connectorForm.reauthenticate": "重新验证",
-  "connectorForm.expandForm": "展开此表单以继续设置您的链接",
+  "connectorForm.expandForm": "展开此表单以继续设置您的接口",
 
   "form.rawData": "原始数据（JSON）",
   "form.basicNormalization": "标准化表格数据",
