@@ -26,15 +26,15 @@ def get_gcs_blobs(config):
     return blobs
 
 
-def read_csv_file(blob: Blob, limit_bytes=0):
-    if limit_bytes:
-        content = blob.download_as_bytes(start=0, end=limit_bytes)
+def read_csv_file(blob: Blob, read_header_only=False):
+    file_obj = io.BytesIO()
+    blob.download_to_file(file_obj)
+    file_obj.seek(0)
+    if read_header_only:
+        df = pd.read_csv(file_obj, nrows=0)
     else:
-        content = blob.download_as_bytes()
-    bytes_buffer = io.BytesIO(content)
-    df = pd.read_csv(bytes_buffer)
+        df = pd.read_csv(file_obj)
     return df
-
 
 def construct_file_schema(df):
     # Fix all columns to string for maximum compability
