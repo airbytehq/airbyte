@@ -43,22 +43,6 @@ def preparse(args: List[str]) -> Tuple[str, str, str]:
     parsed, _ = parser.parse_known_args(args)
     return parsed.command, parsed.config
 
-def create_configure_catalog(stream_name: str) -> ConfiguredAirbyteCatalog:
-    return ConfiguredAirbyteCatalog.parse_obj(
-        {
-            "streams": [
-                {
-                    "stream": {
-                        "name": stream_name,
-                        "json_schema": {},
-                        "supported_sync_modes": ["full_refresh", "incremental"],
-                    },
-                    "sync_mode": "full_refresh",
-                    "destination_sync_mode": "overwrite",
-                }
-            ]
-        }
-    )
 
 def execute_command(source: DeclarativeSource, config: Mapping[str, Any]):
     command = config.get("__command")

@@ -4,25 +4,13 @@
 
 import asyncio
 import json
-from typing import Iterator
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, Level, Type
-from connector_builder.generated.models.http_request import HttpRequest
-from connector_builder.generated.models.http_response import HttpResponse
-from connector_builder.generated.models.resolve_manifest import ResolveManifest
-from connector_builder.generated.models.resolve_manifest_request_body import ResolveManifestRequestBody
-from connector_builder.generated.models.stream_read import StreamRead
-from connector_builder.generated.models.stream_read_pages import StreamReadPages
-from connector_builder.generated.models.stream_read_request_body import StreamReadRequestBody
-from connector_builder.generated.models.streams_list_read import StreamsListRead
-from connector_builder.generated.models.streams_list_read_streams import StreamsListReadStreams
-from connector_builder.generated.models.streams_list_request_body import StreamsListRequestBody
-from connector_builder.impl.default_api import DefaultApiImpl
-from connector_builder.impl.low_code_cdk_adapter import LowCodeSourceAdapterFactory
-from fastapi import HTTPException
 from pydantic.error_wrappers import ValidationError
+
+from airbyte_cdk.models import Level, Type
+from connector_builder.connector_builder_handler import *
 
 MAX_PAGES_PER_SLICE = 4
 MAX_SLICES = 3
@@ -119,7 +107,7 @@ def test_read_stream():
         ),
     ]
 
-    mock_source_adapter_cls = make_mock_adapter_factory(
+    mock_source = make_mock_source(
         iter(
             [
                 request_log_message(request),
@@ -133,343 +121,35 @@ def test_read_stream():
         )
     )
 
-    api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES)
+    connector_builder_handler = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES)
+    actual_response: AirbyteMessage = connector_builder_handler.read_stream(source=mock_source, config=CONFIG, stream="hashiras")
+    record = actual_response.record
+    stream_read_object: StreamRead = StreamRead(**record.data)
+    stream_read_object.slices = [StreamReadSlicesInner(**s) for s in stream_read_object.slices]
+    print(stream_read_object)
+    assert stream_read_object.inferred_schema == expected_schema
 
-    loop = asyncio.get_event_loop()
-    actual_response: StreamRead = loop.run_until_complete(
-        api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras"))
-    )
-    assert actual_response.inferred_schema == expected_schema
-
-    single_slice = actual_response.slices[0]
+    single_slice = stream_read_object.slices[0]
     for i, actual_page in enumerate(single_slice.pages):
         assert actual_page == expected_pages[i]
 
-def test_read_stream():
-    request = {
-        "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
-        "headers": {"Content-Type": "application/json"},
-        "http_method": "GET",
-        "body": {"custom": "field"},
-    }
-    response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}', "http_method": "GET"}
-    expected_schema = {"$schema": "http://json-schema.org/schema#", "properties": {"name": {"type": "string"}}, "type": "object"}
-    expected_pages = [
-        StreamReadPages(
-            request=HttpRequest(
-                url="https://demonslayers.com/api/v1/hashiras",
-                parameters={"era": ["taisho"]},
-                headers={"Content-Type": "application/json"},
-                body={"custom": "field"},
-                http_method="GET",
-            ),
-            response=HttpResponse(status=200, headers={"field": "value"}, body='{"name": "field"}'),
-            records=[{"name": "Shinobu Kocho"}, {"name": "Muichiro Tokito"}],
-        ),
-        StreamReadPages(
-            request=HttpRequest(
-                url="https://demonslayers.com/api/v1/hashiras",
-                parameters={"era": ["taisho"]},
-                headers={"Content-Type": "application/json"},
-                body={"custom": "field"},
-                http_method="GET",
-            ),
-            response=HttpResponse(status=200, headers={"field": "value"}, body='{"name": "field"}'),
-            records=[{"name": "Mitsuri Kanroji"}],
-        ),
-    ]
+def make_mock_source(return_value: Iterator) -> MagicMock:
+    mock_source = MagicMock()
+    mock_source.read.return_value = return_value
+    return mock_source
 
-    mock_source_adapter_cls = make_mock_adapter_factory(
-        iter(
-            [
-                request_log_message(request),
-                response_log_message(response),
-                record_message("hashiras", {"name": "Shinobu Kocho"}),
-                record_message("hashiras", {"name": "Muichiro Tokito"}),
-                request_log_message(request),
-                response_log_message(response),
-                record_message("hashiras", {"name": "Mitsuri Kanroji"}),
-            ]
-        )
-    )
-
-    api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES)
-
-    loop = asyncio.get_event_loop()
-    actual_response: StreamRead = loop.run_until_complete(
-        api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras"))
-    )
-    assert actual_response.inferred_schema == expected_schema
-
-    single_slice = actual_response.slices[0]
-    for i, actual_page in enumerate(single_slice.pages):
-        assert actual_page == expected_pages[i]
+def request_log_message(request: dict) -> AirbyteMessage:
+    return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=f"request:{json.dumps(request)}"))
 
 
-def test_read_stream_with_logs():
-    request = {
-        "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
-        "headers": {"Content-Type": "application/json"},
-        "body": {"custom": "field"},
-        "http_method": "GET",
-    }
-    response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
-    expected_pages = [
-        StreamReadPages(
-            request=HttpRequest(
-                url="https://demonslayers.com/api/v1/hashiras",
-                parameters={"era": ["taisho"]},
-                headers={"Content-Type": "application/json"},
-                body={"custom": "field"},
-                http_method="GET",
-            ),
-            response=HttpResponse(status=200, headers={"field": "value"}, body='{"name": "field"}'),
-            records=[{"name": "Shinobu Kocho"}, {"name": "Muichiro Tokito"}],
-        ),
-        StreamReadPages(
-            request=HttpRequest(
-                url="https://demonslayers.com/api/v1/hashiras",
-                parameters={"era": ["taisho"]},
-                headers={"Content-Type": "application/json"},
-                body={"custom": "field"},
-                http_method="GET",
-            ),
-            response=HttpResponse(status=200, headers={"field": "value"}, body='{"name": "field"}'),
-            records=[{"name": "Mitsuri Kanroji"}],
-        ),
-    ]
-    expected_logs = [
-        {"message": "log message before the request"},
-        {"message": "log message during the page"},
-        {"message": "log message after the response"},
-    ]
-
-    mock_source_adapter_cls = make_mock_adapter_factory(
-        iter(
-            [
-                AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="log message before the request")),
-                request_log_message(request),
-                response_log_message(response),
-                record_message("hashiras", {"name": "Shinobu Kocho"}),
-                AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="log message during the page")),
-                record_message("hashiras", {"name": "Muichiro Tokito"}),
-                AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="log message after the response")),
-            ]
-        )
-    )
-
-    api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES)
-
-    loop = asyncio.get_event_loop()
-    actual_response: StreamRead = loop.run_until_complete(
-        api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras"))
-    )
-
-    single_slice = actual_response.slices[0]
-    for i, actual_page in enumerate(single_slice.pages):
-        assert actual_page == expected_pages[i]
-
-    for i, actual_log in enumerate(actual_response.logs):
-        assert actual_log == expected_logs[i]
+def response_log_message(response: dict) -> AirbyteMessage:
+    return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=f"response:{json.dumps(response)}"))
 
 
-@pytest.mark.parametrize(
-    "request_record_limit, max_record_limit",
-    [
-        pytest.param(1, 3, id="test_create_request_with_record_limit"),
-        pytest.param(3, 1, id="test_create_request_record_limit_exceeds_max"),
-    ],
-)
-def test_read_stream_record_limit(request_record_limit, max_record_limit):
-    request = {
-        "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
-        "headers": {"Content-Type": "application/json"},
-        "body": {"custom": "field"},
-    }
-    response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
-    mock_source_adapter_cls = make_mock_adapter_factory(
-        iter(
-            [
-                request_log_message(request),
-                response_log_message(response),
-                record_message("hashiras", {"name": "Shinobu Kocho"}),
-                record_message("hashiras", {"name": "Muichiro Tokito"}),
-                request_log_message(request),
-                response_log_message(response),
-                record_message("hashiras", {"name": "Mitsuri Kanroji"}),
-                response_log_message(response),
-            ]
-        )
-    )
-    n_records = 2
-    record_limit = min(request_record_limit, max_record_limit)
-
-    api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES, max_record_limit=max_record_limit)
-    loop = asyncio.get_event_loop()
-    actual_response: StreamRead = loop.run_until_complete(
-        api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras", record_limit=request_record_limit))
-    )
-    single_slice = actual_response.slices[0]
-    total_records = 0
-    for i, actual_page in enumerate(single_slice.pages):
-        total_records += len(actual_page.records)
-    assert total_records == min([record_limit, n_records])
+def record_message(stream: str, data: dict) -> AirbyteMessage:
+    return AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data=data, emitted_at=1234))
 
 
-@pytest.mark.parametrize(
-    "max_record_limit",
-    [
-        pytest.param(2, id="test_create_request_no_record_limit"),
-        pytest.param(1, id="test_create_request_no_record_limit_n_records_exceed_max"),
-    ],
-)
-def test_read_stream_default_record_limit(max_record_limit):
-    request = {
-        "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
-        "headers": {"Content-Type": "application/json"},
-        "body": {"custom": "field"},
-    }
-    response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
-    mock_source_adapter_cls = make_mock_adapter_factory(
-        iter(
-            [
-                request_log_message(request),
-                response_log_message(response),
-                record_message("hashiras", {"name": "Shinobu Kocho"}),
-                record_message("hashiras", {"name": "Muichiro Tokito"}),
-                request_log_message(request),
-                response_log_message(response),
-                record_message("hashiras", {"name": "Mitsuri Kanroji"}),
-                response_log_message(response),
-            ]
-        )
-    )
-    n_records = 2
+def slice_message() -> AirbyteMessage:
+    return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message='slice:{"key": "value"}'))
 
-    api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES, max_record_limit=max_record_limit)
-    loop = asyncio.get_event_loop()
-    actual_response: StreamRead = loop.run_until_complete(
-        api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras"))
-    )
-    single_slice = actual_response.slices[0]
-    total_records = 0
-    for i, actual_page in enumerate(single_slice.pages):
-        total_records += len(actual_page.records)
-    assert total_records == min([max_record_limit, n_records])
-
-
-def test_read_stream_limit_0():
-    request = {
-        "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
-        "headers": {"Content-Type": "application/json"},
-        "body": {"custom": "field"},
-    }
-    response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
-    mock_source_adapter_cls = make_mock_adapter_factory(
-        iter(
-            [
-                request_log_message(request),
-                response_log_message(response),
-                record_message("hashiras", {"name": "Shinobu Kocho"}),
-                record_message("hashiras", {"name": "Muichiro Tokito"}),
-                request_log_message(request),
-                response_log_message(response),
-                record_message("hashiras", {"name": "Mitsuri Kanroji"}),
-                response_log_message(response),
-            ]
-        )
-    )
-    api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES)
-    loop = asyncio.get_event_loop()
-
-    with pytest.raises(ValidationError):
-        loop.run_until_complete(api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras", record_limit=0)))
-        loop.run_until_complete(api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras")))
-
-
-def test_read_stream_no_records():
-    request = {
-        "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
-        "headers": {"Content-Type": "application/json"},
-        "body": {"custom": "field"},
-        "http_method": "GET",
-    }
-    response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
-    expected_pages = [
-        StreamReadPages(
-            request=HttpRequest(
-                url="https://demonslayers.com/api/v1/hashiras",
-                parameters={"era": ["taisho"]},
-                headers={"Content-Type": "application/json"},
-                body={"custom": "field"},
-                http_method="GET",
-            ),
-            response=HttpResponse(status=200, headers={"field": "value"}, body='{"name": "field"}'),
-            records=[],
-        ),
-        StreamReadPages(
-            request=HttpRequest(
-                url="https://demonslayers.com/api/v1/hashiras",
-                parameters={"era": ["taisho"]},
-                headers={"Content-Type": "application/json"},
-                body={"custom": "field"},
-                http_method="GET",
-            ),
-            response=HttpResponse(status=200, headers={"field": "value"}, body='{"name": "field"}'),
-            records=[],
-        ),
-    ]
-
-    mock_source_adapter_cls = make_mock_adapter_factory(
-        iter(
-            [
-                request_log_message(request),
-                response_log_message(response),
-                request_log_message(request),
-                response_log_message(response),
-            ]
-        )
-    )
-
-    api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES)
-
-    loop = asyncio.get_event_loop()
-    actual_response: StreamRead = loop.run_until_complete(
-        api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras"))
-    )
-
-    single_slice = actual_response.slices[0]
-    for i, actual_page in enumerate(single_slice.pages):
-        assert actual_page == expected_pages[i]
-
-def test_read_stream_invalid_group_format():
-    response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
-
-    mock_source_adapter_cls = make_mock_adapter_factory(
-        iter(
-            [
-                response_log_message(response),
-                record_message("hashiras", {"name": "Shinobu Kocho"}),
-                record_message("hashiras", {"name": "Muichiro Tokito"}),
-            ]
-        )
-    )
-
-    api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES)
-
-    loop = asyncio.get_event_loop()
-    with pytest.raises(HTTPException) as actual_exception:
-        loop.run_until_complete(api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras")))
-
-    assert actual_exception.value.status_code == 400
-
-
-def test_read_stream_returns_error_if_stream_does_not_exist():
-    expected_status_code = 400
-
-    api = DefaultApiImpl(LowCodeSourceAdapterFactory(MAX_PAGES_PER_SLICE, MAX_SLICES), MAX_PAGES_PER_SLICE, MAX_SLICES)
-    loop = asyncio.get_event_loop()
-    with pytest.raises(HTTPException) as actual_exception:
-        loop.run_until_complete(api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config={}, stream="not_in_manifest")))
-
-    assert actual_exception.value.status_code == expected_status_code
