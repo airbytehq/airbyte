@@ -97,7 +97,7 @@ class AbstractOauth2Authenticator(AuthBase):
         :return: a tuple of (access_token, token_lifespan_in_seconds)
         """
         response_json = self._get_refresh_access_token_response()
-        return response_json[self.get_access_token_name()], response_json[self.get_expires_in_name()]
+        return response_json[self.get_access_token_name()], int(response_json[self.get_expires_in_name()])
 
     @abstractmethod
     def get_token_refresh_endpoint(self) -> str:
