@@ -19,10 +19,7 @@ RUN pip install .
 
 WORKDIR /airbyte/normalization_code
 RUN pip install .
-RUN pip install dbt-duckdb==1.4.0
-
-#adding duckdb manually (outside of setup.py - lots of errors)
-RUN pip install duckdb
+RUN pip install dbt-duckdb==1.4.0 # must be in sync with duckdb version from setup.py
 
 WORKDIR /airbyte/normalization_code/dbt-template/
 # Download external dbt dependencies
