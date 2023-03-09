@@ -20,8 +20,7 @@ class ConnectorTestContext:
     git_branch: str
     git_revision: str
     use_remote_secrets: bool = True
-    # Set default connector_acceptance_test_image to dev as its currently patched in this branch to support Dagger
-    connector_acceptance_test_image: str = "airbyte/connector-acceptance-test:dev"
+    connector_acceptance_test_image: str = "airbyte/connector-acceptance-test:latest"
     created_at: datetime = field(default_factory=datetime.utcnow)
     gha_workflow_run_url: str = None
 

@@ -4,14 +4,15 @@
 
 """This modules groups functions made to run tests for a specific connector given a test context."""
 
-
+import json
+import uuid
 from typing import Optional, Tuple
 
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.pipelines.models import Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.utils import check_path_in_workdir, with_exit_code, with_stderr, with_stdout
-from dagger import Container, Directory
+from dagger import CacheSharingMode, Container, Directory
 
 RUN_BLACK_CMD = ["python", "-m", "black", f"--config=/{environments.PYPROJECT_TOML_FILE_PATH}", "--check", "."]
 RUN_ISORT_CMD = ["python", "-m", "isort", f"--settings-file=/{environments.PYPROJECT_TOML_FILE_PATH}", "--check-only", "--diff", "."]
@@ -121,15 +122,13 @@ async def run_integration_tests(connector_under_test: Container, step=Step.INTEG
 
 async def run_acceptance_tests(
     context: ConnectorTestContext,
-    connector_under_test_image_id: str,
     step=Step.ACCEPTANCE_TESTS,
 ) -> Tuple[StepResult, Directory]:
     """Runs the acceptance test suite on a connector dev image.
     It's rebuilding the connector acceptance test image if the tag is :dev.
-
+    It's building the connector under test dev image if the connector image is :dev in the acceptance test config.
     Args:
         context (ConnectorTestContext): The current test context, providing a connector object, a dagger client, a repository directory and the secrets directory.
-        connector_under_test_image_id (str): Connector under test image id, used as a cachebuster.
         step (Step): The step in which the acceptance tests are run. Defaults to Step.ACCEPTANCE_TESTS
 
     Returns:
@@ -141,20 +140,46 @@ async def run_acceptance_tests(
 
     dagger_client = step.get_dagger_pipeline(context.dagger_client)
 
-    docker_host_socket = dagger_client.host().unix_socket("/var/run/docker.sock")
-
     if context.connector_acceptance_test_image.endswith(":dev"):
         cat_container = context.connector_acceptance_test_source_dir.docker_build()
     else:
         cat_container = dagger_client.container().from_(context.connector_acceptance_test_image)
 
+    dockerd = (
+        dagger_client.container()
+        .from_("docker:23.0.1-dind")
+        .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume("docker-lib"), sharing=CacheSharingMode.PRIVATE)
+        .with_mounted_cache("/tmp", dagger_client.cache_volume("share-tmp"))
+        .with_exposed_port(2375)
+        .with_exec(["dockerd", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
+    )
+    docker_host = await dockerd.endpoint(scheme="tcp")
+
+    acceptance_test_cache_buster = str(uuid.uuid4())
+    if context.connector.acceptance_test_config["connector_image"].endswith(":dev"):
+        inspect_output = await (
+            dagger_client.pipeline(f"Building {context.connector.acceptance_test_config['connector_image']}")
+            .container()
+            .from_("docker:23.0.1-cli")
+            .with_env_variable("DOCKER_HOST", docker_host)
+            .with_service_binding("docker", dockerd)
+            .with_mounted_directory("/connector_to_build", context.get_connector_dir(exclude=[".venv"]))
+            .with_workdir("/connector_to_build")
+            .with_exec(["docker", "build", ".", "-t", f"airbyte/{context.connector.technical_name}:dev"])
+            .with_exec(["docker", "image", "inspect", f"airbyte/{context.connector.technical_name}:dev"])
+            .stdout()
+        )
+        acceptance_test_cache_buster = json.loads(inspect_output)[0]["Id"]
+
     cat_container = (
-        cat_container.with_unix_socket("/var/run/docker.sock", docker_host_socket)
-        .with_workdir("/test_input")
-        .with_env_variable("CACHEBUSTER", connector_under_test_image_id)
+        cat_container.with_env_variable("DOCKER_HOST", docker_host)
+        .with_service_binding("docker", dockerd)
+        .with_mounted_cache("/tmp", dagger_client.cache_volume("share-tmp"))
         .with_mounted_directory("/test_input", context.get_connector_dir(exclude=["secrets", ".venv"]))
         .with_directory("/test_input/secrets", context.secrets_dir)
+        .with_workdir("/test_input")
         .with_entrypoint(["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "-r", "fEsx"])
+        .with_env_variable("CACHEBUSTER", acceptance_test_cache_buster)
         .with_exec(["--acceptance-test-config", "/test_input"])
     )
 

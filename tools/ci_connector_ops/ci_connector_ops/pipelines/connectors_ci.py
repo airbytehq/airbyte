@@ -11,7 +11,7 @@ from typing import List, Tuple
 import anyio
 import click
 import dagger
-from ci_connector_ops.pipelines.actions import builds, environments, remote_storage, secrets, tests
+from ci_connector_ops.pipelines.actions import environments, remote_storage, secrets, tests
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.pipelines.github import send_commit_status_check
 from ci_connector_ops.pipelines.models import ConnectorTestReport, Step, StepResult, StepStatus
@@ -121,21 +121,14 @@ async def run(test_context: ConnectorTestContext) -> ConnectorTestReport:
 
     if unit_tests_results.status is StepStatus.SUCCESS:
         integration_test_future = asyncio.create_task(tests.run_integration_tests(connector_under_test))
-        docker_build_future = asyncio.create_task(builds.build_dev_image(test_context, exclude=[".venv"]))
-
-        _, connector_image_short_id = await docker_build_future
-
-        docker_build_result = StepResult(Step.DOCKER_BUILD, StepStatus.SUCCESS)
         acceptance_tests_results, test_context.updated_secrets_dir = await tests.run_acceptance_tests(
             test_context,
-            connector_image_short_id,
         )
 
         integration_tests_result = await integration_test_future
 
     else:
         integration_tests_result = StepResult(Step.INTEGRATION_TESTS, StepStatus.SKIPPED, stdout="Skipped because unit tests failed")
-        docker_build_result = StepResult(Step.DOCKER_BUILD, StepStatus.SKIPPED, stdout="Skipped because unit tests failed")
         acceptance_tests_results = StepResult(Step.ACCEPTANCE_TESTS, StepStatus.SKIPPED, stdout="Skipped because unit tests failed")
 
     test_report = ConnectorTestReport(
@@ -145,7 +138,6 @@ async def run(test_context: ConnectorTestContext) -> ConnectorTestReport:
             await code_format_checks_results_future,
             unit_tests_results,
             integration_tests_result,
-            docker_build_result,
             acceptance_tests_results,
             await qa_checks_results_future,
         ],
