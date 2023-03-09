@@ -213,7 +213,7 @@ def connectors_ci(
     ctx.ensure_object(dict)
     if use_remote_secrets and os.getenv("GCP_GSM_CREDENTIALS") is None:
         raise click.UsageError(
-            "You have to set the GCP_GSM_CREDENTIALS if you want to download secrets from GSM. Set the --use-gsm-secrets option to false otherwise."
+            "You have to set the GCP_GSM_CREDENTIALS if you want to download secrets from GSM. Set the --use-remote-secrets option to false otherwise."
         )
     if not is_local:
         for required_env_var in REQUIRED_ENV_VARS_FOR_CI:
