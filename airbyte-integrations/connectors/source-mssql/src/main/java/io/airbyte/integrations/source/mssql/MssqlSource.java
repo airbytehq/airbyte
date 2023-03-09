@@ -71,7 +71,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
             FROM (
             SELECT CAST(COLUMNPROPERTY(OBJECT_ID('%s.%s'), '%s', 'AllowsNull') AS BIT) AS allowNulls) AS t1
             WHERE t1.allowNulls = 1
-            ) AS nullValue
+            ) AS %s
       """;
   static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.getDriverClassName();
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
@@ -256,7 +256,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final String resultColName = "nullValue";
 
     final String query = String.format(NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY,
-        resultColName, schema, tableName, columnName, schema, tableName, columnName);
+        schema, tableName, columnName, schema, tableName, columnName, resultColName);
 
     LOGGER.debug("null value query: {}", query);
     final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(query),
