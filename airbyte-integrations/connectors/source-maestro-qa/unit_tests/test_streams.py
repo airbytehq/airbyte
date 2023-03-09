@@ -7,8 +7,9 @@ from unittest.mock import MagicMock
 
 import pytest
 import responses
-from source_maestro_qa.source import MaestroQAStream, MaestroQAExportStream
-from .helpers import setup_good_response, setup_bad_response, data_url
+from source_maestro_qa.source import MaestroQAExportStream, MaestroQAStream
+
+from .helpers import data_url, setup_bad_response, setup_good_response
 
 
 @pytest.fixture
@@ -72,6 +73,7 @@ def test_download_data(patch_base_class):
     }
     assert next(stream.download_data(**inputs)) == expected_data
 
+
 @responses.activate
 def test_create_export_job(patch_base_class):
     setup_good_response()
@@ -80,6 +82,7 @@ def test_create_export_job(patch_base_class):
     inputs = {"path": stream.path, "headers": {}, "json": {}}
     expected_job = "123"
     assert stream.create_export_job(**inputs) == expected_job
+
 
 @responses.activate
 def test_create_export_job_error(patch_base_class):
@@ -108,6 +111,7 @@ def test_wait_for_job_error(patch_base_class):
     inputs = {"export_id": "123", "headers": {}}
     with pytest.raises(Exception):
         stream.wait_for_job(**inputs)
+
 
 @pytest.mark.parametrize(
     ("http_status", "should_retry"),

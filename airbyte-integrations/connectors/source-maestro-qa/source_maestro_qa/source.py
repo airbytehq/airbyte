@@ -3,23 +3,22 @@
 #
 
 
-from abc import ABC
-from typing import Any, Iterable, List, Mapping, Optional, Tuple
-
-import time
-import requests
-import csv
 import codecs
-import pendulum
+import csv
 import logging
-from urllib.parse import urljoin
+import time
+from abc import ABC
 from contextlib import closing
+from typing import Any, Iterable, List, Mapping, Optional, Tuple
+from urllib.parse import urljoin
+
+import pendulum
+import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-
 
 logger = logging.getLogger("airbyte")
 
@@ -104,9 +103,8 @@ class MaestroQAExportStream(MaestroQAStream, ABC):
             if data_url:
                 yield from self.download_data(data_url)
 
-class AgentGroups(MaestroQAExportStream):
-    primary_key = "agent_ids"
 
+class AgentGroups(MaestroQAExportStream):
     @property
     def use_cache(self):
         return True
@@ -121,6 +119,7 @@ class AgentGroups(MaestroQAExportStream):
 
 
 class IncrementalMaestroQAStream(MaestroQAExportStream, ABC):
+    _cursor_value = None
     cursor_field = "last_synced_at"
     state_checkpoint_interval = None
 
@@ -130,8 +129,8 @@ class IncrementalMaestroQAStream(MaestroQAExportStream, ABC):
         super().__init__(**kwargs)
 
     @property
-    def state(self) -> str:
-        return {self.cursor_field: self._cursor_value}
+    def state(self) -> Optional[Mapping[str, Any]]:
+        return {self.cursor_field: self._cursor_value} if self._cursor_value else None
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
@@ -237,6 +236,7 @@ class ScreenCaptureUsageStats(MaestroQAStream):
 
 class TokenAuth(TokenAuthenticator):
     """Overwrite to allow token without auth method"""
+
     @property
     def token(self) -> str:
         return self._token

@@ -5,8 +5,8 @@
 import responses
 from source_maestro_qa.source import BASE_URL
 
-
 data_url = f"{BASE_URL}csv-data-url"
+
 
 def setup_good_response():
     responses.add(
@@ -52,4 +52,3 @@ def setup_bad_response():
             "status": "errored"
         }
     )
-

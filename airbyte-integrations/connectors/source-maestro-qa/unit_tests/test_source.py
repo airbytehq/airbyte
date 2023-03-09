@@ -2,11 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import responses
 from unittest.mock import MagicMock
 
-from .helpers import setup_good_response, setup_bad_response, data_url
+import responses
 from source_maestro_qa.source import SourceMaestroQA
+
+from .helpers import setup_bad_response, setup_good_response
 
 
 def test_get_auth(mocker):
@@ -14,6 +15,7 @@ def test_get_auth(mocker):
     config_mock = {"api_key": "hello"}
     auth = source.get_auth(config_mock)
     assert auth.get_auth_header() == {"apitoken": "hello"}
+
 
 @responses.activate
 def test_check_connection(mocker):
@@ -23,6 +25,7 @@ def test_check_connection(mocker):
     logger_mock, config_mock = MagicMock(), {"api_key": "hello"}
     assert source.check_connection(logger_mock, config_mock) == (True, None)
 
+
 @responses.activate
 def test_check_connection_fail(mocker):
     setup_bad_response()
@@ -31,7 +34,6 @@ def test_check_connection_fail(mocker):
     logger_mock, config_mock = MagicMock(), {"api_key": "hello"}
     check, msg = source.check_connection(logger_mock, config_mock)
     assert check is False
-
 
 
 def test_streams(mocker):

@@ -3,11 +3,11 @@
 #
 
 
-from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_maestro_qa.source import IncrementalMaestroQAStream
 
 default_start_date = "2021-01-01T00:00:00Z"
+
 
 @fixture
 def patch_incremental_base_class(mocker):
@@ -23,13 +23,21 @@ def test_cursor_field(patch_incremental_base_class):
     assert stream.cursor_field == expected_cursor_field
 
 
-def test_get_updated_state(patch_incremental_base_class):
+def test_get_state(patch_incremental_base_class):
     stream = IncrementalMaestroQAStream(default_start_date=default_start_date)
-    # TODO: replace this with your input parameters
-    inputs = {"current_stream_state": None, "latest_record": None}
-    # TODO: replace this with your expected updated stream state
-    expected_state = {}
-    assert stream.get_updated_state(**inputs) == expected_state
+    assert stream.state is None
+
+
+def test_get_updated_state_smaller_than_start_date(patch_incremental_base_class):
+    stream = IncrementalMaestroQAStream(default_start_date=default_start_date)
+    stream.state = {"last_synced_at": "2020-01-01T00:00:00Z"}
+    assert stream.state == {"last_synced_at": "2021-01-01T00:00:00Z"}
+
+
+def test_get_updated_state_bigger_than_start_date(patch_incremental_base_class):
+    stream = IncrementalMaestroQAStream(default_start_date=default_start_date)
+    stream.state = {"last_synced_at": "2023-01-01T00:00:00Z"}
+    assert stream.state == {"last_synced_at": "2023-01-01T00:00:00Z"}
 
 
 def test_supports_incremental(patch_incremental_base_class, mocker):
