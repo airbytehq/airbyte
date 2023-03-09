@@ -132,6 +132,72 @@ def test_read_stream():
     for i, actual_page in enumerate(single_slice.pages):
         assert actual_page == expected_pages[i]
 
+def test_read_stream_with_logs():
+    request = {
+        "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
+        "headers": {"Content-Type": "application/json"},
+        "body": {"custom": "field"},
+        "http_method": "GET",
+    }
+    response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
+    expected_pages = [
+        {
+            "request":{
+                "url": "https://demonslayers.com/api/v1/hashiras",
+                "parameters": {"era": ["taisho"]},
+                "headers": {"Content-Type": "application/json"},
+                "body": {"custom": "field"},
+                "http_method": "GET",
+            },
+            "response":{"status": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'},
+            "records":[{"name": "Shinobu Kocho"}, {"name": "Muichiro Tokito"}],
+        },
+        {
+            "request":{
+                "url":"https://demonslayers.com/api/v1/hashiras",
+                "parameters": {"era": ["taisho"]},
+                "headers": {"Content-Type": "application/json"},
+                "body": {"custom": "field"},
+                "http_method": "GET",
+            },
+            "response":{"status":200, "headers":{"field": "value"}, "body": '{"name": "field"}'},
+            "records":[{"name": "Mitsuri Kanroji"}],
+        },
+    ]
+    expected_logs = [
+        {"message": "log message before the request"},
+        {"message": "log message during the page"},
+        {"message": "log message after the response"},
+    ]
+
+    mock_source = make_mock_source(
+        iter(
+            [
+                AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="log message before the request")),
+                request_log_message(request),
+                response_log_message(response),
+                record_message("hashiras", {"name": "Shinobu Kocho"}),
+                AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="log message during the page")),
+                record_message("hashiras", {"name": "Muichiro Tokito"}),
+                AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="log message after the response")),
+            ]
+        )
+    )
+
+    connector_builder_handler = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES)
+
+    actual_response: AirbyteMessage = connector_builder_handler.read_stream(source=mock_source, config=CONFIG, stream="hashiras")
+    record = actual_response.record
+    stream_read_object: StreamRead = StreamRead(**record.data)
+    stream_read_object.slices = [StreamReadSlicesInner(**s) for s in stream_read_object.slices]
+
+    single_slice = stream_read_object.slices[0]
+    for i, actual_page in enumerate(single_slice.pages):
+        assert actual_page == expected_pages[i]
+
+    for i, actual_log in enumerate(stream_read_object.logs):
+        assert actual_log == expected_logs[i]
+
 def make_mock_source(return_value: Iterator) -> MagicMock:
     mock_source = MagicMock()
     mock_source.read.return_value = return_value
