@@ -70,7 +70,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This class contains helper functions and boilerplate for implementing a source connector for a DB
- * source of both non-relational and relational type
+ * source of both non-relational and relational type. Use this class for non-JDBC sources.
  */
 public abstract class AbstractDbSource<DataType, Database extends AbstractDatabase> extends
     BaseConnector implements Source, AutoCloseable {
@@ -186,8 +186,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
   // in case of user manually modified source table schema but did not refresh it and save into the
   // catalog - it can lead to sync failure. This method compare actual schema vs catalog schema
-  private void logSourceSchemaChange(Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo,
-                                     ConfiguredAirbyteCatalog catalog) {
+  private void logSourceSchemaChange(final Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo,
+                                     final ConfiguredAirbyteCatalog catalog) {
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
       final String fullyQualifiedTableName = getFullyQualifiedTableName(stream.getNamespace(),
