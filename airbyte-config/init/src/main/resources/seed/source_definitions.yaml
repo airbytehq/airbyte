@@ -1424,7 +1424,7 @@
 - name: Pipedrive
   sourceDefinitionId: d8286229-c680-4063-8c59-23b9b391c700
   dockerRepository: airbyte/source-pipedrive
-  dockerImageTag: 0.1.15
+  dockerImageTag: 0.1.16
   documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
   icon: pipedrive.svg
   sourceType: api
@@ -2075,6 +2075,14 @@
   allowedHosts:
     hosts:
       - "api.typeform.com"
+- name: Unleash
+  sourceDefinitionId: f77914a1-442b-4195-9355-8810a1f4ed3f
+  dockerRepository: airbyte/source-unleash
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/unleash
+  icon: unleash.svg
+  sourceType: api
+  releaseStage: alpha
 - name: US Census
   sourceDefinitionId: c4cfaeda-c757-489a-8aba-859fb08b6970
   dockerRepository: airbyte/source-us-census
