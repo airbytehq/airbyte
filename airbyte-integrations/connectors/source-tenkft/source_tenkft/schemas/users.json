@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "number"]
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "display_name": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": "string"
+    },
+    "user_type_id": {
+      "type": ["null", "number"]
+    },
+    "billable": {
+      "type": "boolean"
+    },
+    "hire_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "termination_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "mobile_phone": {
+      "type": ["null", "string"]
+    },
+    "office_phone": {
+      "type": ["null", "string"]
+    },
+    "archived": {
+      "type": "boolean"
+    },
+    "archived_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "deleted": {
+      "type": "boolean"
+    },
+    "deleted_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "account_owner": {
+      "type": "boolean"
+    },
+    "invitation_pending": {
+      "type": "boolean"
+    },
+    "user_settings": {
+      "type": "string"
+    },
+    "guid": {
+      "type": ["null", "string"]
+    },
+    "employee_number": {
+      "type": ["null", "string"]
+    },
+    "role": {
+      "type": ["null", "string"]
+    },
+    "discipline": {
+      "type": ["null", "string"]
+    },
+    "location": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "has_login": {
+      "type": "boolean"
+    },
+    "login_type": {
+      "type": ["null", "string"]
+    },
+    "license_type": {
+      "type": ["null", "string"]
+    },
+    "thumbnail": {
+      "type": ["null", "string"]
+    },
+    "approver_user_ids": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
+    },
+    "approvee_user_ids": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
+    },
+    "last_login_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}
