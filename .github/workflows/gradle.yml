@@ -169,11 +169,6 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
 
-      - name: Cache Build Artifacts
-        uses: ./.github/actions/cache-build-artifacts
-        with:
-          cache-key: ${{ secrets.CACHE_VERSION }}
-
       - uses: actions/setup-java@v3
         with:
           distribution: "zulu"
@@ -260,6 +255,11 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
+
+      - name: Cache Build Artifacts
+        uses: ./.github/actions/cache-build-artifacts
+        with:
+          cache-key: ${{ secrets.CACHE_VERSION }}
 
       - uses: actions/setup-java@v3
         with:
