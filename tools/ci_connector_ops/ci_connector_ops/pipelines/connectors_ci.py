@@ -226,7 +226,6 @@ def connectors_ci(
     ctx.obj["modified_files"] = get_modified_files(git_revision, diffed_branch, is_local)
     ctx.obj["gha_workflow_run_id"] = gha_workflow_run_id
     ctx.obj["gha_workflow_run_url"] = f"https://github.com/airbytehq/airbyte/actions/runs/{gha_workflow_run_id}"
-    os.environ["CI_GITHUB_ACCESS_TOKEN"] = github_access_token
 
 
 @connectors_ci.command()
