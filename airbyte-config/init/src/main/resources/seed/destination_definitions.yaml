@@ -36,6 +36,7 @@
   dockerRepository: airbyte/destination-aws-datalake
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/destinations/aws-datalake
+  icon: awsdatalake.svg
   releaseStage: alpha
 - name: BigQuery
   destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
