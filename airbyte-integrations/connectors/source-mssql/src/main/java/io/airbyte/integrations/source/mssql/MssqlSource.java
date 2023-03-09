@@ -68,7 +68,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       """
         SELECT t1.allowNulls & t2.hasNulls AS %s
         FROM (SELECT CAST(COLUMNPROPERTY(OBJECT_ID('%s.%s'), '%s', 'AllowsNull') AS BIT) AS allowNulls) AS t1
-        CROSS APPLY (SELECT CAST(IIF(EXISTS(SELECT TOP 1 1 FROM %s.%s WHERE %s IS NULL), 1, 0) AS BIT) AS hasNulls) AS t2
+        CROSS APPLY (SELECT CAST(IIF(EXISTS(SELECT TOP 1 1 FROM "%s"."%s" WHERE "%s" IS NULL), 1, 0) AS BIT) AS hasNulls) AS t2
       """;
   static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.getDriverClassName();
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
@@ -250,7 +250,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   @Override
   protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName)
       throws SQLException {
-    ;
     final String resultColName = "nullValue";
 
     final String query = String.format(NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY,
