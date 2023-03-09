@@ -43,7 +43,6 @@ jobs:
     timeout-minutes: 240
     needs: start-runner
     runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
-    env:
     steps:
       # TODO: Airbyte checkout should ideally be not necessary but the ci_connector_ops utils need an active git repo...
       - name: Checkout Airbyte repo
