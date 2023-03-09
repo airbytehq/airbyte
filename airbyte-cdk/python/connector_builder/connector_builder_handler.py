@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.manifest_declarative_source import Manifest
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
-class ConnectorBuilderSource:
+class ConnectorBuilderHandler:
     def __init__(self, source: ManifestDeclarativeSource):
         self.source = source
 

@@ -10,7 +10,7 @@ This is the backend for requests from the [Connector Builder](https://docs.airby
 python main.py read --config secrets/config.json
 ```
 
-Note: Requires the keys `__injected_declarative_manifest` and `__command` in its config, where `__injected_declarative_manifest` is a JSON manifest and `__command` is one of the commands handled by the ConnectorBuilderSource (`stream_read`, `list_streams`, or `resolve_manifest`).
+Note: Requires the keys `__injected_declarative_manifest` and `__command` in its config, where `__injected_declarative_manifest` is a JSON manifest and `__command` is one of the commands handled by the ConnectorBuilderHandler (`stream_read`, `list_streams`, or `resolve_manifest`).
 
 ### Locally running the docker image
 

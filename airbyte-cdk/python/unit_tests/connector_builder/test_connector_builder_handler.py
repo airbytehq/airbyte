@@ -7,7 +7,7 @@ import copy
 import pytest
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.parsers.custom_exceptions import UndefinedReferenceException
-from connector_builder.connector_builder_source import ConnectorBuilderSource
+from connector_builder.connector_builder_handler import ConnectorBuilderHandler
 
 _stream_name = "stream_with_custom_requester"
 _stream_primary_key = "id"
@@ -61,16 +61,16 @@ CONFIG = {
     ],
 )
 def test_invalid_command(command):
-    source = ConnectorBuilderSource(ManifestDeclarativeSource(MANIFEST))
+    handler = ConnectorBuilderHandler(ManifestDeclarativeSource(MANIFEST))
     config = copy.deepcopy(CONFIG)
     config["__command"] = command
     with pytest.raises(ValueError):
-        source.handle_request(config)
+        handler.handle_request(config)
 
 
 def test_resolve_manifest():
-    source = ConnectorBuilderSource(ManifestDeclarativeSource(MANIFEST))
-    resolved_manifest = source.handle_request(CONFIG)
+    handler = ConnectorBuilderHandler(ManifestDeclarativeSource(MANIFEST))
+    resolved_manifest = handler.handle_request(CONFIG)
 
     expected_resolved_manifest = {
         "type": "DeclarativeSource",
@@ -193,8 +193,8 @@ def test_resolve_manifest_error_returns_error_response():
         def resolved_manifest(self):
             raise ValueError
 
-    source = ConnectorBuilderSource(MockManifestDeclarativeSource())
-    response = source.handle_request(CONFIG)
+    handler = ConnectorBuilderHandler(MockManifestDeclarativeSource())
+    response = handler.handle_request(CONFIG)
     assert "Error resolving manifest" in response.trace.error.message
 
 
@@ -202,5 +202,5 @@ def test_resolve_manifest_cannot_instantiate_source():
     manifest = copy.deepcopy(MANIFEST)
     manifest["streams"][0]["retriever"] = "#/definitions/retrieverasdf"
     with pytest.raises(UndefinedReferenceException) as actual_exception:
-        ConnectorBuilderSource(ManifestDeclarativeSource(manifest))
+        ConnectorBuilderHandler(ManifestDeclarativeSource(manifest))
     assert "Undefined reference #/definitions/retriever" in actual_exception.value.args[0]

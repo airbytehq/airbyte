@@ -11,7 +11,7 @@ from airbyte_cdk.connector import BaseConnector
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
-from connector_builder.connector_builder_source import ConnectorBuilderSource
+from connector_builder.connector_builder_handler import ConnectorBuilderHandler
 
 
 def create_source(config: Mapping[str, Any]) -> DeclarativeSource:
@@ -46,7 +46,7 @@ def handle_request(args: List[str]):
     config = get_config_from_args(args)
     source = create_source(config)
     if "__command" in config:
-        ConnectorBuilderSource(source).handle_request(config)
+        ConnectorBuilderHandler(source).handle_request(config)
     else:
         # Verify that the correct args are present for the production codepaths.
         AirbyteEntrypoint.parse_args(args)

@@ -132,7 +132,7 @@ def test_given_injected_declarative_manifest_then_launch_with_declarative_manife
         handle_request(["read", "--config", str(valid_config_file)])
 
 
-def test_given_command_then_use_connector_builder_source(config_file_with_command):
-    with mock.patch.object(source_declarative_manifest.main.ConnectorBuilderSource, "handle_request") as patch:
+def test_given_command_then_use_connector_builder_handler(config_file_with_command):
+    with mock.patch.object(source_declarative_manifest.main.ConnectorBuilderHandler, "handle_request") as patch:
         handle_request(["read", "--config", str(config_file_with_command)])
         assert patch.call_count == 1
