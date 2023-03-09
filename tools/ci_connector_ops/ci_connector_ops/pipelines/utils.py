@@ -75,8 +75,7 @@ def write_connector_secrets_to_local_storage(connector: Connector, gsm_credentia
         secret_directory = Path(secret.directory)
         secret_directory.mkdir(parents=True, exist_ok=True)
         filepath = secret_directory / secret.configuration_file_name
-        with open(filepath, "w") as file:
-            file.write(secret.value)
+        filepath.write_text(secret.value)
 
 
 # This is a stop-gap solution to capture non 0 exit code on Containers
