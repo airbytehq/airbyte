@@ -31,9 +31,6 @@ class IterableStream(HttpStream, ABC):
     # in case we get a 401 error (api token disabled or deleted) on a stream slice, do not make further requests within the current stream
     # to prevent 429 error on other streams
     ignore_further_slices = False
-    # Hardcode the value because it is not returned from the API
-    BACKOFF_TIME_CONSTANT = 10.0
-    # define date-time fields with potential wrong format
 
     url_base = "https://api.iterable.com/api/"
     primary_key = "id"
@@ -41,6 +38,15 @@ class IterableStream(HttpStream, ABC):
     def __init__(self, authenticator):
         self._cred = authenticator
         super().__init__(authenticator)
+
+    @property
+    def retry_factor(self) -> int:
+        return 20
+
+    # With factor 20 it would be from 20 to 400 seconds delay
+    @property
+    def max_retries(self) -> Union[int, None]:
+        return 10
 
     @property
     @abstractmethod
@@ -60,9 +66,6 @@ class IterableStream(HttpStream, ABC):
             setattr(self, "raise_on_http_errors", False)
             return False
         return True
-
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        return self.BACKOFF_TIME_CONSTANT
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -127,24 +130,6 @@ class IterableExportStream(IterableStream, ABC):
 
     def path(self, **kwargs) -> str:
         return "export/data.json"
-
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        # Use default exponential backoff
-        return None
-
-    # For python backoff package expo backoff delays calculated according to formula:
-    # delay = factor * base ** n where base is 2
-    # With default factor equal to 5 and 5 retries delays would be 5, 10, 20, 40 and 80 seconds.
-    # For exports stream there is a limit of 4 requests per minute.
-    # Tune up factor and retries to send a lot of excessive requests before timeout exceed.
-    @property
-    def retry_factor(self) -> int:
-        return 20
-
-    # With factor 20 it would be 20, 40, 80 and 160 seconds delays.
-    @property
-    def max_retries(self) -> Union[int, None]:
-        return 4
 
     @staticmethod
     def _field_to_datetime(value: Union[int, str]) -> pendulum.datetime:
@@ -337,6 +322,8 @@ class ListUsers(IterableStream):
     primary_key = "listId"
     data_field = "getUsers"
     name = "list_users"
+    # enable caching, because this stream used by other ones
+    use_cache = True
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"lists/{self.data_field}?listId={stream_slice['list_id']}"
