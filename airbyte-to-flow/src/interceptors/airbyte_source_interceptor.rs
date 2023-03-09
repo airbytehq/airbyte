@@ -41,7 +41,6 @@ use super::remap::remap;
 const CONFIG_FILE_NAME: &str = "config.json";
 const CATALOG_FILE_NAME: &str = "catalog.json";
 const STATE_FILE_NAME: &str = "state.json";
-const NORMALIZATIONS_FILE_NAME: &str = "normalize.json";
 
 const SPEC_PATCH_FILE_NAME: &str = "spec.patch.json";
 const SPEC_MAP_FILE_NAME: &str = "spec.map.json";
@@ -50,11 +49,16 @@ const DOC_URL_PATCH_FILE_NAME: &str = "documentation_url.patch.json";
 const STREAM_PATCH_DIR_NAME: &str = "streams";
 const STREAM_PK_SUFFIX: &str = ".pk.json";
 const STREAM_PATCH_SUFFIX: &str = ".patch.json";
+const STREAM_NORMALIZE_SUFFIX: &str = ".normalize.json";
 const SELECTED_STREAMS_FILE_NAME: &str = "selected_streams.json";
+
+// SavedBinding records the binding index and applicable normalizations obtained from a Pull
+// request.
+type SavedBinding = (usize, Option<Vec<NormalizationEntry>>);
 
 pub struct AirbyteSourceInterceptor {
     validate_request: Arc<Mutex<Option<ValidateRequest>>>,
-    stream_to_binding: Arc<Mutex<HashMap<String, usize>>>,
+    stream_to_binding: Arc<Mutex<HashMap<String, SavedBinding>>>,
     tmp_dir: TempDir,
 }
 
@@ -333,7 +337,7 @@ impl AirbyteSourceInterceptor {
         config_file_path: String,
         catalog_file_path: String,
         state_file_path: String,
-        stream_to_binding: Arc<Mutex<HashMap<String, usize>>>,
+        stream_to_binding: Arc<Mutex<HashMap<String, SavedBinding>>>,
         in_stream: InterceptorStream,
     ) -> InterceptorStream {
         let runtime_messages_stream = Box::pin(stream_runtime_messages::<PullRequest>(in_stream));
@@ -366,7 +370,18 @@ impl AirbyteSourceInterceptor {
                         for (i, binding) in c.bindings.iter().enumerate() {
                             let resource: ResourceSpec =
                                 serde_json::from_str(&binding.resource_spec_json)?;
-                            stb.lock().await.insert(resource.stream.clone(), i);
+
+                            let normalizations = std::fs::read_to_string(format!(
+                                "{}/{}{}",
+                                STREAM_PATCH_DIR_NAME,
+                                &resource.stream,
+                                STREAM_NORMALIZE_SUFFIX
+                            ))
+                            .ok()
+                            .map(|p| sj::from_str::<Vec<NormalizationEntry>>(&p))
+                            .transpose()?;
+
+                            stb.lock().await.insert(resource.stream.clone(), (i, normalizations));
 
                             let mut projections = HashMap::new();
                             if let Some(ref collection) = binding.collection {
@@ -422,8 +437,7 @@ impl AirbyteSourceInterceptor {
 
     fn adapt_pull_response_stream(
         &mut self,
-        normalizations: Option<Vec<NormalizationEntry>>,
-        stream_to_binding: Arc<Mutex<HashMap<String, usize>>>,
+        stream_to_binding: Arc<Mutex<HashMap<String, SavedBinding>>>,
         in_stream: InterceptorStream,
     ) -> InterceptorStream {
         // Respond first with Opened.
@@ -437,8 +451,8 @@ impl AirbyteSourceInterceptor {
         // Then stream airbyte messages converted to the native protocol.
         let airbyte_message_stream = Box::pin(stream_airbyte_responses(in_stream));
         let airbyte_message_stream = stream::try_unfold(
-            (stream_to_binding, airbyte_message_stream, normalizations),
-            |(stb, mut stream, normalizations)| async move {
+            (stream_to_binding, airbyte_message_stream),
+            |(stb, mut stream)| async move {
                 let message = match stream.next().await {
                     Some(m) => m?,
                     None => {
@@ -453,22 +467,19 @@ impl AirbyteSourceInterceptor {
                         rfc7396_merge_patch: state.merge.unwrap_or(false),
                     });
 
-                    Ok(Some((
-                        encode_message(&resp)?,
-                        (stb, stream, normalizations),
-                    )))
+                    Ok(Some((encode_message(&resp)?, (stb, stream))))
                 } else if let Some(mut record) = message.record {
                     let stream_to_binding = stb.lock().await;
                     let binding = stream_to_binding
                         .get(&record.stream)
-                        .ok_or(Error::DanglingConnectorRecord(record.stream))?;
+                        .ok_or(Error::DanglingConnectorRecord(record.stream.clone()))?;
 
-                    normalize_doc(&mut record.data, &normalizations);
+                    normalize_doc(&mut record.data, &binding.1);
 
                     let arena = sj::to_string(&record.data)?.as_bytes().to_vec();
                     let arena_len: u32 = arena.len() as u32;
                     resp.documents = Some(Documents {
-                        binding: *binding as u32,
+                        binding: binding.0 as u32,
                         arena,
                         docs_json: vec![Slice {
                             begin: 0,
@@ -476,10 +487,7 @@ impl AirbyteSourceInterceptor {
                         }],
                     });
                     drop(stream_to_binding);
-                    Ok(Some((
-                        encode_message(&resp)?,
-                        (stb, stream, normalizations),
-                    )))
+                    Ok(Some((encode_message(&resp)?, (stb, stream))))
                 } else {
                     Err(Error::InvalidPullResponse)
                 }
@@ -578,16 +586,7 @@ impl AirbyteSourceInterceptor {
                 Ok(self.adapt_apply_response_stream(in_stream))
             }
             FlowCaptureOperation::Pull => {
-                let normalizations = std::fs::read_to_string(NORMALIZATIONS_FILE_NAME)
-                    .ok()
-                    .map(|p| sj::from_str::<Vec<NormalizationEntry>>(&p))
-                    .transpose()?;
-
-                Ok(self.adapt_pull_response_stream(
-                    normalizations,
-                    Arc::clone(&self.stream_to_binding),
-                    in_stream,
-                ))
+                Ok(self.adapt_pull_response_stream(Arc::clone(&self.stream_to_binding), in_stream))
             }
         }
     }
