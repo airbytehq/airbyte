@@ -117,6 +117,7 @@ class MssqlSourceTest {
       final Database database = getDatabase(dslContext);
       database.query(ctx -> {
         ctx.fetch(String.format("USE %s;", config.get(JdbcUtils.DATABASE_KEY)));
+        ctx.execute("ALTER TABLE id_and_name ALTER COLUMN id INTEGER NULL");
         ctx.execute("INSERT INTO id_and_name(id) VALUES (7), (8), (NULL)");
         return null;
       });
