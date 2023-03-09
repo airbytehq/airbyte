@@ -290,7 +290,7 @@
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift
-  dockerImageTag: 0.3.56
+  dockerImageTag: 0.4.0
   documentationUrl: https://docs.airbyte.com/integrations/destinations/redshift
   icon: redshift.svg
   normalizationConfig:
@@ -348,7 +348,7 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.4.48
+  dockerImageTag: 0.4.49
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   icon: snowflake.svg
   normalizationConfig:
@@ -433,16 +433,17 @@
 - name: Teradata Vantage
   destinationDefinitionId: 58e6f9da-904e-11ed-a1eb-0242ac120002
   dockerRepository: airbyte/destination-teradata
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   icon: teradata.svg
   documentationUrl: https://docs.airbyte.io/integrations/destinations/teradata
   releaseStage: alpha
 - name: Weaviate
   destinationDefinitionId: 7b7d7a0d-954c-45a0-bcfc-39a634b97736
   dockerRepository: airbyte/destination-weaviate
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/destinations/weaviate
   releaseStage: alpha
+  icon: weaviate.svg
 - name: DuckDB
   destinationDefinitionId: 94bd199c-2ff0-4aa2-b98e-17f0acb72610
   dockerRepository: airbyte/destination-duckdb
