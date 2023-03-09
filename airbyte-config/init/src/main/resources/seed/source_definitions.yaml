@@ -1682,6 +1682,9 @@
   icon: salesloft.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "api.salesloft.com"
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce

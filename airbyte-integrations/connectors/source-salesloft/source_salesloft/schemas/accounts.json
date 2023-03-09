@@ -94,7 +94,7 @@
       "type": ["null", "string"]
     },
     "do_not_contact": {
-      "type": ["null", "string"]
+      "type": ["null", "boolean"]
     },
     "counts": {
       "type": ["null", "object"],
