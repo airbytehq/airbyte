@@ -35,7 +35,7 @@ public class SqlServerOperations implements SqlOperations {
         "IF NOT EXISTS (SELECT * FROM sys.tables t JOIN sys.schemas s ON t.schema_id = s.schema_id "
             + "WHERE s.name = '%s' AND t.name = '%s') "
             + "CREATE TABLE %s.%s ( \n"
-            + "%s VARCHAR(64) PRIMARY KEY,\n"
+            + "%s VARCHAR(64) PRIMARY KEY NONCLUSTERED NOT ENFORCED,\n"
             + "%s NVARCHAR(MAX),\n" // Microsoft SQL Server specific: NVARCHAR can store Unicode meanwhile VARCHAR - not
             + "%s DATETIMEOFFSET(7) DEFAULT SYSDATETIMEOFFSET()\n"
             + ");\n",
