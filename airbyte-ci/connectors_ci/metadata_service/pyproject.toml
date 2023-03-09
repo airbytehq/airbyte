@@ -10,7 +10,7 @@ packages = [{include = "metadata_service"}]
 python = "^3.9"
 dagit = "^1.1.21"
 dagster = "^1.1.21"
-dagster-pydantic = "^0.1.0"
+pandas = "^1.5.3"
 
 
 [build-system]
