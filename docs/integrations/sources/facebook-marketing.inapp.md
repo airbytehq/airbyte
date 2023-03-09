@@ -11,7 +11,7 @@
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, select **Facebook Marketing** from the **Source type** dropdown.
-4. For Name, enter a name for the Facebook Marketing connector.
+4. For Name, enter a name for your Facebook Marketing connector.
 
 **Facebook Marketing Source Settings:**
 
@@ -33,7 +33,7 @@
     :::
 
 8. (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
-9. (Optional) In the Custom Insights section, click **Add**.
+9. (Optional) In the Custom Insights section. A list which contains ad statistics entries, each entry must have a name and can contain fields, breakdowns or action_breakdowns. Click on "add" to fill this field.
     To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync.
 
     :::warning
@@ -56,5 +56,5 @@
     8. For **Custom Insights Lookback Window**, fill in the appropriate value. See [more](#facebook-marketing-attribution-reporting) on this parameter.
     9. Click **Done**.
 10. For **Page Size of Requests**, fill in the page size in case pagination kicks in. Feel free to ignore it, the default value should work in most cases. 
-11. For **Insights Lookback Window**, fill in the appropriate value. See [more](#facebook-marketing-attribution-reporting) on this parameter. 
+11. For **Insights Lookback Window**, fill in the appropriate value. Facebook freezes insight data 28 days after it was generated, which means that all data from the past 28 days may have changed since we last emitted it, so you can retrieve refreshed insights from the past by setting this parameter. If you set a custom lookback window value in Facebook account, please provide the same value here. See [more](#facebook-marketing-attribution-reporting) on this parameter. 
 12. Click **Set up source**.
