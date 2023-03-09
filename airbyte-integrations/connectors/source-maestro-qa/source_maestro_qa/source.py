@@ -105,6 +105,8 @@ class MaestroQAExportStream(MaestroQAStream, ABC):
 
 
 class AgentGroups(MaestroQAExportStream):
+    primary_key = "agent_ids"
+
     @property
     def use_cache(self):
         return True
