@@ -14,7 +14,8 @@ def update_commit_status_check(context: ConnectorTestContext, test_report: Conne
     if context.is_local:
         context.logger.debug("Local run: no commit status sent to GitHub.")
         return
-    github_context = f"Tests: {context.connector.technical_name}"
+
+    github_context = f"Connector tests: {context.connector.technical_name}"
     error = None
     if context.state in [ContextState.CREATED, ContextState.INITIALIZED]:
         github_state = "pending"
