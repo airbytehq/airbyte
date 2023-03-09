@@ -62,22 +62,6 @@ async def get_file_contents(container: Container, path: str) -> Optional[str]:
     return None
 
 
-def write_connector_secrets_to_local_storage(connector: Connector, gsm_credentials: str):
-    """Download and write connector's secrets locally.
-
-    Args:
-        connector (Connector): The connector for which you want to download secrets.
-        gsm_credentials (str): The credentials to connect to GSM.
-    """
-    connector_secrets = connector.get_secret_manager(gsm_credentials).read_from_gsm()
-
-    for secret in connector_secrets:
-        secret_directory = Path(secret.directory)
-        secret_directory.mkdir(parents=True, exist_ok=True)
-        filepath = secret_directory / secret.configuration_file_name
-        filepath.write_text(secret.value)
-
-
 # This is a stop-gap solution to capture non 0 exit code on Containers
 # The original issue is tracked here https://github.com/dagger/dagger/issues/3192
 async def with_exit_code(container: Container) -> int:
