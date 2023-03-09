@@ -92,7 +92,7 @@ async def with_exit_code(container: Container) -> int:
     """
     try:
         await container.exit_code()
-    except Exception as e:
+    except QueryError as e:
         error_message = str(e)
         if "exit code: " in error_message:
             exit_code = re.search(r"exit code: (\d+)", error_message)
@@ -107,14 +107,14 @@ async def with_exit_code(container: Container) -> int:
 async def with_stderr(container: Container) -> str:
     try:
         return await container.stderr()
-    except Exception as e:
+    except QueryError as e:
         return str(e)
 
 
 async def with_stdout(container: Container) -> str:
     try:
         return await container.stdout()
-    except Exception as e:
+    except QueryError as e:
         return str(e)
 
 
