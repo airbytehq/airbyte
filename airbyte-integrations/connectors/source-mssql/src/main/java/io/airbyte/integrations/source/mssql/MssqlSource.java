@@ -66,9 +66,12 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlSource.class);
   public static final String NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY =
       """
-        SELECT t1.allowNulls & t2.hasNulls AS %s
-        FROM (SELECT CAST(COLUMNPROPERTY(OBJECT_ID('%s.%s'), '%s', 'AllowsNull') AS BIT) AS allowNulls) AS t1
-        CROSS APPLY (SELECT CAST(IIF(EXISTS(SELECT TOP 1 1 FROM "%s"."%s" WHERE "%s" IS NULL), 1, 0) AS BIT) AS hasNulls) AS t2
+         SELECT
+            (SELECT CAST(IIF(EXISTS(SELECT TOP 1 1 FROM FROM "%s"."%s" WHERE "%s" IS NULL), 1, 0) AS BIT) AS hasNulls
+            FROM (
+            SELECT CAST(COLUMNPROPERTY(OBJECT_ID('%s.%s'), '%s', 'AllowsNull') AS BIT) AS allowNulls) AS t1
+            WHERE t1.allowNulls = 1
+            ) AS nullValue
       """;
   static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.getDriverClassName();
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
