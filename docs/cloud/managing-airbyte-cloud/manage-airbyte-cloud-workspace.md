@@ -1,4 +1,4 @@
-# Manage your Airbyte Cloud workspace
+# Manage your workspace
 
 An Airbyte Cloud workspace allows you to collaborate with other users and manage connections under a shared billing account.
 
