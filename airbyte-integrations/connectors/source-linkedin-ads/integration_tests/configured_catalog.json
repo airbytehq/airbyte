@@ -100,13 +100,13 @@
       "stream": {
         "name": "ad_creative_name",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "default_cursor_field": []
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["end_date"]
       },
-      "sync_mode": "full_refresh",
-      "cursor_field": [],
-      "destination_sync_mode": "append_dedup"
+      "sync_mode": "incremental",
+      "cursor_field": ["end_date"],
+      "destination_sync_mode": "append"
     }
   ]
 }

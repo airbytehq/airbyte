@@ -47,5 +47,12 @@
       "stream_state": { "end_date": "2050-01-01" },
       "stream_descriptor": { "name": "ad_creative_analytics" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "end_date": "2050-01-01" },
+      "stream_descriptor": { "name": "ad_creative_name" }
+    }
   }
 ]
