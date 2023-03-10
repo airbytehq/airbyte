@@ -4,6 +4,7 @@
 
 
 import json
+import re
 import requests
 from urllib.parse import parse_qs, urlparse
 from abc import ABC
@@ -23,12 +24,13 @@ class KoboToolStream(HttpStream):
     primary_key = None
     PAGINATION_LIMIT = 30000
 
-    def __init__(self, config: Mapping[str, Any], form_id, schema, **kwargs):
+    def __init__(self, config: Mapping[str, Any], form_id, schema, name, **kwargs):
         super().__init__()
         self.form_id = form_id
         token = self.get_access_token(config)
         self.auth_token = token[0]
         self.schema = schema
+        self.stream_name = name
 
     @property
     def url_base(self) -> str:
@@ -36,7 +38,11 @@ class KoboToolStream(HttpStream):
 
     @property
     def name(self) -> str:
-        return self.form_id
+        # Return the english substring as stream name. If not found return form uid
+        regex = re.compile('[^a-zA-Z ]')
+        s = regex.sub('', self.stream_name)
+        s = s.strip()
+        return s if len(s) > 0 else self.form_id 
 
     def get_json_schema(self):
         return self.schema
@@ -101,15 +107,12 @@ class SourceKobotoolbox(AbstractSource):
             config["username"], config["password"]))
         json_response = response.json()
         key_list = json_response.get('results')
-        key = "uid"
-        forms = [a_dict[key] for a_dict in key_list]
         streams = []
-
-        streams = []
-        for form_id in forms:
+        for form_dict in key_list:
             stream = KoboToolStream(
-                config=config, form_id=form_id, schema=self.base_schema())
+                config=config, form_id=form_dict['uid'], schema=self.base_schema(), name=form_dict['name'])
             streams.append(stream)
+
         return streams
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
