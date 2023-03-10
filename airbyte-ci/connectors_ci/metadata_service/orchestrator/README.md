@@ -1,6 +1,18 @@
 # Connector Orchestrator
 TODO
 
+### Todo
+- [ ] sensor on etag
+- [ ] write a job to injest the oss catalog and determine which files are in oss and output it to a file
+- [ ] write a job to injest the cloud catalog and determine which files are in oss and output it to a file
+- [ ] polish sensors and jobs into the appropriate format
+- [ ] deal with config
+- [ ] write a job that stores past versions of the catalogs by etag
+- [ ] write a job that compares the new file with the previous cursor and outputs the diff
+- [ ] write a job that uses the cloud and oss catalogs to construct metadata files
+- [ ] write a job that replicates metadata files from prod to dev manually
+
+
 ### Notes
 what to discuss in readme
 - the use of the env file
