@@ -28,6 +28,9 @@ const getBackgroundColor = (props: IStyleProps) => {
     }
     return "transparent";
   } else if (props.secondary || props.iconOnly) {
+    if (props.white) {
+      return props.theme.whiteColor;
+    }
     return "transparent";
   } else if (props.danger) {
     return props.theme.dangerColor;
