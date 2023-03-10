@@ -25,74 +25,23 @@ def parse_catalog_files():
 
 # TODO add types
 # TODO move this to config so its available in resource_context
-def get_gcs_cred_json_from_env():
+
+@resource()
+def gcp_gsm_credentials(resource_context: InitResourceContext):
     raw_cred = os.getenv("GCP_GSM_CREDENTIALS")
     if raw_cred is None:
         raise Exception("GCP_GSM_CREDENTIALS not set")
 
     return json.loads(raw_cred)
 
-@resource(
-    config_schema={
-        "project_id": Field(
-            String,
-            is_required=True,
-            description="service account project_id field",
-        ),
-        "client_x509_cert_url": Field(
-            String,
-            is_required=True,
-            description="service account client_x509_cert_url field",
-        ),
-        "private_key_id": Field(
-            String,
-            is_required=True,
-            description="service account private_key_id field",
-        ),
-        "auth_uri": Field(
-            String,
-            is_required=True,
-            description="service account auth_uri field",
-        ),
-        "token_uri": Field(
-            String,
-            is_required=True,
-            description="service account token_uri field",
-        ),
-        "client_id": Field(
-            String,
-            is_required=True,
-            description="service account client_id field",
-        ),
-        "private_key": Field(
-            String,
-            is_required=True,
-            description="service account private_key field",
-        ),
-        "client_email": Field(
-            String,
-            is_required=True,
-            description="service account client_email field",
-        ),
-        "auth_provider_x509_cert_url": Field(
-            String,
-            is_required=True,
-            description="TODO",
-        ),
-        "type": Field(
-            String,
-            is_required=True,
-            description="TODO",
-        ),
-    }
-)
-def gcp_gcs_resource(resource_context: InitResourceContext):
+@resource(required_resource_keys={"gcp_gsm_credentials"})
+def gcp_gcs_client(resource_context: InitResourceContext):
     """Create a connection to gcs.
     :param resource_context: Dagster execution context for configuration data
     :type resource_context: InitResourceContext
     :yields: A gcs client instance for use during pipeline execution.
     """
-    credentials = service_account.Credentials.from_service_account_info(resource_context)
+    credentials = service_account.Credentials.from_service_account_info(resource_context.resources.gcp_gsm_credentials)
     yield storage.Client(
         credentials=credentials,
         project=credentials.project_id,
@@ -106,24 +55,29 @@ def gcp_gcs_resource(resource_context: InitResourceContext):
 def gcs_catalog_updated_sensor(context: SensorEvaluationContext):
     # TODO parse which catalog(s) we're watching
     context.log.info("Logging from a sensor!")
-    # break point
-    # import pdb; pdb.set_trace()
 
-    gcp_gcs_cred = get_gcs_cred_json_from_env()
-    config = {"gcp_gcs": {"config": gcp_gcs_cred}}
 
-    with build_resources(
-        resources={"gcp_gcs": gcp_gcs_resource}, resource_config=config
+    with build_resources({
+        "gcp_gcs_client": gcp_gcs_client,
+        "gcp_gsm_credentials": gcp_gsm_credentials,
+    }
     ) as resources:
-        storage_client = resources.gcp_gcs
+        storage_client = resources.gcp_gcs_client
         bucket = storage_client.get_bucket("ben-ab-test-bucket") # TODO move to config
         new_files = storage_client.list_blobs(bucket)
+
+        # log the file names with the prefix Found new file
+        for file in new_files:
+            context.log.info(f"Found new file: {file.name}")
+
+
         if new_files:
+            context.log.info("Found new files in GCS bucket")
             # TODO use a better cursor than the list of files
             context.update_cursor(str(new_files)) # Question: what happens if the run fails? is the cursor still updated?
             yield RunRequest(
                 run_key="new_gcs_file",
-                run_config=config,
+                # run_config=config,
             )
         else:
             yield SkipReason("No new files in GCS bucket")
