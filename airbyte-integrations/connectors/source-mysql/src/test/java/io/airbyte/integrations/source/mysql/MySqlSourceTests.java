@@ -17,6 +17,7 @@ import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.db.Database;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -32,6 +33,8 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+
+import org.jooq.DSLContext;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -140,6 +143,54 @@ public class MySqlSourceTests {
             Field.of("id", JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
+
+  }
+
+  @Test
+  public void viewWithNullValueCursorShouldThrowException() throws SQLException {
+    try (final MySQLContainer<?> db = new MySQLContainer<>("mysql:8.0")
+            .withUsername(TEST_USER)
+            .withPassword(TEST_PASSWORD)
+            .withEnv("MYSQL_ROOT_HOST", "%")
+            .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD)) {
+      db.start();
+      final JsonNode config = getConfig(db, "test", "");
+      try (Connection connection = DriverManager.getConnection(db.getJdbcUrl(), "root", config.get(JdbcUtils.PASSWORD_KEY).asText())) {
+        final ConfiguredAirbyteStream table = createViewWithNullValueCursor(connection);
+        final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(table));
+
+        final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new MySqlSource().read(config, catalog, null)));
+        assertThat(throwable).isInstanceOf(ConfigErrorException.class)
+                .hasMessageContaining(
+                        "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='test.test_view_null_cursor', cursorColumnName='id', cursorSqlType=INT, cause=Cursor column contains NULL value}");
+
+      } finally {
+        db.stop();
+      }
+    }
+  }
+
+  private ConfiguredAirbyteStream createViewWithNullValueCursor(final Connection connection) throws SQLException {
+
+    connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
+    connection.createStatement().execute("CREATE TABLE IF NOT EXISTS test.test_table_null_cursor(id INTEGER NULL)");
+    connection.createStatement().execute("""
+                CREATE VIEW test_view_null_cursor(id) as
+                SELECT test_table_null_cursor.id
+                FROM test_table_null_cursor
+                """);
+    connection.createStatement().execute("INSERT INTO test.test_table_null_cursor(id) VALUES (1), (2), (NULL)");
+
+    return new ConfiguredAirbyteStream().withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("id"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                            "test_view_null_cursor",
+                            "test",
+                            Field.of("id", JsonSchemaType.STRING))
+                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                    .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
 
   }
 
