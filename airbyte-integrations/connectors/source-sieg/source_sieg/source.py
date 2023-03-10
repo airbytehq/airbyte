@@ -463,27 +463,27 @@ class CteEvents(Cte):
 class SourceSieg(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
 
-        payload = json.dumps({
-            "apikey": config["api_key"],
-            "email": config["email"],
-            "xmltype": "nfe",
-            "take": 1,
-            "skip": 0,
-            "dataInicio": config["start_date"],
-            "dataFim": config["end_date"],
-            "downloadevent": False
-        })
-        headers = {
-            "Content-Type": "application/json"
-        }
-        url = "https://api.sieg.com/aws/api-xml-search.ashx"
+        # payload = json.dumps({
+        #     "apikey": config["api_key"],
+        #     "email": config["email"],
+        #     "xmltype": "nfe",
+        #     "take": 1,
+        #     "skip": 0,
+        #     "dataInicio": config["start_date"],
+        #     "dataFim": config["end_date"],
+        #     "downloadevent": False
+        # })
+        # headers = {
+        #     "Content-Type": "application/json"
+        # }
+        # url = "https://api.sieg.com/aws/api-xml-search.ashx"
 
-        response = requests.request("POST", url=url, data=payload, headers=headers)
+        # response = requests.request("POST", url=url, data=payload, headers=headers)
 
-        if response.json()['xmls']:
-            return True, None
-        else:
-            return None
+        # if response.json()['xmls']:
+        return True, None
+        # else:
+        #     return None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         # NoAuth just means there is no authentication required for this API. It's only included for completeness
