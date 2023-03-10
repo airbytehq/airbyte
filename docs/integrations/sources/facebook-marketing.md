@@ -95,7 +95,7 @@ The Facebook Marketing source connector supports the following sync modes:
 You can replicate the following tables using the Facebook Marketing connector:
 
 * [Activities](https://developers.facebook.com/docs/marketing-api/reference/ad-activity)
-* [AdAccount](https://developers.facebook.com/docs/marketing-api/reference/ad-account)
+* [AdAccount](https://developers.facebook.com/docs/marketing-api/business-asset-management/guides/ad-accounts)
 * [AdCreatives](https://developers.facebook.com/docs/marketing-api/reference/ad-creative#fields)
 * [AdSets](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign#fields)
 * [Ads](https://developers.facebook.com/docs/marketing-api/reference/adgroup#fields)
