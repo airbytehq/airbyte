@@ -60,7 +60,8 @@ jobs:
       - name: Install ci-connector-ops package
         # TODO update the git url before merge
         run: pip install --quiet 'git+https://github.com/airbytehq/airbyte.git@${{ steps.extract_branch.outputs.branch }}#subdirectory=tools/ci_connector_ops'
-      - name: Run connectors-ci test-connectors
+      - name: Run connectors-ci test-connectors [WORKFLOW DISPATCH]
+        if: github.event_name == 'workflow_dispatch'
         run: connectors-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} test-connectors ${{ github.event.inputs.test-connectors-options }}
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -70,6 +71,18 @@ jobs:
           TEST_REPORTS_BUCKET_NAME: "airbyte-connector-build-status"
           CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
+          CI_GIT_REVISION: ${{ github.sha }}
+      - name: Run connectors-ci test-connectors [PULL REQUESTS]
+        if: github.event_name == 'pull_request'
+        run: connectors-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} test-connectors --modified
+        env:
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "us-east-2"
+          TEST_REPORTS_BUCKET_NAME: "airbyte-connector-build-status"
+          CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          CI_GIT_BRANCH: ${{ env.GITHUB_HEAD_REF }}
           CI_GIT_REVISION: ${{ github.sha }}
   stop-runner:
     name: "Connectors Integration Test: Stop Build EC2 Runner"
