@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/contributing-to-airbyte/building-new-connector/source-acceptance-tests.md)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/contributing-to-airbyte/building-new-connector/connector-acceptance-tests.md)
 # for more information about how to configure these tests
 connector_image: airbyte/source-delighted:dev
 test_strictness_level: high
@@ -6,6 +6,8 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "source_delighted/spec.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 0.2.1
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -19,7 +21,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         expect_records:
-          path: "integration_tests/expected_records.txt"
+          path: "integration_tests/expected_records.jsonl"
   incremental:
     tests:
       - config_path: "secrets/config.json"

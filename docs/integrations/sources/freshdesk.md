@@ -8,7 +8,7 @@ To set up the Freshdesk source connector, you'll need the Freshdesk [domain URL]
 
 ## Set up the Freshdesk connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account or navigate to the Airbyte Open Source dashboard.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Freshdesk** from the Source type dropdown.
 4. Enter the name for the Freshdesk connector.
@@ -62,11 +62,17 @@ Several output streams are available from this source:
 
 The Freshdesk connector should not run into Freshdesk API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
 
+If you don't use the start date Freshdesk will retrieve only the last 30 days. More information [here](https://developers.freshdesk.com/api/#list_all_tickets).
+
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------|
+| 3.0.2   | 2023-02-06 | [21970](https://github.com/airbytehq/airbyte/pull/21970) | Enable availability strategy for all streams                                                       |
+| 3.0.0   | 2023-01-31 | [22164](https://github.com/airbytehq/airbyte/pull/22164) | Rename nested `business_hours` table to `working_hours`                               |
+| 2.0.1   | 2023-01-27 | [21888](https://github.com/airbytehq/airbyte/pull/21888) | Set `AvailabilityStrategy` for streams explicitly to `None`                           |
+| 2.0.0   | 2022-12-20 | [20416](https://github.com/airbytehq/airbyte/pull/20416) | Fix `SlaPolicies` stream schema                                                       |
 | 1.0.0   | 2022-11-16 | [19496](https://github.com/airbytehq/airbyte/pull/19496) | Fix `Contacts` stream schema                                                          |
 | 0.3.8   | 2022-11-11 | [19349](https://github.com/airbytehq/airbyte/pull/19349) | Do not rely on response.json() when deciding to retry a request                       |
 | 0.3.7   | 2022-11-03 | [18397](https://github.com/airbytehq/airbyte/pull/18397) | Fix base url for v2 API.                                                              |

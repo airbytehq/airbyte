@@ -1,6 +1,11 @@
-# Deploy Airbyte on Kubernetes
+# (Deprecated) Deploy Airbyte on Kubernetes using Kustomize
+
+:::caution
+This deployment method uses Kustomize and is only supported up to [Airbyte version `0.40.32`](https://github.com/airbytehq/airbyte/releases/tag/v0.40.32). For existing deployments, check out [commit `21a7e102183e20d2d4998ea70c2a8fe4eac8921b`](https://github.com/airbytehq/airbyte/commit/21a7e102183e20d2d4998ea70c2a8fe4eac8921b) to continue deploying using Kustomize. For new deployments, [deploy Airbyte on Kubernetes via Helm](/deploying-airbyte/on-kubernetes-via-helm.md).
+:::
 
 This page guides you through deploying Airbyte Open Source on Kubernetes. 
+
 
 ## Requirements
 
@@ -11,31 +16,37 @@ To test locally, you can use one of the following:
 * [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/)
 
 
-To test on Google Kubernetes Engine(GKE) create a standard zonal cluster.
+To test on Google Kubernetes Engine(GKE), create a standard zonal cluster.
 
-To test on  Amazon Elastic Kubernetes Service (Amazon EKS), install eksctl and then create a cluster.
+To test on  Amazon Elastic Kubernetes Service (Amazon EKS), install eksctl and create a cluster.
 
-**_Note:_** Airbyte deployment is tested on GKE and EKS with version v1.19 and above. If you run into problems, reach out on the `#airbyte-help` channel in our Slack or create an issue on GitHub.
+:::info 
+Airbyte deployment is tested on GKE and EKS with version v1.19 and above. If you run into problems, reach out on the `#airbyte-help` channel in our Slack or create an issue on GitHub.
+:::
 
 ## Install and configure `kubectl `
 
 Install `kubectl` and run the following command to configure it and connect to your cluster:
-```
+
+```bash
 kubectl use-context <my-cluster-name>
 ```
-* To configure `kubectl` in `GKE`:
-  * Initialize the `gcloud` cli.
-  * To view cluster details, go to the `cluster` page in the Google Cloud Console and click `connect`. Run the following command to test cluster details: 
-`gcloud container clusters get-credentials <CLUSTER_NAME> --zone <ZONE_NAME> --project <PROJECT_NAME>`.
-  * To view contexts, run: `kubectl config get-contexts`.
-  * To access the cluster from `kubectl` run : `kubectl config use-context <gke context>`.
 
-* To configure `kubectl` in  `EKS`:
-  * [Configure AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) to connect to your project.
-  * Install [`eksctl`](https://eksctl.io/introduction/).
-  * To Make contexts available to `kubectl`, run `eksctl utils write-kubeconfig --cluster=<CLUSTER NAME>`  
-  * To view available contexts,  run `kubectl config get-contexts`.
-  * To Access the cluster run `kubectl config use-context <eks context>`.
+To configure `kubectl` in `GKE`:
+
+1. Initialize the `gcloud` cli.
+2. To view cluster details, go to the `cluster` page in the Google Cloud Console and click `connect`. Run the following command to test cluster details: 
+`gcloud container clusters get-credentials <CLUSTER_NAME> --zone <ZONE_NAME> --project <PROJECT_NAME>`.
+3. To view contexts, run: `kubectl config get-contexts`.
+4. To access the cluster from `kubectl` run : `kubectl config use-context <gke context>`.
+
+To configure `kubectl` in  `EKS`:
+
+1. [Configure AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) to connect to your project.
+2. Install [`eksctl`](https://eksctl.io/introduction/).
+3. To Make contexts available to `kubectl`, run `eksctl utils write-kubeconfig --cluster=<CLUSTER NAME>`  
+4. To view available contexts,  run `kubectl config get-contexts`.
+5. To access the cluster, run `kubectl config use-context <eks context>`.
 
 ## Configure Logs
 
@@ -53,7 +64,7 @@ Airbyte supports logging to the `Minio` layer, `S3` bucket, and `GCS` bucket.
 
 To write to a custom location, update the following `.env` variable in the `kube/overlays/stable` directory (you will find this directory at the location you launched Airbyte)
 
-```
+``` bash
 S3_LOG_BUCKET=<your_minio_bucket_to_write_logs_in>
 AWS_ACCESS_KEY_ID=<your_minio_access_key>
 AWS_SECRET_ACCESS_KEY=<your_minio_secret_key>
@@ -69,7 +80,7 @@ For the `S3` log location, create an S3 bucket with your AWS credentials.
 
 To write to a custom location, update the following `.env` variable in the `kube/overlays/stable` directory (you can find this directory at the location you launched Airbyte)
 
-```
+``` bash
 S3_LOG_BUCKET=<your_s3_bucket_to_write_logs_in>
 S3_LOG_BUCKET_REGION=<your_s3_bucket_region>
 # Set this to empty.
@@ -78,11 +89,11 @@ S3_MINIO_ENDPOINT=
 S3_PATH_STYLE_ACCESS=
 ```
 Replace the following variable in `.secrets` file in the `kube/overlays/stable` directory:
-```
+
+```bash
 AWS_ACCESS_KEY_ID=<your_aws_access_key_id>
 AWS_SECRET_ACCESS_KEY=<your_aws_secret_access_key>
 ```
-
 
 ### Configure the Custom GCS Log Location​
 
@@ -91,13 +102,14 @@ Create a GCS bucket and  GCP credentials if you haven’t already. Make sure you
 To configure the custom log location:
 
 Base encode the GCP JSON secret with the following command:
-```
+
+```bash
 # The output of this command will be a Base64 string.
 $ cat gcp.json | base64
 ```
 To populate the `gcs-log-creds` secrets with the Base64-encoded credential, take the encoded GCP JSON secret from the previous step and add it to `secret-gcs-log-creds.yaml` file as the value for `gcp.json` key. 
 
-```
+```bash
 apiVersion: v1
 kind: Secret
 metadata:
@@ -109,13 +121,13 @@ data:
 
 In the `kube/overlays/stable` directory, update the  `GCS_LOG_BUCKET` with your GCS log bucket credentials:
 
-```
+```bash
 GCS_LOG_BUCKET=<your_GCS_bucket_to_write_logs_in>
 ```
 
 Modify `GOOGLE_APPLICATION_CREDENTIALS` to the path to `gcp.json` in the `.secrets` file at `kube/overlays/stable` directory.
 
-```
+```bash
 # The path the GCS creds are written to. Unless you know what you are doing, use the below default value.
 
 GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcs-log-creds/gcp.json
@@ -126,13 +138,11 @@ GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcs-log-creds/gcp.json
 
 The following commands will help you launch Airbyte:
 
-```
+```bash
 git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
 kubectl apply -k kube/overlays/stable
 ```
-
-It might take 2 to 5 minutes for the setup depending on your network and system configuration.
 
 To check the pod status, run `kubectl get pods | grep airbyte`.
 
@@ -141,9 +151,9 @@ If you are on Windows, run `kubectl get pods` to the list of pods.
 Run `kubectl port-forward svc/airbyte-webapp-svc 8000:80`  to allow access to the UI/API.
 Navigate to http://localhost:8000 in your browser to verify the deployment.
 
-## Deploying Airbyte on Kubernetes in production
+## Deploy Airbyte on Kubernetes in production
 
-### Setting resource limits
+### Set resource limits
 
 * Core container pods 
 
@@ -160,7 +170,7 @@ Navigate to http://localhost:8000 in your browser to verify the deployment.
   * To specify different volume sizes for the persistent volume backing Airbyte, modify `kube/resources/volume-*`  files.
 
 
-### Increasing job parallelism
+### Increase job parallelism
 
 The ability to run parallel jobs like getting specs, checking connections, discovering schemas and performing syncs is limited by a few factors. `Airbyte-worker-pods` picks and executes the job. Increasing the number of workers will allow more jobs to be processed.
 
@@ -181,13 +191,16 @@ Airbyte publishes logs every minute, so it’s normal to have minute-long log de
 Each log file is uncompressed and named `{yyyyMMddHH24mmss}_{podname}_{UUID}`.
 To view logs, navigate to the relevant folder and download the file for the time period you want.
 
-### Using external databases
+### Use external databases
+
 You can configure a custom database instead of a simple `postgres` container in Kubernetes. This separate instance (AWS RDS or Google Cloud SQL) should be easier and safer to maintain than Postgres on your cluster.
 
-## Customizing Airbytes Manifests
+## Customize Airbytes Manifests
+
 We use Kustomize to allow configuration for different environments. Our shared resources are in the `kube/resources` directory. We recommend defining overlays for each environment and creating your own overlay to customize your deployments. The overlay can live in your own version control system.
 An example of `kustomization.yaml`  file:
-```
+
+```bash
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
@@ -215,7 +228,7 @@ You can view real-time logs in `kubectl logs deployments/airbyte-server` directo
 All logs can be accessed by viewing the scheduler logs. As for connector container logs, use Airbyte UI or Airbyte API to isolate them for a specific job attempt and for easier understanding. Connector pods launched by Airbyte will not relay logs directly to Kubernetes logging. You must access these logs through Airbyte.
 
 
-### Resizing Volumes
+### Resize Volumes
 
 To resize a volume, change the `.spec.resources.requests.storage` value. After re-applying, extend the mount(if that operation is supported for your mount type). For a production deployment, track the usage of volumes to ensure they don't run out of space.
 
@@ -223,13 +236,13 @@ To resize a volume, change the `.spec.resources.requests.storage` value. After r
 
 To copy files, use the [`cp` command in kubectl](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#cp).
 
-### Listing Files
+### List Files
 
 To list files, run:
 
 `kubectl exec -it airbyte-server-6b5747df5c-bj4fx ls /tmp/workspace/8`
 
-### Reading Files
+### Read Files
 
 To read files, run:
 
@@ -241,7 +254,7 @@ Running Airbyte on a GKE regional cluster requires enabling persistent regional 
 
 Sample `volume-configs.yaml` file:
 
-```
+```bash
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -256,6 +269,7 @@ spec:
       storage: 500Mi
   storageClassName: standard-rwo
 ```
+
 ## Troubleshooting
 If you encounter any issues, reach out to our community on [Slack](https://slack.airbyte.com/).
 

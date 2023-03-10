@@ -8,7 +8,7 @@ You can use [OAuth](https://mailchimp.com/developer/marketing/guides/access-user
 
 ## Set up the Mailchimp source connector
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**. 
 3. On the Set up the source page, select **Mailchimp** from the Source type dropdown.
 4. Enter a name for your source.
@@ -212,13 +212,13 @@ The `Lists` and `Campaigns` streams have `id` as the primary key. The `Email Act
 
 ## Data type mapping
 
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `array` | `array` | the type of elements in the array is determined based on the mappings in this table |
-| `date`, `time`, `datetime` | `string` |  |
-| `int`, `float`, `number` | `number` |  |
-| `object` | `object` | properties within objects are mapped based on the mappings in this table |
-| `string` | `string` |  |
+| Integration Type           | Airbyte Type | Notes                                                                               |
+|:---------------------------|:-------------|:------------------------------------------------------------------------------------|
+| `array`                    | `array`      | the type of elements in the array is determined based on the mappings in this table |
+| `date`, `time`, `datetime` | `string`     |                                                                                     |
+| `int`, `float`, `number`   | `number`     |                                                                                     |
+| `object`                   | `object`     | properties within objects are mapped based on the mappings in this table            |
+| `string`                   | `string`     |                                                                                     |
 
 ## Tutorials
 
@@ -228,24 +228,28 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                  |
-|---------|------------|----------------------------------------------------------|--------------------------------------------------------------------------|
-| 0.3.0   | 2022-11-07 | [19023](https://github.com/airbytehq/airbyte/pull/19023) | Set primary key for Email Activity stream.                               |
-| 0.2.15  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                            |
-| 0.2.14  | 2022-04-12 | [11352](https://github.com/airbytehq/airbyte/pull/11352) | Update documentation                                                     |
-| 0.2.13  | 2022-04-11 | [11632](https://github.com/airbytehq/airbyte/pull/11632) | Add unit tests                                                           |
-| 0.2.12  | 2022-03-17 | [10975](https://github.com/airbytehq/airbyte/pull/10975) | Fix campaign's stream normalization                                      |
-| 0.2.11  | 2021-12-24 | [7159](https://github.com/airbytehq/airbyte/pull/7159)   | Add oauth2.0 support                                                     |
-| 0.2.10  | 2021-12-21 | [9000](https://github.com/airbytehq/airbyte/pull/9000)   | Update connector fields title/description                                |
-| 0.2.9   | 2021-12-13 | [7975](https://github.com/airbytehq/airbyte/pull/7975)   | Updated JSON schemas                                                     |
-| 0.2.8   | 2021-08-17 | [5481](https://github.com/airbytehq/airbyte/pull/5481)   | Remove date-time type from some fields                                   |
-| 0.2.7   | 2021-08-03 | [5137](https://github.com/airbytehq/airbyte/pull/5137)   | Source Mailchimp: fix primary key for email activities                   |
-| 0.2.6   | 2021-07-28 | [5024](https://github.com/airbytehq/airbyte/pull/5024)   | Source Mailchimp: handle records with no no "activity" field in response |
-| 0.2.5   | 2021-07-08 | [4621](https://github.com/airbytehq/airbyte/pull/4621)   | Mailchimp fix url-base                                                   |
-| 0.2.4   | 2021-06-09 | [4285](https://github.com/airbytehq/airbyte/pull/4285)   | Use datacenter URL parameter from apikey                                 |
-| 0.2.3   | 2021-06-08 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Add AIRBYTE\_ENTRYPOINT for Kubernetes support                           |
-| 0.2.2   | 2021-06-08 | [3415](https://github.com/airbytehq/airbyte/pull/3415)   | Get Members activities                                                   |
-| 0.2.1   | 2021-04-03 | [2726](https://github.com/airbytehq/airbyte/pull/2726)   | Fix base connector versioning                                            |
-| 0.2.0   | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238)   | Protocol allows future/unknown properties                                |
-| 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)   | Add connectors using an index YAML file                                  |
+| Version | Date       | Pull Request                                             | Subject                                                                    |
+|---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------|
+| 0.3.4   | 2023-02-06 | [22405](https://github.com/airbytehq/airbyte/pull/22405) | Revert extra logging                                                       |
+| 0.3.3   | 2023-02-01 | [22228](https://github.com/airbytehq/airbyte/pull/22228) | Add extra logging                                                          |
+| 0.3.2   | 2023-01-27 | [22014](https://github.com/airbytehq/airbyte/pull/22014) | Set `AvailabilityStrategy` for streams explicitly to `None`                |
+| 0.3.1   | 2022-12-20 | [20720](https://github.com/airbytehq/airbyte/pull/20720) | Use stream slices as a source for request params instead of a stream state |
+| 0.3.0   | 2022-11-07 | [19023](https://github.com/airbytehq/airbyte/pull/19023) | Set primary key for Email Activity stream.                                 |
+| 0.2.15  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                              |
+| 0.2.14  | 2022-04-12 | [11352](https://github.com/airbytehq/airbyte/pull/11352) | Update documentation                                                       |
+| 0.2.13  | 2022-04-11 | [11632](https://github.com/airbytehq/airbyte/pull/11632) | Add unit tests                                                             |
+| 0.2.12  | 2022-03-17 | [10975](https://github.com/airbytehq/airbyte/pull/10975) | Fix campaign's stream normalization                                        |
+| 0.2.11  | 2021-12-24 | [7159](https://github.com/airbytehq/airbyte/pull/7159)   | Add oauth2.0 support                                                       |
+| 0.2.10  | 2021-12-21 | [9000](https://github.com/airbytehq/airbyte/pull/9000)   | Update connector fields title/description                                  |
+| 0.2.9   | 2021-12-13 | [7975](https://github.com/airbytehq/airbyte/pull/7975)   | Updated JSON schemas                                                       |
+| 0.2.8   | 2021-08-17 | [5481](https://github.com/airbytehq/airbyte/pull/5481)   | Remove date-time type from some fields                                     |
+| 0.2.7   | 2021-08-03 | [5137](https://github.com/airbytehq/airbyte/pull/5137)   | Source Mailchimp: fix primary key for email activities                     |
+| 0.2.6   | 2021-07-28 | [5024](https://github.com/airbytehq/airbyte/pull/5024)   | Source Mailchimp: handle records with no no "activity" field in response   |
+| 0.2.5   | 2021-07-08 | [4621](https://github.com/airbytehq/airbyte/pull/4621)   | Mailchimp fix url-base                                                     |
+| 0.2.4   | 2021-06-09 | [4285](https://github.com/airbytehq/airbyte/pull/4285)   | Use datacenter URL parameter from apikey                                   |
+| 0.2.3   | 2021-06-08 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Add AIRBYTE\_ENTRYPOINT for Kubernetes support                             |
+| 0.2.2   | 2021-06-08 | [3415](https://github.com/airbytehq/airbyte/pull/3415)   | Get Members activities                                                     |
+| 0.2.1   | 2021-04-03 | [2726](https://github.com/airbytehq/airbyte/pull/2726)   | Fix base connector versioning                                              |
+| 0.2.0   | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238)   | Protocol allows future/unknown properties                                  |
+| 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)   | Add connectors using an index YAML file                                    |
 

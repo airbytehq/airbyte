@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import re
@@ -43,13 +43,16 @@ class JiraStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_json = response.json()
         if isinstance(response_json, dict):
-            if response_json.get("isLast"):
-                return
             startAt = response_json.get("startAt")
             if startAt is not None:
                 startAt += response_json["maxResults"]
-                if startAt < response_json["total"]:
-                    return {"startAt": startAt}
+                if "isLast" in response_json:
+                    if response_json["isLast"]:
+                        return
+                elif "total" in response_json:
+                    if startAt >= response_json["total"]:
+                        return
+                return {"startAt": startAt}
         elif isinstance(response_json, list):
             if len(response_json) == self.page_size:
                 query_params = dict(parse_qsl(urlparse.urlparse(response.url).query))
@@ -187,12 +190,15 @@ class Boards(JiraStream):
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         for board in super().read_records(**kwargs):
-            if not self._projects or board["location"]["projectKey"] in self._projects:
+            location = board.get("location", {})
+            if not self._projects or location.get("projectKey") in self._projects:
                 yield board
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["projectId"] = str(record["location"]["projectId"])
-        record["projectKey"] = record["location"]["projectKey"]
+        location = record.get("location")
+        if location:
+            record["projectId"] = str(location.get("projectId"))
+            record["projectKey"] = location.get("projectKey")
         return record
 
 
@@ -300,7 +306,7 @@ class Issues(IncrementalJiraStream):
 
     cursor_field = "updated"
     extract_field = "issues"
-    use_cache = True
+    use_cache = False  # disable caching due to OOM errors in kubernetes
 
     def __init__(self, expand_changelog: bool = False, render_fields: bool = False, **kwargs):
         super().__init__(**kwargs)
@@ -552,6 +558,9 @@ class IssueRemoteLinks(StartDateJiraStream):
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         for issue in read_full_refresh(self.issues_stream):
             yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
 
 
 class IssueResolutions(JiraStream):

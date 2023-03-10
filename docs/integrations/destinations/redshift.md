@@ -46,6 +46,7 @@ Optional parameters:
 * **Purge Staging Data**
     * Whether to delete the staging files from S3 after completing the sync. Specifically, the connector will create CSV files named `bucketPath/namespace/streamName/syncDate_epochMillis_randomUuid.csv` containing three columns (`ab_id`, `data`, `emitted_at`). Normally these files are deleted after the `COPY` command completes; if you want to keep them for other purposes, set `purge_staging_data` to `false`.
 
+NOTE: S3 staging does not use the SSH Tunnel option, if configured. SSH Tunnel supports the SQL connection only. S3 is secured through public HTTPS access only.
 
 ## Step 1: Set up Redshift
 
@@ -55,12 +56,22 @@ Optional parameters:
 3. [Create](https://docs.aws.amazon.com/ses/latest/dg/event-publishing-redshift-cluster.html) and activate AWS Redshift cluster if you don't have one ready
 4. (Optional) [Allow](https://aws.amazon.com/premiumsupport/knowledge-center/cannot-connect-redshift-cluster/) connections from Airbyte to your Redshift cluster \(if they exist in separate VPCs\)
 5. (Optional) [Create](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) a staging S3 bucket \(for the COPY strategy\).
+6. Create a user with at least create table permissions for the schema. If the schema does not exist you need to add permissions for that, too. Something like this:
+```
+GRANT CREATE ON DATABASE database_name TO airflow_user; -- add create schema permission
+GRANT usage, create on schema my_schema TO airflow_user; -- add create table permission
+```
+
+### Optional Use of SSH Bastion Host
+This connector supports the use of a Bastion host as a gateway to a private Redshift cluster via SSH Tunneling.
+Setup of the host is beyond the scope of this document but several tutorials are available online to fascilitate this task.
+Enter the bastion host, port and credentials in the destination configuration.
 
 ## Step 2: Set up the destination connector in Airbyte
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.
 3. On the destination setup page, select **Redshift** from the Destination type dropdown and enter a name for this connector.
 4. Fill in all the required fields to use the INSERT or COPY strategy
@@ -141,10 +152,16 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.3.51  | 2022-10-26 | [\#18434](https://github.com/airbytehq/airbyte/pull/18434) | Fix empty S3 bucket path handling |
-| 0.3.50  | 2022-09-14 | [\#15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage |
-| 0.3.49  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields) |
-| 0.3.48  | 2022-09-01 |  | Added JDBC URL params                                                                                                                                                                                            |
+| 0.4.0   | 2023-02-28 | [\#23523](https://github.com/airbytehq/airbyte/pull/23523) | Add SSH Bastion Host configuration options                                                                                                                                                                       |
+| 0.3.56  | 2023-01-26 | [\#21890](https://github.com/airbytehq/airbyte/pull/21890) | Fixed configurable parameter for number of file buffers                                                                                                                                                          |
+| 0.3.55  | 2023-01-26 | [\#20631](https://github.com/airbytehq/airbyte/pull/20631) | Added support for destination checkpointing with staging                                                                                                                                                         |
+| 0.3.54  | 2023-01-18 | [\#21087](https://github.com/airbytehq/airbyte/pull/21087) | Wrap Authentication Errors as Config Exceptions                                                                                                                                                                  |
+| 0.3.53  | 2023-01-03 | [\#17273](https://github.com/airbytehq/airbyte/pull/17273) | Flatten JSON arrays to fix maximum size check for SUPER field                                                                                                                                                    |
+| 0.3.52  | 2022-12-30 | [\#20879](https://github.com/airbytehq/airbyte/pull/20879) | Added configurable parameter for number of file buffers (⛔ this version has a bug and will not work; use `0.3.56` instead)                                                                                       |
+| 0.3.51  | 2022-10-26 | [\#18434](https://github.com/airbytehq/airbyte/pull/18434) | Fix empty S3 bucket path handling                                                                                                                                                                                |
+| 0.3.50  | 2022-09-14 | [\#15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage                                                                                                                                                                                   |
+| 0.3.49  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields)                                                                                         |
+| 0.3.48  | 2022-09-01 |                                                            | Added JDBC URL params                                                                                                                                                                                            |
 | 0.3.47  | 2022-07-15 | [\#14494](https://github.com/airbytehq/airbyte/pull/14494) | Make S3 output filename configurable.                                                                                                                                                                            |
 | 0.3.46  | 2022-06-27 | [\#14190](https://github.com/airbytehq/airbyte/pull/13916) | Correctly cleanup S3 bucket when using a configured bucket path for S3 staging operations.                                                                                                                       |
 | 0.3.45  | 2022-06-25 | [\#13916](https://github.com/airbytehq/airbyte/pull/13916) | Use the configured bucket path for S3 staging operations.                                                                                                                                                        |
@@ -176,5 +193,3 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 | 0.3.13  | 2021-09-02 | [5745](https://github.com/airbytehq/airbyte/pull/5745)     | Disable STATUPDATE flag when using S3 staging to speed up performance                                                                                                                                            |
 | 0.3.12  | 2021-07-21 | [3555](https://github.com/airbytehq/airbyte/pull/3555)     | Enable partial checkpointing for halfway syncs                                                                                                                                                                   |
 | 0.3.11  | 2021-07-20 | [4874](https://github.com/airbytehq/airbyte/pull/4874)     | allow `additionalProperties` in connector spec                                                                                                                                                                   |
-
-

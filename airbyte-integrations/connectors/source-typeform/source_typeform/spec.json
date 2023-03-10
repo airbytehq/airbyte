@@ -7,18 +7,20 @@
     "required": ["token", "start_date"],
     "additionalProperties": true,
     "properties": {
+      "token": {
+        "type": "string",
+        "description": "The API Token for a Typeform account.",
+        "title": "API Token",
+        "airbyte_secret": true,
+        "order": 0
+      },
       "start_date": {
         "type": "string",
         "description": "UTC date and time in the format: YYYY-MM-DDTHH:mm:ss[Z]. Any data before this date will not be replicated.",
         "title": "Start Date",
         "examples": ["2020-01-01T00:00:00Z"],
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
-      },
-      "token": {
-        "type": "string",
-        "description": "The API Token for a Typeform account.",
-        "title": "API Token",
-        "airbyte_secret": true
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "order": 1
       },
       "form_ids": {
         "title": "Form IDs to replicate",
@@ -27,7 +29,8 @@
         "items": {
           "type": "string"
         },
-        "uniqueItems": true
+        "uniqueItems": true,
+        "order": 2
       }
     }
   }

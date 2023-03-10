@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -13,7 +13,7 @@ from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSel
 
 
 @pytest.mark.parametrize(
-    "test_name, field_pointer, filter_template, body, expected_records",
+    "test_name, field_path, filter_template, body, expected_records",
     [
         (
             "test_with_extractor_and_filter",
@@ -30,9 +30,9 @@ from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSel
             [{"id": 1, "created_at": "06-06-21"}, {"id": 2, "created_at": "06-07-21"}],
         ),
         (
-            "test_with_extractor_and_filter_with_options",
-            ["{{ options['options_field'] }}"],
-            "{{ record['created_at'] > options['created_at'] }}",
+            "test_with_extractor_and_filter_with_parameters",
+            ["{{ parameters['parameters_field'] }}"],
+            "{{ record['created_at'] > parameters['created_at'] }}",
             {"data": [{"id": 1, "created_at": "06-06-21"}, {"id": 2, "created_at": "06-07-21"}, {"id": 3, "created_at": "06-08-21"}]},
             [{"id": 3, "created_at": "06-08-21"}],
         ),
@@ -59,21 +59,21 @@ from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSel
         ),
     ],
 )
-def test_record_filter(test_name, field_pointer, filter_template, body, expected_records):
+def test_record_filter(test_name, field_path, filter_template, body, expected_records):
     config = {"response_override": "stop_if_you_see_me"}
-    options = {"options_field": "data", "created_at": "06-07-21"}
+    parameters = {"parameters_field": "data", "created_at": "06-07-21"}
     stream_state = {"created_at": "06-06-21"}
     stream_slice = {"last_seen": "06-10-21"}
     next_page_token = {"last_seen_id": 14}
 
     response = create_response(body)
-    decoder = JsonDecoder(options={})
-    extractor = DpathExtractor(field_pointer=field_pointer, decoder=decoder, config=config, options=options)
+    decoder = JsonDecoder(parameters={})
+    extractor = DpathExtractor(field_path=field_path, decoder=decoder, config=config, parameters=parameters)
     if filter_template is None:
         record_filter = None
     else:
-        record_filter = RecordFilter(config=config, condition=filter_template, options=options)
-    record_selector = RecordSelector(extractor=extractor, record_filter=record_filter, options=options)
+        record_filter = RecordFilter(config=config, condition=filter_template, parameters=parameters)
+    record_selector = RecordSelector(extractor=extractor, record_filter=record_filter, parameters=parameters)
 
     actual_records = record_selector.select_records(
         response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token

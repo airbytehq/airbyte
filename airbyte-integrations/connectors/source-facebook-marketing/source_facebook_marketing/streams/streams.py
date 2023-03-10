@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import base64
@@ -12,6 +12,7 @@ from airbyte_cdk.models import SyncMode
 from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
 from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
+from facebook_business.adobjects.adimage import AdImage
 from facebook_business.adobjects.user import User
 
 from .base_insight_streams import AdsInsights
@@ -145,13 +146,14 @@ class Activities(FBMarketingIncrementalStream):
         return {"since": since.int_timestamp}
 
 
-class Videos(FBMarketingIncrementalStream):
+class Videos(FBMarketingReversedIncrementalStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/video"""
 
     entity_prefix = "video"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_ad_videos(params=params)
+        # Remove filtering as it is not working for this stream since 2023-01-13
+        return self._api.account.get_ad_videos(params=params, fields=self.fields)
 
 
 class AdAccount(FBMarketingStream):
@@ -179,6 +181,7 @@ class AdAccount(FBMarketingStream):
         # that specific ad account.
         if "funding_source_details" in properties and "MANAGE" not in self.get_task_permissions():
             properties.remove("funding_source_details")
+        if "is_prepay_account" in properties and "MANAGE" not in self.get_task_permissions():
             properties.remove("is_prepay_account")
         return properties
 
@@ -192,6 +195,9 @@ class Images(FBMarketingReversedIncrementalStream):
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         return self._api.account.get_ad_images(params=params, fields=self.fields)
+
+    def get_record_deleted_status(self, record) -> bool:
+        return record[AdImage.Field.status] == AdImage.Status.deleted
 
 
 class AdsInsightsAgeAndGender(AdsInsights):

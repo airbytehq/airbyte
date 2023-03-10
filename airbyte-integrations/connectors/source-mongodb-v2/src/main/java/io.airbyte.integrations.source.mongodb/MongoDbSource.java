@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mongodb;
@@ -67,10 +67,13 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  protected MongoDatabase createDatabase(final JsonNode config) throws Exception {
-    final var dbConfig = toDatabaseConfig(config);
-    return new MongoDatabase(dbConfig.get("connectionString").asText(),
+  protected MongoDatabase createDatabase(final JsonNode sourceConfig) throws Exception {
+    final var dbConfig = toDatabaseConfig(sourceConfig);
+    final MongoDatabase database = new MongoDatabase(dbConfig.get("connectionString").asText(),
         dbConfig.get(JdbcUtils.DATABASE_KEY).asText());
+    database.setSourceConfig(sourceConfig);
+    database.setDatabaseConfig(toDatabaseConfig(sourceConfig));
+    return database;
   }
 
   @Override
@@ -87,7 +90,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  protected JsonSchemaType getType(final BsonType fieldType) {
+  protected JsonSchemaType getAirbyteType(final BsonType fieldType) {
     return MongoUtils.getType(fieldType);
   }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -8,7 +8,7 @@ import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseC
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
-import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullTableName;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getIdentifierWithQuoting;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 import static java.util.stream.Collectors.toList;
@@ -51,6 +51,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -67,6 +68,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
   public static final String CDC_LSN = "_ab_cdc_lsn";
+  public static final String CDC_EVENT_SERIAL_NO = "_ab_cdc_event_serial_no";
   private static final String HIERARCHYID = "hierarchyid";
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
   private List<String> schemas;
@@ -87,7 +89,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     LOGGER.info("Queueing query for table: {}", tableName);
 
     final String newIdentifiers = getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
-    final String preparedSqlQuery = String.format("SELECT %s FROM %s", newIdentifiers, getFullTableName(schemaName, tableName, getQuoteString()));
+    final String preparedSqlQuery =
+        String.format("SELECT %s FROM %s", newIdentifiers, getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()));
 
     LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
     return queryTable(database, preparedSqlQuery);
@@ -115,7 +118,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
           .queryMetadata(String
               .format("SELECT TOP 1 %s FROM %s", // only first row is enough to get field's type
                   enquoteIdentifierList(columnNames, getQuoteString()),
-                  getFullTableName(schemaName, tableName, getQuoteString())));
+                  getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())));
 
       // metadata will be null if table doesn't contain records
       if (sqlServerResultSetMetaData != null) {
@@ -175,6 +178,14 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     if (mssqlConfig.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
       configBuilder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, mssqlConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
     }
+
+    final Map<String, String> additionalParams = new HashMap<>();
+    additionalParameters.forEach(param -> {
+      int i = param.indexOf('=');
+      additionalParams.put(param.substring(0, i), param.substring(i + 1));
+    });
+
+    configBuilder.putAll(additionalParams);
 
     return Jsons.jsonNode(configBuilder.build());
   }
@@ -378,8 +389,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
           new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
           new MssqlCdcStateHandler(stateManager),
           new MssqlCdcConnectorMetadataInjector(),
-          MssqlCdcHelper.getDebeziumProperties(sourceConfig, catalog),
-          emittedAt);
+          MssqlCdcHelper.getDebeziumProperties(database, catalog),
+          emittedAt, true);
 
       return Collections.singletonList(incrementalIteratorSupplier.get());
     } else {
@@ -425,6 +436,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     properties.set(CDC_LSN, stringType);
     properties.set(CDC_UPDATED_AT, stringType);
     properties.set(CDC_DELETED_AT, stringType);
+    properties.set(CDC_EVENT_SERIAL_NO, stringType);
 
     return stream;
   }

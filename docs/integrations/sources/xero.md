@@ -1,4 +1,4 @@
-# Airbyte Source Connector for Xero
+# Xero
 
 This is a setup guide for the Xero source connector which ingests data from the Accounting API.
 

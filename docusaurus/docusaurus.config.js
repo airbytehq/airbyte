@@ -9,7 +9,7 @@ const config = {
     title: 'Airbyte Documentation',
     tagline:
         'Airbyte is an open-source data integration platform to build ELT pipelines. Consolidate your data in your data warehouses, lakes and databases.',
-    url: 'https://docs.airbyte.com',
+    url: 'https://docs.airbyte.com/',
     // Assumed relative path.  If you are using airbytehq.github.io use /
     // anything else should match the repo name
     baseUrl: '/',
@@ -42,6 +42,10 @@ const config = {
                             to: '/integrations/sources/google-analytics-v4',
                         },
                         {
+                            from: '/integrations/sources/appstore',
+                            to: '/integrations/sources/appstore-singer',
+                        },
+                        {
                             from: '/project-overview/security',
                             to: '/operator-guides/security',
                         },
@@ -52,6 +56,22 @@ const config = {
                         {
                             from: '/connector-development/config-based/',
                             to: '/connector-development/config-based/low-code-cdk-overview',
+                        },
+                        {
+                            from: '/project-overview/changelog',
+                            to: '/category/release-notes',
+                        },
+                        {
+                            from: '/connector-development/config-based/understanding-the-yaml-file/stream-slicers/',
+                            to: '/connector-development/config-based/understanding-the-yaml-file/partition-router',
+                        },
+                        {
+                            from: '/cloud/managing-airbyte-cloud',
+                            to: '/category/managing-airbyte-cloud',
+                        },
+                        {
+                            from: '/cloud/dbt-cloud-integration',
+                            to: '/cloud/managing-airbyte-cloud/dbt-cloud-integration',
                         },
 //                        {
 //                         from: '/some-lame-path',
@@ -73,6 +93,7 @@ const config = {
                     sidebarPath: require.resolve('./sidebars.js'),
                     editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
                     path: '../docs',
+                    exclude: ['**/*.inapp.md'],
                 },
                 blog: false,
                 theme: {

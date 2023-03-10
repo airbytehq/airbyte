@@ -44,12 +44,12 @@ Explore our [demo app](https://demo.airbyte.io/).
 
 ### Run Airbyte locally
 
-You can run Airbyte locally with Docker.
+You can run Airbyte locally with Docker. The shell script below will retrieve the requisite docker files from the [platform repository](https://github.com/airbytehq/airbyte-platform) and run docker compose for you.
 
 ```bash
-git clone https://github.com/airbytehq/airbyte.git
+git clone --depth 1 https://github.com/airbytehq/airbyte.git
 cd airbyte
-docker-compose up
+./run-ab-platform.sh
 ```
 
 Login to the web app at [http://localhost:8000](http://localhost:8000) by entering the default credentials found in your .env file.
@@ -80,6 +80,8 @@ Sign up for [Airbyte Cloud](https://cloud.airbyte.io/signup).
 ## Contributing
 
 Get started by checking Github issues and creating a Pull Request. An easy way to start contributing is to update an existing connector or create a new connector using the low-code and Python CDKs. You can find the code for existing connectors in the [connectors](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors) directory. The Airbyte platform is written in Java, and the frontend in React. You can also contribute to our docs and tutorials. Advanced Airbyte users can apply to the [Maintainer program](https://airbyte.com/maintainer-program) and [Writer Program](https://airbyte.com/write-for-the-community).
+
+If you would like to make a contribution to the platform itself, please refer to guides in [the platform repository](https://github.com/airbytehq/airbyte-platform)
 
 Read the [Contributing guide](https://docs.airbyte.com/contributing-to-airbyte/).
 

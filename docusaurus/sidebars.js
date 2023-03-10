@@ -7,6 +7,7 @@ const destinationDocs = `${connectorsDocsRoot}/destinations`;
 
 function getFilenamesInDir(prefix, dir, excludes) {
     return fs.readdirSync(dir)
+        .filter(fileName => !fileName.endsWith(".inapp.md"))
         .map(fileName => fileName.replace(".md", ""))
         .filter(fileName => excludes.indexOf(fileName.toLowerCase()) === -1)
         .map(filename => {
@@ -31,12 +32,11 @@ module.exports = {
     {
       type: 'category',
       label: 'Connector Catalog',
+      link: {
+        type: 'doc',
+        id: 'integrations/README',
+      },
       items: [
-          {
-            type: 'doc',
-            label: 'Overview',
-            id: 'integrations/README',
-          },
           {
             type: 'category',
             label: 'Sources',
@@ -70,8 +70,25 @@ module.exports = {
           id: "cloud/getting-started-with-airbyte-cloud",
         },
         'cloud/core-concepts',
-        'cloud/managing-airbyte-cloud',
-        'cloud/dbt-cloud-integration',
+        {
+          type: 'category',
+          label: 'Managing Airbyte Cloud',
+          link: {
+            type: 'generated-index',
+          },
+          items: [
+            'cloud/managing-airbyte-cloud/edit-stream-configuration',
+            'cloud/managing-airbyte-cloud/manage-schema-changes',
+            'cloud/managing-airbyte-cloud/manage-data-residency',
+            'cloud/managing-airbyte-cloud/manage-credits',
+            'cloud/managing-airbyte-cloud/review-sync-summary',
+            'cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications',
+            'cloud/managing-airbyte-cloud/dbt-cloud-integration',
+            'cloud/managing-airbyte-cloud/manage-airbyte-cloud-workspace',
+            'cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits',
+            'cloud/managing-airbyte-cloud/review-connection-state',
+          ],        
+        },
       ],
     },
     {
@@ -104,7 +121,7 @@ module.exports = {
           label: 'On AWS EC2',
           id: 'deploying-airbyte/on-aws-ec2',
         },
-        
+
         {
           type: 'doc',
           label: 'On Azure',
@@ -117,7 +134,7 @@ module.exports = {
         },
         {
           type: 'doc',
-          label: 'On Kubernetes',
+          label: 'On Kubernetes using Kustomize',
           id:'deploying-airbyte/on-kubernetes',
         },
         {
@@ -196,12 +213,12 @@ module.exports = {
         'troubleshooting/README',
         'troubleshooting/on-deploying',
         'troubleshooting/new-connection',
-        'troubleshooting/running-sync',     
+        'troubleshooting/running-sync',
       ],
     },
     {
       type: 'category',
-      label: 'Build a connector',      
+      label: 'Build a connector',
       items: [
         {
           type: 'doc',
@@ -249,15 +266,17 @@ module.exports = {
                   items: [
                     'connector-development/config-based/understanding-the-yaml-file/request-options',
                     'connector-development/config-based/understanding-the-yaml-file/authentication',
-                    'connector-development/config-based/understanding-the-yaml-file/error-handling',  
+                    'connector-development/config-based/understanding-the-yaml-file/error-handling',
                   ]
               },
+                'connector-development/config-based/understanding-the-yaml-file/incremental-syncs',
                 'connector-development/config-based/understanding-the-yaml-file/pagination',
+                'connector-development/config-based/understanding-the-yaml-file/partition-router',
                 'connector-development/config-based/understanding-the-yaml-file/record-selector',
-                'connector-development/config-based/understanding-the-yaml-file/stream-slicers',
+                'connector-development/config-based/understanding-the-yaml-file/reference',
               ]
             },
-            'connector-development/config-based/advanced-topics',    
+            'connector-development/config-based/advanced-topics',
           ]
         },
         'connector-development/tutorials/cdk-speedrun',
@@ -299,8 +318,21 @@ module.exports = {
         },
         'connector-development/cdk-faros-js',
         'connector-development/airbyte101',
-        'connector-development/testing-connectors/README',
-        'connector-development/testing-connectors/source-acceptance-tests-reference',
+        {
+          type: 'category',
+          label: 'Testing Connectors',
+          link: {
+            type: 'doc',
+            id: 'connector-development/testing-connectors/README',
+          },
+          items: [
+            'connector-development/testing-connectors/connector-acceptance-tests-reference',
+            'connector-development/testing-connectors/legacy-standard-source-tests',
+            'connector-development/testing-connectors/source-acceptance-tests-reference',
+            'connector-development/testing-connectors/standard-source-tests',
+            'connector-development/testing-connectors/testing-a-local-catalog-in-development',
+          ]
+        },
         'connector-development/connector-specification-reference',
         'connector-development/best-practices',
         'connector-development/ux-handbook',
@@ -316,7 +348,7 @@ module.exports = {
         'contributing-to-airbyte/developing-locally',
         'contributing-to-airbyte/developing-on-docker',
         'contributing-to-airbyte/developing-on-kubernetes',
-        'contributing-to-airbyte/monorepo-python-development',
+        'contributing-to-airbyte/python-gradle-setup',
         'contributing-to-airbyte/code-style',
         'contributing-to-airbyte/issues-and-pull-requests',
         'contributing-to-airbyte/gradle-cheatsheet',
@@ -381,9 +413,8 @@ module.exports = {
       id: "api-documentation",
     },
     {
-      type: 'link',
-      label: 'CLI documentation',
-      href: 'https://github.com/airbytehq/airbyte/blob/master/octavia-cli/README.md',
+      type: 'doc',
+      id: "cli-documentation",
     },
     {
       type: 'category',
@@ -424,6 +455,9 @@ module.exports = {
         type: 'generated-index',
       },
       items: [
+        'release_notes/february_2023',
+        'release_notes/january_2023',
+        'release_notes/december_2022',
         'release_notes/november_2022',
         'release_notes/october_2022',
         'release_notes/september_2022',

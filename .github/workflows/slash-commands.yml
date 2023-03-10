@@ -8,17 +8,6 @@ jobs:
     if: ${{ github.event.issue.pull_request }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-
-      - name: Check PAT rate limits
-        run: |
-          ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
-
       - name: Get PR repo and ref
         id: getref
         run: |
@@ -30,7 +19,7 @@ jobs:
         id: scd
         uses: peter-evans/slash-command-dispatch@v2
         with:
-          token: ${{ env.PAT }}
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           commands: |
             test
             test-performance
@@ -38,9 +27,9 @@ jobs:
             publish-connector
             publish
             publish-external
-            publish-cdk
             gke-kube-test
             run-specific-test
+            test-connector-performance
           static-args: |
             repo=${{ steps.getref.outputs.repo }}
             gitref=${{ steps.getref.outputs.ref }}

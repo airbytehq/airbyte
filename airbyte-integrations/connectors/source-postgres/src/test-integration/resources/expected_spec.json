@@ -236,6 +236,7 @@
             "title": "Logical Replication (CDC)",
             "description": "Logical replication uses the Postgres write-ahead log (WAL) to detect inserts, updates, and deletes. This needs to be configured on the source database itself. Only available on Postgres 10 and above. Read the <a href=\"https://docs.airbyte.com/integrations/sources/postgres\">docs</a>.",
             "required": ["method", "replication_slot", "publication"],
+            "additionalProperties": true,
             "properties": {
               "method": {
                 "type": "string",
@@ -245,8 +246,8 @@
               "plugin": {
                 "type": "string",
                 "title": "Plugin",
-                "description": "A logical decoding plugin installed on the PostgreSQL server. The `pgoutput` plugin is used by default. If the replication table contains a lot of big jsonb values it is recommended to use `wal2json` plugin. Read more about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-2-select-a-replication-plugin\">selecting replication plugins</a>.",
-                "enum": ["pgoutput", "wal2json"],
+                "description": "A logical decoding plugin installed on the PostgreSQL server.",
+                "enum": ["pgoutput"],
                 "default": "pgoutput",
                 "order": 2
               },
@@ -270,6 +271,14 @@
                 "order": 5,
                 "min": 120,
                 "max": 1200
+              },
+              "lsn_commit_behaviour": {
+                "type": "string",
+                "title": "LSN commit behaviour",
+                "description": "Determines when Airbtye should flush the LSN of processed WAL logs in the source database. `After loading Data in the destination` is default. If `While reading Data` is selected, in case of a downstream failure (while loading data into the destination), next sync would result in a full sync.",
+                "enum": ["While reading Data", "After loading Data in the destination"],
+                "default": "After loading Data in the destination",
+                "order": 6
               }
             }
           }
@@ -391,7 +400,5 @@
       }
     }
   },
-  "supportsNormalization": false,
-  "supportsDBT": false,
   "supported_destination_sync_modes": []
 }

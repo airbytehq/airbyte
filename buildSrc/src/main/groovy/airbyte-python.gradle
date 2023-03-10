@@ -149,11 +149,6 @@ class AirbytePythonPlugin implements Plugin<Project> {
                 command = "install -r requirements.txt"
                 inputs.file('requirements.txt')
                 outputs.file('build/installedlocalreqs.txt')
-
-                // HACK: makes all integrations depend on installing requirements for bases. long term we should resolve deps and install in order.
-                if (project.getPath().startsWith(":airbyte-integrations:connectors") && !project.hasProperty("reports_folder")) {
-                    dependsOn project.rootProject.getTasksByName("airbytePythonApply", true).findAll { it.project.getPath().startsWith(":airbyte-integrations:bases") }
-                }
             }
         } else if (project.file('setup.py').exists()) {
             // If requirements.txt does not exists, install from setup.py instead, assume a dev or "tests" profile exists.

@@ -5,19 +5,22 @@
     "title": "Confluence Spec",
     "type": "object",
     "required": ["api_token", "domain_name", "email"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "api_token": {
+        "title": "API Token",
         "type": "string",
-        "description": "Please follow the Jira confluence for generating an API token: https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/",
+        "description": "Please follow the Jira confluence for generating an API token: <a href=\"https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/\">generating an API token</a>.",
         "airbyte_secret": true
       },
       "domain_name": {
+        "title": "Domain name",
         "type": "string",
         "description": "Your Confluence domain name",
         "examples": ["example.atlassian.net"]
       },
       "email": {
+        "title": "Email",
         "type": "string",
         "description": "Your Confluence login email",
         "examples": ["abc@example.com"]

@@ -3,7 +3,7 @@ plugins {
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
     id 'airbyte-performance-test-java'
-    id 'airbyte-source-acceptance-test'
+    id 'airbyte-connector-acceptance-test'
 }
 
 application {
@@ -14,19 +14,19 @@ application {
 dependencies {
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-integrations:bases:debezium-v1-9-6')
+    implementation project(':airbyte-integrations:bases:debezium')
     implementation project(':airbyte-integrations:connectors:source-jdbc')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:connectors:source-relational-db')
 
     implementation 'mysql:mysql-connector-java:8.0.30'
     implementation 'org.apache.commons:commons-lang3:3.11'
 
-    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium-v1-9-6'))
+    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium'))
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
-    testImplementation 'uk.org.webcompere:system-stubs-jupiter:2.0.1'
+    testImplementation libs.junit.jupiter.system.stubs
     testImplementation libs.connectors.testcontainers.mysql
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')

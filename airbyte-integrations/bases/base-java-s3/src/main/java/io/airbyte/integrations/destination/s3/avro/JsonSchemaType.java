@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.avro;
@@ -23,7 +23,7 @@ public enum JsonSchemaType {
   DATE_V1("WellKnownTypes.json#/definitions/Date", Schema.Type.INT),
   TIMESTAMP_WITH_TIMEZONE_V1("WellKnownTypes.json#/definitions/TimestampWithTimezone", Schema.Type.LONG),
   TIMESTAMP_WITHOUT_TIMEZONE_V1("WellKnownTypes.json#/definitions/TimestampWithoutTimezone", Schema.Type.LONG),
-  TIME_WITH_TIMEZONE_V1("WellKnownTypes.json#/definitions/TimeWithTimezone", Schema.Type.LONG),
+  TIME_WITH_TIMEZONE_V1("WellKnownTypes.json#/definitions/TimeWithTimezone", Schema.Type.STRING),
   TIME_WITHOUT_TIMEZONE_V1("WellKnownTypes.json#/definitions/TimeWithoutTimezone", Schema.Type.LONG),
   OBJECT("object", Schema.Type.RECORD),
   ARRAY("array", Schema.Type.ARRAY),

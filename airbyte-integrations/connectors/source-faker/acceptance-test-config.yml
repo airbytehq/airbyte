@@ -14,24 +14,17 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         backward_compatibility_tests_config:
-          disable_for_version: "0.2.1"
+          disable_for_version: "1.0.0" # We changed the cursor field of the Purchases stream in 2.0.0
   basic_read:
     tests:
       - config_path: secrets/config.json
         empty_streams: []
         expect_records:
           path: integration_tests/expected_records.jsonl
-          exact_order: true
-          extra_fields: false
-          extra_records: false
   full_refresh:
     tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_catalog.json
-        ignored_fields:
-          users:
-            - created_at
-            - updated_at
   incremental:
     tests:
       - config_path: secrets/config.json

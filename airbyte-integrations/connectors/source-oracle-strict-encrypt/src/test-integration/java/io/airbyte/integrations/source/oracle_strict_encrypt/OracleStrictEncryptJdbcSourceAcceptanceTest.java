@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle_strict_encrypt;
 
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -152,7 +153,9 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
           connection.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
       while (resultSet.next()) {
         final String tableName = resultSet.getString("TABLE_NAME");
-        final String tableNameProcessed = tableName.contains(" ") ? sourceOperations.enquoteIdentifier(connection, tableName) : tableName;
+        final String tableNameProcessed =
+            tableName.contains(" ") ? enquoteIdentifier(tableName, connection.getMetaData().getIdentifierQuoteString())
+                : tableName;
         connection.createStatement().executeQuery("DROP TABLE " + schemaName + "." + tableNameProcessed);
       }
     }
