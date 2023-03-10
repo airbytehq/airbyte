@@ -12,7 +12,6 @@ MAIN_REQUIREMENTS = [
     "PyYAML~=6.0",
     "GitPython~=3.1.29",
     "pydantic~=1.10.4",
-    "docker~=6.0.0",
     "PyGithub~=1.58.0",
     "rich",
 ]
