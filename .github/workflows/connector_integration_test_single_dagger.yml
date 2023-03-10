@@ -82,7 +82,7 @@ jobs:
           AWS_DEFAULT_REGION: "us-east-2"
           TEST_REPORTS_BUCKET_NAME: "airbyte-connector-build-status"
           CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          CI_GIT_BRANCH: ${{ env.GITHUB_HEAD_REF }}
+          CI_GIT_BRANCH: "$GITHUB_HEAD_REF"
           CI_GIT_REVISION: ${{ github.sha }}
   stop-runner:
     name: "Connectors Integration Test: Stop Build EC2 Runner"
