@@ -11,10 +11,8 @@ from typing import List, Tuple
 import anyio
 import click
 import dagger
-from asyncer import asyncify
-from ci_connector_ops.pipelines.actions import environments, remote_storage, secrets, tests
-from ci_connector_ops.pipelines.contexts import ConnectorTestContext, ContextState
-from ci_connector_ops.pipelines.github import update_commit_status_check
+from ci_connector_ops.pipelines.actions import environments, tests
+from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.pipelines.models import ConnectorTestReport, Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.utils import (
     DAGGER_CONFIG,
@@ -35,68 +33,9 @@ REQUIRED_ENV_VARS_FOR_CI = [
     "CI_GITHUB_ACCESS_TOKEN",
 ]
 
-logging.basicConfig(level=logging.INFO, format="%(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
+logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
 
 logger = logging.getLogger(__name__)
-
-
-async def setup(test_context: ConnectorTestContext) -> ConnectorTestContext:
-    """Initializes the test context with a logger and secrets dir.
-
-    Args:
-        test_context (ConnectorTestContext): The context for a connector specific test pipeline.
-
-    Returns:
-        ConnectorTestContext: The initialized test context.
-    """
-    main_pipeline_name = f"CI test for {test_context.connector.technical_name}"
-    test_context.logger = logging.getLogger(main_pipeline_name)
-    test_context.secrets_dir = await secrets.get_connector_secret_dir(test_context)
-    test_context.updated_secrets_dir = None
-    test_context.state = ContextState.INITIALIZED
-    async with anyio.create_task_group() as tg:
-        tg.start_soon(asyncify(update_commit_status_check), test_context)
-    return test_context
-
-
-async def teardown(test_context: ConnectorTestContext, test_report: ConnectorTestReport) -> ConnectorTestContext:
-    """Finish pipeline execution by saving updated secrets to GSM and upload test reports to S3.
-
-    Args:
-        test_context (ConnectorTestContext): The context for a connector specific test pipeline.
-        test_report (ConnectorTestReport): The test report to upload to S3.
-
-    Returns:
-        ConnectorTestContext: The connector test context.
-    """
-    teardown_pipeline = test_context.dagger_client.pipeline(f"Teardown {test_context.connector.technical_name}")
-    if test_context.should_save_updated_secrets:
-        await secrets.upload(
-            teardown_pipeline,
-            test_context.connector,
-        )
-
-    if test_report is None:
-        logger.error("No test report was provided. This is probably due to an upstream error")
-        return test_context
-    test_report.print()
-    test_context.logger.info(test_report.to_json())
-    local_test_reports_path_root = "tools/ci_connector_ops/test_reports/"
-    connector_name = test_report.connector_test_context.connector.technical_name
-    connector_version = test_report.connector_test_context.connector.version
-    git_revision = test_report.connector_test_context.git_revision
-    git_branch = test_report.connector_test_context.git_branch.replace("/", "_")
-    suffix = f"{connector_name}/{git_branch}/{connector_version}/{git_revision}.json"
-    local_report_path = Path(local_test_reports_path_root + suffix)
-    local_report_path.parents[0].mkdir(parents=True, exist_ok=True)
-    local_report_path.write_text(test_report.to_json())
-    if test_context.state.FINISHED and test_report.should_be_saved:
-        s3_reports_path_root = "python-poc/tests/history/"
-        s3_key = s3_reports_path_root + suffix
-        await remote_storage.upload_to_s3(teardown_pipeline, str(local_report_path), s3_key, os.environ["TEST_REPORTS_BUCKET_NAME"])
-    async with anyio.create_task_group() as tg:
-        tg.start_soon(asyncify(update_commit_status_check), test_context, test_report)
-    return test_context
 
 
 async def run(test_context: ConnectorTestContext) -> ConnectorTestReport:
@@ -109,12 +48,7 @@ async def run(test_context: ConnectorTestContext) -> ConnectorTestReport:
     Returns:
         ConnectorTestReport: The test reports holding tests results.
     """
-    test_context = await setup(test_context)
-    test_report = None
-    try:
-        test_context.state = ContextState.RUNNING
-        async with anyio.create_task_group() as tg:
-            tg.start_soon(asyncify(update_commit_status_check), test_context)
+    async with test_context:
         qa_checks_results = await tests.run_qa_checks(test_context)
         connector_source_code = await environments.with_airbyte_connector(test_context, install=False)
         connector_under_test = await environments.with_airbyte_connector(test_context)
@@ -137,7 +71,7 @@ async def run(test_context: ConnectorTestContext) -> ConnectorTestReport:
             integration_tests_result = StepResult(Step.INTEGRATION_TESTS, StepStatus.SKIPPED, stdout="Skipped because unit tests failed")
             acceptance_tests_results = StepResult(Step.ACCEPTANCE_TESTS, StepStatus.SKIPPED, stdout="Skipped because unit tests failed")
 
-        test_report = ConnectorTestReport(
+        test_context.test_report = ConnectorTestReport(
             test_context,
             steps_results=[
                 package_install_result,
@@ -148,16 +82,8 @@ async def run(test_context: ConnectorTestContext) -> ConnectorTestReport:
                 qa_checks_results,
             ],
         )
-        test_context.state = ContextState.FINISHED
 
-    except Exception as e:
-
-        test_context.state = ContextState.FAILED
-        test_context.logger.error(str(e))
-
-    await teardown(test_context, test_report)
-
-    return test_report
+    return test_context.test_report
 
 
 async def run_connectors_test_pipelines(test_contexts: List[ConnectorTestContext]):
@@ -266,7 +192,6 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
         sys.exit(0)
     connectors_tests_contexts = [
         ConnectorTestContext(
-            ContextState.CREATED,
             connector,
             ctx.obj["is_local"],
             ctx.obj["git_branch"],

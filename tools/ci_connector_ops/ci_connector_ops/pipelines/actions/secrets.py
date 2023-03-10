@@ -3,13 +3,17 @@
 #
 
 """This modules groups functions made to download/upload secrets from/to a remote secret service and provide these secret in a dagger Directory."""
+from __future__ import annotations
 
 import datetime
+from typing import TYPE_CHECKING
 
 import anyio
 from ci_connector_ops.pipelines.actions import environments
-from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from dagger import Directory
+
+if TYPE_CHECKING:
+    from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 
 
 async def download(context: ConnectorTestContext, gcp_gsm_env_variable_name: str = "GCP_GSM_CREDENTIALS") -> Directory:

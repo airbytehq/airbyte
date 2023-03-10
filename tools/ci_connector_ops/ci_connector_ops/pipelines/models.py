@@ -1,13 +1,14 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
+
 import json
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
-from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.utils import console
 from dagger import Client, Container
 from rich.console import Group
@@ -15,6 +16,9 @@ from rich.panel import Panel
 from rich.style import Style
 from rich.table import Table
 from rich.text import Text
+
+if TYPE_CHECKING:
+    from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 
 
 class Step(Enum):
