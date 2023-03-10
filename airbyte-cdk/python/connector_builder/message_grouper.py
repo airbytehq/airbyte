@@ -25,12 +25,12 @@ class MessageGrouper:
         self._max_slices = max_slices
         self.max_record_limit = max_record_limit
 
-    def get_grouped_messages(self,
-                             source: DeclarativeSource,
-                             config: Mapping[str, Any],
-                             stream: str,
-                             record_limit: Optional[int] = None,
-    ) -> StreamRead:
+    def get_message_groups(self,
+                           source: DeclarativeSource,
+                           config: Mapping[str, Any],
+                           stream: str,
+                           record_limit: Optional[int] = None,
+                           ) -> StreamRead:
         if record_limit is not None and not (1 <= record_limit <= 1000):
             raise ValueError(f"Record limit must be between 1 and 1000. Got {record_limit}")
         schema_inferrer = SchemaInferrer()
