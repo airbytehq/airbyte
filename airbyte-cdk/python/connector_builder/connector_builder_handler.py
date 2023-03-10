@@ -217,8 +217,8 @@ class ConnectorBuilderHandler:
 
     @staticmethod
     def _close_page(current_page_request, current_page_response, current_slice_pages, current_page_records):
-        #if not current_page_request or not current_page_response:
-        #    raise ValueError("Every message grouping should have at least one request and response")
+        if not current_page_request or not current_page_response:
+            raise ValueError("Every message grouping should have at least one request and response")
 
         current_slice_pages.append(
             StreamReadPages(request=current_page_request, response=current_page_response, records=deepcopy(current_page_records))

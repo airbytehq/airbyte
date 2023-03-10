@@ -362,6 +362,24 @@ def test_read_stream_no_records():
     for i, actual_page in enumerate(single_slice.pages):
         assert actual_page == expected_pages[i]
 
+def test_read_stream_invalid_group_format():
+    response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
+
+    mock_source = make_mock_source(
+        iter(
+            [
+                response_log_message(response),
+                record_message("hashiras", {"name": "Shinobu Kocho"}),
+                record_message("hashiras", {"name": "Muichiro Tokito"}),
+            ]
+        )
+    )
+
+    api = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES)
+
+    with pytest.raises(ValueError) as actual_exception:
+        api.read_stream(source=mock_source, config=CONFIG, stream="hashiras")
+
 def make_mock_source(return_value: Iterator) -> MagicMock:
     mock_source = MagicMock()
     mock_source.read.return_value = return_value
