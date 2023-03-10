@@ -441,10 +441,9 @@ def test_read_stream_with_many_slices():
         )
     )
 
-    api = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES)
+    connecto_builder_handler = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES)
 
-    loop = asyncio.get_event_loop()
-    stream_read: StreamRead = api.read_stream(source=mock_source, config=CONFIG, stream="hashiras")
+    stream_read: StreamRead = connecto_builder_handler.read_stream(source=mock_source, config=CONFIG, stream="hashiras")
 
     assert not stream_read.test_read_limit_reached
     assert len(stream_read.slices) == 2
