@@ -75,11 +75,11 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
     def get_token_expiry_date(self) -> pendulum.DateTime:
         return self._token_expiry_date
 
-    def set_token_expiry_date(self, initial_time: pendulum.DateTime, value: Union[str, int]):
+    def set_token_expiry_date(self, value: Union[str, int]):
         if self._token_expiry_date_format:
             self._token_expiry_date = pendulum.from_format(value, self._token_expiry_date_format)
         else:
-            self._token_expiry_date = initial_time.add(seconds=value)
+            self._token_expiry_date = pendulum.now().add(seconds=value)
 
     @property
     def access_token(self) -> str:

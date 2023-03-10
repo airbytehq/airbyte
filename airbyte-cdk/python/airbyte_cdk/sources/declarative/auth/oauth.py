@@ -101,7 +101,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
 
         However, this class provides the ability to determine the expiry date of an access token either by using (pseudocode):
         * expiry_datetime = datetime.now() + seconds_till_access_token_expiry # in this option we have to calculate expiry timestamp, OR
-        * expiry_datetime = parse(response.headers["expires_at"]) # in this option the API tells us exactly when access token expires
+        * expiry_datetime = parse(response.body["expires_at"]) # in this option the API tells us exactly when access token expires
 
         :return: a tuple of (access_token, either token_lifespan_in_seconds or datetime_of_token_expiry)
 
@@ -115,11 +115,11 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     def get_token_expiry_date(self) -> pendulum.DateTime:
         return self._token_expiry_date
 
-    def set_token_expiry_date(self, initial_time: pendulum.DateTime, value: Union[str, int]):
+    def set_token_expiry_date(self, value: Union[str, int]):
         if self.token_expiry_date_format:
             self._token_expiry_date = pendulum.from_format(value, self.token_expiry_date_format)
         else:
-            self._token_expiry_date = initial_time.add(seconds=value)
+            self._token_expiry_date = pendulum.now().add(seconds=value)
 
     @property
     def access_token(self) -> str:
