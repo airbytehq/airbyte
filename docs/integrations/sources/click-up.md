@@ -50,6 +50,8 @@ Here are some optional fields for different streams:
 
 * `list_id`: Your list ID in your folder of space. It is required for `task` stream.
 
+* `Include Closed Tasks`: Toggle to include or exclude closed tasks. By default, they are excluded.
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject    |
