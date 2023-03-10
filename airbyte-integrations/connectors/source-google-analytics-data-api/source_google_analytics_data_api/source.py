@@ -19,7 +19,8 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from source_google_analytics_data_api import utils
 from source_google_analytics_data_api.utils import DATE_FORMAT
 
-from .utils import GoogleAnalyticsApiQuota, authenticator_class_map, get_dimensions_type, get_metrics_type, metrics_type_to_python
+from .api_quota import GoogleAnalyticsApiQuota
+from .utils import authenticator_class_map, get_dimensions_type, get_metrics_type, metrics_type_to_python
 
 # set the quota handler globaly since limitations are the same for all streams
 # the initial values should be saved once and tracked for each stream, inclusivelly.
@@ -61,10 +62,10 @@ class GoogleAnalyticsDataApiAbstractStream(HttpStream, ABC):
     def config(self):
         return self._config
 
-    # check and prepare the scenario for backoff, if applicable
-    @GoogleAnalyticsQuotaHandler.check_quota()
+    # handle the quota errors with prepared values for:
+    # `should_retry`, `backoff_time`, `raise_on_http_errors`, `stop_iter` based on quota scenario.
+    @GoogleAnalyticsQuotaHandler.handle_quota()
     def should_retry(self, response: requests.Response) -> bool:
-        # handle the error with prepared GoogleAnalyticsQuotaHandler should_retry value
         if response.status_code == requests.codes.too_many_requests:
             setattr(self, "raise_on_http_errors", GoogleAnalyticsQuotaHandler.raise_on_http_errors)
             return GoogleAnalyticsQuotaHandler.should_retry
