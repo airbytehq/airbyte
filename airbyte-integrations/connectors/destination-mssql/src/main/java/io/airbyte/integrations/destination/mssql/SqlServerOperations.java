@@ -35,7 +35,7 @@ public class SqlServerOperations implements SqlOperations {
         "IF NOT EXISTS (SELECT * FROM sys.tables t JOIN sys.schemas s ON t.schema_id = s.schema_id "
             + "WHERE s.name = '%s' AND t.name = '%s') "
             + "CREATE TABLE %s.%s ( \n"
-            + "%s VARCHAR(64) PRIMARY KEY,\n"
+            + "%s VARCHAR(64) PRIMARY KEY NONCLUSTERED NOT ENFORCED,\n"
             + "%s NVARCHAR(MAX),\n" // Microsoft SQL Server specific: NVARCHAR can store Unicode meanwhile VARCHAR - not
             + "%s DATETIMEOFFSET(7) DEFAULT SYSDATETIMEOFFSET()\n"
             + ");\n",
@@ -88,9 +88,9 @@ public class SqlServerOperations implements SqlOperations {
 
   @Override
   public String insertTableQuery(final JdbcDatabase database,
-                               final String schemaName,
-                               final String sourceTableName,
-                               final String destinationTableName) {
+                                 final String schemaName,
+                                 final String sourceTableName,
+                                 final String destinationTableName) {
     return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", schemaName, destinationTableName, schemaName, sourceTableName);
   }
 
