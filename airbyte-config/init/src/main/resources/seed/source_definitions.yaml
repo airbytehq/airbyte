@@ -2317,7 +2317,7 @@
 - name: ZohoCRM
   sourceDefinitionId: 4942d392-c7b5-4271-91f9-3b4f4e51eb3e
   dockerRepository: airbyte/source-zoho-crm
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/zoho-crm
   icon: zohocrm.svg
   sourceType: api
