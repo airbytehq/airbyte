@@ -191,6 +191,41 @@ class BaseClass(HttpStream):
                 self.read_invoice(item_list, new_list)
                 
     
+    # def parse_response(
+    #     self,
+    #     response: requests.Response,
+    #     stream_state: Mapping[str, Any],
+    #     stream_slice: Mapping[str, Any] = None,
+    #     next_page_token: Mapping[str, Any] = None,
+    # ):
+
+    #     logger.info("Parsing Response")
+
+    #     skips_list = [i for i in range(0,self.max_skip)]
+    #     item_list = ThreadSafeList()
+    #     threads_quantity = self.threads_quantity
+
+    #     threads = []
+    #     events = Event()
+    #     for chunk in self.chunker_list(skips_list, threads_quantity):
+    #         threads.append(Thread(target=self.read_invoice, args=(item_list, chunk)))
+
+    #     # start threads
+    #     for thread in threads:
+    #         thread.start()
+        
+    #     # wait for all threads
+    #     for thread in threads:
+    #         thread.join()
+        
+    #     return item_list.get_list()
+
+
+class Nfe(BaseClass):
+    xmltype = "nfe"
+    downloadevent = False
+    class_identifier = "NFe"
+
     def parse_response(
         self,
         response: requests.Response,
@@ -219,12 +254,6 @@ class BaseClass(HttpStream):
             thread.join()
         
         return item_list.get_list()
-
-
-class Nfe(BaseClass):
-    xmltype = "nfe"
-    downloadevent = False
-    class_identifier = "NFe"
 
     def get_created_at(self, xml_item):
         try:
@@ -277,6 +306,35 @@ class Cte(BaseClass):
     downloadevent = False
     class_identifier = "CTe"
 
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ):
+
+        logger.info("Parsing Response")
+
+        skips_list = [i for i in range(0,self.max_skip)]
+        item_list = ThreadSafeList()
+        threads_quantity = self.threads_quantity
+
+        threads = []
+        events = Event()
+        for chunk in self.chunker_list(skips_list, threads_quantity):
+            threads.append(Thread(target=self.read_invoice, args=(item_list, chunk)))
+
+        # start threads
+        for thread in threads:
+            thread.start()
+        
+        # wait for all threads
+        for thread in threads:
+            thread.join()
+        
+        return item_list.get_list()
+    
     def get_created_at(self, xml_item):
         try:
             return xml_item["cteProc"]["CTe"]["infCte"]["ide"]["dhEmi"]
@@ -300,15 +358,26 @@ class Cte(BaseClass):
         try:
             cnpj_emit = xml_item["cteProc"]["CTe"]["infCte"]["emit"]["CNPJ"]
         except:
-            cnpj_emit = None
+            try:
+                cnpj_emit = xml_item["cteOSProc"]["CTeOS"]["infCte"]["emit"]["CNPJ"]
+            except:
+                cnpj_emit = None
+
         try:
             cnpj_dest = xml_item["cteProc"]["CTe"]["infCte"]["dest"]["CNPJ"]
         except:
-            cnpj_dest = None
+            try:
+                cnpj_dest = xml_item["cteOSProc"]["CTeOS"]["infCte"]["dest"]["CNPJ"]
+            except:
+                cnpj_dest = None
+
         try:
             cnpj_inf = xml_item["cteProc"]["CTe"]["infCte"]["infRespTec"]["CNPJ"]
         except:
-            cnpj_inf = None
+            try:
+                cnpj_inf = xml_item["cteOSProc"]["CTeOS"]["infCte"]["infRespTec"]["CNPJ"]
+            except:
+                cnpj_inf = None
         
         cnpjs.append(cnpj_emit)
         cnpjs.append(cnpj_dest)
@@ -321,6 +390,35 @@ class NfeEvents(Nfe):
     downloadevent = True
     class_identifier = "Evento_NFe"
 
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ):
+
+        logger.info("Parsing Response")
+
+        skips_list = [i for i in range(0,self.max_skip)]
+        item_list = ThreadSafeList()
+        threads_quantity = self.threads_quantity
+
+        threads = []
+        events = Event()
+        for chunk in self.chunker_list(skips_list, threads_quantity):
+            threads.append(Thread(target=self.read_invoice, args=(item_list, chunk)))
+
+        # start threads
+        for thread in threads:
+            thread.start()
+        
+        # wait for all threads
+        for thread in threads:
+            thread.join()
+        
+        return item_list.get_list()
+
     def get_invoice_type(self, xml_item):
         return "evento_nfe"
 
@@ -328,6 +426,35 @@ class CteEvents(Cte):
     xmltype = "cte"
     downloadevent = True
     class_identifier = "Evento_CTe"
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ):
+
+        logger.info("Parsing Response")
+
+        skips_list = [i for i in range(0,self.max_skip)]
+        item_list = ThreadSafeList()
+        threads_quantity = self.threads_quantity
+
+        threads = []
+        events = Event()
+        for chunk in self.chunker_list(skips_list, threads_quantity):
+            threads.append(Thread(target=self.read_invoice, args=(item_list, chunk)))
+
+        # start threads
+        for thread in threads:
+            thread.start()
+        
+        # wait for all threads
+        for thread in threads:
+            thread.join()
+        
+        return item_list.get_list()
 
     def get_invoice_type(self, xml_item):
         return "evento_cte"
