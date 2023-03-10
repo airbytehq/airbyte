@@ -630,7 +630,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-bigquery:1.2.15"
+- dockerImage: "airbyte/destination-bigquery:1.2.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/bigquery"
     connectionSpecification:
@@ -840,7 +840,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:1.2.15"
+- dockerImage: "airbyte/destination-bigquery-denormalized:1.2.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/bigquery"
     connectionSpecification:
@@ -5055,7 +5055,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-redshift:0.4.1"
+- dockerImage: "airbyte/destination-redshift:0.4.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/redshift"
     connectionSpecification:
@@ -6151,7 +6151,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.51"
+- dockerImage: "airbyte/destination-snowflake:0.4.52"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/snowflake"
     connectionSpecification:
