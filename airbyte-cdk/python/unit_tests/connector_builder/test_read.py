@@ -2,14 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import asyncio
-import json
 from unittest.mock import MagicMock
 
 import pytest
-from pydantic.error_wrappers import ValidationError
 
-from airbyte_cdk.models import Level, Type
+from airbyte_cdk.models import Level
 from connector_builder.connector_builder_handler import *
 
 MAX_PAGES_PER_SLICE = 4
