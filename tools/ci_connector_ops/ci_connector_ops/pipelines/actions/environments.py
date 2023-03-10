@@ -21,6 +21,7 @@ CONNECTOR_TESTING_REQUIREMENTS = [
     "isort==5.6.4",
     "pytest==6.2.5",
     "coverage[toml]==6.3.1",
+    "pytest-custom_exit_code",
 ]
 
 INSTALL_LOCAL_REQUIREMENTS_CMD = ["python", "-m", "pip", "install", "-r", "requirements.txt"]
@@ -169,4 +170,4 @@ async def with_ci_connector_ops(context: ConnectorTestContext) -> Container:
     """
     python_base_environment: Container = await with_python_base(context, "python:3-alpine")
     python_with_git = python_base_environment.with_exec(["apk", "add", "gcc", "libffi-dev", "musl-dev", "git"])
-    return await with_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH)
+    return await with_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH, exclude=["pipelines"])

@@ -6,7 +6,7 @@
 
 import json
 import uuid
-from typing import Optional, Tuple
+from typing import Tuple
 
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
@@ -19,7 +19,17 @@ RUN_ISORT_CMD = ["python", "-m", "isort", f"--settings-file=/{environments.PYPRO
 RUN_FLAKE_CMD = ["python", "-m", "pflake8", f"--config=/{environments.PYPROJECT_TOML_FILE_PATH}", "."]
 
 
-async def _run_tests_in_directory(connector_under_test: Container, test_directory: str) -> Tuple[StepStatus, Optional[str], Optional[str]]:
+def pytest_logs_to_step_result(logs: str, step: Step) -> StepResult:
+    last_log_line = logs.split("\n")[-2]
+    if "failed" in last_log_line:
+        return StepResult(step, StepStatus.FAILURE, stderr=logs)
+    elif "no tests ran" in last_log_line:
+        return StepResult(step, StepStatus.SKIPPED, stdout=logs)
+    else:
+        return StepResult(step, StepStatus.SUCCESS, stdout=logs)
+
+
+async def _run_tests_in_directory(connector_under_test: Container, test_directory: str, step: Step) -> StepResult:
     """Runs the pytest tests in the test_directory that was passed.
     A StepStatus.SKIPPED is returned if no tests were discovered.
     Args:
@@ -38,16 +48,18 @@ async def _run_tests_in_directory(connector_under_test: Container, test_director
                 "python",
                 "-m",
                 "pytest",
+                "--suppress-tests-failed-exit-code",
+                "--suppress-no-test-exit-code",
                 "-s",
                 test_directory,
                 "-c",
                 test_config,
             ]
         )
-        return StepStatus.from_exit_code(await with_exit_code(tester)), await with_stderr(tester), await with_stdout(tester)
+        return pytest_logs_to_step_result(await tester.stdout(), step)
 
     else:
-        return StepStatus.SKIPPED, None, None
+        return StepResult(step, StepStatus.SKIPPED)
 
 
 async def code_format_checks(connector_under_test: Container, step=Step.CODE_FORMAT_CHECKS) -> StepResult:
@@ -91,13 +103,7 @@ async def run_unit_tests(connector_under_test: Container, step=Step.UNIT_TESTS) 
         StepResult: Failure or success of the unit tests with stdout and stdout.
     """
     connector_under_test = step.get_dagger_pipeline(connector_under_test)
-    step_status, stderr, stdout = await _run_tests_in_directory(connector_under_test, "unit_tests")
-    return StepResult(
-        step,
-        step_status,
-        stderr=stderr,
-        stdout=stdout,
-    )
+    return await _run_tests_in_directory(connector_under_test, "unit_tests", step)
 
 
 async def run_integration_tests(connector_under_test: Container, step=Step.INTEGRATION_TESTS) -> StepStatus:
@@ -111,13 +117,7 @@ async def run_integration_tests(connector_under_test: Container, step=Step.INTEG
         StepResult: Failure or success of the integration tests with stdout and stdout.
     """
     connector_under_test = step.get_dagger_pipeline(connector_under_test)
-    step_status, stderr, stdout = await _run_tests_in_directory(connector_under_test, "integration_tests")
-    return StepResult(
-        step,
-        step_status,
-        stderr=stderr,
-        stdout=stdout,
-    )
+    return await _run_tests_in_directory(connector_under_test, "integration_tests", step)
 
 
 async def run_acceptance_tests(
@@ -151,7 +151,7 @@ async def run_acceptance_tests(
         .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume("docker-lib"), sharing=CacheSharingMode.PRIVATE)
         .with_mounted_cache("/tmp", dagger_client.cache_volume("share-tmp"))
         .with_exposed_port(2375)
-        .with_exec(["dockerd", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
+        .with_exec(["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
     )
     docker_host = await dockerd.endpoint(scheme="tcp")
 
@@ -173,12 +173,14 @@ async def run_acceptance_tests(
 
     cat_container = (
         cat_container.with_env_variable("DOCKER_HOST", docker_host)
+        .with_entrypoint(["pip"])
+        .with_exec(["install", "pytest-custom_exit_code"])
         .with_service_binding("docker", dockerd)
         .with_mounted_cache("/tmp", dagger_client.cache_volume("share-tmp"))
         .with_mounted_directory("/test_input", context.get_connector_dir(exclude=["secrets", ".venv"]))
         .with_directory("/test_input/secrets", context.secrets_dir)
         .with_workdir("/test_input")
-        .with_entrypoint(["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "-r", "fEsx"])
+        .with_entrypoint(["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "--suppress-tests-failed-exit-code"])
         .with_env_variable("CACHEBUSTER", acceptance_test_cache_buster)
         .with_exec(["--acceptance-test-config", "/test_input"])
     )
@@ -191,15 +193,7 @@ async def run_acceptance_tests(
                 updated_secrets_dir = secret_dir
                 break
 
-    return (
-        StepResult(
-            step,
-            StepStatus.from_exit_code(await with_exit_code(cat_container)),
-            stderr=await with_stderr(cat_container),
-            stdout=await with_stdout(cat_container),
-        ),
-        updated_secrets_dir,
-    )
+    return (pytest_logs_to_step_result(await cat_container.stdout(), step), updated_secrets_dir)
 
 
 async def run_qa_checks(context: ConnectorTestContext, step=Step.QA_CHECKS) -> StepResult:

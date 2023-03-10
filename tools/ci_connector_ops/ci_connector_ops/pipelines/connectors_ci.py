@@ -115,7 +115,7 @@ async def run(test_context: ConnectorTestContext) -> ConnectorTestReport:
         test_context.state = ContextState.RUNNING
         async with anyio.create_task_group() as tg:
             tg.start_soon(asyncify(update_commit_status_check), test_context)
-        qa_checks_results_future = asyncio.create_task(tests.run_qa_checks(test_context))
+        qa_checks_results = await tests.run_qa_checks(test_context)
         connector_source_code = await environments.with_airbyte_connector(test_context, install=False)
         connector_under_test = await environments.with_airbyte_connector(test_context)
 
@@ -131,7 +131,6 @@ async def run(test_context: ConnectorTestContext) -> ConnectorTestReport:
             acceptance_tests_results, test_context.updated_secrets_dir = await tests.run_acceptance_tests(
                 test_context,
             )
-
             integration_tests_result = await integration_test_future
 
         else:
@@ -146,13 +145,13 @@ async def run(test_context: ConnectorTestContext) -> ConnectorTestReport:
                 unit_tests_results,
                 integration_tests_result,
                 acceptance_tests_results,
-                await qa_checks_results_future,
+                qa_checks_results,
             ],
         )
-
         test_context.state = ContextState.FINISHED
 
     except Exception as e:
+
         test_context.state = ContextState.FAILED
         test_context.logger.error(str(e))
 
@@ -221,7 +220,9 @@ def connectors_ci(
     ctx.obj["git_revision"] = git_revision
     ctx.obj["modified_files"] = get_modified_files(git_revision, diffed_branch, is_local)
     ctx.obj["gha_workflow_run_id"] = gha_workflow_run_id
-    ctx.obj["gha_workflow_run_url"] = f"https://github.com/airbytehq/airbyte/actions/runs/{gha_workflow_run_id}"
+    ctx.obj["gha_workflow_run_url"] = (
+        f"https://github.com/airbytehq/airbyte/actions/runs/{gha_workflow_run_id}" if gha_workflow_run_id else None
+    )
 
 
 @connectors_ci.command()
@@ -259,7 +260,7 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
         connectors_under_test = {connector for connector in connectors_under_test if connector.release_stage in release_stages}
     connectors_under_test_names = [c.technical_name for c in connectors_under_test]
     if connectors_under_test_names:
-        click.secho(f"Will run test pipeline for the following connectors: {', '.join(connectors_under_test_names)}.", fg="green")
+        click.secho(f"Will run the test pipeline for the following connectors: {', '.join(connectors_under_test_names)}.", fg="green")
     else:
         click.secho("No connector test will run according to your inputs.", fg="yellow")
         sys.exit(0)
