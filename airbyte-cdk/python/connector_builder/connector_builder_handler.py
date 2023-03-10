@@ -5,9 +5,6 @@
 import dataclasses
 from datetime import datetime
 from typing import Any, Mapping
-from typing import Union
-
-from airbyte_protocol.models.airbyte_protocol import ConfiguredAirbyteCatalog
 
 from airbyte_cdk.models import AirbyteRecordMessage, AirbyteMessage
 from airbyte_cdk.models import Type as MessageType

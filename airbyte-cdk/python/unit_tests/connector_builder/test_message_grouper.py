@@ -1,13 +1,16 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+from typing import Iterator
 from unittest.mock import MagicMock
 
 import pytest
 
-from airbyte_cdk.models import Level
-from connector_builder.message_grouper import *
+from airbyte_cdk.models import Level, AirbyteMessage, AirbyteRecordMessage, AirbyteLogMessage
+from connector_builder.message_grouper import MessageGrouper
+from connector_builder.models import StreamReadPages, HttpRequest, HttpResponse, StreamRead
+from airbyte_cdk.models import Type as MessageType
+import json
 
 MAX_PAGES_PER_SLICE = 4
 MAX_SLICES = 3
@@ -70,6 +73,7 @@ MANIFEST = {
 
 CONFIG = {"rank": "upper-six"}
 
+
 def test_get_grouped_messages():
     request = {
         "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
@@ -126,6 +130,7 @@ def test_get_grouped_messages():
     for i, actual_page in enumerate(single_slice.pages):
         assert actual_page == expected_pages[i]
 
+
 def test_get_grouped_messages_with_logs():
     request = {
         "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
@@ -167,26 +172,27 @@ def test_get_grouped_messages_with_logs():
     mock_source = make_mock_source(
         iter(
             [
-                AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="log message before the request")),
+                AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message="log message before the request")),
                 request_log_message(request),
                 response_log_message(response),
                 record_message("hashiras", {"name": "Shinobu Kocho"}),
-                AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="log message during the page")),
+                AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message="log message during the page")),
                 record_message("hashiras", {"name": "Muichiro Tokito"}),
-                AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="log message after the response")),
+                AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message="log message after the response")),
             ]
         )
     )
 
     connector_builder_handler = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
 
-    actual_response: AirbyteMessage = connector_builder_handler.get_message_groups(source=mock_source, config=CONFIG, stream="hashiras")
+    actual_response: StreamRead = connector_builder_handler.get_message_groups(source=mock_source, config=CONFIG, stream="hashiras")
     single_slice = actual_response.slices[0]
     for i, actual_page in enumerate(single_slice.pages):
         assert actual_page == expected_pages[i]
 
     for i, actual_log in enumerate(actual_response.logs):
         assert actual_log == expected_logs[i]
+
 
 @pytest.mark.parametrize(
     "request_record_limit, max_record_limit",
@@ -220,12 +226,13 @@ def test_get_grouped_messages_record_limit(request_record_limit, max_record_limi
     record_limit = min(request_record_limit, max_record_limit)
 
     api = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES, max_record_limit=max_record_limit)
-    actual_response: StreamRead =  api.get_message_groups(mock_source, config=CONFIG, stream="hashiras", record_limit=request_record_limit)
+    actual_response: StreamRead = api.get_message_groups(mock_source, config=CONFIG, stream="hashiras", record_limit=request_record_limit)
     single_slice = actual_response.slices[0]
     total_records = 0
     for i, actual_page in enumerate(single_slice.pages):
         total_records += len(actual_page.records)
     assert total_records == min([record_limit, n_records])
+
 
 @pytest.mark.parametrize(
     "max_record_limit",
@@ -265,6 +272,7 @@ def test_get_grouped_messages_default_record_limit(max_record_limit):
         total_records += len(actual_page.records)
     assert total_records == min([max_record_limit, n_records])
 
+
 def test_get_grouped_messages_limit_0():
     request = {
         "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
@@ -290,6 +298,7 @@ def test_get_grouped_messages_limit_0():
 
     with pytest.raises(ValueError):
         api.get_message_groups(source=mock_source, config=CONFIG, stream="hashiras", record_limit=0)
+
 
 def test_get_grouped_messages_no_records():
     request = {
@@ -335,13 +344,14 @@ def test_get_grouped_messages_no_records():
         )
     )
 
-    api = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
+    message_grouper = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
 
-    actual_response: AirbyteMessage = api.get_message_groups(source=mock_source, config=CONFIG, stream="hashiras")
+    actual_response: StreamRead = message_grouper.get_message_groups(source=mock_source, config=CONFIG, stream="hashiras")
 
     single_slice = actual_response.slices[0]
     for i, actual_page in enumerate(single_slice.pages):
         assert actual_page == expected_pages[i]
+
 
 def test_get_grouped_messages_invalid_group_format():
     response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
@@ -360,6 +370,7 @@ def test_get_grouped_messages_invalid_group_format():
 
     with pytest.raises(ValueError) as actual_exception:
         api.get_message_groups(source=mock_source, config=CONFIG, stream="hashiras")
+
 
 @pytest.mark.parametrize(
     "log_message, expected_response",
@@ -413,6 +424,7 @@ def test_create_response_from_log_message(log_message, expected_response):
 
     assert actual_response == expected_response
 
+
 def test_get_grouped_messages_with_many_slices():
     request = {}
     response = {"status_code": 200}
@@ -453,6 +465,7 @@ def test_get_grouped_messages_with_many_slices():
     assert len(stream_read.slices[1].pages[1].records) == 1
     assert len(stream_read.slices[1].pages[2].records) == 0
 
+
 def test_get_grouped_messages_given_maximum_number_of_slices_then_test_read_limit_reached():
     maximum_number_of_slices = 5
     request = {}
@@ -466,6 +479,7 @@ def test_get_grouped_messages_given_maximum_number_of_slices_then_test_read_limi
     stream_read: StreamRead = api.get_message_groups(source=mock_source, config=CONFIG, stream="hashiras")
 
     assert stream_read.test_read_limit_reached
+
 
 def test_get_grouped_messages_given_maximum_number_of_pages_then_test_read_limit_reached():
     maximum_number_of_pages_per_slice = 5
@@ -481,23 +495,24 @@ def test_get_grouped_messages_given_maximum_number_of_pages_then_test_read_limit
 
     assert stream_read.test_read_limit_reached
 
+
 def make_mock_source(return_value: Iterator) -> MagicMock:
     mock_source = MagicMock()
     mock_source.read.return_value = return_value
     return mock_source
 
+
 def request_log_message(request: dict) -> AirbyteMessage:
-    return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=f"request:{json.dumps(request)}"))
+    return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=f"request:{json.dumps(request)}"))
 
 
 def response_log_message(response: dict) -> AirbyteMessage:
-    return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=f"response:{json.dumps(response)}"))
+    return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=f"response:{json.dumps(response)}"))
 
 
 def record_message(stream: str, data: dict) -> AirbyteMessage:
-    return AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data=data, emitted_at=1234))
+    return AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(stream=stream, data=data, emitted_at=1234))
 
 
 def slice_message() -> AirbyteMessage:
-    return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message='slice:{"key": "value"}'))
-
+    return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message='slice:{"key": "value"}'))
