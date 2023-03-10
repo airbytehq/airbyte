@@ -1157,6 +1157,10 @@
   icon: mssql.svg
   sourceType: database
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${host}"
+      - "${tunnel_method.tunnel_host}"
 - name: Microsoft teams
   sourceDefinitionId: eaf50f04-21dd-4620-913b-2a83f5635227
   dockerRepository: airbyte/source-microsoft-teams
@@ -1216,6 +1220,10 @@
   icon: mysql.svg
   sourceType: database
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - "${host}"
+      - "${tunnel_method.tunnel_host}"
 - name: n8n
   sourceDefinitionId: 4a961f66-5e99-4430-8320-a73afe52f7a2
   dockerRepository: airbyte/source-n8n
