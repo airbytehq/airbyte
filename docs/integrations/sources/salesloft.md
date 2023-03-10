@@ -91,7 +91,7 @@ Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Top
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------|
-| 1.0.0   | 2023-03-08 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Certify to Beta                                                   |
+| 1.0.0   | 2023-03-08 | [23937](https://github.com/airbytehq/airbyte/pull/23937) | Certify to Beta                                                   |
 | 0.1.6   | 2023-03-07 | [22893](https://github.com/airbytehq/airbyte/pull/22893) | Specified date formatting in specification                        |
 | 0.1.5   | 2023-03-07 | [23828](https://github.com/airbytehq/airbyte/pull/23828) | Use `start_date` to filter data                                   |
 | 0.1.4   | 2023-02-28 | [23564](https://github.com/airbytehq/airbyte/pull/23564) | Allow additional properties in spec and stream schemas            |
