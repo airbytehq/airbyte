@@ -58,25 +58,25 @@ class BaseClass(HttpStream):
                 return merchant_uid
         return None
 
-    # def request_body_json(
-    #     self,
-    #     stream_state: Mapping[str, Any],
-    #     stream_slice: Mapping[str, Any] = None,
-    #     next_page_token: Mapping[str, Any] = None,
-    # ) -> Optional[Mapping]:
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
 
-    #     payload = {
-    #         "apikey": self.api_key,
-    #         "email": self.email,
-    #         "xmltype": self.xmltype,
-    #         "take": self.take,
-    #         "skip": self.skip,
-    #         "dataInicio": self.start_date,
-    #         "dataFim": self.end_date,
-    #         "downloadevent": self.downloadevent
-    #     }
+        payload = {
+            "apikey": self.api_key,
+            "email": self.email,
+            "xmltype": self.xmltype,
+            "take": self.take,
+            "skip": self.skip,
+            "dataInicio": self.start_date,
+            "dataFim": self.end_date,
+            "downloadevent": self.downloadevent
+        }
 
-    #     return payload
+        return payload
 
     def get_payload_skip(self, skip):
         payload = {
@@ -102,6 +102,12 @@ class BaseClass(HttpStream):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "aws/api-xml-search.ashx"
+    
 
     def format_xml(
         self,
@@ -185,6 +191,41 @@ class BaseClass(HttpStream):
                 self.read_invoice(item_list, new_list)
                 
     
+    # def parse_response(
+    #     self,
+    #     response: requests.Response,
+    #     stream_state: Mapping[str, Any],
+    #     stream_slice: Mapping[str, Any] = None,
+    #     next_page_token: Mapping[str, Any] = None,
+    # ):
+
+    #     logger.info("Parsing Response")
+
+    #     skips_list = [i for i in range(0,self.max_skip)]
+    #     item_list = ThreadSafeList()
+    #     threads_quantity = self.threads_quantity
+
+    #     threads = []
+    #     events = Event()
+    #     for chunk in self.chunker_list(skips_list, threads_quantity):
+    #         threads.append(Thread(target=self.read_invoice, args=(item_list, chunk)))
+
+    #     # start threads
+    #     for thread in threads:
+    #         thread.start()
+        
+    #     # wait for all threads
+    #     for thread in threads:
+    #         thread.join()
+        
+    #     return item_list.get_list()
+
+
+class Nfe(BaseClass):
+    xmltype = "nfe"
+    downloadevent = False
+    class_identifier = "NFe"
+
     def parse_response(
         self,
         response: requests.Response,
@@ -213,40 +254,6 @@ class BaseClass(HttpStream):
             thread.join()
         
         return item_list.get_list()
-
-
-class Nfe(BaseClass):
-    xmltype = "nfe"
-    downloadevent = False
-    class_identifier = "NFe"
-
-    def __init__(self, config: Mapping[str, Any], **kwargs):
-        super().__init__()
-
-    def request_body_json(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Optional[Mapping]:
-
-        payload = {
-            "apikey": self.api_key,
-            "email": self.email,
-            "xmltype": self.xmltype,
-            "take": self.take,
-            "skip": self.skip,
-            "dataInicio": self.start_date,
-            "dataFim": self.end_date,
-            "downloadevent": self.downloadevent
-        }
-
-        return payload
-    
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "aws/api-xml-search.ashx"
 
     def get_created_at(self, xml_item):
         try:
@@ -299,33 +306,34 @@ class Cte(BaseClass):
     downloadevent = False
     class_identifier = "CTe"
 
-    def __init__(self, config: Mapping[str, Any], **kwargs):
-        super().__init__()
-
-    def request_body_json(
+    def parse_response(
         self,
+        response: requests.Response,
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ) -> Optional[Mapping]:
+    ):
 
-        payload = {
-            "apikey": self.api_key,
-            "email": self.email,
-            "xmltype": self.xmltype,
-            "take": self.take,
-            "skip": self.skip,
-            "dataInicio": self.start_date,
-            "dataFim": self.end_date,
-            "downloadevent": self.downloadevent
-        }
+        logger.info("Parsing Response")
 
-        return payload
-    
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "aws/api-xml-search.ashx"
+        skips_list = [i for i in range(0,self.max_skip)]
+        item_list = ThreadSafeList()
+        threads_quantity = self.threads_quantity
+
+        threads = []
+        events = Event()
+        for chunk in self.chunker_list(skips_list, threads_quantity):
+            threads.append(Thread(target=self.read_invoice, args=(item_list, chunk)))
+
+        # start threads
+        for thread in threads:
+            thread.start()
+        
+        # wait for all threads
+        for thread in threads:
+            thread.join()
+        
+        return item_list.get_list()
     
     def get_created_at(self, xml_item):
         try:
@@ -377,76 +385,76 @@ class Cte(BaseClass):
         
         return cnpjs
 
-
 class NfeEvents(Nfe):
     xmltype = "nfe"
     downloadevent = True
     class_identifier = "Evento_NFe"
 
-    def __init__(self, config: Mapping[str, Any], **kwargs):
-        super().__init__()
-
-    def request_body_json(
+    def parse_response(
         self,
+        response: requests.Response,
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ) -> Optional[Mapping]:
+    ):
 
-        payload = {
-            "apikey": self.api_key,
-            "email": self.email,
-            "xmltype": self.xmltype,
-            "take": self.take,
-            "skip": self.skip,
-            "dataInicio": self.start_date,
-            "dataFim": self.end_date,
-            "downloadevent": self.downloadevent
-        }
+        logger.info("Parsing Response")
 
-        return payload
-    
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "aws/api-xml-search.ashx"
+        skips_list = [i for i in range(0,self.max_skip)]
+        item_list = ThreadSafeList()
+        threads_quantity = self.threads_quantity
+
+        threads = []
+        events = Event()
+        for chunk in self.chunker_list(skips_list, threads_quantity):
+            threads.append(Thread(target=self.read_invoice, args=(item_list, chunk)))
+
+        # start threads
+        for thread in threads:
+            thread.start()
+        
+        # wait for all threads
+        for thread in threads:
+            thread.join()
+        
+        return item_list.get_list()
 
     def get_invoice_type(self, xml_item):
         return "evento_nfe"
-
 
 class CteEvents(Cte):
     xmltype = "cte"
     downloadevent = True
     class_identifier = "Evento_CTe"
 
-    def __init__(self, config: Mapping[str, Any], **kwargs):
-        super().__init__()
-
-    def request_body_json(
+    def parse_response(
         self,
+        response: requests.Response,
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ) -> Optional[Mapping]:
+    ):
 
-        payload = {
-            "apikey": self.api_key,
-            "email": self.email,
-            "xmltype": self.xmltype,
-            "take": self.take,
-            "skip": self.skip,
-            "dataInicio": self.start_date,
-            "dataFim": self.end_date,
-            "downloadevent": self.downloadevent
-        }
+        logger.info("Parsing Response")
 
-        return payload
-    
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "aws/api-xml-search.ashx"
+        skips_list = [i for i in range(0,self.max_skip)]
+        item_list = ThreadSafeList()
+        threads_quantity = self.threads_quantity
+
+        threads = []
+        events = Event()
+        for chunk in self.chunker_list(skips_list, threads_quantity):
+            threads.append(Thread(target=self.read_invoice, args=(item_list, chunk)))
+
+        # start threads
+        for thread in threads:
+            thread.start()
+        
+        # wait for all threads
+        for thread in threads:
+            thread.join()
+        
+        return item_list.get_list()
 
     def get_invoice_type(self, xml_item):
         return "evento_cte"
