@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "csat_response": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "overall_rating": {
+          "type": "integer"
+        },
+        "overall_rating_text": {
+          "type": "string"
+        },
+        "primary_question": {
+          "type": "string"
+        },
+        "questionnaire_responses": {
+          "type": "array",
+          "items": [
+            {
+              "type": "object",
+              "properties": {
+                "question": {
+                  "type": "object",
+                  "properties": {
+                    "question_text": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "question_text"
+                  ]
+                },
+                "answers": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "answer_text": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "answer_text"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "question",
+                "answers"
+              ]
+            }
+          ]
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "overall_rating",
+        "overall_rating_text",
+        "primary_question",
+        "questionnaire_responses",
+        "created_at",
+        "updated_at"
+      ]
+    }
+  },
+  "required": [
+    "csat_response"
+  ]
+}
