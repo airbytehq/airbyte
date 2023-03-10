@@ -8,12 +8,10 @@ from source_google_analytics_data_api.api_quota import GoogleAnalyticsApiQuota
 
 TEST_QUOTA_INSTANCE: GoogleAnalyticsApiQuota = GoogleAnalyticsApiQuota()
 
-    
+
 @pytest.fixture(name='expected_quota_list')
 def expected_quota_list():
-    """
-    The Quota weare currently handle.
-    """
+    """ The Quota were currently handle """
     return ['concurrentRequests', 'tokensPerProjectPerHour']
 
 
@@ -21,7 +19,7 @@ def test_check_initial_quota_is_empty():
     """
     Check the initial quota property is empty (== None), but ready to be fullfield.
     """
-    assert not TEST_QUOTA_INSTANCE.initial_quota      
+    assert not TEST_QUOTA_INSTANCE.initial_quota
 
 
 @pytest.mark.parametrize(
@@ -66,7 +64,8 @@ def test_check_initial_quota_is_empty():
                     },
                     'tokensPerProjectPerHour': {
                         'consumed': 5,
-                        'remaining': 172 # ~9% from original quota is left
+                        # ~9% from original quota is left
+                        'remaining': 172
                     }
                 }
             },
@@ -77,11 +76,12 @@ def test_check_initial_quota_is_empty():
                 'propertyQuota': {
                     'concurrentRequests': {
                         'consumed': 9,
-                        'remaining': 1 # 10% from original quota is left
+                        # 10% from original quota is left
+                        'remaining': 1
                     },
                     'tokensPerProjectPerHour': {
                         'consumed': 5,
-                        'remaining': 935 
+                        'remaining': 935
                     }
                 }
             },
@@ -97,7 +97,7 @@ def test_check_initial_quota_is_empty():
 )
 def test_check_full_quota(
     requests_mock,
-    expected_quota_list, 
+    expected_quota_list,
     response_quota,
     partial_quota,
     should_retry_exp,
@@ -116,17 +116,17 @@ def test_check_full_quota(
     response = requests.post(url)
     # process and prepare the scenario
     TEST_QUOTA_INSTANCE._check_quota(response)
-    
+
     # TEST BLOCK
-    
+
     # Check the INITIAL QUOTA is saved properly
     assert [quota in expected_quota_list for quota in TEST_QUOTA_INSTANCE.initial_quota.keys()]
-    
+
     # Check the CURRENT QUOTA is different from Initial
     if partial_quota:
         current_quota = TEST_QUOTA_INSTANCE._get_known_quota_from_response(response.json().get('propertyQuota'))
         assert not current_quota == TEST_QUOTA_INSTANCE.initial_quota
-    
+
     # Check the scenario is applied based on Quota Values
     # should_retry
     assert TEST_QUOTA_INSTANCE.should_retry is should_retry_exp
