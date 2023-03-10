@@ -148,7 +148,7 @@ def connectors_ci(
         logger=logger,
     )
 
-    ctx.obj["modified_files"] = get_modified_files(git_revision, diffed_branch, is_local)
+    ctx.obj["modified_files"] = get_modified_files(git_branch, git_revision, diffed_branch, is_local)
 
 
 @connectors_ci.command()

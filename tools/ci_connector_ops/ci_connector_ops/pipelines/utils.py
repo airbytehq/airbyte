@@ -103,16 +103,28 @@ def get_current_git_revision() -> str:
     return git.Repo().head.object.hexsha
 
 
-async def get_modified_files_remote(current_git_revision: str, diffed_branch: str = "origin/master") -> Set[str]:
+async def get_modified_files_remote(current_git_branch: str, current_git_revision: str, diffed_branch: str = "origin/master") -> Set[str]:
     async with Connection(DAGGER_CONFIG) as dagger_client:
         modified_files = await (
             dagger_client.container()
             .from_("alpine/git:latest")
             .with_workdir("/repo")
-            .with_exec(["clone", AIRBYTE_REPO_URL, "."])
+            .with_exec(["init"])
             .with_env_variable("CACHEBUSTER", current_git_revision)
-            .with_exec(["fetch"])
-            .with_exec(["checkout", current_git_revision])
+            .with_exec(
+                [
+                    "remote",
+                    "add",
+                    "--fetch",
+                    "--track",
+                    diffed_branch.split("/")[-1],
+                    "--track",
+                    current_git_branch,
+                    "origin",
+                    AIRBYTE_REPO_URL,
+                ]
+            )
+            .with_exec(["checkout", "-t", f"origin/{current_git_branch}"])
             .with_exec(["diff", "--diff-filter=MA", "--name-only", f"{diffed_branch}...{current_git_revision}"])
             .stdout()
         )
@@ -125,11 +137,11 @@ def get_modified_files_local(current_git_revision: str, diffed_branch: str = "ma
     return set(modified_files)
 
 
-def get_modified_files(current_git_revision: str, diffed_branch: str, is_local: bool = True) -> Set[str]:
+def get_modified_files(current_git_branch: str, current_git_revision: str, diffed_branch: str, is_local: bool = True) -> Set[str]:
     if is_local:
         return get_modified_files_local(current_git_revision, diffed_branch)
     else:
-        return anyio.run(get_modified_files_remote, current_git_revision, diffed_branch)
+        return anyio.run(get_modified_files_remote, current_git_branch, current_git_revision, diffed_branch)
 
 
 def get_modified_connectors(modified_files: Set[str]) -> Set[Connector]:
