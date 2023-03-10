@@ -102,6 +102,14 @@
         "examples": [30, 60, 90, 120, 200, 364],
         "default": 1,
         "order": 4
+      },
+      "lookback_window": {
+        "type": "integer",
+        "title": "Days in the past that we should refresh data",
+        "description": "Since Google Analytics has a data processing latency, we should specify how many days in the past we should refresh the data",
+        "examples": [2,3,4,7,28],
+        "default": 2,
+        "order": 5
       }
     }
   },
