@@ -13,7 +13,7 @@ from dataclasses import asdict, dataclass
 from copy import deepcopy
 import json
 from json import JSONDecodeError
-from typing import Any, Dict, Iterable, Iterator, Optional, Union
+from typing import Any, Dict, Iterable, Iterator, Mapping, Optional, Union
 from urllib.parse import parse_qs, urlparse
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
@@ -75,7 +75,6 @@ class StreamReadRequestBody:
     record_limit: Optional[int]
 
     def __post_init__(self):
-        print(self.record_limit)
         raise ValueError("here")
         if not (1 <= self.record_limit <= 1000):
             raise ValueError("") #FIXME
@@ -118,7 +117,7 @@ class ConnectorBuilderHandler:
     def read_stream(
             self,
             source: DeclarativeSource,
-            config: Dict[str, Any],
+            config: Mapping[str, Any],
             stream: str,
             record_limit: Optional[int] = None,
     ) -> StreamRead:
@@ -196,7 +195,6 @@ class ConnectorBuilderHandler:
             elif message.type == Type.LOG:
                 yield message.log
             elif message.type == Type.RECORD:
-                print(f"record! {message.record.data}")
                 current_page_records.append(message.record.data)
                 records_count += 1
                 schema_inferrer.accumulate(message.record)

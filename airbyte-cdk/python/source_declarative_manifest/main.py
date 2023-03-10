@@ -4,9 +4,13 @@
 
 
 import argparse
+import dataclasses
 import sys
 from typing import Any, List, Mapping, Tuple
 
+from airbyte_cdk.models import AirbyteRecordMessage, AirbyteMessage, Level, SyncMode
+
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.connector import BaseConnector
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
@@ -15,10 +19,12 @@ from connector_builder import connector_builder_handler
 from airbyte_protocol.models.airbyte_protocol import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, SyncMode, DestinationSyncMode
 import logging
 
+from connector_builder.connector_builder_handler import _emitted_at
 
-def create_source(config: Mapping[str, Any]) -> DeclarativeSource:
+
+def create_source(config: Mapping[str, Any], debug) -> DeclarativeSource:
     manifest = config.get("__injected_declarative_manifest")
-    return ManifestDeclarativeSource(manifest)
+    return ManifestDeclarativeSource(manifest, debug)
 
 
 def get_config_from_args(args: List[str]) -> Mapping[str, Any]:
@@ -44,22 +50,28 @@ def preparse(args: List[str]) -> Tuple[str, str, str]:
     return parsed.command, parsed.config
 
 
-def execute_command(source: DeclarativeSource, config: Mapping[str, Any]):
+def execute_command(source: DeclarativeSource, config: Mapping[str, Any]) -> AirbyteMessage:
     command = config.get("__command")
     command_config = config.get("__command_config")
     if command == "resolve_manifest":
         return connector_builder_handler.resolve_manifest(source)
     elif command == "read":
         stream_name = command_config["stream_name"]
-        configured_catalog = create_configure_catalog(stream_name)
-        logger = logging.getLogger(f"airbyte.{source.name}")
-        return source.read(logger, config, configured_catalog, None)
+        max_pages_per_slice = command_config["max_pages_per_slice"]
+        max_slices = command_config["max_slices"]
+        max_record_limit = command_config["max_records"]
+        handler = connector_builder_handler.ConnectorBuilderHandler(max_pages_per_slice, max_slices)
+        stream_read = handler.read_stream(source, config, stream_name, max_record_limit)
+        return AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(
+            data=dataclasses.asdict(stream_read),
+            stream="_test_read",
+            emitted_at=_emitted_at() #FIXME need to move to connector_builder_handler
+        ))
     raise ValueError(f"Unrecognized command {command}.")
 
 def handle_connector_builder_request(source: DeclarativeSource, config: Mapping[str, Any]):
-    messages = execute_command(source, config)
-    for message in messages:
-        print(message.json(exclude_unset=True))
+    message = execute_command(source, config)
+    print(message.json(exclude_unset=True))
 
 
 def handle_connector_request(source: DeclarativeSource, args: List[str]):
@@ -70,8 +82,9 @@ def handle_connector_request(source: DeclarativeSource, args: List[str]):
 
 def handle_request(args: List[str]):
     config = get_config_from_args(args)
-    source = create_source(config)
-    if "__command" in config:
+    is_connector_builder_request = "__command" in config
+    source = create_source(config, is_connector_builder_request)
+    if is_connector_builder_request:
         handle_connector_builder_request(source, config)
     else:
         handle_connector_request(source, args)
