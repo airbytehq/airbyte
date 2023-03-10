@@ -6,9 +6,10 @@ import dataclasses
 from datetime import datetime
 from typing import Any, Mapping
 
-from airbyte_cdk.models import AirbyteRecordMessage, AirbyteMessage
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, Type
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
+from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from connector_builder.message_grouper import MessageGrouper
 
@@ -32,13 +33,16 @@ def read_stream(source: DeclarativeSource, config: Mapping[str, Any]) -> Airbyte
     ))
 
 
-def resolve_manifest(source) -> AirbyteMessage:
+def resolve_manifest(source: ManifestDeclarativeSource) -> AirbyteMessage:
     try:
-        return AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(
-            data={"manifest": source.resolved_manifest},
-            emitted_at=_emitted_at(),
-            stream="",
-        ))
+        return AirbyteMessage(
+            type=Type.RECORD,
+            record=AirbyteRecordMessage(
+                data={"manifest": source.resolved_manifest},
+                emitted_at=_emitted_at(),
+                stream="resolve_manifest",
+            ),
+        )
     except Exception as exc:
         error = AirbyteTracedException.from_exception(exc, message="Error resolving manifest.")
         return error.as_airbyte_message()
