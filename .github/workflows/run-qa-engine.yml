@@ -9,7 +9,7 @@ on:
 jobs:
   run-qa-engine:
     name: "Run QA Engine"
-    #if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
@@ -27,4 +27,4 @@ jobs:
         env:
           LOGLEVEL: INFO
           GITHUB_API_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-        run: run-qa-engine #--create-prs
+        run: run-qa-engine --create-prs
