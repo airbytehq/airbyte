@@ -439,7 +439,7 @@
               "type": "array"
             },
             "work_phone_number": {
-              "type": "integer"
+              "type": "string"
             },
             "mobile_phone_number": {
               "type": "integer"
@@ -533,7 +533,7 @@
               "type": "string"
             },
             "work_phone_number": {
-              "type": "integer"
+              "type": "string"
             },
             "mobile_phone_number": {
               "type": "integer"
