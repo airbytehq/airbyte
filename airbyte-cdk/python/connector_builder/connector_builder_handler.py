@@ -121,7 +121,7 @@ class ConnectorBuilderHandler:
             config: Dict[str, Any],
             stream: str,
             record_limit: Optional[int] = None,
-    ) -> AirbyteMessage:
+    ) -> StreamRead:
         if record_limit is not None and not (1 <= record_limit <= 1000):
             raise ValueError("")
         schema_inferrer = SchemaInferrer()
@@ -145,15 +145,12 @@ class ConnectorBuilderHandler:
             else:
                 slices.append(message_group)
 
-        return AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(
-            stream="_test_read",
-            emitted_at=_emitted_at(),
-            data=asdict(StreamRead(
+        return StreamRead(
                 logs=log_messages,
                 slices=slices,
                 test_read_limit_reached=self._has_reached_limit(slices),
-                inferred_schema=schema_inferrer.get_stream_schema(stream),
-        ))))
+                inferred_schema=schema_inferrer.get_stream_schema(stream)
+            )
 
     def _get_message_groups(
             self, messages: Iterator[AirbyteMessage], schema_inferrer: SchemaInferrer, limit: int

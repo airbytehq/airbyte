@@ -83,28 +83,28 @@ def test_read_stream():
     response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}', "http_method": "GET"}
     expected_schema = {"$schema": "http://json-schema.org/schema#", "properties": {"name": {"type": "string"}}, "type": "object"}
     expected_pages = [
-        {
-            "request":{
-                "url":"https://demonslayers.com/api/v1/hashiras",
-                "parameters":{"era": ["taisho"]},
-                "headers": {"Content-Type": "application/json"},
-                "body":{"custom": "field"},
-                "http_method":"GET",
-            },
-            "response":{"status":200, "headers":{"field": "value"}, "body":'{"name": "field"}'},
-            "records":[{"name": "Shinobu Kocho"}, {"name": "Muichiro Tokito"}],
-        },
-        {
-            "request":{
-                "url": "https://demonslayers.com/api/v1/hashiras",
-                "parameters": {"era": ["taisho"]},
-                "headers": {"Content-Type": "application/json"},
-                "body":{"custom": "field"},
-                "http_method":"GET",
-            },
-            "response":{"status": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'},
-            "records":[{"name": "Mitsuri Kanroji"}],
-        },
+        StreamReadPages(
+            request=HttpRequest(
+                url="https://demonslayers.com/api/v1/hashiras",
+                parameters={"era": ["taisho"]},
+                headers={"Content-Type": "application/json"},
+                body={"custom": "field"},
+                http_method="GET",
+            ),
+            response=HttpResponse(status=200, headers={"field": "value"}, body='{"name": "field"}'),
+            records=[{"name": "Shinobu Kocho"}, {"name": "Muichiro Tokito"}],
+        ),
+        StreamReadPages(
+            request=HttpRequest(
+                url="https://demonslayers.com/api/v1/hashiras",
+                parameters={"era": ["taisho"]},
+                headers={"Content-Type": "application/json"},
+                body={"custom": "field"},
+                http_method="GET",
+            ),
+            response=HttpResponse(status=200, headers={"field": "value"}, body='{"name": "field"}'),
+            records=[{"name": "Mitsuri Kanroji"}],
+        ),
     ]
 
     mock_source = make_mock_source(
@@ -122,13 +122,10 @@ def test_read_stream():
     )
 
     connector_builder_handler = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES)
-    actual_response: AirbyteMessage = connector_builder_handler.read_stream(source=mock_source, config=CONFIG, stream="hashiras")
-    record = actual_response.record
-    stream_read_object: StreamRead = StreamRead(**record.data)
-    stream_read_object.slices = [StreamReadSlicesInner(**s) for s in stream_read_object.slices]
-    assert stream_read_object.inferred_schema == expected_schema
+    actual_response: StreamRead = connector_builder_handler.read_stream(source=mock_source, config=CONFIG, stream="hashiras")
+    assert actual_response.inferred_schema == expected_schema
 
-    single_slice = stream_read_object.slices[0]
+    single_slice = actual_response.slices[0]
     for i, actual_page in enumerate(single_slice.pages):
         assert actual_page == expected_pages[i]
 
@@ -141,28 +138,28 @@ def test_read_stream_with_logs():
     }
     response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
     expected_pages = [
-        {
-            "request":{
-                "url": "https://demonslayers.com/api/v1/hashiras",
-                "parameters": {"era": ["taisho"]},
-                "headers": {"Content-Type": "application/json"},
-                "body": {"custom": "field"},
-                "http_method": "GET",
-            },
-            "response":{"status": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'},
-            "records":[{"name": "Shinobu Kocho"}, {"name": "Muichiro Tokito"}],
-        },
-        {
-            "request":{
-                "url":"https://demonslayers.com/api/v1/hashiras",
-                "parameters": {"era": ["taisho"]},
-                "headers": {"Content-Type": "application/json"},
-                "body": {"custom": "field"},
-                "http_method": "GET",
-            },
-            "response":{"status":200, "headers":{"field": "value"}, "body": '{"name": "field"}'},
-            "records":[{"name": "Mitsuri Kanroji"}],
-        },
+        StreamReadPages(
+            request=HttpRequest(
+                url="https://demonslayers.com/api/v1/hashiras",
+                parameters={"era": ["taisho"]},
+                headers={"Content-Type": "application/json"},
+                body={"custom": "field"},
+                http_method="GET",
+            ),
+            response=HttpResponse(status=200, headers={"field": "value"}, body='{"name": "field"}'),
+            records=[{"name": "Shinobu Kocho"}, {"name": "Muichiro Tokito"}],
+        ),
+        StreamReadPages(
+            request=HttpRequest(
+                url="https://demonslayers.com/api/v1/hashiras",
+                parameters={"era": ["taisho"]},
+                headers={"Content-Type": "application/json"},
+                body={"custom": "field"},
+                http_method="GET",
+            ),
+            response=HttpResponse(status=200, headers={"field": "value"}, body='{"name": "field"}'),
+            records=[{"name": "Mitsuri Kanroji"}],
+        ),
     ]
     expected_logs = [
         {"message": "log message before the request"},
@@ -187,15 +184,11 @@ def test_read_stream_with_logs():
     connector_builder_handler = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES)
 
     actual_response: AirbyteMessage = connector_builder_handler.read_stream(source=mock_source, config=CONFIG, stream="hashiras")
-    record = actual_response.record
-    stream_read_object: StreamRead = StreamRead(**record.data)
-    stream_read_object.slices = [StreamReadSlicesInner(**s) for s in stream_read_object.slices]
-
-    single_slice = stream_read_object.slices[0]
+    single_slice = actual_response.slices[0]
     for i, actual_page in enumerate(single_slice.pages):
         assert actual_page == expected_pages[i]
 
-    for i, actual_log in enumerate(stream_read_object.logs):
+    for i, actual_log in enumerate(actual_response.logs):
         assert actual_log == expected_logs[i]
 
 @pytest.mark.parametrize(
@@ -230,14 +223,11 @@ def test_read_stream_record_limit(request_record_limit, max_record_limit):
     record_limit = min(request_record_limit, max_record_limit)
 
     api = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES, max_record_limit=max_record_limit)
-    actual_response: AirbyteMessage =  api.read_stream(mock_source, config=CONFIG, stream="hashiras", record_limit=request_record_limit)
-    record = actual_response.record
-    stream_read_object: StreamRead = StreamRead(**record.data)
-    stream_read_object.slices = [StreamReadSlicesInner(**s) for s in stream_read_object.slices]
-    single_slice = stream_read_object.slices[0]
+    actual_response: StreamRead =  api.read_stream(mock_source, config=CONFIG, stream="hashiras", record_limit=request_record_limit)
+    single_slice = actual_response.slices[0]
     total_records = 0
     for i, actual_page in enumerate(single_slice.pages):
-        total_records += len(actual_page["records"])
+        total_records += len(actual_page.records)
     assert total_records == min([record_limit, n_records])
 
 @pytest.mark.parametrize(
@@ -271,14 +261,11 @@ def test_read_stream_default_record_limit(max_record_limit):
     n_records = 2
 
     api = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES, max_record_limit=max_record_limit)
-    actual_response: AirbyteMessage = api.read_stream(source=mock_source, config=CONFIG, stream="hashiras")
-    record = actual_response.record
-    stream_read_object: StreamRead = StreamRead(**record.data)
-    stream_read_object.slices = [StreamReadSlicesInner(**s) for s in stream_read_object.slices]
-    single_slice = stream_read_object.slices[0]
+    actual_response: StreamRead = api.read_stream(source=mock_source, config=CONFIG, stream="hashiras")
+    single_slice = actual_response.slices[0]
     total_records = 0
     for i, actual_page in enumerate(single_slice.pages):
-        total_records += len(actual_page["records"])
+        total_records += len(actual_page.records)
     assert total_records == min([max_record_limit, n_records])
 
 def test_read_stream_limit_0():
@@ -316,28 +303,28 @@ def test_read_stream_no_records():
     }
     response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
     expected_pages = [
-        {
-            "request":{
-                "url":"https://demonslayers.com/api/v1/hashiras",
-                "parameters": {"era": ["taisho"]},
-                "headers": {"Content-Type": "application/json"},
-                "body": {"custom": "field"},
-                "http_method": "GET",
-            },
-            "response":{"status": 200, "headers": {"field": "value"}, "body":'{"name": "field"}'},
-            "records":[],
-        },
-        {
-            "request":{
-                "url": "https://demonslayers.com/api/v1/hashiras",
-                "parameters": {"era": ["taisho"]},
-                "headers": {"Content-Type": "application/json"},
-                "body": {"custom": "field"},
-                "http_method": "GET",
-            },
-            "response": {"status":200, "headers":{"field": "value"}, "body": '{"name": "field"}'},
-            "records": [],
-        },
+        StreamReadPages(
+            request=HttpRequest(
+                url="https://demonslayers.com/api/v1/hashiras",
+                parameters={"era": ["taisho"]},
+                headers={"Content-Type": "application/json"},
+                body={"custom": "field"},
+                http_method="GET",
+            ),
+            response=HttpResponse(status=200, headers={"field": "value"}, body='{"name": "field"}'),
+            records=[],
+        ),
+        StreamReadPages(
+            request=HttpRequest(
+                url="https://demonslayers.com/api/v1/hashiras",
+                parameters={"era": ["taisho"]},
+                headers={"Content-Type": "application/json"},
+                body={"custom": "field"},
+                http_method="GET",
+            ),
+            response=HttpResponse(status=200, headers={"field": "value"}, body='{"name": "field"}'),
+            records=[],
+        ),
     ]
 
     mock_source = make_mock_source(
@@ -354,11 +341,8 @@ def test_read_stream_no_records():
     api = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES)
 
     actual_response: AirbyteMessage = api.read_stream(source=mock_source, config=CONFIG, stream="hashiras")
-    record = actual_response.record
-    stream_read_object: StreamRead = StreamRead(**record.data)
-    stream_read_object.slices = [StreamReadSlicesInner(**s) for s in stream_read_object.slices]
 
-    single_slice = stream_read_object.slices[0]
+    single_slice = actual_response.slices[0]
     for i, actual_page in enumerate(single_slice.pages):
         assert actual_page == expected_pages[i]
 
