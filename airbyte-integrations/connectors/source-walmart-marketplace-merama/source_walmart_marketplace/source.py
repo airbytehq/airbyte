@@ -198,6 +198,9 @@ class Orders(WalmartMarketplaceBase):
             self.offset = self.totalCount
         else:
             self.offset = self.offset + self.limit
+            if self.offset > 1000:
+                logger.info('offset must bigger than one thousand for this day!')
+                return None
         logger.info('new_offset')
         logger.info(self.offset)
         return self.offset
@@ -224,9 +227,9 @@ class Orders(WalmartMarketplaceBase):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
 
         latest_record_date = datetime.strptime(latest_record['data'][self.record_creation_date_key], '%Y-%m-%dT%H:%M:%S.%f%z')
-        logger.info('get_updated_state log:')
-        logger.info(latest_record_date)
-        logger.info(current_stream_state)
+        # logger.info('get_updated_state log:')
+        # logger.info(latest_record_date)
+        # logger.info(current_stream_state)
         if current_stream_state.get(self.cursor_field):
             if isinstance(current_stream_state[self.cursor_field], str):
                 current_stream_state_date = datetime.strptime(current_stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S')
