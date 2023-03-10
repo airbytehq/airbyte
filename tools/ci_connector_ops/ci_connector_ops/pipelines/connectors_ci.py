@@ -233,7 +233,7 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
 
 def validate_environment(is_local: bool, use_remote_secrets: bool):
     if is_local:
-        if not (os.getcwd().endswith("/airbyte") and not Path(".git").is_dir()):
+        if not (os.getcwd().endswith("/airbyte") and Path(".git").is_dir()):
             raise click.UsageError("You need to run this command from the airbyte repository root.")
     else:
         for required_env_var in REQUIRED_ENV_VARS_FOR_CI:
