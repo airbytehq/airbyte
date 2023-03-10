@@ -13,6 +13,7 @@ import click
 import dagger
 from ci_connector_ops.pipelines.actions import environments, tests
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
+from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.models import ConnectorTestReport, Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.utils import (
     DAGGER_CONFIG,
@@ -24,6 +25,8 @@ from ci_connector_ops.pipelines.utils import (
 from ci_connector_ops.utils import ConnectorLanguage, get_all_released_connectors
 from rich.logging import RichHandler
 
+GITHUB_GLOBAL_CONTEXT = "[POC please ignore] Connectors CI"
+GITHUB_GLOBAL_DESCRIPTION = "Running connectors tests"
 REQUIRED_ENV_VARS_FOR_CI = [
     "GCP_GSM_CREDENTIALS",
     "AWS_ACCESS_KEY_ID",
@@ -92,7 +95,6 @@ async def run_connectors_test_pipelines(test_contexts: List[ConnectorTestContext
     Args:
         test_contexts (List[ConnectorTestContext]): List of connector test contexts for which a CI pipeline needs to be run.
     """
-
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         async with anyio.create_task_group() as tg:
             for test_context in test_contexts:
@@ -129,9 +131,20 @@ def connectors_ci(
     gha_workflow_run_id: str,
 ):
     """A command group to gather all the connectors-ci command"""
+
     if not (os.getcwd().endswith("/airbyte") and Path(".git").is_dir()):
         raise click.ClickException("You need to run this command from the airbyte repository root.")
+
     ctx.ensure_object(dict)
+    ctx.obj["use_remote_secrets"] = use_remote_secrets
+    ctx.obj["is_local"] = is_local
+    ctx.obj["git_branch"] = git_branch
+    ctx.obj["git_revision"] = git_revision
+    ctx.obj["gha_workflow_run_id"] = gha_workflow_run_id
+    ctx.obj["gha_workflow_run_url"] = (
+        f"https://github.com/airbytehq/airbyte/actions/runs/{gha_workflow_run_id}" if gha_workflow_run_id else None
+    )
+
     if use_remote_secrets and os.getenv("GCP_GSM_CREDENTIALS") is None:
         raise click.UsageError(
             "You have to set the GCP_GSM_CREDENTIALS if you want to download secrets from GSM. Set the --use-remote-secrets option to false otherwise."
@@ -140,15 +153,17 @@ def connectors_ci(
         for required_env_var in REQUIRED_ENV_VARS_FOR_CI:
             if os.getenv(required_env_var) is None:
                 raise click.UsageError(f"When running in a CI context a {required_env_var} environment variable must be set.")
-    ctx.obj["use_remote_secrets"] = use_remote_secrets
-    ctx.obj["is_local"] = is_local
-    ctx.obj["git_branch"] = git_branch
-    ctx.obj["git_revision"] = git_revision
-    ctx.obj["modified_files"] = get_modified_files(git_revision, diffed_branch, is_local)
-    ctx.obj["gha_workflow_run_id"] = gha_workflow_run_id
-    ctx.obj["gha_workflow_run_url"] = (
-        f"https://github.com/airbytehq/airbyte/actions/runs/{gha_workflow_run_id}" if gha_workflow_run_id else None
+    update_commit_status_check(
+        ctx.obj["git_revision"],
+        "pending",
+        ctx.obj["gha_workflow_run_url"],
+        GITHUB_GLOBAL_DESCRIPTION,
+        GITHUB_GLOBAL_CONTEXT,
+        should_send=not ctx.obj["is_local"],
+        logger=logger,
     )
+
+    ctx.obj["modified_files"] = get_modified_files(git_revision, diffed_branch, is_local)
 
 
 @connectors_ci.command()
@@ -187,6 +202,9 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
     connectors_under_test_names = [c.technical_name for c in connectors_under_test]
     if connectors_under_test_names:
         click.secho(f"Will run the test pipeline for the following connectors: {', '.join(connectors_under_test_names)}.", fg="green")
+        click.secho(
+            "If you're running this command for the first time the Dagger engine image will be pulled, it can take a short minute..."
+        )
     else:
         click.secho("No connector test will run according to your inputs.", fg="yellow")
         sys.exit(0)
@@ -203,8 +221,26 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
     ]
     try:
         anyio.run(run_connectors_test_pipelines, connectors_tests_contexts)
+        update_commit_status_check(
+            ctx.obj["git_revision"],
+            "success",
+            ctx.obj["gha_workflow_run_url"],
+            GITHUB_GLOBAL_DESCRIPTION,
+            GITHUB_GLOBAL_CONTEXT,
+            should_send=not ctx.obj["is_local"],
+            logger=logger,
+        )
     except dagger.DaggerError as e:
         click.secho(str(e), err=True, fg="red")
+        update_commit_status_check(
+            ctx.obj["git_revision"],
+            "error",
+            ctx.obj["gha_workflow_run_url"],
+            GITHUB_GLOBAL_DESCRIPTION,
+            GITHUB_GLOBAL_CONTEXT,
+            should_send=not ctx.obj["is_local"],
+            logger=logger,
+        )
 
 
 if __name__ == "__main__":

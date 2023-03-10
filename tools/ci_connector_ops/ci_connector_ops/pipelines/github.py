@@ -6,32 +6,36 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING
 
+from ci_connector_ops.utils import console
+
 if TYPE_CHECKING:
-    from ci_connector_ops.pipelines.contexts import ConnectorTestContext
+    from logging import Logger
 
 from github import Github
 
 AIRBYTE_GITHUB_REPO = "airbytehq/airbyte"
 
 
-def update_commit_status_check(context: ConnectorTestContext):
-    if context.is_local:
-        context.logger.debug("Local run: no commit status sent to GitHub.")
+def update_commit_status_check(
+    sha: str, state: str, target_url: str, description: str, context: str, should_send=True, logger: Logger = None
+):
+    if not should_send:
         return
 
-    github_context = f"Connector tests: {context.connector.technical_name}"
-    error = None
+    try:
+        github_client = Github(os.environ["CI_GITHUB_ACCESS_TOKEN"])
+        airbyte_repo = github_client.get_repo(AIRBYTE_GITHUB_REPO)
+    except Exception as e:
+        if logger:
+            logger.error("No commit status check sent, the connection to Github API failed", exc_info=True)
+        else:
+            console.print(e)
+        return
 
-    github_client = Github(os.environ["CI_GITHUB_ACCESS_TOKEN"])
-    airbyte_repo = github_client.get_repo(AIRBYTE_GITHUB_REPO)
-    airbyte_repo.get_commit(sha=context.git_revision).create_status(
-        state=context.state.value["github_state"],
-        target_url=context.gha_workflow_run_url,
-        description=context.state.value["description"],
-        context=github_context,
+    airbyte_repo.get_commit(sha=sha).create_status(
+        state=state,
+        target_url=target_url,
+        description=description,
+        context=context,
     )
-    context.logger.info(
-        f"Created {context.state.value['github_state']} status for commit {context.git_revision} on Github in {github_context} context."
-    )
-    if error:
-        raise error
+    context.logger.info(f"Created {state} status for commit {sha} on Github in {context} context.")

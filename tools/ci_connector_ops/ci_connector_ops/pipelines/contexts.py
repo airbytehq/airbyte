@@ -56,7 +56,7 @@ class ConnectorTestContext:
         self._secrets_dir = None
         self._updated_secrets_dir = None
         self._test_report = None
-        update_commit_status_check(self)
+        update_commit_status_check(**self.github_commit_status)
 
     @property
     def updated_secrets_dir(self) -> Directory:
@@ -103,6 +103,18 @@ class ConnectorTestContext:
         self._test_report = test_report
         self.state = ContextState.SUCCESSFUL if test_report.success else ContextState.FAILURE
 
+    @property
+    def github_commit_status(self) -> dict:
+        return {
+            "sha": self.git_revision,
+            "state": self.state.value["github_state"],
+            "target_url": self.gha_workflow_run_url,
+            "description": self.state.value["description"],
+            "context": f"[POC please ignore] Connector tests: {self.connector.technical_name}",
+            "should_send": self.is_ci,
+            "logger": self.logger,
+        }
+
     def get_repo_dir(self, subdir=".", exclude=None, include=None) -> Directory:
         if self.is_local:
             return self.dagger_client.host().directory(subdir, exclude=exclude, include=include)
@@ -118,7 +130,7 @@ class ConnectorTestContext:
         self.secrets_dir = await secrets.get_connector_secret_dir(self)
         self.updated_secrets_dir = None
         self.state = ContextState.RUNNING
-        await asyncify(update_commit_status_check)(self)
+        await asyncify(update_commit_status_check)(**self.github_commit_status)
         return self
 
     async def __aexit__(self, exception_type, exception_value, traceback) -> bool:
@@ -152,5 +164,5 @@ class ConnectorTestContext:
                 s3_key = s3_reports_path_root + suffix
                 await remote_storage.upload_to_s3(teardown_pipeline, str(local_report_path), s3_key, os.environ["TEST_REPORTS_BUCKET_NAME"])
 
-        await asyncify(update_commit_status_check)(self)
+        await asyncify(update_commit_status_check)(**self.github_commit_status)
         return True
