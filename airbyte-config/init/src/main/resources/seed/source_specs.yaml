@@ -4317,7 +4317,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.33"
+- dockerImage: "airbyte/source-file:0.2.34"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/file"
     connectionSpecification:
@@ -4359,10 +4359,17 @@
           examples:
           - "{}"
           - "{\"sep\": \" \"}"
+          - sep: "\t"
+            header: 0
+            names: "column1, column2"
         url:
           type: "string"
           title: "URL"
           description: "The URL path to access the file which should be replicated."
+          examples:
+          - "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv"
+          - "gs://my-google-bucket/data.csv"
+          - "s3://gdelt-open-data/events/20190914.export.csv"
         provider:
           type: "object"
           title: "Storage Provider"
