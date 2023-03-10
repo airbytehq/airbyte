@@ -16,8 +16,7 @@ from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from connector_builder import connector_builder_handler
-from airbyte_protocol.models.airbyte_protocol import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, SyncMode, DestinationSyncMode
-import logging
+from connector_builder.message_grouper import MessageGrouper
 
 from connector_builder.connector_builder_handler import _emitted_at
 
@@ -60,8 +59,8 @@ def execute_command(source: DeclarativeSource, config: Mapping[str, Any]) -> Air
         max_pages_per_slice = command_config["max_pages_per_slice"]
         max_slices = command_config["max_slices"]
         max_record_limit = command_config["max_records"]
-        handler = connector_builder_handler.ConnectorBuilderHandler(max_pages_per_slice, max_slices)
-        stream_read = handler.read_stream(source, config, stream_name, max_record_limit)
+        handler = MessageGrouper(max_pages_per_slice, max_slices)
+        stream_read = handler.get_grouped_messages(source, config, stream_name, max_record_limit)
         return AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(
             data=dataclasses.asdict(stream_read),
             stream="_test_read",

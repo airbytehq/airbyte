@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from airbyte_cdk.models import Level
-from connector_builder.connector_builder_handler import *
+from connector_builder.message_grouper import *
 
 MAX_PAGES_PER_SLICE = 4
 MAX_SLICES = 3
@@ -70,7 +70,7 @@ MANIFEST = {
 
 CONFIG = {"rank": "upper-six"}
 
-def test_read_stream():
+def test_get_grouped_messages():
     request = {
         "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
         "headers": {"Content-Type": "application/json"},
@@ -118,15 +118,15 @@ def test_read_stream():
         )
     )
 
-    connector_builder_handler = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES)
-    actual_response: StreamRead = connector_builder_handler.read_stream(source=mock_source, config=CONFIG, stream="hashiras")
+    connector_builder_handler = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
+    actual_response: StreamRead = connector_builder_handler.get_grouped_messages(source=mock_source, config=CONFIG, stream="hashiras")
     assert actual_response.inferred_schema == expected_schema
 
     single_slice = actual_response.slices[0]
     for i, actual_page in enumerate(single_slice.pages):
         assert actual_page == expected_pages[i]
 
-def test_read_stream_with_logs():
+def test_get_grouped_messages_with_logs():
     request = {
         "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
         "headers": {"Content-Type": "application/json"},
@@ -178,9 +178,9 @@ def test_read_stream_with_logs():
         )
     )
 
-    connector_builder_handler = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES)
+    connector_builder_handler = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
 
-    actual_response: AirbyteMessage = connector_builder_handler.read_stream(source=mock_source, config=CONFIG, stream="hashiras")
+    actual_response: AirbyteMessage = connector_builder_handler.get_grouped_messages(source=mock_source, config=CONFIG, stream="hashiras")
     single_slice = actual_response.slices[0]
     for i, actual_page in enumerate(single_slice.pages):
         assert actual_page == expected_pages[i]
@@ -195,7 +195,7 @@ def test_read_stream_with_logs():
         pytest.param(3, 1, id="test_create_request_record_limit_exceeds_max"),
     ],
 )
-def test_read_stream_record_limit(request_record_limit, max_record_limit):
+def test_get_grouped_messages_record_limit(request_record_limit, max_record_limit):
     request = {
         "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
         "headers": {"Content-Type": "application/json"},
@@ -219,8 +219,8 @@ def test_read_stream_record_limit(request_record_limit, max_record_limit):
     n_records = 2
     record_limit = min(request_record_limit, max_record_limit)
 
-    api = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES, max_record_limit=max_record_limit)
-    actual_response: StreamRead =  api.read_stream(mock_source, config=CONFIG, stream="hashiras", record_limit=request_record_limit)
+    api = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES, max_record_limit=max_record_limit)
+    actual_response: StreamRead =  api.get_grouped_messages(mock_source, config=CONFIG, stream="hashiras", record_limit=request_record_limit)
     single_slice = actual_response.slices[0]
     total_records = 0
     for i, actual_page in enumerate(single_slice.pages):
@@ -234,7 +234,7 @@ def test_read_stream_record_limit(request_record_limit, max_record_limit):
         pytest.param(1, id="test_create_request_no_record_limit_n_records_exceed_max"),
     ],
 )
-def test_read_stream_default_record_limit(max_record_limit):
+def test_get_grouped_messages_default_record_limit(max_record_limit):
     request = {
         "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
         "headers": {"Content-Type": "application/json"},
@@ -257,15 +257,15 @@ def test_read_stream_default_record_limit(max_record_limit):
     )
     n_records = 2
 
-    api = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES, max_record_limit=max_record_limit)
-    actual_response: StreamRead = api.read_stream(source=mock_source, config=CONFIG, stream="hashiras")
+    api = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES, max_record_limit=max_record_limit)
+    actual_response: StreamRead = api.get_grouped_messages(source=mock_source, config=CONFIG, stream="hashiras")
     single_slice = actual_response.slices[0]
     total_records = 0
     for i, actual_page in enumerate(single_slice.pages):
         total_records += len(actual_page.records)
     assert total_records == min([max_record_limit, n_records])
 
-def test_read_stream_limit_0():
+def test_get_grouped_messages_limit_0():
     request = {
         "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
         "headers": {"Content-Type": "application/json"},
@@ -286,12 +286,12 @@ def test_read_stream_limit_0():
             ]
         )
     )
-    api = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES)
+    api = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
 
     with pytest.raises(ValueError):
-        api.read_stream(source=mock_source, config=CONFIG, stream="hashiras", record_limit=0)
+        api.get_grouped_messages(source=mock_source, config=CONFIG, stream="hashiras", record_limit=0)
 
-def test_read_stream_no_records():
+def test_get_grouped_messages_no_records():
     request = {
         "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
         "headers": {"Content-Type": "application/json"},
@@ -335,15 +335,15 @@ def test_read_stream_no_records():
         )
     )
 
-    api = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES)
+    api = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
 
-    actual_response: AirbyteMessage = api.read_stream(source=mock_source, config=CONFIG, stream="hashiras")
+    actual_response: AirbyteMessage = api.get_grouped_messages(source=mock_source, config=CONFIG, stream="hashiras")
 
     single_slice = actual_response.slices[0]
     for i, actual_page in enumerate(single_slice.pages):
         assert actual_page == expected_pages[i]
 
-def test_read_stream_invalid_group_format():
+def test_get_grouped_messages_invalid_group_format():
     response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
 
     mock_source = make_mock_source(
@@ -356,10 +356,10 @@ def test_read_stream_invalid_group_format():
         )
     )
 
-    api = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES)
+    api = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
 
     with pytest.raises(ValueError) as actual_exception:
-        api.read_stream(source=mock_source, config=CONFIG, stream="hashiras")
+        api.get_grouped_messages(source=mock_source, config=CONFIG, stream="hashiras")
 
 @pytest.mark.parametrize(
     "log_message, expected_response",
@@ -408,12 +408,12 @@ def test_create_response_from_log_message(log_message, expected_response):
         response_message = f"response:{json.dumps(log_message)}"
 
     airbyte_log_message = AirbyteLogMessage(level=Level.INFO, message=response_message)
-    connector_builder_handler = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES)
+    connector_builder_handler = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
     actual_response = connector_builder_handler._create_response_from_log_message(airbyte_log_message)
 
     assert actual_response == expected_response
 
-def test_read_stream_with_many_slices():
+def test_get_grouped_messages_with_many_slices():
     request = {}
     response = {"status_code": 200}
 
@@ -438,9 +438,9 @@ def test_read_stream_with_many_slices():
         )
     )
 
-    connecto_builder_handler = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES)
+    connecto_builder_handler = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
 
-    stream_read: StreamRead = connecto_builder_handler.read_stream(source=mock_source, config=CONFIG, stream="hashiras")
+    stream_read: StreamRead = connecto_builder_handler.get_grouped_messages(source=mock_source, config=CONFIG, stream="hashiras")
 
     assert not stream_read.test_read_limit_reached
     assert len(stream_read.slices) == 2
@@ -453,7 +453,7 @@ def test_read_stream_with_many_slices():
     assert len(stream_read.slices[1].pages[1].records) == 1
     assert len(stream_read.slices[1].pages[2].records) == 0
 
-def test_read_stream_given_maximum_number_of_slices_then_test_read_limit_reached():
+def test_get_grouped_messages_given_maximum_number_of_slices_then_test_read_limit_reached():
     maximum_number_of_slices = 5
     request = {}
     response = {"status_code": 200}
@@ -461,13 +461,13 @@ def test_read_stream_given_maximum_number_of_slices_then_test_read_limit_reached
         iter([slice_message(), request_log_message(request), response_log_message(response)] * maximum_number_of_slices)
     )
 
-    api = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES)
+    api = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
 
-    stream_read: StreamRead = api.read_stream(source=mock_source, config=CONFIG, stream="hashiras")
+    stream_read: StreamRead = api.get_grouped_messages(source=mock_source, config=CONFIG, stream="hashiras")
 
     assert stream_read.test_read_limit_reached
 
-def test_read_stream_given_maximum_number_of_pages_then_test_read_limit_reached():
+def test_get_grouped_messages_given_maximum_number_of_pages_then_test_read_limit_reached():
     maximum_number_of_pages_per_slice = 5
     request = {}
     response = {"status_code": 200}
@@ -475,9 +475,9 @@ def test_read_stream_given_maximum_number_of_pages_then_test_read_limit_reached(
         iter([slice_message()] + [request_log_message(request), response_log_message(response)] * maximum_number_of_pages_per_slice)
     )
 
-    api = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES)
+    api = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
 
-    stream_read: StreamRead = api.read_stream(source=mock_source, config=CONFIG, stream="hashiras")
+    stream_read: StreamRead = api.get_grouped_messages(source=mock_source, config=CONFIG, stream="hashiras")
 
     assert stream_read.test_read_limit_reached
 
