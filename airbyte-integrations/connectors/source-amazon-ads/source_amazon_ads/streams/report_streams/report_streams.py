@@ -121,8 +121,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         self.report_wait_timeout: int = get_typed_env("REPORT_WAIT_TIMEOUT", 180)
         # Maximum retries Airbyte will attempt for fetching report data. Default is 5.
         self.report_generation_maximum_retries: int = get_typed_env("REPORT_GENERATION_MAX_RETRIES", 5)
-
-        self._report_record_types = config.get("report_record_types", [])
+        self._report_record_types = config.get("report_record_types")
 
     @property
     def model(self) -> CatalogModel:
