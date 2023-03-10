@@ -136,9 +136,10 @@ class TestOauth2Authenticator:
             refresh_access_token_headers=TestOauth2Authenticator.refresh_access_token_headers,
         )
 
-        token = oauth.refresh_access_token()
+        token, expires_in = oauth.refresh_access_token()
 
-        assert ("token", 10) == token
+        assert isinstance(expires_in, int)
+        assert ("token", 10) == (token, expires_in)
         for header in self.refresh_access_token_headers:
             assert header in mock_refresh_token_call.last_request.headers
             assert self.refresh_access_token_headers[header] == mock_refresh_token_call.last_request.headers[header]
