@@ -31,6 +31,7 @@ class WalmartMarketplaceBase(HttpStream):
         self.Authorization = 'Basic ' + base64.b64encode((self.client_id + ':' + self.client_secret).encode('utf-8')).decode('utf-8')
         self.WM_MARKET = config['WM_MARKET']
         self.merchant = config['merchant']
+        self.user_id = config['user_id']
         self.createdStartDate = datetime.strptime(config['createdStartDate'], '%Y-%m-%d') - timedelta(days=15)
         self.createdEndDate = datetime.now().strftime("%Y-%m-%d")
 
@@ -113,6 +114,7 @@ class WalmartMarketplaceBase(HttpStream):
                 "source": self.WM_MARKET + "_WALMART",
                 "type": f"{self.merchant.lower()}_{self.record_key_name}",
                 "id": item[self.record_primary_key],
+                "user_id": self.user_id,
                 "timeline": "historic",
                 "created_at": item[self.record_creation_date_key],
                 "updated_at": item[self.record_update_date_key_1][0][self.record_update_date_key_2][0][self.record_update_date_key_3],
@@ -375,6 +377,7 @@ class Items(WalmartMarketplaceBase):
                 "source": self.WM_MARKET + "_WALMART",
                 "type": f"{self.merchant.lower()}_{self.record_key_name}",
                 "id": item[self.record_primary_key],
+                "user_id": self.user_id,
                 "timeline": "historic",
                 "created_at": timestamp,
                 "updated_at": timestamp,
