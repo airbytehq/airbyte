@@ -281,6 +281,32 @@ def test_read_stream_default_record_limit(max_record_limit):
         total_records += len(actual_page["records"])
     assert total_records == min([max_record_limit, n_records])
 
+def test_read_stream_limit_0():
+    request = {
+        "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
+        "headers": {"Content-Type": "application/json"},
+        "body": {"custom": "field"},
+    }
+    response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
+    mock_source = make_mock_source(
+        iter(
+            [
+                request_log_message(request),
+                response_log_message(response),
+                record_message("hashiras", {"name": "Shinobu Kocho"}),
+                record_message("hashiras", {"name": "Muichiro Tokito"}),
+                request_log_message(request),
+                response_log_message(response),
+                record_message("hashiras", {"name": "Mitsuri Kanroji"}),
+                response_log_message(response),
+            ]
+        )
+    )
+    api = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES)
+
+    with pytest.raises(ValueError):
+        api.read_stream(source=mock_source, config=CONFIG, stream="hashiras", record_limit=0)
+
 def make_mock_source(return_value: Iterator) -> MagicMock:
     mock_source = MagicMock()
     mock_source.read.return_value = return_value

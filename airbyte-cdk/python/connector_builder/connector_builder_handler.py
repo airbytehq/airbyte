@@ -75,6 +75,12 @@ class StreamReadRequestBody:
     state: Optional[Dict[str, Any]]
     record_limit: Optional[int]
 
+    def __post_init__(self):
+        print(self.record_limit)
+        raise ValueError("here")
+        if not (1 <= self.record_limit <= 1000):
+            raise ValueError("") #FIXME
+
 #FIXME: can dataclasses also have validators?
 """
     @validator("record_limit")
@@ -116,6 +122,8 @@ class ConnectorBuilderHandler:
             stream: str,
             record_limit: Optional[int] = None,
     ) -> AirbyteMessage:
+        if record_limit is not None and not (1 <= record_limit <= 1000):
+            raise ValueError("")
         schema_inferrer = SchemaInferrer()
 
         if record_limit is None:
@@ -209,8 +217,8 @@ class ConnectorBuilderHandler:
 
     @staticmethod
     def _close_page(current_page_request, current_page_response, current_slice_pages, current_page_records):
-        if not current_page_request or not current_page_response:
-            raise ValueError("Every message grouping should have at least one request and response")
+        #if not current_page_request or not current_page_response:
+        #    raise ValueError("Every message grouping should have at least one request and response")
 
         current_slice_pages.append(
             StreamReadPages(request=current_page_request, response=current_page_response, records=deepcopy(current_page_records))
