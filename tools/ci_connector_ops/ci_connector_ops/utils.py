@@ -23,7 +23,7 @@ except ImportError:
     from yaml import Loader
 
 console = Console()
-AIRBYTE_REPO = git.Repo(search_parent_directories=True)
+
 DIFFED_BRANCH = os.environ.get("DIFFED_BRANCH", "origin/master")
 OSS_CATALOG_URL = "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/oss_catalog.json"
 CONNECTOR_PATH_PREFIX = "airbyte-integrations/connectors"
@@ -70,6 +70,8 @@ def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[
     Returns:
         Set[Connector]: Set of connectors that were changed
     """
+    airbyte_repo = git.Repo(search_parent_directories=True)
+
     if diff_regex is None:
         diff_command_args = ("--name-only", DIFFED_BRANCH)
     else:
@@ -77,7 +79,7 @@ def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[
 
     changed_acceptance_test_config_paths = {
         file_path
-        for file_path in AIRBYTE_REPO.git.diff(*diff_command_args).split("\n")
+        for file_path in airbyte_repo.git.diff(*diff_command_args).split("\n")
         if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) and file_path.endswith(ACCEPTANCE_TEST_CONFIG_FILE_NAME)
     }
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_acceptance_test_config_paths}
@@ -206,9 +208,10 @@ class Connector:
 
 def get_changed_connectors() -> Set[Connector]:
     """Retrieve a set of Connectors that were changed in the current branch (compared to master)."""
+    airbyte_repo = git.Repo(search_parent_directories=True)
     changed_source_connector_files = {
         file_path
-        for file_path in AIRBYTE_REPO.git.diff("--name-only", DIFFED_BRANCH).split("\n")
+        for file_path in airbyte_repo.git.diff("--name-only", DIFFED_BRANCH).split("\n")
         if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX)
     }
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_source_connector_files}

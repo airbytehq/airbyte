@@ -8,13 +8,7 @@ from typing import Optional, Set
 
 import anyio
 import git
-from ci_connector_ops.utils import (
-    AIRBYTE_REPO,
-    DESTINATION_CONNECTOR_PATH_PREFIX,
-    SOURCE_CONNECTOR_PATH_PREFIX,
-    Connector,
-    get_connector_name_from_path,
-)
+from ci_connector_ops.utils import DESTINATION_CONNECTOR_PATH_PREFIX, SOURCE_CONNECTOR_PATH_PREFIX, Connector, get_connector_name_from_path
 from dagger import Config, Connection, Container, QueryError
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
@@ -102,11 +96,11 @@ async def with_stdout(container: Container) -> str:
 
 
 def get_current_git_branch() -> str:
-    return AIRBYTE_REPO.active_branch.name
+    return git.Repo().active_branch.name
 
 
 def get_current_git_revision() -> str:
-    return AIRBYTE_REPO.head.object.hexsha
+    return git.Repo().head.object.hexsha
 
 
 async def get_modified_files_remote(current_git_revision: str, diffed_branch: str = "origin/master") -> Set[str]:
