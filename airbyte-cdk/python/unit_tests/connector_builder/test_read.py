@@ -198,6 +198,48 @@ def test_read_stream_with_logs():
     for i, actual_log in enumerate(stream_read_object.logs):
         assert actual_log == expected_logs[i]
 
+@pytest.mark.parametrize(
+    "request_record_limit, max_record_limit",
+    [
+        pytest.param(1, 3, id="test_create_request_with_record_limit"),
+        pytest.param(3, 1, id="test_create_request_record_limit_exceeds_max"),
+    ],
+)
+def test_read_stream_record_limit(request_record_limit, max_record_limit):
+    request = {
+        "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
+        "headers": {"Content-Type": "application/json"},
+        "body": {"custom": "field"},
+    }
+    response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
+    mock_source = make_mock_source(
+        iter(
+            [
+                request_log_message(request),
+                response_log_message(response),
+                record_message("hashiras", {"name": "Shinobu Kocho"}),
+                record_message("hashiras", {"name": "Muichiro Tokito"}),
+                request_log_message(request),
+                response_log_message(response),
+                record_message("hashiras", {"name": "Mitsuri Kanroji"}),
+                response_log_message(response),
+            ]
+        )
+    )
+    n_records = 2
+    record_limit = min(request_record_limit, max_record_limit)
+
+    api = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES, max_record_limit=max_record_limit)
+    actual_response: AirbyteMessage =  api.read_stream(mock_source, config=CONFIG, stream="hashiras", record_limit=request_record_limit)
+    record = actual_response.record
+    stream_read_object: StreamRead = StreamRead(**record.data)
+    stream_read_object.slices = [StreamReadSlicesInner(**s) for s in stream_read_object.slices]
+    single_slice = stream_read_object.slices[0]
+    total_records = 0
+    for i, actual_page in enumerate(single_slice.pages):
+        total_records += len(actual_page["records"])
+    assert total_records == min([record_limit, n_records])
+
 def make_mock_source(return_value: Iterator) -> MagicMock:
     mock_source = MagicMock()
     mock_source.read.return_value = return_value
