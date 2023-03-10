@@ -49,21 +49,3 @@ def resolve_manifest(source) -> Union[AirbyteMessage, AirbyteRecordMessage]:
 
 def _emitted_at():
     return int(datetime.now().timestamp()) * 1000
-
-
-def _create_configure_catalog(stream_name: str) -> ConfiguredAirbyteCatalog:
-    return ConfiguredAirbyteCatalog.parse_obj(
-        {
-            "streams": [
-                {
-                    "stream": {
-                        "name": stream_name,
-                        "json_schema": {},
-                        "supported_sync_modes": ["full_refresh", "incremental"],
-                    },
-                    "sync_mode": "full_refresh",
-                    "destination_sync_mode": "overwrite",
-                }
-            ]
-        }
-    )
