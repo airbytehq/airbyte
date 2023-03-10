@@ -307,6 +307,61 @@ def test_read_stream_limit_0():
     with pytest.raises(ValueError):
         api.read_stream(source=mock_source, config=CONFIG, stream="hashiras", record_limit=0)
 
+def test_read_stream_no_records():
+    request = {
+        "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
+        "headers": {"Content-Type": "application/json"},
+        "body": {"custom": "field"},
+        "http_method": "GET",
+    }
+    response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
+    expected_pages = [
+        {
+            "request":{
+                "url":"https://demonslayers.com/api/v1/hashiras",
+                "parameters": {"era": ["taisho"]},
+                "headers": {"Content-Type": "application/json"},
+                "body": {"custom": "field"},
+                "http_method": "GET",
+            },
+            "response":{"status": 200, "headers": {"field": "value"}, "body":'{"name": "field"}'},
+            "records":[],
+        },
+        {
+            "request":{
+                "url": "https://demonslayers.com/api/v1/hashiras",
+                "parameters": {"era": ["taisho"]},
+                "headers": {"Content-Type": "application/json"},
+                "body": {"custom": "field"},
+                "http_method": "GET",
+            },
+            "response": {"status":200, "headers":{"field": "value"}, "body": '{"name": "field"}'},
+            "records": [],
+        },
+    ]
+
+    mock_source = make_mock_source(
+        iter(
+            [
+                request_log_message(request),
+                response_log_message(response),
+                request_log_message(request),
+                response_log_message(response),
+            ]
+        )
+    )
+
+    api = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES)
+
+    actual_response: AirbyteMessage = api.read_stream(source=mock_source, config=CONFIG, stream="hashiras")
+    record = actual_response.record
+    stream_read_object: StreamRead = StreamRead(**record.data)
+    stream_read_object.slices = [StreamReadSlicesInner(**s) for s in stream_read_object.slices]
+
+    single_slice = stream_read_object.slices[0]
+    for i, actual_page in enumerate(single_slice.pages):
+        assert actual_page == expected_pages[i]
+
 def make_mock_source(return_value: Iterator) -> MagicMock:
     mock_source = MagicMock()
     mock_source.read.return_value = return_value
