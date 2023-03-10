@@ -56,17 +56,21 @@ def handle_connector_request(source: ManifestDeclarativeSource, args: List[str])
 
 
 def handle_request(args: List[str]):
-    # FIXME: need to make sure the manifest is passed in the config too!
     parser = AirbyteEntrypoint.parse_args(args)
+    command = parser.command
     config_path = parser.config
-    catalog_path = parser.catalog
     config = BaseConnector.read_config(config_path)
-    catalog = Source.read_catalog(catalog_path)
-    is_builder_request = connector_builder_handler.is_connector_builder_request(config, catalog)
-    source = create_source(config, is_builder_request)
-    if is_builder_request:
-        handle_connector_builder_request(source, config, catalog)
+    if command == "read":
+        catalog_path = parser.catalog
+        catalog = Source.read_catalog(catalog_path)
+        is_builder_request = connector_builder_handler.is_connector_builder_request(config, catalog)
+        source = create_source(config, is_builder_request)
+        if is_builder_request:
+            handle_connector_builder_request(source, config, catalog)
+        else:
+            handle_connector_request(source, args)
     else:
+        source = create_source(config, False)
         handle_connector_request(source, args)
 
 

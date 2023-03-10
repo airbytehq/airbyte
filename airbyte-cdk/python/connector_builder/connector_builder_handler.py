@@ -47,7 +47,7 @@ def resolve_manifest(source: ManifestDeclarativeSource) -> AirbyteMessage:
         return error.as_airbyte_message()
 
 
-CONNECTOR_BUILDER_STREAMS= {
+CONNECTOR_BUILDER_STREAMS = {
     "resolve_manifest",
     "list_streams"
 }
