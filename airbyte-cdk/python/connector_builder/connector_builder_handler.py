@@ -16,11 +16,11 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from connector_builder.message_grouper import MessageGrouper
 
 
-def list_streams() -> AirbyteRecordMessage:
+def list_streams() -> AirbyteMessage:
     raise NotImplementedError
 
 
-def read_stream(source: DeclarativeSource, config: Mapping[str, Any]):
+def read_stream(source: DeclarativeSource, config: Mapping[str, Any]) -> AirbyteMessage:
     command_config = config.get("__command_config")
     stream_name = command_config["stream_name"]
     max_pages_per_slice = command_config["max_pages_per_slice"]
@@ -35,13 +35,13 @@ def read_stream(source: DeclarativeSource, config: Mapping[str, Any]):
     ))
 
 
-def resolve_manifest(source) -> Union[AirbyteMessage, AirbyteRecordMessage]:
+def resolve_manifest(source) -> AirbyteMessage:
     try:
-        return AirbyteRecordMessage(
+        return AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(
             data={"manifest": source.resolved_manifest},
             emitted_at=_emitted_at(),
             stream="",
-        )
+        ))
     except Exception as exc:
         error = AirbyteTracedException.from_exception(exc, message="Error resolving manifest.")
         return error.as_airbyte_message()

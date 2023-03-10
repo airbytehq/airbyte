@@ -51,6 +51,7 @@ def execute_command(source: DeclarativeSource, config: Mapping[str, Any]) -> Air
         return connector_builder_handler.read_stream(source, config)
     raise ValueError(f"Unrecognized command {command}.")
 
+
 def handle_connector_builder_request(source: DeclarativeSource, config: Mapping[str, Any]):
     message = execute_command(source, config)
     print(message.json(exclude_unset=True))
