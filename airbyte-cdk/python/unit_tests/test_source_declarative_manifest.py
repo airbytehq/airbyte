@@ -8,11 +8,11 @@ from typing import Mapping, Any
 from unittest import mock
 
 import pytest
+
 import source_declarative_manifest
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, Type, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from source_declarative_manifest.main import handle_connector_builder_request, handle_request
-import argparse
 
 CONFIG = {
     "__injected_declarative_manifest": {
