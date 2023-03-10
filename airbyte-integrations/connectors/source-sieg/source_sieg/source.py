@@ -58,25 +58,25 @@ class BaseClass(HttpStream):
                 return merchant_uid
         return None
 
-    def request_body_json(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Optional[Mapping]:
+    # def request_body_json(
+    #     self,
+    #     stream_state: Mapping[str, Any],
+    #     stream_slice: Mapping[str, Any] = None,
+    #     next_page_token: Mapping[str, Any] = None,
+    # ) -> Optional[Mapping]:
 
-        payload = {
-            "apikey": self.api_key,
-            "email": self.email,
-            "xmltype": self.xmltype,
-            "take": self.take,
-            "skip": self.skip,
-            "dataInicio": self.start_date,
-            "dataFim": self.end_date,
-            "downloadevent": self.downloadevent
-        }
+    #     payload = {
+    #         "apikey": self.api_key,
+    #         "email": self.email,
+    #         "xmltype": self.xmltype,
+    #         "take": self.take,
+    #         "skip": self.skip,
+    #         "dataInicio": self.start_date,
+    #         "dataFim": self.end_date,
+    #         "downloadevent": self.downloadevent
+    #     }
 
-        return payload
+    #     return payload
 
     def get_payload_skip(self, skip):
         payload = {
@@ -220,6 +220,34 @@ class Nfe(BaseClass):
     downloadevent = False
     class_identifier = "NFe"
 
+    def __init__(self, config: Mapping[str, Any], **kwargs):
+        super().__init__()
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+
+        payload = {
+            "apikey": self.api_key,
+            "email": self.email,
+            "xmltype": self.xmltype,
+            "take": self.take,
+            "skip": self.skip,
+            "dataInicio": self.start_date,
+            "dataFim": self.end_date,
+            "downloadevent": self.downloadevent
+        }
+
+        return payload
+    
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "aws/api-xml-search.ashx"
+
     def get_created_at(self, xml_item):
         try:
             return xml_item["nfeProc"]["NFe"]["infNFe"]["ide"]["dhEmi"]
@@ -264,11 +292,6 @@ class Nfe(BaseClass):
         cnpjs.append(cnpj_inf)
         
         return cnpjs
-    
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "aws/api-xml-search.ashx"
 
 
 class Cte(BaseClass):
@@ -276,6 +299,34 @@ class Cte(BaseClass):
     downloadevent = False
     class_identifier = "CTe"
 
+    def __init__(self, config: Mapping[str, Any], **kwargs):
+        super().__init__()
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+
+        payload = {
+            "apikey": self.api_key,
+            "email": self.email,
+            "xmltype": self.xmltype,
+            "take": self.take,
+            "skip": self.skip,
+            "dataInicio": self.start_date,
+            "dataFim": self.end_date,
+            "downloadevent": self.downloadevent
+        }
+
+        return payload
+    
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "aws/api-xml-search.ashx"
+    
     def get_created_at(self, xml_item):
         try:
             return xml_item["cteProc"]["CTe"]["infCte"]["ide"]["dhEmi"]
@@ -325,37 +376,80 @@ class Cte(BaseClass):
         cnpjs.append(cnpj_inf)
         
         return cnpjs
-    
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "aws/api-xml-search.ashx"
+
 
 class NfeEvents(Nfe):
     xmltype = "nfe"
     downloadevent = True
     class_identifier = "Evento_NFe"
 
-    def get_invoice_type(self, xml_item):
-        return "evento_nfe"
+    def __init__(self, config: Mapping[str, Any], **kwargs):
+        super().__init__()
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+
+        payload = {
+            "apikey": self.api_key,
+            "email": self.email,
+            "xmltype": self.xmltype,
+            "take": self.take,
+            "skip": self.skip,
+            "dataInicio": self.start_date,
+            "dataFim": self.end_date,
+            "downloadevent": self.downloadevent
+        }
+
+        return payload
     
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "aws/api-xml-search.ashx"
+
+    def get_invoice_type(self, xml_item):
+        return "evento_nfe"
+
 
 class CteEvents(Cte):
     xmltype = "cte"
     downloadevent = True
     class_identifier = "Evento_CTe"
 
-    def get_invoice_type(self, xml_item):
-        return "evento_cte"
+    def __init__(self, config: Mapping[str, Any], **kwargs):
+        super().__init__()
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+
+        payload = {
+            "apikey": self.api_key,
+            "email": self.email,
+            "xmltype": self.xmltype,
+            "take": self.take,
+            "skip": self.skip,
+            "dataInicio": self.start_date,
+            "dataFim": self.end_date,
+            "downloadevent": self.downloadevent
+        }
+
+        return payload
     
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "aws/api-xml-search.ashx"
+
+    def get_invoice_type(self, xml_item):
+        return "evento_cte"
 
 
 class SourceSieg(AbstractSource):
