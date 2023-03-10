@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, List, Mapping, Optional, Union, Tuple
 
 import pendulum
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
@@ -91,6 +91,26 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
 
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         return self._refresh_request_body.eval(self.config)
+
+    def refresh_access_token(self) -> Tuple[str, Any]:
+        """
+        Returns the refresh token and its lifespan in seconds
+
+        This overrides the parent class method because the parent class assumes the "expires_in" field is always an int representing
+         seconds till token expiry.
+
+        However, this class provides the ability to determine the expiry date of an access token either by using (pseudocode):
+        * expiry_datetime = datetime.now() + seconds_till_access_token_expiry # in this option we have to calculate expiry timestamp, OR
+        * expiry_datetime = parse(response.headers["expires_at"]) # in this option the API tells us exactly when access token expires
+
+        :return: a tuple of (access_token, either token_lifespan_in_seconds or datetime_of_token_expiry)
+
+        # TODO this is a hack and should be better encapsulated/enabled by the AbstractOAuthAuthenticator i.e: that class should have
+                a method which takes the HTTP response and returns a timestamp for when the access token will expire which subclasses
+                such as this one can override or just configure directly.
+        """
+        response_json = self._get_refresh_access_token_response()
+        return response_json[self.get_access_token_name()], response_json[self.get_expires_in_name()]
 
     def get_token_expiry_date(self) -> pendulum.DateTime:
         return self._token_expiry_date
