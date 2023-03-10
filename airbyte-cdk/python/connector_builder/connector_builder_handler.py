@@ -19,6 +19,7 @@ from connector_builder.message_grouper import MessageGrouper
 def list_streams() -> AirbyteRecordMessage:
     raise NotImplementedError
 
+
 def read_stream(source: DeclarativeSource, config: Mapping[str, Any]):
     command_config = config.get("__command_config")
     stream_name = command_config["stream_name"]
@@ -49,6 +50,7 @@ def resolve_manifest(source) -> Union[AirbyteMessage, AirbyteRecordMessage]:
 def _emitted_at():
     return int(datetime.now().timestamp()) * 1000
 
+
 def _create_configure_catalog(stream_name: str) -> ConfiguredAirbyteCatalog:
     return ConfiguredAirbyteCatalog.parse_obj(
         {
@@ -65,4 +67,3 @@ def _create_configure_catalog(stream_name: str) -> ConfiguredAirbyteCatalog:
             ]
         }
     )
-

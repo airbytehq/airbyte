@@ -1,107 +1,20 @@
-from typing import Iterable, Iterator
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
-from airbyte_cdk.models import AirbyteMessage
-from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
-from datetime import datetime
-from typing import List
-
-from airbyte_cdk.models import AirbyteRecordMessage
-from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-
-from dataclasses import asdict, dataclass
-from copy import deepcopy
 import json
 from json import JSONDecodeError
-from typing import Any, Dict, Iterable, Iterator, Mapping, Optional, Union
+from typing import Any, Iterable, Iterator, Mapping, Optional, Union
 from urllib.parse import parse_qs, urlparse
 
+from airbyte_protocol.models.airbyte_protocol import ConfiguredAirbyteCatalog
+
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
+from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
+from connector_builder.models import StreamRead, StreamReadPages, HttpResponse, HttpRequest, StreamReadSlices
 import logging
-from airbyte_protocol.models.airbyte_protocol import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, SyncMode, DestinationSyncMode
-
-
-@dataclass
-class HttpResponse:
-    status: int
-    body: Optional[str] = None
-    headers: Optional[Dict[str, Any]] = None
-
-@dataclass
-class HttpRequest:
-    url: str
-    parameters: Optional[Dict[str, Any]]
-    body: Optional[Dict[str, Any]]
-    headers: Optional[Dict[str, Any]]
-    http_method: str
-@dataclass
-class StreamReadPages:
-    records: List[object]
-    request: Optional[HttpRequest] = None
-    response: Optional[HttpResponse] = None
-
-@dataclass
-class StreamReadSlicesInnerPagesInner:
-
-    records: List[object]
-    request: Optional[HttpRequest]
-    response: Optional[HttpResponse]
-
-@dataclass
-class StreamReadSlicesInnerSliceDescriptor:
-    start_datetime: Optional[datetime]
-    list_item: Optional[str]
-
-@dataclass
-class StreamReadSlicesInner:
-    pages: List[StreamReadSlicesInnerPagesInner]
-    slice_descriptor: Optional[StreamReadSlicesInnerSliceDescriptor]
-    state: Optional[Dict[str, Any]]
-
-@dataclass
-class StreamRead(object):
-    logs: List[object]
-    slices: List[StreamReadSlicesInner]
-    test_read_limit_reached: bool
-    inferred_schema: Optional[Dict[str, Any]]
-
-@dataclass
-class StreamReadRequestBody:
-    manifest: Dict[str, Any]
-    stream: str
-    config: Dict[str, Any]
-    state: Optional[Dict[str, Any]]
-    record_limit: Optional[int]
-
-    def __post_init__(self):
-        raise ValueError("here")
-        if not (1 <= self.record_limit <= 1000):
-            raise ValueError("") #FIXME
-
-#FIXME: can dataclasses also have validators?
-"""
-    @validator("record_limit")
-    def record_limit_max(cls, value):
-        assert value <= 1000
-        return value
-
-    @validator("record_limit")
-    def record_limit_min(cls, value):
-        assert value >= 1
-        return value
-"""
-
-@dataclass
-class StreamReadSliceDescriptor:
-    start_datetime: Optional[datetime] = None
-    list_item: Optional[str] = None
-
-@dataclass
-class StreamReadSlices:
-    pages: List[StreamReadPages]
-    slice_descriptor: Optional[StreamReadSliceDescriptor] = None
-    state: Optional[Dict[str, Any]] = None
+from copy import deepcopy
 
 
 class MessageGrouper:
