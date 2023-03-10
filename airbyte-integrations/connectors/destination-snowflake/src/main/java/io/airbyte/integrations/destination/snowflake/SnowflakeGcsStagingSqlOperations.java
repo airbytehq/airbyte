@@ -119,7 +119,8 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
    * Upload the file from {@code recordsData} to S3 and simplify the filename as <partId>.<extension>.
    *
    * <p>
-   * Method mirrors similarly named method within {@link io.airbyte.integrations.destination.s3.S3StorageOperations}
+   * Method mirrors similarly named method within
+   * {@link io.airbyte.integrations.destination.s3.S3StorageOperations}
    * </p>
    *
    * @param objectPath filepath to the object
