@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "transaction": {"type": ["null", "string"]},
+    "product.name": {"type": ["null", "string"]},
+    "product.id": {"type": ["null", "integer"]},
+    "base.currency_code": {"type": ["null", "string"]},
+    "base.value": {"type": ["null", "number"]},
+    "total.currency_code": {"type": ["null", "string"]},
+    "total.value": {"type": ["null", "number"]},
+    "vat.currency_code": {"type": ["null", "string"]},
+    "vat.value": {"type": ["null", "number"]},
+    "fee.currency_code": {"type": ["null", "string"]},
+    "fee.value": {"type": ["null", "number"]},
+    "coupon.code": {"type": ["null", "string"]},
+    "coupon.value": {"type": ["null", "number"]},
+    "real_conversion_rate": {"type": ["null", "number"]}
+  }
+}

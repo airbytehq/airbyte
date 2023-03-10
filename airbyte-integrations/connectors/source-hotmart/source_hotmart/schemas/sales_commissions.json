@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "transaction": {"type": ["null", "string"]},
+    "product.name": {"type": ["null", "string"]},
+    "product.id": {"type": ["null", "integer"]},
+    "exchange_rate_currency_payout": {"type": ["null", "number"]},
+    "commission.currency_code": {"type": ["null", "string"]},
+    "commission.value": {"type": ["null", "number"]},
+    "user.ucode": {"type": ["null", "string"]},
+    "user.name": {"type": ["null", "string"]},
+    "source": {"type": ["null", "string"]}
+  }
+}

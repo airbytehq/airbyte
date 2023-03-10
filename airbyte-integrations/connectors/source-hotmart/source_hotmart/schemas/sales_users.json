@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "transaction": {"type": ["null", "string"]},
+    "product.name": {"type": ["null", "string"]},
+    "product.id": {"type": ["null", "integer"]},
+    "role": {"type": ["null", "string"]},
+    "user.ucode": {"type": ["null", "string"]},
+    "user.locale": {"type": ["null", "string"]},
+    "user.name": {"type": ["null", "string"]},
+    "user.trade_name": {"type": ["null", "string"]},
+    "user.cellphone": {"type": ["null", "string"]},
+    "user.phone": {"type": ["null", "string"]},
+    "user.email": {"type": ["null", "string"]},
+    "user.address.city": {"type": ["null", "string"]},
+    "user.address.state": {"type": ["null", "string"]},
+    "user.address.country": {"type": ["null", "string"]},
+    "user.address.zip_code": {"type": ["null", "string"]},
+    "user.address.address": {"type": ["null", "string"]},
+    "user.address.complement": {"type": ["null", "string"]},
+    "user.address.neighborhood": {"type": ["null", "string"]},
+    "user.address.number": {"type": ["null", "string"]}
+  }
+}
