@@ -14,9 +14,6 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from connector_builder.message_grouper import MessageGrouper
 
 
-
-
-
 def list_streams() -> AirbyteMessage:
     raise NotImplementedError
 
@@ -49,14 +46,16 @@ def resolve_manifest(source: ManifestDeclarativeSource) -> AirbyteMessage:
         error = AirbyteTracedException.from_exception(exc, message="Error resolving manifest.")
         return error.as_airbyte_message()
 
-CONNECTOR_BUILDER_STREAM_TO_FUNCTIONS = {
-    "resolve_manifest": resolve_manifest
+
+CONNECTOR_BUILDER_STREAMS= {
+    "resolve_manifest",
+    "list_streams"
 }
 
+
 def is_connector_builder_request(config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog):
-    # TODO handle test read
     stream_names = set([s.stream.name for s in configured_catalog.streams])
-    if any([s in CONNECTOR_BUILDER_STREAM_TO_FUNCTIONS for s in stream_names]) or "__test_read_config" in config:
+    if any([s in CONNECTOR_BUILDER_STREAMS for s in stream_names]) or "__test_read_config" in config:
         if len(stream_names) != 1:
             raise ValueError(f"Only reading from a single stream is supported. Got: {stream_names}")
         return True
@@ -66,4 +65,3 @@ def is_connector_builder_request(config: Mapping[str, Any], configured_catalog: 
 
 def _emitted_at():
     return int(datetime.now().timestamp()) * 1000
-

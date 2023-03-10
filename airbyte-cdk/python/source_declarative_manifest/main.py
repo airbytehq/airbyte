@@ -35,9 +35,8 @@ def get_config_from_args(args: List[str]) -> Mapping[str, Any]:
     return config
 
 
-
-def execute_command(source: ManifestDeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog) -> AirbyteMessage:
-
+def execute_command(source: ManifestDeclarativeSource, config: Mapping[str, Any],
+                    configured_catalog: ConfiguredAirbyteCatalog) -> AirbyteMessage:
     command = configured_catalog.streams[0].stream.name
     if command == "resolve_manifest":
         return connector_builder_handler.resolve_manifest(source)
@@ -45,7 +44,8 @@ def execute_command(source: ManifestDeclarativeSource, config: Mapping[str, Any]
         return connector_builder_handler.read_stream(source, config, configured_catalog)
 
 
-def handle_connector_builder_request(source: ManifestDeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog):
+def handle_connector_builder_request(source: ManifestDeclarativeSource, config: Mapping[str, Any],
+                                     configured_catalog: ConfiguredAirbyteCatalog):
     message = execute_command(source, config, configured_catalog)
     print(message.json(exclude_unset=True))
 
@@ -54,8 +54,9 @@ def handle_connector_request(source: ManifestDeclarativeSource, args: List[str])
     # Verify that the correct args are present for the production codepaths.
     launch(source, sys.argv[1:])
 
+
 def handle_request(args: List[str]):
-    #FIXME: need to make sure the manifest is passed in the config too!
+    # FIXME: need to make sure the manifest is passed in the config too!
     parser = AirbyteEntrypoint.parse_args(args)
     config_path = parser.config
     catalog_path = parser.catalog
