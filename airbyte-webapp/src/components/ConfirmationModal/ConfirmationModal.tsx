@@ -16,7 +16,8 @@ const Content = styled.div`
 `;
 
 const ButtonContent = styled.div`
-  margin: 50px 0 36px 0;
+  width: 85%;
+  margin: 50px auto 36px auto;
   display: flex;
   justify-content: space-around;
   flex-direction: row-reverse;
@@ -61,6 +62,8 @@ export interface ConfirmationModalProps {
   submitButtonDataId?: string;
   cancelButtonText?: string;
   center?: boolean;
+  contentValues?: any;
+  loading?: boolean;
 }
 
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -69,28 +72,29 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   text,
   center,
   onSubmit,
+  contentValues,
   submitButtonText,
   submitButtonDataId,
   cancelButtonText,
+  loading,
 }) => {
   const { isLoading, startAction } = useLoadingState();
   const onSubmitBtnClick = () => startAction({ action: () => onSubmit() });
-
   return (
     <Modal onClose={onClose} title={<FormattedMessage id={title} />}>
       <Content>
         <Text center={center}>
-          <FormattedMessage id={text} />
+          <FormattedMessage id={text} values={contentValues ?? {}} />
         </Text>
         <ButtonContent>
-          <ButtonWithMargin onClick={onClose} type="button" disabled={isLoading}>
+          <ButtonWithMargin onClick={onClose} type="button" disabled={loading || isLoading}>
             <FormattedMessage id={cancelButtonText ?? "form.cancel"} />
           </ButtonWithMargin>
           <ButtonLoadingContainer
             onClick={onSubmitBtnClick}
             secondary
             data-id={submitButtonDataId}
-            isLoading={isLoading}
+            isLoading={loading || isLoading}
           >
             <FormattedMessage id={submitButtonText} />
           </ButtonLoadingContainer>

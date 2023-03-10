@@ -38,7 +38,7 @@ const Modal: React.FC<ModalProps> = ({ children, size, title, onClose, cardless,
             children
           ) : (
             <div className={classNames(styles.card, size ? cardStyleBySize[size] : undefined)}>
-              <div className={styles.cardTitle}>{title}</div>
+              {title && <div className={styles.cardTitle}>{title}</div>}
               {children}
             </div>
             // <Card title={title} className={classNames(styles.card, size ? cardStyleBySize[size] : undefined)}>

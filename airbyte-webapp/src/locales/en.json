@@ -532,9 +532,7 @@
   "subscription.plan.update": "Congrats! Your change was successful!",
 
   "subscription.cancelSubscriptionModal.title": "Cancel subscription?",
-  "subscription.cancelSubscriptionModal.desc1": "Your current plan expires on {expiryDate}.",
-  "subscription.cancelSubscriptionModal.desc2": "You will still be able to use your current plan until it expires.",
-  "subscription.cancelSubscriptionModal.desc3": "Are you sure you want to cancel your subscription?",
+  "subscription.cancelSubscriptionModal.content": "Your current plan expires on {expiryDate}.\nYou will still be able to use your current plan until it expires.\nAre you sure you want to cancel your subscription?",
 
   "payment.planName": "{planName} Plan",
   "payment.planDeductionTime": "month",
