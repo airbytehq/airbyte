@@ -66,7 +66,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlSource.class);
   public static final String DESCRIBE_TABLE_QUERY =
       """
-      sp_columns %s
+      sp_columns "%s"
       """;
   public static final String NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY =
       """
