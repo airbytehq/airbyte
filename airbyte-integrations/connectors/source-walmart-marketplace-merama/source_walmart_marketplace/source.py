@@ -127,7 +127,7 @@ class WalmartMarketplaceBase(HttpStream):
 
             item_list.append(item_json)
         if len(response_json[self.record_list_name]) > 0:
-            self.new_initial_date = datetime.strptime(response_json[self.record_list_name][0][self.record_creation_date_key], '%Y-%m-%dT%H:%M:%S.000-06:00')
+            self.new_initial_date = datetime.strptime(response_json[self.record_list_name][0][self.record_creation_date_key], '%Y-%m-%dT%H:%M:%S.%f%z')
 
         return item_list
 
@@ -192,6 +192,7 @@ class Orders(WalmartMarketplaceBase):
         logger.info('old_offset')
         logger.info(self.offset)
         if self.totalCount == 0:
+            self.offset = 0
             return None
         elif self.totalCount - self.offset  <= self.limit:
             self.offset = self.totalCount
@@ -210,19 +211,19 @@ class Orders(WalmartMarketplaceBase):
     ) -> str:
 
         # logger.info(stream_slice)
-        # param_createdStartDate = stream_slice['createdStartDate']
-        # param_createdEndDate = stream_slice['createdEndDate']
-        # param_limit = stream_slice['limit']
-        param_createdStartDate = self.createdStartDate
-        param_createdEndDate = self.createdEndDate
-        param_limit = self.limit
+        param_createdStartDate = stream_slice['createdStartDate']
+        param_createdEndDate = stream_slice['createdEndDate']
+        param_limit = stream_slice['limit']
+        # param_createdStartDate = self.createdStartDate
+        # param_createdEndDate = self.createdEndDate
+        # param_limit = self.limit
         param_offset = self.offset
 
         return f"{self.endpoint_name}?limit={param_limit}&createdStartDate={param_createdStartDate}&createdEndDate={param_createdEndDate}&offset={param_offset}"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
 
-        latest_record_date = datetime.strptime(latest_record['data'][self.record_creation_date_key], '%Y-%m-%dT%H:%M:%S.000-06:00')
+        latest_record_date = datetime.strptime(latest_record['data'][self.record_creation_date_key], '%Y-%m-%dT%H:%M:%S.%f%z')
         logger.info('get_updated_state log:')
         logger.info(latest_record_date)
         logger.info(current_stream_state)
@@ -236,40 +237,41 @@ class Orders(WalmartMarketplaceBase):
 
         return {self.cursor_field: latest_record_date}
 
-    # def _chunk_slices(self, createdStartDate: datetime) -> List[Mapping[str, any]]:
-    #     slices = []
-    #
-    #     while createdStartDate <= datetime.now():
-    #         # for status in status_list:
-    #         slice = {}
-    #         slice['limit'] = 100
-    #         slice["createdStartDate"] = datetime.strftime(createdStartDate, "%Y-%m-%dT00:00:00Z")
-    #         slice["createdEndDate"] = datetime.strftime(createdStartDate, "%Y-%m-%dT23:59:59Z")
-    #         slices.append(slice)
-    #
-    #         createdStartDate += timedelta(days=1)
-    #
-    #     logger.info('slices content log:')
-    #     logger.info(slices)
-    #
-    #     return slices
-    #
-    # def stream_slices(
-    #         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    # ) -> Iterable[Optional[Mapping[str, any]]]:
-    #
-    #     # createdStartDate = self.createdStartDate
-    #
-    #     if stream_state and (self.cursor_field in stream_state):
-    #         if isinstance(stream_state[self.cursor_field], str):
-    #             current_stream_state_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S')
-    #         else:
-    #             current_stream_state_date = stream_state[self.cursor_field]
-    #
-    #     createdStartDate = current_stream_state_date - timedelta(
-    #         days=15) if stream_state and self.cursor_field in stream_state else self.createdStartDate
-    #
-    #     return self._chunk_slices(createdStartDate)
+    def _chunk_slices(self, createdStartDate: datetime) -> List[Mapping[str, any]]:
+        slices = []
+
+        while createdStartDate <= datetime.now():
+            # for status in status_list:
+            slice = {}
+            slice['limit'] = 100
+            slice["createdStartDate"] = datetime.strftime(createdStartDate, "%Y-%m-%dT00:00:00Z")
+            slice["createdEndDate"] = datetime.strftime(createdStartDate, "%Y-%m-%dT23:59:59Z")
+            slice['offset'] = 0
+            slices.append(slice)
+
+            createdStartDate += timedelta(days=1)
+
+        logger.info('slices content log:')
+        logger.info(slices)
+
+        return slices
+
+    def stream_slices(
+            self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, any]]]:
+
+        # createdStartDate = self.createdStartDate
+
+        if stream_state and (self.cursor_field in stream_state):
+            if isinstance(stream_state[self.cursor_field], str):
+                current_stream_state_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S')
+            else:
+                current_stream_state_date = stream_state[self.cursor_field]
+
+        createdStartDate = current_stream_state_date - timedelta(
+            days=15) if stream_state and self.cursor_field in stream_state else self.createdStartDate
+
+        return self._chunk_slices(createdStartDate)
 
 
 class Items(WalmartMarketplaceBase):
