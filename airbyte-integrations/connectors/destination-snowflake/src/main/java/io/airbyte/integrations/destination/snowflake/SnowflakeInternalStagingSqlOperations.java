@@ -88,7 +88,10 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
     return recordsData.getFilename();
   }
 
-  private void uploadRecordsToBucket(final JdbcDatabase database, final String stageName, final String stagingPath, final SerializableBuffer recordsData)
+  private void uploadRecordsToBucket(final JdbcDatabase database,
+                                     final String stageName,
+                                     final String stagingPath,
+                                     final SerializableBuffer recordsData)
       throws Exception {
     final String query = getPutQuery(stageName, stagingPath, recordsData.getFile().getAbsolutePath());
     LOGGER.debug("Executing query: {}", query);
