@@ -71,12 +71,21 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSource.class);
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
   public static final String NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY =
-      """
-        SELECT
-          (EXISTS (SELECT * FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s' AND is_nullable = 'YES' AND column_name = '%s'))
-        AND
-          (EXISTS (SELECT * from `%s`.`%s` where `%s` IS NULL LIMIT 1)) AS %s
-      """;
+          """
+            SELECT (EXISTS (SELECT * from `%s`.`%s` where `%s` IS NULL LIMIT 1)) AS %s
+          """;
+  public static final String NULL_CURSOR_VALUE_WITHOUT_SCHEMA_QUERY =
+          """
+          SELECT (EXISTS (SELECT * from %s where `%s` IS NULL LIMIT 1)) AS %s
+          """;
+  public static final String DESCRIBE_TABLE_WITHOUT_SCHEMA_QUERY =
+          """
+          DESCRIBE %s
+          """;
+  public static final String DESCRIBE_TABLE_WITH_SCHEMA_QUERY =
+          """
+          DESCRIBE `%s`.`%s`
+          """;
 
   public static final String DRIVER_CLASS = DatabaseDriver.MYSQL.getDriverClassName();
   public static final String MYSQL_CDC_OFFSET = "mysql_cdc_offset";
@@ -325,18 +334,36 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   @Override
   protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName)
           throws SQLException {
-    ;
+    boolean nullValExist = false;
     final String resultColName = "nullValue";
+    final String descQuery = schema == null || schema.isBlank()
+            ? String.format(DESCRIBE_TABLE_WITHOUT_SCHEMA_QUERY, tableName)
+            : String.format(DESCRIBE_TABLE_WITH_SCHEMA_QUERY, schema, tableName);
+    final Optional<JsonNode> field = database.bufferedResultSetQuery(conn -> conn.createStatement()
+                            .executeQuery(descQuery),
+                    resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet))
+            .stream().filter(x -> x.get("Field").asText().equalsIgnoreCase(columnName))
+            .findFirst();
+    if(field.isPresent()){
+      final JsonNode jsonNode = field.get();
+      final JsonNode isNullable = jsonNode.get("Null");
+      if (isNullable!=null){
+        if (isNullable.asText().equalsIgnoreCase("YES")){
+          final String query = schema == null || schema.isBlank()
+                  ? String.format(NULL_CURSOR_VALUE_WITHOUT_SCHEMA_QUERY,
+                  tableName, columnName, resultColName)
+                  : String.format(NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY,
+                  schema, tableName, columnName, resultColName) ;
 
-    final String query = String.format(NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY,
-            schema, tableName, columnName, schema, tableName, columnName, resultColName);
-
-    LOGGER.debug("null value query: {}", query);
-    final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(query),
-            resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
-    Preconditions.checkState(jsonNodes.size() == 1);
-    final boolean nullValExist = convertToBoolean(jsonNodes.get(0).get(resultColName).toString());
-    LOGGER.debug("null value exist: {}", nullValExist);
+          LOGGER.debug("null value query: {}", query);
+          final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(query),
+                  resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+          Preconditions.checkState(jsonNodes.size() == 1);
+          nullValExist = convertToBoolean(jsonNodes.get(0).get(resultColName).toString());
+          LOGGER.debug("null value exist: {}", nullValExist);
+        }
+      }
+    }
     return !nullValExist;
   }
 

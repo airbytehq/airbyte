@@ -110,7 +110,7 @@ public class MySqlSourceTests {
         .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD)) {
       db.start();
       final JsonNode config = getConfig(db, "test", "");
-      try (Connection connection = DriverManager.getConnection(db.getJdbcUrl(), "root", TEST_PASSWORD)) {
+      try (Connection connection = DriverManager.getConnection(db.getJdbcUrl(), "root", config.get(JdbcUtils.PASSWORD_KEY).asText())) {
         final ConfiguredAirbyteStream table = createTableWithNullValueCursor(connection);
         final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(table));
 
