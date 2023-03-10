@@ -416,6 +416,47 @@ def test_create_response_from_log_message(log_message, expected_response):
 
     assert actual_response == expected_response
 
+def test_read_stream_with_many_slices():
+    request = {}
+    response = {"status_code": 200}
+
+    mock_source = make_mock_source(
+        iter(
+            [
+                slice_message(),
+                request_log_message(request),
+                response_log_message(response),
+                record_message("hashiras", {"name": "Muichiro Tokito"}),
+                slice_message(),
+                request_log_message(request),
+                response_log_message(response),
+                record_message("hashiras", {"name": "Shinobu Kocho"}),
+                record_message("hashiras", {"name": "Mitsuri Kanroji"}),
+                request_log_message(request),
+                response_log_message(response),
+                record_message("hashiras", {"name": "Obanai Iguro"}),
+                request_log_message(request),
+                response_log_message(response),
+            ]
+        )
+    )
+
+    api = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES)
+
+    loop = asyncio.get_event_loop()
+    stream_read: StreamRead = api.read_stream(source=mock_source, config=CONFIG, stream="hashiras")
+
+    assert not stream_read.test_read_limit_reached
+    assert len(stream_read.slices) == 2
+
+    assert len(stream_read.slices[0].pages) == 1
+    assert len(stream_read.slices[0].pages[0].records) == 1
+
+    assert len(stream_read.slices[1].pages) == 3
+    assert len(stream_read.slices[1].pages[0].records) == 2
+    assert len(stream_read.slices[1].pages[1].records) == 1
+    assert len(stream_read.slices[1].pages[2].records) == 0
+
 def make_mock_source(return_value: Iterator) -> MagicMock:
     mock_source = MagicMock()
     mock_source.read.return_value = return_value
