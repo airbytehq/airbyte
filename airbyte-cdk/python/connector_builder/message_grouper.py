@@ -32,7 +32,7 @@ class MessageGrouper:
                              record_limit: Optional[int] = None,
     ) -> StreamRead:
         if record_limit is not None and not (1 <= record_limit <= 1000):
-            raise ValueError("")
+            raise ValueError(f"Record limit must be between 1 and 1000. Got {record_limit}")
         schema_inferrer = SchemaInferrer()
 
         if record_limit is None:
