@@ -35,3 +35,8 @@ connectionSpecification:
       type: string
       description: "Two letter country code where the account get it's data from"
       order: 2
+    user_id:
+      title: walmart account id
+      type: string
+      description: "id of the walmart account credentials (we can have multiple account for the same merchant/country)"
+      order: 3

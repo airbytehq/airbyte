@@ -36,6 +36,12 @@
                 "string"
             ]
         },
+        "user_id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
         "timeline": {
             "type": [
                 "null",

@@ -243,6 +243,8 @@ class IncrementalBlingBase(BlingBase):
         
         latest_record_date = datetime.strptime(latest_record['data'][self.record_date_field], self.record_date_field_format)
 
+        logger.info(latest_record_date)
+
         if current_stream_state.get(self.cursor_field):
             if isinstance(current_stream_state[self.cursor_field], str):
                 current_stream_state_date = datetime.strptime(current_stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S')
@@ -311,8 +313,7 @@ class NotaFiscal(IncrementalBlingBase):
         start_ingestion_date = self.start_date
         if self.cursor_field in stream_state.keys():
             start_ingestion_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S') - timedelta(hours=2)
-        
-        logger.info(start_ingestion_date)
+
 
         return f"{self.endpoint_name}/page={self.page}/json/?filters={self.api_date_filter_field}[{datetime.strftime(start_ingestion_date, '%d/%m/%Y %H')}:00:00 TO {datetime.strftime(datetime.now(), '%d/%m/%Y 23:59:59')}]" 
     
@@ -372,14 +373,16 @@ class NotaFiscal(IncrementalBlingBase):
 
     def get_nf_xml(self, item_list, nf_item_list):
         for item in nf_item_list:
-            xml = self.handle_request_error(item['data']['xml'] + f'&{self.api_key}').content
-            
-            try:
-                item['data_xml'] = xmltodict.parse(xml.strip())
-            except:
-                logger.info('Error for xml: %s', item['data']['xml'])
-                item['data_xml'] = {}
-                pass
+            read_xml = False 
+
+            while read_xml == False:
+                try:
+                    xml = self.handle_request_error(item['data']['xml'] + f'&{self.api_key}').content
+                    item['data_xml'] = xmltodict.parse(xml.strip())
+                    read_xml = True
+                except:
+                    logger.info('Error for xml: %s', item['data']['xml'])
+                    pass
 
             item_list.append(item)
 

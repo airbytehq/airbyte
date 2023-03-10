@@ -18,6 +18,9 @@
             },
             "WM_MARKET" : {
               "type" : "string"
+            },
+            "user_id" : {
+              "type" : "string"
             }
           }
         },
@@ -43,6 +46,9 @@
               "type" : "string"
             },
             "WM_MARKET" : {
+              "type" : "string"
+            },
+            "user_id" : {
               "type" : "string"
             }
           }

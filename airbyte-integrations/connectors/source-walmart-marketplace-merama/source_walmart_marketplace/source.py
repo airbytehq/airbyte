@@ -12,8 +12,8 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from datetime import datetime, timedelta
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.models import SyncMode
-import xmltodict
-from time import sleep
+# import xmltodict
+# from time import sleep
 
 
 class WalmartMarketplaceBase(HttpStream):
@@ -31,6 +31,7 @@ class WalmartMarketplaceBase(HttpStream):
         self.Authorization = 'Basic ' + base64.b64encode((self.client_id + ':' + self.client_secret).encode('utf-8')).decode('utf-8')
         self.WM_MARKET = config['WM_MARKET']
         self.merchant = config['merchant']
+        self.user_id = config['user_id']
         self.createdStartDate = datetime.strptime(config['createdStartDate'], '%Y-%m-%d') - timedelta(days=15)
         self.createdEndDate = datetime.now().strftime("%Y-%m-%d")
 
@@ -95,8 +96,11 @@ class WalmartMarketplaceBase(HttpStream):
 
         response_json = response.json()
         # logger.info(response_json)
+        logger.info('totalCount')
         logger.info(response_json[self.record_metadata_name]['totalCount'])
+        logger.info('limit')
         logger.info(response_json[self.record_metadata_name]['limit'])
+        self.totalCount = response_json[self.record_metadata_name]['totalCount']
         # if response_json[self.record_metadata_name]['totalCount'] < response_json[self.record_metadata_name]['limit']:
         #     self.timedelta_to_sum = 1
         # if response_json[self.record_metadata_name]['totalCount'] == 0:
@@ -113,6 +117,7 @@ class WalmartMarketplaceBase(HttpStream):
                 "source": self.WM_MARKET + "_WALMART",
                 "type": f"{self.merchant.lower()}_{self.record_key_name}",
                 "id": item[self.record_primary_key],
+                "user_id": self.user_id,
                 "timeline": "historic",
                 "created_at": item[self.record_creation_date_key],
                 "updated_at": item[self.record_update_date_key_1][0][self.record_update_date_key_2][0][self.record_update_date_key_3],
@@ -151,7 +156,8 @@ class Orders(WalmartMarketplaceBase):
         super().__init__(config)
 
         self.createdStartDate = datetime.strptime(config['createdStartDate'], '%Y-%m-%d')
-
+        self.offset = 0
+        self.totalCount = 0
         self._cursor_value = None
 
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
@@ -182,7 +188,19 @@ class Orders(WalmartMarketplaceBase):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
 
-        return None
+        # self.next_page_token = xmltodict.parse(response.text)['ns2:ItemResponses'][self.next_page_token_key]
+        logger.info('old_offset')
+        logger.info(self.offset)
+        if self.totalCount == 0:
+            return None
+        elif self.totalCount - self.offset  <= self.limit:
+            self.offset = self.totalCount
+        else:
+            self.offset = self.offset + self.limit
+        logger.info('new_offset')
+        logger.info(self.offset)
+        return self.offset
+        # return None
 
     def path(
         self,
@@ -191,12 +209,16 @@ class Orders(WalmartMarketplaceBase):
         next_page_token: Mapping[str, Any] = None
     ) -> str:
 
-        logger.info(stream_slice)
-        param_createdStartDate = stream_slice['createdStartDate']
-        param_createdEndDate = stream_slice['createdEndDate']
-        param_limit = stream_slice['limit']
+        # logger.info(stream_slice)
+        # param_createdStartDate = stream_slice['createdStartDate']
+        # param_createdEndDate = stream_slice['createdEndDate']
+        # param_limit = stream_slice['limit']
+        param_createdStartDate = self.createdStartDate
+        param_createdEndDate = self.createdEndDate
+        param_limit = self.limit
+        param_offset = self.offset
 
-        return f"{self.endpoint_name}?limit={param_limit}&createdStartDate={param_createdStartDate}&createdEndDate={param_createdEndDate}"
+        return f"{self.endpoint_name}?limit={param_limit}&createdStartDate={param_createdStartDate}&createdEndDate={param_createdEndDate}&offset={param_offset}"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
 
@@ -214,52 +236,48 @@ class Orders(WalmartMarketplaceBase):
 
         return {self.cursor_field: latest_record_date}
 
-    def _chunk_slices(self, createdStartDate: datetime) -> List[Mapping[str, any]]:
-        slices = []
-
-        while createdStartDate <= datetime.now():
-            # for status in status_list:
-            slice = {}
-            slice['limit'] = 100
-            slice["createdStartDate"] = datetime.strftime(createdStartDate, "%Y-%m-%dT00:00:00Z")
-            slice["createdEndDate"] = datetime.strftime(createdStartDate, "%Y-%m-%dT23:59:59Z")
-            slices.append(slice)
-
-            createdStartDate += timedelta(days=1)
-
-        logger.info('slices content log:')
-        logger.info(slices)
-
-        return slices
-
-    def stream_slices(
-            self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, any]]]:
-
-        # createdStartDate = self.createdStartDate
-
-        if stream_state and (self.cursor_field in stream_state):
-            if isinstance(stream_state[self.cursor_field], str):
-                current_stream_state_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT00:00:00')
-            else:
-                current_stream_state_date = stream_state[self.cursor_field]
-
-        createdStartDate = current_stream_state_date - timedelta(
-            days=15) if stream_state and self.cursor_field in stream_state else self.createdStartDate
-
-        return self._chunk_slices(createdStartDate)
+    # def _chunk_slices(self, createdStartDate: datetime) -> List[Mapping[str, any]]:
+    #     slices = []
+    #
+    #     while createdStartDate <= datetime.now():
+    #         # for status in status_list:
+    #         slice = {}
+    #         slice['limit'] = 100
+    #         slice["createdStartDate"] = datetime.strftime(createdStartDate, "%Y-%m-%dT00:00:00Z")
+    #         slice["createdEndDate"] = datetime.strftime(createdStartDate, "%Y-%m-%dT23:59:59Z")
+    #         slices.append(slice)
+    #
+    #         createdStartDate += timedelta(days=1)
+    #
+    #     logger.info('slices content log:')
+    #     logger.info(slices)
+    #
+    #     return slices
+    #
+    # def stream_slices(
+    #         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    # ) -> Iterable[Optional[Mapping[str, any]]]:
+    #
+    #     # createdStartDate = self.createdStartDate
+    #
+    #     if stream_state and (self.cursor_field in stream_state):
+    #         if isinstance(stream_state[self.cursor_field], str):
+    #             current_stream_state_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S')
+    #         else:
+    #             current_stream_state_date = stream_state[self.cursor_field]
+    #
+    #     createdStartDate = current_stream_state_date - timedelta(
+    #         days=15) if stream_state and self.cursor_field in stream_state else self.createdStartDate
+    #
+    #     return self._chunk_slices(createdStartDate)
 
 
 class Items(WalmartMarketplaceBase):
 
-    # cursor_field = 'orderDate'
     endpoint_name = 'items'
-    # record_list_name = 'ns2:ItemResponse'
     record_list_name = 'ItemResponse'
     record_key_name = 'item'
-    # record_primary_key = 'ns2:wpid'
     record_primary_key = 'wpid'
-    # next_page_token_key = 'ns2:nextCursor'
     next_page_token_key = 'nextCursor'
 
     primary_key = 'id'
@@ -311,32 +329,10 @@ class Items(WalmartMarketplaceBase):
 
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
                        ):
-
-        # createdStartDate = self.createdStartDate
-        # logger.info('stream_state content')
-        # logger.info(stream_state)
-        # if self.cursor_field in stream_state.keys():
-        #     if isinstance(stream_state[self.cursor_field], str):
-        #         createdStartDate = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S') - timedelta(days=15)
-        #     else:
-        #         createdStartDate = stream_state[self.cursor_field] - timedelta(days=15)
-        #     # createdStartDate = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S') - timedelta(days=15)
-        #
-        # start_ingestion_date = datetime.strftime(createdStartDate + timedelta(days=self.timedelta_to_sum), '%Y-%m-%dT00:00:00Z')
-        # end_ingestion_date = datetime.strftime(datetime.now(), '%Y-%m-%dT23:59:59Z')
-        #
-        # params = {
-        #     "nextCursor": self.next_page_token,
-        #     "limit": self.limit
-        # }
-        # logger.info(params)
-        #
-        # return params
         return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
 
-        # self.next_page_token = xmltodict.parse(response.text)['ns2:ItemResponses'][self.next_page_token_key]
         logger.info(response.json().keys())
         if self.next_page_token_key in response.json().keys():
             self.next_page_token_value = response.json()[self.next_page_token_key]
@@ -375,6 +371,7 @@ class Items(WalmartMarketplaceBase):
                 "source": self.WM_MARKET + "_WALMART",
                 "type": f"{self.merchant.lower()}_{self.record_key_name}",
                 "id": item[self.record_primary_key],
+                "user_id": self.user_id,
                 "timeline": "historic",
                 "created_at": timestamp,
                 "updated_at": timestamp,
@@ -412,8 +409,8 @@ class SourceWalmartMarketplace(AbstractSource):
         createdStartDate = datetime.strptime(config['createdStartDate'], '%Y-%m-%d')
 
         return [
-            Orders(authenticator=auth, config=config, createdStartDate=createdStartDate),
-            Items(authenticator=auth, config=config)
+            Orders(authenticator=auth, config=config, createdStartDate=createdStartDate)
+            ,Items(authenticator=auth, config=config)
         ]
 
 # Durante a emissão da Credencial Plena, o titular poderá incluir dependentes, contudo, a Credencial Plena de dependentes maiores de 18 anos só estará disponível para uso
