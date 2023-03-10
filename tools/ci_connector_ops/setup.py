@@ -58,7 +58,7 @@ setup(
         "dev": QA_ENGINE_REQUIREMENTS + TEST_REQUIREMENTS + DEV_REQUIREMENTS,
         "qa_engine": QA_ENGINE_REQUIREMENTS,
     },
-    python_requires=">=3.10",
+    # python_requires=">=3.10", TODO upgrade all our CI packages + GHA env to 3.10
     package_data={"ci_connector_ops.qa_engine": ["connector_adoption.sql"]},
     entry_points={
         "console_scripts": [

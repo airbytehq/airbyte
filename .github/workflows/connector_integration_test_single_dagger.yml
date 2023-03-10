@@ -51,6 +51,7 @@ jobs:
           ref: ${{ github.event.inputs.gitref }}
       - name: Extract branch name
         shell: bash
+        if: github.event_name == 'workflow_dispatch'
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
         id: extract_branch
       - name: Install Python 3.10
@@ -82,8 +83,8 @@ jobs:
           AWS_DEFAULT_REGION: "us-east-2"
           TEST_REPORTS_BUCKET_NAME: "airbyte-connector-build-status"
           CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          CI_GIT_BRANCH: "$GITHUB_HEAD_REF"
-          CI_GIT_REVISION: ${{ github.sha }}
+          CI_GIT_BRANCH: ${{ github.head_ref }}
+          CI_GIT_REVISION: ${{ github.event.pull_request.head.sha }}
   stop-runner:
     name: "Connectors Integration Test: Stop Build EC2 Runner"
     timeout-minutes: 10
