@@ -44,8 +44,9 @@ jobs:
           DAGGER_TMP_BINDIR="/tmp/dagger_${DAGGER_CLI_COMMIT}"
           export _EXPERIMENTAL_DAGGER_CLI_BIN="$DAGGER_TMP_BINDIR/dagger"
           if [ ! -f  "$_EXPERIMENTAL_DAGGER_CLI_BIN" ]; then
-            mkdir -p "$DAGGER_TMP_BINDIR"
-            curl "https://dl.dagger.io/dagger/main/${DAGGER_CLI_COMMIT}/dagger_${DAGGER_CLI_COMMIT}_$(uname -s | tr A-Z a-z)_$(uname -m | sed s/x86_64/amd64/).tar.gz" | tar xvz -C "$DAGGER_TMP_BINDIR"
+              mkdir -p "$DAGGER_TMP_BINDIR"
+              curl -o $_EXPERIMENTAL_DAGGER_CLI_BIN "https://eks-buildkit-cache-test.s3.us-east-2.amazonaws.com/dagger?response-content-disposition=inline&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEMH%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMiJHMEUCIQCh1B5IA556%2F1OcVdyRCRpMsmA5ax%2Bc6fmV8%2Bj7t%2Fc5PgIgQhCBNTxk3DY8aiD5mWjihuDwSG4WKetJR9FSymaC0F0q%2BwIIehADGgwxMjU2MzUwMDMxODYiDBwFspQ8LFBF7GzcuirYAhjJb%2B5fW1r6j%2FYieKdDc8N3y15FNyv3sDMdOOsUbWs5gzY2WG08BbJp%2BfyguTk7EEYtlNANzoirLI05qB5NX6UQljRrq5Jrb%2FDvE6rayvUHdXYndbfsfMdkO05cU%2BbkvxKgyPnPkv2Oxew618xuAm%2Bbh9kolMXTqUMkTrX1%2FMteoLFVn024Viywblg4vgA%2FCPoZFxxlURtYG6iof8H%2Fjh8fDe3GxejK2Te5tCvwJycvUvOuDWn1AZNtgUC36FLlShcciQcbA1Y07MtttjVACZNcNEifoDqeKHghz%2BEguCGWYtzzow5SQT3In4WVdJauBvD%2F9tZ0oCBjiEZAyGb1jEMPhE2L2BjTz8DYixMeWOaWgsPApcogMJbN13vHfszXa9AESIZNL5b5D9NzghX5XG5OtyZrDoFcHZY7hV1eMWIkYwYRdz2%2BxOu3hqGnAyux6l3AeZGZpFQ5MN3LraAGOrMCb0WZI%2BZ%2BjiGS6fuawnf9NjWg97s7jxfr4oRMSGw66gPgjtbSbC%2FKYwFoLGvwx%2FabVCg5%2Fw%2Fwbb6rJ68tBJ2uVaWq%2BHz8Nn%2FYvUAxah7hvCOElrK4s25tCarLWiOiVu4N%2FKAladR2JM4eQrrd8im%2B4adG0JyqYN75AeGPjt29R40B%2BczThfBlKaQbIZ71s0e%2F3weCi%2B7aQ69j%2BoR%2FQa8YxsJSd%2BXwWDi5%2FbRE36GKmr5feZYlcj3iaLGg0fDzr9r%2BxB0py8LxXcrakslqP0p38cggVRX%2BuI5Pk1CCU7bcXTooshPBF4cf7bji%2BxKn3BQD8cSRJ5nFIgs%2FLgmTPAaWv8p6cAhhRcRf7TXJUnPUmQ%2B2hFhP3A6QgXnXjwDa97dckuIcVirq%2Fmk51WKSQkTbe33ZOA%3D%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20230310T171631Z&X-Amz-SignedHeaders=host&X-Amz-Expires=43200&X-Amz-Credential=ASIAR2QDOAMZK7OF5VV6%2F20230310%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=3bac0e332d6cf44890583eebbefe61cf25568e41756a964b40fdece5c831c371"
+              chmod a+x $_EXPERIMENTAL_DAGGER_CLI_BIN
           fi
           connectors-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} test-connectors ${{ github.event.inputs.test-connectors-options }}
         env:
@@ -65,8 +66,9 @@ jobs:
           DAGGER_TMP_BINDIR="/tmp/dagger_${DAGGER_CLI_COMMIT}"
           export _EXPERIMENTAL_DAGGER_CLI_BIN="$DAGGER_TMP_BINDIR/dagger"
           if [ ! -f  "$_EXPERIMENTAL_DAGGER_CLI_BIN" ]; then
-            mkdir -p "$DAGGER_TMP_BINDIR"
-            curl "https://dl.dagger.io/dagger/main/${DAGGER_CLI_COMMIT}/dagger_${DAGGER_CLI_COMMIT}_$(uname -s | tr A-Z a-z)_$(uname -m | sed s/x86_64/amd64/).tar.gz" | tar xvz -C "$DAGGER_TMP_BINDIR"
+              mkdir -p "$DAGGER_TMP_BINDIR"
+              curl -o $_EXPERIMENTAL_DAGGER_CLI_BIN "https://eks-buildkit-cache-test.s3.us-east-2.amazonaws.com/dagger?response-content-disposition=inline&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEMH%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMiJHMEUCIQCh1B5IA556%2F1OcVdyRCRpMsmA5ax%2Bc6fmV8%2Bj7t%2Fc5PgIgQhCBNTxk3DY8aiD5mWjihuDwSG4WKetJR9FSymaC0F0q%2BwIIehADGgwxMjU2MzUwMDMxODYiDBwFspQ8LFBF7GzcuirYAhjJb%2B5fW1r6j%2FYieKdDc8N3y15FNyv3sDMdOOsUbWs5gzY2WG08BbJp%2BfyguTk7EEYtlNANzoirLI05qB5NX6UQljRrq5Jrb%2FDvE6rayvUHdXYndbfsfMdkO05cU%2BbkvxKgyPnPkv2Oxew618xuAm%2Bbh9kolMXTqUMkTrX1%2FMteoLFVn024Viywblg4vgA%2FCPoZFxxlURtYG6iof8H%2Fjh8fDe3GxejK2Te5tCvwJycvUvOuDWn1AZNtgUC36FLlShcciQcbA1Y07MtttjVACZNcNEifoDqeKHghz%2BEguCGWYtzzow5SQT3In4WVdJauBvD%2F9tZ0oCBjiEZAyGb1jEMPhE2L2BjTz8DYixMeWOaWgsPApcogMJbN13vHfszXa9AESIZNL5b5D9NzghX5XG5OtyZrDoFcHZY7hV1eMWIkYwYRdz2%2BxOu3hqGnAyux6l3AeZGZpFQ5MN3LraAGOrMCb0WZI%2BZ%2BjiGS6fuawnf9NjWg97s7jxfr4oRMSGw66gPgjtbSbC%2FKYwFoLGvwx%2FabVCg5%2Fw%2Fwbb6rJ68tBJ2uVaWq%2BHz8Nn%2FYvUAxah7hvCOElrK4s25tCarLWiOiVu4N%2FKAladR2JM4eQrrd8im%2B4adG0JyqYN75AeGPjt29R40B%2BczThfBlKaQbIZ71s0e%2F3weCi%2B7aQ69j%2BoR%2FQa8YxsJSd%2BXwWDi5%2FbRE36GKmr5feZYlcj3iaLGg0fDzr9r%2BxB0py8LxXcrakslqP0p38cggVRX%2BuI5Pk1CCU7bcXTooshPBF4cf7bji%2BxKn3BQD8cSRJ5nFIgs%2FLgmTPAaWv8p6cAhhRcRf7TXJUnPUmQ%2B2hFhP3A6QgXnXjwDa97dckuIcVirq%2Fmk51WKSQkTbe33ZOA%3D%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20230310T171631Z&X-Amz-SignedHeaders=host&X-Amz-Expires=43200&X-Amz-Credential=ASIAR2QDOAMZK7OF5VV6%2F20230310%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=3bac0e332d6cf44890583eebbefe61cf25568e41756a964b40fdece5c831c371"
+              chmod a+x $_EXPERIMENTAL_DAGGER_CLI_BIN
           fi
           connectors-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} test-connectors --modified
         env:
