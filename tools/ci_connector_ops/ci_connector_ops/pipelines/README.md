@@ -82,24 +82,24 @@ The main differences are that:
 ## What does a connector pipeline run
 
 ```mermaid
-flowchart LR;
-    AB_GIT_REPO[Airbyte Git Repo] --> MOUNT_AB[Mount Airbyte repo to container];
-    AB_GIT_REPO[Airbyte Git Repo] --> MOUNT_CONN[Mount connector source code to container];
-    DOWN_SECRETS[Download secrets from GSM]-->CAT
-    MOUNT_AB-->QA[Run QA checks];
-    MOUNT_CONN-->FORMAT[Code format checks];
-    MOUNT_CONN-->INSTALL_CONN[Install connector package in container];
-    INSTALL_CONN-->UNIT_TESTS[Run unit tests];
-    UNIT_TESTS-->INTEGRATION_TESTS[Run integration tests];
-    UNIT_TESTS-->DOCKER_BUILD[Docker build connector dev image];
-    DOCKER_BUILD-->CAT[Run acceptance tests];
-    CAT-->UPLOAD_SECRETS[Upload updated secrets to GSM];
-    CAT-->REPORT[Build test report];
-    UNIT_TESTS-->REPORT;
-    INTEGRATION_TESTS-->REPORT;
-    QA-->REPORT;
-    FORMAT-->REPORT;
-    REPORT--if in CI-->UPLOAD[Upload to S3];
+flowchart TB
+    conn([Connector pipeline])==>qa & fmt & tu
+    src[[Mount connector source code to container]]-->fmt & pkg & ta
+    fmt & tu & ti & ta & qa -.-> r([Build test report])--if in CI-->s3[[Upload to S3]]
+    subgraph QA Checks
+        repo[[Mount Airbyte repo to container]]-->qa[Run QA checks]
+    end
+    subgraph Tests
+        tu[Run unit tests]==>ti[Run integration tests] & ta[Run acceptance tests]
+        pkg[[Install connector package in container]]-->tu & ti
+        dsec[[Download secrets from GSM]] --> ti & ta
+        subgraph Acceptance
+            bld[[Build connector dev image]]-->ta-->upsec[[Upload updated secrets to GSM]]
+        end
+    end
+    subgraph Code format
+        fmt[Run code format checks]
+    end
 ```
 
 This is the DAG we expect for every connector for which the pipeline is triggered.
@@ -146,6 +146,6 @@ A log grouping tool is under construction: https://www.youtube.com/watch&ab_chan
 
 ### Performance benchmarks
 
-| Connector      | Run integration test GHA duration | Dagger POC duration (local) | Dagger POC duration (CI) |
-|----------------|-----------------------------------|-----------------------------|--------------------------|
-| source-pokeapi | 3mn45s                            | 1mn48                       | TBD                      |
+| Connector      | Run integration test GHA duration                                      | Dagger POC duration (CI no cache)                                      |
+| -------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| source-pokeapi | [7mn22s](https://github.com/airbytehq/airbyte/actions/runs/4395453220) | [5mn26s](https://github.com/airbytehq/airbyte/actions/runs/4403595746) |

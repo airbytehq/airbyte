@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import asyncio
 import logging
 import os
 import sys
@@ -9,9 +8,10 @@ from pathlib import Path
 from typing import List, Tuple
 
 import anyio
+import asyncer
 import click
 import dagger
-from ci_connector_ops.pipelines.actions import environments, tests
+from ci_connector_ops.pipelines.actions import secrets, tests
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.models import ConnectorTestReport, Step, StepResult, StepStatus
@@ -52,35 +52,38 @@ async def run(test_context: ConnectorTestContext) -> ConnectorTestReport:
         ConnectorTestReport: The test reports holding tests results.
     """
     async with test_context:
-        qa_checks_results = await tests.run_qa_checks(test_context)
-        connector_source_code = await environments.with_airbyte_connector(test_context, install=False)
-        connector_under_test = await environments.with_airbyte_connector(test_context)
+        async with asyncer.create_task_group() as task_group:
+            soon_qa_checks_results = task_group.soonify(tests.run_qa_checks)(test_context)
+            soon_connector_install_result = task_group.soonify(tests.connector_install_check)(test_context)
 
-        code_format_checks_results_future = asyncio.create_task(tests.code_format_checks(connector_source_code))
-        unit_tests_results, connector_under_test_exit_code = await asyncio.gather(
-            tests.run_unit_tests(connector_under_test), connector_under_test.exit_code()
-        )
+        qa_checks_results = soon_qa_checks_results.value
+        package_install_results, connector_under_test = soon_connector_install_result.value
 
-        package_install_result = StepResult(Step.PACKAGE_INSTALL, StepStatus.from_exit_code(connector_under_test_exit_code))
+        async with asyncer.create_task_group() as task_group:
+            soon_code_format_checks_results = task_group.soonify(tests.run_code_format_checks)(connector_under_test)
+            soon_unit_tests_results = task_group.soonify(tests.run_unit_tests)(connector_under_test)
+
+        code_format_checks_results, unit_tests_results = soon_code_format_checks_results.value, soon_unit_tests_results.value
 
         if unit_tests_results.status is StepStatus.SUCCESS:
-            integration_test_future = asyncio.create_task(tests.run_integration_tests(connector_under_test))
-            acceptance_tests_results, test_context.updated_secrets_dir = await tests.run_acceptance_tests(
-                test_context,
-            )
-            integration_tests_result = await integration_test_future
+            test_context.secrets_dir = await secrets.get_connector_secret_dir(test_context)
+            async with asyncer.create_task_group() as task_group:
+                soon_integration_tests_results = task_group.soonify(tests.run_integration_tests)(connector_under_test, test_context)
+                soon_acceptance_tests_results = task_group.soonify(tests.run_acceptance_tests)(test_context)
+            integration_tests_results = soon_integration_tests_results.value
+            acceptance_tests_results, test_context.updated_secrets_dir = soon_acceptance_tests_results.value
 
         else:
-            integration_tests_result = StepResult(Step.INTEGRATION_TESTS, StepStatus.SKIPPED, stdout="Skipped because unit tests failed")
+            integration_tests_results = StepResult(Step.INTEGRATION_TESTS, StepStatus.SKIPPED, stdout="Skipped because unit tests failed")
             acceptance_tests_results = StepResult(Step.ACCEPTANCE_TESTS, StepStatus.SKIPPED, stdout="Skipped because unit tests failed")
 
         test_context.test_report = ConnectorTestReport(
             test_context,
             steps_results=[
-                package_install_result,
-                await code_format_checks_results_future,
+                package_install_results,
+                code_format_checks_results,
                 unit_tests_results,
-                integration_tests_result,
+                integration_tests_results,
                 acceptance_tests_results,
                 qa_checks_results,
             ],

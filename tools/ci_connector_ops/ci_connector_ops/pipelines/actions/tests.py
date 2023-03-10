@@ -8,6 +8,7 @@ import json
 import uuid
 from typing import Tuple
 
+import asyncer
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.pipelines.models import Step, StepResult, StepStatus
@@ -27,6 +28,14 @@ def pytest_logs_to_step_result(logs: str, step: Step) -> StepResult:
         return StepResult(step, StepStatus.SKIPPED, stdout=logs)
     else:
         return StepResult(step, StepStatus.SUCCESS, stdout=logs)
+
+
+async def get_step_result(container: Container, step: Step) -> StepResult:
+    async with asyncer.create_task_group() as task_group:
+        soon_exit_code = task_group.soonify(with_exit_code)(container)
+        soon_stderr = task_group.soonify(with_stderr)(container)
+        soon_stdout = task_group.soonify(with_stdout)(container)
+    return StepResult(step, StepStatus.from_exit_code(soon_exit_code.value), stderr=soon_stderr.value, stdout=soon_stdout.value)
 
 
 async def _run_tests_in_directory(connector_under_test: Container, test_directory: str, step: Step) -> StepResult:
@@ -62,7 +71,20 @@ async def _run_tests_in_directory(connector_under_test: Container, test_director
         return StepResult(step, StepStatus.SKIPPED)
 
 
-async def code_format_checks(connector_under_test: Container, step=Step.CODE_FORMAT_CHECKS) -> StepResult:
+async def connector_install_check(context: ConnectorTestContext, step=Step.PACKAGE_INSTALL) -> Tuple[StepResult, Container]:
+    connector_under_test = await environments.with_airbyte_connector(context, install=True)
+    async with asyncer.create_task_group() as task_group:
+        soon_exit_code = task_group.soonify(with_exit_code)(connector_under_test)
+        soon_stderr = task_group.soonify(with_stderr)(connector_under_test)
+        soon_stdout = task_group.soonify(with_stdout)(connector_under_test)
+
+    return (
+        StepResult(step, StepStatus.from_exit_code(soon_exit_code.value), stderr=soon_stderr.value, stdout=soon_stdout.value),
+        connector_under_test,
+    )
+
+
+async def run_code_format_checks(connector_under_test: Container, step=Step.CODE_FORMAT_CHECKS) -> StepResult:
     """Run a code format check on the container source code.
     We call black, isort and flake commands:
     - Black formats the code: fails if the code is not formatted.
@@ -84,12 +106,7 @@ async def code_format_checks(connector_under_test: Container, step=Step.CODE_FOR
         .with_exec(["echo", "Running Flake"])
         .with_exec(RUN_FLAKE_CMD)
     )
-    return StepResult(
-        step,
-        StepStatus.from_exit_code(await with_exit_code(formatter)),
-        stderr=await with_stderr(formatter),
-        stdout=await with_stdout(formatter),
-    )
+    return await get_step_result(formatter, step)
 
 
 async def run_unit_tests(connector_under_test: Container, step=Step.UNIT_TESTS) -> StepStatus:
@@ -106,18 +123,22 @@ async def run_unit_tests(connector_under_test: Container, step=Step.UNIT_TESTS) 
     return await _run_tests_in_directory(connector_under_test, "unit_tests", step)
 
 
-async def run_integration_tests(connector_under_test: Container, step=Step.INTEGRATION_TESTS) -> StepStatus:
+async def run_integration_tests(connector_under_test: Container, context: ConnectorTestContext, step=Step.INTEGRATION_TESTS) -> StepStatus:
     """Run all pytest tests declared in the unit_tests directory of the connector code.
 
     Args:
         connector_under_test (Container): The connector under test container.
         step (Step): The step in which the integration tests are run. Defaults to Step.UNIT_TESTS
-
+        context (ConnectorTestContext): The context from which we can pull the secrets directory and mount it to the connector_under_test code directory.
     Returns:
         StepResult: Failure or success of the integration tests with stdout and stdout.
     """
     connector_under_test = step.get_dagger_pipeline(connector_under_test)
-    return await _run_tests_in_directory(connector_under_test, "integration_tests", step)
+    connector_under_test_with_secrets = connector_under_test.with_directory(
+        str(context.connector.code_directory) + "/secrets", context.secrets_dir
+    )
+
+    return await _run_tests_in_directory(connector_under_test_with_secrets, "integration_tests", step)
 
 
 async def run_acceptance_tests(
@@ -187,13 +208,18 @@ async def run_acceptance_tests(
 
     secret_dir = cat_container.directory("/test_input/secrets")
     updated_secrets_dir = None
-    if secret_files := await secret_dir.entries():
+
+    async with asyncer.create_task_group() as task_group:
+        soon_secret_files = task_group.soonify(secret_dir.entries)()
+        soon_cat_container_stdout = task_group.soonify(cat_container.stdout)()
+
+    if secret_files := soon_secret_files.value:
         for file_path in secret_files:
             if file_path.startswith("updated_configurations"):
                 updated_secrets_dir = secret_dir
                 break
 
-    return (pytest_logs_to_step_result(await cat_container.stdout(), step), updated_secrets_dir)
+    return (pytest_logs_to_step_result(soon_cat_container_stdout.value, step), updated_secrets_dir)
 
 
 async def run_qa_checks(context: ConnectorTestContext, step=Step.QA_CHECKS) -> StepResult:
@@ -221,10 +247,4 @@ async def run_qa_checks(context: ConnectorTestContext, step=Step.QA_CHECKS) -> S
         .with_workdir("/airbyte")
         .with_exec(["run-qa-checks", f"connectors/{context.connector.technical_name}"])
     )
-
-    return StepResult(
-        step,
-        StepStatus.from_exit_code(await with_exit_code(qa_checks)),
-        stderr=await with_stderr(qa_checks),
-        stdout=await with_stdout(qa_checks),
-    )
+    return await get_step_result(qa_checks, step)
