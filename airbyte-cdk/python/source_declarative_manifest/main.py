@@ -3,15 +3,17 @@
 #
 
 
-import argparse
 import sys
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping
 
 from airbyte_cdk.connector import BaseConnector
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteMessage
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
+from airbyte_cdk.sources.source import Source
 from connector_builder import connector_builder_handler
+
 
 def create_source(config: Mapping[str, Any], debug: bool) -> ManifestDeclarativeSource:
     manifest = config.get("__injected_declarative_manifest")
@@ -33,40 +35,36 @@ def get_config_from_args(args: List[str]) -> Mapping[str, Any]:
     return config
 
 
-def preparse(args: List[str]) -> Tuple[str, str]:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("command", type=str, help="Airbyte Protocol command")
-    parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
-    parsed, _ = parser.parse_known_args(args)
-    return parsed.command, parsed.config
 
+def execute_command(source: ManifestDeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog) -> AirbyteMessage:
 
-def execute_command(source: ManifestDeclarativeSource, config: Mapping[str, Any]) -> AirbyteMessage:
-    command = config.get("__command")
+    command = configured_catalog.streams[0].stream.name
     if command == "resolve_manifest":
         return connector_builder_handler.resolve_manifest(source)
-    elif command == "read":
-        return connector_builder_handler.read_stream(source, config)
-    raise ValueError(f"Unrecognized command {command}.")
+    else:
+        return connector_builder_handler.read_stream(source, config, configured_catalog)
 
 
-def handle_connector_builder_request(source: ManifestDeclarativeSource, config: Mapping[str, Any]):
-    message = execute_command(source, config)
+def handle_connector_builder_request(source: ManifestDeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog):
+    message = execute_command(source, config, configured_catalog)
     print(message.json(exclude_unset=True))
 
 
 def handle_connector_request(source: ManifestDeclarativeSource, args: List[str]):
     # Verify that the correct args are present for the production codepaths.
-    AirbyteEntrypoint.parse_args(args)
     launch(source, sys.argv[1:])
 
-
 def handle_request(args: List[str]):
-    config = get_config_from_args(args)
-    is_connector_builder_request = "__command" in config
-    source = create_source(config, is_connector_builder_request)
-    if is_connector_builder_request:
-        handle_connector_builder_request(source, config)
+    #FIXME: need to make sure the manifest is passed in the config too!
+    parser = AirbyteEntrypoint.parse_args(args)
+    config_path = parser.config
+    catalog_path = parser.catalog
+    config = BaseConnector.read_config(config_path)
+    catalog = Source.read_catalog(catalog_path)
+    is_builder_request = connector_builder_handler.is_connector_builder_request(config, catalog)
+    source = create_source(config, is_builder_request)
+    if is_builder_request:
+        handle_connector_builder_request(source, config, catalog)
     else:
         handle_connector_request(source, args)
 
