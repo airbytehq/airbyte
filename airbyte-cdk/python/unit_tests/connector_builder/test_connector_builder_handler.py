@@ -1,9 +1,11 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from typing import Iterator
+from unittest.mock import MagicMock
 
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
-from connector_builder.connector_builder_handler import resolve_manifest
+from connector_builder.connector_builder_handler import read_stream, resolve_manifest
 
 _stream_name = "stream_with_custom_requester"
 _stream_primary_key = "id"
