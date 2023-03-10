@@ -2,6 +2,6 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: [ 'build', '-t', 'us-docker.pkg.dev/$PROJECT_ID/airbyte-custom-connectors/source-sieg:${_SIEG_VERSION}', './airbyte-integrations/connectors/source-sieg' ]
 substitutions:
-  _SIEG_VERSION: 0.0.8
+  _SIEG_VERSION: 0.0.9
 images:
 - 'us-docker.pkg.dev/$PROJECT_ID/airbyte-custom-connectors/source-sieg:${_SIEG_VERSION}'
