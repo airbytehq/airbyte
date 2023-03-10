@@ -64,14 +64,13 @@ import org.slf4j.LoggerFactory;
 public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlSource.class);
+  public static final String DESCRIBE_TABLE_QUERY =
+      """
+      sp_columns %s
+      """;
   public static final String NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY =
       """
-         SELECT
-            (SELECT CAST(IIF(EXISTS(SELECT TOP 1 1 FROM "%s"."%s" WHERE "%s" IS NULL), 1, 0) AS BIT) AS hasNulls
-            FROM (
-            SELECT CAST(COLUMNPROPERTY(OBJECT_ID('%s.%s'), '%s', 'AllowsNull') AS BIT) AS allowNulls) AS t1
-            WHERE t1.allowNulls = 1
-            ) AS %s
+        SELECT CAST(IIF(EXISTS(SELECT TOP 1 1 FROM "%s"."%s" WHERE "%s" IS NULL), 1, 0) AS BIT) AS %s
       """;
   static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.getDriverClassName();
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
@@ -253,17 +252,34 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   @Override
   protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName)
       throws SQLException {
+
+    boolean nullValExist = false;
     final String resultColName = "nullValue";
+    final String descQuery = String.format(DESCRIBE_TABLE_QUERY, tableName);
+    final Optional<JsonNode> field = database.bufferedResultSetQuery(conn -> conn.createStatement()
+        .executeQuery(descQuery),
+        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet))
+        .stream()
+        .filter(x -> x.get("TABLE_OWNER").asText().equals(schema))
+        .filter(x -> x.get("COLUMN_NAME").asText().equalsIgnoreCase(columnName))
+        .findFirst();
+    if (field.isPresent()) {
+      final JsonNode jsonNode = field.get();
+      final JsonNode isNullable = jsonNode.get("IS_NULLABLE");
+      if (isNullable != null) {
+        if (isNullable.asText().equalsIgnoreCase("YES")) {
+          final String query = String.format(NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY,
+              schema, tableName, columnName, resultColName);
 
-    final String query = String.format(NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY,
-        schema, tableName, columnName, schema, tableName, columnName, resultColName);
-
-    LOGGER.debug("null value query: {}", query);
-    final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(query),
-        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
-    Preconditions.checkState(jsonNodes.size() == 1);
-    final boolean nullValExist = jsonNodes.get(0).get(resultColName).booleanValue();
-    LOGGER.debug("null value exist: {}", nullValExist);
+          LOGGER.debug("null value query: {}", query);
+          final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(query),
+              resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+          Preconditions.checkState(jsonNodes.size() == 1);
+          nullValExist = jsonNodes.get(0).get(resultColName).booleanValue();
+          LOGGER.debug("null value exist: {}", nullValExist);
+        }
+      }
+    }
     return !nullValExist;
   }
 
