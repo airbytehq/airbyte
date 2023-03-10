@@ -40,10 +40,12 @@ jobs:
           ec2-instance-type: "c5.2xlarge" # https://aws.amazon.com/ec2/instance-types/
   connectors_ci:
     name: Connectors CI
-    timeout-minutes: 120
+    timeout-minutes: 240 # 4 hours
     needs: start-runner
     runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
     steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
       - name: Extract branch name
         shell: bash
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"

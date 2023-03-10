@@ -193,6 +193,7 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
     else:
         click.secho("No connector test will run according to your inputs.", fg="yellow")
         sys.exit(0)
+
     connectors_tests_contexts = [
         ConnectorTestContext(
             connector,
