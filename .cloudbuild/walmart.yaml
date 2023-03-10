@@ -2,6 +2,6 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: [ 'build', '-t', 'us-docker.pkg.dev/$PROJECT_ID/airbyte-custom-connectors/source-walmart-marketplace-merama:${_WALMART_VERSION}', './airbyte-integrations/connectors/source-walmart-marketplace-merama' ]
 substitutions:
-  _WALMART_VERSION: 0.0.7
+  _WALMART_VERSION: 0.0.8
 images:
 - 'us-docker.pkg.dev/$PROJECT_ID/airbyte-custom-connectors/source-walmart-marketplace-merama:${_WALMART_VERSION}'

@@ -9,7 +9,7 @@ from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.models import SyncMode
 # import xmltodict
@@ -226,13 +226,16 @@ class Orders(WalmartMarketplaceBase):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
 
-        latest_record_date = datetime.strptime(latest_record['data'][self.record_creation_date_key], '%Y-%m-%dT%H:%M:%S.%f%z')
+        latest_record_date = datetime.strptime(latest_record['data'][self.record_creation_date_key], '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(tz=timezone.utc).replace(tzinfo=None)
         # logger.info('get_updated_state log:')
         # logger.info(latest_record_date)
         # logger.info(current_stream_state)
         if current_stream_state.get(self.cursor_field):
             if isinstance(current_stream_state[self.cursor_field], str):
-                current_stream_state_date = datetime.strptime(current_stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S')
+                try:
+                    current_stream_state_date = datetime.strptime(current_stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S')
+                except:
+                    current_stream_state_date = datetime.strptime(current_stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(tz=timezone.utc).replace(tzinfo=None)
             else:
                 current_stream_state_date = current_stream_state[self.cursor_field]
 
@@ -270,7 +273,7 @@ class Orders(WalmartMarketplaceBase):
                 try:
                     current_stream_state_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S')
                 except:
-                    current_stream_state_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S.%f%z')
+                    current_stream_state_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(tz=timezone.utc).replace(tzinfo=None)
             else:
                 current_stream_state_date = stream_state[self.cursor_field]
 
