@@ -20,20 +20,6 @@ def create_source(config: Mapping[str, Any], debug: bool) -> ManifestDeclarative
     return ManifestDeclarativeSource(manifest, debug)
 
 
-def get_config_from_args(args: List[str]) -> Mapping[str, Any]:
-    command, config_filepath = preparse(args)
-    if command == "spec":
-        raise ValueError("spec command is not supported for injected declarative manifest")
-
-    config = BaseConnector.read_config(config_filepath)
-
-    if "__injected_declarative_manifest" not in config:
-        raise ValueError(
-            f"Invalid config: `__injected_declarative_manifest` should be provided at the root of the config but config only has keys {list(config.keys())}"
-        )
-
-    return config
-
 
 def execute_command(source: ManifestDeclarativeSource, config: Mapping[str, Any],
                     configured_catalog: ConfiguredAirbyteCatalog) -> AirbyteMessage:
@@ -60,6 +46,10 @@ def handle_request(args: List[str]):
     command = parser.command
     config_path = parser.config
     config = BaseConnector.read_config(config_path)
+    if "__injected_declarative_manifest" not in config:
+        raise ValueError(
+            f"Invalid config: `__injected_declarative_manifest` should be provided at the root of the config but config only has keys {list(config.keys())}"
+        )
     if command == "read":
         catalog_path = parser.catalog
         catalog = Source.read_catalog(catalog_path)

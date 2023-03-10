@@ -1,9 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import pytest
 
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
-from connector_builder.connector_builder_handler import resolve_manifest
+from connector_builder.connector_builder_handler import resolve_manifest, is_connector_builder_request
+from unit_tests.connector_builder.utils import create_configured_catalog
+
 
 _stream_name = "stream_with_custom_requester"
 _stream_primary_key = "id"
@@ -44,7 +47,13 @@ MANIFEST = {
 
 CONFIG = {
     "__injected_declarative_manifest": MANIFEST,
-    "__command": "resolve_manifest",
+}
+
+TEST_READ_CONFIG = {
+    "__injected_declarative_manifest": MANIFEST,
+    "__test_read_config": {
+        "max_records": 10
+    }
 }
 
 
@@ -177,3 +186,14 @@ def test_resolve_manifest_error_returns_error_response():
     source = MockManifestDeclarativeSource()
     response = resolve_manifest(source)
     assert "Error resolving manifest" in response.trace.error.message
+
+@pytest.mark.parametrize("test_name, config, configured_catalog, expected_result",
+                         [
+                             ("test_resolve_manifest_is_connector_builder_request", CONFIG, create_configured_catalog("resolve_manifest"), True),
+                             ("test_list_streams_is_connector_builder_request", CONFIG, create_configured_catalog("list_streams"), True),
+                             ("test_regular_stream_is_not_connector_builder_request", CONFIG, create_configured_catalog("my_stream"), False),
+                             ("test_regular_stream_with_test_read_config_is_connector_builder_request", TEST_READ_CONFIG, create_configured_catalog("my_stream"), True),
+                         ])
+def test_is_connector_builder_request(test_name, config, configured_catalog, expected_result):
+    result = is_connector_builder_request(config, configured_catalog)
+    assert result == expected_result

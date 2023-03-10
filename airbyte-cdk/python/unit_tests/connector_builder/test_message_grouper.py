@@ -7,11 +7,12 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage
 from airbyte_cdk.models import Level, AirbyteLogMessage
 from airbyte_cdk.models import Type as MessageType
 from connector_builder.message_grouper import MessageGrouper
 from connector_builder.models import StreamReadPages, HttpRequest, HttpResponse, StreamRead
+from unit_tests.connector_builder.utils import create_configured_catalog
 
 MAX_PAGES_PER_SLICE = 4
 MAX_SLICES = 3
@@ -125,7 +126,7 @@ def test_get_grouped_messages():
 
     connector_builder_handler = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
     actual_response: StreamRead = connector_builder_handler.get_message_groups(source=mock_source, config=CONFIG,
-                                                                               configured_catalog=_create_configured_catalog("hashiras"))
+                                                                               configured_catalog=create_configured_catalog("hashiras"))
     assert actual_response.inferred_schema == expected_schema
 
     single_slice = actual_response.slices[0]
@@ -188,7 +189,7 @@ def test_get_grouped_messages_with_logs():
     connector_builder_handler = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
 
     actual_response: StreamRead = connector_builder_handler.get_message_groups(source=mock_source, config=CONFIG,
-                                                                               configured_catalog=_create_configured_catalog("hashiras"))
+                                                                               configured_catalog=create_configured_catalog("hashiras"))
     single_slice = actual_response.slices[0]
     for i, actual_page in enumerate(single_slice.pages):
         assert actual_page == expected_pages[i]
@@ -230,7 +231,7 @@ def test_get_grouped_messages_record_limit(request_record_limit, max_record_limi
 
     api = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES, max_record_limit=max_record_limit)
     actual_response: StreamRead = api.get_message_groups(mock_source, config=CONFIG,
-                                                         configured_catalog=_create_configured_catalog("hashiras"),
+                                                         configured_catalog=create_configured_catalog("hashiras"),
                                                          record_limit=request_record_limit)
     single_slice = actual_response.slices[0]
     total_records = 0
@@ -271,7 +272,7 @@ def test_get_grouped_messages_default_record_limit(max_record_limit):
 
     api = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES, max_record_limit=max_record_limit)
     actual_response: StreamRead = api.get_message_groups(source=mock_source, config=CONFIG,
-                                                         configured_catalog=_create_configured_catalog("hashiras"))
+                                                         configured_catalog=create_configured_catalog("hashiras"))
     single_slice = actual_response.slices[0]
     total_records = 0
     for i, actual_page in enumerate(single_slice.pages):
@@ -303,7 +304,7 @@ def test_get_grouped_messages_limit_0():
     api = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
 
     with pytest.raises(ValueError):
-        api.get_message_groups(source=mock_source, config=CONFIG, configured_catalog=_create_configured_catalog("hashiras"), record_limit=0)
+        api.get_message_groups(source=mock_source, config=CONFIG, configured_catalog=create_configured_catalog("hashiras"), record_limit=0)
 
 
 def test_get_grouped_messages_no_records():
@@ -353,7 +354,7 @@ def test_get_grouped_messages_no_records():
     message_grouper = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
 
     actual_response: StreamRead = message_grouper.get_message_groups(source=mock_source, config=CONFIG,
-                                                                     configured_catalog=_create_configured_catalog("hashiras"))
+                                                                     configured_catalog=create_configured_catalog("hashiras"))
 
     single_slice = actual_response.slices[0]
     for i, actual_page in enumerate(single_slice.pages):
@@ -376,7 +377,7 @@ def test_get_grouped_messages_invalid_group_format():
     api = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
 
     with pytest.raises(ValueError) as actual_exception:
-        api.get_message_groups(source=mock_source, config=CONFIG, configured_catalog=_create_configured_catalog("hashiras"))
+        api.get_message_groups(source=mock_source, config=CONFIG, configured_catalog=create_configured_catalog("hashiras"))
 
 
 @pytest.mark.parametrize(
@@ -460,7 +461,7 @@ def test_get_grouped_messages_with_many_slices():
     connecto_builder_handler = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
 
     stream_read: StreamRead = connecto_builder_handler.get_message_groups(source=mock_source, config=CONFIG,
-                                                                          configured_catalog=_create_configured_catalog("hashiras"))
+                                                                          configured_catalog=create_configured_catalog("hashiras"))
 
     assert not stream_read.test_read_limit_reached
     assert len(stream_read.slices) == 2
@@ -485,7 +486,7 @@ def test_get_grouped_messages_given_maximum_number_of_slices_then_test_read_limi
     api = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
 
     stream_read: StreamRead = api.get_message_groups(source=mock_source, config=CONFIG,
-                                                     configured_catalog=_create_configured_catalog("hashiras"))
+                                                     configured_catalog=create_configured_catalog("hashiras"))
 
     assert stream_read.test_read_limit_reached
 
@@ -501,7 +502,7 @@ def test_get_grouped_messages_given_maximum_number_of_pages_then_test_read_limit
     api = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
 
     stream_read: StreamRead = api.get_message_groups(source=mock_source, config=CONFIG,
-                                                     configured_catalog=_create_configured_catalog("hashiras"))
+                                                     configured_catalog=create_configured_catalog("hashiras"))
 
     assert stream_read.test_read_limit_reached
 
@@ -526,19 +527,3 @@ def record_message(stream: str, data: dict) -> AirbyteMessage:
 
 def slice_message() -> AirbyteMessage:
     return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message='slice:{"key": "value"}'))
-
-
-def _create_configured_catalog(stream_name: str) -> ConfiguredAirbyteCatalog:
-    return ConfiguredAirbyteCatalog.parse_obj({
-        "streams": [
-            {
-                "stream": {
-                    "name": stream_name,
-                    "json_schema": {},
-                    "supported_sync_modes": ["full_refresh", "incremental"],
-                },
-                "sync_mode": "full_refresh",
-                "destination_sync_mode": "overwrite",
-            }
-        ]
-    })
