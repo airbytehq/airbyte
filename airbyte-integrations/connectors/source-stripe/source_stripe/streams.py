@@ -658,3 +658,13 @@ class ExternalAccountCards(ExternalAccount):
     """
 
     object = "card"
+
+class SetupIntents(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/setup_intents/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "setup_intents"
