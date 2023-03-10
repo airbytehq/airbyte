@@ -49,7 +49,7 @@ See the [concepts docs](docs/concepts/) for a tour through what the API offers.
 
 ### First time setup
 
-We assume `python` points to python &gt;=3.9.
+We assume `python` points to python &gt;=3.8.
 
 Setup a virtual env:
 
@@ -132,7 +132,7 @@ To run acceptance tests for multiple connectors using the local CDK, from the ro
 #### Publishing a new version to PyPi
 
 1. Open a PR
-2. Once it is approved and merge, an Airbyte member must run the `Publish CDK Manually` workflow using `release-type=major|manor|patch` and setting the changelog message.
+2. Once it is approved and **merged**, an Airbyte member must run the `Publish CDK Manually` workflow from master using `release-type=major|manor|patch` and setting the changelog message.
 
 ## Coming Soon
 
