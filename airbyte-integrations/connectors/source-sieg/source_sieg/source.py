@@ -103,12 +103,6 @@ class BaseClass(HttpStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "aws/api-xml-search.ashx"
-    
-
     def format_xml(
         self,
         xml_item: Mapping[str, Any]
@@ -270,6 +264,11 @@ class Nfe(BaseClass):
         cnpjs.append(cnpj_inf)
         
         return cnpjs
+    
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "aws/api-xml-search.ashx"
 
 
 class Cte(BaseClass):
@@ -300,21 +299,37 @@ class Cte(BaseClass):
         try:
             cnpj_emit = xml_item["cteProc"]["CTe"]["infCte"]["emit"]["CNPJ"]
         except:
-            cnpj_emit = None
+            try:
+                cnpj_emit = xml_item["cteOSProc"]["CTeOS"]["infCte"]["emit"]["CNPJ"]
+            except:
+                cnpj_emit = None
+
         try:
             cnpj_dest = xml_item["cteProc"]["CTe"]["infCte"]["dest"]["CNPJ"]
         except:
-            cnpj_dest = None
+            try:
+                cnpj_dest = xml_item["cteOSProc"]["CTeOS"]["infCte"]["dest"]["CNPJ"]
+            except:
+                cnpj_dest = None
+
         try:
             cnpj_inf = xml_item["cteProc"]["CTe"]["infCte"]["infRespTec"]["CNPJ"]
         except:
-            cnpj_inf = None
+            try:
+                cnpj_inf = xml_item["cteOSProc"]["CTeOS"]["infCte"]["infRespTec"]["CNPJ"]
+            except:
+                cnpj_inf = None
         
         cnpjs.append(cnpj_emit)
         cnpjs.append(cnpj_dest)
         cnpjs.append(cnpj_inf)
         
         return cnpjs
+    
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "aws/api-xml-search.ashx"
 
 class NfeEvents(Nfe):
     xmltype = "nfe"
@@ -323,6 +338,11 @@ class NfeEvents(Nfe):
 
     def get_invoice_type(self, xml_item):
         return "evento_nfe"
+    
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "aws/api-xml-search.ashx"
 
 class CteEvents(Cte):
     xmltype = "cte"
@@ -331,6 +351,11 @@ class CteEvents(Cte):
 
     def get_invoice_type(self, xml_item):
         return "evento_cte"
+    
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "aws/api-xml-search.ashx"
 
 
 class SourceSieg(AbstractSource):
