@@ -20,7 +20,7 @@ from pendulum.datetime import DateTime
 from requests import codes
 from requests.exceptions import ChunkedEncodingError
 from source_iterable.slice_generators import AdjustableSliceGenerator, RangeSliceGenerator, StreamSlice
-from source_iterable.utils import dateutil_parse
+from source_iterable.utils import IterableGenericErrorHandler, dateutil_parse
 
 EVENT_ROWS_LIMIT = 200
 CAMPAIGNS_PER_REQUEST = 20
@@ -31,6 +31,8 @@ class IterableStream(HttpStream, ABC):
     # in case we get a 401 error (api token disabled or deleted) on a stream slice, do not make further requests within the current stream
     # to prevent 429 error on other streams
     ignore_further_slices = False
+    # to handle the Generic Errors (500 with msg pattern)
+    generic_error_handler: IterableGenericErrorHandler = IterableGenericErrorHandler()
 
     url_base = "https://api.iterable.com/api/"
     primary_key = "id"
@@ -38,6 +40,9 @@ class IterableStream(HttpStream, ABC):
     def __init__(self, authenticator):
         self._cred = authenticator
         super().__init__(authenticator)
+        # placeholder for last slice used for API request
+        # to reuse it later in logs or whatever
+        self._last_slice: Mapping[str, Any] = {}
 
     @property
     def retry_factor(self) -> int:
@@ -76,7 +81,7 @@ class IterableStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if not self.check_unauthorized_key(response):
             return []
-        response_json = response.json()
+        response_json = response.json() or {}
         records = response_json.get(self.data_field, [])
 
         for record in records:
@@ -86,12 +91,10 @@ class IterableStream(HttpStream, ABC):
         # check the authentication
         if not self.check_unauthorized_key(response):
             return False
-        # retry on generic error 500 meaning
+        # retry on generic error 500
         if response.status_code == 500:
-            if response.json().get("code") == "GenericError" and "Please try again later" in response.json().get("msg"):
-                self.logger.warn(f"Generic Server Error occured for stream: `{self.name}`.")
-                setattr(self, "raise_on_http_errors", False)
-                return True
+            # will retry for 2 times, then give up and skip the fetch for slice
+            return self.generic_error_handler.handle(response, self.name, self._last_slice)
         # all other cases
         return super().should_retry(response)
 
@@ -104,6 +107,8 @@ class IterableStream(HttpStream, ABC):
     ) -> Iterable[Mapping[str, Any]]:
         if self.ignore_further_slices:
             return []
+        # save last slice
+        self._last_slice = stream_slice
         yield from super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
 
 

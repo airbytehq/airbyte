@@ -164,11 +164,22 @@ def test_iterable_export_stream_backoff_time():
     "status, json, expected",
     [
         (429, {}, True),
-        (500, {"msg": "...Please try again later...", "code": "Generic Error"}, True)
+        # for 500 - Generic error we should make 2 retry attempts
+        # and give up on third one!
+        (500, {"msg": "...Please try again later...1", "code": "Generic Error"}, True),
+        (500, {"msg": "...Please try again later...2", "code": "Generic Error"}, True),
+        # This one should return False
+        (500, {"msg": "...Please try again later...3", "code": "Generic Error"}, False)
     ],
+    ids=[
+        "Retry on 429",
+        "Retry on 500 - Generic (first)",
+        "Retry on 500 - Generic (second)",
+        "Retry on 500 - Generic (third)",
+    ]
 )
-def test_should_retry(status, json, expected, requests_mock):
-    stream = Lists(authenticator=NoAuth())
+def test_should_retry(status, json, expected, requests_mock, lists_stream):
+    stream = lists_stream
     url = f"{stream.url_base}/{stream.path()}"
     requests_mock.get(url, json=json, status_code=status)
     test_response = requests.get(url)
@@ -197,7 +208,7 @@ def test_get_updated_state(current_state, record_date, expected_state):
 def test_stream_stops_on_401(mock_lists_resp):
     # no requests should be made after getting 401 error despite the multiple slices
     users_stream = ListUsers(authenticator=NoAuth())
-    responses.add(responses.GET, "https://api.iterable.com/api/lists/getUsers?listId=2", json={}, status=401)
+    responses.add(responses.GET, "https://api.iterable.com/api/lists/getUsers?listId=1", json={}, status=401)
     slices = 0
     for slice_ in users_stream.stream_slices(sync_mode=SyncMode.full_refresh):
         slices += 1
