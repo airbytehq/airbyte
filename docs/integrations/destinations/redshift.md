@@ -46,6 +46,7 @@ Optional parameters:
 * **Purge Staging Data**
     * Whether to delete the staging files from S3 after completing the sync. Specifically, the connector will create CSV files named `bucketPath/namespace/streamName/syncDate_epochMillis_randomUuid.csv` containing three columns (`ab_id`, `data`, `emitted_at`). Normally these files are deleted after the `COPY` command completes; if you want to keep them for other purposes, set `purge_staging_data` to `false`.
 
+NOTE: S3 staging does not use the SSH Tunnel option, if configured. SSH Tunnel supports the SQL connection only. S3 is secured through public HTTPS access only.
 
 ## Step 1: Set up Redshift
 
@@ -61,11 +62,16 @@ GRANT CREATE ON DATABASE database_name TO airflow_user; -- add create schema per
 GRANT usage, create on schema my_schema TO airflow_user; -- add create table permission
 ```
 
+### Optional Use of SSH Bastion Host
+This connector supports the use of a Bastion host as a gateway to a private Redshift cluster via SSH Tunneling.
+Setup of the host is beyond the scope of this document but several tutorials are available online to fascilitate this task.
+Enter the bastion host, port and credentials in the destination configuration.
+
 ## Step 2: Set up the destination connector in Airbyte
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.
 3. On the destination setup page, select **Redshift** from the Destination type dropdown and enter a name for this connector.
 4. Fill in all the required fields to use the INSERT or COPY strategy
@@ -146,6 +152,8 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.1   | 2023-03-10 | [#23466](https://github.com/airbytehq/airbyte/pull/23466)  | Changed S3 Avro type from Int to Long                                                                                                                                                                            |
+| 0.4.0   | 2023-02-28 | [\#23523](https://github.com/airbytehq/airbyte/pull/23523) | Add SSH Bastion Host configuration options                                                                                                                                                                       |
 | 0.3.56  | 2023-01-26 | [\#21890](https://github.com/airbytehq/airbyte/pull/21890) | Fixed configurable parameter for number of file buffers                                                                                                                                                          |
 | 0.3.55  | 2023-01-26 | [\#20631](https://github.com/airbytehq/airbyte/pull/20631) | Added support for destination checkpointing with staging                                                                                                                                                         |
 | 0.3.54  | 2023-01-18 | [\#21087](https://github.com/airbytehq/airbyte/pull/21087) | Wrap Authentication Errors as Config Exceptions                                                                                                                                                                  |

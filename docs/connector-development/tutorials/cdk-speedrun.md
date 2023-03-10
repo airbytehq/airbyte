@@ -44,7 +44,7 @@ cd source_python_http_example
 We're working with the PokeAPI, so we need to define our input schema to reflect that. Open the `spec.yaml` file here and replace it with:
 
 ```yaml
-documentationUrl: https://docs.airbyte.io/integrations/sources/pokeapi
+documentationUrl: https://docs.airbyte.com/integrations/sources/pokeapi
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Pokeapi Spec
@@ -164,7 +164,7 @@ class Pokemon(HttpStream):
 
 Now download [this file](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/pokemon.json). Name it `pokemon.json` and place it in `/source_python_http_example/schemas`.
 
-This file defines your output schema for every endpoint that you want to implement. Normally, this will likely be the most time-consuming section of the connector development process, as it requires defining the output of the endpoint exactly. This is really important, as Airbyte needs to have clear expectations for what the stream will output. Note that the name of this stream will be consistent in the naming of the JSON schema and the `HttpStream` class, as `pokemon.json` and `Pokemon` respectively in this case. Learn more about schema creation [here](https://docs.airbyte.io/connector-development/cdk-python/full-refresh-stream#defining-the-streams-schema).
+This file defines your output schema for every endpoint that you want to implement. Normally, this will likely be the most time-consuming section of the connector development process, as it requires defining the output of the endpoint exactly. This is really important, as Airbyte needs to have clear expectations for what the stream will output. Note that the name of this stream will be consistent in the naming of the JSON schema and the `HttpStream` class, as `pokemon.json` and `Pokemon` respectively in this case. Learn more about schema creation [here](https://docs.airbyte.com/connector-development/cdk-python/full-refresh-stream#defining-the-streams-schema).
 
 Test your discover function. You should receive a fairly large JSON object in return.
 
@@ -221,7 +221,7 @@ class Pokemon(HttpStream):
         return None
 ```
 
-We now need a catalog that defines all of our streams. We only have one stream: `Pokemon`. Download that file [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/configured_catalog_pokeapi.json). Place it in `/sample_files` named as `configured_catalog.json`. More clearly, this is where we tell Airbyte all the streams/endpoints we support for the connector and in which sync modes Airbyte can run the connector on. Learn more about the AirbyteCatalog [here](https://docs.airbyte.io/understanding-airbyte/beginners-guide-to-catalog) and learn more about sync modes [here](https://docs.airbyte.io/understanding-airbyte/connections#sync-modes).
+We now need a catalog that defines all of our streams. We only have one stream: `Pokemon`. Download that file [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/configured_catalog_pokeapi.json). Place it in `/sample_files` named as `configured_catalog.json`. More clearly, this is where we tell Airbyte all the streams/endpoints we support for the connector and in which sync modes Airbyte can run the connector on. Learn more about the AirbyteCatalog [here](https://docs.airbyte.com/understanding-airbyte/beginners-guide-to-catalog) and learn more about sync modes [here](https://docs.airbyte.com/understanding-airbyte/connections#sync-modes).
 
 Let's read some data.
 
