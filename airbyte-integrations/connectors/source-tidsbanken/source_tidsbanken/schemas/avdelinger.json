@@ -1,0 +1,40 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+      "avdelingId": {
+        "type": ["string","null"]
+      },
+      "hovedavdelingId": {
+        "type": ["string","null"]
+      },
+      "avdelingTekst": {
+        "type": ["string","null"]
+      },
+      "beskrivelse": {
+        "type": ["string","null"]
+      },
+      "timepris": {
+        "type": ["number","null"]
+      },
+      "enhet": {
+        "type": ["string","null"]
+      },
+      "organisasjonsnr": {
+        "type": ["string","null"]
+      },
+      "eksternId": {
+        "type": ["string","null"]
+      }
+    },
+    "required": [
+      "avdelingId",
+      "hovedavdelingId",
+      "avdelingTekst",
+      "beskrivelse",
+      "timepris",
+      "enhet",
+      "organisasjonsnr",
+      "eksternId"
+    ]
+  }
