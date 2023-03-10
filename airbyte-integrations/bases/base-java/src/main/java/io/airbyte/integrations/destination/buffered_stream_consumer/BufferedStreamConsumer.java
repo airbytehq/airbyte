@@ -93,7 +93,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private boolean hasClosed;
 
   private Instant nextFlushDeadline;
-  private final Duration BUFFER_FLUSH_FREQUENCY;
+  private final Duration bufferFlushFrequency;
 
   public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
                                 final VoidCallable onStart,
@@ -133,7 +133,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.streamToIgnoredRecordCount = new HashMap<>();
     this.bufferingStrategy = bufferingStrategy;
     this.stateManager = new DefaultDestStateLifecycleManager();
-    this.BUFFER_FLUSH_FREQUENCY = flushFrequency;
+    this.bufferFlushFrequency = flushFrequency;
   }
 
   @Override
@@ -141,7 +141,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     // todo (cgardens) - if we reuse this pattern, consider moving it into FailureTrackingConsumer.
     Preconditions.checkState(!hasStarted, "Consumer has already been started.");
     hasStarted = true;
-    nextFlushDeadline = Instant.now().plus(BUFFER_FLUSH_FREQUENCY);
+    nextFlushDeadline = Instant.now().plus(bufferFlushFrequency);
     streamToIgnoredRecordCount.clear();
     LOGGER.info("{} started.", BufferedStreamConsumer.class);
     onStart.call();
@@ -206,7 +206,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     stateManager.markPendingAsCommitted();
     stateManager.listCommitted().forEach(outputRecordCollector);
     stateManager.clearCommitted();
-    nextFlushDeadline = Instant.now().plus(BUFFER_FLUSH_FREQUENCY);
+    nextFlushDeadline = Instant.now().plus(bufferFlushFrequency);
   }
 
   /**
