@@ -102,6 +102,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
     def __init__(self, config: MutableMapping):
         super().__init__(authenticator=config["authenticator"])
         self.start_date = config["start_date"]
+        self.lookback_window = config["lookback_window"]
         self.window_in_days: int = config.get("window_in_days", 1)
         self.view_id = config["view_id"]
         self.metrics = config["metrics"]
@@ -260,10 +261,10 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         if stream_state:
             prev_end_date = pendulum.parse(stream_state.get(self.cursor_field)).date()
             start_date = prev_end_date.add(days=1)  # do not include previous `end_date`
-        # always resync 2 previous days to be sure data is golden
+        # always resync lookback_window previous days to be sure data is golden
         # https://support.google.com/analytics/answer/1070983?hl=en#DataProcessingLatency&zippy=%2Cin-this-article
         # https://github.com/airbytehq/airbyte/issues/12013#issuecomment-1111255503
-        start_date = start_date.subtract(days=2)
+        start_date = start_date.subtract(days=self.lookback_window)
 
         date_slices = []
         slice_start_date = start_date
