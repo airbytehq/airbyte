@@ -287,6 +287,7 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.51  | 2023-03-10 | [#23466](https://github.com/airbytehq/airbyte/pull/23466)  | Changed S3 Avro type from Int to Long                                                                                                               |
 | 0.4.49  | 2023-02-27 | [\#23360](https://github.com/airbytehq/airbyte/pull/23360) | Added logging for flushing and writing data to destination storage                                                                                  |
 | 0.4.48  | 2023-02-23 | [\#22877](https://github.com/airbytehq/airbyte/pull/22877) | Add handler for IP not in whitelist error and more handlers for insufficient permission error                                                       |
 | 0.4.47  | 2023-01-30 | [\#21912](https://github.com/airbytehq/airbyte/pull/21912) | Catch "Create" Table and Stage Known Permissions and rethrow as ConfigExceptions                                                                    |
