@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
+import { BigButton, ButtonRows } from "components/base/Button/BigButton";
 import HeadTitle from "components/HeadTitle";
 import MainPageWithScroll from "components/MainPageWithScroll";
 
@@ -113,6 +115,14 @@ const PaymentPage: React.FC = () => {
       });
   }, []);
 
+  const onBack = () => {
+    if (currentStep === PaymentSteps.SELECT_PLAN) {
+      push(`/${RoutePaths.Settings}/${RoutePaths.PlanAndBilling}`);
+    } else {
+      setCurrentStep(PaymentSteps.SELECT_PLAN);
+    }
+  };
+
   return (
     <MainPageWithScroll headTitle={<HeadTitle titles={[{ id: "payment.tabTitle" }]} />}>
       <PaymentNav steps={Object.values(PaymentSteps)} currentStep={currentStep} />
@@ -134,11 +144,21 @@ const PaymentPage: React.FC = () => {
               productPrice={product?.price as number}
               selectedProductPrice={selectedProduct?.price as number}
               planDetail={planDetail}
-              onUpdadePlan={onUpdadePlan}
-              updatePlanLoading={updatePlanLoading}
+              // onUpdadePlan={onUpdadePlan}
+              // updatePlanLoading={updatePlanLoading}
             />
           )}
         </MainView>
+        <ButtonRows top="40">
+          <BigButton secondary white onClick={onBack}>
+            <FormattedMessage id="form.button.back" />
+          </BigButton>
+          {currentStep === PaymentSteps.BILLING_PAYMENT && (
+            <BigButton isLoading={updatePlanLoading} onClick={onUpdadePlan}>
+              <FormattedMessage id="plan.update.btn" />
+            </BigButton>
+          )}
+        </ButtonRows>
       </Content>
     </MainPageWithScroll>
   );

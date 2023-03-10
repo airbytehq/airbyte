@@ -33,6 +33,8 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2023.03.10
+1. UI related changes - change plan page(add back button)
 #### 2023.03.09
 1. Sign out confirmation message.
 2. UI related changes - sign out button location
