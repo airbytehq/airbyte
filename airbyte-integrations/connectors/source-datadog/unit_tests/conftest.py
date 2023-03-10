@@ -17,6 +17,7 @@ def config_fixture():
         "end_date": "2022-10-10T00:10:00Z",
     }
 
+
 @fixture(name="config_eu")
 def config_fixture_eu():
     return {

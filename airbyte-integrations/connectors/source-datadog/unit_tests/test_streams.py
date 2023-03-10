@@ -107,3 +107,32 @@ def test_next_page_token_paginated(stream, config):
     response._content = json.dumps(body_content).encode("utf-8")
     result = instance.next_page_token(response=response)
     assert result.get("offset") == 999
+
+
+@patch.multiple(DatadogStream, __abstractmethods__=set())
+def test_site_parameter_is_set(config):
+    site = "example.com"
+    stream = DatadogStream(
+        site=site,
+        query=config["query"],
+        max_records_per_request=config["max_records_per_request"],
+        start_date=config["start_date"],
+        end_date=config["end_date"],
+    )
+    url_base = stream.url_base
+    expected_url_base = f"https://api.{site}/api"
+    assert url_base == expected_url_base
+
+
+@patch.multiple(DatadogStream, __abstractmethods__=set())
+def test_site_parameter_is_not_set(config):
+    stream = DatadogStream(
+        site=config["site"],
+        query=config["query"],
+        max_records_per_request=config["max_records_per_request"],
+        start_date=config["start_date"],
+        end_date=config["end_date"],
+    )
+    url_base = stream.url_base
+    expected_url_base = "https://api.datadoghq.com/api"
+    assert url_base == expected_url_base
