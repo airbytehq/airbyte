@@ -98,14 +98,8 @@ async def run_connectors_test_pipelines(test_contexts: List[ConnectorTestContext
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         async with anyio.create_task_group() as tg:
             for test_context in test_contexts:
-                # We scoped this POC only for python and low-code connectors
-                if test_context.connector.language in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
-                    test_context.dagger_client = dagger_client.pipeline(f"{test_context.connector.technical_name} - Test Pipeline")
-                    tg.start_soon(run, test_context)
-                else:
-                    logger.warning(
-                        f"Not running test pipeline for {test_context.connector.technical_name} as it's not a Python or Low code connector",
-                    )
+                test_context.dagger_client = dagger_client.pipeline(f"{test_context.connector.technical_name} - Test Pipeline")
+                tg.start_soon(run, test_context)
 
 
 @click.group()
@@ -132,8 +126,7 @@ def connectors_ci(
 ):
     """A command group to gather all the connectors-ci command"""
 
-    if not (os.getcwd().endswith("/airbyte") and Path(".git").is_dir()):
-        raise click.ClickException("You need to run this command from the airbyte repository root.")
+    validate_environment(is_local, use_remote_secrets)
 
     ctx.ensure_object(dict)
     ctx.obj["use_remote_secrets"] = use_remote_secrets
@@ -145,14 +138,6 @@ def connectors_ci(
         f"https://github.com/airbytehq/airbyte/actions/runs/{gha_workflow_run_id}" if gha_workflow_run_id else None
     )
 
-    if use_remote_secrets and os.getenv("GCP_GSM_CREDENTIALS") is None:
-        raise click.UsageError(
-            "You have to set the GCP_GSM_CREDENTIALS if you want to download secrets from GSM. Set the --use-remote-secrets option to false otherwise."
-        )
-    if not is_local:
-        for required_env_var in REQUIRED_ENV_VARS_FOR_CI:
-            if os.getenv(required_env_var) is None:
-                raise click.UsageError(f"When running in a CI context a {required_env_var} environment variable must be set.")
     update_commit_status_check(
         ctx.obj["git_revision"],
         "pending",
@@ -218,6 +203,8 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
         )
         for connector in connectors_under_test
+        if connector.language
+        in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]  # TODO: remove this once we implement pipelines for Java connector
     ]
     try:
         anyio.run(run_connectors_test_pipelines, connectors_tests_contexts)
@@ -240,6 +227,20 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
             GITHUB_GLOBAL_CONTEXT,
             should_send=not ctx.obj["is_local"],
             logger=logger,
+        )
+
+
+def validate_environment(is_local: bool, use_remote_secrets: bool):
+    if is_local:
+        if not (os.getcwd().endswith("/airbyte") and not Path(".git").is_dir()):
+            raise click.UsageError("You need to run this command from the airbyte repository root.")
+    else:
+        for required_env_var in REQUIRED_ENV_VARS_FOR_CI:
+            if os.getenv(required_env_var) is None:
+                raise click.UsageError(f"When running in a CI context a {required_env_var} environment variable must be set.")
+    if use_remote_secrets and os.getenv("GCP_GSM_CREDENTIALS") is None:
+        raise click.UsageError(
+            "You have to set the GCP_GSM_CREDENTIALS if you want to download secrets from GSM. Set the --use-remote-secrets option to false otherwise."
         )
 
 

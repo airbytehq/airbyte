@@ -212,7 +212,6 @@ async def run_qa_checks(context: ConnectorTestContext, step=Step.QA_CHECKS) -> S
             str(context.connector.code_directory),
             str(context.connector.documentation_file_path),
             str(context.connector.icon_path),
-            ".git",  # This is a big directory but ci_connectors_ops needs it...
             "airbyte-config/init/src/main/resources/seed/source_definitions.yaml",
             "airbyte-config/init/src/main/resources/seed/destination_definitions.yaml",
         ],
