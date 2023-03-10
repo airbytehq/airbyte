@@ -21,13 +21,12 @@ from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
 import logging
 from airbyte_protocol.models.airbyte_protocol import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, SyncMode, DestinationSyncMode
 
-logger = logging.getLogger("airbyte.connector-builder")
 
 @dataclass
 class HttpResponse:
     status: int
-    body: Optional[str]
-    headers: Optional[Dict[str, Any]]
+    body: Optional[str] = None
+    headers: Optional[Dict[str, Any]] = None
 
 @dataclass
 class HttpRequest:
@@ -111,6 +110,7 @@ def list_streams() -> AirbyteRecordMessage:
 
 
 class ConnectorBuilderHandler:
+    logger = logging.getLogger("airbyte.connector-builder")
     def __init__(self, max_pages_per_slice: int, max_slices: int, max_record_limit: int = 1000):
         self._max_pages_per_slice = max_pages_per_slice
         self._max_slices = max_slices
@@ -136,7 +136,7 @@ class ConnectorBuilderHandler:
         state = {} # No support for incremental sync
         catalog = _create_configure_catalog(stream)
         for message_group in self._get_message_groups(
-            source.read(logger, config, catalog, state),
+            source.read(self.logger, config, catalog, state),
             schema_inferrer,
             record_limit,
         ):

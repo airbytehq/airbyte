@@ -364,6 +364,58 @@ def test_read_stream_invalid_group_format():
     with pytest.raises(ValueError) as actual_exception:
         api.read_stream(source=mock_source, config=CONFIG, stream="hashiras")
 
+@pytest.mark.parametrize(
+    "log_message, expected_response",
+    [
+        pytest.param(
+            {"status_code": 200, "headers": {"field": "name"}, "body": '{"id": "fire", "owner": "kyojuro_rengoku"}'},
+            HttpResponse(status=200, headers={"field": "name"}, body='{"id": "fire", "owner": "kyojuro_rengoku"}'),
+            id="test_create_response_with_all_fields",
+        ),
+        pytest.param(
+            {"status_code": 200, "headers": {"field": "name"}},
+            HttpResponse(status=200, headers={"field": "name"}, body="{}"),
+            id="test_create_response_with_no_body",
+        ),
+        pytest.param(
+            {"status_code": 200, "body": '{"id": "fire", "owner": "kyojuro_rengoku"}'},
+            HttpResponse(status=200, body='{"id": "fire", "owner": "kyojuro_rengoku"}'),
+            id="test_create_response_with_no_headers",
+        ),
+        pytest.param(
+            {
+                "status_code": 200,
+                "headers": {"field": "name"},
+                "body": '[{"id": "fire", "owner": "kyojuro_rengoku"}, {"id": "mist", "owner": "muichiro_tokito"}]',
+            },
+            HttpResponse(
+                status=200,
+                headers={"field": "name"},
+                body='[{"id": "fire", "owner": "kyojuro_rengoku"}, {"id": "mist", "owner": "muichiro_tokito"}]',
+            ),
+            id="test_create_response_with_array",
+        ),
+        pytest.param(
+            {"status_code": 200, "body": "tomioka"},
+            HttpResponse(status=200, body="tomioka"),
+            id="test_create_response_with_string",
+        ),
+        pytest.param("request:{invalid_json: }", None, id="test_invalid_json_still_does_not_crash"),
+        pytest.param("just a regular log message", None, id="test_no_response:_prefix_does_not_crash"),
+    ],
+)
+def test_create_response_from_log_message(log_message, expected_response):
+    if isinstance(log_message, str):
+        response_message = log_message
+    else:
+        response_message = f"response:{json.dumps(log_message)}"
+
+    airbyte_log_message = AirbyteLogMessage(level=Level.INFO, message=response_message)
+    connector_builder_handler = ConnectorBuilderHandler(MAX_PAGES_PER_SLICE, MAX_SLICES)
+    actual_response = connector_builder_handler._create_response_from_log_message(airbyte_log_message)
+
+    assert actual_response == expected_response
+
 def make_mock_source(return_value: Iterator) -> MagicMock:
     mock_source = MagicMock()
     mock_source.read.return_value = return_value
