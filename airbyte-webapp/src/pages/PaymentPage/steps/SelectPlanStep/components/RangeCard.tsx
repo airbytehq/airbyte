@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Card } from "components";
+// import { Card } from "components";
 
 import { ProductItem } from "core/domain/product";
 import { NumberNaming } from "core/functions/numberFormatter";
@@ -28,7 +28,9 @@ const RangeContainer = styled.div`
 `;
 
 const CardContainer = styled.div`
-  padding: 10px 20px;
+  padding: 20px 20px;
+  background: #ffffff;
+  border-radius: 16px;
 `;
 
 const NoteContainer = styled.div`
@@ -45,19 +47,19 @@ const NoteContainer = styled.div`
 
 const RangeCard: React.FC<IProps> = ({ products, product, setProduct }) => {
   return (
-    <Card withPadding roundedBottom>
-      <CardContainer>
-        <Title>
-          <FormattedMessage id="plan.rows.card.title" />
-        </Title>
-        <RangeContainer>
-          <Range min={0} max={110 * NumberNaming.M} marks={products} selectedMark={product} onSelect={setProduct} />
-        </RangeContainer>
-        <NoteContainer>
-          <FormattedMessage id="plan.rows.card.note" />
-        </NoteContainer>
-      </CardContainer>
-    </Card>
+    // <Card withPadding roundedBottom>
+    <CardContainer>
+      <Title>
+        <FormattedMessage id="plan.rows.card.title" />
+      </Title>
+      <RangeContainer>
+        <Range min={0} max={110 * NumberNaming.M} marks={products} selectedMark={product} onSelect={setProduct} />
+      </RangeContainer>
+      <NoteContainer>
+        <FormattedMessage id="plan.rows.card.note" />
+      </NoteContainer>
+    </CardContainer>
+    // </Card>
   );
 };
 

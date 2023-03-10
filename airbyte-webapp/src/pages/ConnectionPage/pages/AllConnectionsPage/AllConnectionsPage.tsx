@@ -6,6 +6,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button, LoadingPage, MainPageWithScroll, PageTitle, DropDown, DropDownRow } from "components";
+import MessageBox from "components/base/MessageBox";
 import { EmptyResourceListView } from "components/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
 import { Pagination } from "components/Pagination";
@@ -66,6 +67,7 @@ const Footer = styled.div`
 const AllConnectionsPage: React.FC = () => {
   const CONNECTION_PAGE_SIZE = 10;
   const { push, pathname, query } = useRouter();
+  const [messageId, setMessageId] = useState<string | undefined>("");
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_LIST);
   const workspace = useCurrentWorkspace();
@@ -116,71 +118,77 @@ const AllConnectionsPage: React.FC = () => {
 
   const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
 
-  const onCreateClick = () => push(`${RoutePaths.ConnectionNew}`);
+  const onCreateClick = () => push(`${RoutePaths.SelectConnection}`); // ConnectionNew
+  const onSetMessageId = (id: string) => setMessageId(id);
 
   return (
     <Suspense fallback={<LoadingPage position="relative" />}>
       {hasConnections() ? (
-        <MainPageWithScroll
-          withPadding
-          headTitle={<HeadTitle titles={[{ title: "Connections" }]} />}
-          pageTitle={
-            <PageTitle
-              title=""
-              endComponent={
-                <Button onClick={onCreateClick} disabled={!allowCreateConnection} size="m">
-                  <BtnInnerContainer>
-                    <BtnIcon icon={faPlus} />
-                    <BtnText>
-                      <FormattedMessage id="connection.newConnection" />
-                    </BtnText>
-                  </BtnInnerContainer>
-                </Button>
-              }
-            />
-          }
-        >
-          <Separator />
-          <DDsContainer>
-            <DDContainer margin="0 24px 0 0">
-              <DropDown
-                $withBorder
-                $background="white"
-                value={filters.status}
-                options={statusOptions}
-                onChange={(option: DropDownRow.IDataItem) => onSelectFilter("status", option.value)}
+        <>
+          <MessageBox message={messageId} onClose={() => setMessageId("")} type="info" position="center" />
+          <MainPageWithScroll
+            // withPadding
+            headTitle={<HeadTitle titles={[{ id: "connection.pageTitle" }]} />}
+            pageTitle={
+              <PageTitle
+                withPadding
+                title=""
+                endComponent={
+                  <Button onClick={onCreateClick} disabled={!allowCreateConnection} size="m">
+                    <BtnInnerContainer>
+                      <BtnIcon icon={faPlus} />
+                      <BtnText>
+                        <FormattedMessage id="connection.newConnection" />
+                      </BtnText>
+                    </BtnInnerContainer>
+                  </Button>
+                }
               />
-            </DDContainer>
-            <DDContainer margin="0 24px 0 0">
-              <DropDown
-                $withBorder
-                $background="white"
-                value={filters.sourceDefinitionId}
-                options={sourceOptions}
-                onChange={(option: DropDownRow.IDataItem) => onSelectFilter("sourceDefinitionId", option.value)}
+            }
+          >
+            {/* <Separator /> */}
+            <DDsContainer>
+              <DDContainer margin="0 24px 0 0">
+                <DropDown
+                  $withBorder
+                  $background="white"
+                  value={filters.status}
+                  options={statusOptions}
+                  onChange={(option: DropDownRow.IDataItem) => onSelectFilter("status", option.value)}
+                />
+              </DDContainer>
+              <DDContainer margin="0 24px 0 0">
+                <DropDown
+                  $withBorder
+                  $background="white"
+                  value={filters.sourceDefinitionId}
+                  options={sourceOptions}
+                  onChange={(option: DropDownRow.IDataItem) => onSelectFilter("sourceDefinitionId", option.value)}
+                />
+              </DDContainer>
+              <DDContainer>
+                <DropDown
+                  $withBorder
+                  $background="white"
+                  value={filters.destinationDefinitionId}
+                  options={destinationOptions}
+                  onChange={(option: DropDownRow.IDataItem) => onSelectFilter("destinationDefinitionId", option.value)}
+                />
+              </DDContainer>
+            </DDsContainer>
+            <Separator height="24px" />
+            <ConnectionsTable connections={connections} onSetMessageId={onSetMessageId} />
+            <Separator height="24px" />
+            <Footer>
+              <Pagination
+                pages={total / pageSize}
+                value={filters.pageCurrent}
+                onChange={(value: number) => onSelectFilter("pageCurrent", value)}
               />
-            </DDContainer>
-            <DDContainer>
-              <DropDown
-                $withBorder
-                $background="white"
-                value={filters.destinationDefinitionId}
-                options={destinationOptions}
-                onChange={(option: DropDownRow.IDataItem) => onSelectFilter("destinationDefinitionId", option.value)}
-              />
-            </DDContainer>
-          </DDsContainer>
-          <Separator height="24px" />
-          <ConnectionsTable connections={connections} />
-          <Separator height="54px" />
-          <Footer>
-            <Pagination
-              pages={total / pageSize}
-              value={filters.pageCurrent}
-              onChange={(value: number) => onSelectFilter("pageCurrent", value)}
-            />
-          </Footer>
-        </MainPageWithScroll>
+            </Footer>
+            <Separator height="24px" />
+          </MainPageWithScroll>
+        </>
       ) : (
         <EmptyResourceListView
           resourceType="connections"

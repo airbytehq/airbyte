@@ -6,7 +6,7 @@ import { LoadingButton } from "components";
 import { Separator } from "components/Separator";
 
 import { useUser } from "core/AuthContext";
-import { getStatusAgainstStatusNumber, STATUSES } from "core/Constants/statuses";
+import { getPaymentStatus, PAYMENT_STATUS } from "core/Constants/statuses";
 
 interface IProps {
   price?: number;
@@ -52,7 +52,10 @@ const ProfessionalCell: React.FC<IProps> = ({ price = 0, selectPlanBtnDisability
   return (
     <Container>
       <PricingContainer>
-        <Price>${price}</Price>&nbsp;<PerMonthText>/mo</PerMonthText>
+        <Price>${price}</Price>&nbsp;
+        <PerMonthText>
+          /<FormattedMessage id="feature.cell.professional.perMonth" />
+        </PerMonthText>
       </PricingContainer>
       <Separator />
       <Message>
@@ -65,7 +68,7 @@ const ProfessionalCell: React.FC<IProps> = ({ price = 0, selectPlanBtnDisability
         onClick={onSelectPlan}
         disabled={
           ((price > 0 ? false : true) || selectPlanBtnDisability) &&
-          getStatusAgainstStatusNumber(user.status) !== STATUSES.Pause_Subscription
+          getPaymentStatus(user.status) !== PAYMENT_STATUS.Pause_Subscription
         }
         isLoading={paymentLoading}
       >

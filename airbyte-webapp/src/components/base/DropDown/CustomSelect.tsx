@@ -9,7 +9,7 @@ export const CustomSelect = styled(Select)<
   } & Props
 >`
   & > .react-select__control {
-    height: ${({ $withBorder }) => ($withBorder ? 31 : 36)}px;
+    height: ${({ $withBorder }) => ($withBorder ? 36 : 36)}px;
 
     box-shadow: none;
     border: 1px solid
@@ -18,7 +18,8 @@ export const CustomSelect = styled(Select)<
     background: ${({ $background, theme }) => ($background ? $background : theme.greyColor0)};
     border-radius: 6px;
     font-size: 14px;
-    line-height: 20px;
+    //line-height: 20px;
+    line-height: 16px;
     min-height: 36px;
 
     &:hover {
@@ -39,6 +40,8 @@ export const CustomSelect = styled(Select)<
     & .react-select__value-container {
       overflow: visible;
       display: flex;
+      align-items: center;
+      flex-wrap: nowrap;
     }
   }
 `;

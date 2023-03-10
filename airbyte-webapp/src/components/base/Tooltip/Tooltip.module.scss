@@ -15,7 +15,7 @@
   max-width: 300px;
   z-index: z-indices.$tooltip;
   box-shadow: 0 2px 4px rgba(colors.$dark-blue, 0.12);
-  background: rgba(colors.$dark-blue, 0.9);
+  background: #6b6b6f; // rgba(colors.$dark-blue, 0.9);
   color: colors.$white;
 
   a {

@@ -176,6 +176,20 @@ export const updateUserRole = (
   );
 };
 
+export const updateUserLang = (lang: string, options?: SecondParameter<typeof apiOverride>) => {
+  return apiOverride(
+    {
+      url: `/user/language`,
+      method: "post",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept-Language": lang,
+      },
+    },
+    options
+  );
+};
+
 export const registerNewUser = (
   newUserRegisterBody: NewUserRegisterBody,
   options?: SecondParameter<typeof apiOverride>

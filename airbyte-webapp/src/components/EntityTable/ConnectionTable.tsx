@@ -21,18 +21,30 @@ import LastSyncCell from "./components/LastSyncCell";
 // import SwitchButton from "./components/SwitchButton";
 import { ITableDataItem, SortOrderEnum } from "./types";
 
-const Content = styled.div`
-  margin: 0 32px 0 27px;
+// const Content = styled.div`
+//   margin: 0 32px 0 27px;
+// `;
+
+const SwitchContent = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const HeaderColumns = styled.div`
+  display: flex;
+  flex-wrap: nowrap;
+  min-width: 100px;
 `;
 
 interface IProps {
   data: ITableDataItem[];
   entity: "source" | "destination" | "connection";
   onClickRow?: (data: ITableDataItem) => void;
-  onChangeStatus: (id: string) => void;
+  onChangeStatus: (id: string, status: string | undefined) => void;
   onSync: (id: string) => void;
   rowId?: string;
   statusLoading?: boolean;
+  switchSize?: string;
 }
 
 const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSync, rowId, statusLoading }) => {
@@ -89,14 +101,22 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
         customWidth: 1,
         Cell: ({ cell }: CellProps<ITableDataItem>) => {
           return (
-            <LabeledSwitch
-              id={`${cell.row.original.connectionId}`}
-              checked={cell.row.values.status === "Active" ? true : false}
-              onClick={() => {
-                onChangeStatus(cell.row.original.connectionId);
+            <SwitchContent
+              onClick={(e) => {
+                onChangeStatus(cell.row.original.connectionId, cell.row.original.status);
+                e.preventDefault();
               }}
-              loading={rowId === cell.row.original.connectionId && statusLoading ? true : false}
-            />
+            >
+              <LabeledSwitch
+                swithSize="medium"
+                id={`${cell.row.original.connectionId}`}
+                checked={cell.row.original.status === "Active" ? true : false}
+                // onClick={() => {
+                //   onChangeStatus(cell.row.original.connectionId);
+                // }}
+                loading={rowId === cell.row.original.connectionId && statusLoading ? true : false}
+              />
+            </SwitchContent>
           );
         },
       },
@@ -120,21 +140,21 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
       },
       {
         Header: <FormattedMessage id="tables.status" />,
-        accessor: "status",
+        accessor: "statusLang",
         // Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
         //     <FrequencyCell value={cell.value} enabled={row.original.enabled} />
         // ),
       },
       {
         Header: (
-          <>
+          <HeaderColumns>
             <FormattedMessage id="tables.lastSyncAt" />
             {/* <SortButton*/}
             {/*    wasActive={sortBy === "lastSync"}*/}
             {/*    lowToLarge={sortOrder === SortOrderEnum.ASC}*/}
             {/*    onClick={() => onSortClick("lastSync")}*/}
             {/*/ >*/}
-          </>
+          </HeaderColumns>
         ),
         accessor: "lastSync",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
@@ -231,14 +251,14 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
   );
 
   return (
-    <Content>
-      <Table
-        columns={columns}
-        data={data}
-        // onClickRow={onClickRow}
-        erroredRows
-      />
-    </Content>
+    // <Content>
+    <Table
+      columns={columns}
+      data={data}
+      // onClickRow={onClickRow}
+      erroredRows
+    />
+    // </Content>
   );
 };
 

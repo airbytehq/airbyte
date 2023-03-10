@@ -13,7 +13,11 @@ const ControlContainer = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 `;
 
 const Label = styled.label<{ disabled?: boolean }>`

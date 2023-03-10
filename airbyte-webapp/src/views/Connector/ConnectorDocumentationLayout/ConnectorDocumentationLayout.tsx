@@ -5,11 +5,32 @@ import React, { lazy, Suspense } from "react";
 import { FormattedMessage } from "react-intl";
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 import { useWindowSize } from "react-use";
+import styled from "styled-components";
 
 import { LoadingPage } from "components/LoadingPage";
 
 import styles from "./ConnectorDocumentationLayout.module.scss";
 import { useDocumentationPanelContext } from "./DocumentationPanelContext";
+
+// .pageContainer {
+//   height: calc(100% - 80px);
+// }
+
+// .panelGrabber {
+//   height: calc(100vh - 80px);
+//   padding: 6px;
+//   display: flex;
+// }
+
+const PageContainer = styled.div`
+  height: calc(100% - 70px);
+`;
+
+const PnelGrabber = styled.div`
+  height: calc(100vh - 70px);
+  padding: 6px;
+  display: flex;
+`;
 
 const LazyDocumentationPanel = lazy(() =>
   import("components/DocumentationPanel").then(({ DocumentationPanel }) => ({ default: DocumentationPanel }))
@@ -21,6 +42,10 @@ interface PanelContainerProps {
     height: number;
   };
 }
+
+// interface ConnectorDocumentationProps {
+//   topComponent?: React.ReactNode;
+// }
 
 const LeftPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>> = ({ children, dimensions }) => {
   const width = dimensions?.width ?? 0;
@@ -47,7 +72,9 @@ const RightPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>
     <>
       {width < 350 ? (
         <div className={classNames(styles.rightPanelContainer, styles.lightOverlay)}>
-          <h2 className={styles.rotatedHeader}>Setup Guide</h2>
+          <h2 className={styles.rotatedHeader}>
+            <FormattedMessage id="form.setupGuide" />
+          </h2>
         </div>
       ) : (
         <div className={styles.rightPanelContainer}>{children}</div>
@@ -62,26 +89,32 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
   const screenWidth = useWindowSize().width;
 
   return (
-    <ReflexContainer orientation="vertical">
-      <ReflexElement className={styles.leftPanelStyle} propagateDimensions minSize={150}>
-        <LeftPanelContainer>{children}</LeftPanelContainer>
-      </ReflexElement>
-      {documentationPanelOpen && (
-        <ReflexSplitter style={{ border: 0, background: "rgba(255, 165, 0, 0)" }}>
-          <div className={styles.panelGrabber}>
-            <FontAwesomeIcon className={styles.grabberHandleIcon} icon={faGripLinesVertical} size="1x" />
-          </div>
-        </ReflexSplitter>
-      )}
-      {screenWidth > 500 && documentationPanelOpen && (
-        <ReflexElement className={styles.rightPanelStyle} size={1000} propagateDimensions minSize={60}>
-          <RightPanelContainer>
-            <Suspense fallback={<LoadingPage />}>
-              <LazyDocumentationPanel />
-            </Suspense>
-          </RightPanelContainer>
+    // <div className={styles.pageContainer}>
+    <PageContainer>
+      <ReflexContainer orientation="vertical">
+        <ReflexElement className={styles.leftPanelStyle} propagateDimensions minSize={150}>
+          <LeftPanelContainer>{children}</LeftPanelContainer>
         </ReflexElement>
-      )}
-    </ReflexContainer>
+        {documentationPanelOpen && (
+          <ReflexSplitter style={{ border: 0, background: "rgba(255, 165, 0, 0)" }}>
+            {/* <div className={styles.panelGrabber}> */}
+            <PnelGrabber>
+              <FontAwesomeIcon className={styles.grabberHandleIcon} icon={faGripLinesVertical} size="1x" />
+              {/* </div> */}
+            </PnelGrabber>
+          </ReflexSplitter>
+        )}
+        {screenWidth > 500 && documentationPanelOpen && (
+          <ReflexElement className={styles.rightPanelStyle} size={1000} propagateDimensions minSize={60}>
+            <RightPanelContainer>
+              <Suspense fallback={<LoadingPage />}>
+                <LazyDocumentationPanel />
+              </Suspense>
+            </RightPanelContainer>
+          </ReflexElement>
+        )}
+      </ReflexContainer>
+      {/* </div> */}
+    </PageContainer>
   );
 };

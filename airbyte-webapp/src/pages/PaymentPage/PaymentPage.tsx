@@ -5,6 +5,7 @@ import HeadTitle from "components/HeadTitle";
 import MainPageWithScroll from "components/MainPageWithScroll";
 
 import { useUser } from "core/AuthContext";
+import { getPaymentStatus, PAYMENT_STATUS } from "core/Constants/statuses";
 import { GetUpgradeSubscriptionDetail } from "core/domain/payment";
 import { ProductItem } from "core/domain/product";
 import useRouter from "hooks/useRouter";
@@ -29,14 +30,14 @@ const MainView = styled.div`
 `;
 
 export const PaymentSteps = {
-  SelectPlan: "Select Plan",
-  BillingPayment: "Billing Payment",
+  SELECT_PLAN: "SELECT_PLAN",
+  BILLING_PAYMENT: "BILLING_PAYMENT",
 } as const;
 
 const PaymentPage: React.FC = () => {
   const { push } = useRouter();
 
-  const [currentStep, setCurrentStep] = useState<string>(PaymentSteps.SelectPlan);
+  const [currentStep, setCurrentStep] = useState<string>(PaymentSteps.SELECT_PLAN);
   const [product, setProduct] = useState<ProductItem | undefined>();
   const [paymentLoading, setPaymentLoading] = useState<boolean>(false);
   const [planDetail, setPlanDetail] = useState<GetUpgradeSubscriptionDetail>();
@@ -45,7 +46,7 @@ const PaymentPage: React.FC = () => {
   const authService = useAuthenticationService();
   const { onCreateSubscriptionURL, onGetUpgradeSubscription, onUpgradeSubscription } = useAsyncAction();
 
-  const { updateUserStatus } = useUser();
+  const { updateUserStatus, user } = useUser();
   const userPlanDetail = useUserPlanDetail();
   const { selectedProduct } = userPlanDetail;
   const packagesDetail = usePackagesDetail();
@@ -66,13 +67,16 @@ const PaymentPage: React.FC = () => {
 
   const onSelectPlan = useCallback(async () => {
     setPaymentLoading(true);
-    if (selectedProduct) {
+    if (
+      getPaymentStatus(user.status) === PAYMENT_STATUS.Subscription ||
+      getPaymentStatus(user.status) === PAYMENT_STATUS.Pause_Subscription
+    ) {
       onGetUpgradeSubscription({ productItemId: product?.id as string })
         .then((response: any) => {
           const detail: GetUpgradeSubscriptionDetail = response?.data;
           setPlanDetail(detail);
           setPaymentLoading(false);
-          setCurrentStep(PaymentSteps.BillingPayment);
+          setCurrentStep(PaymentSteps.BILLING_PAYMENT);
         })
         .catch(() => {
           setPaymentLoading(false);
@@ -114,7 +118,7 @@ const PaymentPage: React.FC = () => {
       <PaymentNav steps={Object.values(PaymentSteps)} currentStep={currentStep} />
       <Content className={styles.pageContainer}>
         <MainView>
-          {currentStep === PaymentSteps.SelectPlan && (
+          {currentStep === PaymentSteps.SELECT_PLAN && (
             <SelectPlanStep
               product={product}
               setProduct={setProduct}
@@ -125,7 +129,7 @@ const PaymentPage: React.FC = () => {
               onSelectPlan={onSelectPlan}
             />
           )}
-          {currentStep === PaymentSteps.BillingPayment && (
+          {currentStep === PaymentSteps.BILLING_PAYMENT && (
             <BillingPaymentStep
               productPrice={product?.price as number}
               selectedProductPrice={selectedProduct?.price as number}

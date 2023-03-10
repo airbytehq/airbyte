@@ -89,9 +89,10 @@ const LogOut = styled.div`
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  justify-content: center;
+  // justify-content: center;
   color: #6b6b6f;
   margin: 20px 0 40px 0;
+  padding-left: 54px;
   &:hover {
     cursor: pointer;
     color: #4f46e5;
@@ -153,11 +154,11 @@ export const useCalculateSidebarItemStyles = (route: string) => {
   const menuItemStyle = () => {
     // const isActive = location.pathname.split("/").length >= 4 && location.pathname.split("/")[3] === route;
     const isActive = location.pathname.split("/").length >= 2 && location.pathname.split("/")[1] === route;
-    const isSetting = route === "settings";
+    // const isSetting = route === "settings";
     return classnames(
       styles.menuItem,
       { [styles.inActive]: !isActive },
-      { [styles.inActiveSetting]: isSetting },
+      // { [styles.inActiveSetting]: isSetting },
       { [styles.active]: isActive }
     );
   };

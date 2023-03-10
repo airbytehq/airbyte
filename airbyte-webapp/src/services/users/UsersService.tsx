@@ -87,6 +87,18 @@ export const useUpdateRole = () => {
   });
 };
 
+export const useUpdateLang = () => {
+  const service = useUserService();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (lang: string) => service.updateLang(lang),
+    onSuccess: () => {
+      queryClient.resetQueries();
+    },
+  });
+};
+
 export const useRegisterUser = () => {
   const service = useUserService();
   return useMutation((newUserRegisterBody: NewUserRegisterBody) => service.registerUser(newUserRegisterBody));
@@ -97,12 +109,14 @@ export const useUserAsyncAction = (): {
   onDeleteUser: (id: string) => Promise<any>;
   onResendInvite: (id: string) => Promise<any>;
   onUpdateRole: (UpdateRoleBody: UpdateRoleRequestBody) => Promise<any>;
+  onUpdateLang: (lang: string) => Promise<any>;
   onRegisterUser: (newUserRegisterBody: NewUserRegisterBody) => Promise<any>;
 } => {
   const { mutateAsync: addUsers } = useAddUsers();
   const { mutateAsync: deleteUser } = useDeleteUser();
   const { mutateAsync: resendInvite } = useResendInvite();
   const { mutateAsync: updateRole } = useUpdateRole();
+  const { mutateAsync: updateLang } = useUpdateLang();
   const { mutateAsync: registerUser } = useRegisterUser();
 
   const onAddUser = async (users: NewUser[]) => {
@@ -121,6 +135,10 @@ export const useUserAsyncAction = (): {
     return await updateRole(UpdateRoleBody);
   };
 
+  const onUpdateLang = async (lang: string) => {
+    return await updateLang(lang);
+  };
+
   const onRegisterUser = async (newUserRegisterBody: NewUserRegisterBody) => {
     return await registerUser(newUserRegisterBody);
   };
@@ -130,6 +148,7 @@ export const useUserAsyncAction = (): {
     onDeleteUser,
     onResendInvite,
     onUpdateRole,
+    onUpdateLang,
     onRegisterUser,
   };
 };

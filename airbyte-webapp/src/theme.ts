@@ -28,6 +28,7 @@ export const theme = {
   darkBlue: scss.darkBlue,
 
   grey30: scss.grey30,
+  grey40: scss.grey40,
   grey50: scss.grey50,
   grey100: scss.grey100,
   grey200: scss.grey200,
@@ -117,7 +118,7 @@ export const theme = {
   dangerTransparentColor: scss.red50,
   successColor: scss.green,
   successColor20: scss.green50,
-  backgroundColor: scss.grey40,
+  backgroundColor: scss.backgroundColor,
   shadowColor: scss.shadowColor,
   cardShadowColor: scss.cardShadowColor,
 

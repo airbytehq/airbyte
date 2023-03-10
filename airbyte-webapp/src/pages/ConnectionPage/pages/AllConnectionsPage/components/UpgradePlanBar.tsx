@@ -3,10 +3,11 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components";
+import { Separator } from "components/Separator";
 
 import { useUser } from "core/AuthContext";
 import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
-import { getStatusAgainstStatusNumber, STATUSES } from "core/Constants/statuses";
+import { getPaymentStatus, PAYMENT_STATUS } from "core/Constants/statuses";
 import useRouter from "hooks/useRouter";
 import { UnauthorizedModal } from "pages/ConnectionPage/pages/AllConnectionsPage/components/UnauthorizedModal";
 import { RoutePaths } from "pages/routePaths";
@@ -22,7 +23,7 @@ const Container = styled.div`
   align-items: center;
   justify-content: center;
   position: fixed;
-  z-index: 10000;
+  z-index: 1000;
 `;
 
 const Text = styled.div`
@@ -51,7 +52,7 @@ export const UpgradePlanBar: React.FC = () => {
 
   const isUpgradePlanBar = (): boolean => {
     let showUpgradePlanBar = false;
-    if (getStatusAgainstStatusNumber(user.status) === STATUSES.Free_Trial) {
+    if (getPaymentStatus(user.status) === PAYMENT_STATUS.Free_Trial) {
       if (!pathname.split("/").includes(RoutePaths.Payment)) {
         showUpgradePlanBar = true;
       }
@@ -89,6 +90,7 @@ export const UpgradePlanBar: React.FC = () => {
           </Button>
         </Container>
         {isAuthorized && <UnauthorizedModal onClose={() => setIsAuthorized(false)} />}
+        <Separator height="40px" />
       </>
     );
   }

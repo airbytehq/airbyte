@@ -1,10 +1,13 @@
 import { ProductItem } from "./Product";
 
 export interface PackageItem {
-  packageName: string;
-  itemType: string;
   itemName: string;
   itemScope: string;
+  itemScopeLang: string;
+  itemType: string;
+  itemTypeLang: string;
+  packageName: string;
+  packageNameLang: string;
 }
 
 export interface ProcessedPackageMapItem {

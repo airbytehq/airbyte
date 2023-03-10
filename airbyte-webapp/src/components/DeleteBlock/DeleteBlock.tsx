@@ -2,32 +2,40 @@ import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button, H5 } from "components";
+import { Button } from "components";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import useRouter from "hooks/useRouter";
-
-import { Card } from "../base/Card";
 
 interface IProps {
   type: "source" | "destination" | "connection";
   onDelete: () => Promise<unknown>;
 }
 
-const DeleteBlockComponent = styled(Card)`
-  margin-top: 12px;
-  padding: 19px 20px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+const Title = styled.div`
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 30px;
+  color: #27272a;
 `;
 
 const Text = styled.div`
-  margin-left: 20px;
-  font-size: 11px;
-  line-height: 13px;
-  color: ${({ theme }) => theme.greyColor40};
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 30px;
+  color: #999999;
+  margin: 16px 0;
   white-space: pre-line;
+`;
+
+const DeleteButton = styled(Button)`
+  // width: 168px;
+  height: 36px;
+  background: #ff5454;
+  border-radius: 6px;
+  border-color: #ff5454;
+  font-size: 14px;
+  color: #ffffff;
 `;
 
 const DeleteBlock: React.FC<IProps> = ({ type, onDelete }) => {
@@ -49,17 +57,17 @@ const DeleteBlock: React.FC<IProps> = ({ type, onDelete }) => {
   }, [closeConfirmationModal, onDelete, openConfirmationModal, push, type]);
 
   return (
-    <DeleteBlockComponent>
+    <>
+      <Title>
+        <FormattedMessage id={`tables.${type}Delete.title`} />
+      </Title>
       <Text>
-        <H5 bold>
-          <FormattedMessage id={`tables.${type}Delete.title`} />
-        </H5>
         <FormattedMessage id={`tables.${type}DataDelete`} />
       </Text>
-      <Button danger onClick={onDeleteButtonClick} data-id="open-delete-modal">
-        <FormattedMessage id={`tables.${type}Delete`} />
-      </Button>
-    </DeleteBlockComponent>
+      <DeleteButton danger onClick={onDeleteButtonClick} data-id="open-delete-modal" size="m">
+        <FormattedMessage id={`tables.${type}Delete.title`} />
+      </DeleteButton>
+    </>
   );
 };
 

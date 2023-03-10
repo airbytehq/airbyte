@@ -20,7 +20,7 @@ import styles from "./DocumentationPanel.module.scss";
 export const DocumentationPanel: React.FC = () => {
   const { formatMessage } = useIntl();
   const config = useConfig();
-  const { setDocumentationPanelOpen, documentationUrl } = useDocumentationPanelContext();
+  const { setDocumentationPanelOpen, documentationUrl, selectedServiceName } = useDocumentationPanelContext();
   const { data: docs, isLoading } = useDocumentation(documentationUrl);
 
   // @ts-expect-error rehype-slug currently has type conflicts due to duplicate vfile dependencies
@@ -52,7 +52,12 @@ export const DocumentationPanel: React.FC = () => {
     <LoadingPage />
   ) : (
     <div className={styles.container}>
-      <PageTitle withLine title={<FormattedMessage id="connector.setupGuide" />} />
+      <PageTitle
+        withLine
+        withPadding
+        title={<FormattedMessage id="connector.setupGuide" />}
+        subText={<FormattedMessage id="connector.setupGuide.subTitle" values={{ value: selectedServiceName }} />}
+      />
       <Markdown
         className={styles.content}
         content={!docs?.includes("<!DOCTYPE html>") ? docs : formatMessage({ id: "connector.setupGuide.notFound" })}

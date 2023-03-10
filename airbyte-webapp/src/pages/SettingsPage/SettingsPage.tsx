@@ -3,6 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { Navigate, Route, Routes } from "react-router-dom";
 import styled from "styled-components";
 
+import MessageBox from "components/base/MessageBox";
 import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
@@ -13,8 +14,7 @@ import { useUser } from "core/AuthContext";
 import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
 import useRouter from "hooks/useRouter";
 
-import { MessageBox } from "./components/MessageBox";
-// import AccountSettingsPage from "./pages/AccountSettingsPage";
+import AccountSettingsPage from "./pages/AccountSettingsPage";
 import NotificationPage from "./pages/NotificationPage";
 import PlansBillingPage from "./pages/PlansBillingPage";
 import UserManagementPage from "./pages/UserManagementPage";
@@ -78,7 +78,7 @@ export const SettingsRoute = {
 } as const;
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
-  const { push, pathname } = useRouter();
+  const { push } = useRouter();
   const { user } = useUser();
 
   const [messageId, setMessageId] = useState<string>("");
@@ -97,12 +97,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
               ? true
               : false,
         },
-        // {
-        //   path: `${SettingsRoute.AccountSettings}`,
-        //   name: <FormattedMessage id="settings.account.settings" />,
-        //   component: <AccountSettingsPage />,
-        //   show: true,
-        // },
+        {
+          path: `${SettingsRoute.AccountSettings}`,
+          name: <FormattedMessage id="settings.account.settings" />,
+          component: <AccountSettingsPage />,
+          show: true,
+        },
         {
           path: `${SettingsRoute.PlanAndBilling}`,
           name: <FormattedMessage id="settings.plan.billing" />,
@@ -137,21 +137,21 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
     <PageContainer>
       <Seperator />
       <ContentContainer>
+        <MessageBox message={messageId} onClose={() => setMessageId("")} type={messageType} />
         <MainPageWithScroll
           withPadding
           headTitle={<HeadTitle titles={[{ id: "sidebar.settings" }]} />}
           pageTitle={
             <PageHeaderContainer>
-              <div style={{ padding: "0 0 0 20px" }}>
+              <div style={{ padding: "24px 0 0 20px" }}>
                 <PageTitle title={<FormattedMessage id="sidebar.settings" />} />
               </div>
-              <MessageBox message={messageId} onClose={() => setMessageId("")} type={messageType} />
             </PageHeaderContainer>
           }
         >
           <Content>
             <TabContainer>
-              <TabMenu data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} />
+              <TabMenu data={menuItems} onSelect={onSelectMenuItem} />
             </TabContainer>
             <MainView>
               <Suspense fallback={<LoadingPage />}>
@@ -160,7 +160,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
                     .flatMap((menuItem) => menuItem.routes)
                     .map(
                       ({ path, component: Component, show }) =>
-                        show && <Route key={path} path={path} element={Component} />
+                        show && <Route key={path} path={`${path}/*`} element={Component} />
                     )}
                   <Route path="*" element={<Navigate to={firstRoute()} replace />} />
                 </Routes>

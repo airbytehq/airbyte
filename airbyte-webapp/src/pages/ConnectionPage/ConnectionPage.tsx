@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router-dom";
 
 import { LoadingPage } from "components";
 
+import SelectConnectionCard from "pages/ConnectionPage/pages/CreationFormPage/SelectConnectionPage";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 
@@ -15,6 +16,7 @@ export const ConnectionPage: React.FC = () => (
   <Suspense fallback={<LoadingPage position="relative" />}>
     <Routes>
       <Route path={RoutePaths.ConnectionNew} element={<CreationFormPage />} />
+      <Route path={RoutePaths.SelectConnection} element={<SelectConnectionCard />} />
       <Route
         path=":connectionId/*"
         element={

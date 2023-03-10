@@ -91,7 +91,7 @@ class EbayStream(HttpStream, ABC):
 
 class Inventory(EbayStream):
     dateFilter = False
-    dateFormat = DATE_TIME_F_S
+    dateFormat = DATE_TIME_F
     url_base = AUTH_BASE_URL
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__(config, **kwargs)

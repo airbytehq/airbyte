@@ -1,43 +1,54 @@
 @use "../../../../../scss/colors";
 
 .statusView {
-  margin: 0 10px;
+  margin: 0 26px;
 
   .title {
     display: flex;
     justify-content: space-between;
     flex-direction: row;
     align-items: center;
+    padding-bottom: 30px;
+
+    .titleText {
+      font-weight: 500;
+      font-size: 20px;
+      line-height: 30px;
+    }
 
     .actions {
       display: flex;
+      margin-right: 28px;
 
       .resetButton,
-      .cancelButton,
-      .syncButton {
+      .cancelButton {
         display: flex;
         align-items: center;
         justify-content: center;
+        padding: 6px 0;
       }
 
       .resetButton {
         margin-right: 10px;
+        width: 148px;
+        height: 40px;
+        font-size: 15px;
+        border: 1px solid colors.$borderColor;
+        border-radius: 6px;
       }
 
       .cancelButton {
-        border-color: transparent;
-        background-color: colors.$red;
+        border: 1px solid colors.$borderColor;
+        background-color: colors.$white;
+        color: #999;
+        width: 148px;
+        height: 40px;
+        font-size: 15px;
+        border-radius: 6px;
 
         .iconXmark {
           margin-right: 12px;
           font-size: 18px;
-        }
-      }
-
-      .syncButton {
-        .iconRotate {
-          display: flex;
-          margin-right: 12px;
         }
       }
     }
@@ -45,6 +56,9 @@
 
   .contentCard {
     margin-bottom: 20px;
+    background-color: colors.$white;
+    border-radius: 16px;
+    padding: 32px;
   }
 
   .footer {
@@ -52,5 +66,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
+
+    .loadButton {
+      width: 168px;
+      height: 46px;
+      font-size: 16px;
+      border-radius: 6px;
+    }
   }
 }

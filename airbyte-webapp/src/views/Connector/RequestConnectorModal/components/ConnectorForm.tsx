@@ -70,6 +70,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({ onSubmit, onCancel, curre
           <Field name="connectorType">
             {({ field, meta }: FieldProps<string>) => (
               <ControlLabelsWithMargin
+                labelAdditionLength={0}
                 error={!!meta.error && meta.touched}
                 label={<FormattedMessage id="connector.type" />}
                 message={!!meta.error && meta.touched && <FormattedMessage id={meta.error} />}
@@ -91,6 +92,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({ onSubmit, onCancel, curre
           <Field name="name">
             {({ field, meta, form }: FieldProps<string, Values>) => (
               <ControlLabelsWithMargin
+                labelAdditionLength={0}
                 error={!!meta.error && meta.touched}
                 label={
                   form.values.connectorType === "destination" ? (
@@ -107,6 +109,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({ onSubmit, onCancel, curre
           <Field name="additionalInfo">
             {({ field, meta }: FieldProps<string>) => (
               <ControlLabelsWithMargin
+                labelAdditionLength={0}
                 error={!!meta.error && meta.touched}
                 label={<FormattedMessage id="connector.additionalInfo" />}
                 message={<FormattedMessage id="connector.additionalInfo.message" />}
@@ -119,6 +122,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({ onSubmit, onCancel, curre
             <Field name="email">
               {({ field, meta }: FieldProps<string>) => (
                 <ControlLabelsWithMargin
+                  labelAdditionLength={0}
                   error={!!meta.error && meta.touched}
                   label={<FormattedMessage id="connector.email" />}
                   message={!!meta.error && meta.touched && <FormattedMessage id={meta.error} />}

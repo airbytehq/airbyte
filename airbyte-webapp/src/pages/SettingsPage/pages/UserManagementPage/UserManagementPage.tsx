@@ -7,7 +7,7 @@ import styled from "styled-components";
 import { Button, DropDownRow } from "components";
 import { Separator } from "components/Separator";
 
-import { ROLES } from "core/Constants/roles";
+import { ROLES, ROLES_ZH } from "core/Constants/roles";
 import { useRoleOptions } from "services/roles/RolesService";
 import { useListUsers, useUserAsyncAction } from "services/users/UsersService";
 
@@ -49,7 +49,9 @@ const BtnText = styled.div`
 `;
 
 const UserManagementPage: React.FC<IProps> = ({ setMessageId, setMessageType }) => {
-  const roleOptions = useRoleOptions().filter((role) => role.label !== ROLES.Administrator_Owner);
+  const roleOptions = useRoleOptions().filter(
+    (role) => role.label !== ROLES.Administrator_Owner && role.label !== ROLES_ZH.Administrator_Owner
+  );
   const users = useListUsers();
   const { onDeleteUser, onResendInvite, onUpdateRole } = useUserAsyncAction();
 

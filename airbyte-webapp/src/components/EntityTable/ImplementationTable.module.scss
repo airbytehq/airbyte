@@ -1,7 +1,13 @@
 .content {
-  margin: 0 32px 0 27px;
+  margin: 0 32px 40px 27px;
 
   > table > tbody > tr > td:first-of-type {
     padding-left: 32px !important;
+  }
+
+  .headerColumns {
+    display: flex;
+    flex-wrap: nowrap;
+    min-width: 100px;
   }
 }

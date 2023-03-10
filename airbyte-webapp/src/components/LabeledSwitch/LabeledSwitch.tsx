@@ -10,6 +10,7 @@ interface LabeledSwitchProps extends React.InputHTMLAttributes<HTMLInputElement>
   label?: React.ReactNode;
   checkbox?: boolean;
   loading?: boolean;
+  swithSize?: string;
 }
 
 export const LabeledSwitch: React.FC<LabeledSwitchProps> = (props) => (

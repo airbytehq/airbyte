@@ -26,7 +26,6 @@ import {
   windowConfigProvider,
 } from "./config";
 import GlobalStyle from "./global-styles";
-import en from "./locales/en.json";
 import { Routing } from "./pages/routes";
 import { WorkspaceServiceProvider } from "./services/workspaces/WorkspacesService";
 import { theme } from "./theme";
@@ -41,48 +40,48 @@ const StyleProvider: React.FC = ({ children }) => (
 const configProviders: ValueProvider<Config> = [envConfigProvider, windowConfigProvider];
 
 const Services: React.FC = ({ children }) => (
-  <AuthContextProvider>
-    <AnalyticsProvider>
-      <ApiErrorBoundary>
-        <WorkspaceServiceProvider>
-          <FeatureService features={defaultFeatures}>
-            <NotificationService>
-              <ConfirmationModalService>
-                <ModalServiceProvider>
-                  <FormChangeTrackerService>
-                    <ApiServices>{children}</ApiServices>
-                  </FormChangeTrackerService>
-                </ModalServiceProvider>
-              </ConfirmationModalService>
-            </NotificationService>
-          </FeatureService>
-        </WorkspaceServiceProvider>
-      </ApiErrorBoundary>
-    </AnalyticsProvider>
-  </AuthContextProvider>
+  <AnalyticsProvider>
+    <ApiErrorBoundary>
+      <WorkspaceServiceProvider>
+        <FeatureService features={defaultFeatures}>
+          <NotificationService>
+            <ConfirmationModalService>
+              <ModalServiceProvider>
+                <FormChangeTrackerService>
+                  <ApiServices>{children}</ApiServices>
+                </FormChangeTrackerService>
+              </ModalServiceProvider>
+            </ConfirmationModalService>
+          </NotificationService>
+        </FeatureService>
+      </WorkspaceServiceProvider>
+    </ApiErrorBoundary>
+  </AnalyticsProvider>
 );
 
 const App: React.FC = () => {
   return (
     <React.StrictMode>
       <StyleProvider>
-        <I18nProvider locale="en" messages={en}>
-          <StoreProvider>
-            <ServicesProvider>
-              <Suspense fallback={<LoadingPage />}>
-                <ConfigServiceProvider defaultConfig={defaultConfig} providers={configProviders}>
-                  <Router>
-                    <Services>
-                      <GoogleOAuthProvider clientId="797465575128-he9j9jrtastc66su472tnv3uvbtkllid.apps.googleusercontent.com">
-                        <Routing />
-                      </GoogleOAuthProvider>
-                    </Services>
-                  </Router>
-                </ConfigServiceProvider>
-              </Suspense>
-            </ServicesProvider>
-          </StoreProvider>
-        </I18nProvider>
+        <StoreProvider>
+          <ServicesProvider>
+            <Suspense fallback={<LoadingPage />}>
+              <ConfigServiceProvider defaultConfig={defaultConfig} providers={configProviders}>
+                <Router>
+                  <AuthContextProvider>
+                    <I18nProvider>
+                      <Services>
+                        <GoogleOAuthProvider clientId="797465575128-he9j9jrtastc66su472tnv3uvbtkllid.apps.googleusercontent.com">
+                          <Routing />
+                        </GoogleOAuthProvider>
+                      </Services>
+                    </I18nProvider>
+                  </AuthContextProvider>
+                </Router>
+              </ConfigServiceProvider>
+            </Suspense>
+          </ServicesProvider>
+        </StoreProvider>
       </StyleProvider>
     </React.StrictMode>
   );

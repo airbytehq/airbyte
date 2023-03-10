@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Card } from "components";
+// import { Card } from "components";
 // import { JobItem } from "components/JobItem/JobItem";
 
 import { Action, Namespace } from "core/analytics";
@@ -23,6 +23,9 @@ interface ConnectorCardBaseProps extends ConnectorCardProvidedProps {
   title?: React.ReactNode;
   full?: boolean;
   jobInfo?: SynchronousJobRead | null;
+  onShowLoading?: (isLoading: boolean, formValues: ServiceFormValues, error: JSX.Element | string | null) => void;
+  onBack?: () => void;
+  isCopyMode?: boolean;
 }
 
 interface ConnectorCardCreateProps extends ConnectorCardBaseProps {
@@ -39,12 +42,15 @@ export const ConnectorCard: React.VFC<ConnectorCardCreateProps | ConnectorCardEd
   full,
   jobInfo,
   onSubmit,
+  onShowLoading,
+  onBack,
   ...props
 }) => {
   const [saved, setSaved] = useState(false);
   // const [errorStatusRequest, setErrorStatusRequest] = useState<Error | null>(null);
 
   const { testConnector, isTestConnectionInProgress, onStopTesting, error, reset } = useTestConnector(props);
+  // const { setSourceServiceValues, setDestinationServiceValues } = useDataCardContext();
 
   useEffect(() => {
     // Whenever the selected connector changed, reset the check connection call and other errors
@@ -55,6 +61,10 @@ export const ConnectorCard: React.VFC<ConnectorCardCreateProps | ConnectorCardEd
   const analyticsService = useAnalyticsService();
 
   const onHandleSubmit = async (values: ServiceFormValues) => {
+    if (onShowLoading) {
+      onShowLoading(true, values, null);
+    }
+
     // setErrorStatusRequest(null);
 
     const connector = props.availableServices.find((item) => Connector.id(item) === values.serviceType);
@@ -85,18 +95,25 @@ export const ConnectorCard: React.VFC<ConnectorCardCreateProps | ConnectorCardEd
     };
 
     try {
-      await testConnectorWithTracking();
+      if (!props.isCopyMode) {
+        await testConnectorWithTracking();
+      }
       await onSubmit(values);
       setSaved(true);
     } catch (e) {
+      // Testing failed and return create form page
+      if (onShowLoading) {
+        const errorMessage = e ? generateMessageFromError(e) : null;
+        onShowLoading(false, values, errorMessage);
+      }
       // setErrorStatusRequest(e);
     }
   };
 
   // const job = jobInfo || LogsRequestError.extractJobInfo(errorStatusRequest);
-
   return (
-    <Card title={title} fullWidth={full}>
+    // <Card fullWidth={full} title="">
+    <>
       <ServiceForm
         {...props}
         errorMessage={props.errorMessage || (error && generateMessageFromError(error))}
@@ -104,11 +121,13 @@ export const ConnectorCard: React.VFC<ConnectorCardCreateProps | ConnectorCardEd
         onStopTesting={onStopTesting}
         testConnector={testConnector}
         onSubmit={onHandleSubmit}
+        onBack={onBack}
         successMessage={
           props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
         }
       />
       {/* {job && <JobItem job={job} />} */}
-    </Card>
+    </>
+    // </Card>
   );
 };

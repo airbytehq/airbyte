@@ -15,28 +15,38 @@ interface Props {
 const MainComponent = styled.div`
   display: flex;
   padding: 10px;
-  width: 220px;
+  // width: 220px;
+  width: 100%;
   align-items: center;
 `;
 
 const Details = styled.div`
-  width: 160px;
-  margin-left: 10px;
+  // width: 160px;
+  //  width: 100%;
+  flex: 1;
+  margin-left: 22px;
   display: flex;
   flex-direction: column;
   font-weight: normal;
 `;
 
 const EntityIcon = styled.div`
-  height: 30px;
-  width: 30px;
+  width: 86px;
+  height: 86px;
+  box-shadow: 0px 10px 12px rgba(74, 74, 87, 0.1);
+  border-radius: 18px;
+  padding: 6px;
+  box-sizing: border-box;
 `;
 
 const ConnectionName = styled.div`
-  font-size: 14px;
-  color: #1a194d;
+  font-size: 16px;
   text-align: left;
   margin-right: 10px;
+  font-weight: 500;
+  line-height: 30px;
+  color: #27272a;
+  flex: 1;
 `;
 
 const ConnectorDetails = styled.div`
@@ -45,16 +55,16 @@ const ConnectorDetails = styled.div`
   align-items: center;
 `;
 
-const ConnectorName = styled.div`
-  font-size: 11px;
-  margin-top: 1px;
-  color: #afafc1;
-  text-align: left;
-  word-wrap: break-word;
-`;
+// const ConnectorName = styled.div`
+//   font-size: 11px;
+//   margin-top: 1px;
+//   color: #afafc1;
+//   text-align: left;
+//   word-wrap: break-word;
+// `;
 
 const ConnectorCard = (props: Props) => {
-  const { connectionName, connectorName, icon, releaseStage } = props;
+  const { connectionName, icon, releaseStage } = props; // connectorName
 
   return (
     <MainComponent>
@@ -64,7 +74,7 @@ const ConnectorCard = (props: Props) => {
           <ConnectionName>{connectionName}</ConnectionName>
           {releaseStage && <ReleaseStageBadge stage={releaseStage} />}
         </ConnectorDetails>
-        <ConnectorName>{connectorName} </ConnectorName>
+        {/* <ConnectorName>{connectorName} </ConnectorName> */}
       </Details>
     </MainComponent>
   );

@@ -93,6 +93,7 @@ const ListItem = styled.div`
 const FormContent = styled.div`
   width: 60%;
   // height: 100%;
+  // background-color: #ffffff;
   background-color: #eff0f5;
 `;
 
@@ -137,7 +138,7 @@ const SignupPage: React.FC<SignupPageProps> = () => {
   useTrackPage(PageTrackingCodes.SIGNUP);
   return (
     <Container>
-      <HeadTitle titles={[{ title: "Free Trial" }]} />
+      <HeadTitle titles={[{ id: "signup.pageTitle" }]} />
       <InformationContent>
         <ImageContent>
           <img src="/SignupCover.png" alt="cover" style={{ maxWidth: "80%", height: "auto", objectFit: "cover" }} />
@@ -204,7 +205,7 @@ const SignupPage: React.FC<SignupPageProps> = () => {
           </SigninText>
           <SigninButton>
             <Link $clear to={`/${RoutePaths.Signin}`}>
-              <FormattedMessage id="Sign in" />
+              <FormattedMessage id="signup.siginButton" />
             </Link>
           </SigninButton>
         </SigninButtonContent>

@@ -1,8 +1,9 @@
 import { Field, FieldArray } from "formik";
 import React from "react";
 import { useIntl } from "react-intl";
+import styled from "styled-components";
 
-import { H5 } from "components";
+import { H4 } from "components";
 
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 
@@ -17,6 +18,10 @@ interface OperationsSectionProps {
   onEndEditTransformation?: () => void;
   wrapper: React.ComponentType;
 }
+
+const SectionTitle = styled(H4)`
+  margin-bottom: 30px;
+`;
 
 export const OperationsSection: React.FC<OperationsSectionProps> = ({
   destDefinition,
@@ -38,14 +43,14 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
   return (
     <Wrapper>
       {supportsNormalization || supportsTransformations ? (
-        <H5 bold>
+        <SectionTitle bold>
           {[
             supportsNormalization && formatMessage({ id: "connectionForm.normalization.title" }),
             supportsTransformations && formatMessage({ id: "connectionForm.transformation.title" }),
           ]
             .filter(Boolean)
             .join(" & ")}
-        </H5>
+        </SectionTitle>
       ) : null}
       {supportsNormalization && <Field name="normalization" component={NormalizationField} />}
       {supportsTransformations && (
