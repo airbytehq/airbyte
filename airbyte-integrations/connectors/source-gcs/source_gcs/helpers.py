@@ -34,6 +34,7 @@ def read_csv_file(blob: Blob, read_header_only=False):
         df = pd.read_csv(file_obj, nrows=0)
     else:
         df = pd.read_csv(file_obj)
+    file_obj.close()
     return df
 
 def construct_file_schema(df):
