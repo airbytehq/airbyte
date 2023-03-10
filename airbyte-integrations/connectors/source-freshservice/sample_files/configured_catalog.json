@@ -442,7 +442,7 @@
               "type": "string"
             },
             "mobile_phone_number": {
-              "type": "integer"
+              "type": "string"
             },
             "department_ids": {
               "type": "array"
@@ -536,7 +536,7 @@
               "type": "string"
             },
             "mobile_phone_number": {
-              "type": "integer"
+              "type": "string"
             },
             "department_ids": {
               "type": "array"
