@@ -1,22 +1,48 @@
 {
-  "streams": [
+  "streams" : [
     {
-      "stream": {
-        "name": "customers",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+      "stream" : {
+        "name" : "invoice",
+        "json_schema" : {},
+        "supported_sync_modes" : [
+          "full_refresh"
+        ]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode" : "full_refresh",
+      "destination_sync_mode" : "append"
     },
     {
-      "stream": {
-        "name": "employees",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"]
+      "stream" : {
+        "name" : "postings",
+        "json_schema" : {},
+        "supported_sync_modes" : [
+          "full_refresh"
+        ]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode" : "full_refresh",
+      "destination_sync_mode" : "append"
+    },
+    {
+      "stream" : {
+        "name" : "departments",
+        "json_schema" : {},
+        "supported_sync_modes" : [
+          "full_refresh"
+        ]
+      },
+      "sync_mode" : "full_refresh",
+      "destination_sync_mode" : "append"
+    },
+    {
+      "stream" : {
+        "name" : "accounts",
+        "json_schema" : {},
+        "supported_sync_modes" : [
+          "full_refresh"
+        ]
+      },
+      "sync_mode" : "full_refresh",
+      "destination_sync_mode" : "append"
     }
   ]
 }

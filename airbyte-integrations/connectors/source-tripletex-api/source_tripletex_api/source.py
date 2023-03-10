@@ -54,6 +54,10 @@ class TripletexApiStream(HttpStream, ABC):
 
 
 class DateRequiredStream(TripletexApiStream, ABC):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.date_from_key_name = "dateFrom"
+        self.date_to_key_name = "dateTo"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -73,8 +77,8 @@ class DateRequiredStream(TripletexApiStream, ABC):
         if last_date < self.today:
             self.date_to = last_date.add(days=8).format("YYYY-MM-DD")
             return {
-                "dateFrom": last_date.add(days=1).format("YYYY-MM-DD"),
-                "dateTo": self.date_to
+                self.date_from_key_name: last_date.add(days=1).format("YYYY-MM-DD"),
+                self.date_to_key_name: self.date_to
             }
 
         return None
@@ -83,8 +87,8 @@ class DateRequiredStream(TripletexApiStream, ABC):
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = {
-            "dateFrom": self.start_date,
-            "dateTo": pendulum.parse(self.start_date).add(days=7).format("YYYY-MM-DD"),
+            self.date_from_key_name: self.start_date,
+            self.date_to_key_name: pendulum.parse(self.start_date).add(days=7).format("YYYY-MM-DD"),
             "count": 10000
         }
 
@@ -94,7 +98,6 @@ class DateRequiredStream(TripletexApiStream, ABC):
         return params
 
 
-
 class Postings(DateRequiredStream):
     primary_key = "id"
 
@@ -102,6 +105,20 @@ class Postings(DateRequiredStream):
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "ledger/posting"
+
+
+class Invoice(DateRequiredStream):
+    primary_key = "id"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.date_from_key_name = "invoiceDateFrom"
+        self.date_to_key_name = "invoiceDateTo"
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "invoice"
 
 
 class Departments(TripletexApiStream):
@@ -127,6 +144,7 @@ class Accounts(TripletexApiStream):
     ) -> str:
         return "ledger/account"
 
+
 class Employee(TripletexApiStream):
     primary_key = "id"
 
@@ -137,6 +155,7 @@ class Employee(TripletexApiStream):
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "employee"
+
 
 class BalanceSheet(DateRequiredStream):
     primary_key = "id"
@@ -161,4 +180,5 @@ class SourceTripletexApi(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
 
-        return [Postings(config=config), Departments(config=config), Accounts(config=config), BalanceSheet(config=config), Employee(config=config)]
+        return [Postings(config=config), Departments(config=config), Accounts(config=config), BalanceSheet(config=config),
+                Employee(config=config), Invoice(config=config)]
