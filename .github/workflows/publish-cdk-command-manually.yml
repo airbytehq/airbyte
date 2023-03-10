@@ -282,13 +282,20 @@ jobs:
       - publish-docker-image
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
       - name: Checkout Airbyte Platform Internal
         uses: actions/checkout@v3
         with:
           repository: airbytehq/airbyte-platform-internal
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
       - name: Update CDK version
-        run: echo ${{needs.bump-version.outputs.new_cdk_version}} > oss/airbyte-connector-builder-server/CDK_VERSION
+        run: |
+          sed -i '' -E 's/BUILDER_CDK_VERSION=.*/BUILDER_CDK_VERSION=${{needs.bump-version.outputs.new_cdk_version}}/' oss/.env
+          pip install pip-tools
+          pip-compile
+          pip-compile --extra tests --output-file requirements-tests.txt
       - name: Create Pull Request
         id: create-pull-request
         uses: peter-evans/create-pull-request@v4
