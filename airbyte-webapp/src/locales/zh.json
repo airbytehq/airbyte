@@ -148,7 +148,7 @@
   "connectorForm.authenticate.succeeded": "身份验证成功！",
   "connectorForm.authenticate.required": "需要身份验证",
   "connectorForm.reauthenticate": "重新验证",
-  "connectorForm.expandForm": "展开此表单以继续设置您的接口",
+  "connectorForm.expandForm": "展开此表单以继续设置您的数据接口",
 
   "form.rawData": "原始数据（JSON）",
   "form.basicNormalization": "标准化表格数据",
@@ -491,7 +491,7 @@
   "settings.accountSetting.notifications": "通知",
   "settings.accountSetting.password": "密码",
   "settings.logout.modal.title": "退出登录？",
-  "settings.logout.modal.content": "  您确定要退出吗？",
+  "settings.logout.modal.content": "  您确定要退出登录吗？",
   "settings.logout.modal.confirmText": "登出",
 
   "payment.tabTitle": "付款",
@@ -532,9 +532,7 @@
   "subscription.plan.update": "恭喜！您的更改成功！",
 
   "subscription.cancelSubscriptionModal.title": "取消订阅？",
-  "subscription.cancelSubscriptionModal.desc1": "您当前的订阅将于{expiryDate}日到期。",
-  "subscription.cancelSubscriptionModal.desc2": "在到期之前，您仍然可以使用当前的计划。",
-  "subscription.cancelSubscriptionModal.desc3": "您确定要取消订阅吗?",
+  "subscription.cancelSubscriptionModal.content": "您当前的订阅将于{expiryDate}日到期。\n在到期之前，您仍然可以使用当前的计划。\n您确定要取消订阅吗?",
 
   "payment.planName": "{planName}方案",
   "payment.planDeductionTime": "月",
