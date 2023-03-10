@@ -38,4 +38,4 @@ def update_commit_status_check(
         description=description,
         context=context,
     )
-    context.logger.info(f"Created {state} status for commit {sha} on Github in {context} context.")
+    logger.info(f"Created {state} status for commit {sha} on Github in {context} context.")
