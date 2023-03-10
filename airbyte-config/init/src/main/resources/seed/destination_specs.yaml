@@ -2399,7 +2399,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-gcs:0.2.14"
+- dockerImage: "airbyte/destination-gcs:0.2.15"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/gcs"
     connectionSpecification:

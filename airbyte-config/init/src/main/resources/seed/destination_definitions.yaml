@@ -145,7 +145,7 @@
 - name: Google Cloud Storage (GCS)
   destinationDefinitionId: ca8f6566-e555-4b40-943a-545bf123117a
   dockerRepository: airbyte/destination-gcs
-  dockerImageTag: 0.2.14
+  dockerImageTag: 0.2.15
   documentationUrl: https://docs.airbyte.com/integrations/destinations/gcs
   icon: googlecloudstorage.svg
   resourceRequirements:
