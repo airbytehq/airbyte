@@ -739,6 +739,11 @@
   icon: google-analytics.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - oauth2.googleapis.com
+      - www.googleapis.com
+      - analyticsdata.googleapis.com
 - name: Google Directory
   sourceDefinitionId: d19ae824-e289-4b14-995a-0632eb46d246
   dockerRepository: airbyte/source-google-directory
