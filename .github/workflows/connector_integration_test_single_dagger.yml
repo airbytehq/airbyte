@@ -44,12 +44,6 @@ jobs:
     needs: start-runner
     runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
     steps:
-      # TODO: Airbyte checkout should ideally be not necessary but the ci_connector_ops utils need an active git repo...
-      - name: Checkout Airbyte repo
-        uses: actions/checkout@v3
-        with:
-          repository: ${{ github.event.inputs.repo }}
-          ref: ${{ github.event.inputs.gitref }}
       - name: Extract branch name
         shell: bash
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
@@ -60,18 +54,18 @@ jobs:
           python-version: "3.10"
       - name: Install ci-connector-ops package
         # TODO update the git url before merge
-        run: pip install --quiet 'git+https://github.com/airbytehq/airbyte.git@augustin/poc/ci-in-python#subdirectory=tools/ci_connector_ops'
+        run: pip install --quiet 'git+https://github.com/airbytehq/airbyte.git@${{ steps.extract_branch.outputs.branch }}#subdirectory=tools/ci_connector_ops'
       - name: Run connectors-ci test-connectors
         run: connectors-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} test-connectors ${{ github.event.inputs.test-connectors-options }}
         env:
-          CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
           AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: "us-east-2"
           TEST_REPORTS_BUCKET_NAME: "airbyte-connector-build-status"
-          CI_GIT_REVISION: ${{ github.sha }}
           CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
+          CI_GIT_REVISION: ${{ github.sha }}
   stop-runner:
     name: "Connectors Integration Test: Stop Build EC2 Runner"
     timeout-minutes: 10
