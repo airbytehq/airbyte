@@ -12,11 +12,9 @@ MAIN_REQUIREMENTS = [
     "PyYAML~=6.0",
     "GitPython~=3.1.29",
     "pydantic~=1.10.4",
-    "dagger-io==0.4.0",
     "docker~=6.0.0",
     "PyGithub~=1.58.0",
     "rich",
-    "asyncer",
 ]
 
 
@@ -45,6 +43,11 @@ QA_ENGINE_REQUIREMENTS = [
     "pytablewriter~=0.64.2",
 ]
 
+PIPELINES_REQUIREMENTS = [
+    "dagger-io==0.4.0",
+    "asyncer",
+]
+
 setup(
     version="0.1.16",
     name="ci_connector_ops",
@@ -56,7 +59,8 @@ setup(
     extras_require={
         "tests": QA_ENGINE_REQUIREMENTS + TEST_REQUIREMENTS,
         "dev": QA_ENGINE_REQUIREMENTS + TEST_REQUIREMENTS + DEV_REQUIREMENTS,
-        "qa_engine": QA_ENGINE_REQUIREMENTS,
+        "pipelines": MAIN_REQUIREMENTS + PIPELINES_REQUIREMENTS,
+        "qa_engine": MAIN_REQUIREMENTS + QA_ENGINE_REQUIREMENTS,
     },
     # python_requires=">=3.10", TODO upgrade all our CI packages + GHA env to 3.10
     package_data={"ci_connector_ops.qa_engine": ["connector_adoption.sql"]},

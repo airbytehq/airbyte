@@ -59,8 +59,7 @@ jobs:
         with:
           python-version: "3.10"
       - name: Install ci-connector-ops package
-        # TODO update the git url before merge
-        run: pip install --quiet 'git+https://github.com/airbytehq/airbyte.git@${{ steps.extract_branch.outputs.branch }}#subdirectory=tools/ci_connector_ops'
+        run: pip install ./tools/ci_connector_ops\[pipelines]\
       - name: Run connectors-ci test-connectors [WORKFLOW DISPATCH]
         if: github.event_name == 'workflow_dispatch'
         run: connectors-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} test-connectors ${{ github.event.inputs.test-connectors-options }}
