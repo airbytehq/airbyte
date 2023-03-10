@@ -7,11 +7,11 @@ import logging
 from google.cloud import storage
 from google.oauth2 import service_account
 
-from dagster import sensor, RunRequest, SkipReason, op, job, SensorEvaluationContext, build_resources, InitResourceContext, resource, DefaultSensorStatus, Definitions, Field, InitResourceContext, String
+from dagster import sensor, RunRequest, SkipReason, op, job, SensorEvaluationContext, build_resources, InitResourceContext, resource, DefaultSensorStatus, Definitions, Output, InitResourceContext, get_dagster_logger, asset, define_asset_job
 from dagster_gcp.gcs import gcs_resource; # TODO: figure out how to use this
 
 # from dagster_aws.s3.sensor import get_s3_keys
-logger = logging.getLogger("catalog_to_metadata_backfill")
+logger = get_dagster_logger()
 
 # move to config -> metadata service
 BUCKET_NAME = "ben-ab-test-bucket"
@@ -21,14 +21,32 @@ CATALOG_FOLDER = "catalogs"
 def succeeds():
     return 1
 
+@asset(required_resource_keys={"latest_oss_catalog"})
+def oss_catalog_dataframe(context):
+    oss_catalog_file = context.resources.latest_oss_catalog
+    json_string = oss_catalog_file.download_as_string().decode('utf-8')
+    return pd.read_json(json_string)
 
-@job
-def generate_catalog_markdown():
-    logger.info("generate_catalog_markdown")
-    succeeds()
+# @job
+# def generate_catalog_markdown():
+#     logger.info("generate_catalog_markdown")
+
+#     oss_df = oss_catalog_dataframe()
+#     logger.info(f"oss_catalog_dataframe: {dir(oss_df)}")
+
+#         # recorded metadata can be customized
+#     metadata = {
+#         # "num_records": len(oss_df),
+#         "preview": oss_df,
+#     }
+#     return Output(value=oss_df, metadata=metadata)
+
+generate_catalog_markdown = define_asset_job(name="generate_catalog_markdown", selection="oss_catalog_dataframe")
 
 # TODO add types
 # TODO move this to config so its available in resource_context
+
+
 
 @resource()
 def gcp_gsm_credentials(resource_context: InitResourceContext):
@@ -131,9 +149,16 @@ def gcs_catalog_updated_sensor(context: SensorEvaluationContext):
 
 # TODO move to a generic location
 defn = Definitions(
-    # assets=all_assets,
-    # resources=resources_by_deployment_name[deployment_name],
-    # schedules=[core_assets_schedule],
+    assets=[oss_catalog_dataframe],
+    jobs=[generate_catalog_markdown],
+    resources={
+        "gcp_gsm_credentials": gcp_gsm_credentials,
+        "gcp_gcs_client": gcp_gcs_client,
+        "gcp_gcs_metadata_bucket": gcp_gcs_metadata_bucket,
+        "latest_oss_catalog": latest_oss_catalog,
+        "latest_cloud_catalog": latest_cloud_catalog
+    },
+    schedules=[],
     sensors=[gcs_catalog_updated_sensor], # todo allow us to watch both the cloud and oss catalog
 )
 
