@@ -2,7 +2,7 @@
 
 By editing stream configurations, you can customize how your data syncs to the destination. This allows you to manage aspects of the sync, such as replication frequency, destination namespace, and ensuring your data is written to the correct location.
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** and then click the connection you want to change.   
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Connections** and then click the connection you want to change.   
 
 2. Click the **Replication** tab.
 
