@@ -13,7 +13,6 @@ import pytest
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from source_marketo.source import Activities, Campaigns, Leads, MarketoStream, Programs, SourceMarketo
 
-
 def test_create_export_job(mocker, send_email_stream, caplog):
     mocker.patch("time.sleep")
     caplog.set_level(logging.WARNING)
@@ -246,7 +245,7 @@ def test_source_streams(config, activity):
     source = SourceMarketo()
     with patch("source_marketo.source.ActivityTypes.read_records", Mock(return_value=[activity])):
         streams = source.streams(config)
-    assert len(streams) == 6
+    assert len(streams) == 7
     assert all(isinstance(stream, MarketoStream) for stream in streams)
 
 

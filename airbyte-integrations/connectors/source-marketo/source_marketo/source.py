@@ -496,6 +496,16 @@ class Lists(SemiIncrementalMarketoStream):
     API Docs: https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListsUsingGET
     """
 
+class Segmentations(SemiIncrementalMarketoStream):
+     
+
+    def __init__(self, config: Mapping[str, Any], segment_id: Optional[str] = None):
+        super().__init__(config)
+        self.segment_id = segment_id
+
+    def path(self, **kwargs) -> str:
+        return f"rest/asset/v1/segmentation/{self.segment_id}/segments.json"
+
 
 class MarketoAuthenticator(Oauth2Authenticator):
     def __init__(self, config):
@@ -553,7 +563,7 @@ class SourceMarketo(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config["authenticator"] = MarketoAuthenticator(config)
 
-        streams = [ActivityTypes(config), Campaigns(config), Leads(config), Lists(config), Programs(config)]
+        streams = [ActivityTypes(config), Segmentations(config, segment_id=config.get("segment_id")), Campaigns(config), Leads(config), Lists(config), Programs(config)]
 
         # create dynamically activities by activity type id
         for activity in ActivityTypes(config).read_records(sync_mode=None):
@@ -564,5 +574,6 @@ class SourceMarketo(AbstractSource):
             # instantiate a stream with config
             stream_instance = stream_class(config)
             streams.append(stream_instance)
+        
 
         return streams
