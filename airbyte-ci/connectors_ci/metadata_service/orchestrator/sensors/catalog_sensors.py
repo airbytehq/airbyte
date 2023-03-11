@@ -7,7 +7,7 @@ from ..resources.catalog_resources import latest_oss_catalog_gcs_file, latest_cl
 def generate_composite_etag_cursor(etags: List[str]):
     return ":".join(etags)
 
-def catalog_updated_sensor(job) -> SensorDefinition:
+def catalog_updated_sensor(job, resources_def) -> SensorDefinition:
 
     @sensor(
         name=f"{job.name}_on_catalog_updated",
@@ -20,14 +20,7 @@ def catalog_updated_sensor(job) -> SensorDefinition:
         context.log.info("Starting gcs_catalog_updated_sensor")
 
         # TOOD apply this through the context
-        with build_resources({
-            "gcp_gcs_client": gcp_gcs_client,
-            "gcp_gsm_credentials": gcp_gsm_credentials,
-            "gcp_gcs_metadata_bucket": gcp_gcs_metadata_bucket,
-            "latest_oss_catalog_gcs_file": latest_oss_catalog_gcs_file,
-            "latest_cloud_catalog_gcs_file": latest_cloud_catalog_gcs_file
-        }
-        ) as resources:
+        with build_resources(resources_def) as resources:
             context.log.info("Got resources for gcs_catalog_updated_sensor")
 
             etag_cursor = context.cursor or None

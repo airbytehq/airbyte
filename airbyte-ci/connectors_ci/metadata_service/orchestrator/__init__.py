@@ -6,31 +6,45 @@ from .assets.catalog import oss_destinations_dataframe, cloud_destinations_dataf
 from .jobs.catalog_jobs import generate_catalog_markdown
 from .sensors.catalog_sensors import catalog_updated_sensor
 
-defn = Definitions(
-    assets=[
-        oss_destinations_dataframe,
-        cloud_destinations_dataframe,
-        oss_sources_dataframe,
-        cloud_sources_dataframe,
-        latest_oss_catalog_dict,
-        latest_cloud_catalog_dict,
-        all_sources_dataframe,
-        all_destinations_dataframe,
-        connector_catalog_location_markdown,
-        connector_catalog_location_html,
-    ],
-    jobs=[generate_catalog_markdown],
-    resources={
-        "gcp_gsm_credentials": gcp_gsm_credentials,
-        "gcp_gcs_client": gcp_gcs_client,
-        "gcp_gcs_metadata_bucket": gcp_gcs_metadata_bucket,
-        "latest_oss_catalog_gcs_file": latest_oss_catalog_gcs_file,
-        "latest_cloud_catalog_gcs_file": latest_cloud_catalog_gcs_file
-    },
-    schedules=[],
+assets=[
+    oss_destinations_dataframe,
+    cloud_destinations_dataframe,
+    oss_sources_dataframe,
+    cloud_sources_dataframe,
+    latest_oss_catalog_dict,
+    latest_cloud_catalog_dict,
+    all_sources_dataframe,
+    all_destinations_dataframe,
+    connector_catalog_location_markdown,
+    connector_catalog_location_html,
+]
 
+resources={
+    "gcp_gsm_credentials": gcp_gsm_credentials,
+    "gcp_gcs_client": gcp_gcs_client,
+    "gcp_gcs_metadata_bucket": gcp_gcs_metadata_bucket,
+    "latest_oss_catalog_gcs_file": latest_oss_catalog_gcs_file,
+    "latest_cloud_catalog_gcs_file": latest_cloud_catalog_gcs_file
+}
+
+sensors=[
     # todo allow us to watch both the cloud and oss catalog
-    sensors=[catalog_updated_sensor(generate_catalog_markdown)],
+    catalog_updated_sensor(
+        job=generate_catalog_markdown,
+        resources_def=resources
+    )
+]
+
+schedules=[]
+
+jobs=[generate_catalog_markdown]
+
+defn = Definitions(
+    jobs=jobs,
+    assets=assets,
+    resources=resources,
+    schedules=schedules,
+    sensors=sensors,
 )
 
 # def debug_catalog_projection():
