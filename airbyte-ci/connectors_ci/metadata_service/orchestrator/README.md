@@ -2,11 +2,14 @@
 TODO
 
 ### Todo
-- [ ] sensor on etag
-- [ ] write a job to injest the oss catalog and determine which files are in oss and output it to a file
-- [ ] write a job to injest the cloud catalog and determine which files are in oss and output it to a file
-- [ ] polish sensors and jobs into the appropriate format
-- [ ] deal with config
+- [x] sensor on etag
+- [x] write a job to injest the oss catalog and determine which files are in oss and output it to a file
+- [x] write a job to injest the cloud catalog and determine which files are in oss and output it to a file
+- [ ] update sensor to a factory
+- [ ] update sensor to use context
+- [ ] update GCS to work off of config
+- [ ] update GCS to work off of local vs gcs
+- [ ] update to use IO manager
 - [ ] write a job that stores past versions of the catalogs by etag
 - [ ] write a job that compares the new file with the previous cursor and outputs the diff
 - [ ] write a job that uses the cloud and oss catalogs to construct metadata files

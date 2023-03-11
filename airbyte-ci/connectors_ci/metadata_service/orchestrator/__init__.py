@@ -1,10 +1,10 @@
 from dagster import Definitions
 
-from .resources.gcp import gcp_gcs_client, gcp_gsm_credentials, gcp_gcs_metadata_bucket
-from .resources.catalog import latest_oss_catalog_gcs_file, latest_cloud_catalog_gcs_file
+from .resources.gcp_resources import gcp_gcs_client, gcp_gsm_credentials, gcp_gcs_metadata_bucket
+from .resources.catalog_resources import latest_oss_catalog_gcs_file, latest_cloud_catalog_gcs_file
 from .assets.catalog import oss_destinations_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, cloud_sources_dataframe, latest_oss_catalog_dict, latest_cloud_catalog_dict, all_sources_dataframe, all_destinations_dataframe, connector_catalog_location_markdown, connector_catalog_location_html
-from .jobs.catalog import generate_catalog_markdown
-from .sensors.catalog import gcs_catalog_updated_sensor
+from .jobs.catalog_jobs import generate_catalog_markdown
+from .sensors.catalog_sensors import catalog_updated_sensor
 
 defn = Definitions(
     assets=[
@@ -28,7 +28,9 @@ defn = Definitions(
         "latest_cloud_catalog_gcs_file": latest_cloud_catalog_gcs_file
     },
     schedules=[],
-    sensors=[gcs_catalog_updated_sensor], # todo allow us to watch both the cloud and oss catalog
+
+    # todo allow us to watch both the cloud and oss catalog
+    sensors=[catalog_updated_sensor(generate_catalog_markdown)],
 )
 
 # def debug_catalog_projection():
