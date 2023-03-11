@@ -23,7 +23,7 @@ class MessageGrouper:
     def __init__(self, max_pages_per_slice: int, max_slices: int, max_record_limit: int = 1000):
         self._max_pages_per_slice = max_pages_per_slice
         self._max_slices = max_slices
-        self.max_record_limit = max_record_limit
+        self._max_record_limit = max_record_limit
 
     def get_message_groups(self,
                            source: DeclarativeSource,
@@ -36,9 +36,9 @@ class MessageGrouper:
         schema_inferrer = SchemaInferrer()
 
         if record_limit is None:
-            record_limit = self.max_record_limit
+            record_limit = self._max_record_limit
         else:
-            record_limit = min(record_limit, self.max_record_limit)
+            record_limit = min(record_limit, self._max_record_limit)
 
         slices = []
         log_messages = []
