@@ -754,7 +754,7 @@
 - name: Google Analytics 4 (GA4)
   sourceDefinitionId: 3cc2eafd-84aa-4dca-93af-322d9dfeec1a
   dockerRepository: airbyte/source-google-analytics-data-api
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-v4
   icon: google-analytics.svg
   sourceType: api
