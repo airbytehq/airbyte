@@ -37,10 +37,10 @@ def handle_request(args: List[str]):
     if command == "read":
         catalog_path = parser.catalog
         catalog = Source.read_catalog(catalog_path)
-        is_builder_request = connector_builder_handler.get_connector_builder_request_handler(config, catalog)
-        source = create_source(config, is_builder_request)
-        if is_builder_request:
-            print(is_builder_request(source))
+        builder_request_handle = connector_builder_handler.get_connector_builder_request_handler(config, catalog)
+        source = create_source(config, builder_request_handle is not None)
+        if builder_request_handle:
+            print(builder_request_handle(source))
         else:
             handle_connector_request(source, args)
     else:
