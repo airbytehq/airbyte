@@ -135,7 +135,7 @@ Each destination contains a specification written in JsonSchema that describes t
 
 Some notes about fields in the output spec:
 
-* `supportsNormalization` is a boolean which indicates if this connector supports [basic normalization via DBT](https://docs.airbyte.io/understanding-airbyte/basic-normalization). If true, `supportsDBT` must also be true. 
+* `supportsNormalization` is a boolean which indicates if this connector supports [basic normalization via DBT](https://docs.airbyte.com/understanding-airbyte/basic-normalization). If true, `supportsDBT` must also be true. 
 * `supportsDBT` is a boolean which indicates whether this destination is compatible with DBT. If set to true, the user can define custom DBT transformations that run on this destination after each successful sync. This must be true if `supportsNormalization` is set to true.
 * `supported_destination_sync_modes`: An array of strings declaring the sync modes supported by this connector. The available options are: 
   * `overwrite`: The connector can be configured to wipe any existing data in a stream before writing new data
@@ -174,7 +174,7 @@ python main.py check --config secrets/config.json
 The `write` operation is the main workhorse of a destination connector: it reads input data from the source and writes it to the underlying destination. It takes as input the config file used to run the connector as well as the configured catalog: the file used to describe the schema of the incoming data and how it should be written to the destination. Its "output" is two things:
 
 1. Data written to the underlying destination
-2. `AirbyteMessage`s of type `AirbyteStateMessage`, written to stdout to indicate which records have been written so far during a sync. It's important to output these messages when possible in order to avoid re-extracting messages from the source. See the [write operation protocol reference](https://docs.airbyte.io/understanding-airbyte/airbyte-protocol#write) for more information.
+2. `AirbyteMessage`s of type `AirbyteStateMessage`, written to stdout to indicate which records have been written so far during a sync. It's important to output these messages when possible in order to avoid re-extracting messages from the source. See the [write operation protocol reference](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol#write) for more information.
 
 To implement the `write` Airbyte operation, implement the `write` method in your generated `destination.py` file. [Here is an example implementation](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-kvdb/destination_kvdb/destination.py) from the KvDB destination connector.
 
