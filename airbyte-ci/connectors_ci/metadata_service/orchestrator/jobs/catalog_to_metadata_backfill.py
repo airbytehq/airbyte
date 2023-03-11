@@ -7,7 +7,7 @@ import logging
 from google.cloud import storage
 from google.oauth2 import service_account
 
-from dagster import sensor, RunRequest, SkipReason, op, job, SensorEvaluationContext, build_resources, InitResourceContext, resource, DefaultSensorStatus, Definitions, Output, InitResourceContext, get_dagster_logger, asset, define_asset_job
+from dagster import sensor, RunRequest, SkipReason, build_op_context, MetadataValue, SensorEvaluationContext, build_resources, InitResourceContext, resource, DefaultSensorStatus, Definitions, Output, InitResourceContext, get_dagster_logger, asset, define_asset_job
 from dagster_gcp.gcs import gcs_resource; # TODO: figure out how to use this
 
 # from dagster_aws.s3.sensor import get_s3_keys
@@ -19,7 +19,58 @@ CATALOG_FOLDER = "catalogs"
 
 # ------ Assets ------ #
 
+@asset
+def connector_catalog_location_markdown(all_destinations_dataframe, all_sources_dataframe):
+    markdown = f"""# Connector Catalog Locations
+## Sources
+{all_sources_dataframe.to_markdown()}
 
+## Destinations
+{all_destinations_dataframe.to_markdown()}
+"""
+    metadata = {
+        "preview": MetadataValue.md(markdown)
+    }
+    return Output(metadata=metadata, value=markdown)
+
+@asset
+def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_dataframe):
+    # Add a column 'is_cloud' to indicate if an image/version pair is in the cloud catalog
+    cloud_destinations_dataframe['is_cloud'] = True
+
+    # Add a column 'is_oss' to indicate if an image/version pair is in the oss catalog
+    oss_destinations_dataframe['is_oss'] = True
+
+    composite_key = ['dockerRepository', 'dockerImageTag']
+
+    # Merge the two catalogs on the 'image' and 'version' columns, keeping only the unique pairs
+    merged_catalog = pd.merge(cloud_destinations_dataframe, oss_destinations_dataframe, how='outer', on=composite_key).drop_duplicates(subset=composite_key)
+
+    # Replace NaN values in the 'is_cloud' and 'is_oss' columns with False
+    merged_catalog[['is_cloud', 'is_oss']] = merged_catalog[['is_cloud', 'is_oss']].fillna(False)
+
+    # Return the merged catalog with the desired columns
+    return merged_catalog[['name_x', 'dockerRepository', 'dockerImageTag', 'is_oss', 'is_cloud']]
+
+
+@asset
+def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe):
+    # Add a column 'is_cloud' to indicate if an image/version pair is in the cloud catalog
+    cloud_sources_dataframe['is_cloud'] = True
+
+    # Add a column 'is_oss' to indicate if an image/version pair is in the oss catalog
+    oss_sources_dataframe['is_oss'] = True
+
+    composite_key = ['dockerRepository', 'dockerImageTag']
+
+    # Merge the two catalogs on the 'image' and 'version' columns, keeping only the unique pairs
+    merged_catalog = pd.merge(cloud_sources_dataframe, oss_sources_dataframe, how='outer', on=composite_key).drop_duplicates(subset=composite_key)
+
+    # Replace NaN values in the 'is_cloud' and 'is_oss' columns with False
+    merged_catalog[['is_cloud', 'is_oss']] = merged_catalog[['is_cloud', 'is_oss']].fillna(False)
+
+    # Return the merged catalog with the desired columns
+    return merged_catalog[['name_x', 'dockerRepository', 'dockerImageTag', 'is_oss', 'is_cloud']]
 
 @asset
 def cloud_sources_dataframe(latest_cloud_catalog_dict):
@@ -43,7 +94,7 @@ def oss_destinations_dataframe(latest_oss_catalog_dict):
 
 @asset(required_resource_keys={"latest_cloud_catalog_gcs_file"})
 def latest_cloud_catalog_dict(context):
-    oss_catalog_file = context.resources.latest_cloud_catalog_gcs_gcs_file
+    oss_catalog_file = context.resources.latest_cloud_catalog_gcs_file
     json_string = oss_catalog_file.download_as_string().decode('utf-8')
     oss_catalog_dict = json.loads(json_string)
     return oss_catalog_dict
@@ -122,8 +173,7 @@ def gcp_gcs_metadata_bucket(resource_context: InitResourceContext):
 
 # ------ Jobs ------ #
 
-# todo kick off the final asset creation
-generate_catalog_markdown = define_asset_job(name="generate_catalog_markdown", selection="oss_destinations_dataframe")
+generate_catalog_markdown = define_asset_job(name="generate_catalog_markdown", selection="connector_catalog_location_markdown")
 
 # ------ Sensors ------ #
 
@@ -178,6 +228,9 @@ defn = Definitions(
         cloud_sources_dataframe,
         latest_oss_catalog_dict,
         latest_cloud_catalog_dict,
+        all_sources_dataframe,
+        all_destinations_dataframe,
+        connector_catalog_location_markdown,
     ],
     jobs=[generate_catalog_markdown],
     resources={
@@ -190,3 +243,23 @@ defn = Definitions(
     schedules=[],
     sensors=[gcs_catalog_updated_sensor], # todo allow us to watch both the cloud and oss catalog
 )
+
+def debug_catalog_projection():
+    context = build_op_context(resources={
+        "gcp_gsm_credentials": gcp_gsm_credentials,
+        "gcp_gcs_client": gcp_gcs_client,
+        "gcp_gcs_metadata_bucket": gcp_gcs_metadata_bucket,
+        "latest_oss_catalog_gcs_file": latest_oss_catalog_gcs_file,
+        "latest_cloud_catalog_gcs_file": latest_cloud_catalog_gcs_file
+    })
+    cloud_catalog_dict = latest_cloud_catalog_dict(context)
+    cloud_destinations_df = cloud_destinations_dataframe(cloud_catalog_dict)
+    cloud_sources_df = cloud_sources_dataframe(cloud_catalog_dict)
+
+    oss_catalog_dict = latest_oss_catalog_dict(context)
+    oss_destinations_df = oss_destinations_dataframe(oss_catalog_dict)
+    oss_sources_df = oss_sources_dataframe(oss_catalog_dict)
+
+    all_sources_df = all_sources_dataframe(cloud_sources_df, oss_sources_df)
+
+# debug_catalog_projection()
