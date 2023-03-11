@@ -10,9 +10,9 @@ from unittest import mock
 import pytest
 
 import source_declarative_manifest
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
+import connector_builder
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
-from source_declarative_manifest.main import handle_connector_builder_request, handle_request
+from source_declarative_manifest.main import handle_request
 from unit_tests.connector_builder.utils import create_configured_catalog_dict
 
 CONFIG = {
@@ -138,22 +138,6 @@ def test_given_injected_declarative_manifest_then_launch_with_declarative_manife
 
 
 def test_given_command_then_use_connector_builder_handler(config_file_with_command, catalog_file):
-    with mock.patch.object(source_declarative_manifest.main, "handle_connector_builder_request") as patch:
+    with mock.patch.object(connector_builder.connector_builder_handler, "is_connector_builder_request") as patch:
         handle_request(["read", "--config", str(config_file_with_command), "--catalog", str(catalog_file)])
         assert patch.call_count == 1
-
-
-@pytest.mark.parametrize(
-    "command",
-    [
-        pytest.param("asdf", id="test_arbitrary_command_error"),
-        pytest.param(None, id="test_command_is_none_error"),
-        pytest.param("", id="test_command_is_empty_error"),
-    ],
-)
-def test_invalid_command(command):
-    config = copy.deepcopy(CONFIG)
-    source = ManifestDeclarativeSource(CONFIG["__injected_declarative_manifest"])
-    with pytest.raises(Exception):
-        handle_connector_builder_request(source, config, ConfiguredAirbyteCatalog.parse_obj(create_configured_catalog_dict(command)))
-

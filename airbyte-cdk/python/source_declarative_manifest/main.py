@@ -20,25 +20,9 @@ def create_source(config: Mapping[str, Any], debug: bool) -> ManifestDeclarative
     return ManifestDeclarativeSource(manifest, debug)
 
 
-
-def execute_command(source: ManifestDeclarativeSource, config: Mapping[str, Any],
-                    configured_catalog: ConfiguredAirbyteCatalog) -> AirbyteMessage:
-    command = configured_catalog.streams[0].stream.name
-    if command == "resolve_manifest":
-        return connector_builder_handler.resolve_manifest(source)
-    else:
-        return connector_builder_handler.read_stream(source, config, configured_catalog)
-
-
-def handle_connector_builder_request(source: ManifestDeclarativeSource, config: Mapping[str, Any],
-                                     configured_catalog: ConfiguredAirbyteCatalog):
-    message = execute_command(source, config, configured_catalog)
-    print(message.json(exclude_unset=True))
-
-
 def handle_connector_request(source: ManifestDeclarativeSource, args: List[str]):
     # Verify that the correct args are present for the production codepaths.
-    launch(source, sys.argv[1:])
+    launch(source, args)
 
 
 def handle_request(args: List[str]):
@@ -56,7 +40,7 @@ def handle_request(args: List[str]):
         is_builder_request = connector_builder_handler.is_connector_builder_request(config, catalog)
         source = create_source(config, is_builder_request)
         if is_builder_request:
-            handle_connector_builder_request(source, config, catalog)
+            print(is_builder_request(source))
         else:
             handle_connector_request(source, args)
     else:

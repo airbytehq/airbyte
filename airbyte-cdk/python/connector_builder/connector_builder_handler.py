@@ -12,6 +12,7 @@ from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from connector_builder.message_grouper import MessageGrouper
+from functools import partial
 
 
 def list_streams() -> AirbyteMessage:
@@ -58,9 +59,14 @@ def is_connector_builder_request(config: Mapping[str, Any], configured_catalog: 
     if any([s in CONNECTOR_BUILDER_STREAMS for s in stream_names]) or "__test_read_config" in config:
         if len(stream_names) != 1:
             raise ValueError(f"Only reading from a single stream is supported. Got: {stream_names}")
-        return True
-    else:
-        return False
+        command = next(iter(stream_names))  # Connector builder only supports reading from a single stream
+        if command == "resolve_manifest":
+            return resolve_manifest
+        elif command == "list_streams":
+            return list_streams
+        else:
+            return partial(read_stream, config=config, configured_catalog=configured_catalog)
+    return None
 
 
 def _emitted_at():

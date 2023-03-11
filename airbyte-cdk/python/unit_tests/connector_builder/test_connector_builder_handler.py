@@ -3,10 +3,11 @@
 #
 import pytest
 
+import connector_builder.connector_builder_handler
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from connector_builder.connector_builder_handler import resolve_manifest, is_connector_builder_request
 from unit_tests.connector_builder.utils import create_configured_catalog
-
+from functools import partial
 
 _stream_name = "stream_with_custom_requester"
 _stream_primary_key = "id"
@@ -43,7 +44,6 @@ MANIFEST = {
     ],
     "check": {"type": "CheckStream", "stream_names": ["lists"]},
 }
-
 
 CONFIG = {
     "__injected_declarative_manifest": MANIFEST,
@@ -187,13 +187,27 @@ def test_resolve_manifest_error_returns_error_response():
     response = resolve_manifest(source)
     assert "Error resolving manifest" in response.trace.error.message
 
+
 @pytest.mark.parametrize("test_name, config, configured_catalog, expected_result",
                          [
-                             ("test_resolve_manifest_is_connector_builder_request", CONFIG, create_configured_catalog("resolve_manifest"), True),
-                             ("test_list_streams_is_connector_builder_request", CONFIG, create_configured_catalog("list_streams"), True),
-                             ("test_regular_stream_is_not_connector_builder_request", CONFIG, create_configured_catalog("my_stream"), False),
-                             ("test_regular_stream_with_test_read_config_is_connector_builder_request", TEST_READ_CONFIG, create_configured_catalog("my_stream"), True),
+                             ("test_resolve_manifest_is_connector_builder_request", CONFIG, create_configured_catalog("resolve_manifest"), connector_builder.connector_builder_handler.resolve_manifest),
+                             ("test_list_streams_is_connector_builder_request", CONFIG, create_configured_catalog("list_streams"), connector_builder.connector_builder_handler.list_streams),
+                             ("test_regular_stream_is_not_connector_builder_request", CONFIG, create_configured_catalog("my_stream"), None),
+                             ("test_regular_stream_with_test_read_config_is_connector_builder_request", TEST_READ_CONFIG,
+                              create_configured_catalog("my_stream"),
+                              partial(connector_builder.connector_builder_handler.read_stream, config=TEST_READ_CONFIG,
+                                      configured_catalog=create_configured_catalog("my_stream"))),
                          ])
 def test_is_connector_builder_request(test_name, config, configured_catalog, expected_result):
     result = is_connector_builder_request(config, configured_catalog)
-    assert result == expected_result
+    if isinstance(expected_result, partial):
+        assert partial_functions_equal(expected_result, result)
+    else:
+        assert result == expected_result
+
+
+def partial_functions_equal(func1, func2):
+    if not (isinstance(func1, partial) and isinstance(func2, partial)):
+        return False
+    are_equal = all([getattr(func1, attr) == getattr(func2, attr) for attr in ['func', 'args', 'keywords']])
+    return are_equal
