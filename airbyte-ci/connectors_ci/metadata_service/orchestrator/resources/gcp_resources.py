@@ -4,21 +4,11 @@ import json
 from google.cloud import storage
 from google.oauth2 import service_account
 
-from dagster import sensor, RunRequest, SkipReason, build_op_context, MetadataValue, SensorEvaluationContext, build_resources, InitResourceContext, resource, DefaultSensorStatus, Definitions, Output, InitResourceContext, get_dagster_logger, asset, define_asset_job, OpExecutionContext
+from dagster import StringSource, InitResourceContext, resource, InitResourceContext
 
 from ..config import BUCKET_NAME
 
-@resource()
-def gcp_gsm_credentials(resource_context: InitResourceContext):
-    resource_context.log.info("retrieving gcp_gsm_credentials")
-
-    raw_cred = os.getenv("GCP_GSM_CREDENTIALS")
-    if raw_cred is None:
-        raise Exception("GCP_GSM_CREDENTIALS not set")
-
-    return json.loads(raw_cred)
-
-@resource(required_resource_keys={"gcp_gsm_credentials"})
+@resource(config_schema={"gcp_gsm_cred_string": StringSource})
 def gcp_gcs_client(resource_context: InitResourceContext):
     """Create a connection to gcs.
     :param resource_context: Dagster execution context for configuration data
@@ -26,8 +16,9 @@ def gcp_gcs_client(resource_context: InitResourceContext):
     :yields: A gcs client instance for use during pipeline execution.
     """
     resource_context.log.info("retrieving gcp_gcs_client")
-
-    credentials = service_account.Credentials.from_service_account_info(resource_context.resources.gcp_gsm_credentials)
+    gcp_gsm_cred_string = resource_context.resource_config["gcp_gsm_cred_string"]
+    gcp_gsm_cred_json = json.loads(gcp_gsm_cred_string)
+    credentials = service_account.Credentials.from_service_account_info(gcp_gsm_cred_json)
     return storage.Client(
         credentials=credentials,
         project=credentials.project_id,

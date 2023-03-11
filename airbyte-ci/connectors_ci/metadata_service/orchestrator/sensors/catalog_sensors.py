@@ -1,9 +1,6 @@
 from typing import List
 from dagster import sensor, RunRequest, SkipReason, SensorDefinition, SensorEvaluationContext, build_resources, DefaultSensorStatus
 
-from ..resources.gcp_resources import gcp_gcs_client, gcp_gsm_credentials, gcp_gcs_metadata_bucket
-from ..resources.catalog_resources import latest_oss_catalog_gcs_file, latest_cloud_catalog_gcs_file
-
 def generate_composite_etag_cursor(etags: List[str]):
     return ":".join(etags)
 
@@ -19,7 +16,6 @@ def catalog_updated_sensor(job, resources_def) -> SensorDefinition:
         # TODO parse which catalog(s) we're watching
         context.log.info("Starting gcs_catalog_updated_sensor")
 
-        # TOOD apply this through the context
         with build_resources(resources_def) as resources:
             context.log.info("Got resources for gcs_catalog_updated_sensor")
 

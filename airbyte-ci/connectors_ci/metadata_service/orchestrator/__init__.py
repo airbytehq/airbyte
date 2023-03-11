@@ -1,6 +1,6 @@
 from dagster import Definitions
 
-from .resources.gcp_resources import gcp_gcs_client, gcp_gsm_credentials, gcp_gcs_metadata_bucket
+from .resources.gcp_resources import gcp_gcs_client, gcp_gcs_metadata_bucket
 from .resources.catalog_resources import latest_oss_catalog_gcs_file, latest_cloud_catalog_gcs_file
 from .assets.catalog import oss_destinations_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, cloud_sources_dataframe, latest_oss_catalog_dict, latest_cloud_catalog_dict, all_sources_dataframe, all_destinations_dataframe, connector_catalog_location_markdown, connector_catalog_location_html
 from .jobs.catalog_jobs import generate_catalog_markdown
@@ -20,15 +20,15 @@ assets=[
 ]
 
 resources={
-    "gcp_gsm_credentials": gcp_gsm_credentials,
-    "gcp_gcs_client": gcp_gcs_client,
+    "gcp_gcs_client": gcp_gcs_client.configured({
+        "gcp_gsm_cred_string": {"env": "GCP_GSM_CREDENTIALS"},
+    }),
     "gcp_gcs_metadata_bucket": gcp_gcs_metadata_bucket,
     "latest_oss_catalog_gcs_file": latest_oss_catalog_gcs_file,
     "latest_cloud_catalog_gcs_file": latest_cloud_catalog_gcs_file
 }
 
 sensors=[
-    # todo allow us to watch both the cloud and oss catalog
     catalog_updated_sensor(
         job=generate_catalog_markdown,
         resources_def=resources
