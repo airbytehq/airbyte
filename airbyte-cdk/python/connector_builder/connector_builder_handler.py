@@ -54,7 +54,7 @@ CONNECTOR_BUILDER_STREAMS = {
 }
 
 
-def is_connector_builder_request(config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog):
+def get_connector_builder_request_handler(config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog):
     stream_names = set([s.stream.name for s in configured_catalog.streams])
     if any([s in CONNECTOR_BUILDER_STREAMS for s in stream_names]) or "__test_read_config" in config:
         if len(stream_names) != 1:

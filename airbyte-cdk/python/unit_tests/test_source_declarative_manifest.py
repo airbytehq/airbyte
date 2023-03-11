@@ -138,6 +138,6 @@ def test_given_injected_declarative_manifest_then_launch_with_declarative_manife
 
 
 def test_given_command_then_use_connector_builder_handler(config_file_with_command, catalog_file):
-    with mock.patch.object(connector_builder.connector_builder_handler, "is_connector_builder_request") as patch:
+    with mock.patch.object(connector_builder.connector_builder_handler, "get_connector_builder_request_handler") as patch:
         handle_request(["read", "--config", str(config_file_with_command), "--catalog", str(catalog_file)])
         assert patch.call_count == 1

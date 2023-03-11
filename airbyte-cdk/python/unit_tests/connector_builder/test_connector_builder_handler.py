@@ -5,7 +5,7 @@ import pytest
 
 import connector_builder.connector_builder_handler
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
-from connector_builder.connector_builder_handler import resolve_manifest, is_connector_builder_request
+from connector_builder.connector_builder_handler import resolve_manifest, get_connector_builder_request_handler
 from unit_tests.connector_builder.utils import create_configured_catalog
 from functools import partial
 
@@ -198,8 +198,8 @@ def test_resolve_manifest_error_returns_error_response():
                               partial(connector_builder.connector_builder_handler.read_stream, config=TEST_READ_CONFIG,
                                       configured_catalog=create_configured_catalog("my_stream"))),
                          ])
-def test_is_connector_builder_request(test_name, config, configured_catalog, expected_result):
-    result = is_connector_builder_request(config, configured_catalog)
+def test_get_connector_builder_request(test_name, config, configured_catalog, expected_result):
+    result = get_connector_builder_request_handler(config, configured_catalog)
     if isinstance(expected_result, partial):
         assert partial_functions_equal(expected_result, result)
     else:
