@@ -1,10 +1,10 @@
-import os
 import json
 
 from google.cloud import storage
 from google.oauth2 import service_account
 
-from dagster import StringSource, InitResourceContext, resource, InitResourceContext
+from dagster import StringSource, InitResourceContext, resource, InitResourceContext, Field
+from dagster_gcp.gcs.file_manager import GCSFileManager
 
 from ..config import BUCKET_NAME
 
@@ -35,3 +35,25 @@ def gcp_gcs_metadata_bucket(resource_context: InitResourceContext):
 
     storage_client = resource_context.resources.gcp_gcs_client
     return storage_client.get_bucket(BUCKET_NAME)
+
+
+@resource(
+    required_resource_keys={"gcp_gcs_client"},
+    config_schema={
+        "gcs_bucket": StringSource,
+        "gcs_prefix": Field(StringSource, is_required=False, default_value="dagster"),
+    },
+)
+def gcs_file_manager(resource_context):
+    """FileManager that provides abstract access to GCS.
+
+    Implements the :py:class:`~dagster._core.storage.file_manager.FileManager` API.
+    """
+
+    storage_client = resource_context.resources.gcp_gcs_client
+
+    return GCSFileManager(
+        client=storage_client,
+        gcs_bucket=resource_context.resource_config["gcs_bucket"],
+        gcs_base_key=resource_context.resource_config["gcs_prefix"],
+    )

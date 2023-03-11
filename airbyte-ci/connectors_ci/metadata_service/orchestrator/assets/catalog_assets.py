@@ -34,7 +34,7 @@ def connector_catalog_location_html(context, all_destinations_dataframe, all_sou
     }
     return Output(metadata=metadata, value=html)
 
-@asset(required_resource_keys={"gcp_gcs_metadata_bucket"})
+@asset(required_resource_keys={"gcs_test_folder"})
 def connector_catalog_location_markdown(context, all_destinations_dataframe, all_sources_dataframe):
     columns_to_show = ['name_x', 'dockerRepository', 'dockerImageTag', 'is_oss', 'is_cloud']
     markdown = f"# Connector Catalog Locations\n\n"
@@ -43,18 +43,14 @@ def connector_catalog_location_markdown(context, all_destinations_dataframe, all
     markdown += f"\n\n## Destinations\n"
     markdown += all_destinations_dataframe[columns_to_show].to_markdown()
 
-    bucket = context.resources.gcp_gcs_metadata_bucket
-
-    blob = bucket.blob(f"{REPORT_FOLDER}/connector_catalog_locations.md")
-    blob.upload_from_string(markdown)
-
-    public_url = blob.public_url
+    gcs_test_folder_manager = context.resources.gcs_test_folder
+    file_handle = gcs_test_folder_manager.write_data(markdown.encode(), ext="md", key="connector_catalog_locations_2")
 
     metadata = {
         "preview": MetadataValue.md(markdown),
-        "public_url": MetadataValue.url(public_url),
+        "gcs_path": MetadataValue.url(file_handle.gcs_path),
     }
-    return Output(metadata=metadata, value=markdown)
+    return Output(metadata=metadata, value=file_handle)
 
 @asset
 def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_dataframe):

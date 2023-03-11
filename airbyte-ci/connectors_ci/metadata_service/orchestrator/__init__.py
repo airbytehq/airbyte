@@ -1,10 +1,13 @@
 from dagster import Definitions
 
-from .resources.gcp_resources import gcp_gcs_client, gcp_gcs_metadata_bucket
+from .resources.gcp_resources import gcp_gcs_client, gcp_gcs_metadata_bucket, gcs_file_manager
 from .resources.catalog_resources import latest_oss_catalog_gcs_file, latest_cloud_catalog_gcs_file
-from .assets.catalog import oss_destinations_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, cloud_sources_dataframe, latest_oss_catalog_dict, latest_cloud_catalog_dict, all_sources_dataframe, all_destinations_dataframe, connector_catalog_location_markdown, connector_catalog_location_html
+from .assets.catalog_assets import oss_destinations_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, cloud_sources_dataframe, latest_oss_catalog_dict, latest_cloud_catalog_dict, all_sources_dataframe, all_destinations_dataframe, connector_catalog_location_markdown, connector_catalog_location_html
 from .jobs.catalog_jobs import generate_catalog_markdown
 from .sensors.catalog_sensors import catalog_updated_sensor
+
+from .config import BUCKET_NAME
+
 
 assets=[
     oss_destinations_dataframe,
@@ -24,6 +27,10 @@ resources={
         "gcp_gsm_cred_string": {"env": "GCP_GSM_CREDENTIALS"},
     }),
     "gcp_gcs_metadata_bucket": gcp_gcs_metadata_bucket,
+    "gcs_test_folder": gcs_file_manager.configured({
+        "gcs_bucket": BUCKET_NAME,
+        "gcs_prefix": "testy"
+    }),
     "latest_oss_catalog_gcs_file": latest_oss_catalog_gcs_file,
     "latest_cloud_catalog_gcs_file": latest_cloud_catalog_gcs_file
 }
