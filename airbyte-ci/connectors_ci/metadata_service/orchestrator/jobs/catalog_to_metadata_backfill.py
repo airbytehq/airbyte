@@ -7,7 +7,7 @@ import logging
 from google.cloud import storage
 from google.oauth2 import service_account
 
-from dagster import sensor, RunRequest, SkipReason, build_op_context, MetadataValue, SensorEvaluationContext, build_resources, InitResourceContext, resource, DefaultSensorStatus, Definitions, Output, InitResourceContext, get_dagster_logger, asset, define_asset_job
+from dagster import sensor, RunRequest, SkipReason, build_op_context, MetadataValue, SensorEvaluationContext, build_resources, InitResourceContext, resource, DefaultSensorStatus, Definitions, Output, InitResourceContext, get_dagster_logger, asset, define_asset_job, OpExecutionContext
 from dagster_gcp.gcs import gcs_resource; # TODO: figure out how to use this
 
 # from dagster_aws.s3.sensor import get_s3_keys
@@ -16,20 +16,68 @@ logger = get_dagster_logger()
 # move to config -> metadata service
 BUCKET_NAME = "ben-ab-test-bucket"
 CATALOG_FOLDER = "catalogs"
+REPORT_FOLDER = "generated_reports"
+
+# ------ helpers ------ #
+
+def html_body(title, content):
+    return f"""
+    <!DOCTYPE html>
+    <html>
+        <head>
+            <title>{title}</title>
+        </head>
+        <body>
+            {content}
+        </body>
+    </html>
+    """
+
 
 # ------ Assets ------ #
 
-@asset
-def connector_catalog_location_markdown(all_destinations_dataframe, all_sources_dataframe):
-    markdown = f"""# Connector Catalog Locations
-## Sources
-{all_sources_dataframe.to_markdown()}
+@asset(required_resource_keys={"gcp_gcs_metadata_bucket"})
+def connector_catalog_location_html(context, all_destinations_dataframe, all_sources_dataframe):
+    title = "Connector Catalogs"
+    content = f"<h1>{title}</h1>"
+    content += f"<h2>Sources</h2>"
+    content += all_sources_dataframe.to_html()
+    content += f"<h2>Destinations</h2>"
+    content += all_destinations_dataframe.to_html()
 
-## Destinations
-{all_destinations_dataframe.to_markdown()}
-"""
+    html = html_body(title, content)
+
+    bucket = context.resources.gcp_gcs_metadata_bucket
+    blob = bucket.blob(f"{REPORT_FOLDER}/connector_catalog_locations.html")
+    blob.upload_from_string(html)
+    blob.content_type = "text/html"
+    blob.patch()
+
+    public_url = blob.public_url
+
     metadata = {
-        "preview": MetadataValue.md(markdown)
+        "public_url": MetadataValue.url(public_url),
+    }
+    return Output(metadata=metadata, value=html)
+
+@asset(required_resource_keys={"gcp_gcs_metadata_bucket"})
+def connector_catalog_location_markdown(context, all_destinations_dataframe, all_sources_dataframe):
+    markdown = f"# Connector Catalog Locations\n\n"
+    markdown += f"## Sources\n"
+    markdown += all_sources_dataframe.to_markdown()
+    markdown += f"\n\n## Destinations\n"
+    markdown += all_destinations_dataframe.to_markdown()
+
+    bucket = context.resources.gcp_gcs_metadata_bucket
+
+    blob = bucket.blob(f"{REPORT_FOLDER}/connector_catalog_locations.md")
+    blob.upload_from_string(markdown)
+
+    public_url = blob.public_url
+
+    metadata = {
+        "preview": MetadataValue.md(markdown),
+        "public_url": MetadataValue.url(public_url),
     }
     return Output(metadata=metadata, value=markdown)
 
@@ -93,7 +141,7 @@ def oss_destinations_dataframe(latest_oss_catalog_dict):
     return pd.DataFrame(destinations)
 
 @asset(required_resource_keys={"latest_cloud_catalog_gcs_file"})
-def latest_cloud_catalog_dict(context):
+def latest_cloud_catalog_dict(context: OpExecutionContext):
     oss_catalog_file = context.resources.latest_cloud_catalog_gcs_file
     json_string = oss_catalog_file.download_as_string().decode('utf-8')
     oss_catalog_dict = json.loads(json_string)
@@ -101,7 +149,7 @@ def latest_cloud_catalog_dict(context):
 
 # TODO add partitions
 @asset(required_resource_keys={"latest_oss_catalog_gcs_file"})
-def latest_oss_catalog_dict(context):
+def latest_oss_catalog_dict(context: OpExecutionContext):
     oss_catalog_file = context.resources.latest_oss_catalog_gcs_file
     json_string = oss_catalog_file.download_as_string().decode('utf-8')
     oss_catalog_dict = json.loads(json_string)
@@ -173,6 +221,7 @@ def gcp_gcs_metadata_bucket(resource_context: InitResourceContext):
 
 # ------ Jobs ------ #
 
+# Generate all
 generate_catalog_markdown = define_asset_job(name="generate_catalog_markdown", selection="connector_catalog_location_markdown")
 
 # ------ Sensors ------ #
@@ -231,6 +280,7 @@ defn = Definitions(
         all_sources_dataframe,
         all_destinations_dataframe,
         connector_catalog_location_markdown,
+        connector_catalog_location_html,
     ],
     jobs=[generate_catalog_markdown],
     resources={
@@ -261,5 +311,8 @@ def debug_catalog_projection():
     oss_sources_df = oss_sources_dataframe(oss_catalog_dict)
 
     all_sources_df = all_sources_dataframe(cloud_sources_df, oss_sources_df)
+    all_destinations_df = all_destinations_dataframe(cloud_destinations_df, oss_destinations_df)
+
+    connector_catalog_location_html(context, all_sources_df, all_destinations_df)
 
 # debug_catalog_projection()
