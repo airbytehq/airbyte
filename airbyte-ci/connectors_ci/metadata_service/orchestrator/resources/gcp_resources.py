@@ -24,24 +24,23 @@ def gcp_gcs_client(resource_context: InitResourceContext):
         project=credentials.project_id,
     )
 
-@resource(required_resource_keys={"gcp_gcs_client"})
-def gcp_gcs_metadata_bucket(resource_context: InitResourceContext):
-    """Create a connection to gcs.
-    :param resource_context: Dagster execution context for configuration data
-    :type resource_context: InitResourceContext
-    :yields: A gcs client instance for use during pipeline execution.
-    """
-    resource_context.log.info("retrieving gcp_gcs_metadata_bucket")
+@resource(
+    required_resource_keys={"gcp_gcs_client"},
+    config_schema={"gcs_bucket": StringSource},
+)
+def gcs_bucket_manager(resource_context: InitResourceContext):
+    gcs_bucket = resource_context.resource_config["gcs_bucket"]
+    resource_context.log.info(f"retrieving gcs_bucket_manager for {gcs_bucket}")
 
     storage_client = resource_context.resources.gcp_gcs_client
-    return storage_client.get_bucket(BUCKET_NAME)
+    return storage_client.get_bucket(gcs_bucket)
 
 
 @resource(
     required_resource_keys={"gcp_gcs_client"},
     config_schema={
         "gcs_bucket": StringSource,
-        "gcs_prefix": Field(StringSource, is_required=False, default_value="dagster"),
+        "gcs_prefix": StringSource,
     },
 )
 def gcs_file_manager(resource_context):
@@ -57,3 +56,25 @@ def gcs_file_manager(resource_context):
         gcs_bucket=resource_context.resource_config["gcs_bucket"],
         gcs_base_key=resource_context.resource_config["gcs_prefix"],
     )
+
+@resource(
+    required_resource_keys={"gcs_bucket_manager"},
+    config_schema={
+        "gcs_prefix": StringSource,
+        "gcs_filename": StringSource,
+    },
+)
+def gcs_file_blob(resource_context: InitResourceContext):
+    bucket = resource_context.resources.gcs_bucket_manager
+
+    gcs_prefix = resource_context.resource_config["gcs_prefix"]
+    gcs_filename = resource_context.resource_config["gcs_filename"]
+    gcs_file_path = f"{gcs_prefix}/{gcs_filename}"
+
+    resource_context.log.info(f"retrieving gcs file blob for {gcs_file_path}")
+
+    gcs_file_blob = bucket.get_blob(gcs_file_path)
+    if not gcs_file_blob.exists():
+        raise Exception(f"File does not exist at path: {gcs_file_path}")
+
+    return gcs_file_blob;

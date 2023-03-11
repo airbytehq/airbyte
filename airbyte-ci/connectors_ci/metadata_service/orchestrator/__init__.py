@@ -1,12 +1,11 @@
 from dagster import Definitions
 
-from .resources.gcp_resources import gcp_gcs_client, gcp_gcs_metadata_bucket, gcs_file_manager
-from .resources.catalog_resources import latest_oss_catalog_gcs_file, latest_cloud_catalog_gcs_file
+from .resources.gcp_resources import gcp_gcs_client, gcs_bucket_manager, gcs_file_manager, gcs_file_blob
 from .assets.catalog_assets import oss_destinations_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, cloud_sources_dataframe, latest_oss_catalog_dict, latest_cloud_catalog_dict, all_sources_dataframe, all_destinations_dataframe, connector_catalog_location_markdown, connector_catalog_location_html
 from .jobs.catalog_jobs import generate_catalog_markdown
 from .sensors.catalog_sensors import catalog_updated_sensor
 
-from .config import BUCKET_NAME, REPORT_FOLDER
+from .config import BUCKET_NAME, REPORT_FOLDER, CATALOG_FOLDER
 
 
 assets=[
@@ -26,13 +25,21 @@ resources={
     "gcp_gcs_client": gcp_gcs_client.configured({
         "gcp_gsm_cred_string": {"env": "GCP_GSM_CREDENTIALS"},
     }),
-    "gcp_gcs_metadata_bucket": gcp_gcs_metadata_bucket,
+    "gcs_bucket_manager": gcs_bucket_manager.configured({
+        "gcs_bucket": BUCKET_NAME
+    }),
     "catalog_report_directory_manager": gcs_file_manager.configured({
         "gcs_bucket": BUCKET_NAME,
-        "gcs_prefix": REPORT_FOLDER,
+        "gcs_prefix": REPORT_FOLDER
     }),
-    "latest_oss_catalog_gcs_file": latest_oss_catalog_gcs_file,
-    "latest_cloud_catalog_gcs_file": latest_cloud_catalog_gcs_file
+    "latest_oss_catalog_gcs_file": gcs_file_blob.configured({
+        "gcs_prefix": CATALOG_FOLDER,
+        "gcs_filename": "oss_catalog.json"
+    }),
+    "latest_cloud_catalog_gcs_file": gcs_file_blob.configured({
+        "gcs_prefix": CATALOG_FOLDER,
+        "gcs_filename": "cloud_catalog.json"
+    })
 }
 
 sensors=[
@@ -58,7 +65,7 @@ defn = Definitions(
 #     context = build_op_context(resources={
 #         "gcp_gsm_credentials": gcp_gsm_credentials,
 #         "gcp_gcs_client": gcp_gcs_client,
-#         "gcp_gcs_metadata_bucket": gcp_gcs_metadata_bucket,
+#         "gcs_bucket_manager": gcs_bucket_manager,
 #         "latest_oss_catalog_gcs_file": latest_oss_catalog_gcs_file,
 #         "latest_cloud_catalog_gcs_file": latest_cloud_catalog_gcs_file
 #     })
