@@ -195,11 +195,13 @@ class Orders(WalmartMarketplaceBase):
             self.offset = 0
             return None
         elif self.totalCount - self.offset  <= self.limit:
-            self.offset = self.totalCount
+            self.offset = 0
+            return None
         else:
             self.offset = self.offset + self.limit
             if self.offset > 1000:
                 logger.info('offset must bigger than one thousand for this day!')
+                self.offset = 0
                 return None
         logger.info('new_offset')
         logger.info(self.offset)
