@@ -5,10 +5,12 @@ from dagster import MetadataValue, Output, asset, OpExecutionContext
 
 from ..utils.html import html_body
 
-# ------ Assets ------ #
-
 @asset(required_resource_keys={"catalog_report_directory_manager"})
 def connector_catalog_location_html(context, all_destinations_dataframe, all_sources_dataframe):
+    """
+    Generate an HTML report of the connector catalog locations.
+    """
+
     columns_to_show = ['name_x', 'dockerRepository', 'dockerImageTag', 'is_oss', 'is_cloud']
 
     # convert true and false to checkmarks and x's
@@ -35,6 +37,10 @@ def connector_catalog_location_html(context, all_destinations_dataframe, all_sou
 
 @asset(required_resource_keys={"catalog_report_directory_manager"})
 def connector_catalog_location_markdown(context, all_destinations_dataframe, all_sources_dataframe):
+    """
+    Generate a markdown report of the connector catalog locations.
+    """
+
     columns_to_show = ['name_x', 'dockerRepository', 'dockerImageTag', 'is_oss', 'is_cloud']
 
     # convert true and false to checkmarks and x's
@@ -57,7 +63,11 @@ def connector_catalog_location_markdown(context, all_destinations_dataframe, all
     return Output(metadata=metadata, value=file_handle)
 
 @asset
-def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_dataframe):
+def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_dataframe) -> pd.DataFrame:
+    """
+    Merge the cloud and oss destinations catalogs into a single dataframe.
+    """
+
     # Add a column 'is_cloud' to indicate if an image/version pair is in the cloud catalog
     cloud_destinations_dataframe['is_cloud'] = True
 
@@ -77,7 +87,11 @@ def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_da
 
 
 @asset
-def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe):
+def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe) -> pd.DataFrame:
+    """
+    Merge the cloud and oss source catalogs into a single dataframe.
+    """
+
     # Add a column 'is_cloud' to indicate if an image/version pair is in the cloud catalog
     cloud_sources_dataframe['is_cloud'] = True
 
@@ -96,35 +110,34 @@ def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe):
     return merged_catalog
 
 @asset
-def cloud_sources_dataframe(latest_cloud_catalog_dict):
+def cloud_sources_dataframe(latest_cloud_catalog_dict: dict) -> pd.DataFrame:
     sources = latest_cloud_catalog_dict["sources"]
     return pd.DataFrame(sources)
 
 @asset
-def oss_sources_dataframe(latest_oss_catalog_dict):
+def oss_sources_dataframe(latest_oss_catalog_dict: dict) -> pd.DataFrame:
     sources = latest_oss_catalog_dict["sources"]
     return pd.DataFrame(sources)
 
 @asset
-def cloud_destinations_dataframe(latest_cloud_catalog_dict):
+def cloud_destinations_dataframe(latest_cloud_catalog_dict: dict) -> pd.DataFrame:
     destinations = latest_cloud_catalog_dict["destinations"]
     return pd.DataFrame(destinations)
 
 @asset
-def oss_destinations_dataframe(latest_oss_catalog_dict):
+def oss_destinations_dataframe(latest_oss_catalog_dict: dict) -> pd.DataFrame:
     destinations = latest_oss_catalog_dict["destinations"]
     return pd.DataFrame(destinations)
 
 @asset(required_resource_keys={"latest_cloud_catalog_gcs_file"})
-def latest_cloud_catalog_dict(context: OpExecutionContext):
+def latest_cloud_catalog_dict(context: OpExecutionContext) -> dict:
     oss_catalog_file = context.resources.latest_cloud_catalog_gcs_file
     json_string = oss_catalog_file.download_as_string().decode('utf-8')
     oss_catalog_dict = json.loads(json_string)
     return oss_catalog_dict
 
-# TODO add partitions
 @asset(required_resource_keys={"latest_oss_catalog_gcs_file"})
-def latest_oss_catalog_dict(context: OpExecutionContext):
+def latest_oss_catalog_dict(context: OpExecutionContext) -> dict:
     oss_catalog_file = context.resources.latest_oss_catalog_gcs_file
     json_string = oss_catalog_file.download_as_string().decode('utf-8')
     oss_catalog_dict = json.loads(json_string)

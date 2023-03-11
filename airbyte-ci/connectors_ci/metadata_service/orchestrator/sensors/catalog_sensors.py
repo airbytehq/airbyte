@@ -5,15 +5,17 @@ def generate_composite_etag_cursor(etags: List[str]):
     return ":".join(etags)
 
 def catalog_updated_sensor(job, resources_def) -> SensorDefinition:
-
+    """
+    This sensor is responsible for checking if the latest catalog has been updated in GCS.
+    If it has, it will trigger the given job.
+    """
     @sensor(
         name=f"{job.name}_on_catalog_updated",
         job=job,
-        minimum_interval_seconds=30, # Todo have a dev and prod version of this
+        minimum_interval_seconds=30,
         default_status=DefaultSensorStatus.STOPPED,
     )
     def catalog_updated_sensor_definition(context: SensorEvaluationContext):
-        # TODO parse which catalog(s) we're watching
         context.log.info("Starting gcs_catalog_updated_sensor")
 
         with build_resources(resources_def) as resources:

@@ -53,6 +53,12 @@ schedules=[]
 
 jobs=[generate_catalog_markdown]
 
+"""
+START HERE
+
+This is the entry point for the orchestrator.
+It is a list of all the jobs, assets, resources, schedules, and sensors that are available to the orchestrator.
+"""
 defn = Definitions(
     jobs=jobs,
     assets=assets,
@@ -60,26 +66,3 @@ defn = Definitions(
     schedules=schedules,
     sensors=sensors,
 )
-
-# def debug_catalog_projection():
-#     context = build_op_context(resources={
-#         "gcp_gsm_credentials": gcp_gsm_credentials,
-#         "gcp_gcs_client": gcp_gcs_client,
-#         "gcs_bucket_manager": gcs_bucket_manager,
-#         "latest_oss_catalog_gcs_file": latest_oss_catalog_gcs_file,
-#         "latest_cloud_catalog_gcs_file": latest_cloud_catalog_gcs_file
-#     })
-#     cloud_catalog_dict = latest_cloud_catalog_dict(context)
-#     cloud_destinations_df = cloud_destinations_dataframe(cloud_catalog_dict)
-#     cloud_sources_df = cloud_sources_dataframe(cloud_catalog_dict)
-
-#     oss_catalog_dict = latest_oss_catalog_dict(context)
-#     oss_destinations_df = oss_destinations_dataframe(oss_catalog_dict)
-#     oss_sources_df = oss_sources_dataframe(oss_catalog_dict)
-
-#     all_sources_df = all_sources_dataframe(cloud_sources_df, oss_sources_df)
-#     all_destinations_df = all_destinations_dataframe(cloud_destinations_df, oss_destinations_df)
-
-#     connector_catalog_location_html(context, all_sources_df, all_destinations_df)
-
-# debug_catalog_projection()

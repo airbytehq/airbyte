@@ -8,12 +8,9 @@ from dagster_gcp.gcs.file_manager import GCSFileManager
 
 
 @resource(config_schema={"gcp_gsm_cred_string": StringSource})
-def gcp_gcs_client(resource_context: InitResourceContext):
-    """Create a connection to gcs.
-    :param resource_context: Dagster execution context for configuration data
-    :type resource_context: InitResourceContext
-    :yields: A gcs client instance for use during pipeline execution.
-    """
+def gcp_gcs_client(resource_context: InitResourceContext) -> storage.Client:
+    """Create a connection to gcs."""
+
     resource_context.log.info("retrieving gcp_gcs_client")
     gcp_gsm_cred_string = resource_context.resource_config["gcp_gsm_cred_string"]
     gcp_gsm_cred_json = json.loads(gcp_gsm_cred_string)
@@ -27,7 +24,9 @@ def gcp_gcs_client(resource_context: InitResourceContext):
     required_resource_keys={"gcp_gcs_client"},
     config_schema={"gcs_bucket": StringSource},
 )
-def gcs_bucket_manager(resource_context: InitResourceContext):
+def gcs_bucket_manager(resource_context: InitResourceContext) -> storage.Bucket:
+    """Create a connection to a gcs bucket."""
+
     gcs_bucket = resource_context.resource_config["gcs_bucket"]
     resource_context.log.info(f"retrieving gcs_bucket_manager for {gcs_bucket}")
 
@@ -63,7 +62,13 @@ def gcs_file_manager(resource_context):
         "gcs_filename": StringSource,
     },
 )
-def gcs_file_blob(resource_context: InitResourceContext):
+def gcs_file_blob(resource_context: InitResourceContext) -> storage.Blob:
+    """
+    Create a connection to a gcs file blob.
+
+    This is implemented so we are able to retrieve the metadata of a file
+    before committing to downloading the file.
+    """
     bucket = resource_context.resources.gcs_bucket_manager
 
     gcs_prefix = resource_context.resource_config["gcs_prefix"]
