@@ -3,10 +3,9 @@ import json
 from google.cloud import storage
 from google.oauth2 import service_account
 
-from dagster import StringSource, InitResourceContext, resource, InitResourceContext, Field
+from dagster import StringSource, InitResourceContext, resource, InitResourceContext
 from dagster_gcp.gcs.file_manager import GCSFileManager
 
-from ..config import BUCKET_NAME
 
 @resource(config_schema={"gcp_gsm_cred_string": StringSource})
 def gcp_gcs_client(resource_context: InitResourceContext):
