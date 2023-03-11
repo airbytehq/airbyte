@@ -38,12 +38,14 @@ def html_body(title, content):
 
 @asset(required_resource_keys={"gcp_gcs_metadata_bucket"})
 def connector_catalog_location_html(context, all_destinations_dataframe, all_sources_dataframe):
+    columns_to_show = ['name_x', 'dockerRepository', 'dockerImageTag', 'is_oss', 'is_cloud']
+
     title = "Connector Catalogs"
     content = f"<h1>{title}</h1>"
     content += f"<h2>Sources</h2>"
-    content += all_sources_dataframe.to_html()
+    content += all_sources_dataframe[columns_to_show].to_html()
     content += f"<h2>Destinations</h2>"
-    content += all_destinations_dataframe.to_html()
+    content += all_destinations_dataframe[columns_to_show].to_html()
 
     html = html_body(title, content)
 
@@ -62,11 +64,12 @@ def connector_catalog_location_html(context, all_destinations_dataframe, all_sou
 
 @asset(required_resource_keys={"gcp_gcs_metadata_bucket"})
 def connector_catalog_location_markdown(context, all_destinations_dataframe, all_sources_dataframe):
+    columns_to_show = ['name_x', 'dockerRepository', 'dockerImageTag', 'is_oss', 'is_cloud']
     markdown = f"# Connector Catalog Locations\n\n"
     markdown += f"## Sources\n"
-    markdown += all_sources_dataframe.to_markdown()
+    markdown += all_sources_dataframe[columns_to_show].to_markdown()
     markdown += f"\n\n## Destinations\n"
-    markdown += all_destinations_dataframe.to_markdown()
+    markdown += all_destinations_dataframe[columns_to_show].to_markdown()
 
     bucket = context.resources.gcp_gcs_metadata_bucket
 
@@ -98,7 +101,7 @@ def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_da
     merged_catalog[['is_cloud', 'is_oss']] = merged_catalog[['is_cloud', 'is_oss']].fillna(False)
 
     # Return the merged catalog with the desired columns
-    return merged_catalog[['name_x', 'dockerRepository', 'dockerImageTag', 'is_oss', 'is_cloud']]
+    return merged_catalog
 
 
 @asset
@@ -118,7 +121,7 @@ def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe):
     merged_catalog[['is_cloud', 'is_oss']] = merged_catalog[['is_cloud', 'is_oss']].fillna(False)
 
     # Return the merged catalog with the desired columns
-    return merged_catalog[['name_x', 'dockerRepository', 'dockerImageTag', 'is_oss', 'is_cloud']]
+    return merged_catalog
 
 @asset
 def cloud_sources_dataframe(latest_cloud_catalog_dict):
@@ -221,8 +224,7 @@ def gcp_gcs_metadata_bucket(resource_context: InitResourceContext):
 
 # ------ Jobs ------ #
 
-# Generate all
-generate_catalog_markdown = define_asset_job(name="generate_catalog_markdown", selection="connector_catalog_location_markdown")
+generate_catalog_markdown = define_asset_job(name="generate_catalog_markdown", selection="*")
 
 # ------ Sensors ------ #
 
