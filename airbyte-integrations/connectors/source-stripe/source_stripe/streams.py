@@ -658,3 +658,14 @@ class ExternalAccountCards(ExternalAccount):
     """
 
     object = "card"
+
+
+class Accounts(IncrementalStripeStream):
+    """
+    https://stripe.com/docs/api/accounts/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "accounts"

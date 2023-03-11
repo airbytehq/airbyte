@@ -36,6 +36,7 @@ from source_stripe.streams import (
     SubscriptionItems,
     Subscriptions,
     Transfers,
+    Accounts,
 )
 
 
@@ -83,4 +84,5 @@ class SourceStripe(AbstractSource):
             Transfers(**incremental_args),
             ExternalAccountBankAccounts(**args),
             ExternalAccountCards(**args),
+            Accounts(**incremental_args),
         ]

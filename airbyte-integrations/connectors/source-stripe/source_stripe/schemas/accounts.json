@@ -1,0 +1,145 @@
+{
+    "type": "object",
+    "properties": {
+        "business_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/account_business_profile"
+              }
+            ],
+            "description": "Business information about the account.",
+            "nullable": true
+          },
+          "business_type": {
+            "description": "The business type.",
+            "enum": [
+              "company",
+              "government_entity",
+              "individual",
+              "non_profit"
+            ],
+            "nullable": true,
+            "type": "string",
+            "x-stripeBypassValidation": true
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/account_capabilities"
+          },
+          "charges_enabled": {
+            "description": "Whether the account can create live charges.",
+            "type": "boolean"
+          },
+          "company": {
+            "$ref": "#/components/schemas/legal_entity_company"
+          },
+          "country": {
+            "description": "The account's country.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "created": {
+            "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
+            "format": "unix-time",
+            "type": "integer"
+          },
+          "default_currency": {
+            "description": "Three-letter ISO currency code representing the default currency for the account. This must be a currency that [Stripe supports in the account's country](https://stripe.com/docs/payouts).",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "details_submitted": {
+            "description": "Whether account details have been submitted. Standard accounts cannot receive payouts before this is true.",
+            "type": "boolean"
+          },
+          "email": {
+            "description": "An email address associated with the account. You can treat this as metadata: it is not used for authentication or messaging account holders.",
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "external_accounts": {
+            "description": "External accounts (bank accounts and debit cards) currently attached to this account",
+            "properties": {
+              "data": {
+                "description": "The list contains all external accounts that have been attached to the Stripe account. These may be bank accounts or cards.",
+                "items": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/bank_account"
+                    },
+                    {
+                      "$ref": "#/components/schemas/card"
+                    }
+                  ],
+                  "title": "Polymorphic"
+                },
+                "type": "array"
+              },
+              "has_more": {
+                "description": "True if this list has another page of items after this one that can be fetched.",
+                "type": "boolean"
+              },
+              "object": {
+                "description": "String representing the object's type. Objects of the same type share the same value. Always has the value `list`.",
+                "enum": ["list"],
+                "type": "string"
+              },
+              "url": {
+                "description": "The URL where this list can be accessed.",
+                "maxLength": 5000,
+                "type": "string"
+              }
+            },
+            "required": ["data", "has_more", "object", "url"],
+            "title": "ExternalAccountList",
+            "type": "object",
+            "x-expandableFields": ["data"]
+          },
+          "id": {
+            "description": "Unique identifier for the object.",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "individual": {
+            "$ref": "#/components/schemas/person"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "maxLength": 500,
+              "type": "string"
+            },
+            "description": "Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
+            "type": "object"
+          },
+          "object": {
+            "description": "String representing the object's type. Objects of the same type share the same value.",
+            "enum": ["account"],
+            "type": "string"
+          },
+          "payouts_enabled": {
+            "description": "Whether Stripe can send payouts to this account.",
+            "type": "boolean"
+          },
+          "requirements": {
+            "$ref": "#/components/schemas/account_requirements"
+          },
+          "settings": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/account_settings"
+              }
+            ],
+            "description": "Options for customizing how the account functions within Stripe.",
+            "nullable": true
+          },
+          "tos_acceptance": {
+            "$ref": "#/components/schemas/account_tos_acceptance"
+          },
+          "type": {
+            "description": "The Stripe account type. Can be `standard`, `express`, or `custom`.",
+            "enum": ["custom", "express", "standard"],
+            "type": "string"
+          }
+    }
+  }
+  
