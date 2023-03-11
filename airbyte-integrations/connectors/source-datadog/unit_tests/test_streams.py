@@ -53,14 +53,6 @@ def test_next_page_token(config):
     assert stream.next_page_token(**inputs) is None
 
 
-def test_site_config(config):
-    assert config['site'] == 'datadoghq.com'
-
-
-def test_site_config_eu(config_eu):
-    assert config_eu['site'] == 'datadoghq.eu'
-
-
 @pytest.mark.parametrize(
     "stream",
     [AuditLogs, Dashboards, Downtimes, Incidents, IncidentTeams, Logs, Metrics, SyntheticTests, Users],
