@@ -6,7 +6,7 @@ from .assets.catalog_assets import oss_destinations_dataframe, cloud_destination
 from .jobs.catalog_jobs import generate_catalog_markdown
 from .sensors.catalog_sensors import catalog_updated_sensor
 
-from .config import BUCKET_NAME
+from .config import BUCKET_NAME, REPORT_FOLDER
 
 
 assets=[
@@ -27,9 +27,9 @@ resources={
         "gcp_gsm_cred_string": {"env": "GCP_GSM_CREDENTIALS"},
     }),
     "gcp_gcs_metadata_bucket": gcp_gcs_metadata_bucket,
-    "gcs_test_folder": gcs_file_manager.configured({
+    "catalog_report_directory_manager": gcs_file_manager.configured({
         "gcs_bucket": BUCKET_NAME,
-        "gcs_prefix": "testy"
+        "gcs_prefix": REPORT_FOLDER,
     }),
     "latest_oss_catalog_gcs_file": latest_oss_catalog_gcs_file,
     "latest_cloud_catalog_gcs_file": latest_cloud_catalog_gcs_file

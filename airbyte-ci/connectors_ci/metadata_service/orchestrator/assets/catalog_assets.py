@@ -1,16 +1,19 @@
 import pandas as pd
 import json
 
-from dagster import sensor, RunRequest, SkipReason, build_op_context, MetadataValue, SensorEvaluationContext, build_resources, InitResourceContext, resource, DefaultSensorStatus, Definitions, Output, InitResourceContext, get_dagster_logger, asset, define_asset_job, OpExecutionContext
+from dagster import MetadataValue, Output, asset, OpExecutionContext
 
-from ..config import REPORT_FOLDER
 from ..utils.html import html_body
 
 # ------ Assets ------ #
 
-@asset(required_resource_keys={"gcp_gcs_metadata_bucket"})
+@asset(required_resource_keys={"catalog_report_directory_manager"})
 def connector_catalog_location_html(context, all_destinations_dataframe, all_sources_dataframe):
     columns_to_show = ['name_x', 'dockerRepository', 'dockerImageTag', 'is_oss', 'is_cloud']
+
+    # convert true and false to checkmarks and x's
+    all_sources_dataframe.replace({True: '✅', False: '❌'}, inplace=True)
+    all_destinations_dataframe.replace({True: '✅', False: '❌'}, inplace=True)
 
     title = "Connector Catalogs"
     content = f"<h1>{title}</h1>"
@@ -21,30 +24,31 @@ def connector_catalog_location_html(context, all_destinations_dataframe, all_sou
 
     html = html_body(title, content)
 
-    bucket = context.resources.gcp_gcs_metadata_bucket
-    blob = bucket.blob(f"{REPORT_FOLDER}/connector_catalog_locations.html")
-    blob.upload_from_string(html)
-    blob.content_type = "text/html"
-    blob.patch()
-
-    public_url = blob.public_url
+    catalog_report_directory_manager = context.resources.catalog_report_directory_manager
+    file_handle = catalog_report_directory_manager.write_data(html.encode(), ext="html", key="connector_catalog_locations")
 
     metadata = {
-        "public_url": MetadataValue.url(public_url),
+        "gcs_path": MetadataValue.url(file_handle.gcs_path),
     }
-    return Output(metadata=metadata, value=html)
 
-@asset(required_resource_keys={"gcs_test_folder"})
+    return Output(metadata=metadata, value=file_handle)
+
+@asset(required_resource_keys={"catalog_report_directory_manager"})
 def connector_catalog_location_markdown(context, all_destinations_dataframe, all_sources_dataframe):
     columns_to_show = ['name_x', 'dockerRepository', 'dockerImageTag', 'is_oss', 'is_cloud']
+
+    # convert true and false to checkmarks and x's
+    all_sources_dataframe.replace({True: '✅', False: '❌'}, inplace=True)
+    all_destinations_dataframe.replace({True: '✅', False: '❌'}, inplace=True)
+
     markdown = f"# Connector Catalog Locations\n\n"
     markdown += f"## Sources\n"
     markdown += all_sources_dataframe[columns_to_show].to_markdown()
     markdown += f"\n\n## Destinations\n"
     markdown += all_destinations_dataframe[columns_to_show].to_markdown()
 
-    gcs_test_folder_manager = context.resources.gcs_test_folder
-    file_handle = gcs_test_folder_manager.write_data(markdown.encode(), ext="md", key="connector_catalog_locations_2")
+    catalog_report_directory_manager = context.resources.catalog_report_directory_manager
+    file_handle = catalog_report_directory_manager.write_data(markdown.encode(), ext="md", key="connector_catalog_locations")
 
     metadata = {
         "preview": MetadataValue.md(markdown),
