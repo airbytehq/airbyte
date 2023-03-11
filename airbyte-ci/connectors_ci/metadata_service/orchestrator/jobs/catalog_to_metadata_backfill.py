@@ -22,10 +22,13 @@ def succeeds():
     return 1
 
 @asset(required_resource_keys={"latest_oss_catalog"})
-def oss_catalog_dataframe(context):
+def oss_destinations_dataframe(context):
+    # todo move the string to its own resource
     oss_catalog_file = context.resources.latest_oss_catalog
     json_string = oss_catalog_file.download_as_string().decode('utf-8')
-    return pd.read_json(json_string)
+    oss_catalog_dict = json.loads(json_string)
+    destinations = oss_catalog_dict["destinations"]
+    return pd.DataFrame(destinations)
 
 # @job
 # def generate_catalog_markdown():
@@ -41,7 +44,7 @@ def oss_catalog_dataframe(context):
 #     }
 #     return Output(value=oss_df, metadata=metadata)
 
-generate_catalog_markdown = define_asset_job(name="generate_catalog_markdown", selection="oss_catalog_dataframe")
+generate_catalog_markdown = define_asset_job(name="generate_catalog_markdown", selection="oss_destinations_dataframe")
 
 # TODO add types
 # TODO move this to config so its available in resource_context
@@ -149,7 +152,7 @@ def gcs_catalog_updated_sensor(context: SensorEvaluationContext):
 
 # TODO move to a generic location
 defn = Definitions(
-    assets=[oss_catalog_dataframe],
+    assets=[oss_destinations_dataframe],
     jobs=[generate_catalog_markdown],
     resources={
         "gcp_gsm_credentials": gcp_gsm_credentials,
