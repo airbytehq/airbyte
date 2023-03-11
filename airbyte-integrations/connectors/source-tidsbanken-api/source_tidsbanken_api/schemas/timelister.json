@@ -1,0 +1,160 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "timeregistreringId": {
+      "type": ["integer","null"]
+    },
+    "ansattId": {
+      "type": ["integer","null"]
+    },
+    "ansatt": {
+      "type": ["string","null"]
+    },
+    "dato": {
+      "type": ["string","null"]
+    },
+    "tm_Stemple_inn": {
+      "type": ["string","null"]
+    },
+    "tm_Stemple_ut": {
+      "type": ["string","null"]
+    },
+    "tm_Virk_inn": {
+      "type": ["string","null"]
+    },
+    "tm_Virk_ut": {
+      "type": ["string","null"]
+    },
+    "t_Pause1_Fra": {
+      "type": ["string","null"]
+    },
+    "t_Pause1_Til": {
+      "type": ["string","null"]
+    },
+    "t_Pause2_Fra": {
+      "type": ["string","null"]
+    },
+    "t_Pause2_Til": {
+      "type": ["string","null"]
+    },
+    "artId": {
+      "type": ["string","null"]
+    },
+    "ma_Timer": {
+      "type": ["number","null"]
+    },
+    "kostpris": {
+      "type": ["number","null"]
+    },
+    "salgspris": {
+      "type": ["number","null"]
+    },
+    "avdelingId": {
+      "type": ["string","null"]
+    },
+    "avdeling": {
+      "type": ["string","null"]
+    },
+    "prosjektId": {
+      "type": ["string","null"]
+    },
+    "prosjekt": {
+      "type": ["string","null"]
+    },
+    "avsnittId": {
+      "type": ["string","null"]
+    },
+    "jobbId": {
+      "type": ["string","null"]
+    },
+    "godkjent": {
+      "type": ["boolean","null"]
+    },
+    "notat": {
+      "type": ["string","null"]
+    },
+    "t_ArbT": {
+      "type": ["number","null"]
+    },
+    "kontoId": {
+      "type": ["string","null"]
+    },
+    "kundeId": {
+      "type": ["string","null"]
+    },
+    "arbeidsartId": {
+      "type": ["string","null"]
+    },
+    "faktureres": {
+      "type": ["boolean","null"]
+    },
+    "opprettetDato": {
+      "type": ["string","null"]
+    },
+    "endretDato": {
+      "type": ["string","null"]
+    },
+    "planFra": {
+      "type": ["string","null"]
+    },
+    "planTil": {
+      "type": ["string","null"]
+    },
+    "fAntall": {
+      "type": ["number","null"]
+    },
+    "produktId": {
+      "type": ["string","null"]
+    },
+    "produktiv": {
+      "type": ["boolean","null"]
+    },
+    "anleggId": {
+      "type": ["string","null"]
+    },
+    "timeType": {
+      "type": ["integer","null"]
+    }
+  },
+  "required": [
+    "timeregistreringId",
+    "ansattId",
+    "ansatt",
+    "dato",
+    "tm_Stemple_inn",
+    "tm_Stemple_ut",
+    "tm_Virk_inn",
+    "tm_Virk_ut",
+    "t_Pause1_Fra",
+    "t_Pause1_Til",
+    "t_Pause2_Fra",
+    "t_Pause2_Til",
+    "artId",
+    "ma_Timer",
+    "kostpris",
+    "salgspris",
+    "avdelingId",
+    "avdeling",
+    "prosjektId",
+    "prosjekt",
+    "avsnittId",
+    "jobbId",
+    "godkjent",
+    "notat",
+    "t_ArbT",
+    "kontoId",
+    "kundeId",
+    "arbeidsartId",
+    "faktureres",
+    "opprettetDato",
+    "endretDato",
+    "planFra",
+    "planTil",
+    "fAntall",
+    "produktId",
+    "produktiv",
+    "anleggId",
+    "timeType"
+  ]
+}

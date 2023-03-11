@@ -1,0 +1,393 @@
+version: 0.28.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - timelister
+streams:
+  - type: DeclarativeStream
+    name: timelister
+    primary_key:
+      - timeregistreringId
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          anleggId:
+            type: 'null'
+          ansatt:
+            type: 'null'
+          ansattId:
+            type: integer
+          arbeidsartId:
+            type: string
+          artId:
+            type: string
+          avdeling:
+            type: 'null'
+          avdelingId:
+            type: string
+          avsnittId:
+            type:
+              - 'null'
+              - string
+          dato:
+            type: string
+          endretDato:
+            type: string
+          fAntall:
+            type: number
+          faktureres:
+            type: boolean
+          godkjent:
+            type: boolean
+          jobbId:
+            type:
+              - 'null'
+              - string
+          kontoId:
+            type: 'null'
+          kostpris:
+            type: number
+          kundeId:
+            type: 'null'
+          ma_Timer:
+            type: number
+          notat:
+            type:
+              - 'null'
+              - string
+          opprettetDato:
+            type: string
+          planFra:
+            type:
+              - 'null'
+              - string
+          planTil:
+            type:
+              - 'null'
+              - string
+          produktId:
+            type:
+              - 'null'
+              - string
+          produktiv:
+            type: boolean
+          prosjekt:
+            type: 'null'
+          prosjektId:
+            type:
+              - 'null'
+              - string
+          salgspris:
+            type: number
+          t_ArbT:
+            type: number
+          t_Pause1_Fra:
+            type:
+              - 'null'
+              - string
+          t_Pause1_Til:
+            type:
+              - 'null'
+              - string
+          t_Pause2_Fra:
+            type: 'null'
+          t_Pause2_Til:
+            type: 'null'
+          timeType:
+            type: integer
+          timeregistreringId:
+            type: integer
+          tm_Stemple_inn:
+            type: string
+          tm_Stemple_ut:
+            type: string
+          tm_Virk_inn:
+            type: string
+          tm_Virk_ut:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.tidsbanken.net/v2
+        path: /timelister?$orderby=dato&
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        request_body_json: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          header: tb-key
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: $skip
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: $top
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+  - type: DeclarativeStream
+    name: ansatte
+    primary_key:
+      - ansattId
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          anleggId:
+            type: 'null'
+          ansatt:
+            type: 'null'
+          ansattId:
+            type: integer
+          arbeidsartId:
+            type: string
+          artId:
+            type: string
+          avdeling:
+            type: 'null'
+          avdelingId:
+            type: string
+          avsnittId:
+            type:
+              - 'null'
+              - string
+          dato:
+            type: string
+          endretDato:
+            type: string
+          fAntall:
+            type: number
+          faktureres:
+            type: boolean
+          godkjent:
+            type: boolean
+          jobbId:
+            type:
+              - 'null'
+              - string
+          kontoId:
+            type: 'null'
+          kostpris:
+            type: number
+          kundeId:
+            type: 'null'
+          ma_Timer:
+            type: number
+          notat:
+            type:
+              - 'null'
+              - string
+          opprettetDato:
+            type: string
+          planFra:
+            type:
+              - 'null'
+              - string
+          planTil:
+            type:
+              - 'null'
+              - string
+          produktId:
+            type:
+              - 'null'
+              - string
+          produktiv:
+            type: boolean
+          prosjekt:
+            type: 'null'
+          prosjektId:
+            type:
+              - 'null'
+              - string
+          salgspris:
+            type: number
+          t_ArbT:
+            type: number
+          t_Pause1_Fra:
+            type:
+              - 'null'
+              - string
+          t_Pause1_Til:
+            type:
+              - 'null'
+              - string
+          t_Pause2_Fra:
+            type: 'null'
+          t_Pause2_Til:
+            type: 'null'
+          timeType:
+            type: integer
+          timeregistreringId:
+            type: integer
+          tm_Stemple_inn:
+            type: string
+          tm_Stemple_ut:
+            type: string
+          tm_Virk_inn:
+            type: string
+          tm_Virk_ut:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.tidsbanken.net/v2
+        path: /ansatte
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        request_body_json: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          header: tb-key
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: avdelinger
+    primary_key:
+      - avdelingId
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          anleggId:
+            type: 'null'
+          ansatt:
+            type: 'null'
+          ansattId:
+            type: integer
+          arbeidsartId:
+            type: string
+          artId:
+            type: string
+          avdeling:
+            type: 'null'
+          avdelingId:
+            type: string
+          avsnittId:
+            type:
+              - 'null'
+              - string
+          dato:
+            type: string
+          endretDato:
+            type: string
+          fAntall:
+            type: number
+          faktureres:
+            type: boolean
+          godkjent:
+            type: boolean
+          jobbId:
+            type:
+              - 'null'
+              - string
+          kontoId:
+            type: 'null'
+          kostpris:
+            type: number
+          kundeId:
+            type: 'null'
+          ma_Timer:
+            type: number
+          notat:
+            type:
+              - 'null'
+              - string
+          opprettetDato:
+            type: string
+          planFra:
+            type:
+              - 'null'
+              - string
+          planTil:
+            type:
+              - 'null'
+              - string
+          produktId:
+            type:
+              - 'null'
+              - string
+          produktiv:
+            type: boolean
+          prosjekt:
+            type: 'null'
+          prosjektId:
+            type:
+              - 'null'
+              - string
+          salgspris:
+            type: number
+          t_ArbT:
+            type: number
+          t_Pause1_Fra:
+            type:
+              - 'null'
+              - string
+          t_Pause1_Til:
+            type:
+              - 'null'
+              - string
+          t_Pause2_Fra:
+            type: 'null'
+          t_Pause2_Til:
+            type: 'null'
+          timeType:
+            type: integer
+          timeregistreringId:
+            type: integer
+          tm_Stemple_inn:
+            type: string
+          tm_Stemple_ut:
+            type: string
+          tm_Virk_inn:
+            type: string
+          tm_Virk_ut:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.tidsbanken.net/v2
+        path: /avdelinger
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        request_body_json: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          header: tb-key
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination

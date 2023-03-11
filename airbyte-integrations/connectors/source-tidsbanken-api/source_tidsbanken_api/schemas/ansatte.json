@@ -1,0 +1,172 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "ansattId": {
+      "type": ["integer","null"]
+    },
+    "fornavn": {
+      "type": ["string","null"]
+    },
+    "etternavn": {
+      "type": ["string","null"]
+    },
+    "adresse": {
+      "type": ["string","null"]
+    },
+    "postnummer": {
+      "type": ["string","null"]
+    },
+    "poststed": {
+      "type": ["string","null"]
+    },
+    "tlfPrivat": {
+      "type": ["string","null"]
+    },
+    "mobilTlf": {
+      "type": ["string","null"]
+    },
+    "epostAdresse": {
+      "type": ["string","null"]
+    },
+    "fodt": {
+      "type": ["string","null"]
+    },
+    "tittel": {
+      "type": ["string","null"]
+    },
+    "lonnskonto": {
+      "type": ["string","null"]
+    },
+    "ansattDato": {
+      "type": ["string","null"]
+    },
+    "sluttet": {
+      "type": ["boolean","null"]
+    },
+    "aktiv": {
+      "type": ["boolean","null"]
+    },
+    "sluttetDato": {
+      "type": ["string","null"]
+    },
+    "avdelingId": {
+      "type": ["string","null"]
+    },
+    "avdeling": {
+      "type": ["string","null"]
+    },
+    "identifikator": {
+      "type": ["string","null"]
+    },
+    "element1Id": {
+      "type": ["string","null"]
+    },
+    "element2Id": {
+      "type": ["string","null"]
+    },
+    "antallFerieDager": {
+      "type": ["number","null"]
+    },
+    "statsborgerskap": {
+      "type": ["string","null"]
+    },
+    "opprettetDato": {
+      "type": ["string","null"]
+    },
+    "kortKode": {
+      "type": ["string","null"]
+    },
+    "stillingsprosent": {
+      "type": ["number","null"]
+    },
+    "kjonn": {
+      "type": ["string","null"]
+    },
+    "kommune": {
+      "type": ["string","null"]
+    },
+    "spraak": {
+      "type": ["string","null"]
+    },
+    "sistInnlogget": {
+      "type": ["string","null"]
+    },
+    "sistEndretDato": {
+      "type": ["string","null"]
+    },
+    "antallHalveFerieDager": {
+      "type": ["number","null"]
+    },
+    "skatteProsent": {
+      "type": ["number","null"]
+    },
+    "malId": {
+      "type": ["integer","null"]
+    },
+    "fastLonn": {
+      "type": ["boolean","null"]
+    },
+    "innleid": {
+      "type": ["boolean","null"]
+    },
+    "utelatFraLonn": {
+      "type": ["boolean","null"]
+    },
+    "utelatFraRapporter": {
+      "type": ["boolean","null"]
+    },
+    "utelatFraStatusrapport": {
+      "type": ["boolean","null"]
+    },
+    "paaroerendeNavn": {
+      "type": ["string","null"]
+    },
+    "paaroerendeNr": {
+      "type": ["string","null"]
+    }
+  },
+  "required": [
+    "ansattId",
+    "fornavn",
+    "etternavn",
+    "adresse",
+    "postnummer",
+    "poststed",
+    "tlfPrivat",
+    "mobilTlf",
+    "epostAdresse",
+    "fodt",
+    "tittel",
+    "lonnskonto",
+    "ansattDato",
+    "sluttet",
+    "aktiv",
+    "sluttetDato",
+    "avdelingId",
+    "avdeling",
+    "identifikator",
+    "element1Id",
+    "element2Id",
+    "antallFerieDager",
+    "statsborgerskap",
+    "opprettetDato",
+    "kortKode",
+    "stillingsprosent",
+    "kjonn",
+    "kommune",
+    "spraak",
+    "sistInnlogget",
+    "sistEndretDato",
+    "antallHalveFerieDager",
+    "skatteProsent",
+    "malId",
+    "fastLonn",
+    "innleid",
+    "utelatFraLonn",
+    "utelatFraRapporter",
+    "utelatFraStatusrapport",
+    "paaroerendeNavn",
+    "paaroerendeNr"
+  ]
+}
