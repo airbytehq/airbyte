@@ -15,13 +15,13 @@ A site, API key and application key are required. See the [Datadog API and Appli
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Datadog connector and select **Datadog** from the Source type dropdown.
-4. Enter your `site` - Data Dog Site
-5. Enter your `api_key` - Datadog API key.
-6. Enter your `application_key` - Datadog application key.
-7. Enter your `query` - Optional. Type your query to filter records when collecting data from Logs and AuditLogs stream.
-8. Enter your `limit` - Number of records to collect per request.
-9. Enter your `start_date` - Optional. Start date to filter records when collecting data from Logs and AuditLogs stream.
-10. Enter your `end_date` - Optional. End date to filter records when collecting data from Logs and AuditLogs stream.
+4. Enter your `api_key` - Datadog API key.
+5. Enter your `application_key` - Datadog application key.
+6. Enter your `query` - Optional. Type your query to filter records when collecting data from Logs and AuditLogs stream.
+7. Enter your `limit` - Number of records to collect per request.
+8. **Optional**: Enter your `start_date`. Start date to filter records when collecting data from Logs and AuditLogs stream.
+9. **Optional**: Enter your `end_date`. End date to filter records when collecting data from Logs and AuditLogs stream.
+10. **Optional**: If your Datadog site is different from the default `datadoghq.com`, choose the appropriate site you want from the dropdown.
 11. Click **Set up source**.
 
 ### For Airbyte OSS:
@@ -33,9 +33,10 @@ A site, API key and application key are required. See the [Datadog API and Appli
 5. Enter your `application_key` - Datadog application key.
 6. Enter your `query` - Optional. Type your query to filter records when collecting data from Logs and AuditLogs stream.
 7. Enter your `limit` - Number of records to collect per request.
-8. Enter your `start_date` - Optional. Start date to filter records when collecting data from Logs and AuditLogs stream.
-9. Enter your `end_date` - Optional. End date to filter records when collecting data from Logs and AuditLogs stream.
-10. Click **Set up source**.
+8. **Optional**: Enter your `start_date`. Start date to filter records when collecting data from Logs and AuditLogs stream.
+9. **Optional**: Enter your `end_date`. End date to filter records when collecting data from Logs and AuditLogs stream.
+10. **Optional**: If your Datadog site is different from the default `datadoghq.com`, choose the appropriate site you want from the dropdown.
+11. Click **Set up source**.
 
 ## Supported sync modes
 
