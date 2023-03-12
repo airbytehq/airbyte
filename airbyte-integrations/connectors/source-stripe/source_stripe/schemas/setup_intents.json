@@ -12,8 +12,7 @@
             "type": ["null", "string"]
         },
         "cancellation_reason": {
-            "type": ["null", "string"],
-            "enum": ["abandoned", "requested_by_customer", "duplicate"]
+            "type": ["null", "string"]
         },
         "client_secret": {
             "type": ["string"]

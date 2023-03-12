@@ -659,6 +659,7 @@ class ExternalAccountCards(ExternalAccount):
 
     object = "card"
 
+
 class SetupIntents(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/setup_intents/list
