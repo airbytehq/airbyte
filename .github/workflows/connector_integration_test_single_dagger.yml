@@ -1,0 +1,117 @@
+name: POC Connectors CI - test pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      test-connectors-options:
+        description: "Options to pass to the 'connectors-ci test-connectors' command"
+        default: "--modified"
+  pull_request:
+    paths:
+      - "airbyte-integrations/connectors/**"
+  push:
+    paths:
+      - "airbyte-integrations/connectors/**"
+    branches:
+      - "master"
+jobs:
+  start-runner:
+    name: "Connectors Integration Test: Start Build EC2 Runner"
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          github-token: ${{ env.PAT }}
+          ec2-instance-type: "c5.2xlarge" # https://aws.amazon.com/ec2/instance-types/
+  connectors_ci:
+    name: Connectors CI
+    timeout-minutes: 240 # 4 hours
+    needs: start-runner
+    runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
+      - name: Extract branch name
+        shell: bash
+        if: github.event_name == 'workflow_dispatch'
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+      - name: Install Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install ci-connector-ops package
+        run: pip install ./tools/ci_connector_ops\[pipelines]\
+      - name: Run connectors-ci test-connectors [WORKFLOW DISPATCH]
+        if: github.event_name == 'workflow_dispatch'
+        run: connectors-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} test-connectors ${{ github.event.inputs.test-connectors-options }}
+        env:
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "us-east-2"
+          TEST_REPORTS_BUCKET_NAME: "airbyte-connector-build-status"
+          CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
+          CI_GIT_REVISION: ${{ github.sha }}
+      - name: Run connectors-ci test-connectors [PULL REQUESTS]
+        if: github.event_name == 'pull_request'
+        run: connectors-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} test-connectors --modified
+        env:
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "us-east-2"
+          TEST_REPORTS_BUCKET_NAME: "airbyte-connector-build-status"
+          CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          CI_GIT_BRANCH: ${{ github.head_ref }}
+          CI_GIT_REVISION: ${{ github.event.pull_request.head.sha }}
+  stop-runner:
+    name: "Connectors Integration Test: Stop Build EC2 Runner"
+    timeout-minutes: 10
+    needs:
+      - start-runner # required to get output from the start-runner job
+      - connectors_ci # required to wait when the main job is done
+    runs-on: ubuntu-latest
+    # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
+    # Thus, we check for skipped here.
+    if: ${{ always() && needs.start-runner.result != 'skipped'}}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
+      - name: Stop EC2 runner
+        uses: supertopher/ec2-github-runner@base64v1.0.10
+        with:
+          mode: stop
+          github-token: ${{ env.PAT }}
+          label: ${{ needs.start-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}
