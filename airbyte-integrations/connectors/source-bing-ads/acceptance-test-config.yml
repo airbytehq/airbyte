@@ -21,6 +21,7 @@ acceptance_tests:
       expect_records:
         path: "integration_tests/expected_records.txt"
         extra_records: yes
+        extra_fields: yes
       empty_streams:
       - name: account_performance_report_hourly
         bypass_reason: "Hourly reports are disabled, because sync is too long"
