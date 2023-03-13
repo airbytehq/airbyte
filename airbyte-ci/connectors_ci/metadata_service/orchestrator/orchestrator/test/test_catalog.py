@@ -7,8 +7,6 @@ from ..assets.catalog_assets import (
     cloud_destinations_dataframe,
     oss_sources_dataframe,
     cloud_sources_dataframe,
-    latest_oss_catalog_dict,
-    latest_cloud_catalog_dict,
     all_sources_dataframe,
     all_destinations_dataframe,
 )

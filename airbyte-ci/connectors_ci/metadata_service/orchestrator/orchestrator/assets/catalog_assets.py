@@ -20,9 +20,9 @@ def connector_catalog_location_html(context, all_destinations_dataframe, all_sou
 
     title = "Connector Catalogs"
     content = f"<h1>{title}</h1>"
-    content += f"<h2>Sources</h2>"
+    content += "<h2>Sources</h2>"
     content += all_sources_dataframe[columns_to_show].to_html()
-    content += f"<h2>Destinations</h2>"
+    content += "<h2>Destinations</h2>"
     content += all_destinations_dataframe[columns_to_show].to_html()
 
     html = html_body(title, content)
@@ -49,10 +49,10 @@ def connector_catalog_location_markdown(context, all_destinations_dataframe, all
     all_sources_dataframe.replace({True: "✅", False: "❌"}, inplace=True)
     all_destinations_dataframe.replace({True: "✅", False: "❌"}, inplace=True)
 
-    markdown = f"# Connector Catalog Locations\n\n"
-    markdown += f"## Sources\n"
+    markdown = "# Connector Catalog Locations\n\n"
+    markdown += "## Sources\n"
     markdown += all_sources_dataframe[columns_to_show].to_markdown()
-    markdown += f"\n\n## Destinations\n"
+    markdown += "\n\n## Destinations\n"
     markdown += all_destinations_dataframe[columns_to_show].to_markdown()
 
     catalog_report_directory_manager = context.resources.catalog_report_directory_manager

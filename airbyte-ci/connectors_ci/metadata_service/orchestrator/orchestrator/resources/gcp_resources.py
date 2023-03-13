@@ -3,7 +3,7 @@ import json
 from google.cloud import storage
 from google.oauth2 import service_account
 
-from dagster import StringSource, InitResourceContext, resource, InitResourceContext
+from dagster import StringSource, InitResourceContext, resource
 from dagster_gcp.gcs.file_manager import GCSFileManager
 
 
