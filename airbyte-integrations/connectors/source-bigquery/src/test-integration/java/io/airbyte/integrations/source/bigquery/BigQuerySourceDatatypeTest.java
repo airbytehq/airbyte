@@ -84,6 +84,10 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   @Override
   protected void initTests() {
+    // We need to clear out the test data holders before each new test. If we don't, the testing framework attempts to execut the SQL queries
+    // associated with the previous test data. At best, this is just very inefficient (each subsequent run attempts to re-run all the queries from the
+    // previous test). At worst, this causes tests to fail. For example, in BigQuery the API call to create a table fails if it is already there
+    testDataHolders.clear();
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("int64")
