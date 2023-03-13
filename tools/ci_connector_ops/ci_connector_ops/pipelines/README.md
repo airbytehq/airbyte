@@ -86,8 +86,9 @@ flowchart TB
     conn([Connector pipeline])==>qa & fmt & tu
     src[[Mount connector source code to container]]-->fmt & pkg & ta
     fmt & tu & ti & ta & qa -.-> r([Build test report])--if in CI-->s3[[Upload to S3]]
-    subgraph QA Checks
+    subgraph "Checks (static code analysis)"
         repo[[Mount Airbyte repo to container]]-->qa[Run QA checks]
+        fmt[Run code format checks]
     end
     subgraph Tests
         tu[Run unit tests]==>ti[Run integration tests] & ta[Run acceptance tests]
