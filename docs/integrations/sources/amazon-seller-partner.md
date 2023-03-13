@@ -129,6 +129,7 @@ So, for any value that exceeds the limit, the `period_in_days` will be automatic
 
 | Version  | Date       | Pull Request                                               | Subject                                                                |
 |:---------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------|
+| `0.2.34` | 2023-03-13 | [\#23980](https://github.com/airbytehq/airbyte/pull/23980) | Increased end_date gap up to 5 minutes from now for Finance streams         |
 | `0.2.33` | 2023-03-01 | [\#23606](https://github.com/airbytehq/airbyte/pull/23606) | Implement reportOptions for all missing reports and refactor           |
 | `0.2.32` | 2022-02-21 | [\#23300](https://github.com/airbytehq/airbyte/pull/23300) | Make AWS Access Key, AWS Secret Access and Role ARN optional           |
 | `0.2.31` | 2022-01-10 | [\#16430](https://github.com/airbytehq/airbyte/pull/16430) | Implement slicing for report streams                                   |
