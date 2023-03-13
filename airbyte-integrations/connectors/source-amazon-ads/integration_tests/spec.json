@@ -72,6 +72,14 @@
         "examples": [3, 10],
         "order": 8,
         "type": "integer"
+      },
+      "look_back_window_stream": {
+        "title": "Look Back Window Stream",
+        "description": "Enable Look Back Window with incremental sync",
+        "default": false,
+        "examples": [true, false],
+        "order": 9,
+        "type": "boolean"
       }
     },
     "required": ["client_id", "client_secret", "refresh_token"],
