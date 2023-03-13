@@ -68,6 +68,10 @@ class XeroStream(HttpStream, ABC):
     current_page = 1
     pagination = False
 
+    def __init__(self, tenant_id: str, **kwargs):
+        super().__init__(**kwargs)
+        self.tenant_id = tenant_id
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         records = response.json().get(self.data_field) or []
         if not self.pagination:
@@ -88,7 +92,10 @@ class XeroStream(HttpStream, ABC):
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-        headers = {"Accept": "application/json"}
+        headers = {
+            "Accept": "application/json",
+            "Xero-Tenant-Id": self.tenant_id,
+        }
         return headers
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
