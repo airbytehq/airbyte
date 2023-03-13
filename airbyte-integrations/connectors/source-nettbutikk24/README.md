@@ -61,7 +61,7 @@ python main.py read --config secrets/config.json --catalog sample_files/configur
 First, make sure you build the latest Docker image:
 
 ```shell
-IMAGE_TAG="0.0.5"
+IMAGE_TAG="1.0.4"
 ```
 ```shell
 docker build . -t airbyte/source-nettbutikk24:$IMAGE_TAG --platform linux/amd64
