@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "properties": {
+    "type": { "type": "string" },
+    "id": { "type": "string" },
+    "attributes": {
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "first_name": { "type": "string" },
+        "last_name": { "type": "string" },
+        "organization": { "type": "string" },
+        "title": { "type": "string" },
+        "created": { "type": "string", "format": "date-time" },
+        "updated": { "type": "string", "format": "date-time" },
+        "last_event_date": { "type": "string", "format": "date-time" }
+      }
+    },
+    "properties": { "type": "object" },
+    "subscriptions": { "type": "object" },
+    "links": { "type": "object" },
+    "relationships":  { "type": "object" },
+    "segments":  { "type": "object" }
+  }
+}
