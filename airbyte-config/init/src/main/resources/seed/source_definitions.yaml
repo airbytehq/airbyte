@@ -569,6 +569,12 @@
   icon: faker.svg
   sourceType: api
   releaseStage: beta
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          cpu_limit: "4.0"
+          cpu_request: "1.0"
   allowedHosts:
     hosts: []
   suggestedStreams:
