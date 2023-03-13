@@ -16,10 +16,10 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: "0.4.1" # Removed nullability on created_at and updated_at which are never null
+          disable_for_version: "0.4.2" # Removed nullability on created_at and updated_at which are never null
       - config_path: "secrets/config_oauth.json"
         backward_compatibility_tests_config:
-          disable_for_version: "0.4.1" # Removed nullability on created_at and updated_at which are never null
+          disable_for_version: "0.4.2" # Removed nullability on created_at and updated_at which are never null
 
   basic_read:
     tests:
