@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the [Tmdb](http
 
 ## Prerequisites
 
-Api key and movie ID is mandate for this connector to work, It could be generated using a free account at TMDb. Visit: `https://www.themoviedb.org/settings/api`
+Api key and movie ID is mandate for this connector to work, It could be generated using a free account at TMDb. Visit: https://www.themoviedb.org/settings/api
 Just pass the generated API key and Movie ID for establishing the connection.
 
 ## Setup guide
