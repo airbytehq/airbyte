@@ -15,7 +15,8 @@ def config():
         "client_secret": "test_client_secret",
         "refresh_token": "test_refresh",
         "region": "NA",
-        "look_back_window": 3
+        "look_back_window": 3,
+        "look_back_window_stream": False,
     }
 
 

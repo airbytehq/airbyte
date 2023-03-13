@@ -69,6 +69,7 @@ def test_check(config_gen):
     assert url_strip_query(responses.calls[7].request.url) == "https://advertising-api.amazon.com/v2/profiles"
 
     assert command_check(source, config_gen(look_back_window=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
+    assert command_check(source, config_gen(look_back_window_stream=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
 
 @responses.activate
