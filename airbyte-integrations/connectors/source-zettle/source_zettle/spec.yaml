@@ -1,0 +1,27 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Zettle Spec
+  type: object
+  required:
+    - client_id
+    - api_key
+    - start_date
+  properties:
+    client_id:
+      title: Client id
+      type: string
+      description: "Client id"
+      airbyte_secret: true
+    api_key:
+      title: API token
+      type: string
+      description: "API token"
+      airbyte_secret: true
+    start_date:
+      title: Start date
+      type: string
+      description: "Start date"
+      default: "2023-02-10"
+      examples:
+        - "2023-02-10"
