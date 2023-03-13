@@ -51,4 +51,4 @@ def test_source(response, url, payload, test_config):
     source = SourceLeverHiring()
     logger_mock = MagicMock()
     assert source.check_connection(logger_mock, test_config) == (True, None)
-    assert len(source.streams(test_config)) == 7
+    assert len(source.streams(test_config)) == 11
