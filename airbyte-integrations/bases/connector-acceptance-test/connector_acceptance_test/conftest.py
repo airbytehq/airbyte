@@ -308,7 +308,13 @@ def previous_discovered_catalog_fixture(
     if not cache_discovered_catalog:
         previous_cached_schemas.clear()
     if not previous_cached_schemas:
-        output = previous_connector_docker_runner.call_discover(config=connector_config)
+        try:
+            output = previous_connector_docker_runner.call_discover(config=connector_config)
+        except errors.ContainerError:
+            logging.warning(
+                "\n DISCOVER on the previous connector version failed. This could be because the current connector config is not compatible with the previous connector version."
+            )
+            return None
         catalogs = [message.catalog for message in output if message.type == Type.CATALOG]
         for stream in catalogs[-1].streams:
             previous_cached_schemas[stream.name] = stream
