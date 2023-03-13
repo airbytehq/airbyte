@@ -10,7 +10,7 @@ The Talkdesk Explore connector uses the [Talkdesk Explore API](https://docs.talk
 
 The connector supports both Full Refresh and Incremental on the following streams:
 
-* [Calls Report](https://docs.talkdesk.com/docs/calls-report-explore)
+* [Calls Report](https://docs.talkdesk.com/docs/calls-report)
 * [User Status Report](https://docs.talkdesk.com/docs/user-status-explore)
 * [Studio Flow Execution Report](https://docs.talkdesk.com/docs/studio-flow-execution-report)
 * [Contacts Report](https://docs.talkdesk.com/docs/contacts-report)
