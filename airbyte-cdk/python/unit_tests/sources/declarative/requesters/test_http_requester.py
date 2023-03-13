@@ -73,7 +73,7 @@ def test_http_requester():
         ("test_with_v1_with_trailing_slash", "https://example.com/v1/", "https://example.com/v1/"),
     ],
 )
-def base_url_has_a_trailing_slash(test_name, base_url, expected_base_url):
+def test_base_url_has_a_trailing_slash(test_name, base_url, expected_base_url):
     requester = HttpRequester(
         name="name",
         url_base=base_url,
@@ -89,20 +89,16 @@ def base_url_has_a_trailing_slash(test_name, base_url, expected_base_url):
 
 
 @pytest.mark.parametrize(
-    "test_name, base_url, expected_base_url",
+    "test_name, path, expected_path",
     [
         ("test_no_leading_slash", "deals", "deals"),
         ("test_with_leading_slash", "/deals", "deals"),
         ("test_with_v1_no_leading_slash", "v1/deals", "v1/deals"),
         ("test_with_v1_with_leading_slash", "/v1/deals", "v1/deals"),
-        ("test_with_v1_with_trailing_slash", "/v1/deals/", "v1/deals/"),
-        ("test_duplicate_leading_slashes", "//v1/deals/", "v1/deals/"),
-        ("test_many_duplicate_leading_slashes", "/////v1/deals/", "v1/deals/"),
-        ("test_duplicate_trailing_slashes", "v1/deals/", "v1/deals//"),
-        ("test_many_duplicate_trailing_slashes", "v1/deals/////", "v1/deals/"),
+        ("test_with_v1_with_trailing_slash", "v1/deals/", "v1/deals/"),
     ],
 )
-def path_has_no_leading_slash(test_name, path, expected_path):
+def test_path(test_name, path, expected_path):
     requester = HttpRequester(
         name="name",
         url_base="https://example.com",
@@ -115,4 +111,3 @@ def path_has_no_leading_slash(test_name, path, expected_path):
         parameters={},
     )
     assert requester.get_path(stream_state={}, stream_slice={}, next_page_token={}) == expected_path
-    assert False
