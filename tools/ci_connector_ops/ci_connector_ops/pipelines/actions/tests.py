@@ -31,6 +31,16 @@ def pytest_logs_to_step_result(logs: str, step: Step) -> StepResult:
 
 
 async def get_step_result(container: Container, step: Step) -> StepResult:
+    """Concurrent retrieval of exit code, stdout and stdout of a container.
+    Create a StepResult object from these objects.
+
+    Args:
+        container (Container): The container from which we want to infer a step result/
+        step (Step): The step that was ran to build the step result.
+
+    Returns:
+        StepResult: Failure or success with stdout and stderr.
+    """
     async with asyncer.create_task_group() as task_group:
         soon_exit_code = task_group.soonify(with_exit_code)(container)
         soon_stderr = task_group.soonify(with_stderr)(container)
