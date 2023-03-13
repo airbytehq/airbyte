@@ -4,12 +4,10 @@
 
 
 import sys
-from typing import Any, List, Mapping
 from typing import List
 
 from airbyte_cdk.connector import BaseConnector
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 
 
