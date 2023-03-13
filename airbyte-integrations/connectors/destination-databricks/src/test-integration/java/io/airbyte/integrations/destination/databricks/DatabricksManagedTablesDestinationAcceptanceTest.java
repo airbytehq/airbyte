@@ -12,7 +12,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
@@ -25,7 +25,7 @@ import org.jooq.DSLContext;
 public class DatabricksManagedTablesDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final String SECRETS_CONFIG_JSON = "secrets/managed_tables_config.json";
-  private final ExtendedNameTransformer nameTransformer = new DatabricksNameTransformer();
+  private final StandardNameTransformer nameTransformer = new DatabricksNameTransformer();
   private DatabricksDestinationConfig databricksConfig;
   JsonNode configJson;
 
