@@ -2,12 +2,15 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.databricks;
+package io.airbyte.integrations.destination.databricks.azure;
 
 import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageConnectionChecker;
+import io.airbyte.integrations.destination.databricks.DatabricksExternalStorageBaseDestination;
+import io.airbyte.integrations.destination.databricks.DatabricksStorageConfig;
+import io.airbyte.integrations.destination.databricks.DatabricksStreamCopierFactory;
 import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 
-public class DatabricksAzureBlobStorageDestination extends DatabricksBaseDestination {
+public class DatabricksAzureBlobStorageDestination extends DatabricksExternalStorageBaseDestination {
 
   @Override
   protected void checkPersistence(DatabricksStorageConfig databricksConfig) {

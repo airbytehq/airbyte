@@ -2,13 +2,14 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.databricks;
+package io.airbyte.integrations.destination.databricks.s3;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.integrations.destination.databricks.DatabricksStorageConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +21,7 @@ public class DatabricksS3StorageConfigTest {
   @BeforeEach
   public void setup() {
     final ObjectNode dataSourceConfig = OBJECT_MAPPER.createObjectNode()
-        .put("data_source_type", "S3")
+        .put("data_source_type", "S3_STORAGE")
         .put("s3_bucket_name", "bucket_name")
         .put("s3_bucket_path", "bucket_path")
         .put("s3_bucket_region", "bucket_region")

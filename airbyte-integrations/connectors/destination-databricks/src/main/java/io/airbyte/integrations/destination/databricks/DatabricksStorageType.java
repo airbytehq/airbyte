@@ -6,7 +6,8 @@ package io.airbyte.integrations.destination.databricks;
 
 public enum DatabricksStorageType {
 
-  S3,
+  MANAGED_TABLES_STORAGE,
+  S3_STORAGE,
   AZURE_BLOB_STORAGE;
 
 }

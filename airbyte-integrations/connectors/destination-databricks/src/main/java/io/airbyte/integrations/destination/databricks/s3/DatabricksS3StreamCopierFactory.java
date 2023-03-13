@@ -2,11 +2,13 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.databricks;
+package io.airbyte.integrations.destination.databricks.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.databricks.DatabricksDestinationConfig;
+import io.airbyte.integrations.destination.databricks.DatabricksStreamCopierFactory;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
@@ -30,7 +32,7 @@ public class DatabricksS3StreamCopierFactory implements DatabricksStreamCopierFa
       final AirbyteStream stream = configuredStream.getStream();
       final String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
 
-      S3DestinationConfig s3Config = databricksConfig.getStorageConfig().getS3DestinationConfigOrThrow();
+      S3DestinationConfig s3Config = databricksConfig.storageConfig().getS3DestinationConfigOrThrow();
       final AmazonS3 s3Client = s3Config.getS3Client();
       final ProductionWriterFactory writerFactory = new ProductionWriterFactory();
       final Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());

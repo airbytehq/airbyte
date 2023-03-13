@@ -2,9 +2,10 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.databricks;
+package io.airbyte.integrations.destination.databricks.azure;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.integrations.destination.databricks.DatabricksStorageConfig;
 import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 
 public class DatabricksAzureBlobStorageConfig extends DatabricksStorageConfig {

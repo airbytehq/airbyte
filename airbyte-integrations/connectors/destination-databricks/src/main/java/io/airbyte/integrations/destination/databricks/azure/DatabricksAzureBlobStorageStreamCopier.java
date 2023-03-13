@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.databricks;
+package io.airbyte.integrations.destination.databricks.azure;
 
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.specialized.AppendBlobClient;
@@ -17,6 +17,8 @@ import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDe
 import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageFormatConfig;
 import io.airbyte.integrations.destination.azure_blob_storage.csv.AzureBlobStorageCsvFormatConfig;
 import io.airbyte.integrations.destination.azure_blob_storage.csv.AzureBlobStorageCsvWriter;
+import io.airbyte.integrations.destination.databricks.DatabricksDestinationConfig;
+import io.airbyte.integrations.destination.databricks.DatabricksStreamCopier;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;

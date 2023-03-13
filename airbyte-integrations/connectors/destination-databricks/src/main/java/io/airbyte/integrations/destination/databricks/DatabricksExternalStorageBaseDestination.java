@@ -4,13 +4,14 @@
 
 package io.airbyte.integrations.destination.databricks;
 
+import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_SCHEMA_KEY;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.databricks.utils.DatabricksDatabaseUtil;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.CopyConsumerFactory;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
@@ -19,15 +20,15 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
 
-public abstract class DatabricksBaseDestination extends CopyDestination {
+public abstract class DatabricksExternalStorageBaseDestination extends CopyDestination {
 
-  public DatabricksBaseDestination() {
-    super("database_schema");
+  public DatabricksExternalStorageBaseDestination() {
+    super(DATABRICKS_SCHEMA_KEY);
   }
 
   @Override
   public void checkPersistence(JsonNode config) {
-    checkPersistence(DatabricksDestinationConfig.get(config).getStorageConfig());
+    checkPersistence(DatabricksDestinationConfig.get(config).storageConfig());
   }
 
   protected abstract void checkPersistence(DatabricksStorageConfig databricksConfig);
@@ -47,7 +48,7 @@ public abstract class DatabricksBaseDestination extends CopyDestination {
         databricksConfig,
         catalog,
         getStreamCopierFactory(),
-        databricksConfig.getDatabaseSchema());
+        databricksConfig.schema());
   }
 
   protected abstract DatabricksStreamCopierFactory getStreamCopierFactory();
@@ -59,12 +60,7 @@ public abstract class DatabricksBaseDestination extends CopyDestination {
 
   @Override
   public DataSource getDataSource(final JsonNode config) {
-    final DatabricksDestinationConfig databricksConfig = DatabricksDestinationConfig.get(config);
-    return DataSourceFactory.create(
-        DatabricksConstants.DATABRICKS_USERNAME,
-        databricksConfig.getDatabricksPersonalAccessToken(),
-        DatabricksConstants.DATABRICKS_DRIVER_CLASS,
-        getDatabricksConnectionString(databricksConfig));
+    return DatabricksDatabaseUtil.getDataSource(config);
   }
 
   @Override
@@ -75,12 +71,6 @@ public abstract class DatabricksBaseDestination extends CopyDestination {
   @Override
   public SqlOperations getSqlOperations() {
     return new DatabricksSqlOperations();
-  }
-
-  public static String getDatabricksConnectionString(final DatabricksDestinationConfig databricksConfig) {
-    return String.format(DatabaseDriver.DATABRICKS.getUrlFormatString(),
-        databricksConfig.getDatabricksServerHostname(),
-        databricksConfig.getDatabricksHttpPath());
   }
 
 }

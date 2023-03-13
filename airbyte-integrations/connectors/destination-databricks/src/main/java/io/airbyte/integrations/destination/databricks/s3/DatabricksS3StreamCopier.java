@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.databricks;
+package io.airbyte.integrations.destination.databricks.s3;
 
 import static org.apache.logging.log4j.util.Strings.EMPTY;
 
@@ -10,6 +10,8 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.databricks.DatabricksDestinationConfig;
+import io.airbyte.integrations.destination.databricks.DatabricksStreamCopier;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
@@ -62,7 +64,7 @@ public class DatabricksS3StreamCopier extends DatabricksStreamCopier {
       throws Exception {
     super(stagingFolder, schema, configuredStream, database, databricksConfig, nameTransformer, sqlOperations);
     this.s3Client = s3Client;
-    this.s3Config = databricksConfig.getStorageConfig().getS3DestinationConfigOrThrow();
+    this.s3Config = databricksConfig.storageConfig().getS3DestinationConfigOrThrow();
     final S3DestinationConfig stagingS3Config = getStagingS3DestinationConfig(s3Config, stagingFolder);
     this.parquetWriter = (S3ParquetWriter) writerFactory.create(stagingS3Config, s3Client, configuredStream, uploadTime);
 
@@ -98,7 +100,7 @@ public class DatabricksS3StreamCopier extends DatabricksStreamCopier {
   @Override
   protected String getDestTableLocation() {
     return String.format("s3://%s/%s/%s/%s",
-        s3Config.getBucketName(), s3Config.getBucketPath(), databricksConfig.getDatabaseSchema(), streamName);
+        s3Config.getBucketName(), s3Config.getBucketPath(), databricksConfig.schema(), streamName);
   }
 
   @Override

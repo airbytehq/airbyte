@@ -2,13 +2,16 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.databricks;
+package io.airbyte.integrations.destination.databricks.s3;
 
+import io.airbyte.integrations.destination.databricks.DatabricksExternalStorageBaseDestination;
+import io.airbyte.integrations.destination.databricks.DatabricksStorageConfig;
+import io.airbyte.integrations.destination.databricks.DatabricksStreamCopierFactory;
 import io.airbyte.integrations.destination.s3.S3BaseChecks;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
 
-public class DatabricksS3Destination extends DatabricksBaseDestination {
+public class DatabricksS3Destination extends DatabricksExternalStorageBaseDestination {
 
   @Override
   protected void checkPersistence(DatabricksStorageConfig databricksConfig) {

@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.databricks;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.databricks.utils.DatabricksConstants;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants;
