@@ -8,7 +8,7 @@ Default data residency allows you to choose where your data is processed.
 
 :::note 
 
-Configuring default data residency only applies to new connections and does not affect existing connections.   
+To ensure your data is processed in the correct region, set your default data residency before creating a new connection, as some workflows rely on the default data residency. When you set the default data residency, it applies to new connections and does not affect existing ones. If you do not set the default data residency, the [Airbyte Default](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud/#united-states-and-airbyte-default) region is used. 
 
 :::
 
