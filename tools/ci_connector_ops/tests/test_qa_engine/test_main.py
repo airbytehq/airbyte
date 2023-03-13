@@ -20,7 +20,7 @@ def test_main(mocker, dummy_qa_report, create_prs):
     mocker.patch.object(main.inputs, "fetch_adoption_metrics_per_connector_version")
     mocker.patch.object(main.validations, "get_qa_report", mocker.Mock(return_value=dummy_qa_report))
     mocker.patch.object(main.validations, "get_connectors_eligible_for_cloud")
-    mocker.patch.object(main.cloud_availability_updater, "deploy_eligible_connectors_to_cloud_repo")
+    mocker.patch.object(main.cloud_availability_updater, "batch_deploy_eligible_connectors_to_cloud_repo")
     mocker.patch.object(main.outputs, "persist_qa_report")
 
     if create_prs:
@@ -39,6 +39,6 @@ def test_main(mocker, dummy_qa_report, create_prs):
     )
     if create_prs:
         main.validations.get_connectors_eligible_for_cloud.assert_called_with(main.validations.get_qa_report.return_value)
-        main.cloud_availability_updater.deploy_eligible_connectors_to_cloud_repo.assert_called_with(
+        main.cloud_availability_updater.batch_deploy_eligible_connectors_to_cloud_repo.assert_called_with(
             main.validations.get_connectors_eligible_for_cloud.return_value
         )

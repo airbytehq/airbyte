@@ -3,10 +3,9 @@ name: Run QA Engine
 on:
   workflow_dispatch:
   schedule:
-    # 1pm UTC is 6am PDT.
     # same time as Generate Build Report
-    - cron: "0 13 * * *"
-
+    # 6AM UTC is 8AM EET, 7AM CET, 11PM PST.
+    - cron: "0 6 * * *"
 jobs:
   run-qa-engine:
     name: "Run QA Engine"
@@ -23,7 +22,7 @@ jobs:
       - name: Preparing Runner to the Build process
         uses: ./.github/actions/runner-prepare-for-build
       - name: Install ci-connector-ops package
-        run: pip install --quiet -e ./tools/ci_connector_ops
+        run: pip install --quiet -e ./tools/ci_connector_ops\[qa_engine\]
       - name: Run QA Engine
         env:
           LOGLEVEL: INFO

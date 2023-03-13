@@ -8,7 +8,7 @@ To set up the Appfollow source connector, you'll need your Appfollow `ext_id`, `
 
 ## Set up the Appfollow source connector
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Appfollow** from the Source type dropdown.
 4. Enter a name for your source.

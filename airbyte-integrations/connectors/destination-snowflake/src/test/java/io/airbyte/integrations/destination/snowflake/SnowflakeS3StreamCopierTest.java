@@ -12,7 +12,7 @@ import static org.mockito.Mockito.verify;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.common.collect.Lists;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopyConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
@@ -60,7 +60,7 @@ class SnowflakeS3StreamCopierTest {
         s3Client,
         db,
         new S3CopyConfig(true, s3Config),
-        new ExtendedNameTransformer(),
+        new StandardNameTransformer(),
         sqlOperations,
         new ConfiguredAirbyteStream()
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
