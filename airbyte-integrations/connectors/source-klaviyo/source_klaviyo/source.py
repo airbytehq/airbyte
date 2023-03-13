@@ -13,10 +13,12 @@ from source_klaviyo.streams import Campaigns, Events, Flows, GlobalExclusions, L
 class SourceKlaviyo(AbstractSource):
     def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
+
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
         :return Tuple[bool, Any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
+
         try:
             # we use metrics endpoint because it never returns an error
             _ = list(Metrics(api_key=config["api_key"]).read_records(sync_mode=SyncMode.full_refresh))
@@ -25,10 +27,11 @@ class SourceKlaviyo(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        Discovery method, returns available streams
+        """Discovery method, returns available streams
+
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
+
         api_key = config["api_key"]
         start_date = config["start_date"]
         return [
@@ -38,5 +41,5 @@ class SourceKlaviyo(AbstractSource):
             Lists(api_key=api_key),
             Metrics(api_key=api_key),
             Flows(api_key=api_key, start_date=start_date),
-            Profiles(api_key=api_key, start_date=start_date)
+            Profiles(api_key=api_key, start_date=start_date),
         ]
