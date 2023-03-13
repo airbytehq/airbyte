@@ -27,14 +27,10 @@
       "type": ["null", "array"]
     },
     "SubTotal": {
-      "type": ["null", "number"],
-      "minimum": -1e33,
-      "maximum": 1e33
+      "type": ["null", "number"]
     },
     "Total": {
-      "type": ["null", "number"],
-      "minimum": -1e33,
-      "maximum": 1e33
+      "type": ["null", "number"]
     },
     "UpdatedDateUTC": {
       "format": "date-time",
@@ -47,22 +43,16 @@
       "type": ["string"]
     },
     "CurrencyRate": {
-      "type": ["null", "number"],
-      "minimum": -1e33,
-      "maximum": 1e33
+      "type": ["null", "number"]
     },
     "Reference": {
       "type": ["null", "string"]
     },
     "RemainingCredit": {
-      "type": ["null", "number"],
-      "minimum": -1e33,
-      "maximum": 1e33
+      "type": ["null", "number"]
     },
     "AppliedAmount": {
-      "type": ["null", "number"],
-      "minimum": -1e33,
-      "maximum": 1e33
+      "type": ["null", "number"]
     },
     "Allocations": {
       "type": ["null", "array"],
@@ -80,9 +70,7 @@
       "type": ["null", "boolean"]
     },
     "TotalTax": {
-      "type": ["null", "number"],
-      "minimum": -1e33,
-      "maximum": 1e33
+      "type": ["null", "number"]
     },
     "DateString": {
       "format": "date-time",

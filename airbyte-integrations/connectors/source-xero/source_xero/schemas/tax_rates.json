@@ -22,9 +22,7 @@
             "type": ["null", "boolean"]
           },
           "Rate": {
-            "type": ["null", "number"],
-            "minimum": -1e33,
-            "maximum": 1e33
+            "type": ["null", "number"]
           }
         },
         "additionalProperties": true
@@ -52,14 +50,10 @@
       "type": ["null", "boolean"]
     },
     "DisplayTaxRate": {
-      "type": ["null", "number"],
-      "minimum": -1e33,
-      "maximum": 1e33
+      "type": ["null", "number"]
     },
     "EffectiveRate": {
-      "type": ["null", "number"],
-      "minimum": -1e33,
-      "maximum": 1e33
+      "type": ["null", "number"]
     }
   },
   "additionalProperties": true

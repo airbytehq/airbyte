@@ -6,9 +6,7 @@
       "format": "date-time"
     },
     "Amount": {
-      "type": ["null", "number"],
-      "minimum": -1e33,
-      "maximum": 1e33
+      "type": ["null", "number"]
     },
     "Invoice": {
       "$ref": "nested_invoice.json"
