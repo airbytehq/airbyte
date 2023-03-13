@@ -16,8 +16,12 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SqlOperationsUtils {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(SqlOperationsUtils.class);
 
   /**
    * Inserts "raw" records in a single query. The purpose of helper to abstract away database-specific
@@ -84,6 +88,7 @@ public class SqlOperationsUtils {
       // TODO(sherif) this should use a smarter, destination-aware partitioning scheme instead of 10k by
       // default
       for (List<AirbyteRecordMessage> partition : Iterables.partition(records, 10_000)) {
+        LOGGER.info("Begin processing partition");
         final StringBuilder sql = new StringBuilder(insertQueryComponent);
         partition.forEach(r -> sql.append(recordQueryComponent));
         final String s = sql.toString();
@@ -103,6 +108,7 @@ public class SqlOperationsUtils {
           statement.execute();
         }
       }
+      LOGGER.info("Done Processing partitions");
     });
   }
 

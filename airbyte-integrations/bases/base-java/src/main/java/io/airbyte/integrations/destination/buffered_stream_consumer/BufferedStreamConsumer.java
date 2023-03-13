@@ -17,6 +17,7 @@ import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DefaultD
 import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DestStateLifecycleManager;
 import io.airbyte.integrations.destination.record_buffer.BufferFlushType;
 import io.airbyte.integrations.destination.record_buffer.BufferingStrategy;
+import io.airbyte.integrations.util.ErrorChannel;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -28,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,6 +97,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private Instant nextFlushDeadline;
   private final Duration bufferFlushFrequency;
 
+  private final AtomicLong messageCounter = new AtomicLong();
+
   public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
                                 final VoidCallable onStart,
                                 final BufferingStrategy bufferingStrategy,
@@ -158,6 +162,16 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   protected void acceptTracked(final AirbyteMessage message) throws Exception {
     Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started");
     if (message.getType() == Type.RECORD) {
+      if (messageCounter.incrementAndGet() % 10000 == 0) {
+        LOGGER.info("received messages: {}", messageCounter.get());
+      }
+
+      // check for errors thrown by async operations. Only some staging Destinations do this
+      ErrorChannel errorChannel = ErrorChannel.getInstance();
+      if (errorChannel.hasError()) {
+        throw errorChannel.getNextError();
+      }
+
       final AirbyteRecordMessage recordMessage = message.getRecord();
       final AirbyteStreamNameNamespacePair stream = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
 
@@ -248,6 +262,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     Preconditions.checkState(!hasClosed, "Has already closed.");
     hasClosed = true;
 
+    LOGGER.info("Processed {} incoming messages", messageCounter.get());
     streamToIgnoredRecordCount
         .forEach((pair, count) -> LOGGER.warn("A total of {} record(s) of data from stream {} were invalid and were ignored.", count, pair));
     if (hasFailed) {

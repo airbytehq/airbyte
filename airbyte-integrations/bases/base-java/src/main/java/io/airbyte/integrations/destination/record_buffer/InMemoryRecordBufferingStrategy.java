@@ -101,6 +101,9 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
   }
 
   @Override
+  public void awaitCompletion() {}
+
+  @Override
   public void close() throws Exception {}
 
 }

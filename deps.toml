@@ -74,6 +74,8 @@ jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", ver
 jackson-dataformat = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "fasterxml_version" }
 jackson-datatype = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "fasterxml_version" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "fasterxml_version" }
+jackson-blackbird = { module = "com.fasterxml.jackson.module:jackson-module-blackbird", version.ref = "fasterxml_version" }
+jackson-afterburner = { module = "com.fasterxml.jackson.module:jackson-module-afterburner", version.ref = "fasterxml_version" }
 java-dogstatsd-client = { module = "com.datadoghq:java-dogstatsd-client", version = "4.1.0" }
 javax-databind = { module = "javax.xml.bind:jaxb-api", version = "2.4.0-b180830.0359" }
 jcl-over-slf4j = { module = "org.slf4j:jcl-over-slf4j", version.ref = "slf4j" }
@@ -148,7 +150,7 @@ micronaut-validation = { module = "io.micronaut:micronaut-validation" }
 [bundles]
 apache = ["apache-commons", "apache-commons-lang"]
 datadog = ["datadog-trace-api", "datadog-trace-ot"]
-jackson = ["jackson-databind", "jackson-annotations", "jackson-dataformat", "jackson-datatype"]
+jackson = ["jackson-databind", "jackson-annotations", "jackson-dataformat", "jackson-datatype", "jackson-blackbird", "jackson-afterburner"]
 junit = ["junit-jupiter-api", "junit-jupiter-params", "mockito-junit-jupiter"]
 log4j = ["log4j-api", "log4j-core", "log4j-impl", "log4j-web"]
 micronaut = ["jakarta-inject", "javax-transaction", "micronaut-http-server-netty", "micronaut-http-client", "micronaut-inject", "micronaut-validation", "micronaut-runtime", "micronaut-management", "micronaut-security", "micronaut-jaxrs-server", "micronaut-flyway", "micronaut-jdbc-hikari", "micronaut-jooq"]

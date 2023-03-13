@@ -4,9 +4,11 @@
 
 package io.airbyte.integrations.destination.record_buffer;
 
+import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedBiConsumer;
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.integrations.util.ExecutorFactory;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -16,6 +18,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +44,9 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   private long totalBufferSizeInBytes;
   private final ConfiguredAirbyteCatalog catalog;
 
+  private final ThreadPoolExecutor asyncStagingExecutor;
+  private final LinkedBlockingQueue<Future<Void>> futures = new LinkedBlockingQueue<>();
+
   /**
    * Creates instance of Serialized Buffering Strategy used to handle the logic of flushing buffer
    * with an associated buffer type
@@ -54,6 +62,7 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
     this.catalog = catalog;
     this.onStreamFlush = onStreamFlush;
     this.totalBufferSizeInBytes = 0;
+    this.asyncStagingExecutor = ExecutorFactory.getExecutor(1, 100);
   }
 
   /**
@@ -84,9 +93,11 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
         throw new RuntimeException(e);
       }
     });
+
     if (streamBuffer == null) {
       throw new RuntimeException(String.format("Failed to create/get streamBuffer for stream %s.%s", stream.getNamespace(), stream.getName()));
     }
+
     final long actualMessageSizeInBytes = streamBuffer.accept(message.getRecord());
     totalBufferSizeInBytes += actualMessageSizeInBytes;
     // Flushes buffer when either the buffer was completely filled or only a single stream was filled
@@ -119,7 +130,12 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   @Override
   public void flushWriter(final AirbyteStreamNameNamespacePair stream, final SerializableBuffer writer) throws Exception {
     LOGGER.info("Flushing buffer of stream {} ({})", stream.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
-    onStreamFlush.accept(stream, writer);
+
+    // important to flush the writer BEFORE calling onStreamFlush.accept() in order to capture the byte count correctly
+    writer.flush();
+    Future<Void> future = asyncStagingExecutor.submit((VoidCallable) () -> onStreamFlush.accept(stream, writer));
+    futures.add(future);
+
     totalBufferSizeInBytes -= writer.getByteCount();
     allBuffers.remove(stream);
     LOGGER.info("Flushing completed for {}", stream.getName());
@@ -129,11 +145,17 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   public void flushAll() throws Exception {
     LOGGER.info("Flushing all {} current buffers ({} in total)", allBuffers.size(), FileUtils.byteCountToDisplaySize(totalBufferSizeInBytes));
     for (final Entry<AirbyteStreamNameNamespacePair, SerializableBuffer> entry : allBuffers.entrySet()) {
-      LOGGER.info("Flushing buffer of stream {} ({})", entry.getKey().getName(), FileUtils.byteCountToDisplaySize(entry.getValue().getByteCount()));
-      onStreamFlush.accept(entry.getKey(), entry.getValue());
-      LOGGER.info("Flushing completed for {}", entry.getKey().getName());
+      final AirbyteStreamNameNamespacePair pair = entry.getKey();
+      final SerializableBuffer writer = entry.getValue();
+      LOGGER.info("Flushing buffer of stream {} ({})", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
+
+      // important to flush the writer BEFORE calling onStreamFlush.accept() in order to capture the byte count correctly
+      writer.flush();
+      Future<Void> future = asyncStagingExecutor.submit((VoidCallable) () -> onStreamFlush.accept(pair, writer));
+      futures.add(future);
+
+      LOGGER.info("Flushing in progress for {}", pair.getName());
     }
-    close();
     clear();
     totalBufferSizeInBytes = 0;
   }
@@ -142,6 +164,24 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   public void clear() throws Exception {
     LOGGER.debug("Reset all buffers");
     allBuffers = new HashMap<>();
+  }
+
+  /**
+   * Await completion of all async operations. This is important at the end of a sync because the main thread is
+   * ready to shut down and clean up but the async op may still be running.
+   */
+  @Override
+  public void awaitCompletion() {
+    LOGGER.info("Awaiting completion of async processing.");
+    for (Future<?> future : futures) {
+      try {
+        future.get();
+      } catch (Exception e) {
+        LOGGER.error("async job failed: " + e.getMessage());
+        future.cancel(true);
+      }
+    }
+    LOGGER.info("All async operations are complete.");
   }
 
   @Override
