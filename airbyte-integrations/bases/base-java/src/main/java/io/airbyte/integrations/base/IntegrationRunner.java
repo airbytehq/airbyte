@@ -152,8 +152,19 @@ public class IntegrationRunner {
 
   private AirbyteMessage runCheckWithCatalog(final IntegrationConfig parsed) throws Exception {
     LOGGER.info("Using Check With Catalog Method");
-    // TODO: Actually implement something different
-    return runCheck(parsed);
+    if (!(integration instanceof Check)) {
+      LOGGER.warn("Catalog Sent to check which does not implement checkWithCatalog for connector {}", integration);
+      return runCheck(parsed);
+    } else {
+      try {
+        final JsonNode config = getValidatedConfig(parsed, CHECK.toString());
+        final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
+        return new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(((Check)integration).check(config, catalog));
+      } catch (final ConfigValidationException e) {
+        // if validation fails don't throw an exception, return a failed connection check message
+        return failedConnectionStatusMessage(e.getMessage());
+      }
+    }
   }
 
   private AirbyteMessage runDiscover(final IntegrationConfig parsed) throws Exception {
