@@ -119,9 +119,6 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
 
         final Map<String, ?> heartbeatSourceOffset = getHeartbeatSourceOffset(next);
 
-        LOGGER.error("Source record offset: {}", heartbeatSourceOffset);
-        LOGGER.error("Source record offset last: {}", this.lastHeartbeatSourceOffset);
-
         final long heartbeatPos = (long) targetPosition.getHeartbeatPositon(heartbeatSourceOffset);
         LOGGER.debug("Found heartbeat position: {}", heartbeatPos);
         // wrap up sync if heartbeat position crossed the target OR heartbeat position hasn't changed for
