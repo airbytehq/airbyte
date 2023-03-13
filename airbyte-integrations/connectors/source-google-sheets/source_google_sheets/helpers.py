@@ -104,7 +104,12 @@ class Helpers(object):
             raise Exception(f"Expected data for exactly one range for sheet {sheet_name}")
 
         all_row_data = range_data[0].rowData
-        if not all_row_data or len(all_row_data) != 1:
+        if not all_row_data:
+            # the sheet is empty
+            logger.warning(f"The sheet {sheet_name} (ID {spreadsheet_id}) is empty!")
+            return []
+
+        if len(all_row_data) != 1:
             raise Exception(f"Expected data for exactly one row for sheet {sheet_name}")
 
         first_row_data = all_row_data[0]
@@ -176,13 +181,17 @@ class Helpers(object):
         non_grid_sheets = []
         for sheet in spreadsheet_metadata.sheets:
             sheet_title = sheet.properties.title
-            if hasattr(sheet.properties, "gridProperties"):
+            if (
+                hasattr(sheet.properties, "gridProperties")
+                and hasattr(sheet.properties, "sheetType")
+                and sheet.properties.sheetType == "GRID"
+            ):
                 grid_sheets.append(sheet_title)
             else:
                 non_grid_sheets.append(sheet_title)
 
         if non_grid_sheets:
-            AirbyteLogger().log("WARN", "Skip non-grid sheets: " + "".join(non_grid_sheets))
+            AirbyteLogger().log("WARN", "Skip non-grid sheets: " + ", ".join(non_grid_sheets))
 
         return grid_sheets
 

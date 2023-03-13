@@ -22,7 +22,7 @@ Let's first add the stream to the configured catalog in `source-exchange-rates-t
 ```
 
 The configured catalog declares the sync modes supported by the stream (full refresh or incremental).
-See the [catalog guide](https://docs.airbyte.io/understanding-airbyte/beginners-guide-to-catalog) for more information.
+See the [catalog guide](https://docs.airbyte.com/understanding-airbyte/beginners-guide-to-catalog) for more information.
 
 Let's define the stream schema in `source-exchange-rates-tutorial/source_exchange_rates_tutorial/schemas/rates.json`
 
@@ -69,4 +69,4 @@ Next, we'll [enhance the connector to read data for a given date, which will ena
 ## More readings
 
 - [Record selector](../understanding-the-yaml-file/record-selector.md)
-- [Catalog guide](https://docs.airbyte.io/understanding-airbyte/beginners-guide-to-catalog)
+- [Catalog guide](https://docs.airbyte.com/understanding-airbyte/beginners-guide-to-catalog)
