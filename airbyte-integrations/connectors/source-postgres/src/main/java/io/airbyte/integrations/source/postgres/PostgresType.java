@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
 
 import java.sql.SQLType;
 import java.sql.Types;
+import java.util.Map;
 
 public enum PostgresType implements SQLType {
 
@@ -74,7 +75,7 @@ public enum PostgresType implements SQLType {
   /**
    * The Integer value for the JDBCType. It maps to a value in {@code Types.java}
    */
-  private Integer type;
+  protected Integer type;
 
   /**
    * Constructor to specify the data type value from {@code Types) for
@@ -121,18 +122,17 @@ public enum PostgresType implements SQLType {
    *         {@code Types} value
    * @see Types
    */
-  public static PostgresType valueOf(int type) {
-    for (PostgresType sqlType : PostgresType.class.getEnumConstants()) {
-      if (type == sqlType.type)
-        return sqlType;
+  public static PostgresType valueOf(final int type, final Map<Integer, PostgresType> postgresTypeMap) {
+    if (postgresTypeMap.containsKey(type)) {
+      return postgresTypeMap.get(type);
     }
     throw new IllegalArgumentException("Type:" + type + " is not a valid "
         + "Types.java value.");
   }
 
-  public static PostgresType safeGetJdbcType(final int columnTypeInt) {
+  public static PostgresType safeGetJdbcType(final int columnTypeInt, final Map<Integer, PostgresType> postgresTypeMap) {
     try {
-      return PostgresType.valueOf(columnTypeInt);
+      return PostgresType.valueOf(columnTypeInt, postgresTypeMap);
     } catch (final Exception e) {
       return PostgresType.VARCHAR;
     }

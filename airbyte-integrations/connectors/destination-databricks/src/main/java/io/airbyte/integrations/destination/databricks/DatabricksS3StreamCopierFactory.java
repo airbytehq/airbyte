@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.databricks;
 
 import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
@@ -23,7 +23,7 @@ public class DatabricksS3StreamCopierFactory implements DatabricksStreamCopierFa
                              final DatabricksDestinationConfig databricksConfig,
                              final String stagingFolder,
                              final ConfiguredAirbyteStream configuredStream,
-                             final ExtendedNameTransformer nameTransformer,
+                             final StandardNameTransformer nameTransformer,
                              final JdbcDatabase database,
                              final SqlOperations sqlOperations) {
     try {

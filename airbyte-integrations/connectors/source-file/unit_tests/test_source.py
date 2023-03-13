@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -150,7 +150,7 @@ def test_discover(source, config, client):
 def test_check_wrong_reader_options(source, config):
     config["reader_options"] = '{encoding":"utf_16"}'
     assert source.check(logger=logger, config=config) == AirbyteConnectionStatus(
-        status=Status.FAILED, message="reader_options is not valid JSON"
+        status=Status.FAILED, message="Field 'reader_options' is not valid JSON. https://www.json.org/"
     )
 
 

@@ -1,37 +1,123 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-google-search-console:dev
-tests:
+test_strictness_level: "high"
+acceptance_tests:
   spec:
-    - spec_path: "source_google_search_console/spec.json"
+    tests:
+      - spec_path: "source_google_search_console/spec.json"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "secrets/service_account_config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "secrets/service_account_config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
+    tests:
+      - config_path: "secrets/config.json"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: []
-      timeout_seconds: 1800
+    tests:
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          extra_fields: yes
+          exact_order: yes
+          extra_records: no
+        timeout_seconds: 1800
+        ignored_fields:
+          sitemaps:
+            - name: lastDownloaded
+              bypass_reason: "URL changes upon each request for privacy/security"
+            - name: contents/0/submitted
+              bypass_reason: "URL changes upon each request for privacy/security"
+          search_analytics_by_date:
+            - name: clicks
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: impressions
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: ctr
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: position
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: date
+              bypass_reason: "Statistic shift each day."
+          search_analytics_by_country:
+            - name: clicks
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: impressions
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: ctr
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: position
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: date
+              bypass_reason: "Statistic shift each day."
+          search_analytics_by_device:
+            - name: clicks
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: impressions
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: ctr
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: position
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: date
+              bypass_reason: "Statistic shift each day."
+          search_analytics_by_page:
+            - name: clicks
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: impressions
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: ctr
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: position
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: date
+              bypass_reason: "Statistic shift each day."
+          search_analytics_by_query:
+            - name: clicks
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: impressions
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: ctr
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: position
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: date
+              bypass_reason: "Statistic shift each day."
+          search_analytics_all_fields:
+            - name: clicks
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: impressions
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: ctr
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: position
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: date
+              bypass_reason: "Statistic shift each day."
+          custom_dimensions:
+            - name: clicks
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: impressions
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: ctr
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: position
+              bypass_reason: "Data changing frequently, because we use live account."
+            - name: date
+              bypass_reason: "Statistic shift each day."
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/catalog.json"
-      timeout_seconds: 1800
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/catalog.json"
+        timeout_seconds: 1800
   incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
-      timeout_seconds: 1800
-      future_state_path: "integration_tests/abnormal_state.json"
-      cursor_paths:
-        search_analytics_by_country: [ "https://airbyte.io", "web", "date" ]
-        search_analytics_by_country: [ "https://airbyte.io", "web", "image" ]
-        search_analytics_by_device: [ "https://airbyte.io", "web", "date" ]
-        search_analytics_by_page: [ "https://airbyte.io", "web", "date" ]
-        search_analytics_by_query: [ "https://airbyte.io", "web", "date" ]
-        search_analytics_all_fields: [ "https://airbyte.io", "web", "date" ]
-        custom_dimensions: [ "https://airbyte.io", "web", "date" ]
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
+        timeout_seconds: 1800
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"

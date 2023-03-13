@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -84,7 +84,7 @@ class SourceFile(Source):
             try:
                 config["reader_options"] = json.loads(config["reader_options"])
             except ValueError:
-                raise ConfigurationError("reader_options is not valid JSON")
+                raise ConfigurationError("Field 'reader_options' is not valid JSON. https://www.json.org/")
         else:
             config["reader_options"] = {}
         config["url"] = dropbox_force_download(config["url"])
@@ -112,14 +112,11 @@ class SourceFile(Source):
                 list(client.streams)
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except (TypeError, ValueError, ConfigurationError) as err:
-            reason = (
-                f"Failed to load {source_url}\n Please check File Format and Reader Options are set correctly"
-                f"\n{repr(err)}\n{traceback.format_exc()}"
-            )
+            reason = f"Failed to load {source_url}\n Please check File Format and Reader Options are set correctly. \n{repr(err)}"
             logger.error(reason)
             return AirbyteConnectionStatus(status=Status.FAILED, message=reason)
         except Exception as err:
-            reason = f"Failed to load {source_url}: {repr(err)}\n{traceback.format_exc()}"
+            reason = f"Failed to load {source_url}. You could have provided an invalid URL, please verify it: {repr(err)}."
             logger.error(reason)
             return AirbyteConnectionStatus(status=Status.FAILED, message=reason)
 

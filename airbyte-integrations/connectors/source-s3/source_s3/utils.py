@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import multiprocessing as mp
@@ -50,5 +50,5 @@ def multiprocess_queuer(func: Callable, queue: mp.Queue, *args: Any, **kwargs: A
     queue.put(dill.loads(func)(*args, **kwargs))
 
 
-def get_value_or_json_if_empty_string(options: str) -> str:
-    return options.strip() or "{}"
+def get_value_or_json_if_empty_string(options: str = None) -> str:
+    return options.strip() if options else "{}"

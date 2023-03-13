@@ -1,33 +1,44 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.jsonl;
 
 import static io.airbyte.integrations.destination.s3.S3DestinationConstants.COMPRESSION_ARG_NAME;
 import static io.airbyte.integrations.destination.s3.S3DestinationConstants.DEFAULT_COMPRESSION_TYPE;
-import static io.airbyte.integrations.destination.s3.S3DestinationConstants.FLATTEN_DATA;
+import static io.airbyte.integrations.destination.s3.S3DestinationConstants.FLATTENING_ARG_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.integrations.destination.s3.util.CompressionTypeHelper;
+import io.airbyte.integrations.destination.s3.util.Flattening;
 import java.util.Objects;
+import lombok.ToString;
 
+@ToString
 public class S3JsonlFormatConfig implements S3FormatConfig {
 
   public static final String JSONL_SUFFIX = ".jsonl";
 
+  private final Flattening flattening;
+
   private final CompressionType compressionType;
 
-  private final boolean flattenData;
-
   public S3JsonlFormatConfig(final JsonNode formatConfig) {
-    this.compressionType = formatConfig.has(COMPRESSION_ARG_NAME)
-        ? CompressionTypeHelper.parseCompressionType(formatConfig.get(COMPRESSION_ARG_NAME))
-        : DEFAULT_COMPRESSION_TYPE;
-    this.flattenData = formatConfig.has(FLATTEN_DATA) && formatConfig.get(FLATTEN_DATA).asBoolean();
+    this(
+        formatConfig.has(FLATTENING_ARG_NAME)
+            ? Flattening.fromValue(formatConfig.get(FLATTENING_ARG_NAME).asText())
+            : Flattening.NO,
+        formatConfig.has(COMPRESSION_ARG_NAME)
+            ? CompressionTypeHelper.parseCompressionType(formatConfig.get(COMPRESSION_ARG_NAME))
+            : DEFAULT_COMPRESSION_TYPE);
+  }
+
+  public S3JsonlFormatConfig(final Flattening flattening, final CompressionType compressionType) {
+    this.flattening = flattening;
+    this.compressionType = compressionType;
   }
 
   @Override
@@ -44,16 +55,8 @@ public class S3JsonlFormatConfig implements S3FormatConfig {
     return compressionType;
   }
 
-  public boolean getFlattenData() {
-    return flattenData;
-  }
-
-  @Override
-  public String toString() {
-    return "S3JsonlFormatConfig{" +
-        "compressionType=" + compressionType +
-        ", flattenData=" + flattenData +
-        '}';
+  public Flattening getFlatteningType() {
+    return flattening;
   }
 
   @Override
@@ -65,12 +68,13 @@ public class S3JsonlFormatConfig implements S3FormatConfig {
       return false;
     }
     final S3JsonlFormatConfig that = (S3JsonlFormatConfig) o;
-    return Objects.equals(compressionType, that.compressionType);
+    return flattening == that.flattening
+        && Objects.equals(compressionType, that.compressionType);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(compressionType);
+    return Objects.hash(flattening, compressionType);
   }
 
 }

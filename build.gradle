@@ -49,7 +49,7 @@ repositories {
 }
 
 Properties env = new Properties()
-rootProject.file('.env').withInputStream { env.load(it) }
+rootProject.file('gradle.properties').withInputStream { env.load(it) }
 
 if (!env.containsKey('VERSION')) {
     throw new Exception('Version not specified in .env file...')
@@ -120,6 +120,7 @@ def createSpotlessTarget = { pattern ->
             'dbt-project-template-clickhouse',
             'dbt-project-template-snowflake',
             'dbt-project-template-tidb',
+            'dbt-project-template-duckdb',
             'dbt_test_config',
             'normalization_test_output',
             'tools',
@@ -338,11 +339,10 @@ subprojects { subproj ->
         }
     }
 
-    def integrationTagName = 'platform-integration'
-    def slowIntegrationTagName = 'platform-slow-integration'
     // make tag accessible in submodules.
     ext {
         cloudStorageTestTagName = 'cloud-storage'
+        numberThreads = project.hasProperty('numberThreads') ? project.getProperty('numberThreads') as int : Runtime.runtime.availableProcessors() ?: 1
     }
 
     spotbugs {
@@ -355,41 +355,18 @@ subprojects { subproj ->
     }
 
     test {
+        //This allows to set up a `gradle.properties` file inside the connector folder to reduce number of threads and reduce parallelization.
+        //Specially useful for connectors that shares resources (like Redshift or Snowflake).
+        maxParallelForks = numberThreads
         jacoco {
             enabled = true
             excludes = ['**/*Test*', '**/generated*']
         }
         useJUnitPlatform {
-            excludeTags(integrationTagName, slowIntegrationTagName, cloudStorageTestTagName)
+            excludeTags(cloudStorageTestTagName)
         }
         testLogging() {
             events "passed", "skipped", "failed"
-            exceptionFormat 'full'
-            // uncomment to get the full log output
-            // showStandardStreams = true
-        }
-        finalizedBy jacocoTestReport
-    }
-
-    task newIntegrationTests(type: Test) {
-        useJUnitPlatform {
-            includeTags integrationTagName
-        }
-        testLogging() {
-            events "passed", "failed", "started"
-            exceptionFormat 'full'
-            // uncomment to get the full log output
-            // showStandardStreams = true
-        }
-        finalizedBy jacocoTestReport
-    }
-
-    task slowIntegrationTests(type: Test) {
-        useJUnitPlatform {
-            includeTags slowIntegrationTagName
-        }
-        testLogging() {
-            events "passed", "failed", "started"
             exceptionFormat 'full'
             // uncomment to get the full log output
             // showStandardStreams = true
@@ -486,7 +463,6 @@ subprojects { subproj ->
 }
 
 task('generate') {
-    dependsOn subprojects.collect { it.getTasksByName('generateProtocolClassFiles', true) }
     dependsOn subprojects.collect { it.getTasksByName('generateComponentManifestClassFiles', true) }
     dependsOn subprojects.collect { it.getTasksByName('generateJsonSchema2Pojo', true) }
 }
@@ -526,27 +502,12 @@ subprojects {
         }
         blackFormat.dependsOn licenseTask
 
-        def generateFilesTask = project.tasks.findByName('generateProtocolClassFiles')
-        if (generateFilesTask != null) {
-            licenseTask.dependsOn generateFilesTask
-        }
-
         def generateManifestFilesTask = project.tasks.findByName('generateComponentManifestClassFiles')
         if (generateManifestFilesTask != null) {
             licenseTask.dependsOn generateManifestFilesTask
         }
     }
     task listAllDependencies(type: DependencyReportTask) {}
-}
-
-task('generate-docker') {
-    dependsOn(':airbyte-bootloader:assemble')
-    dependsOn(':airbyte-workers:assemble')
-    dependsOn(':airbyte-webapp:assemble')
-    dependsOn(':airbyte-server:assemble')
-    dependsOn(':airbyte-db:db-lib:assemble')
-    dependsOn(':airbyte-config:init:assemble')
-    dependsOn(':airbyte-temporal:assemble')
 }
 
 // produce reproducible archives

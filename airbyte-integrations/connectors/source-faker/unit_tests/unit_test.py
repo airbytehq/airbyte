@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import jsonschema
@@ -18,6 +18,9 @@ class MockLogger:
     def exception(a,b,**kwargs):
         print(b)
         return None
+
+    def isEnabledFor(a, b, **kwargs):
+        return False
 
 
 logger = MockLogger()

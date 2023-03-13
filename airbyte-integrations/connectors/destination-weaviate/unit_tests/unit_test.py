@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import uuid
@@ -44,3 +44,6 @@ def test_generate_id():
     assert generate_id("0x1") == uuid.UUID(int=1)
     assert generate_id(1) == uuid.UUID(int=1)
     assert generate_id("123e4567-e89b-12d3-a456-426614174000") == uuid.UUID("123e4567-e89b-12d3-a456-426614174000")
+    assert generate_id("123e4567e89b12d3a456426614174000") == uuid.UUID("123e4567-e89b-12d3-a456-426614174000")
+    for i in range(10):
+        assert generate_id("this should be using md5") == uuid.UUID("802a479a-190e-92c8-8340-d687c860f53d")

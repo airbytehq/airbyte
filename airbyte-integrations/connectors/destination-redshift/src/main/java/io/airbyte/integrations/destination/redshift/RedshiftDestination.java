@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redshift;
@@ -8,9 +8,13 @@ import static io.airbyte.integrations.destination.redshift.util.RedshiftUtil.any
 import static io.airbyte.integrations.destination.redshift.util.RedshiftUtil.findS3Options;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,16 +31,15 @@ import org.slf4j.LoggerFactory;
 public class RedshiftDestination extends SwitchingDestination<RedshiftDestination.DestinationType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftDestination.class);
-  private static final String METHOD = "method";
-
-  private static final Map<DestinationType, Destination> destinationMap = Map.of(
-      DestinationType.STANDARD, new RedshiftInsertDestination(),
-      DestinationType.COPY_S3, new RedshiftStagingS3Destination());
 
   enum DestinationType {
     STANDARD,
     COPY_S3
   }
+
+  private static final Map<DestinationType, Destination> destinationMap = Map.of(
+      DestinationType.STANDARD, RedshiftInsertDestination.sshWrappedDestination(),
+      DestinationType.COPY_S3, RedshiftStagingS3Destination.sshWrappedDestination());
 
   public RedshiftDestination() {
     super(DestinationType.class, RedshiftDestination::getTypeFromConfig, destinationMap);
@@ -47,7 +50,6 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
   }
 
   public static DestinationType determineUploadMode(final JsonNode config) {
-
     final JsonNode jsonNode = findS3Options(config);
 
     if (anyOfS3FieldsAreNullOrEmpty(jsonNode)) {
@@ -56,6 +58,15 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
       return DestinationType.STANDARD;
     }
     return DestinationType.COPY_S3;
+  }
+
+  @Override
+  public ConnectorSpecification spec() throws Exception {
+    // inject the standard ssh configuration into the spec.
+    final ConnectorSpecification originalSpec = super.spec();
+    final ObjectNode propNode = (ObjectNode) originalSpec.getConnectionSpecification().get("properties");
+    propNode.set("tunnel_method", Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json")));
+    return originalSpec;
   }
 
   public static void main(final String[] args) throws Exception {

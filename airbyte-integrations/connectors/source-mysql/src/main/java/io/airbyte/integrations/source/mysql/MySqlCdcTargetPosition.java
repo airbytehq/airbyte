@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
@@ -68,9 +68,8 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition {
   @Override
   public boolean reachedTargetPosition(final JsonNode valueAsJson) {
     final String eventFileName = valueAsJson.get("source").get("file").asText();
-    final SnapshotMetadata snapshotMetadata = SnapshotMetadata.valueOf(valueAsJson.get("source").get("snapshot").asText().toUpperCase());
-
-    if (SnapshotMetadata.TRUE == snapshotMetadata) {
+    final SnapshotMetadata snapshotMetadata = SnapshotMetadata.fromString(valueAsJson.get("source").get("snapshot").asText());
+    if (SnapshotMetadata.isSnapshotEventMetadata(snapshotMetadata)) {
       return false;
     } else if (SnapshotMetadata.LAST == snapshotMetadata) {
       LOGGER.info("Signalling close because Snapshot is complete");

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -23,7 +23,6 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sources import AbstractSource, Source
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.http import HttpStream
@@ -401,6 +400,7 @@ def test_internal_config_limit(mocker, abstract_source, catalog):
     logger_mock.level = logging.DEBUG
     del catalog.streams[1]
     STREAM_LIMIT = 2
+    SLICE_DEBUG_LOG_COUNT = 1
     FULL_RECORDS_NUMBER = 3
     streams = abstract_source.streams(None)
     http_stream = streams[0]
@@ -409,7 +409,7 @@ def test_internal_config_limit(mocker, abstract_source, catalog):
 
     catalog.streams[0].sync_mode = SyncMode.full_refresh
     records = [r for r in abstract_source.read(logger=logger_mock, config=internal_config, catalog=catalog, state={})]
-    assert len(records) == STREAM_LIMIT
+    assert len(records) == STREAM_LIMIT + SLICE_DEBUG_LOG_COUNT
     logger_info_args = [call[0][0] for call in logger_mock.info.call_args_list]
     # Check if log line matches number of limit
     read_log_record = [_l for _l in logger_info_args if _l.startswith("Read")]
@@ -418,13 +418,13 @@ def test_internal_config_limit(mocker, abstract_source, catalog):
     # No limit, check if state record produced for incremental stream
     catalog.streams[0].sync_mode = SyncMode.incremental
     records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
-    assert len(records) == FULL_RECORDS_NUMBER + 1
+    assert len(records) == FULL_RECORDS_NUMBER + SLICE_DEBUG_LOG_COUNT + 1
     assert records[-1].type == Type.STATE
 
     # Set limit and check if state is produced when limit is set for incremental stream
     logger_mock.reset_mock()
     records = [r for r in abstract_source.read(logger=logger_mock, config=internal_config, catalog=catalog, state={})]
-    assert len(records) == STREAM_LIMIT + 1
+    assert len(records) == STREAM_LIMIT + SLICE_DEBUG_LOG_COUNT + 1
     assert records[-1].type == Type.STATE
     logger_info_args = [call[0][0] for call in logger_mock.info.call_args_list]
     read_log_record = [_l for _l in logger_info_args if _l.startswith("Read")]
@@ -435,6 +435,7 @@ SCHEMA = {"type": "object", "properties": {"value": {"type": "string"}}}
 
 
 def test_source_config_no_transform(mocker, abstract_source, catalog):
+    SLICE_DEBUG_LOG_COUNT = 1
     logger_mock = mocker.MagicMock()
     logger_mock.level = logging.DEBUG
     streams = abstract_source.streams(None)
@@ -442,8 +443,8 @@ def test_source_config_no_transform(mocker, abstract_source, catalog):
     http_stream.get_json_schema.return_value = non_http_stream.get_json_schema.return_value = SCHEMA
     http_stream.read_records.return_value, non_http_stream.read_records.return_value = [[{"value": 23}] * 5] * 2
     records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
-    assert len(records) == 2 * 5
-    assert [r.record.data for r in records] == [{"value": 23}] * 2 * 5
+    assert len(records) == 2 * (5 + SLICE_DEBUG_LOG_COUNT)
+    assert [r.record.data for r in records if r.type == Type.RECORD] == [{"value": 23}] * 2 * 5
     assert http_stream.get_json_schema.call_count == 5
     assert non_http_stream.get_json_schema.call_count == 5
 
@@ -451,6 +452,7 @@ def test_source_config_no_transform(mocker, abstract_source, catalog):
 def test_source_config_transform(mocker, abstract_source, catalog):
     logger_mock = mocker.MagicMock()
     logger_mock.level = logging.DEBUG
+    SLICE_DEBUG_LOG_COUNT = 2
     streams = abstract_source.streams(None)
     http_stream, non_http_stream = streams
     http_stream.transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
@@ -458,21 +460,22 @@ def test_source_config_transform(mocker, abstract_source, catalog):
     http_stream.get_json_schema.return_value = non_http_stream.get_json_schema.return_value = SCHEMA
     http_stream.read_records.return_value, non_http_stream.read_records.return_value = [{"value": 23}], [{"value": 23}]
     records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
-    assert len(records) == 2
-    assert [r.record.data for r in records] == [{"value": "23"}] * 2
+    assert len(records) == 2 + SLICE_DEBUG_LOG_COUNT
+    assert [r.record.data for r in records if r.type == Type.RECORD] == [{"value": "23"}] * 2
 
 
 def test_source_config_transform_and_no_transform(mocker, abstract_source, catalog):
     logger_mock = mocker.MagicMock()
     logger_mock.level = logging.DEBUG
+    SLICE_DEBUG_LOG_COUNT = 2
     streams = abstract_source.streams(None)
     http_stream, non_http_stream = streams
     http_stream.transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     http_stream.get_json_schema.return_value = non_http_stream.get_json_schema.return_value = SCHEMA
     http_stream.read_records.return_value, non_http_stream.read_records.return_value = [{"value": 23}], [{"value": 23}]
     records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
-    assert len(records) == 2
-    assert [r.record.data for r in records] == [{"value": "23"}, {"value": 23}]
+    assert len(records) == 2 + SLICE_DEBUG_LOG_COUNT
+    assert [r.record.data for r in records if r.type == Type.RECORD] == [{"value": "23"}, {"value": 23}]
 
 
 def test_read_default_http_availability_strategy_stream_available(catalog, mocker):
@@ -491,11 +494,6 @@ def test_read_default_http_availability_strategy_stream_available(catalog, mocke
             mocker.MagicMock.__init__(self)
             HttpStream.__init__(self, *args, kvargs)
             self.read_records = mocker.MagicMock()
-
-        # TODO (Ella): Remove explicit definition when turning on default
-        @property
-        def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-            return HttpAvailabilityStrategy()
 
     class MockStream(mocker.MagicMock, Stream):
         page_size = None
@@ -549,11 +547,6 @@ def test_read_default_http_availability_strategy_stream_unavailable(catalog, moc
             stub_response = {"data": self.resp_counter}
             self.resp_counter += 1
             yield stub_response
-
-        # TODO (Ella): Remove explicit definition when turning on default
-        @property
-        def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-            return HttpAvailabilityStrategy()
 
     class MockStream(mocker.MagicMock, Stream):
         page_size = None

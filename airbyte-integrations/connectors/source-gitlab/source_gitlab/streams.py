@@ -1,14 +1,16 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
+import datetime
 from abc import ABC
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -18,12 +20,22 @@ class GitlabStream(HttpStream, ABC):
     stream_base_params = {}
     flatten_id_keys = []
     flatten_list_keys = []
-    page = 1
     per_page = 50
 
     def __init__(self, api_url: str, **kwargs):
         super().__init__(**kwargs)
         self.api_url = api_url
+        self.page = 1
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[StreamData]:
+        self.page = 1
+        yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
     def request_params(
         self,
@@ -40,6 +52,10 @@ class GitlabStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return f"https://{self.api_url}/api/v4/"
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def should_retry(self, response: requests.Response) -> bool:
         # Gitlab API returns a 403 response in case a feature is disabled in a project (pipelines/jobs for instance).
@@ -107,7 +123,9 @@ class GitlabChildStream(GitlabStream):
             template.append("repository")
         return "/".join(template + [self.name])
 
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, any]]]:
         for slice in self.parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
             for record in self.parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
                 yield {path_key: record[path_key] for path_key in self.path_list}
@@ -125,7 +143,8 @@ class GitlabChildStream(GitlabStream):
 class IncrementalGitlabChildStream(GitlabChildStream):
     state_checkpoint_interval = 100
     cursor_field = "updated_at"
-    filter_field = "updated_after"
+    lower_bound_filter = "updated_after"
+    upper_bound_filter = "updated_before"
 
     def __init__(self, start_date, **kwargs):
         super().__init__(**kwargs)
@@ -146,17 +165,40 @@ class IncrementalGitlabChildStream(GitlabChildStream):
         current_stream_state[str(project_id)] = {self.cursor_field: str(max_value)}
         return current_stream_state
 
-    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any] = None, **kwargs):
-        stream_state = stream_state or {}
-        params = super().request_params(stream_state, stream_slice, **kwargs)
+    @staticmethod
+    def _chunk_date_range(start_point: datetime.datetime) -> Iterable[Tuple[str, str]]:
+        end_point = datetime.datetime.now(datetime.timezone.utc)
+        if start_point > end_point:
+            return []
+        current_start, current_end = start_point, start_point
+        while current_end < end_point:
+            current_end = current_start + datetime.timedelta(days=180)
+            current_end = min(current_end, end_point)
+            yield str(current_start), str(current_end)
+            current_start = current_end + datetime.timedelta(seconds=1)
 
-        start_point = self._start_date
-        state_project_value = stream_state.get(str(stream_slice["id"]))
-        if state_project_value:
-            state_value = state_project_value.get(self.cursor_field)
-            if state_value:
-                start_point = max(start_point, state_value)
-        params[self.filter_field] = start_point
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        stream_state = stream_state or {}
+        super_slices = super().stream_slices(sync_mode, cursor_field, stream_state)
+        for super_slice in super_slices:
+            start_point = self._start_date
+            state_project_value = stream_state.get(str(super_slice["id"]))
+            if state_project_value:
+                state_value = state_project_value.get(self.cursor_field)
+                if state_value:
+                    start_point = max(start_point, state_value)
+            for start_dt, end_dt in self._chunk_date_range(pendulum.parse(start_point)):
+                stream_slice = {key: value for key, value in super_slice.items()}
+                stream_slice[self.lower_bound_filter] = start_dt
+                stream_slice[self.upper_bound_filter] = end_dt
+                yield stream_slice
+
+    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any] = None, **kwargs):
+        params = super().request_params(stream_state, stream_slice, **kwargs)
+        params[self.lower_bound_filter] = stream_slice[self.lower_bound_filter]
+        params[self.upper_bound_filter] = stream_slice[self.upper_bound_filter]
         return params
 
 
@@ -265,7 +307,8 @@ class Branches(GitlabChildStream):
 
 class Commits(IncrementalGitlabChildStream):
     cursor_field = "created_at"
-    filter_field = "since"
+    lower_bound_filter = "since"
+    upper_bound_filter = "until"
     flatten_parent_id = True
     stream_base_params = {"with_stats": True}
 

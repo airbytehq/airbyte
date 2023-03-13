@@ -25,7 +25,7 @@ Generate access tokens with the following permissions:
 <!-- env:cloud -->
 **For Airbyte Cloud:**
 
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Instagram** from the **Source type** dropdown.
 4. Enter a name for your source.
@@ -91,7 +91,8 @@ AirbyteRecords are required to conform to the [Airbyte type](https://docs.airbyt
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 1.0.1   | 2023-01-19 | [21602](https://github.com/airbytehq/airbyte/pull/21602) | Handle abnormally large state values                                                                            |
 | 1.0.0   | 2022-09-23 | [17110](https://github.com/airbytehq/airbyte/pull/17110) | Remove custom read function and migrate to per-stream state                                                     |
 | 0.1.11  | 2022-09-08 | [16428](https://github.com/airbytehq/airbyte/pull/16428) | Fix requests metrics for Reels media product type                                                               |
 | 0.1.10  | 2022-09-05 | [16340](https://github.com/airbytehq/airbyte/pull/16340) | Update to latest version of the CDK (v0.1.81)                                                                   |
