@@ -397,13 +397,14 @@ def test_read(schema, ignored_fields, expect_records_config, record, expected_re
             detailed_logger=MagicMock(),
         )
 
-
-@pytest.mark.parametrize("record_has_unexpected_field, expectation", [
-        (True, pytest.raises(Failed, match="test_stream")),
-        (False, does_not_raise()),
+@pytest.mark.parametrize("config_fail_on_extra_fields, record_has_unexpected_field, should_raise", [
+        (True, True, True),
+        (True, False, False),
+        (False, False, False),
+        (False, True, False),
 ])
-@pytest.mark.parametrize("additional_properties", [(True, False, None)])
-def test_fail_on_extra_fields(record_has_unexpected_field, expectation, additional_properties):
+@pytest.mark.parametrize("additional_properties", [True, False, None])
+def test_fail_on_extra_fields(config_fail_on_extra_fields, record_has_unexpected_field, should_raise, additional_properties):
     schema = {"type": "object", "properties": {"field_1": {"type": ["string"]}, "field_2": {"type": ["string"]}}}
     if additional_properties:
         schema["additionalProperties"] = additional_properties
@@ -426,14 +427,29 @@ def test_fail_on_extra_fields(record_has_unexpected_field, expectation, addition
         AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=111))
     ]
     t = test_core.TestBasicRead()
-    with expectation:
+    if should_raise:
+        with pytest.raises(Failed, match="test_stream"):
+            t.test_read(
+                connector_config=None,
+                configured_catalog=configured_catalog,
+                expect_records_config=ExpectedRecordsConfig(path="foobar"),
+                should_validate_schema=True,
+                should_validate_data_points=False,
+                should_fail_on_extra_fields=config_fail_on_extra_fields,
+                empty_streams=set(),
+                expected_records_by_stream={},
+                docker_runner=docker_runner_mock,
+                ignored_fields=None,
+                detailed_logger=MagicMock(),
+            )
+    else:
         t.test_read(
             connector_config=None,
             configured_catalog=configured_catalog,
             expect_records_config=ExpectedRecordsConfig(path="foobar"),
             should_validate_schema=True,
             should_validate_data_points=False,
-            should_fail_on_extra_fields=True,
+            should_fail_on_extra_fields=config_fail_on_extra_fields,
             empty_streams=set(),
             expected_records_by_stream={},
             docker_runner=docker_runner_mock,
