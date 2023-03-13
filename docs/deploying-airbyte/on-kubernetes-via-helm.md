@@ -107,7 +107,7 @@ helm install %release_name% airbyte/airbyte
 
 In order to customize your deployment, you need to create `values.yaml` file in the local folder and populate it with default configuration override values.
 
-`values.yaml` example can be located in [charts/airbyte](https://github.com/airbytehq/airbyte/blob/master/charts/airbyte/values.yaml) folder of the Airbyte repository.
+`values.yaml` example can be located in [charts/airbyte](https://github.com/airbytehq/airbyte-platform/blob/main/charts/airbyte/values.yaml) folder of the Airbyte repository.
 
 After specifying your own configuration, run the following command:
 
