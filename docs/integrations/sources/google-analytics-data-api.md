@@ -41,7 +41,7 @@ To determine a Google Analytics 4 [Property ID](https://developers.google.com/an
 
 **For Airbyte Cloud:**
 
-1. [Login to your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Login to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Google Analytics 4 (GA4)** from the Source type dropdown and enter a name for this connector.
 4. Click `Authenticate your account` by selecting Oauth or Service Account for Authentication.
@@ -96,6 +96,7 @@ added by default to all reports. There are 8 default reports. To add more report
 
 | Version | Date       | Pull Request                                             | Subject                                            |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------|
+| 0.1.2   | 2023-03-07 | [23822](https://github.com/airbytehq/airbyte/pull/23822) | Improve `rate limits` customer faced error messages and retry logic for `429` |
 | 0.1.1   | 2023-01-10 | [21169](https://github.com/airbytehq/airbyte/pull/21169) | Slicer updated, unit tests added                   |
 | 0.1.0   | 2023-01-08 | [20889](https://github.com/airbytehq/airbyte/pull/20889) | Improved config validation, SAT                    |
 | 0.0.3   | 2022-08-15 | [15229](https://github.com/airbytehq/airbyte/pull/15229) | Source Google Analytics Data Api: code refactoring |
