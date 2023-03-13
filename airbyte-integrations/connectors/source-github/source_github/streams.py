@@ -41,7 +41,6 @@ class GithubStream(HttpStream, ABC):
         MAX_RETRIES = 3
         adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
         self._session.mount("https://", adapter)
-        self._session.mount("http://", adapter)
 
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:

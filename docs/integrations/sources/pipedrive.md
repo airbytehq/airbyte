@@ -62,21 +62,43 @@ Apart from `Fields` streams, all other streams support incremental.
 
 * [ActivityFields](https://developers.pipedrive.com/docs/api/v1/ActivityFields#getActivityFields)
 
+* [ActivityTypes](https://developers.pipedrive.com/docs/api/v1/ActivityTypes#getActivityTypes)
+
+* [Currencies](https://developers.pipedrive.com/docs/api/v1/Currencies#getCurrencies)
+
 * [DealFields](https://developers.pipedrive.com/docs/api/v1/DealFields#getDealFields)
+
+* [DealProducts](https://developers.pipedrive.com/docs/api/v1/Deals#getDealProducts)
 
 * [Deals](https://developers.pipedrive.com/docs/api/v1/Deals#getDeals)
 
+* [Files](https://developers.pipedrive.com/docs/api/v1/Files#getFiles)
+
+* [Filters](https://developers.pipedrive.com/docs/api/v1/Filters#getFilters)
+
+* [LeadLabels](https://developers.pipedrive.com/docs/api/v1/LeadLabels#getLeadLabels)
+
 * [Leads](https://developers.pipedrive.com/docs/api/v1/Leads#getLeads)
+
+* [Notes](https://developers.pipedrive.com/docs/api/v1/Notes#getNotes)
 
 * [OrganizationFields](https://developers.pipedrive.com/docs/api/v1/OrganizationFields#getOrganizationFields)
 
 * [Organizations](https://developers.pipedrive.com/docs/api/v1/Organizations#getOrganizations)
+
+* [PermissionSets](https://developers.pipedrive.com/docs/api/v1/PermissionSets#getPermissionSets)
 
 * [PersonFields](https://developers.pipedrive.com/docs/api/v1/PersonFields#getPersonFields)
 
 * [Persons](https://developers.pipedrive.com/docs/api/v1/Persons#getPersons)
 
 * [Pipelines](https://developers.pipedrive.com/docs/api/v1/Pipelines#getPipelines)
+
+* [ProductFields](https://developers.pipedrive.com/docs/api/v1/ProductFields#getProductFields)
+
+* [Products](https://developers.pipedrive.com/docs/api/v1/Products#getProducts)
+
+* [Roles](https://developers.pipedrive.com/docs/api/v1/Roles#getRoles)
 
 * [Stages](https://developers.pipedrive.com/docs/api/v1/Stages#getStages)
 
@@ -90,6 +112,9 @@ The Pipedrive connector will gracefully handle rate limits. For more information
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
+| 0.1.16  | 2023-03-08 | [23789](https://github.com/airbytehq/airbyte/pull/23789) | Add 11 new streams                                             |
+| 0.1.15  | 2023-03-02 | [23705](https://github.com/airbytehq/airbyte/pull/23705) | Disable OAuth                                                  |
+| 0.1.14  | 2023-03-01 | [23539](https://github.com/airbytehq/airbyte/pull/23539) | Fix schema for "activities", "check" works if empty "deals"    |
 | 0.1.13  | 2022-09-16 | [16799](https://github.com/airbytehq/airbyte/pull/16799) | Migrate to per-stream state                                    |
 | 0.1.12  | 2022-05-12 | [12806](https://github.com/airbytehq/airbyte/pull/12806) | Remove date-time format from schemas                           |
 | 0.1.10  | 2022-04-26 | [11870](https://github.com/airbytehq/airbyte/pull/11870) | Add 3 streams: DealFields, OrganizationFields and PersonFields |
@@ -102,4 +127,4 @@ The Pipedrive connector will gracefully handle rate limits. For more information
 | 0.1.3   | 2021-08-26 | [5642](https://github.com/airbytehq/airbyte/pull/5642)   | Remove date-time from deals stream                             |
 | 0.1.2   | 2021-07-23 | [4912](https://github.com/airbytehq/airbyte/pull/4912)   | Update money type to support floating point                    |
 | 0.1.1   | 2021-07-19 | [4686](https://github.com/airbytehq/airbyte/pull/4686)   | Update spec.json                                               |
-| 0.1.0   | 2021-07-19 | [4686](https://github.com/airbytehq/airbyte/pull/4686)   | 🎉 New source: Pipedrive connector                                   |
+| 0.1.0   | 2021-07-19 | [4686](https://github.com/airbytehq/airbyte/pull/4686)   | 🎉 New source: Pipedrive connector                             |
