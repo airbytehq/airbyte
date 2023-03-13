@@ -47,6 +47,8 @@ const Container = styled.div`
   width: 100%;
   height: 100%;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 `;
 
 const TabContainer = styled.div`
@@ -243,7 +245,7 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
       <ConnectorDocumentationWrapper>
         <DefinitioDetails name={destinationDefinition.name} icon={destinationDefinition.icon} type="destination" />
         <TabContainer>
-          <TabMenu data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} lastOne />
+          <TabMenu data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} lastOne size="16" />
         </TabContainer>
         <ApiErrorBoundary>
           <Suspense fallback={<LoadingPage />}>

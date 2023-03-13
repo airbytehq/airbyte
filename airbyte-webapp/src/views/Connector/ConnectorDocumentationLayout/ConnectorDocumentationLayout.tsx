@@ -5,32 +5,17 @@ import React, { lazy, Suspense } from "react";
 import { FormattedMessage } from "react-intl";
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 import { useWindowSize } from "react-use";
-import styled from "styled-components";
+// import styled from "styled-components";
 
 import { LoadingPage } from "components/LoadingPage";
 
 import styles from "./ConnectorDocumentationLayout.module.scss";
 import { useDocumentationPanelContext } from "./DocumentationPanelContext";
 
-// .pageContainer {
-//   height: calc(100% - 80px);
-// }
-
-// .panelGrabber {
-//   height: calc(100vh - 80px);
-//   padding: 6px;
-//   display: flex;
-// }
-
-const PageContainer = styled.div`
-  height: calc(100% - 70px);
-`;
-
-const PnelGrabber = styled.div`
-  height: calc(100vh - 70px);
-  padding: 6px;
-  display: flex;
-`;
+// const PageContainer = styled.div`
+//   // height: calc(100% - 70px);
+//   flex:1;
+// `;
 
 const LazyDocumentationPanel = lazy(() =>
   import("components/DocumentationPanel").then(({ DocumentationPanel }) => ({ default: DocumentationPanel }))
@@ -89,19 +74,19 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
   const screenWidth = useWindowSize().width;
 
   return (
-    // <div className={styles.pageContainer}>
-    <PageContainer>
+    <div className={styles.pageContainer}>
+      {/* // <PageContainer> */}
       <ReflexContainer orientation="vertical">
         <ReflexElement className={styles.leftPanelStyle} propagateDimensions minSize={150}>
           <LeftPanelContainer>{children}</LeftPanelContainer>
         </ReflexElement>
         {documentationPanelOpen && (
-          <ReflexSplitter style={{ border: 0, background: "rgba(255, 165, 0, 0)" }}>
-            {/* <div className={styles.panelGrabber}> */}
-            <PnelGrabber>
+          <ReflexSplitter style={{ border: 0, background: "rgba(255, 165, 0, 0)", display: "flex" }}>
+            <div className={styles.panelGrabber}>
+              {/* <PnelGrabber> */}
               <FontAwesomeIcon className={styles.grabberHandleIcon} icon={faGripLinesVertical} size="1x" />
-              {/* </div> */}
-            </PnelGrabber>
+            </div>
+            {/* </PnelGrabber> */}
           </ReflexSplitter>
         )}
         {screenWidth > 500 && documentationPanelOpen && (
@@ -114,7 +99,7 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
           </ReflexElement>
         )}
       </ReflexContainer>
-      {/* </div> */}
-    </PageContainer>
+      {/* </PageContainer> */}
+    </div>
   );
 };

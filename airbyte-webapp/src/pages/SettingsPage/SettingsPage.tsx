@@ -24,6 +24,8 @@ const PageContainer = styled.div`
   height: auto;
   display: flex;
   flex-direction: row;
+  height: 1px;
+  flex: 1;
 `;
 
 const Seperator = styled.div`
@@ -34,7 +36,7 @@ const Seperator = styled.div`
 
 const ContentContainer = styled.div`
   width: 100%;
-  min-height: 100vh;
+  // min-height: 100vh;
   background-color: white;
   padding: 16px 26px 26px 26px;
 `;

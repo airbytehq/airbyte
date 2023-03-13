@@ -81,16 +81,16 @@ export const CreateDestinationPage: React.FC = () => {
     <>
       <ConnectionStep lightMode type="destination" activeStep={CreateStepTypes.CREATE_SOURCE} />
       <ConnectorDocumentationWrapper>
-        <FormPageContent>
-          {currentStep === CreateStepTypes.TEST_CONNECTION && (
-            <TestConnection
-              onBack={handleBackButton}
-              onFinish={handleFinishButton}
-              isLoading={isLoading}
-              type="destination"
-            />
-          )}
-          {currentStep === CreateStepTypes.CREATE_DESTINATION && (
+        {currentStep === CreateStepTypes.TEST_CONNECTION && (
+          <TestConnection
+            onBack={handleBackButton}
+            onFinish={handleFinishButton}
+            isLoading={isLoading}
+            type="destination"
+          />
+        )}
+        {currentStep === CreateStepTypes.CREATE_DESTINATION && (
+          <FormPageContent>
             <DestinationForm
               onSubmit={onSubmitDestinationForm}
               destinationDefinitions={destinationDefinitions}
@@ -100,8 +100,8 @@ export const CreateDestinationPage: React.FC = () => {
               error={fetchingConnectorError}
               formValues={formValues}
             />
-          )}
-        </FormPageContent>
+          </FormPageContent>
+        )}
       </ConnectorDocumentationWrapper>
     </>
   );

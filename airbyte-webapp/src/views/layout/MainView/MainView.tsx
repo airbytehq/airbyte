@@ -28,6 +28,8 @@ const Content = styled.div<{
   overflow-y: auto;
   width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
 `;
 
 const hasCurrentStep = (state: unknown): state is { currentStep: string } => {

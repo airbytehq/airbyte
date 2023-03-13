@@ -133,75 +133,79 @@ export const CreationFormPage: React.FC<{
     if (currentStep === CreateStepTypes.CREATE_SOURCE || currentStep === CreateStepTypes.CREATE_DESTINATION) {
       if (currentEntityStep === EntityStepsTypes.SOURCE) {
         return (
-          <ConnectionCreateSourceForm
-            fetchingConnectorError={fetchingConnectorError}
-            formValues={sourceFormValues}
-            afterSubmit={() => {
-              setLoadingStatus(false);
-            }}
-            onShowLoading={(isLoading: boolean, formValues: ServiceFormValues, error: JSX.Element | string | null) => {
-              setSourceFormValues(formValues);
-              if (isLoading) {
-                setCurrentStep(CreateStepTypes.TEST_CONNECTION);
-                setLoadingStatus(true);
-              } else {
-                setCurrentStep(CreateStepTypes.CREATE_SOURCE);
-                setFetchingConnectorError(error);
-              }
-            }}
-            onBack={() => {
-              // navigator(`../${RoutePaths.SelectConnection}`, {
-              //   state: {
-              //     ...(location.state as Record<string, unknown>),
-              //     currentStep: CreateStepTypes.CREATE_SOURCE,
-              //   },
-              //   replace:true
-              // });
-              // navigator(-1);
-              push(`../${RoutePaths.SelectConnection}`, {
-                state: {
-                  ...(location.state as Record<string, unknown>),
-                  currentStep: CreateStepTypes.CREATE_SOURCE,
-                },
-              });
-            }}
-          />
+          <FormPageContent>
+            <ConnectionCreateSourceForm
+              fetchingConnectorError={fetchingConnectorError}
+              formValues={sourceFormValues}
+              afterSubmit={() => {
+                setLoadingStatus(false);
+              }}
+              onShowLoading={(
+                isLoading: boolean,
+                formValues: ServiceFormValues,
+                error: JSX.Element | string | null
+              ) => {
+                setSourceFormValues(formValues);
+                if (isLoading) {
+                  setCurrentStep(CreateStepTypes.TEST_CONNECTION);
+                  setLoadingStatus(true);
+                } else {
+                  setCurrentStep(CreateStepTypes.CREATE_SOURCE);
+                  setFetchingConnectorError(error);
+                }
+              }}
+              onBack={() => {
+                // navigator(`../${RoutePaths.SelectConnection}`, {
+                //   state: {
+                //     ...(location.state as Record<string, unknown>),
+                //     currentStep: CreateStepTypes.CREATE_SOURCE,
+                //   },
+                //   replace:true
+                // });
+                // navigator(-1);
+                push(`../${RoutePaths.SelectConnection}`, {
+                  state: {
+                    ...(location.state as Record<string, unknown>),
+                    currentStep: CreateStepTypes.CREATE_SOURCE,
+                  },
+                });
+              }}
+            />
+          </FormPageContent>
         );
       } else if (currentEntityStep === EntityStepsTypes.DESTINATION) {
         return (
-          <ConnectionCreateDestinationForm
-            fetchingConnectorError={fetchingConnectorError}
-            formValues={destinationFormValues}
-            afterSubmit={() => {
-              setLoadingStatus(false);
-            }}
-            onShowLoading={(isLoading: boolean, formValues: ServiceFormValues, error: JSX.Element | string | null) => {
-              setDestinationFormValues(formValues);
-              if (isLoading) {
-                setCurrentStep(CreateStepTypes.TEST_CONNECTION);
-                setLoadingStatus(true);
-              } else {
-                setCurrentStep(CreateStepTypes.CREATE_DESTINATION);
-                setFetchingConnectorError(error);
-              }
-            }}
-            onBack={() => {
-              // navigator(`../${RoutePaths.SelectConnection}`, {
-              //   state: {
-              //     ...(location.state as Record<string, unknown>),
-              //     currentStep: CreateStepTypes.CREATE_DESTINATION,
-              //   },
-              //   replace:true
-              // });
-              //  navigator(-1);
-              push(`../${RoutePaths.SelectConnection}`, {
-                state: {
-                  ...(location.state as Record<string, unknown>),
-                  currentStep: CreateStepTypes.CREATE_DESTINATION,
-                },
-              });
-            }}
-          />
+          <FormPageContent>
+            <ConnectionCreateDestinationForm
+              fetchingConnectorError={fetchingConnectorError}
+              formValues={destinationFormValues}
+              afterSubmit={() => {
+                setLoadingStatus(false);
+              }}
+              onShowLoading={(
+                isLoading: boolean,
+                formValues: ServiceFormValues,
+                error: JSX.Element | string | null
+              ) => {
+                setDestinationFormValues(formValues);
+                if (isLoading) {
+                  setCurrentStep(CreateStepTypes.TEST_CONNECTION);
+                  setLoadingStatus(true);
+                } else {
+                  setCurrentStep(CreateStepTypes.CREATE_DESTINATION);
+                  setFetchingConnectorError(error);
+                }
+              }}
+              onBack={() => {
+                push(`../${RoutePaths.SelectConnection}`, {
+                  state: {
+                    ...(location.state as Record<string, unknown>),
+                    currentStep: CreateStepTypes.CREATE_DESTINATION,
+                  },
+                });
+              }}
+            />
+          </FormPageContent>
         );
       }
     }
@@ -272,30 +276,30 @@ export const CreationFormPage: React.FC<{
     }
 
     return (
-      <CreateConnectionContent
-        onBack={() => {
-          // navigator(-1);
-          push(`../${RoutePaths.SelectConnection}`, {
-            state: {
-              ...(location.state as Record<string, unknown>),
-              currentStep: CreateStepTypes.CREATE_DESTINATION,
-            },
-          });
-        }}
-        source={source}
-        destination={destination}
-        afterSubmitConnection={afterSubmitConnection}
-        onListenAfterSubmit={onListenAfterSubmit}
-      />
+      <FormPageContent big={currentStep === CreateStepTypes.CREATE_CONNECTION}>
+        <CreateConnectionContent
+          onBack={() => {
+            // navigator(-1);
+            push(`../${RoutePaths.SelectConnection}`, {
+              state: {
+                ...(location.state as Record<string, unknown>),
+                currentStep: CreateStepTypes.CREATE_DESTINATION,
+              },
+            });
+          }}
+          source={source}
+          destination={destination}
+          afterSubmitConnection={afterSubmitConnection}
+          onListenAfterSubmit={onListenAfterSubmit}
+        />
+      </FormPageContent>
     );
   };
   return (
     <>
       <HeadTitle titles={[{ id: "connection.newConnectionTitle" }]} />
       <ConnectionStep lightMode type="connection" activeStep={currentStep} />
-      <ConnectorDocumentationWrapper>
-        <FormPageContent big={currentStep === CreateStepTypes.CREATE_CONNECTION}>{renderStep()}</FormPageContent>
-      </ConnectorDocumentationWrapper>
+      <ConnectorDocumentationWrapper>{renderStep()}</ConnectorDocumentationWrapper>
     </>
   );
 };

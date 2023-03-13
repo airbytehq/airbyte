@@ -15,17 +15,22 @@ interface Iprops {
 }
 
 const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+const LoadingContainer = styled.div`
   margin: 10% auto 200px auto;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
+  flex: 1;
 `;
 
 const TestConnection: React.FC<Iprops> = ({ isLoading, type, onBack, onFinish }) => {
   return (
-    <>
-      <Container>{isLoading ? <TestingLoading /> : <TestingSuccess type={type} />}</Container>
+    <Container>
+      <LoadingContainer>{isLoading ? <TestingLoading /> : <TestingSuccess type={type} />}</LoadingContainer>
       <ButtonRows>
         {((isLoading && type === "connection") || type !== "connection") && (
           <BigButton disabled={isLoading} secondary onClick={onBack}>
@@ -38,7 +43,7 @@ const TestConnection: React.FC<Iprops> = ({ isLoading, type, onBack, onFinish })
           </BigButton>
         )}
       </ButtonRows>
-    </>
+    </Container>
   );
 };
 
