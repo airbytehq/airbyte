@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+      "id": {
+          "type": "string"
+      },
+      "isSubscriber": {
+          "type": "boolean"
+      },
+      "email": {
+          "type": ["string", "null"]
+      },
+      "phone": {
+          "type": ["string", "null"]
+      },
+      "companyName": {
+          "type": ["string", "null"]
+      },
+      "address": {
+          "type": "object",
+          "properties": {
+              "street": {
+                "type": ["string", "null"]
+              },
+              "city": {
+                "type": ["string", "null"]
+              },
+              "postcode": {
+                "type": ["string", "null"]
+              },
+              "country": {
+                "type": ["string", "null"]
+              },
+              "countryCode": {
+                "type": ["string", "null"]
+              }
+          }
+      },
+      "description": {
+          "type": "object",
+          "properties": {
+              "header": {
+                "type": ["string", "null"]
+              },
+              "text": {
+                "type": ["string", "null"]
+              }
+          }
+      },
+      "socialmedia": {
+          "type": "object",
+          "properties": {
+              "facebook": {
+                "type": ["string", "null"]
+              },
+              "linkedin": {
+                "type": ["string", "null"]
+              },
+              "twitter": {
+                "type": ["string", "null"]
+              },
+              "googleplus": {
+                "type": ["string", "null"]
+              },
+              "youtube": {
+                "type": ["string", "null"]
+              },
+              "instagram": {
+                "type": ["string", "null"]
+              }
+          }
+      },
+      "facebookPageId": {
+        "type": ["string", "null"]
+      },
+      "facebookPageUrl": {
+        "type": ["string", "null"]
+      },
+      "isFacebookActivated": {
+        "type": "boolean"
+      },
+      "isCommentsEnabled": {
+        "type": "boolean"
+      },
+      "isIncentivisingUsers": {
+        "type": "boolean"
+      },
+      "isClaimed": {
+        "type": "boolean"
+      }
+  }
+}

@@ -1,0 +1,66 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Trustpilot Spec
+  type: object
+  required:
+    - credentials
+    - business_units
+    - start_date
+  properties:
+    credentials:
+      title: Authorization Method
+      type: object
+      order: 0
+      oneOf:
+        - type: object
+          title: "OAuth2.0"
+          required:
+            - client_id
+            - client_secret
+            - refresh_token
+            - access_token
+            - token_expiry_date
+          properties:
+            auth_type:
+              type: string
+              const: "oauth2.0"
+            client_id:
+              type: string
+              title: API key
+              description: The API key of the Trustpilot API application. (represents the OAuth Client ID)
+              airbyte_secret: true
+            client_secret:
+              type: string
+              title: Secret
+              description: The Secret of the Trustpilot API application. (represents the OAuth Client Secret)
+            access_token:
+              type: string
+              description: Access Token for making authenticated requests.
+              airbyte_secret: true
+            token_expiry_date:
+              type: string
+              description: The date-time when the access token should be refreshed.
+              format: date-time
+            refresh_token:
+              type: string
+              description: The key to refresh the expired access_token.
+              airbyte_secret: true
+
+    business_units:
+      type: array
+      items:
+        type: string
+      title: Business Unit names
+      description: The names of business units which shall be synchronized.
+      examples:
+        - mydomain.com
+        - www.mydomain.com
+
+    start_date:
+      type: string
+      title: Start Date
+      description: For streams with sync. method incremental the start date time to be used
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      examples:
+        - "%Y-%m-%dT%H:%M:%S"
