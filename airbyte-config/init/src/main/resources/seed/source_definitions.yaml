@@ -242,7 +242,7 @@
 - name: Cart.com
   sourceDefinitionId: bb1a6d31-6879-4819-a2bd-3eed299ea8e2
   dockerRepository: airbyte/source-cart
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/cart
   icon: cart.svg
   sourceType: api
