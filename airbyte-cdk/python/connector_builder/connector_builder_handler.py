@@ -21,7 +21,6 @@ def list_streams() -> AirbyteMessage:
 
 
 def read_stream(source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog) -> AirbyteMessage:
-    print(f"config: {config.keys()}")
     command_config = config["__test_read_config"]
     max_pages_per_slice = command_config["max_pages_per_slice"]
     max_slices = command_config["max_slices"]
