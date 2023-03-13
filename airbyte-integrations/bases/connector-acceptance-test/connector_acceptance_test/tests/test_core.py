@@ -758,6 +758,11 @@ class TestBasicRead(BaseTest):
         else:
             return inputs.validate_schema
 
+    @pytest.fixture(name="should_fail_on_extra_fields")
+    def should_fail_on_extra_fields_fixture(self, inputs: BasicReadTestConfig):
+        # TODO: enforce this param once all connectors are passing, sunset additionalProperties on high-level object
+        return inputs.fail_on_extra_fields
+
     @pytest.fixture(name="should_validate_data_points")
     def should_validate_data_points_fixture(self, inputs: BasicReadTestConfig) -> Boolean:
         # TODO: we might want to enforce this when Config.TestStrictnessLevel.high
@@ -802,7 +807,7 @@ class TestBasicRead(BaseTest):
         expect_records_config: ExpectedRecordsConfig,
         should_validate_schema: Boolean,
         should_validate_data_points: Boolean,
-        fail_on_extra_fields: Boolean,
+        should_fail_on_extra_fields: Boolean,
         empty_streams: Set[EmptyStreamConfiguration],
         ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]],
         expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
@@ -815,7 +820,7 @@ class TestBasicRead(BaseTest):
         assert records, "At least one record should be read using provided catalog"
 
         if should_validate_schema:  # TODO Conditional logic
-            self._validate_schema(records=records, configured_catalog=configured_catalog, fail_on_extra_fields=fail_on_extra_fields)
+            self._validate_schema(records=records, configured_catalog=configured_catalog, fail_on_extra_fields=should_fail_on_extra_fields)
 
         self._validate_empty_streams(records=records, configured_catalog=configured_catalog, allowed_empty_streams=empty_streams)
         for pks, record in primary_keys_for_records(streams=configured_catalog.streams, records=records):

@@ -128,6 +128,7 @@ class BasicReadTestConfig(BaseConfig):
     )
     expect_records: Optional[ExpectedRecordsConfig] = Field(description="Expected records from the read")
     validate_schema: bool = Field(True, description="Ensure that records match the schema of the corresponding stream")
+    fail_on_extra_fields: bool = Field(True, description="Hard fail if extra fields are detected in records.")
     # TODO: remove this field after https://github.com/airbytehq/airbyte/issues/8312 is done
     validate_data_points: bool = Field(
         False, description="Set whether we need to validate that all fields in all streams contained at least one data point"
