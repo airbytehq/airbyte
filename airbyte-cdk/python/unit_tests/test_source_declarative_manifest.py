@@ -4,13 +4,12 @@
 
 import copy
 import json
-from typing import Mapping, Any
+from typing import Any, Mapping
 from unittest import mock
 
-import pytest
-
-import source_declarative_manifest
 import connector_builder
+import pytest
+import source_declarative_manifest
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from source_declarative_manifest.main import handle_request
 from unit_tests.connector_builder.utils import create_configured_catalog_dict

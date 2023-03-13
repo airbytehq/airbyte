@@ -1,13 +1,14 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import pytest
+
+from functools import partial
 
 import connector_builder.connector_builder_handler
+import pytest
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
-from connector_builder.connector_builder_handler import resolve_manifest, get_connector_builder_request_handler
+from connector_builder.connector_builder_handler import get_connector_builder_request_handler, resolve_manifest
 from unit_tests.connector_builder.utils import create_configured_catalog
-from functools import partial
 
 _stream_name = "stream_with_custom_requester"
 _stream_primary_key = "id"

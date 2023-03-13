@@ -1,17 +1,16 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import json
 from typing import Iterator
 from unittest.mock import MagicMock
 
 import pytest
-
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage
-from airbyte_cdk.models import Level, AirbyteLogMessage
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, Level
 from airbyte_cdk.models import Type as MessageType
 from connector_builder.message_grouper import MessageGrouper
-from connector_builder.models import StreamReadPages, HttpRequest, HttpResponse, StreamRead
+from connector_builder.models import HttpRequest, HttpResponse, StreamRead, StreamReadPages
 from unit_tests.connector_builder.utils import create_configured_catalog
 
 MAX_PAGES_PER_SLICE = 4

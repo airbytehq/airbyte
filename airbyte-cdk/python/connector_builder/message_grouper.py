@@ -3,18 +3,17 @@
 #
 
 import json
+import logging
+from copy import deepcopy
 from json import JSONDecodeError
 from typing import Any, Iterable, Iterator, Mapping, Optional, Union
 from urllib.parse import parse_qs, urlparse
 
-from airbyte_protocol.models.airbyte_protocol import ConfiguredAirbyteCatalog
-
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
-from connector_builder.models import StreamRead, StreamReadPages, HttpResponse, HttpRequest, StreamReadSlices
-import logging
-from copy import deepcopy
+from airbyte_protocol.models.airbyte_protocol import ConfiguredAirbyteCatalog
+from connector_builder.models import HttpRequest, HttpResponse, StreamRead, StreamReadPages, StreamReadSlices
 
 
 class MessageGrouper:

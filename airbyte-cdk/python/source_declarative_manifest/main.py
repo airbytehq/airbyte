@@ -8,8 +8,7 @@ from typing import Any, List, Mapping
 
 from airbyte_cdk.connector import BaseConnector
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
-from airbyte_cdk.models import AirbyteMessage
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.source import Source
 from connector_builder import connector_builder_handler

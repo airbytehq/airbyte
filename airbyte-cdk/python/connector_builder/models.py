@@ -4,8 +4,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, Optional
-from typing import List
+from typing import Any, Dict, List, Optional
 
 
 @dataclass
