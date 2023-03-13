@@ -8,7 +8,6 @@ import sys
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.connector import BaseConnector
-from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from connector_builder.connector_builder_handler import resolve_manifest
 
@@ -20,8 +19,8 @@ def create_source(config: Mapping[str, Any]) -> ManifestDeclarativeSource:
 
 def get_config_from_args(args: List[str]) -> Mapping[str, Any]:
     command, config_filepath = preparse(args)
-    if command == "spec":
-        raise ValueError("spec command is not supported for injected declarative manifest")
+    if command != "read":
+        raise ValueError("Only read commands are allowed for Connector Builder requests.")
 
     config = BaseConnector.read_config(config_filepath)
 
@@ -37,6 +36,7 @@ def preparse(args: List[str]) -> Tuple[str, str]:
     parser = argparse.ArgumentParser()
     parser.add_argument("command", type=str, help="Airbyte Protocol command")
     parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
+    parser.add_argument("--catalog", type=str, required=True, help="path to the catalog file, if it exists (otherwise empty string)")
     parsed, _ = parser.parse_known_args(args)
     return parsed.command, parsed.config
 
@@ -48,19 +48,13 @@ def handle_connector_builder_request(source: ManifestDeclarativeSource, config: 
     raise ValueError(f"Unrecognized command {command}.")
 
 
-def handle_connector_request(source: ManifestDeclarativeSource, args: List[str]):
-    # Verify that the correct args are present for the production codepaths.
-    AirbyteEntrypoint.parse_args(args)
-    launch(source, sys.argv[1:])
-
-
 def handle_request(args: List[str]):
     config = get_config_from_args(args)
     source = create_source(config)
     if "__command" in config:
         print(handle_connector_builder_request(source, config))
     else:
-        handle_connector_request(source, args)
+        raise ValueError("Missing __command argument in config file.")
 
 
 if __name__ == "__main__":

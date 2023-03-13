@@ -3,11 +3,14 @@
 #
 
 import copy
+import json
+from unittest import mock
 
+import connector_builder
 import pytest
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from connector_builder.connector_builder_handler import resolve_manifest
-from connector_builder.main import handle_connector_builder_request
+from connector_builder.main import handle_connector_builder_request, handle_request
 
 _stream_name = "stream_with_custom_requester"
 _stream_primary_key = "id"
@@ -52,9 +55,33 @@ CONFIG = {
 }
 
 
-def test_resolve_manifest():
+@pytest.fixture
+def valid_config_file(tmp_path):
+    config_file = tmp_path / "config.json"
+    config_file.write_text(json.dumps(CONFIG))
+    return config_file
+
+
+@pytest.fixture
+def invalid_config_file(tmp_path):
+    invalid_config = copy.deepcopy(CONFIG)
+    invalid_config["__command"] = "bad_command"
+    config_file = tmp_path / "config.json"
+    config_file.write_text(json.dumps(invalid_config))
+    return config_file
+
+
+def test_handle_resolve_manifest(valid_config_file):
+    with mock.patch.object(connector_builder.main, "handle_connector_builder_request") as patch:
+        handle_request(["read", "--config", str(valid_config_file), "--catalog", ""])
+        assert patch.call_count == 1
+
+
+def test_resolve_manifest(valid_config_file):
+    config = copy.deepcopy(CONFIG)
+    config["__command"] = "resolve_manifest"
     source = ManifestDeclarativeSource(MANIFEST)
-    resolved_manifest = resolve_manifest(source)
+    resolved_manifest = handle_connector_builder_request(source, config)
 
     expected_resolved_manifest = {
         "type": "DeclarativeSource",
@@ -186,14 +213,35 @@ def test_resolve_manifest_error_returns_error_response():
 @pytest.mark.parametrize(
     "command",
     [
-        pytest.param("asdf", id="test_arbitrary_command_error"),
+        pytest.param("check", id="test_check_command_error"),
+        pytest.param("spec", id="test_spec_command_error"),
+        pytest.param("discover", id="test_discover_command_error"),
         pytest.param(None, id="test_command_is_none_error"),
         pytest.param("", id="test_command_is_empty_error"),
     ],
 )
-def test_invalid_command(command):
+def test_invalid_protocol_command(command, valid_config_file):
     config = copy.deepcopy(CONFIG)
-    config["__command"] = command
-    source = ManifestDeclarativeSource(CONFIG["__injected_declarative_manifest"])
+    config["__command"] = "list_streams"
     with pytest.raises(ValueError):
-        handle_connector_builder_request(source, config)
+        handle_request([command, "--config", str(valid_config_file), "--catalog", ""])
+
+
+def test_missing_command(valid_config_file):
+    with pytest.raises(SystemExit):
+        handle_request(["--config", str(valid_config_file), "--catalog", ""])
+
+
+def test_missing_catalog(valid_config_file):
+    with pytest.raises(SystemExit):
+        handle_request(["read", "--config", str(valid_config_file)])
+
+
+def test_missing_config(valid_config_file):
+    with pytest.raises(SystemExit):
+        handle_request(["read", "--catalog", str(valid_config_file)])
+
+
+def test_invalid_config_command(invalid_config_file):
+    with pytest.raises(ValueError):
+        handle_request(["read", "--config", str(invalid_config_file), "--catalog", ""])
