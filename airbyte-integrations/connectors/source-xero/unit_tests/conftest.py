@@ -8,11 +8,12 @@ from pytest import fixture
 @fixture(name="config")
 def config_fixture():
     return {
-        "client_id": "client_id",
-        "client_secret": "client_secret",
+        "authentication": {
+            "client_id": "client_id",
+            "client_secret": "client_secret",
+            "refresh_token": "refresh_token",
+        },
         "tenant_id": "tenant_id",
-        "scopes": "scope1, scope2",
-        "authentication": {"auth_type": "custom_connection"},
         "start_date": "2020-01-01T00:00:00Z",
     }
 
