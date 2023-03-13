@@ -20,6 +20,7 @@ def gcp_gcs_client(resource_context: InitResourceContext) -> storage.Client:
         project=credentials.project_id,
     )
 
+
 @resource(
     required_resource_keys={"gcp_gcs_client"},
     config_schema={"gcs_bucket": StringSource},
@@ -55,6 +56,7 @@ def gcs_file_manager(resource_context):
         gcs_base_key=resource_context.resource_config["gcs_prefix"],
     )
 
+
 @resource(
     required_resource_keys={"gcs_bucket_manager"},
     config_schema={
@@ -81,4 +83,4 @@ def gcs_file_blob(resource_context: InitResourceContext) -> storage.Blob:
     if not gcs_file_blob.exists():
         raise Exception(f"File does not exist at path: {gcs_file_path}")
 
-    return gcs_file_blob;
+    return gcs_file_blob

@@ -1,14 +1,17 @@
 from typing import List
 from dagster import sensor, RunRequest, SkipReason, SensorDefinition, SensorEvaluationContext, build_resources, DefaultSensorStatus
 
+
 def generate_composite_etag_cursor(etags: List[str]):
     return ":".join(etags)
+
 
 def catalog_updated_sensor(job, resources_def) -> SensorDefinition:
     """
     This sensor is responsible for checking if the latest catalog has been updated in GCS.
     If it has, it will trigger the given job.
     """
+
     @sensor(
         name=f"{job.name}_on_catalog_updated",
         job=job,
@@ -24,7 +27,9 @@ def catalog_updated_sensor(job, resources_def) -> SensorDefinition:
             etag_cursor = context.cursor or None
             context.log.info(f"Old etag cursor: {etag_cursor}")
 
-            new_etag_cursor = generate_composite_etag_cursor([resources.latest_oss_catalog_gcs_file.etag, resources.latest_cloud_catalog_gcs_file.etag])
+            new_etag_cursor = generate_composite_etag_cursor(
+                [resources.latest_oss_catalog_gcs_file.etag, resources.latest_cloud_catalog_gcs_file.etag]
+            )
             context.log.info(f"New etag cursor: {new_etag_cursor}")
 
             # Note: ETAGs are GCS's way of providing a version number for a file
@@ -33,10 +38,8 @@ def catalog_updated_sensor(job, resources_def) -> SensorDefinition:
                 context.log.info("No new catalogs in GCS bucket")
                 return SkipReason("No new catalogs in GCS bucket")
 
-            context.update_cursor(new_etag_cursor) # Question: what happens if the run fails? is the cursor still updated?
+            context.update_cursor(new_etag_cursor)  # Question: what happens if the run fails? is the cursor still updated?
             context.log.info("New catalogs in GCS bucket")
             return RunRequest(run_key="updated_catalogs")
 
-
     return catalog_updated_sensor_definition
-

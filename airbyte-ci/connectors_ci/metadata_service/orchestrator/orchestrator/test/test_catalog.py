@@ -2,17 +2,29 @@ import json
 import pytest
 import os
 
-from ..assets.catalog_assets import oss_destinations_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, cloud_sources_dataframe, latest_oss_catalog_dict, latest_cloud_catalog_dict, all_sources_dataframe, all_destinations_dataframe
+from ..assets.catalog_assets import (
+    oss_destinations_dataframe,
+    cloud_destinations_dataframe,
+    oss_sources_dataframe,
+    cloud_sources_dataframe,
+    latest_oss_catalog_dict,
+    latest_cloud_catalog_dict,
+    all_sources_dataframe,
+    all_destinations_dataframe,
+)
+
 
 @pytest.fixture
 def oss_catalog_dict():
-    file_path = os.path.join(os.path.dirname(__file__), 'files', 'oss_catalog.json')
+    file_path = os.path.join(os.path.dirname(__file__), "files", "oss_catalog.json")
     return json.load(open(file_path))
+
 
 @pytest.fixture
 def cloud_catalog_dict():
-    file_path = os.path.join(os.path.dirname(__file__), 'files', 'cloud_catalog.json')
+    file_path = os.path.join(os.path.dirname(__file__), "files", "cloud_catalog.json")
     return json.load(open(file_path))
+
 
 def test_merged_catalog_dataframes(oss_catalog_dict, cloud_catalog_dict):
     num_oss_destinations = len(oss_catalog_dict["destinations"])
@@ -20,7 +32,6 @@ def test_merged_catalog_dataframes(oss_catalog_dict, cloud_catalog_dict):
 
     num_cloud_sources = len(cloud_catalog_dict["sources"])
     num_oss_sources = len(oss_catalog_dict["sources"])
-
 
     cloud_destinations_df = cloud_destinations_dataframe(cloud_catalog_dict)
     assert len(cloud_destinations_df) == num_cloud_destinations

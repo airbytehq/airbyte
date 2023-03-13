@@ -1,14 +1,25 @@
 from dagster import Definitions
 
 from .resources.gcp_resources import gcp_gcs_client, gcs_bucket_manager, gcs_file_manager, gcs_file_blob
-from .assets.catalog_assets import oss_destinations_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, cloud_sources_dataframe, latest_oss_catalog_dict, latest_cloud_catalog_dict, all_sources_dataframe, all_destinations_dataframe, connector_catalog_location_markdown, connector_catalog_location_html
+from .assets.catalog_assets import (
+    oss_destinations_dataframe,
+    cloud_destinations_dataframe,
+    oss_sources_dataframe,
+    cloud_sources_dataframe,
+    latest_oss_catalog_dict,
+    latest_cloud_catalog_dict,
+    all_sources_dataframe,
+    all_destinations_dataframe,
+    connector_catalog_location_markdown,
+    connector_catalog_location_html,
+)
 from .jobs.catalog_jobs import generate_catalog_markdown
 from .sensors.catalog_sensors import catalog_updated_sensor
 
 from .config import REPORT_FOLDER, CATALOG_FOLDER
 
 
-assets=[
+assets = [
     oss_destinations_dataframe,
     cloud_destinations_dataframe,
     oss_sources_dataframe,
@@ -21,37 +32,25 @@ assets=[
     connector_catalog_location_html,
 ]
 
-resources={
-    "gcp_gcs_client": gcp_gcs_client.configured({
-        "gcp_gsm_cred_string": {"env": "GCP_GSM_CREDENTIALS"},
-    }),
-    "gcs_bucket_manager": gcs_bucket_manager.configured({
-        "gcs_bucket": {"env": "METADATA_BUCKET"}
-    }),
-    "catalog_report_directory_manager": gcs_file_manager.configured({
-        "gcs_bucket": {"env": "METADATA_BUCKET"},
-        "gcs_prefix": REPORT_FOLDER
-    }),
-    "latest_oss_catalog_gcs_file": gcs_file_blob.configured({
-        "gcs_prefix": CATALOG_FOLDER,
-        "gcs_filename": "oss_catalog.json"
-    }),
-    "latest_cloud_catalog_gcs_file": gcs_file_blob.configured({
-        "gcs_prefix": CATALOG_FOLDER,
-        "gcs_filename": "cloud_catalog.json"
-    })
+resources = {
+    "gcp_gcs_client": gcp_gcs_client.configured(
+        {
+            "gcp_gsm_cred_string": {"env": "GCP_GSM_CREDENTIALS"},
+        }
+    ),
+    "gcs_bucket_manager": gcs_bucket_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}}),
+    "catalog_report_directory_manager": gcs_file_manager.configured(
+        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "gcs_prefix": REPORT_FOLDER}
+    ),
+    "latest_oss_catalog_gcs_file": gcs_file_blob.configured({"gcs_prefix": CATALOG_FOLDER, "gcs_filename": "oss_catalog.json"}),
+    "latest_cloud_catalog_gcs_file": gcs_file_blob.configured({"gcs_prefix": CATALOG_FOLDER, "gcs_filename": "cloud_catalog.json"}),
 }
 
-sensors=[
-    catalog_updated_sensor(
-        job=generate_catalog_markdown,
-        resources_def=resources
-    )
-]
+sensors = [catalog_updated_sensor(job=generate_catalog_markdown, resources_def=resources)]
 
-schedules=[]
+schedules = []
 
-jobs=[generate_catalog_markdown]
+jobs = [generate_catalog_markdown]
 
 """
 START HERE
