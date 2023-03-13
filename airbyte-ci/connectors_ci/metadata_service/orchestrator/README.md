@@ -1,22 +1,26 @@
-# Connector Orchestrator
+# Connector Orchestrator (WIP)
+This is the Orchestrator for Airbyte metadata built on Dagster.
+
+
+# Setup
+## Local
+All commands below assume you are in the `metadata_service` directory.
+### Installation
+```bash
+poetry install
+cp .env.template .env
+```
+
+### Create a GCP Service Account and Dev Bucket
 TODO
 
-### Todo
-- [x] sensor on etag
-- [x] write a job to injest the oss catalog and determine which files are in oss and output it to a file
-- [x] write a job to injest the cloud catalog and determine which files are in oss and output it to a file
-- [ ] update sensor to a factory
-- [ ] update sensor to use context
-- [ ] update GCS to work off of config
-- [ ] update GCS to work off of local vs gcs
-- [ ] update to use IO manager
-- [ ] write a job that stores past versions of the catalogs by etag
-- [ ] write a job that compares the new file with the previous cursor and outputs the diff
-- [ ] write a job that uses the cloud and oss catalogs to construct metadata files
-- [ ] write a job that replicates metadata files from prod to dev manually
+### Running
+```bash
+poetry run dagster dev -m orchestrator
+```
 
 
-### Notes
+### WIP Notes
 what to discuss in readme
 - the use of the env file
 - local vs cloud development
