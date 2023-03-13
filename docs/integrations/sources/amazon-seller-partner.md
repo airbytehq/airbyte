@@ -33,7 +33,7 @@ Authenticating this Alpha connector is currently blocked. This is a known issue 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account. 
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
 3. On the source setup page, select **Amazon Seller Partner** from the Source type dropdown and enter a name for this connector.
-4. Click `Authenticate your account`.
+4. Fill in your `app_id` and click `Authenticate your account`.
 5. Log in and Authorize to the Amazon Seller Partner account.
 6. Paste all other data to required fields using your IAM user.
 7. Click `Set up source`.

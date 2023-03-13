@@ -241,7 +241,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
-        params = {"reportType": self.name, "marketplaceIds": [self.marketplace_id], **stream_slice}
+        params = {"reportType": self.name, "marketplaceIds": [self.marketplace_id], **(stream_slice or {})}
         options = self.report_options()
         if options is not None:
             params.update({"reportOptions": options})
@@ -987,7 +987,7 @@ class FinanceStream(AmazonSPStream, ABC):
             return dict(next_page_token)
 
         # for finance APIs, end date-time must be no later than two minutes before the request was submitted
-        end_date = pendulum.now("utc").subtract(minutes=2, seconds=10).strftime(DATE_TIME_FORMAT)
+        end_date = pendulum.now("utc").subtract(minutes=4, seconds=23).strftime(DATE_TIME_FORMAT)
         if self._replication_end_date:
             end_date = self._replication_end_date
 
