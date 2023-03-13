@@ -9,6 +9,12 @@ import pytest
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from connector_builder.connector_builder_handler import get_connector_builder_request_handler, resolve_manifest
 from unit_tests.connector_builder.utils import create_configured_catalog
+import copy
+
+import pytest
+from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
+from connector_builder.connector_builder_handler import resolve_manifest
+from connector_builder.main import handle_connector_builder_request
 
 _stream_name = "stream_with_custom_requester"
 _stream_primary_key = "id"
@@ -212,3 +218,17 @@ def partial_functions_equal(func1, func2):
         return False
     are_equal = all([getattr(func1, attr) == getattr(func2, attr) for attr in ['func', 'args', 'keywords']])
     return are_equal
+@pytest.mark.parametrize(
+    "command",
+    [
+        pytest.param("asdf", id="test_arbitrary_command_error"),
+        pytest.param(None, id="test_command_is_none_error"),
+        pytest.param("", id="test_command_is_empty_error"),
+    ],
+)
+def test_invalid_command(command):
+    config = copy.deepcopy(CONFIG)
+    config["__command"] = command
+    source = ManifestDeclarativeSource(CONFIG["__injected_declarative_manifest"])
+    with pytest.raises(ValueError):
+        handle_connector_builder_request(source, config)
