@@ -398,29 +398,20 @@ def test_read(schema, ignored_fields, expect_records_config, record, expected_re
         )
 
 
-@pytest.mark.parametrize("schema, record, expectation", [
-    (
-            {"type": "object", "properties": {"field_1": {"type": ["string"]}, "field_2": {"type": ["string"]}}},
-            {"field_1": "value", "field_2": "value"},
-            does_not_raise(),
-    ),
-    (
-            {"type": "object", "properties": {"field_1": {"type": ["string"]}, "field_2": {"type": ["string"]}}},
-            {"field_1": "value", "field_2": "value", "surprise_field": "value"},
-            pytest.raises(Failed, match="test_stream"),
-    ),
-    (
-            {"type": "object", "additionalProperties": True, "properties": {"field_1": {"type": ["string"]}, "field_2": {"type": ["string"]}}},
-            {"field_1": "value", "field_2": "value", "surprise_field": "value"},
-            pytest.raises(Failed, match="test_stream"),
-    ),
-    (
-            {"type": "object", "additionalProperties": False, "properties": {"field_1": {"type": ["string"]}, "field_2": {"type": ["string"]}}},
-            {"field_1": "value", "field_2": "value", "surprise_field": "value"},
-            pytest.raises(Failed, match="test_stream"),
-    ),
+@pytest.mark.parametrize("record_has_unexpected_field, expectation", [
+        (True, pytest.raises(Failed, match="test_stream")),
+        (False, does_not_raise()),
 ])
-def test_fail_on_extra_fields(schema, record, expectation):
+@pytest.mark.parametrize("additional_properties", [(True, False, None)])
+def test_fail_on_extra_fields(record_has_unexpected_field, expectation, additional_properties):
+    schema = {"type": "object", "properties": {"field_1": {"type": ["string"]}, "field_2": {"type": ["string"]}}}
+    if additional_properties:
+        schema["additionalProperties"] = additional_properties
+
+    record = {"field_1": "value", "field_2": "value"}
+    if record_has_unexpected_field:
+        record["surprise_field"] = "value"
+
     configured_catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
