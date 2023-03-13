@@ -408,7 +408,17 @@ def test_read(schema, ignored_fields, expect_records_config, record, expected_re
             {"type": "object", "properties": {"field_1": {"type": ["string"]}, "field_2": {"type": ["string"]}}},
             {"field_1": "value", "field_2": "value", "surprise_field": "value"},
             does_not_raise(),  # Should raise though
-    )
+    ),
+    (
+            {"type": "object", "additionalProperties": True, "properties": {"field_1": {"type": ["string"]}, "field_2": {"type": ["string"]}}},
+            {"field_1": "value", "field_2": "value", "surprise_field": "value"},
+            pytest.raises(Failed, match="test_stream"),
+    ),
+    (
+            {"type": "object", "additionalProperties": False, "properties": {"field_1": {"type": ["string"]}, "field_2": {"type": ["string"]}}},
+            {"field_1": "value", "field_2": "value", "surprise_field": "value"},
+            pytest.raises(Failed, match="test_stream"),
+    ),
 ])
 def test_fail_on_extra_fields(schema, record, expectation):
     configured_catalog = ConfiguredAirbyteCatalog(
@@ -432,7 +442,7 @@ def test_fail_on_extra_fields(schema, record, expectation):
             expect_records_config=ExpectedRecordsConfig(path="foobar"),
             should_validate_schema=True,
             should_validate_data_points=False,
-            fail_on_extra_fields=False,
+            fail_on_extra_fields=True,
             empty_streams=set(),
             expected_records_by_stream={},
             docker_runner=docker_runner_mock,

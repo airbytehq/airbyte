@@ -717,24 +717,6 @@ class TestBasicRead(BaseTest):
             msg += f"`{stream_name}` stream has `{fields}` empty fields\n"
         assert not stream_name_to_empty_fields_mapping, msg
 
-    def _validate_no_extra_fields(self, records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
-        """
-        Check records for fields that weren't declared in the configured catalog.
-
-        :param records:
-        :param configured_catalog:
-        """
-        declared_configured_streams: List[ConfiguredAirbyteStream] = configured_catalog.streams
-        declared_streams: List[AirbyteStream] = [configured_stream.stream for configured_stream in declared_configured_streams]
-
-        fields_for_declared_streams = {}
-        for stream in declared_streams:
-            fields_for_declared_streams[stream.name] = _get_fields_from_stream_schema(stream.json_schema)
-
-        for record in records:
-            stream = record.stream
-            expected_fields = fields_for_declared_streams[stream]
-
     def _validate_expected_records(
         self,
         records: List[AirbyteRecordMessage],

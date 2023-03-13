@@ -63,8 +63,9 @@ def verify_records_schema(
     stream_validators = {}
     for stream in catalog.streams:
         schema_to_validate_against = stream.stream.json_schema
-        # if fail_on_extra_fields:
-        #     schema_to_validate_against = _enforce_no_additional_properties(schema_to_validate_against)
+        if fail_on_extra_fields:
+            schema_to_validate_against = _enforce_no_additional_properties(schema_to_validate_against)
+            print(schema_to_validate_against)
         stream_validators[stream.stream.name] = Draft7ValidatorWithStrictInteger(
             schema_to_validate_against, format_checker=CustomFormatChecker()
         )
