@@ -38,41 +38,27 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
     super(DRIVER_CLASS, new MariadbColumnstoreNameTransformer(), new MariadbColumnstoreSqlOperations());
   }
 
+
   @Override
-  public AirbyteConnectionStatus check(final JsonNode config) {
-    final DataSource dataSource = getDataSource(config);
-    try {
-      final JdbcDatabase database = getDatabase(dataSource);
-      final MariadbColumnstoreSqlOperations mariadbColumnstoreSqlOperations = (MariadbColumnstoreSqlOperations) getSqlOperations();
-      final String outputSchema = getNamingResolver().getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
+  protected AirbyteConnectionStatus checkedConnectionStatus(DataSource dataSource, JsonNode config) throws Exception {
+    final JdbcDatabase database = getDatabase(dataSource);
+    final MariadbColumnstoreSqlOperations mariadbColumnstoreSqlOperations = (MariadbColumnstoreSqlOperations) getSqlOperations();
+    final String outputSchema = getNamingResolver().getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
 
-      final VersionCompatibility compatibility = mariadbColumnstoreSqlOperations.isCompatibleVersion(database);
-      if (!compatibility.isCompatible()) {
-        throw new RuntimeException(String
-            .format("Your MariaDB Columnstore version %s is not compatible with Airbyte",
-                compatibility.getVersion()));
-      }
-
-      mariadbColumnstoreSqlOperations.verifyLocalFileEnabled(database);
-
-      attemptSQLCreateAndDropTableOperations(
-          outputSchema,
-          database,
-          getNamingResolver(),
-          mariadbColumnstoreSqlOperations);
-    } catch (final Exception e) {
-      LOGGER.error("Exception while checking connection: ", e);
-      return new AirbyteConnectionStatus()
-          .withStatus(Status.FAILED)
-          .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
-    } finally {
-      try {
-        DataSourceFactory.close(dataSource);
-      } catch (final Exception e) {
-        LOGGER.warn("Unable to close data source.", e);
-      }
+    final VersionCompatibility compatibility = mariadbColumnstoreSqlOperations.isCompatibleVersion(database);
+    if (!compatibility.isCompatible()) {
+      throw new RuntimeException(String
+          .format("Your MariaDB Columnstore version %s is not compatible with Airbyte",
+              compatibility.getVersion()));
     }
 
+    mariadbColumnstoreSqlOperations.verifyLocalFileEnabled(database);
+
+    attemptSQLCreateAndDropTableOperations(
+        outputSchema,
+        database,
+        getNamingResolver(),
+        mariadbColumnstoreSqlOperations);
     return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
   }
 

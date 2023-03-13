@@ -58,21 +58,26 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     this.sqlOperations = sqlOperations;
   }
 
-  @Override
-  public AirbyteConnectionStatus check(final JsonNode config) {
-    final DataSource dataSource = getDataSource(config);
-
+  protected AirbyteConnectionStatus checkedConnectionStatus(DataSource dataSource, JsonNode config) throws Exception {
     try {
-      final JdbcDatabase database = getDatabase(dataSource);
-      final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.SCHEMA_KEY).asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
-      return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
+    final JdbcDatabase database = getDatabase(dataSource);
+    final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.SCHEMA_KEY).asText());
+    attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
+    return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
       final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, message);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage(message);
+    }
+  }
+
+  @Override
+  public AirbyteConnectionStatus check(final JsonNode config) {
+    final DataSource dataSource = getDataSource(config);
+    try {
+      return checkedConnectionStatus(dataSource, config);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()

@@ -53,8 +53,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   @Override
-  public AirbyteConnectionStatus check(final JsonNode config) {
-    final DataSource dataSource = getDataSource(config);
+  protected AirbyteConnectionStatus checkedConnectionStatus(DataSource dataSource, JsonNode config) throws Exception {
     try {
       final JdbcDatabase database = getDatabase(dataSource);
       final MySQLSqlOperations mySQLSqlOperations = (MySQLSqlOperations) getSqlOperations();
@@ -79,17 +78,6 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage(message);
-    } catch (final Exception e) {
-      LOGGER.error("Exception while checking connection: ", e);
-      return new AirbyteConnectionStatus()
-          .withStatus(Status.FAILED)
-          .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
-    } finally {
-      try {
-        DataSourceFactory.close(dataSource);
-      } catch (final Exception e) {
-        LOGGER.warn("Unable to close data source.", e);
-      }
     }
   }
 

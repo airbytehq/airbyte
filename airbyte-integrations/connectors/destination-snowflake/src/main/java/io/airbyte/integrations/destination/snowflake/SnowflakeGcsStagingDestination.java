@@ -40,7 +40,7 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination implements Destination {
+public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination implements Destination  {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeGcsStagingDestination.class);
   private final String airbyteEnvironment;
@@ -55,34 +55,19 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
   }
 
   @Override
-  public AirbyteConnectionStatus check(final JsonNode config) {
+  protected AirbyteConnectionStatus checkedConnectionStatus(DataSource dataSource, JsonNode config) throws Exception {
     final GcsConfig gcsConfig = GcsConfig.getGcsConfig(config);
     final NamingConventionTransformer nameTransformer = getNamingResolver();
     final SnowflakeGcsStagingSqlOperations snowflakeGcsStagingSqlOperations =
         new SnowflakeGcsStagingSqlOperations(nameTransformer, gcsConfig);
-    final DataSource dataSource = getDataSource(config);
+    final JdbcDatabase database = getDatabase(dataSource);
+    final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
 
-    try {
-      final JdbcDatabase database = getDatabase(dataSource);
-      final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
+    attemptTableOperations(outputSchema, database, nameTransformer, snowflakeGcsStagingSqlOperations,
+        true);
+    attemptWriteAndDeleteGcsObject(gcsConfig, outputSchema);
 
-      attemptTableOperations(outputSchema, database, nameTransformer, snowflakeGcsStagingSqlOperations,
-          true);
-      attemptWriteAndDeleteGcsObject(gcsConfig, outputSchema);
-
-      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
-    } catch (final Exception e) {
-      LOGGER.error("Exception while checking connection: ", e);
-      return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
-    } finally {
-      try {
-        DataSourceFactory.close(dataSource);
-      } catch (final Exception e) {
-        LOGGER.warn("Unable to close data source.", e);
-      }
-    }
+    return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
   }
 
   private static void attemptWriteAndDeleteGcsObject(final GcsConfig gcsConfig, final String outputTableName) throws IOException {
