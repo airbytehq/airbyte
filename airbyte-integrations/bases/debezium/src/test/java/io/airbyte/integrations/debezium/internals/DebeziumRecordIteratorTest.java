@@ -26,7 +26,7 @@ public class DebeziumRecordIteratorTest {
         () -> {},
         Duration.ZERO);
 
-      final Map<String, ?> heartbeatSourceOffset = debeziumRecordIterator.getHeartbeatSourceOffset(new ChangeEvent<String, String>() {
+    final Map<String, ?> heartbeatSourceOffset = debeziumRecordIterator.getHeartbeatSourceOffset(new ChangeEvent<String, String>() {
 
       private final SourceRecord sourceRecord = new SourceRecord(null, Collections.singletonMap("lsn", 358824993496L), null, null, null);
 
@@ -50,7 +50,7 @@ public class DebeziumRecordIteratorTest {
       }
 
     });
-      final long lsn = (long) heartbeatSourceOffset.get("lsn");
+    final long lsn = (long) heartbeatSourceOffset.get("lsn");
 
     assertEquals(lsn, 358824993496L);
   }
