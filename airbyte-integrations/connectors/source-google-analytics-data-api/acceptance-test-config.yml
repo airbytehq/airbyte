@@ -5,8 +5,6 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "source_google_analytics_data_api/spec.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "0.0.3"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -16,8 +14,6 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "0.0.2"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -27,14 +23,30 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         ignored_fields:
-          "daily_active_users": ["uuid"]
-          "weekly_active_users": ["uuid"]
-          "four_weekly_active_users": ["uuid"]
-          "devices": ["uuid"]
-          "locations": ["uuid"]
-          "pages": ["uuid"]
-          "traffic_sources": ["uuid"]
-          "website_overview": ["uuid"]
+          daily_active_users:
+            - name: "uuid"
+              bypass_reason: "property is changing from sync to sync"
+          weekly_active_users:
+            - name: "uuid"
+              bypass_reason: "property is changing from sync to sync"
+          four_weekly_active_users:
+            - name: "uuid"
+              bypass_reason: "property is changing from sync to sync"
+          devices:
+            - name: "uuid"
+              bypass_reason: "property is changing from sync to sync"
+          locations:
+            - name: "uuid"
+              bypass_reason: "property is changing from sync to sync"
+          pages:
+            - name: "uuid"
+              bypass_reason: "property is changing from sync to sync"
+          traffic_sources:
+            - name: "uuid"
+              bypass_reason: "property is changing from sync to sync"
+          website_overview:
+            - name: "uuid"
+              bypass_reason: "property is changing from sync to sync"
   incremental:
     tests:
       - config_path: "secrets/config.json"

@@ -81,13 +81,15 @@
       "type": ["null", "integer"]
     },
     "lead_id": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "active_flag": {
       "type": ["null", "boolean"]
     },
     "update_time": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "update_user_id": {
       "type": ["null", "integer"]
@@ -218,6 +220,9 @@
     },
     "assigned_to_user_id": {
       "type": ["null", "integer"]
+    },
+    "type_name": {
+      "type": ["null", "string"]
     },
     "file": {
       "type": ["null", "object"],
