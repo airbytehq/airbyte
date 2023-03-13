@@ -10,12 +10,13 @@ from typing import Any, List, Mapping, Tuple
 from airbyte_cdk.connector import BaseConnector
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
-from connector_builder.connector_builder_handler import resolve_manifest
+from connector_builder.connector_builder_handler import resolve_manifest, read_stream
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 
 
-def create_source(config: Mapping[str, Any]) -> ManifestDeclarativeSource:
+def create_source(config: Mapping[str, Any], debug: bool) -> ManifestDeclarativeSource:
     manifest = config.get("__injected_declarative_manifest")
-    return ManifestDeclarativeSource(manifest)
+    return ManifestDeclarativeSource(manifest, debug)
 
 
 def get_config_from_args(args: List[str]) -> Mapping[str, Any]:
@@ -41,13 +42,15 @@ def preparse(args: List[str]) -> Tuple[str, str]:
     return parsed.command, parsed.config
 
 
-def handle_connector_builder_request(source: ManifestDeclarativeSource, config: Mapping[str, Any]):
-    command = config.get("__command")
+def handle_connector_builder_request(source: ManifestDeclarativeSource, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog):
+    command = config["__command"]
     if command == "resolve_manifest":
-        return resolve_manifest(source)
+        result =  resolve_manifest(source)
     elif command == "read":
-        raise NotImplementedError
-    raise ValueError(f"Unrecognized command {command}.")
+        result = read_stream(source, config, catalog)
+    else:
+        raise ValueError(f"Unrecognized command {command}.")
+    print(result)
 
 
 def handle_connector_request(source: ManifestDeclarativeSource, args: List[str]):
@@ -57,11 +60,15 @@ def handle_connector_request(source: ManifestDeclarativeSource, args: List[str])
 
 
 def handle_request(args: List[str]):
-    config = get_config_from_args(args)
-    source = create_source(config)
+    parser = AirbyteEntrypoint.parse_args(args)
+    config_path, catalog_path = parser.config, parser.catalog
+    config = BaseConnector.read_config(config_path)
+    catalog = ConfiguredAirbyteCatalog.parse_obj(BaseConnector.read_config(catalog_path))
     if "__command" in config:
-        print(handle_connector_builder_request(source, config))
+        source = create_source(config, True)
+        handle_connector_builder_request(source, config, catalog)
     else:
+        source = create_source(config, False)
         handle_connector_request(source, args)
 
 
