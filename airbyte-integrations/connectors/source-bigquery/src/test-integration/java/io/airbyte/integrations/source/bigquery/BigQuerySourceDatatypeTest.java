@@ -4,11 +4,30 @@
 
 package io.airbyte.integrations.source.bigquery;
 
+import static io.airbyte.integrations.source.bigquery.BigQuerySource.CONFIG_CREDS;
+import static io.airbyte.integrations.source.bigquery.BigQuerySource.CONFIG_DATASET_ID;
+import static io.airbyte.integrations.source.bigquery.BigQuerySource.CONFIG_PROJECT_ID;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.cloud.bigquery.Dataset;
+import com.google.cloud.bigquery.DatasetInfo;
+import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
+import io.airbyte.db.Database;
+import io.airbyte.db.bigquery.TempBigQueryJoolDatabaseImpl;
+import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
+import io.airbyte.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.protocol.models.JsonSchemaType;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 @TestInstance(Lifecycle.PER_CLASS)
-public class BigQuerySourceDatatypeTest {/* extends AbstractSourceDatabaseTypeTest {
+public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
   private static final String CREATE_SQL_PATTERN = "CREATE TABLE %1$s(%2$s NUMERIC(29), %3$s %4$s)";
@@ -329,5 +348,5 @@ public class BigQuerySourceDatatypeTest {/* extends AbstractSourceDatabaseTypeTe
   public void cleanTestInstance() {
     database.getRealDatabase().cleanDataSet(getNameSpace());
   }
-*/
+
 }
