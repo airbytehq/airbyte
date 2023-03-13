@@ -9,7 +9,7 @@ const config = {
     title: 'Airbyte Documentation',
     tagline:
         'Airbyte is an open-source data integration platform to build ELT pipelines. Consolidate your data in your data warehouses, lakes and databases.',
-    url: 'https://docs.airbyte.com',
+    url: 'https://docs.airbyte.com/',
     // Assumed relative path.  If you are using airbytehq.github.io use /
     // anything else should match the repo name
     baseUrl: '/',
@@ -64,6 +64,14 @@ const config = {
                         {
                             from: '/connector-development/config-based/understanding-the-yaml-file/stream-slicers/',
                             to: '/connector-development/config-based/understanding-the-yaml-file/partition-router',
+                        },
+                        {
+                            from: '/cloud/managing-airbyte-cloud',
+                            to: '/category/managing-airbyte-cloud',
+                        },
+                        {
+                            from: '/cloud/dbt-cloud-integration',
+                            to: '/cloud/managing-airbyte-cloud/dbt-cloud-integration',
                         },
 //                        {
 //                         from: '/some-lame-path',

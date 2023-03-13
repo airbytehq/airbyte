@@ -40,7 +40,7 @@
 - name: BigQuery
   destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   dockerRepository: airbyte/destination-bigquery
-  dockerImageTag: 1.2.14
+  dockerImageTag: 1.2.16
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   icon: bigquery.svg
   normalizationConfig:
@@ -58,7 +58,7 @@
 - name: BigQuery (denormalized typed struct)
   destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-bigquery-denormalized
-  dockerImageTag: 1.2.14
+  dockerImageTag: 1.2.16
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   icon: bigquery.svg
   resourceRequirements:
@@ -145,7 +145,7 @@
 - name: Google Cloud Storage (GCS)
   destinationDefinitionId: ca8f6566-e555-4b40-943a-545bf123117a
   dockerRepository: airbyte/destination-gcs
-  dockerImageTag: 0.2.14
+  dockerImageTag: 0.2.15
   documentationUrl: https://docs.airbyte.com/integrations/destinations/gcs
   icon: googlecloudstorage.svg
   resourceRequirements:
@@ -290,7 +290,7 @@
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift
-  dockerImageTag: 0.3.56
+  dockerImageTag: 0.4.2
   documentationUrl: https://docs.airbyte.com/integrations/destinations/redshift
   icon: redshift.svg
   normalizationConfig:
@@ -321,7 +321,7 @@
 - name: S3
   destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.3.20
+  dockerImageTag: 0.3.21
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3
   icon: s3.svg
   resourceRequirements:
@@ -348,7 +348,7 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.4.48
+  dockerImageTag: 0.4.52
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   icon: snowflake.svg
   normalizationConfig:
@@ -433,16 +433,17 @@
 - name: Teradata Vantage
   destinationDefinitionId: 58e6f9da-904e-11ed-a1eb-0242ac120002
   dockerRepository: airbyte/destination-teradata
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   icon: teradata.svg
   documentationUrl: https://docs.airbyte.io/integrations/destinations/teradata
   releaseStage: alpha
 - name: Weaviate
   destinationDefinitionId: 7b7d7a0d-954c-45a0-bcfc-39a634b97736
   dockerRepository: airbyte/destination-weaviate
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/destinations/weaviate
   releaseStage: alpha
+  icon: weaviate.svg
 - name: DuckDB
   destinationDefinitionId: 94bd199c-2ff0-4aa2-b98e-17f0acb72610
   dockerRepository: airbyte/destination-duckdb

@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.databricks;
 
 import com.azure.storage.blob.specialized.SpecializedBlobClientBuilder;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
@@ -21,7 +21,7 @@ public class DatabricksAzureBlobStorageStreamCopierFactory implements Databricks
                              final DatabricksDestinationConfig databricksConfig,
                              final String stagingFolder,
                              final ConfiguredAirbyteStream configuredStream,
-                             final ExtendedNameTransformer nameTransformer,
+                             final StandardNameTransformer nameTransformer,
                              final JdbcDatabase database,
                              final SqlOperations sqlOperations) {
     try {
