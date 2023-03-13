@@ -6,18 +6,14 @@
 
 import json
 import uuid
-from typing import Tuple
+from typing import List, Tuple
 
 import asyncer
-from ci_connector_ops.pipelines.actions import environments
+from ci_connector_ops.pipelines.actions import environments, secrets
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.pipelines.models import Step, StepResult, StepStatus
-from ci_connector_ops.pipelines.utils import check_path_in_workdir, with_exit_code, with_stderr, with_stdout
+from ci_connector_ops.pipelines.utils import check_path_in_workdir, get_step_result
 from dagger import CacheSharingMode, Container, Directory
-
-RUN_BLACK_CMD = ["python", "-m", "black", f"--config=/{environments.PYPROJECT_TOML_FILE_PATH}", "--check", "."]
-RUN_ISORT_CMD = ["python", "-m", "isort", f"--settings-file=/{environments.PYPROJECT_TOML_FILE_PATH}", "--check-only", "--diff", "."]
-RUN_FLAKE_CMD = ["python", "-m", "pflake8", f"--config=/{environments.PYPROJECT_TOML_FILE_PATH}", "."]
 
 
 def pytest_logs_to_step_result(logs: str, step: Step) -> StepResult:
@@ -28,24 +24,6 @@ def pytest_logs_to_step_result(logs: str, step: Step) -> StepResult:
         return StepResult(step, StepStatus.SKIPPED, stdout=logs)
     else:
         return StepResult(step, StepStatus.SUCCESS, stdout=logs)
-
-
-async def get_step_result(container: Container, step: Step) -> StepResult:
-    """Concurrent retrieval of exit code, stdout and stdout of a container.
-    Create a StepResult object from these objects.
-
-    Args:
-        container (Container): The container from which we want to infer a step result/
-        step (Step): The step that was ran to build the step result.
-
-    Returns:
-        StepResult: Failure or success with stdout and stderr.
-    """
-    async with asyncer.create_task_group() as task_group:
-        soon_exit_code = task_group.soonify(with_exit_code)(container)
-        soon_stderr = task_group.soonify(with_stderr)(container)
-        soon_stdout = task_group.soonify(with_stdout)(container)
-    return StepResult(step, StepStatus.from_exit_code(soon_exit_code.value), stderr=soon_stderr.value, stdout=soon_stdout.value)
 
 
 async def _run_tests_in_directory(connector_under_test: Container, test_directory: str, step: Step) -> StepResult:
@@ -92,32 +70,7 @@ async def connector_install_check(context: ConnectorTestContext, step=Step.PACKA
         Tuple[StepResult, Container]: Failure or success of the package installation and the connector under test container (with the connector package installed).
     """
     connector_under_test = await environments.with_airbyte_connector(context, install=True)
-    return await get_step_result(connector_under_test), connector_under_test
-
-
-async def run_code_format_checks(connector_under_test: Container, step=Step.CODE_FORMAT_CHECKS) -> StepResult:
-    """Run a code format check on the container source code.
-    We call black, isort and flake commands:
-    - Black formats the code: fails if the code is not formatted.
-    - Isort checks the import orders: fails if the import are not properly ordered.
-    - Flake enforces style-guides: fails if the style-guide is not followed.
-    Args:
-        connector_under_test (Container): The connector under test container.
-        step (Step): The step in which the code format checks are run. Defaults to Step.CODE_FORMAT_CHECKS
-    Returns:
-        StepResult: Failure or success of the code format checks with stdout and stdout.
-    """
-    connector_under_test = step.get_dagger_pipeline(connector_under_test)
-
-    formatter = (
-        connector_under_test.with_exec(["echo", "Running black"])
-        .with_exec(RUN_BLACK_CMD)
-        .with_exec(["echo", "Running Isort"])
-        .with_exec(RUN_ISORT_CMD)
-        .with_exec(["echo", "Running Flake"])
-        .with_exec(RUN_FLAKE_CMD)
-    )
-    return await get_step_result(formatter, step)
+    return await get_step_result(connector_under_test, step), connector_under_test
 
 
 async def run_unit_tests(connector_under_test: Container, step=Step.UNIT_TESTS) -> StepStatus:
@@ -233,29 +186,19 @@ async def run_acceptance_tests(
     return (pytest_logs_to_step_result(soon_cat_container_stdout.value, step), updated_secrets_dir)
 
 
-async def run_qa_checks(context: ConnectorTestContext, step=Step.QA_CHECKS) -> StepResult:
-    """Runs our QA checks on a connector.
+async def run_tests(context: ConnectorTestContext) -> List[StepResult]:
+    package_install_results, connector_under_test = await connector_install_check(context)
+    unit_tests_results = await run_unit_tests(connector_under_test)
+    if unit_tests_results.status is StepStatus.SUCCESS:
+        context.secrets_dir = await secrets.get_connector_secret_dir(context)
+        async with asyncer.create_task_group() as task_group:
+            soon_integration_tests_results = task_group.soonify(run_integration_tests)(connector_under_test, context)
+            soon_acceptance_tests_results = task_group.soonify(run_acceptance_tests)(context)
 
-    Args:
-        context (ConnectorTestContext): The current test context, providing a connector object, a dagger client and a repository directory.
+        integration_tests_results = soon_integration_tests_results.value
+        acceptance_tests_results, context.updated_secrets_dir = soon_acceptance_tests_results.value
+    else:
+        integration_tests_results = StepResult(Step.INTEGRATION_TESTS, StepStatus.SKIPPED, stdout="Skipped because unit tests failed")
+        acceptance_tests_results = StepResult(Step.ACCEPTANCE_TESTS, StepStatus.SKIPPED, stdout="Skipped because unit tests failed")
 
-    Returns:
-        StepResult: Failure or success of the QA checks with stdout and stdout.
-    """
-    ci_connector_ops = await environments.with_ci_connector_ops(context)
-    ci_connector_ops = step.get_dagger_pipeline(ci_connector_ops)
-    filtered_repo = context.get_repo_dir(
-        include=[
-            str(context.connector.code_directory),
-            str(context.connector.documentation_file_path),
-            str(context.connector.icon_path),
-            "airbyte-config/init/src/main/resources/seed/source_definitions.yaml",
-            "airbyte-config/init/src/main/resources/seed/destination_definitions.yaml",
-        ],
-    )
-    qa_checks = (
-        ci_connector_ops.with_mounted_directory("/airbyte", filtered_repo)
-        .with_workdir("/airbyte")
-        .with_exec(["run-qa-checks", f"connectors/{context.connector.technical_name}"])
-    )
-    return await get_step_result(qa_checks, step)
+    return [package_install_results, unit_tests_results, integration_tests_results, acceptance_tests_results]

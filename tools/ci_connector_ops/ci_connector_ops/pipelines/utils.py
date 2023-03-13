@@ -7,7 +7,9 @@ from pathlib import Path
 from typing import Optional, Set
 
 import anyio
+import asyncer
 import git
+from ci_connector_ops.pipelines.models import Step, StepResult, StepStatus
 from ci_connector_ops.utils import DESTINATION_CONNECTOR_PATH_PREFIX, SOURCE_CONNECTOR_PATH_PREFIX, Connector, get_connector_name_from_path
 from dagger import Config, Connection, Container, QueryError
 
@@ -150,3 +152,21 @@ def get_modified_connectors(modified_files: Set[str]) -> Set[Connector]:
         if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) or file_path.startswith(DESTINATION_CONNECTOR_PATH_PREFIX):
             modified_connectors.append(Connector(get_connector_name_from_path(file_path)))
     return set(modified_connectors)
+
+
+async def get_step_result(container: Container, step: Step) -> StepResult:
+    """Concurrent retrieval of exit code, stdout and stdout of a container.
+    Create a StepResult object from these objects.
+
+    Args:
+        container (Container): The container from which we want to infer a step result/
+        step (Step): The step that was ran to build the step result.
+
+    Returns:
+        StepResult: Failure or success with stdout and stderr.
+    """
+    async with asyncer.create_task_group() as task_group:
+        soon_exit_code = task_group.soonify(with_exit_code)(container)
+        soon_stderr = task_group.soonify(with_stderr)(container)
+        soon_stdout = task_group.soonify(with_stdout)(container)
+    return StepResult(step, StepStatus.from_exit_code(soon_exit_code.value), stderr=soon_stderr.value, stdout=soon_stdout.value)

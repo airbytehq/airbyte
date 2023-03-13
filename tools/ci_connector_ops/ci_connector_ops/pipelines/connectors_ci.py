@@ -11,10 +11,10 @@ import anyio
 import asyncer
 import click
 import dagger
-from ci_connector_ops.pipelines.actions import secrets, tests
+from ci_connector_ops.pipelines.actions import checks, tests
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.pipelines.github import update_commit_status_check
-from ci_connector_ops.pipelines.models import ConnectorTestReport, Step, StepResult, StepStatus
+from ci_connector_ops.pipelines.models import ConnectorTestReport
 from ci_connector_ops.pipelines.utils import (
     DAGGER_CONFIG,
     get_current_git_branch,
@@ -41,68 +41,36 @@ logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt=
 logger = logging.getLogger(__name__)
 
 
-async def run(test_context: ConnectorTestContext) -> ConnectorTestReport:
+async def run(context: ConnectorTestContext) -> ConnectorTestReport:
     """Runs a CI pipeline for a single connector.
     A visual DAG can be found on the README.md file of the pipelines modules.
 
     Args:
-        test_context (ConnectorTestContext): The initialized test context.
+        context (ConnectorTestContext): The initialized connector test context.
 
     Returns:
         ConnectorTestReport: The test reports holding tests results.
     """
-    async with test_context:
+    async with context:
         async with asyncer.create_task_group() as task_group:
-            soon_qa_checks_results = task_group.soonify(tests.run_qa_checks)(test_context)
-            soon_connector_install_result = task_group.soonify(tests.connector_install_check)(test_context)
+            soon_checks_results = task_group.soonify(checks.run_checks)(context)
+            soon_tests_results = task_group.soonify(tests.run_tests)(context)
+        context.test_report = ConnectorTestReport(context, steps_results=soon_tests_results.value + soon_checks_results.value)
 
-        qa_checks_results = soon_qa_checks_results.value
-        package_install_results, connector_under_test = soon_connector_install_result.value
-
-        async with asyncer.create_task_group() as task_group:
-            soon_code_format_checks_results = task_group.soonify(tests.run_code_format_checks)(connector_under_test)
-            soon_unit_tests_results = task_group.soonify(tests.run_unit_tests)(connector_under_test)
-
-        code_format_checks_results, unit_tests_results = soon_code_format_checks_results.value, soon_unit_tests_results.value
-
-        if unit_tests_results.status is StepStatus.SUCCESS:
-            test_context.secrets_dir = await secrets.get_connector_secret_dir(test_context)
-            async with asyncer.create_task_group() as task_group:
-                soon_integration_tests_results = task_group.soonify(tests.run_integration_tests)(connector_under_test, test_context)
-                soon_acceptance_tests_results = task_group.soonify(tests.run_acceptance_tests)(test_context)
-            integration_tests_results = soon_integration_tests_results.value
-            acceptance_tests_results, test_context.updated_secrets_dir = soon_acceptance_tests_results.value
-
-        else:
-            integration_tests_results = StepResult(Step.INTEGRATION_TESTS, StepStatus.SKIPPED, stdout="Skipped because unit tests failed")
-            acceptance_tests_results = StepResult(Step.ACCEPTANCE_TESTS, StepStatus.SKIPPED, stdout="Skipped because unit tests failed")
-
-        test_context.test_report = ConnectorTestReport(
-            test_context,
-            steps_results=[
-                package_install_results,
-                code_format_checks_results,
-                unit_tests_results,
-                integration_tests_results,
-                acceptance_tests_results,
-                qa_checks_results,
-            ],
-        )
-
-    return test_context.test_report
+    return context.test_report
 
 
-async def run_connectors_test_pipelines(test_contexts: List[ConnectorTestContext]):
+async def run_connectors_test_pipelines(contexts: List[ConnectorTestContext]):
     """Runs a CI pipeline for all the connectors passed.
 
     Args:
-        test_contexts (List[ConnectorTestContext]): List of connector test contexts for which a CI pipeline needs to be run.
+        contexts (List[ConnectorTestContext]): List of connector test contexts for which a CI pipeline needs to be run.
     """
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         async with anyio.create_task_group() as tg:
-            for test_context in test_contexts:
-                test_context.dagger_client = dagger_client.pipeline(f"{test_context.connector.technical_name} - Test Pipeline")
-                tg.start_soon(run, test_context)
+            for context in contexts:
+                context.dagger_client = dagger_client.pipeline(f"{context.connector.technical_name} - Test Pipeline")
+                tg.start_soon(run, context)
 
 
 @click.group()
