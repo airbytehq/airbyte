@@ -19,29 +19,6 @@ def create_source(config: Mapping[str, Any], debug: bool) -> ManifestDeclarative
     return ManifestDeclarativeSource(manifest, debug)
 
 
-def get_config_from_args(args: List[str]) -> Mapping[str, Any]:
-    command, config_filepath = preparse(args)
-    if command == "spec":
-        raise ValueError("spec command is not supported for injected declarative manifest")
-
-    config = BaseConnector.read_config(config_filepath)
-
-    if "__injected_declarative_manifest" not in config:
-        raise ValueError(
-            f"Invalid config: `__injected_declarative_manifest` should be provided at the root of the config but config only has keys {list(config.keys())}"
-        )
-
-    return config
-
-
-def preparse(args: List[str]) -> Tuple[str, str]:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("command", type=str, help="Airbyte Protocol command")
-    parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
-    parsed, _ = parser.parse_known_args(args)
-    return parsed.command, parsed.config
-
-
 def handle_connector_builder_request(source: ManifestDeclarativeSource, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog):
     command = config["__command"]
     if command == "resolve_manifest":
