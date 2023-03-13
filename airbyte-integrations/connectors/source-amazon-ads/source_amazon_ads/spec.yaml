@@ -86,6 +86,15 @@ connectionSpecification:
       type: "integer"
       default: 3
       order: 8
+    look_back_window_stream:
+      title: "Look Back Window Stream"
+      description: "Enable Look Back Window with incremental sync"
+      examples:
+      - true
+      - false
+      type: "boolean"
+      default: false
+      order: 9
   required:
     - client_id
     - client_secret

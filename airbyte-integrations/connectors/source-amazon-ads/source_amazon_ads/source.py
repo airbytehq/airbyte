@@ -55,6 +55,9 @@ class SourceAmazonAds(AbstractSource):
         if not config.get("look_back_window"):
             source_spec = self.spec(logging.getLogger("airbyte"))
             config["look_back_window"] = source_spec.connectionSpecification["properties"]["look_back_window"]["default"]
+        if not config.get("look_back_window_stream"):
+            source_spec = self.spec(logging.getLogger("airbyte"))
+            config["look_back_window_stream"] = source_spec.connectionSpecification["properties"]["look_back_window_stream"]["default"]
         return config
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
