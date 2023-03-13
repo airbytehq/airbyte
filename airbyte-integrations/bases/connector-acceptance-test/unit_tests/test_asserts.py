@@ -73,7 +73,7 @@ def test_verify_records_schema(configured_catalog: ConfiguredAirbyteCatalog):
 
     records = [AirbyteRecordMessage(stream="my_stream", data=record, emitted_at=0) for record in records]
 
-    streams_with_errors = verify_records_schema(records, configured_catalog)
+    streams_with_errors = verify_records_schema(records, configured_catalog, fail_on_extra_fields=False)
     errors = [error.message for error in streams_with_errors["my_stream"].values()]
 
     assert "my_stream" in streams_with_errors
@@ -138,7 +138,7 @@ def test_verify_records_schema(configured_catalog: ConfiguredAirbyteCatalog):
 )
 def test_validate_records_format(record, configured_catalog, valid):
     records = [AirbyteRecordMessage(stream="my_stream", data=record, emitted_at=0)]
-    streams_with_errors = verify_records_schema(records, configured_catalog)
+    streams_with_errors = verify_records_schema(records, configured_catalog, fail_on_extra_fields=False)
     if valid:
         assert not streams_with_errors
     else:

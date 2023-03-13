@@ -649,13 +649,13 @@ class TestBasicRead(BaseTest):
             ), f" Record {record} from {record.stream} stream with fields {record_fields} should have some fields mentioned by json schema: {schema_pathes}"
 
     @staticmethod
-    def _validate_schema(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
+    def _validate_schema(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog, fail_on_extra_fields: Boolean):
         """
         Check if data type and structure in records matches the one in json_schema of the stream in catalog
         """
         TestBasicRead._validate_records_structure(records, configured_catalog)
         bar = "-" * 80
-        streams_errors = verify_records_schema(records, configured_catalog)
+        streams_errors = verify_records_schema(records, configured_catalog, fail_on_extra_fields)
         for stream_name, errors in streams_errors.items():
             errors = map(str, errors.values())
             str_errors = f"\n{bar}\n".join(errors)
@@ -697,7 +697,7 @@ class TestBasicRead(BaseTest):
 
         return sorted(list(expected_paths))
 
-    def _validate_field_appears_at_least_once(self, records: List, configured_catalog: ConfiguredAirbyteCatalog):
+    def _validate_field_appears_at_least_once(self, records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
         """
         Validate if each field in a stream has appeared at least once in some record.
         """
@@ -716,6 +716,24 @@ class TestBasicRead(BaseTest):
         for stream_name, fields in stream_name_to_empty_fields_mapping.items():
             msg += f"`{stream_name}` stream has `{fields}` empty fields\n"
         assert not stream_name_to_empty_fields_mapping, msg
+
+    def _validate_no_extra_fields(self, records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
+        """
+        Check records for fields that weren't declared in the configured catalog.
+
+        :param records:
+        :param configured_catalog:
+        """
+        declared_configured_streams: List[ConfiguredAirbyteStream] = configured_catalog.streams
+        declared_streams: List[AirbyteStream] = [configured_stream.stream for configured_stream in declared_configured_streams]
+
+        fields_for_declared_streams = {}
+        for stream in declared_streams:
+            fields_for_declared_streams[stream.name] = _get_fields_from_stream_schema(stream.json_schema)
+
+        for record in records:
+            stream = record.stream
+            expected_fields = fields_for_declared_streams[stream]
 
     def _validate_expected_records(
         self,
@@ -802,6 +820,7 @@ class TestBasicRead(BaseTest):
         expect_records_config: ExpectedRecordsConfig,
         should_validate_schema: Boolean,
         should_validate_data_points: Boolean,
+        fail_on_extra_fields: Boolean,
         empty_streams: Set[EmptyStreamConfiguration],
         ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]],
         expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
@@ -813,8 +832,8 @@ class TestBasicRead(BaseTest):
 
         assert records, "At least one record should be read using provided catalog"
 
-        if should_validate_schema:
-            self._validate_schema(records=records, configured_catalog=configured_catalog)
+        if should_validate_schema:  # TODO Conditional logic
+            self._validate_schema(records=records, configured_catalog=configured_catalog, fail_on_extra_fields=fail_on_extra_fields)
 
         self._validate_empty_streams(records=records, configured_catalog=configured_catalog, allowed_empty_streams=empty_streams)
         for pks, record in primary_keys_for_records(streams=configured_catalog.streams, records=records):

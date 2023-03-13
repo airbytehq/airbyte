@@ -44,9 +44,9 @@ class TestFullRefresh(BaseTest):
         first_read_records_emitted_at = [record.emitted_at for record in first_read_records]
         max_emitted_at_first_read = max(first_read_records_emitted_at)
 
-        second_read_reords_emitted_at = [record.emitted_at for record in second_read_records]
+        second_read_records_emitted_at = [record.emitted_at for record in second_read_records]
 
-        min_emitted_at_second_read = min(second_read_reords_emitted_at)
+        min_emitted_at_second_read = min(second_read_records_emitted_at)
 
         assert max_emitted_at_first_read < min_emitted_at_second_read, "emitted_at should increase on subsequent runs"
 
