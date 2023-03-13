@@ -1,6 +1,6 @@
 # Bigquery Denormalized
 
-See [destinations/bigquery](/integrations/destinations/bigquery)
+See [destinations/bigquery](https://docs.airbyte.com/integrations/destinations/bigquery)
 
 ## Changelog
 
@@ -8,6 +8,7 @@ See [destinations/bigquery](/integrations/destinations/bigquery)
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                  |
 |:--------|:-----------|:----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
+| 1.2.15  | 2023-03-10 | [#23466](https://github.com/airbytehq/airbyte/pull/23466) | Changed S3 Avro type from Int to Long                                                                                   |
 | 1.2.14  | 2023-02-08 | [#22497](https://github.com/airbytehq/airbyte/pull/22497) | Fixed table already exists error                                                                                         |
 | 1.2.13  | 2023-01-26 | [#20631](https://github.com/airbytehq/airbyte/pull/20631) | Added support for destination checkpointing with staging                                                                 |
 | 1.2.12  | 2023-01-18 | [#21087](https://github.com/airbytehq/airbyte/pull/21087) | Wrap Authentication Errors as Config Exceptions                                                                          |

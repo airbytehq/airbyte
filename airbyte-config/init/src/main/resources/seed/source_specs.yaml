@@ -370,7 +370,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:2.0.0"
+- dockerImage: "airbyte/source-alloydb:2.0.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -1947,7 +1947,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-braintree:0.1.3"
+- dockerImage: "airbyte/source-braintree:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/braintree"
     connectionSpecification:
@@ -2100,7 +2100,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-cart:0.2.0"
+- dockerImage: "airbyte/source-cart:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/cart"
     connectionSpecification:
@@ -2854,7 +2854,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-confluence:0.1.1"
+- dockerImage: "airbyte/source-confluence:0.1.2"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -2865,19 +2865,23 @@
       - "api_token"
       - "domain_name"
       - "email"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         api_token:
+          title: "API Token"
           type: "string"
           description: "Please follow the Jira confluence for generating an API token:\
-            \ https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/"
+            \ <a href=\"https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/\"\
+            >generating an API token</a>."
           airbyte_secret: true
         domain_name:
+          title: "Domain name"
           type: "string"
           description: "Your Confluence domain name"
           examples:
           - "example.atlassian.net"
         email:
+          title: "Email"
           type: "string"
           description: "Your Confluence login email"
           examples:
@@ -3141,7 +3145,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-delighted:0.2.1"
+- dockerImage: "airbyte/source-delighted:0.2.2"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -3164,8 +3168,9 @@
           type: "string"
           description: "The date from which you'd like to replicate the data"
           examples:
+          - "2022-05-30T04:50:23Z"
           - "2022-05-30 04:50:23"
-          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2} ([0-9]{2}:[0-9]{2}:[0-9]{2})?$"
+          pattern: "^\\d{4}-\\d{2}-\\d{2}[T ]\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z?$"
           order: 1
           format: "date-time"
     supportsNormalization: false
@@ -3249,7 +3254,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-drift:0.2.5"
+- dockerImage: "airbyte/source-drift:0.2.6"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/drift"
     connectionSpecification:
@@ -3274,9 +3279,6 @@
               credentials:
                 type: "string"
                 const: "oauth2.0"
-                enum:
-                - "oauth2.0"
-                default: "oauth2.0"
                 order: 0
               client_id:
                 type: "string"
@@ -3307,9 +3309,6 @@
               credentials:
                 type: "string"
                 const: "access_token"
-                enum:
-                - "access_token"
-                default: "access_token"
                 order: 0
               access_token:
                 type: "string"
@@ -3739,7 +3738,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.85"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.86"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -3750,7 +3749,10 @@
         account_id:
           title: "Account ID"
           description: "The Facebook Ad account ID to use when pulling data from the\
-            \ Facebook Marketing API."
+            \ Facebook Marketing API. Open your Meta Ads Manager. The Ad account ID\
+            \ number is in the account dropdown menu or in your browser's address\
+            \ bar. See the <a href=\"https://www.facebook.com/business/help/1492627900875762\"\
+            >docs</a> for more information."
           order: 0
           examples:
           - "111111111111111"
@@ -3770,8 +3772,8 @@
           title: "End Date"
           description: "The date until which you'd like to replicate data for all\
             \ incremental streams, in the format YYYY-MM-DDT00:00:00Z. All data generated\
-            \ between start_date and this date will be replicated. Not setting this\
-            \ option will result in always syncing the latest data."
+            \ between the start date and this end date will be replicated. Not setting\
+            \ this option will result in always syncing the latest data."
           order: 2
           pattern: "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           examples:
@@ -3779,29 +3781,33 @@
           type: "string"
         access_token:
           title: "Access Token"
-          description: "The value of the access token generated. See the <a href=\"\
-            https://docs.airbyte.com/integrations/sources/facebook-marketing\">docs</a>\
-            \ for more information"
+          description: "The value of the generated access token. From your App’s Dashboard,\
+            \ click on \"Marketing API\" then \"Tools\". Select permissions <b>ads_management,\
+            \ ads_read, read_insights, business_management</b>. Then click on \"Get\
+            \ token\". See the <a href=\"https://docs.airbyte.com/integrations/sources/facebook-marketing\"\
+            >docs</a> for more information."
           order: 3
           airbyte_secret: true
           type: "string"
         include_deleted:
-          title: "Include Deleted"
-          description: "Include data from deleted Campaigns, Ads, and AdSets"
+          title: "Include Deleted Campaigns, Ads, and AdSets"
+          description: "Set to active if you want to include data from deleted Campaigns,\
+            \ Ads, and AdSets."
           default: false
           order: 4
           type: "boolean"
         fetch_thumbnail_images:
-          title: "Fetch Thumbnail Images"
-          description: "In each Ad Creative, fetch the thumbnail_url and store the\
-            \ result in thumbnail_data_url"
+          title: "Fetch Thumbnail Images from Ad Creative"
+          description: "Set to active if you want to fetch the thumbnail_url and store\
+            \ the result in thumbnail_data_url for each Ad Creative."
           default: false
           order: 5
           type: "boolean"
         custom_insights:
           title: "Custom Insights"
-          description: "A list which contains insights entries, each entry must have\
-            \ a name and can contains fields, breakdowns or action_breakdowns)"
+          description: "A list which contains ad statistics entries, each entry must\
+            \ have a name and can contains fields, breakdowns or action_breakdowns.\
+            \ Click on \"add\" to fill this field."
           order: 6
           type: "array"
           items:
@@ -4038,8 +4044,8 @@
                 title: "End Date"
                 description: "The date until which you'd like to replicate data for\
                   \ this stream, in the format YYYY-MM-DDT00:00:00Z. All data generated\
-                  \ between the start date and this date will be replicated. Not setting\
-                  \ this option will result in always syncing the latest data."
+                  \ between the start date and this end date will be replicated. Not\
+                  \ setting this option will result in always syncing the latest data."
                 pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
                 examples:
                 - "2017-01-26T00:00:00Z"
@@ -4067,7 +4073,12 @@
           type: "integer"
         insights_lookback_window:
           title: "Insights Lookback Window"
-          description: "The attribution window"
+          description: "The attribution window. Facebook freezes insight data 28 days\
+            \ after it was generated, which means that all data from the past 28 days\
+            \ may have changed since we last emitted it, so you can retrieve refreshed\
+            \ insights from the past by setting this parameter. If you set a custom\
+            \ lookback window value in Facebook account, please provide the same value\
+            \ here."
           default: 28
           order: 8
           maximum: 28
@@ -4306,7 +4317,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.33"
+- dockerImage: "airbyte/source-file:0.2.34"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/file"
     connectionSpecification:
@@ -4348,10 +4359,17 @@
           examples:
           - "{}"
           - "{\"sep\": \" \"}"
+          - sep: "\t"
+            header: 0
+            names: "column1, column2"
         url:
           type: "string"
           title: "URL"
           description: "The URL path to access the file which should be replicated."
+          examples:
+          - "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv"
+          - "gs://my-google-bucket/data.csv"
+          - "s3://gdelt-open-data/events/20190914.export.csv"
         provider:
           type: "object"
           title: "Storage Provider"
@@ -5431,7 +5449,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.2.10"
+- dockerImage: "airbyte/source-google-ads:0.2.11"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -5721,7 +5739,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-data-api:0.1.1"
+- dockerImage: "airbyte/source-google-analytics-data-api:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-analytics-v4"
     connectionSpecification:
@@ -6297,7 +6315,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-greenhouse:0.3.0"
+- dockerImage: "airbyte/source-greenhouse:0.3.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/greenhouse"
     connectionSpecification:
@@ -6985,7 +7003,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-iterable:0.1.24"
+- dockerImage: "airbyte/source-iterable:0.1.26"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/iterable"
     connectionSpecification:
@@ -8937,7 +8955,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-monday:0.2.2"
+- dockerImage: "airbyte/source-monday:0.2.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/monday"
     connectionSpecification:
@@ -11309,7 +11327,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-pipedrive:0.1.15"
+- dockerImage: "airbyte/source-pipedrive:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pipedrive"
     connectionSpecification:
@@ -11691,7 +11709,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:2.0.0"
+- dockerImage: "airbyte/source-postgres:2.0.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -14374,7 +14392,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-square:0.2.0"
+- dockerImage: "airbyte/source-square:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/square"
     connectionSpecification:
@@ -14621,7 +14639,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-stripe:3.0.0"
+- dockerImage: "airbyte/source-stripe:3.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
     connectionSpecification:
@@ -14955,7 +14973,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tempo:0.3.0"
+- dockerImage: "airbyte/source-tempo:0.3.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/"
     connectionSpecification:
@@ -15825,6 +15843,50 @@
             type: "string"
           uniqueItems: true
           order: 2
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-unleash:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/unleash"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Unleash Source Spec"
+      type: "object"
+      required:
+      - "api_token"
+      - "api_url"
+      additionalProperties: true
+      properties:
+        api_token:
+          title: "API Token Client"
+          type: "string"
+          description: "Your API Token (Server-Side SDK [Client]). See <a href=\"\
+            https://docs.getunleash.io/how-to/how-to-create-api-tokens/\">here</a>.\
+            \ The token is case sensitive."
+          airbyte_secret: true
+          examples:
+          - "project:environment.be44368985f7fb3237c584ef86f3d6bdada42ddbd63a019d26955178"
+          - "*:environment.be44368985f7fb3237c584ef86f3d6bdada42ddbd63a019d26955178"
+          - "be44368985f7fb3237c584ef86f3d6bdada42ddbd63a019d26955178"
+        api_url:
+          title: "API URL"
+          type: "string"
+          description: "Your API URL. No trailing slash. ex: http://unleash.host.com/api"
+        project_name:
+          title: "Project Name"
+          type: "string"
+          description: "Use this if you want to filter the API call for only one given\
+            \ project (can be used in addition to the \"Feature Name Prefix\" field).\
+            \ See <a href=\"https://docs.getunleash.io/reference/api/legacy/unleash/client/features#filter-feature-toggles\"\
+            >here</a>"
+        nameprefix:
+          title: "Feature Name Prefix"
+          type: "string"
+          description: "Use this if you want to filter the API call for only one given\
+            \ project (can be used in addition to the \"Feature Name Prefix\" field).\
+            \ See <a href=\"https://docs.getunleash.io/reference/api/legacy/unleash/client/features#filter-feature-toggles\"\
+            >here</a>"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -16919,7 +16981,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-zenloop:0.1.5"
+- dockerImage: "airbyte/source-zenloop:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zenloop"
     connectionSpecification:
