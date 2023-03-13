@@ -41,29 +41,15 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
   }
 
   @Override
-  public AirbyteConnectionStatus check(final JsonNode config) {
+  protected AirbyteConnectionStatus checkedConnectionStatus(DataSource dataSource, JsonNode config) throws Exception {
     final NamingConventionTransformer nameTransformer = getNamingResolver();
     final SnowflakeInternalStagingSqlOperations snowflakeInternalStagingSqlOperations = new SnowflakeInternalStagingSqlOperations(nameTransformer);
-    final DataSource dataSource = getDataSource(config);
-    try {
-      final JdbcDatabase database = getDatabase(dataSource);
-      final String outputSchema = nameTransformer.getIdentifier(config.get("schema").asText());
-      attemptTableOperations(outputSchema, database, nameTransformer,
-          snowflakeInternalStagingSqlOperations, true);
-      attemptStageOperations(outputSchema, database, nameTransformer, snowflakeInternalStagingSqlOperations);
-      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
-    } catch (final Exception e) {
-      LOGGER.error("Exception while checking connection: ", e);
-      return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
-    } finally {
-      try {
-        DataSourceFactory.close(dataSource);
-      } catch (final Exception e) {
-        LOGGER.warn("Unable to close data source.", e);
-      }
-    }
+    final JdbcDatabase database = getDatabase(dataSource);
+    final String outputSchema = nameTransformer.getIdentifier(config.get("schema").asText());
+    attemptTableOperations(outputSchema, database, nameTransformer,
+        snowflakeInternalStagingSqlOperations, true);
+    attemptStageOperations(outputSchema, database, nameTransformer, snowflakeInternalStagingSqlOperations);
+    return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
   }
 
   private static void attemptStageOperations(final String outputSchema,

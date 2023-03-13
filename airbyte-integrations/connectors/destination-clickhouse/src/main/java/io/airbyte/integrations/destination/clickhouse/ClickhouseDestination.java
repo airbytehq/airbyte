@@ -81,26 +81,12 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
   }
 
   @Override
-  public AirbyteConnectionStatus check(final JsonNode config) {
-    final DataSource dataSource = getDataSource(config);
-    try {
-      final JdbcDatabase database = getDatabase(dataSource);
-      final NamingConventionTransformer namingResolver = getNamingResolver();
-      final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, getSqlOperations());
-      return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-    } catch (final Exception e) {
-      LOGGER.error("Exception while checking connection: ", e);
-      return new AirbyteConnectionStatus()
-          .withStatus(Status.FAILED)
-          .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
-    } finally {
-      try {
-        DataSourceFactory.close(dataSource);
-      } catch (final Exception e) {
-        LOGGER.warn("Unable to close data source.", e);
-      }
-    }
+  protected AirbyteConnectionStatus checkedConnectionStatus(DataSource dataSource, JsonNode config) throws Exception {
+    final JdbcDatabase database = getDatabase(dataSource);
+    final NamingConventionTransformer namingResolver = getNamingResolver();
+    final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
+    attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, getSqlOperations());
+    return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
   }
 
   @Override

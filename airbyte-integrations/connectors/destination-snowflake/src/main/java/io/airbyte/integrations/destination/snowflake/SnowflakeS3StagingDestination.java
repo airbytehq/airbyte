@@ -49,7 +49,7 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
   }
 
   @Override
-  public AirbyteConnectionStatus check(final JsonNode config) {
+  protected AirbyteConnectionStatus checkedConnectionStatus(DataSource dataSource, JsonNode config) throws Exception {
     final S3DestinationConfig s3Config = getS3DestinationConfig(config);
     final EncryptionConfig encryptionConfig = EncryptionConfig.fromJson(config.get("loading_method").get("encryption"));
     if (!isPurgeStagingData(config) && encryptionConfig instanceof AesCbcEnvelopeEncryption c && c.keyType() == KeyType.EPHEMERAL) {
@@ -60,27 +60,13 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
     }
     final NamingConventionTransformer nameTransformer = getNamingResolver();
     final SnowflakeS3StagingSqlOperations snowflakeS3StagingSqlOperations =
-        new SnowflakeS3StagingSqlOperations(nameTransformer, s3Config.getS3Client(), s3Config, encryptionConfig);
-    final DataSource dataSource = getDataSource(config);
-    try {
-      final JdbcDatabase database = getDatabase(dataSource);
-      final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
-      attemptTableOperations(outputSchema, database, nameTransformer, snowflakeS3StagingSqlOperations,
-          true);
-      attemptStageOperations(outputSchema, database, nameTransformer, snowflakeS3StagingSqlOperations);
-      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
-    } catch (final Exception e) {
-      LOGGER.error("Exception while checking connection: ", e);
-      return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
-    } finally {
-      try {
-        DataSourceFactory.close(dataSource);
-      } catch (final Exception e) {
-        LOGGER.warn("Unable to close data source.", e);
-      }
-    }
+      new SnowflakeS3StagingSqlOperations(nameTransformer, s3Config.getS3Client(), s3Config, encryptionConfig);
+    final JdbcDatabase database = getDatabase(dataSource);
+    final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
+    attemptTableOperations(outputSchema, database, nameTransformer, snowflakeS3StagingSqlOperations,
+        true);
+    attemptStageOperations(outputSchema, database, nameTransformer, snowflakeS3StagingSqlOperations);
+    return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
   }
 
   private static void attemptStageOperations(final String outputSchema,

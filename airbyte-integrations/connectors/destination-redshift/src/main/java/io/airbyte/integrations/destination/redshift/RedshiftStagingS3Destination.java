@@ -64,7 +64,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   @Override
-  public AirbyteConnectionStatus check(final JsonNode config) {
+  protected AirbyteConnectionStatus checkedConnectionStatus(DataSource dataSource, JsonNode config) throws Exception {
     final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
     final EncryptionConfig encryptionConfig =
         config.has(UPLOADING_METHOD) ? EncryptionConfig.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
@@ -80,7 +80,6 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
     final NamingConventionTransformer nameTransformer = getNamingResolver();
     final RedshiftS3StagingSqlOperations redshiftS3StagingSqlOperations =
         new RedshiftS3StagingSqlOperations(nameTransformer, s3Config.getS3Client(), s3Config, encryptionConfig);
-    final DataSource dataSource = getDataSource(config);
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
       final String outputSchema = super.getNamingResolver().getIdentifier(config.get(JdbcUtils.SCHEMA_KEY).asText());
@@ -92,17 +91,6 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
           .withMessage(message);
-    } catch (final Exception e) {
-      LOGGER.error("Exception while checking connection: ", e);
-      return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
-    } finally {
-      try {
-        DataSourceFactory.close(dataSource);
-      } catch (final Exception e) {
-        LOGGER.warn("Unable to close data source.", e);
-      }
     }
   }
 
