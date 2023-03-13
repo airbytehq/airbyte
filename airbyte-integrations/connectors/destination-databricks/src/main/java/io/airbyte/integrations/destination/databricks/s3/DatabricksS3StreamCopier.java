@@ -9,7 +9,7 @@ import static org.apache.logging.log4j.util.Strings.EMPTY;
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.databricks.DatabricksDestinationConfig;
 import io.airbyte.integrations.destination.databricks.DatabricksStreamCopier;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -57,7 +57,7 @@ public class DatabricksS3StreamCopier extends DatabricksStreamCopier {
                                   final AmazonS3 s3Client,
                                   final JdbcDatabase database,
                                   final DatabricksDestinationConfig databricksConfig,
-                                  final ExtendedNameTransformer nameTransformer,
+                                  final StandardNameTransformer nameTransformer,
                                   final SqlOperations sqlOperations,
                                   final S3WriterFactory writerFactory,
                                   final Timestamp uploadTime)

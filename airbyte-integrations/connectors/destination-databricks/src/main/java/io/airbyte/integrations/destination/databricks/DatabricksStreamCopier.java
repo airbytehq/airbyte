@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.databricks;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.databricks.utils.DatabricksConstants;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
@@ -49,7 +49,7 @@ public abstract class DatabricksStreamCopier implements StreamCopier {
                                 final ConfiguredAirbyteStream configuredStream,
                                 final JdbcDatabase database,
                                 final DatabricksDestinationConfig databricksConfig,
-                                final ExtendedNameTransformer nameTransformer,
+                                final StandardNameTransformer nameTransformer,
                                 final SqlOperations sqlOperations) {
     this.schemaName = schema;
     this.streamName = configuredStream.getStream().getName();
