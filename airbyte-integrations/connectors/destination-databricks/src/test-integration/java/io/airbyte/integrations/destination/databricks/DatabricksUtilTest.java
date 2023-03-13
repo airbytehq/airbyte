@@ -31,13 +31,13 @@ public class DatabricksUtilTest {
         DatabricksDatabaseUtil.getDatabricksConnectionString(databricksConfig), SQLDialect.DEFAULT, DEFAULT_PROPERTY);
   }
 
-  protected static void tearDown(final DatabricksDestinationConfig databricksConfig) throws SQLException {
+  protected static void cleanUpData(final DatabricksDestinationConfig databricksConfig) throws SQLException {
     LOGGER.info("Dropping database schema {}", databricksConfig.schema());
     try (final DSLContext dslContext = DatabricksUtilTest.getDslContext(databricksConfig)) {
       final Database database = new Database(dslContext);
       // we cannot use jooq dropSchemaIfExists method here because there is no proper dialect for
       // Databricks, and it incorrectly quotes the schema name
-      database.query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE;", databricksConfig.schema())));
+      database.query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s.%s CASCADE;", databricksConfig.catalog(), databricksConfig.schema())));
     } catch (final Exception e) {
       throw new SQLException(e);
     }

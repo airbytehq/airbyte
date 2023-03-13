@@ -67,7 +67,7 @@ public abstract class DatabricksDestinationAcceptanceTest extends DestinationAcc
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws SQLException {
-    DatabricksUtilTest.tearDown(databricksConfig);
+    DatabricksUtilTest.cleanUpData(databricksConfig);
   }
 
 }
