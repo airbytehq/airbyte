@@ -49,26 +49,5 @@ def resolve_manifest(source: ManifestDeclarativeSource) -> AirbyteMessage:
         return error.as_airbyte_message()
 
 
-CONNECTOR_BUILDER_STREAMS = {
-    "resolve_manifest",
-    "list_streams"
-}
-
-
-def get_connector_builder_request_handler(config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog):
-    stream_names = set([s.stream.name for s in configured_catalog.streams])
-    if any([s in CONNECTOR_BUILDER_STREAMS for s in stream_names]) or "__test_read_config" in config:
-        if len(stream_names) != 1:
-            raise ValueError(f"Only reading from a single stream is supported. Got: {stream_names}")
-        command = next(iter(stream_names))  # Connector builder only supports reading from a single stream
-        if command == "resolve_manifest":
-            return resolve_manifest
-        elif command == "list_streams":
-            return list_streams
-        else:
-            return partial(read_stream, config=config, configured_catalog=configured_catalog)
-    return None
-
-
 def _emitted_at():
     return int(datetime.now().timestamp()) * 1000
