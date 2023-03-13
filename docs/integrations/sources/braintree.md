@@ -58,6 +58,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.4 | 2023-03-13 | [23548](https://github.com/airbytehq/airbyte/pull/23548) | Update braintree python library version to 4.18.1 |
 | 0.1.3 | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434) | Update fields in source-connectors specifications |
 | 0.1.2 | 2021-12-22 | [9042](https://github.com/airbytehq/airbyte/pull/9042) | Fix `$ref` in schema and spec |
 | 0.1.1 | 2021-10-27 | [7432](https://github.com/airbytehq/airbyte/pull/7432) | Dispute model should accept multiple Evidences |
