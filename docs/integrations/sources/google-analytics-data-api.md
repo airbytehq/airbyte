@@ -85,7 +85,7 @@ This connector outputs the following incremental streams:
 :::note
 
   * Custom reports should be provided in format `[{"name": "<report-name>", "dimensions": ["<dimension-name>", ...], "metrics": ["<metric-name>", ...]}]`
-
+  * To enable Incremental sync for Custom reports, you need to include the `date` dimension.
 :::
 
 ## Performance Considerations
