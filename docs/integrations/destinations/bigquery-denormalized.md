@@ -1,6 +1,6 @@
 # Bigquery Denormalized
 
-See [destinations/bigquery](/integrations/destinations/bigquery)
+See [destinations/bigquery](https://docs.airbyte.com/integrations/destinations/bigquery)
 
 ## Changelog
 

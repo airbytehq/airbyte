@@ -62,11 +62,11 @@ The SpaceX-API source connector supports the following [sync modes](https://docs
 
 ## API method example
 
-GET https://api.spacexdata.com/v5/launches/latest
+`GET https://api.spacexdata.com/v5/launches/latest`
 
 ## Performance considerations
 
-SpaceX's [API reference](https://api.spacexdata.com/v5/) has both v4 an v5 for launches. The connector as default uses V4 as it has minimal bugs.
+The SpaceX API has both v4 and v5 for [launches](https://github.com/r-spacex/SpaceX-API/tree/master/docs/launches). The connector as default uses V4 as it has minimal bugs.
 
 ## Changelog
 
