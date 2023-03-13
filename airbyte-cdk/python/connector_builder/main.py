@@ -22,7 +22,7 @@ def create_source(config: Mapping[str, Any], debug: bool) -> ManifestDeclarative
 def handle_connector_builder_request(source: ManifestDeclarativeSource, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog):
     command = config["__command"]
     if command == "resolve_manifest":
-        result =  resolve_manifest(source)
+        result = resolve_manifest(source)
     elif command == "read":
         result = read_stream(source, config, catalog)
     else:

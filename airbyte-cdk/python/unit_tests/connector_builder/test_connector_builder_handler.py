@@ -3,13 +3,16 @@
 #
 
 import copy
+from unittest.mock import patch
 
 import pytest
 
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from connector_builder.connector_builder_handler import resolve_manifest
-from connector_builder.main import handle_connector_builder_request
+from connector_builder.main import handle_connector_builder_request, read_stream
+from connector_builder.models import StreamRead
 from unit_tests.connector_builder.utils import create_configured_catalog
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, AirbyteMessage
 
 _stream_name = "stream_with_custom_requester"
 _stream_primary_key = "id"
@@ -50,14 +53,6 @@ MANIFEST = {
 CONFIG = {
     "__injected_declarative_manifest": MANIFEST,
 }
-
-TEST_READ_CONFIG = {
-    "__injected_declarative_manifest": MANIFEST,
-    "__test_read_config": {
-        "max_records": 10
-    }
-}
-
 
 def test_resolve_manifest():
     source = ManifestDeclarativeSource(MANIFEST)
@@ -204,4 +199,3 @@ def test_invalid_command(command):
     source = ManifestDeclarativeSource(CONFIG["__injected_declarative_manifest"])
     with pytest.raises(ValueError):
         handle_connector_builder_request(source, config, create_configured_catalog("my_stream"))
-
