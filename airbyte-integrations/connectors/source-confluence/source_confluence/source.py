@@ -66,6 +66,9 @@ class BaseContentStream(ConfluenceStream, ABC):
         "restrictions.read.restrictions.user",
         "version",
         "descendants.comment",
+        "body",
+        "body.storage",
+        "body.view",
     ]
     limit = 25
     content_type = None
