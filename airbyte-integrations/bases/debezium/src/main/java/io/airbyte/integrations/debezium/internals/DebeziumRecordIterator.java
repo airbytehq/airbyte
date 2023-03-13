@@ -55,6 +55,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   private boolean hasSnapshotFinished;
   private LocalDateTime tsLastHeartbeat;
   private long lastHeartbeatPosition;
+  private Map<String, ?> lastHeartbeatSourceOffset;
   private int maxInstanceOfNoRecordsFound;
 
   public DebeziumRecordIterator(final LinkedBlockingQueue<ChangeEvent<String, String>> queue,
@@ -73,6 +74,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     this.hasSnapshotFinished = true;
     this.tsLastHeartbeat = null;
     this.lastHeartbeatPosition = -1;
+    this.lastHeartbeatSourceOffset = new HashMap<>(1);;
     this.maxInstanceOfNoRecordsFound = 0;
   }
 
@@ -115,16 +117,23 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
           continue;
         }
 
-        final long heartbeatPos = getHeartbeatPosition(next);
+        final Map<String, ?> heartbeatSourceOffset = getHeartbeatSourceOffset(next);
+
+        LOGGER.error("Source record offset: {}", heartbeatSourceOffset);
+        LOGGER.error("Source record offset last: {}", this.lastHeartbeatSourceOffset);
+
+        final long heartbeatPos = (long) targetPosition.getHeartbeatPositon(heartbeatSourceOffset);
+        LOGGER.debug("Found heartbeat position: {}", heartbeatPos);
         // wrap up sync if heartbeat position crossed the target OR heartbeat position hasn't changed for
         // too long
-        if (hasSyncFinished(heartbeatPos)) {
+        if (hasSyncFinished(lastHeartbeatSourceOffset, heartbeatPos)) {
           LOGGER.info("Closing: Heartbeat indicates sync is done");
           requestClose();
         }
-        if (heartbeatPos != this.lastHeartbeatPosition) {
+        if (!heartbeatSourceOffset.equals(this.lastHeartbeatSourceOffset)) {
           this.tsLastHeartbeat = LocalDateTime.now();
           this.lastHeartbeatPosition = heartbeatPos;
+          this.lastHeartbeatSourceOffset = heartbeatSourceOffset;
         }
         continue;
       }
@@ -146,9 +155,16 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     return endOfData();
   }
 
-  private boolean hasSyncFinished(final long heartbeatPos) {
-    return targetPosition.reachedTargetPosition(heartbeatPos)
-        || (heartbeatPos == this.lastHeartbeatPosition && heartbeatPosNotChanging());
+  private boolean hasSyncFinished(Map<String, ?> heartbeatSourceOffset, final long heartbeatPos) {
+    if (heartbeatSourceOffset.get("lsn") != null) {
+      return targetPosition.reachedTargetPosition(heartbeatPos)
+          || (heartbeatPos == this.lastHeartbeatPosition && heartbeatPosNotChanging());
+    } else if (heartbeatSourceOffset.get("file") != null && heartbeatSourceOffset.get("pos") != null) {
+      final String file = (String) heartbeatSourceOffset.get("file");
+      return targetPosition.reachedTargetPosition(file, heartbeatPos)
+          || (heartbeatSourceOffset.equals(this.lastHeartbeatSourceOffset) && heartbeatPosNotChanging());
+    }
+    return false;
   }
 
   /**
@@ -209,10 +225,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
    * reflection to setAccessible for each event
    */
   @VisibleForTesting
-  protected long getHeartbeatPosition(final ChangeEvent<String, String> heartbeatEvent) {
-    if (heartbeatEvent == null) {
-      return -1;
-    }
+  protected Map<String, ?> getHeartbeatSourceOffset(final ChangeEvent<String, String> heartbeatEvent) {
 
     try {
       final Class<? extends ChangeEvent> eventClass = heartbeatEvent.getClass();
@@ -230,11 +243,9 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
       }
 
       final SourceRecord sr = (SourceRecord) f.get(heartbeatEvent);
-      final long hbLsn = (long) sr.sourceOffset().get("lsn");
-      LOGGER.debug("Found heartbeat lsn: {}", hbLsn);
-      return hbLsn;
+      return sr.sourceOffset();
     } catch (final NoSuchFieldException | IllegalAccessException e) {
-      LOGGER.info("failed to get heartbeat lsn");
+      LOGGER.info("failed to get heartbeat source offset");
       throw new RuntimeException(e);
     }
   }

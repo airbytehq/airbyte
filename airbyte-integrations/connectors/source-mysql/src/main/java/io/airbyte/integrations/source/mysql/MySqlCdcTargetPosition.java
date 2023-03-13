@@ -10,6 +10,7 @@ import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.SnapshotMetadata;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -86,6 +87,21 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition {
       return isEventPositionAfter;
     }
 
+  }
+
+  @Override
+  public boolean reachedTargetPosition(final String eventFileName, final Long eventPosition) {
+    return eventFileName.compareTo(fileName) > 0 || (eventFileName.compareTo(fileName) == 0 && eventPosition >= position);
+  }
+
+  @Override
+  public boolean isHeartbeatSupported() {
+    return true;
+  }
+
+  @Override
+  public Object getHeartbeatPositon(Map<String, ?> sourceOffset) {
+    return sourceOffset.get("pos");
   }
 
 }

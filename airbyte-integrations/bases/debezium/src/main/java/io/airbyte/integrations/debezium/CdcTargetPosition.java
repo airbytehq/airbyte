@@ -5,6 +5,7 @@
 package io.airbyte.integrations.debezium;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.Map;
 
 /**
  * This interface is used to define the target position at the beginning of the sync so that once we
@@ -34,6 +35,17 @@ public interface CdcTargetPosition {
   }
 
   /**
+   * Checks if a specified pos has reached the target pos in binlog file.
+   *
+   * @param filename a binlog file name
+   * @param pos an position value
+   * @return true if pos is equal or greater than target pos
+   */
+  default boolean reachedTargetPosition(final String filename, final Long pos) {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
    * Indicates whether the implementation supports heartbeat position.
    *
    * @return true if heartbeats are supported
@@ -41,5 +53,13 @@ public interface CdcTargetPosition {
   default boolean isHeartbeatSupported() {
     return false;
   }
+
+  /**
+   * Returns a position value from a heartbeat event offset.
+   *
+   * @param sourceOffset source offset params from heartbeat change event
+   * @return the hearbeat position in a heartbeat change event or null
+   */
+  Object getHeartbeatPositon(Map<String, ?> sourceOffset);
 
 }
