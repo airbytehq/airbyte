@@ -407,7 +407,7 @@ def test_read(schema, ignored_fields, expect_records_config, record, expected_re
     (
             {"type": "object", "properties": {"field_1": {"type": ["string"]}, "field_2": {"type": ["string"]}}},
             {"field_1": "value", "field_2": "value", "surprise_field": "value"},
-            does_not_raise(),  # Should raise though
+            pytest.raises(Failed, match="test_stream"),
     ),
     (
             {"type": "object", "additionalProperties": True, "properties": {"field_1": {"type": ["string"]}, "field_2": {"type": ["string"]}}},

@@ -46,11 +46,14 @@ class CustomFormatChecker(FormatChecker):
             return super().check(instance, format)
 
 
-def _enforce_no_additional_properties(json_schema: Dict[str, Any]):
-    """Replace any instances of additionalProperties: true with additionalProperties: false"""
+def _enforce_no_extra_fields(json_schema: Dict[str, Any]):
+    """Create a copy of the schema in which `additionalProperties` is set to False for the dict of fields.
+
+    This method will override the value of `additionalProperties` on the highest level object of the json schema
+    if it is set, or will create the property and set it to False if it does not exist.
+    """
     enforced_schema = copy.deepcopy(json_schema)
-    for path, value in dpath.util.search(enforced_schema, "**/additionalProperties", yielded=True):
-        dpath.util.set(enforced_schema, path, False)
+    dpath.util.new(enforced_schema, "additionalProperties", False)
     return enforced_schema
 
 
@@ -64,8 +67,7 @@ def verify_records_schema(
     for stream in catalog.streams:
         schema_to_validate_against = stream.stream.json_schema
         if fail_on_extra_fields:
-            schema_to_validate_against = _enforce_no_additional_properties(schema_to_validate_against)
-            print(schema_to_validate_against)
+            schema_to_validate_against = _enforce_no_extra_fields(schema_to_validate_against)
         stream_validators[stream.stream.name] = Draft7ValidatorWithStrictInteger(
             schema_to_validate_against, format_checker=CustomFormatChecker()
         )
