@@ -98,7 +98,7 @@ const EditControls: React.FC<EditControlProps> = ({
       {withLine && <Line />}
       <Buttons>
         <div>{showStatusMessage()}</div>
-        <ButtonRows>
+        <ButtonRows top="40" bottom="20">
           <BigButton
             type="button"
             secondary

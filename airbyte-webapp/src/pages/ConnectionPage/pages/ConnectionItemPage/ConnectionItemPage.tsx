@@ -86,7 +86,7 @@ const ConnectionItemPage: React.FC = () => {
         headTitle={
           <HeadTitle
             titles={[
-              { id: "sidebar.connections" },
+              { id: "connection.pageTitle" },
               {
                 id: "connection.fromTo",
                 values: {

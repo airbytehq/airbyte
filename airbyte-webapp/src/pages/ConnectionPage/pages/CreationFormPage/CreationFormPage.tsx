@@ -8,6 +8,7 @@ import { ConnectionStep, CreateStepTypes } from "components/ConnectionStep";
 import { FormPageContent } from "components/ConnectorBlocks";
 import CreateConnectionContent from "components/CreateConnectionContent";
 // import StepsMenu from "components/StepsMenu";
+import HeadTitle from "components/HeadTitle";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useGetDestination } from "hooks/services/useDestinationHook";
@@ -284,6 +285,7 @@ export const CreationFormPage: React.FC<{
   };
   return (
     <>
+      <HeadTitle titles={[{ id: "connection.newConnectionTitle" }]} />
       <ConnectionStep lightMode type="connection" activeStep={currentStep} />
       <ConnectorDocumentationWrapper>
         <FormPageContent big={currentStep === CreateStepTypes.CREATE_CONNECTION}>{renderStep()}</FormPageContent>
