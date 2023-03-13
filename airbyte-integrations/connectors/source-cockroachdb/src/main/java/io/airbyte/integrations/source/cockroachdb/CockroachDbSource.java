@@ -99,11 +99,6 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
                                                     final ConfiguredAirbyteCatalog catalog,
                                                     final JsonNode state)
       throws Exception {
-    final AirbyteConnectionStatus check = check(config);
-
-    if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
-      throw new RuntimeException("Unable establish a connection: " + check.getMessage());
-    }
 
     return super.read(config, catalog, state);
   }
