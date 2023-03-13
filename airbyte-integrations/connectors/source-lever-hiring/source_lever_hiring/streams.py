@@ -10,7 +10,20 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
-from .schemas import Application, ArchiveReason, BaseSchemaModel, Interview, Note, Offer, Opportunity, Posting, Referral, Source, Stage, User
+from .schemas import (
+    Application,
+    ArchiveReason,
+    BaseSchemaModel,
+    Interview,
+    Note,
+    Offer,
+    Opportunity,
+    Posting,
+    Referral,
+    Source,
+    Stage,
+    User,
+)
 
 
 class LeverHiringStream(HttpStream, ABC):
