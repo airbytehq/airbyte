@@ -1,0 +1,36 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/StandardSyncSummary.yaml
+title: StandardSyncSummary
+description:
+  standard information output by ALL sources for a sync step (our version
+  of state.json)
+type: object
+required:
+  - status
+  - recordsSynced
+  - bytesSynced
+  - startTime
+  - endTime
+  - totalStats
+  - streamStats
+additionalProperties: false
+properties:
+  status:
+    "$ref": ReplicationStatus.yaml
+  recordsSynced: # TODO (parker) remove in favor of totalRecordsEmitted
+    type: integer
+    minValue: 0
+  bytesSynced: # TODO (parker) remove in favor of totalBytesEmitted
+    type: integer
+    minValue: 0
+  startTime:
+    type: integer
+  endTime:
+    type: integer
+  totalStats:
+    "$ref": SyncStats.yaml
+  streamStats:
+    type: array
+    items:
+      "$ref": StreamSyncStats.yaml

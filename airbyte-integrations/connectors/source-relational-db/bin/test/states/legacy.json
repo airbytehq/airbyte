@@ -1,0 +1,17 @@
+{
+  "cdc": false,
+  "streams": [
+    {
+      "cursor": "4",
+      "stream_name": "cars",
+      "cursor_field": ["id"],
+      "stream_namespace": "public"
+    },
+    {
+      "cursor": "1",
+      "stream_name": "us_states",
+      "cursor_field": ["id"],
+      "stream_namespace": "public"
+    }
+  ]
+}

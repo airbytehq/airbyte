@@ -1,0 +1,8 @@
+{
+  "sourceDefinitionId": "6fe89830-d04d-401b-aad6-6552ffa5c4af",
+  "name": "Harness",
+  "dockerRepository": "farosai/airbyte-harness-source",
+  "dockerImageTag": "0.1.23",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/harness",
+  "icon": "harness.svg"
+}

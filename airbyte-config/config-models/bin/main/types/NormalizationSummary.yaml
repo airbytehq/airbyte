@@ -1,0 +1,19 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/NormalizationSummary.yaml
+title: NormalizationSummary
+description: information output by syncs for which a normalization step was performed
+type: object
+required:
+  - startTime
+  - endTime
+additionalProperties: false
+properties:
+  startTime:
+    type: integer
+  endTime:
+    type: integer
+  failures:
+    type: array
+    items:
+      "$ref": FailureReason.yaml

@@ -1,0 +1,97 @@
+{
+  "type": "object",
+  "properties": {
+    "username": {
+      "type": "string"
+    },
+    "password1": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["key1"],
+          "properties": {
+            "key1": {
+              "type": "string",
+              "airbyte_secret": true
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["key2"],
+          "properties": {
+            "key2": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "required": ["key3"],
+                  "properties": {
+                    "key3": {
+                      "type": "string",
+                      "airbyte_secret": true
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": ["key4"],
+                  "properties": {
+                    "key4": {
+                      "type": "string",
+                      "airbyte_secret": true
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "password2": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["key5"],
+          "properties": {
+            "key5": {
+              "type": "string",
+              "airbyte_secret": true
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["key6"],
+          "properties": {
+            "key6": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "required": ["key7"],
+                  "properties": {
+                    "key7": {
+                      "type": "string",
+                      "airbyte_secret": true
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": ["key8"],
+                  "properties": {
+                    "key8": {
+                      "type": "string",
+                      "airbyte_secret": true
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  },
+  "required": ["username", "password1", "password2"]
+}
