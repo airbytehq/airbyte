@@ -74,10 +74,10 @@ def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_da
     # Add a column 'is_oss' to indicate if an image/version pair is in the oss catalog
     oss_destinations_dataframe['is_oss'] = True
 
-    composite_key = ['dockerRepository', 'dockerImageTag']
+    composite_key = ['destinationDefinitionId', 'dockerRepository', 'dockerImageTag']
 
     # Merge the two catalogs on the 'image' and 'version' columns, keeping only the unique pairs
-    merged_catalog = pd.merge(cloud_destinations_dataframe, oss_destinations_dataframe, how='outer', on=composite_key).drop_duplicates(subset=composite_key)
+    merged_catalog = pd.merge(cloud_destinations_dataframe, oss_destinations_dataframe, how='outer', suffixes=["cloud", "oss"], on=composite_key).drop_duplicates(subset=composite_key)
 
     # Replace NaN values in the 'is_cloud' and 'is_oss' columns with False
     merged_catalog[['is_cloud', 'is_oss']] = merged_catalog[['is_cloud', 'is_oss']].fillna(False)
@@ -98,10 +98,10 @@ def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe) -> pd.
     # Add a column 'is_oss' to indicate if an image/version pair is in the oss catalog
     oss_sources_dataframe['is_oss'] = True
 
-    composite_key = ['dockerRepository', 'dockerImageTag']
+    composite_key = ['sourceDefinitionId', 'dockerRepository', 'dockerImageTag']
 
     # Merge the two catalogs on the 'image' and 'version' columns, keeping only the unique pairs
-    merged_catalog = pd.merge(cloud_sources_dataframe, oss_sources_dataframe, how='outer', on=composite_key).drop_duplicates(subset=composite_key)
+    merged_catalog = pd.merge(cloud_sources_dataframe, oss_sources_dataframe, how='outer', suffixes=["cloud", "oss"], on=composite_key).drop_duplicates(subset=composite_key)
 
     # Replace NaN values in the 'is_cloud' and 'is_oss' columns with False
     merged_catalog[['is_cloud', 'is_oss']] = merged_catalog[['is_cloud', 'is_oss']].fillna(False)

@@ -43,7 +43,7 @@ Here is an example of how to import the service account credentials into your en
 export GCP_GSM_CREDENTIALS=`cat /path/to/credentials.json`
 ```
 
-### Running
+### Start the orchestrator
 Start the orchestrator with the following command:
 ```bash
 poetry run dagster dev -m orchestrator
@@ -53,6 +53,10 @@ Then you can access the dagit UI at http://localhost:3000
 
 Note its important to use `dagster dev` instead of `dagit` because `dagster dev` start additional services that are required for the orchestrator to run. Namely the sensor service.
 
+### Run tests
+```bash
+poetry run pytest
+```
 
 # WIP Notes
 

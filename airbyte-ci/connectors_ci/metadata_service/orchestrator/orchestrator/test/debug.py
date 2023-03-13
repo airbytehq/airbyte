@@ -14,6 +14,7 @@ def debug_catalog_projection():
 
     It is not intended to be used in production.
     """
+
     resources={
         "gcp_gcs_client": gcp_gcs_client.configured({
             "gcp_gsm_cred_string": {"env": "GCP_GSM_CREDENTIALS"},
