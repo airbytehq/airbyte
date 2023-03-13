@@ -96,6 +96,10 @@ def base_url_has_a_trailing_slash(test_name, base_url, expected_base_url):
         ("test_with_v1_no_leading_slash", "v1/deals", "v1/deals"),
         ("test_with_v1_with_leading_slash", "/v1/deals", "v1/deals"),
         ("test_with_v1_with_trailing_slash", "/v1/deals/", "v1/deals/"),
+        ("test_duplicate_leading_slashes", "//v1/deals/", "v1/deals/"),
+        ("test_many_duplicate_leading_slashes", "/////v1/deals/", "v1/deals/"),
+        ("test_duplicate_trailing_slashes", "v1/deals/", "v1/deals//"),
+        ("test_many_duplicate_trailing_slashes", "v1/deals/////", "v1/deals/"),
     ],
 )
 def path_has_no_leading_slash(test_name, path, expected_path):
@@ -111,3 +115,4 @@ def path_has_no_leading_slash(test_name, path, expected_path):
         parameters={},
     )
     assert requester.get_path(stream_state={}, stream_slice={}, next_page_token={}) == expected_path
+    assert False
