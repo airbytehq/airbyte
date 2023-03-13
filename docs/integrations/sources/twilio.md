@@ -77,7 +77,7 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 ## Performance considerations
 
 The Twilio connector will gracefully handle rate limits.
-For more information, see [the Twilio docs for rate limitations](https://support.twilio.com/hc/en-us/articles/360044308153-Twilio-API-response-Error-429-Too-Many-Requests).
+For more information, see [the Twilio docs for rate limitations](https://support.twilio.com/hc/en-us/articles/360044308153-Twilio-API-response-Error-429-Too-Many-Requests-).
 
 ## Changelog
 
