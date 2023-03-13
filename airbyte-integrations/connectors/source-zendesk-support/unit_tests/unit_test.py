@@ -41,7 +41,7 @@ from source_zendesk_support.streams import (
     Tickets,
     Users,
     UserSettingsStream,
-    UserSubscriptionStream, BEFORE_CURSOR,
+    BEFORE_CURSOR,
 )
 from test_data.data import TICKET_EVENTS_STREAM_RESPONSE
 from utils import read_full_refresh
