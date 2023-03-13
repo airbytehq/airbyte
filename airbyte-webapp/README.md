@@ -35,6 +35,7 @@ Note: needs to be run from the root directory of the Airbyte project.
 ## Change log:
 #### 2023.03.13
 1. Frontend translation update
+2. UI related changes - config page UI(create_connection bgColor)
 #### 2023.03.10
 1. UI related changes - change plan page(add back button)
 2. UI related changes - modal size(change CancelPlanModal/DeleteUserModal/ChangeRoleModal)

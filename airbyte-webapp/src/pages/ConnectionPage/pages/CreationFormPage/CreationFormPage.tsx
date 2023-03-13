@@ -223,6 +223,12 @@ export const CreationFormPage: React.FC<{
         if (backtrack) {
           setCurrentStep(CreateStepTypes.CREATE_CONNECTION);
           setCurrentEntityStep(EntityStepsTypes.CONNECTION);
+          push("", {
+            state: {
+              ...(location.state as Record<string, unknown>),
+              currentStep: CreateStepTypes.CREATE_CONNECTION,
+            },
+          });
           return;
         }
         push(`../${RoutePaths.SelectConnection}`, {
@@ -239,7 +245,7 @@ export const CreationFormPage: React.FC<{
         push("", {
           state: {
             ...(location.state as Record<string, unknown>),
-            currentStep,
+            currentStep: CreateStepTypes.CREATE_CONNECTION,
           },
         });
       }
