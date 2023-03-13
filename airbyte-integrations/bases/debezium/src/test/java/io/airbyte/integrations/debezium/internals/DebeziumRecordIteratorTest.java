@@ -11,6 +11,7 @@ import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.debezium.engine.ChangeEvent;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.junit.jupiter.api.Test;
@@ -24,7 +25,8 @@ public class DebeziumRecordIteratorTest {
         () -> false,
         () -> {},
         Duration.ZERO);
-    final Long lsn = debeziumRecordIterator.getHeartbeatPosition(new ChangeEvent<String, String>() {
+
+      final Map<String, ?> heartbeatSourceOffset = debeziumRecordIterator.getHeartbeatSourceOffset(new ChangeEvent<String, String>() {
 
       private final SourceRecord sourceRecord = new SourceRecord(null, Collections.singletonMap("lsn", 358824993496L), null, null, null);
 
@@ -48,9 +50,9 @@ public class DebeziumRecordIteratorTest {
       }
 
     });
+      final long lsn = (long) heartbeatSourceOffset.get("lsn");
 
     assertEquals(lsn, 358824993496L);
-    assertEquals(-1, debeziumRecordIterator.getHeartbeatPosition(null));
   }
 
 }
