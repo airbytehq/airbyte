@@ -72,16 +72,17 @@ async def _run_tests_in_directory(connector_under_test: Container, test_director
 
 
 async def connector_install_check(context: ConnectorTestContext, step=Step.PACKAGE_INSTALL) -> Tuple[StepResult, Container]:
-    connector_under_test = await environments.with_airbyte_connector(context, install=True)
-    async with asyncer.create_task_group() as task_group:
-        soon_exit_code = task_group.soonify(with_exit_code)(connector_under_test)
-        soon_stderr = task_group.soonify(with_stderr)(connector_under_test)
-        soon_stdout = task_group.soonify(with_stdout)(connector_under_test)
+    """Install the connector under test package in a Python container.
 
-    return (
-        StepResult(step, StepStatus.from_exit_code(soon_exit_code.value), stderr=soon_stderr.value, stdout=soon_stdout.value),
-        connector_under_test,
-    )
+    Args:
+        context (ConnectorTestContext): The context pointing the location of the connector under test code.
+        step (Step): The step in which the code format checks are run. Defaults to Step.PACKAGE_INSTALL
+
+    Returns:
+        Tuple[StepResult, Container]: Failure or success of the package installation and the connector under test container (with the connector package installed).
+    """
+    connector_under_test = await environments.with_airbyte_connector(context, install=True)
+    return await get_step_result(connector_under_test), connector_under_test
 
 
 async def run_code_format_checks(connector_under_test: Container, step=Step.CODE_FORMAT_CHECKS) -> StepResult:
