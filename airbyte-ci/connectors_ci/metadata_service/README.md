@@ -7,3 +7,6 @@ This system is responsible for the following:
 - Serving Connector metadata to various consumers
 - Aggregating Connector metadata to provide a unified view of all connectors
 - Triggering actions based on changes to Connector metadata
+
+## Subsystems
+- [Metadata Orchestrator](./orcherstrator/README.md)

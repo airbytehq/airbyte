@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "metadata-service"
+name = "orchestrator"
 version = "0.1.0"
 description = ""
 authors = ["Ben Church <ben@airbyte.io>"]
 readme = "README.md"
-packages = [{include = "metadata_service"}]
+packages = [{include = "orchestrator"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
