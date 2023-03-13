@@ -282,7 +282,7 @@ module.exports = {
 
         {
           type: 'category',
-          label: 'Connector Development Kit (Python)',
+          label: 'Connector Development Kit',
           link: {
             type: 'doc',
             id: 'connector-development/cdk-python/README',
