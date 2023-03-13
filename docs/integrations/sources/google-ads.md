@@ -80,7 +80,7 @@ The Google Ads source connector supports the following [sync modes](https://docs
 
 **Important note**:
 
-    Usage of Conversion Window may lead to duplicates in Incremental Sync, 
+    Usage of Conversion Window may lead to duplicates in Incremental Sync,
     because connector is forced to read data in the given range (Last Sync - Conversion window)
 
 ## Supported Streams
@@ -139,6 +139,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| `0.2.11` | 2023-03-13 | [23999](https://github.com/airbytehq/airbyte/pull/23999) | Fix incremental sync for Campaigns stream
 | `0.2.10` | 2023-02-11 | [22703](https://github.com/airbytehq/airbyte/pull/22703) | Add support for custom full_refresh streams                                                                                          |
 | `0.2.9`  | 2023-01-23 | [21705](https://github.com/airbytehq/airbyte/pull/21705) | Fix multibyte issue; Bump google-ads package to 19.0.0                                                                               |
 | `0.2.8`  | 2023-01-18 | [21517](https://github.com/airbytehq/airbyte/pull/21517) | Write fewer logs                                                                                                                     |
