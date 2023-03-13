@@ -34,6 +34,7 @@ connectionSpecification:
               type: string
               title: Secret
               description: The Secret of the Trustpilot API application. (represents the OAuth Client Secret)
+              airbyte_secret: true
             access_token:
               type: string
               description: Access Token for making authenticated requests.
