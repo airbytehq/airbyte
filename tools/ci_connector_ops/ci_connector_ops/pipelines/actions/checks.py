@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-"""This modules groups functions made to run checks (static code analysis) for a specific connector given a test context."""
+"""This module groups functions made to run checks (static code analysis) for a specific connector given a test context."""
 
 from typing import List
 

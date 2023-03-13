@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-"""This modules groups functions made to run tests for a specific connector given a test context."""
+"""This module groups functions made to run tests for a specific connector given a test context."""
 
 import json
 import uuid
