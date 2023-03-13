@@ -2,8 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import copy
+
+import pytest
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from connector_builder.connector_builder_handler import resolve_manifest
+from connector_builder.main import handle_connector_builder_request
 
 _stream_name = "stream_with_custom_requester"
 _stream_primary_key = "id"
@@ -177,3 +181,19 @@ def test_resolve_manifest_error_returns_error_response():
     source = MockManifestDeclarativeSource()
     response = resolve_manifest(source)
     assert "Error resolving manifest" in response.trace.error.message
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        pytest.param("asdf", id="test_arbitrary_command_error"),
+        pytest.param(None, id="test_command_is_none_error"),
+        pytest.param("", id="test_command_is_empty_error"),
+    ],
+)
+def test_invalid_command(command):
+    config = copy.deepcopy(CONFIG)
+    config["__command"] = command
+    source = ManifestDeclarativeSource(CONFIG["__injected_declarative_manifest"])
+    with pytest.raises(ValueError):
+        handle_connector_builder_request(source, config)
