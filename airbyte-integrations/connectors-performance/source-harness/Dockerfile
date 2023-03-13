@@ -9,7 +9,7 @@ ENV APPLICATION source-harness
 COPY --from=build /airbyte /airbyte
 COPY base.sh .
 
-RUN curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.25.6/2023-01-30/bin/linux/${TARGETARCH}/kubectl
+RUN curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.25.6/2023-01-30/bin/linux/amd64/kubectl
 RUN chmod +x ./kubectl
 RUN mv ./kubectl /bin/
 RUN yum install -y socat && yum clean all

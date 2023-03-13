@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.AllowedHosts;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.WorkerSourceConfig;
@@ -20,9 +21,12 @@ import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import java.io.BufferedWriter;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
@@ -51,17 +55,6 @@ public class PerformanceTest {
   }
 
   void runTest() throws Exception {
-
-    final var runConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, this.config.get(JdbcUtils.HOST_KEY))
-        .put(JdbcUtils.PORT_KEY, this.config.get(JdbcUtils.PORT_KEY))
-        .put(JdbcUtils.DATABASE_KEY, "postgres")
-        .put(JdbcUtils.SCHEMAS_KEY, List.of("public"))
-        .put(JdbcUtils.USERNAME_KEY, this.config.get(JdbcUtils.USERNAME_KEY))
-        .put(JdbcUtils.PASSWORD_KEY, this.config.get(JdbcUtils.PASSWORD_KEY))
-        .put(JdbcUtils.SSL_KEY, true)
-        .put("replication_method", "Standard")
-        .build());
     KubePortManagerSingleton.init(PORTS);
 
     final KubernetesClient fabricClient = new DefaultKubernetesClient();
@@ -70,21 +63,22 @@ public class PerformanceTest {
     final var workerConfigs = new WorkerConfigs(new EnvConfigs());
     final var processFactory = new KubeProcessFactory(workerConfigs, "default", fabricClient, kubeHeartbeatUrl, false);
     final ResourceRequirements resourceReqs = null;
-    final var heartbeatMonitor = new HeartbeatMonitor(Duration.ofSeconds(1));
+    final var heartbeatMonitor = new HeartbeatMonitor(Duration.ofMillis(1));
+    final var allowedHosts = new AllowedHosts().withHosts(List.of("*"));
     final var integrationLauncher =
-        new AirbyteIntegrationLauncher("1", 0, this.imageName, processFactory, resourceReqs, null, false, new EnvVariableFeatureFlags());
+        new AirbyteIntegrationLauncher("1", 0, this.imageName, processFactory, resourceReqs, allowedHosts, false, new EnvVariableFeatureFlags());
     final var source = new DefaultAirbyteSource(integrationLauncher, new EnvVariableFeatureFlags(), heartbeatMonitor);
     final var jobRoot = "/";
     final WorkerSourceConfig sourceConfig = new WorkerSourceConfig()
-        .withSourceConnectionConfiguration(runConfig)
+        .withSourceConnectionConfiguration(this.config)
         .withState(null)
-        .withCatalog(this.catalog);
+        .withCatalog(convertProtocolObject(this.catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
 
     source.start(sourceConfig, Path.of(jobRoot));
     var totalBytes = 0.0;
     var counter = 0L;
     final var start = System.currentTimeMillis();
-    log.info("Starting");
+    log.info("Starting Test");
     while (!source.isFinished()) {
       final Optional<AirbyteMessage> airbyteMessageOptional = source.attemptRead();
       if (airbyteMessageOptional.isPresent()) {
@@ -95,17 +89,19 @@ public class PerformanceTest {
           counter++;
         }
 
-        if (counter % 1_000_000 == 0) {
-          break;
-        }
       }
-
-      final var end = System.currentTimeMillis();
-      final var totalMB = totalBytes / 1_000_000.0;
-      final var totalTimeSecs = (end - start) / 1000.0;
-      final var rps = counter / totalTimeSecs;
-      log.info("total secs: {}. total MB read: {}, rps: {}, throughput: {}", totalTimeSecs, totalMB, rps, totalMB / totalTimeSecs);
-      source.close();
     }
+    log.info("Test Ended");
+    final var end = System.currentTimeMillis();
+    final var totalMB = totalBytes / 1_000_000.0;
+    final var totalTimeSecs = (end - start) / 1000.0;
+    final var rps = counter / totalTimeSecs;
+    log.info("total secs: {}. total MB read: {}, rps: {}, throughput: {}", totalTimeSecs, totalMB, rps, totalMB / totalTimeSecs);
+    source.close();
   }
+
+  private static <V0, V1> V0 convertProtocolObject(final V1 v1, final Class<V0> klass) {
+    return Jsons.object(Jsons.jsonNode(v1), klass);
+  }
+
 }
