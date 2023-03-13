@@ -31,6 +31,8 @@ acceptance_tests:
             bypass_reason: "stream not filled yet"
           - name: "conference_participants"
             bypass_reason: "stream not filled yet"
+          - name: "conversation_participants"
+            bypass_reason: "stream not filled yet"
           - name: "keys"
             bypass_reason: "stream not filled yet"
           - name: "available_phone_numbers_local"

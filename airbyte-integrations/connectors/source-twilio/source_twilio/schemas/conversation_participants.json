@@ -1,0 +1,86 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Generated schema for Root",
+    "type": "object",
+    "properties": {
+      "participants": {
+        "type": ["null","array"],
+        "items": {
+          "type": "object",
+          "properties": {
+            "account_sid": {
+              "type": "string"
+            },
+            "conversation_sid": {
+              "type": "string"
+            },
+            "sid": {
+              "type": "string"
+            },
+            "identity": {
+              "type": "string"
+            },
+            "attributes": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "role"
+              ]
+            },
+            "messaging_binding": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "address": {
+                  "type": "string"
+                },
+                "proxy_address": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "address",
+                "proxy_address"
+              ]
+            },
+            "role_sid": {
+              "type": "string"
+            },
+            "date_created": {
+              "type": "string"
+            },
+            "date_updated": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            },
+            "last_read_message_index": {},
+            "last_read_timestamp": {}
+          },
+          "required": [
+            "account_sid",
+            "conversation_sid",
+            "sid",
+            "attributes",
+            "role_sid",
+            "date_created",
+            "date_updated",
+            "url",
+            "last_read_message_index",
+            "last_read_timestamp"
+          ]
+        }
+      }
+    },
+    "required": [
+      "participants"
+    ]
+  }

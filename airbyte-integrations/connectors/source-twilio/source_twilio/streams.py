@@ -19,6 +19,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from pendulum.datetime import DateTime
 from requests.auth import AuthBase
 
+TWILIO_CONVERSATION_BASE = "https://conversations.twilio.com/v1/"
 TWILIO_API_URL_BASE = "https://api.twilio.com"
 TWILIO_API_URL_BASE_VERSIONED = f"{TWILIO_API_URL_BASE}/2010-04-01/"
 TWILIO_MONITOR_URL_BASE = "https://monitor.twilio.com/v1/"
@@ -363,6 +364,24 @@ class Keys(TwilioNestedStream):
 
     parent_stream = Accounts
 
+class ConversationParticipants(IncrementalTwilioStream, TwilioNestedStream):
+    """https://www.twilio.com/docs/conversations/api/conversation-participant-resource"""
+
+    parent_stream = Accounts
+    lower_boundary_filter_field = None
+    upper_boundary_filter_field = None
+    cursor_field = "date_created"
+    url_base = TWILIO_CONVERSATION_BASE
+    # uri_from_subresource = False
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs):
+        return f"Conversations/{stream_slice['conversation_sid']}/Participants"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        if(record["conversation_sid"]):
+            return {"conversation_sid": record["conversation_sid"]}
+        else:
+            return True
 
 class Calls(IncrementalTwilioStream, TwilioNestedStream):
     """https://www.twilio.com/docs/voice/api/call-resource#create-a-call-resource"""
