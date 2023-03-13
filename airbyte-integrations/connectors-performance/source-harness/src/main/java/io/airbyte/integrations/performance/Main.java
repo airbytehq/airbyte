@@ -5,6 +5,9 @@
 package io.airbyte.integrations.performance;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -239,13 +242,32 @@ public class Main {
   ]
 }
               """);
-      test.runTest();
+      final ExecutorService executors = Executors.newFixedThreadPool(2);
+      final CompletableFuture<Void> readSrcAndWriteDstThread = CompletableFuture.runAsync(() -> {
+        try {
+          test.runTest();
+        } catch (final Exception e) {
+          throw new RuntimeException(e);
+        }
+      }, executors);
+
+      final CompletableFuture<Void> readFromDstThread = CompletableFuture.runAsync(() -> {
+        try {
+          Thread.sleep(20_000);
+          test.readFromDst();
+        } catch (final InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+      }, executors);
+
+      CompletableFuture.allOf(readSrcAndWriteDstThread, readFromDstThread).get();
+
+//      test.runTest();
 //      test.dirtyStart();
     } catch (final Exception e) {
       throw new RuntimeException(e);
 
     }
-    System.exit(1);
   }
 
 }
