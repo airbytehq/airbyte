@@ -164,11 +164,22 @@ def test_iterable_export_stream_backoff_time():
     "status, json, expected",
     [
         (429, {}, True),
-        (500, {"msg": "...Please try again later...", "code": "Generic Error"}, True)
+        # for 500 - Generic error we should make 2 retry attempts
+        # and give up on third one!
+        (500, {"msg": "...Please try again later...1", "code": "Generic Error"}, True),
+        (500, {"msg": "...Please try again later...2", "code": "Generic Error"}, True),
+        # This one should return False
+        (500, {"msg": "...Please try again later...3", "code": "Generic Error"}, False)
     ],
+    ids=[
+        "Retry on 429",
+        "Retry on 500 - Generic (first)",
+        "Retry on 500 - Generic (second)",
+        "Retry on 500 - Generic (third)",
+    ]
 )
-def test_should_retry(status, json, expected, requests_mock):
-    stream = Lists(authenticator=NoAuth())
+def test_should_retry(status, json, expected, requests_mock, lists_stream):
+    stream = lists_stream
     url = f"{stream.url_base}/{stream.path()}"
     requests_mock.get(url, json=json, status_code=status)
     test_response = requests.get(url)
