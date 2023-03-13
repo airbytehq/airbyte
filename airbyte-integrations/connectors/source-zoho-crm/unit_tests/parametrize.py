@@ -171,7 +171,7 @@ datatype_inputs = pytest.mark.parametrize(
             "Field",
             [],
             None,
-            {"items": {"type": "string"}, "title": "Field", "type": "array"}
+            {"items": {"airbyte_type": "big_integer", "type": "string"}, "title": "Field", "type": "array"}
         ),
         TestCase(
             "jsonarray",

@@ -132,4 +132,6 @@ Make sure to complete the auth flow quickly, as the initial token granted by Zoh
 
 | Version | Date       | Pull Request                                             | Subject         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------|
+| 0.1.1   | 2023-03-13 | [23818](https://github.com/airbytehq/airbyte/pull/23818) | Set airbyte type to string for zoho autonumbers when they include prefix or suffix |
 | 0.1.0   | 2022-03-30 | [11193](https://github.com/airbytehq/airbyte/pull/11193) | Initial release |
+
