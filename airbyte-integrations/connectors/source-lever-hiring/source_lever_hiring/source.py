@@ -67,7 +67,7 @@ class SourceLeverHiring(AbstractSource):
             Opportunities(**stream_params_with_start_date),
             Postings(**full_refresh_params),
             Referrals(**stream_params_with_start_date),
-            Users(**full_refresh_params),            
+            Users(**full_refresh_params),
             Sources(**full_refresh_params),
             Stages(**full_refresh_params),
         ]
