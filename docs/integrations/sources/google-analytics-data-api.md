@@ -1,6 +1,6 @@
 # Google Analytics 4 (GA4)
 
-This page contains the setup guide and reference information for the Google Analytics v4 source connector.
+This page contains the setup guide and reference information for the Google Analytics 4 source connector.
 
 ## Prerequisites
 
@@ -67,7 +67,7 @@ The Google Analytics source connector supports the following [sync modes](https:
 
 This connector outputs the following incremental streams:
 
-* Default streams:
+* Preconfigured streams:
   * [daily_active_users](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
   * [devices](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
   * [four_weekly_active_users](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
