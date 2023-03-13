@@ -9,6 +9,7 @@ on:
 
   pull_request:
     types:
+      - closed
       - opened
       - reopened
       - synchronize
@@ -39,10 +40,10 @@ jobs:
 
       - name: Run Docusaurus
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
         run: |-
           export SKIP_DEPLOY="yes"
-          if [ "${{github.event_name}}" = 'push' -o "${{github.event_name}}" = 'workflow_dispatch' ]; then
+          if [ "${{github.event_name}}" = 'push' -o "${{github.event_name}}" = 'workflow_dispatch' -o "${{github.event.pull_request.merged}}" = 'true' ]; then
               export SKIP_DEPLOY="no"
           fi
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mariadb_columnstore;
@@ -15,7 +15,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +37,7 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
   private static final Logger LOGGER = LoggerFactory.getLogger(MariadbColumnstoreDestinationAcceptanceTest.class);
   private static final Network network = Network.newNetwork();
 
-  private final ExtendedNameTransformer namingResolver = new MariadbColumnstoreNameTransformer();
+  private final StandardNameTransformer namingResolver = new MariadbColumnstoreNameTransformer();
 
   private JsonNode configJson;
 

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import InitVar, dataclass, field
@@ -9,29 +9,28 @@ import dpath.util
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, FieldPointer, Record, StreamSlice, StreamState
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass(frozen=True)
-class AddedFieldDefinition(JsonSchemaMixin):
+class AddedFieldDefinition:
     """Defines the field to add on a record"""
 
     path: FieldPointer
     value: Union[InterpolatedString, str]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
 
 @dataclass(frozen=True)
-class ParsedAddFieldDefinition(JsonSchemaMixin):
+class ParsedAddFieldDefinition:
     """Defines the field to add on a record"""
 
     path: FieldPointer
     value: InterpolatedString
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
 
 @dataclass
-class AddFields(RecordTransformation, JsonSchemaMixin):
+class AddFields(RecordTransformation):
     """
     Transformation which adds field to an output record. The path of the added field can be nested. Adding nested fields will create all
     necessary parent objects (like mkdir -p). Adding fields to an array will extend the array to that index (filling intermediate
@@ -83,10 +82,10 @@ class AddFields(RecordTransformation, JsonSchemaMixin):
     """
 
     fields: List[AddedFieldDefinition]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     _parsed_fields: List[ParsedAddFieldDefinition] = field(init=False, repr=False, default_factory=list)
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         for add_field in self.fields:
             if len(add_field.path) < 1:
                 raise f"Expected a non-zero-length path for the AddFields transformation {add_field}"
@@ -97,11 +96,11 @@ class AddFields(RecordTransformation, JsonSchemaMixin):
                 else:
                     self._parsed_fields.append(
                         ParsedAddFieldDefinition(
-                            add_field.path, InterpolatedString.create(add_field.value, options=options), options=options
+                            add_field.path, InterpolatedString.create(add_field.value, parameters=parameters), parameters=parameters
                         )
                     )
             else:
-                self._parsed_fields.append(ParsedAddFieldDefinition(add_field.path, add_field.value, options={}))
+                self._parsed_fields.append(ParsedAddFieldDefinition(add_field.path, add_field.value, parameters={}))
 
     def transform(
         self,

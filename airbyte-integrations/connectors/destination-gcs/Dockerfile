@@ -16,5 +16,5 @@ ENV APPLICATION destination-gcs
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.2.12
+LABEL io.airbyte.version=0.2.15
 LABEL io.airbyte.name=airbyte/destination-gcs

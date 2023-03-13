@@ -110,6 +110,32 @@ The steps for updating an existing connector are the same as for building a new 
 3. Add any needed docs updates
 4. Create a PR to get the connector published
 
+## Adding normalization to a connector
+
+In order to enable normalization for a destination connector, you'll need to set some fields on the destination definitions entry for the connector. This is done in the `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml` file.
+
+### New connectors
+If you're adding normalization to a new connector, you'll need to first add a destination definitions entry:
+1. Add a new connector definition in `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml`. You can copy an existing entry and modify it to match your connector, generating a new UUIDv4 for the `destinationDefinitionId`.
+2. Run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/master/airbyte-config/specs) for more information.
+
+### Add normalization fields
+
+Once you have a destination definitions entry, you'll need to add a `normaliationConfig` field to enable normalization.
+
+Here's an example of normalization fields being set to enable normalization for the Postgres destination:
+
+```yaml
+normalizationConfig:
+    normalizationRepository: airbyte/normalization
+    normalizationTag: 0.2.25
+    normalizationIntegrationType: postgres
+```
+
+For more information about what these fields mean, see the [NormalizationDestinationDefinitionConfig](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/config-models/src/main/resources/types/NormalizationDestinationDefinitionConfig.yaml) schema.
+
+The presence of these fields will enable normalization for the connector, and determine which docker image will run.
+
 ## Publishing a connector
 
 Once you've finished iterating on the changes to a connector as specified in its `README.md`, follow these instructions to ship the new version of the connector with Airbyte out of the box.
@@ -134,9 +160,22 @@ Once you've finished iterating on the changes to a connector as specified in its
         * `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml` if it is a destination.
    
    * Then run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/a534bb2a8f29b20e3cc7c52fef1bc3c34783695d/airbyte-config/specs) for more information.
-   
-5. If the `README.md` file of the connector contains a `Changelog` section, add the new version and relevant release information to the table in the section.
-6. The new version of the connector is now available for everyone who uses it. Thank you!
+
+5. The new version of the connector is now available for everyone who uses it. Thank you!
+
+
+### Updating Connector Metadata
+
+When a new (or updated version) of a connector is ready to be published, our automations will check your branch for a few things:
+* Does the connector have an icon?
+* Does the connector have documentation and is it in the proper format?
+* Does the connector have a changelog entry for this version?
+
+If any of the above are failing, you won't be able to merge your PR or publish your connector.
+
+Connector icons should be square SVGs and be located in [this directory](https://github.com/airbytehq/airbyte/tree/master/airbyte-config/init/src/main/resources/icons).
+
+Connector documentation and changelogs are markdown files which live either [here for sources](https://github.com/airbytehq/airbyte/tree/master/docs/integrations/sources), or [here for destinations](https://github.com/airbytehq/airbyte/tree/master/docs/integrations/destinations).
 
 ### The /publish command
 

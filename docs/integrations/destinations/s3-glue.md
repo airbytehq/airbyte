@@ -39,7 +39,7 @@ Prepare the Glue database that will be used as destination, see [this](https://d
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.
 3. On the destination setup page, select **S3** from the Destination type dropdown and enter a name for this connector.
 4. Configure fields:
@@ -243,7 +243,8 @@ Output files can be compressed. The default option is GZIP compression. If compr
 
 ## CHANGELOG
 
-| Version | Date       | Pull Request                                             | Subject        |
-| :------ | :--------- | :------------------------------------------------------- | :------------- |
-| 0.1.1   | 2022-12-13 | [19907](https://github.com/airbytehq/airbyte/pull/19907) | Fix parsing empty object in schema |
-| 0.1.0   | 2022-11-17 | [18695](https://github.com/airbytehq/airbyte/pull/18695) | Initial Commit |
+| Version | Date       | Pull Request                                             | Subject                                                                                 |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 0.1.2   | 2023-02-01 | [22220](https://github.com/airbytehq/airbyte/pull/22220) | Fix race condition in test, table metadata, add Airbyte sync fields to table definition |
+| 0.1.1   | 2022-12-13 | [19907](https://github.com/airbytehq/airbyte/pull/19907) | Fix parsing empty object in schema                                                      |
+| 0.1.0   | 2022-11-17 | [18695](https://github.com/airbytehq/airbyte/pull/18695) | Initial Commit                                                                          |

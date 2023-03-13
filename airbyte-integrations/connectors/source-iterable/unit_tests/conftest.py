@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -27,3 +27,14 @@ def config_fixture():
 @pytest.fixture()
 def mock_lists_resp(mocker):
     mocker.patch("source_iterable.streams.Lists.read_records", return_value=iter([{"id": 1}, {"id": 2}]))
+
+
+@pytest.fixture(name="lists_stream")
+def lists_stream():
+    # local imports
+    from airbyte_cdk.sources.streams.http.auth import NoAuth
+    from source_iterable.streams import Lists
+
+    # return the instance of the stream so we could make global tests on it,
+    # to cover the different `should_retry` logic
+    return Lists(authenticator=NoAuth())

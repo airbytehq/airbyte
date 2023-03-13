@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -15,6 +15,7 @@ def config():
         "client_secret": "test_client_secret",
         "refresh_token": "test_refresh",
         "region": "NA",
+        "look_back_window": 3
     }
 
 

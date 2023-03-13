@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.relationaldb;
@@ -18,7 +18,13 @@ import java.util.stream.Stream;
 public class RelationalDbQueryUtils {
 
   public static String getIdentifierWithQuoting(final String identifier, final String quoteString) {
-    return quoteString + identifier + quoteString;
+    // double-quoted values within a database name or column name should be wrapped with extra
+    // quoteString
+    if (identifier.startsWith(quoteString) && identifier.endsWith(quoteString)) {
+      return quoteString + quoteString + identifier + quoteString + quoteString;
+    } else {
+      return quoteString + identifier + quoteString;
+    }
   }
 
   public static String enquoteIdentifierList(final List<String> identifiers, final String quoteString) {
