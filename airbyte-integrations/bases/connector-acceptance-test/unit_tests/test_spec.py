@@ -830,6 +830,7 @@ def test_object_not_empty(mocker, connector_spec, should_fail):
     else:
         conftest.pytest.fail.assert_not_called()
 
+
 @pytest.mark.parametrize(
     "connector_spec, should_fail",
     (
@@ -878,13 +879,23 @@ def test_duplicate_order(mocker, connector_spec, should_fail):
     else:
         conftest.pytest.fail.assert_not_called()
 
+
 @pytest.mark.parametrize(
     "connector_spec, should_fail",
     (
         ({"type": "object", "properties": {"refresh_token": {"type": "boolean", "airbyte_secret": True}}}, False),
         ({"type": "object", "properties": {"group": {"type": "boolean", "airbyte_secret": True}}}, False),
         ({"type": "object", "properties": {"jwt": {"type": "object", "group": "a"}, "token": {"type": "string", "group": "b"}}}, False),
-        ({"type": "object", "properties": {"jwt": {"type": "object", "properties": { "a": { "type": "string", "group": "x" } }}, "token": {"type": "string"}}}, True),
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "jwt": {"type": "object", "properties": {"a": {"type": "string", "group": "x"}}},
+                    "token": {"type": "string"},
+                },
+            },
+            True,
+        ),
         (
             {
                 "type": "object",
@@ -954,15 +965,38 @@ def test_nested_group(mocker, connector_spec, should_fail):
     else:
         conftest.pytest.fail.assert_not_called()
 
+
 @pytest.mark.parametrize(
     "connector_spec, should_fail",
     (
         ({"type": "object", "properties": {"refresh_token": {"type": "boolean", "airbyte_secret": True}}}, False),
         ({"type": "object", "properties": {"prop": {"type": "boolean", "airbyte_secret": True, "always_show": True}}}, False),
-        ({"type": "object", "required": ["prop"], "properties": {"prop": {"type": "boolean", "airbyte_secret": True, "always_show": True}}}, True),
-        ({"type": "object", "properties": {"jwt": {"type": "object", "properties": { "a": { "type": "string", "always_show": True } }}}}, False),
-        ({"type": "object", "properties": {"jwt": {"type": "object", "required": ["a"], "properties": { "a": { "type": "string", "always_show": True } }}}}, True),
-        ({"type": "object", "properties": {"jwt": {"type": "object", "required": ["always_show"], "properties": { "always_show": { "type": "string" } }}}}, False),
+        (
+            {
+                "type": "object",
+                "required": ["prop"],
+                "properties": {"prop": {"type": "boolean", "airbyte_secret": True, "always_show": True}},
+            },
+            True,
+        ),
+        (
+            {"type": "object", "properties": {"jwt": {"type": "object", "properties": {"a": {"type": "string", "always_show": True}}}}},
+            False,
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {"jwt": {"type": "object", "required": ["a"], "properties": {"a": {"type": "string", "always_show": True}}}},
+            },
+            True,
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {"jwt": {"type": "object", "required": ["always_show"], "properties": {"always_show": {"type": "string"}}}},
+            },
+            False,
+        ),
     ),
 )
 def test_required_always_show(mocker, connector_spec, should_fail):

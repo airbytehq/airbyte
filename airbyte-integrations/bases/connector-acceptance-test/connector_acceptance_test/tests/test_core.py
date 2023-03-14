@@ -429,7 +429,7 @@ class TestSpec(BaseTest):
                     continue
                 order = property.get("order")
                 if order in used_orders:
-                   errors.append(f"{properties_path} has duplicate order: {order}") 
+                    errors.append(f"{properties_path} has duplicate order: {order}")
                 used_orders.add(order)
         self._fail_on_errors(errors)
 
@@ -445,7 +445,7 @@ class TestSpec(BaseTest):
             is_property_named_group = parent_path.endswith("properties")
             grandparent_path = schema_helper.get_parent_path(parent_path)
             if grandparent_path != "/properties" and not is_property_named_group:
-                errors.append(f"Groups can only be defined on top level, is defined at {group_path}") 
+                errors.append(f"Groups can only be defined on top level, is defined at {group_path}")
         self._fail_on_errors(errors)
 
     def test_required_always_show(self, connector_spec: ConnectorSpecification):
@@ -463,8 +463,12 @@ class TestSpec(BaseTest):
             property_name = parent_path.rsplit(sep="/", maxsplit=1)[1]
             properties_path = schema_helper.get_parent_path(parent_path)
             parent_object = schema_helper.get_parent(properties_path)
-            if "required" in parent_object and isinstance(parent_object.get("required"), List) and property_name in parent_object.get("required"):
-                errors.append(f"always_show is only allowed on optional properties, but is set on {always_show_path}") 
+            if (
+                "required" in parent_object
+                and isinstance(parent_object.get("required"), List)
+                and property_name in parent_object.get("required")
+            ):
+                errors.append(f"always_show is only allowed on optional properties, but is set on {always_show_path}")
         self._fail_on_errors(errors)
 
     def test_defined_refs_exist_in_json_spec_file(self, connector_spec_dict: dict):
