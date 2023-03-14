@@ -17,6 +17,9 @@ pytest = "^7.2.2"
 [tool.poetry.group.dev.dependencies]
 datamodel-code-generator = "^0.17.1"
 
+[tool.poe.tasks]
+generate-models = "datamodel-codegen --input models/src/ConnectorMetadataDefinitionV0.yaml --output models/generated/ConnectorMetadataDefinitionV0.py --use-title-as-name --disable-timestamp"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

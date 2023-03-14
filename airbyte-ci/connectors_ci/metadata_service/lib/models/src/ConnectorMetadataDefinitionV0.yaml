@@ -7,6 +7,7 @@ type: object
 required:
   - metadataSpecVersion
   - data
+additionalProperties: false
 properties:
   metadataSpecVersion:
     type: number
@@ -64,11 +65,11 @@ properties:
         type: array
         items:
           $ref: "#"
-      # allowedHosts:
-      #   $ref: AllowedHosts.yaml
-      # normalizationConfig:
-      #   "$ref": NormalizationDestinationDefinitionConfig.yaml
-      # suggestedStreams:
-      #   $ref: SuggestedStreams.yaml
-      # resourceRequirements:
-      #   $ref: ActorDefinitionResourceRequirements.yaml
+      allowedHosts:
+        $ref: AllowedHosts.yaml
+      normalizationConfig:
+        "$ref": NormalizationDestinationDefinitionConfig.yaml
+      suggestedStreams:
+        $ref: SuggestedStreams.yaml
+      resourceRequirements:
+        $ref: ActorDefinitionResourceRequirements.yaml
