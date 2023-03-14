@@ -36,6 +36,12 @@ acceptance_tests:
             bypass_reason: "can not populate"
           - name: blocks
             bypass_reason: "can not populate"
+        ignored_fields:
+          segments:
+          - name: sample_updated_at
+            bypass_reason: "depend on current date"
+          - name: next_sample_update
+            bypass_reason: "depend on current date"
   incremental:
     tests:
       - config_path: "secrets/config.json"
