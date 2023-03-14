@@ -510,6 +510,7 @@ def test_default_get_error_display_message_handles_http_error(mocker):
     http_err_msg = stream.get_error_display_message(requests.HTTPError())
     assert http_err_msg == "my custom message"
 
+
 @pytest.mark.parametrize(
     "test_name, base_url, path, expected_full_url",[
         ("test_no_slashes", "https://airbyte.io", "my_endpoint", "https://airbyte.io/my_endpoint"),
