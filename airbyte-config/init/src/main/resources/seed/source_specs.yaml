@@ -370,7 +370,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:2.0.1"
+- dockerImage: "airbyte/source-alloydb:2.0.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -1947,7 +1947,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-braintree:0.1.3"
+- dockerImage: "airbyte/source-braintree:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/braintree"
     connectionSpecification:
@@ -2100,7 +2100,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-cart:0.2.0"
+- dockerImage: "airbyte/source-cart:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/cart"
     connectionSpecification:
@@ -5449,7 +5449,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.2.10"
+- dockerImage: "airbyte/source-google-ads:0.2.11"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -5739,7 +5739,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-data-api:0.1.1"
+- dockerImage: "airbyte/source-google-analytics-data-api:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-analytics-v4"
     connectionSpecification:
@@ -6888,7 +6888,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-instagram:1.0.1"
+- dockerImage: "airbyte/source-instagram:1.0.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/instagram"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/instagram"
@@ -7003,7 +7003,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-iterable:0.1.25"
+- dockerImage: "airbyte/source-iterable:0.1.26"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/iterable"
     connectionSpecification:
@@ -11709,7 +11709,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:2.0.0"
+- dockerImage: "airbyte/source-postgres:2.0.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -14639,7 +14639,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-stripe:3.0.0"
+- dockerImage: "airbyte/source-stripe:3.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
     connectionSpecification:

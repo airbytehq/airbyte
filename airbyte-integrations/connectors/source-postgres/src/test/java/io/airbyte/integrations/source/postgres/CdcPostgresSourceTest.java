@@ -7,12 +7,7 @@ package io.airbyte.integrations.source.postgres;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_LSN;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -58,6 +53,7 @@ import javax.sql.DataSource;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -567,4 +563,87 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     assertEquals(1, recordsFromFourthBatch.size());
   }
 
+  /** This test verify that multiple states are sent during the CDC process based on number of records.
+   * We can ensure that more than one `STATE` type of message is sent, but we are not able to assert the
+   * exact number of messages sent as depends on Debezium.
+   *
+   * @throws Exception
+   */
+  @Test
+  protected void verifyCheckpointStatesByRecords() throws Exception {
+    // We require a huge amount of records, otherwise Debezium will notify directly the last offset.
+    final int recordsToCreate = 20000;
+
+    ((ObjectNode)config).put("sync_checkpoint_records", 100);
+
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
+        .read(config, CONFIGURED_CATALOG, null);
+    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
+        .toListAndClose(firstBatchIterator);
+    final List<AirbyteStateMessage> stateMessages = extractStateMessages(dataFromFirstBatch);
+
+    // As first `read` operation is from snapshot, it would generate only one state message at the end of the process.
+    assertEquals(1, stateMessages.size());
+
+    for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                  "F-" + recordsCreated));
+      writeModelRecord(record);
+    }
+
+    final JsonNode stateAfterFirstSync = Jsons.jsonNode(stateMessages);
+    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
+        .read(config, CONFIGURED_CATALOG, stateAfterFirstSync);
+    final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
+        .toListAndClose(secondBatchIterator);
+
+    final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
+    assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
+    assertTrue(stateMessagesCDC.size() > 1);
+    assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count());
+  }
+
+  /** This test verify that multiple states are sent during the CDC process based on time ranges. We can
+   * ensure that more than one `STATE` type of message is sent, but we are not able to assert the exact
+   * number of messages sent as depends on Debezium.
+   *
+   * @throws Exception
+   */
+  @Test
+  protected void verifyCheckpointStatesBySeconds() throws Exception {
+    // We require a huge amount of records, otherwise Debezium will notify directly the last offset.
+    final int recordsToCreate = 20000;
+
+    ((ObjectNode)config).put("sync_checkpoint_seconds", 1);
+
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
+        .read(config, CONFIGURED_CATALOG, null);
+    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
+        .toListAndClose(firstBatchIterator);
+    final List<AirbyteStateMessage> stateMessages = extractStateMessages(dataFromFirstBatch);
+
+    // As first `read` operation is from snapshot, it would generate only one state message at the end of the process.
+    assertEquals(1, stateMessages.size());
+
+    for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                  "F-" + recordsCreated));
+      writeModelRecord(record);
+    }
+
+    final JsonNode stateAfterFirstSync = Jsons.jsonNode(stateMessages);
+    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
+        .read(config, CONFIGURED_CATALOG, stateAfterFirstSync);
+    final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
+        .toListAndClose(secondBatchIterator);
+
+    final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
+    assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
+    assertTrue(stateMessagesCDC.size() > 1);
+    assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count());
+  }
 }
