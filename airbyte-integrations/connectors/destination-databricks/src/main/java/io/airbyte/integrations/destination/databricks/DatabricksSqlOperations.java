@@ -51,9 +51,9 @@ public class DatabricksSqlOperations extends JdbcSqlOperations {
 
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,
-      final List<AirbyteRecordMessage> records,
-      final String schemaName,
-      final String tmpTableName) throws SQLException {
+                                    final List<AirbyteRecordMessage> records,
+                                    final String schemaName,
+                                    final String tmpTableName) throws SQLException {
     LOGGER.info("actual size of batch: {}", records.size());
     final String insertQueryComponent = String.format(
         "INSERT INTO %s.%s (%s, %s, %s) VALUES\n",

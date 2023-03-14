@@ -6,16 +6,16 @@ package io.airbyte.integrations.destination.databricks.s3;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.airbyte.integrations.destination.databricks.DatabricksStorageConfig;
+import io.airbyte.integrations.destination.databricks.DatabricksStorageConfigProvider;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.constant.S3Constants;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
 
-public class DatabricksS3StorageConfig extends DatabricksStorageConfig {
+public class DatabricksS3StorageConfigProvider extends DatabricksStorageConfigProvider {
 
   private final S3DestinationConfig s3Config;
 
-  public DatabricksS3StorageConfig(JsonNode config) {
+  public DatabricksS3StorageConfigProvider(JsonNode config) {
     final S3DestinationConfig.Builder builder = S3DestinationConfig.create(
         config.get(S3Constants.S_3_BUCKET_NAME).asText(),
         config.get(S3Constants.S_3_BUCKET_PATH).asText(),

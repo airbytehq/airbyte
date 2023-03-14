@@ -9,14 +9,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.integrations.destination.databricks.DatabricksStorageConfig;
+import io.airbyte.integrations.destination.databricks.DatabricksStorageConfigProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class DatabricksS3StorageConfigTest {
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-  private DatabricksStorageConfig storageConfig;
+  private DatabricksStorageConfigProvider storageConfig;
 
   @BeforeEach
   public void setup() {
@@ -28,7 +28,7 @@ public class DatabricksS3StorageConfigTest {
         .put("s3_access_key_id", "access_key_id")
         .put("s3_secret_access_key", "secret_access_key");
 
-    storageConfig = DatabricksStorageConfig.getDatabricksStorageConfig(dataSourceConfig);
+    storageConfig = DatabricksStorageConfigProvider.getDatabricksStorageConfig(dataSourceConfig);
   }
 
   @Test

@@ -9,8 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.integrations.destination.databricks.azure.DatabricksAzureBlobStorageConfig;
-import io.airbyte.integrations.destination.databricks.s3.DatabricksS3StorageConfig;
+import io.airbyte.integrations.destination.databricks.azure.DatabricksAzureBlobStorageConfigProvider;
+import io.airbyte.integrations.destination.databricks.s3.DatabricksS3StorageConfigProvider;
 import org.junit.jupiter.api.Test;
 
 class DatabricksDestinationConfigTest {
@@ -48,7 +48,7 @@ class DatabricksDestinationConfigTest {
     assertEquals("1000", config2.port());
     assertEquals("testing_schema", config2.schema());
 
-    assertEquals(DatabricksS3StorageConfig.class, config2.storageConfig().getClass());
+    assertEquals(DatabricksS3StorageConfigProvider.class, config2.storageConfig().getClass());
   }
 
   @Test
@@ -80,7 +80,7 @@ class DatabricksDestinationConfigTest {
     assertEquals("1000", config2.port());
     assertEquals("testing_schema", config2.schema());
 
-    assertEquals(DatabricksAzureBlobStorageConfig.class, config2.storageConfig().getClass());
+    assertEquals(DatabricksAzureBlobStorageConfigProvider.class, config2.storageConfig().getClass());
   }
 
 }

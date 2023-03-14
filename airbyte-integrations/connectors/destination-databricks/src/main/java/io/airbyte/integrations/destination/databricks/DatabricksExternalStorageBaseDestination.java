@@ -31,7 +31,7 @@ public abstract class DatabricksExternalStorageBaseDestination extends CopyDesti
     checkPersistence(DatabricksDestinationConfig.get(config).storageConfig());
   }
 
-  protected abstract void checkPersistence(DatabricksStorageConfig databricksConfig);
+  protected abstract void checkPersistence(DatabricksStorageConfigProvider databricksConfig);
 
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
