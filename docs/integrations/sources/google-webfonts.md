@@ -55,7 +55,7 @@ The Google-webfonts source connector supports the following [sync modes](https:/
 
 ## API method example
 
-GET https://webfonts.googleapis.com/v1/webfonts?key=<1234567>&sort=SORT_UNDEFINED&prettyPrint=true&alt=json
+`GET https://webfonts.googleapis.com/v1/webfonts?key=<1234567>&sort=SORT_UNDEFINED&prettyPrint=true&alt=json`
 
 ## Performance considerations
 
