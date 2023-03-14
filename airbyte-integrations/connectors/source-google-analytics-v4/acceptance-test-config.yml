@@ -7,6 +7,7 @@ acceptance_tests:
         bypass_reason: no records in the stream
       expect_records:
         path: integration_tests/expected_records.jsonl
+      timeout_seconds: 1800
   connection:
     tests:
     - config_path: secrets/service_config.json

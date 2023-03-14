@@ -1,6 +1,46 @@
-{
-  "global_suppressions": { "created": 7270247822 },
-  "blocks": { "created": 7270247822 },
-  "bounces": { "created": 7270247822 },
-  "invalid_emails": { "created": 7270247822 }
-}
+[
+  {
+    "type" : "STREAM",
+    "stream" : {
+      "stream_state" : {
+        "created" : "7270247822"
+      },
+      "stream_descriptor" : {
+        "name" : "global_suppressions"
+      }
+    }
+  },
+  {
+    "type" : "STREAM",
+    "stream" : {
+      "stream_state" : {
+        "created" : "7270247822"
+      },
+      "stream_descriptor" : {
+        "name" : "blocks"
+      }
+    }
+  },
+  {
+    "type" : "STREAM",
+    "stream" : {
+      "stream_state" : {
+        "created" : "7270247822"
+      },
+      "stream_descriptor" : {
+        "name" : "bounces"
+      }
+    }
+  },
+  {
+    "type" : "STREAM",
+    "stream" : {
+      "stream_state" : {
+        "created" : "7270247822"
+      },
+      "stream_descriptor" : {
+        "name" : "invalid_emails"
+      }
+    }
+  }
+]
