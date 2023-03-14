@@ -63,7 +63,6 @@ class OnesignalStream(HttpStream, ABC):
 
 
 class AppSlicesStream(OnesignalStream):
-
     def stream_slices(
         self,
         sync_mode: SyncMode,
