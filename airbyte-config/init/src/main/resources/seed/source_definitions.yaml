@@ -918,7 +918,7 @@
 - name: Instagram
   sourceDefinitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
   dockerRepository: airbyte/source-instagram
-  dockerImageTag: 1.0.1
+  dockerImageTag: 1.0.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/instagram
   icon: instagram.svg
   sourceType: api
