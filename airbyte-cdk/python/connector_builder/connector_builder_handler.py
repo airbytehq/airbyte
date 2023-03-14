@@ -41,7 +41,7 @@ def read_stream(source: DeclarativeSource, config: Mapping[str, Any], configured
             emitted_at=_emitted_at()
         ))
     except Exception as exc:
-        error = AirbyteTracedException.from_exception(exc, message=f"Error reading stream with catalog={configured_catalog}")
+        error = AirbyteTracedException.from_exception(exc, message=f"Error reading stream with config={config} and catalog={configured_catalog}")
         return error.as_airbyte_message()
 
 
