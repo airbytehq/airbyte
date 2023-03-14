@@ -228,6 +228,8 @@ class IncrementalBlingBase(BlingBase):
 
         '''
 
+        
+
 
         start_ingestion_date = self.start_date
         if self.cursor_field in stream_state.keys():
@@ -291,6 +293,36 @@ class NotaFiscal(IncrementalBlingBase):
     record_date_field_format = '%Y-%m-%d %H:%M:%S'
     api_date_filter_field = 'dataEmissao'
 
+    def __init__(
+        self, 
+        config: Mapping[str, Any], 
+        start_date: datetime,
+        **kwargs
+    ):
+        '''
+        The following parameters must be present in all incremental streams:
+            cursor_field: Airbyte reference date field for incremental ingestions
+            primary_key: Same use as cursor_field
+            record_date_field: Date field name inside the JSON object. It will be used
+            to check which was the last date ingested
+            api_date_filter_field: API date filter name
+        '''
+        super().__init__(config, start_date)
+
+        self.start_slice_index = 0
+
+    def set_start_ingestion_date(self, stream_state):
+        start_ingestion_date = self.start_date
+
+        if self.cursor_field in stream_state.keys():
+            if isinstance(stream_state[self.cursor_field], str):
+                start_ingestion_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S') - timedelta(hours=2)
+            else:
+                start_ingestion_date = stream_state[self.cursor_field] - timedelta(hours=2)
+
+        return start_ingestion_date
+
+
     def path(
         self, 
         stream_state: Mapping[str, Any] = None, 
@@ -309,13 +341,24 @@ class NotaFiscal(IncrementalBlingBase):
 
         '''
 
+        if stream_slice['index'] != self.start_slice_index:
+            self.page = 1
+            self.start_slice_index = stream_slice['index']
+            self.end_of_pages = False
 
-        start_ingestion_date = self.start_date
-        if self.cursor_field in stream_state.keys():
-            start_ingestion_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S') - timedelta(hours=2)
 
+        if stream_slice['index'] == 0: 
+            self.start_ingestion_date = self.set_start_ingestion_date(stream_state)
+            
 
-        return f"{self.endpoint_name}/page={self.page}/json/?filters={self.api_date_filter_field}[{datetime.strftime(start_ingestion_date, '%d/%m/%Y %H')}:00:00 TO {datetime.strftime(datetime.now(), '%d/%m/%Y 23:59:59')}]" 
+        api_filters = f"{self.api_date_filter_field}[{datetime.strftime(self.start_ingestion_date, '%d/%m/%Y %H')}:00:00 TO {datetime.strftime(datetime.now(), '%d/%m/%Y 23:59:59')}];{stream_slice['tipo_filter']}"
+
+        if stream_slice['situacao_filter'] != None: api_filters = f"{api_filters};{stream_slice['situacao_filter']}"
+
+        logger.info(f"{self.endpoint_name}/page={self.page}/json/?filters={api_filters}" )
+
+        return f"{self.endpoint_name}/page={self.page}/json/?filters={api_filters}" 
+    
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         '''
@@ -375,16 +418,40 @@ class NotaFiscal(IncrementalBlingBase):
         for item in nf_item_list:
             read_xml = False 
 
-            while read_xml == False:
-                try:
-                    xml = self.handle_request_error(item['data']['xml'] + f'&{self.api_key}').content
-                    item['data_xml'] = xmltodict.parse(xml.strip())
-                    read_xml = True
-                except:
-                    logger.info('Error for xml: %s', item['data']['xml'])
-                    pass
+            if item['data']['xml'] != None:
+                while read_xml == False:
+                    try:
+                        xml = self.handle_request_error(item['data']['xml'] + f'&{self.api_key}').content
+                        item['data_xml'] = xmltodict.parse(xml.strip())
+                        read_xml = True
+                    except:
+                        logger.info('Error for xml: %s', item['data']['xml'])
+                        pass
+            else:
+                logger.info('Missing XML for NF: %s', item['data']['numero'])
+                logger.info('NF Status: %s', item['data']['situacao'])
+                item['data_xml'] = {}
 
             item_list.append(item)
+    
+    def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        return [
+            {
+                'situacao_filter': None,
+                'tipo_filter': 'tipo[E]',
+                'index': 0
+            },
+            {
+                'situacao_filter': 'situacao[3]',
+                'tipo_filter': 'tipo[S]',
+                'index': 1
+            },
+            {
+                'situacao_filter': None,
+                'tipo_filter': 'tipo[S]',
+                'index': 2
+            }
+        ]
 
 class SourceBling(AbstractSource):
 
