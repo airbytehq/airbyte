@@ -58,10 +58,10 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
     final SnowflakeS3StagingSqlOperations snowflakeS3StagingSqlOperations =
       new SnowflakeS3StagingSqlOperations(nameTransformer, s3Config.getS3Client(), s3Config, encryptionConfig);
     final JdbcDatabase database = getDatabase(dataSource);
-    final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
-    attemptTableOperations(outputSchema, database, nameTransformer, snowflakeS3StagingSqlOperations,
-        true);
-    attemptStageOperations(outputSchema, database, nameTransformer, snowflakeS3StagingSqlOperations);
+    for (String outputSchema : getOutputSchemas(config, catalog)) {
+      attemptTableOperations(outputSchema, database, nameTransformer, snowflakeS3StagingSqlOperations, true);
+      attemptStageOperations(outputSchema, database, nameTransformer, snowflakeS3StagingSqlOperations);
+    }
     return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
   }
 

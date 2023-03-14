@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
@@ -60,11 +61,11 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
     final SnowflakeGcsStagingSqlOperations snowflakeGcsStagingSqlOperations =
         new SnowflakeGcsStagingSqlOperations(nameTransformer, gcsConfig);
     final JdbcDatabase database = getDatabase(dataSource);
-    final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
-
-    attemptTableOperations(outputSchema, database, nameTransformer, snowflakeGcsStagingSqlOperations,
-        true);
-    attemptWriteAndDeleteGcsObject(gcsConfig, outputSchema);
+    for (String outputSchema : getOutputSchemas(config, catalog)) {
+      attemptTableOperations(outputSchema, database, nameTransformer, snowflakeGcsStagingSqlOperations,
+          true);
+      attemptWriteAndDeleteGcsObject(gcsConfig, outputSchema);
+    }
 
     return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
   }
