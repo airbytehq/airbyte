@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "braintree~=4.11.0", "pendulum~=1.5.1", "inflection~=0.5.1", "backoff~=1.11.0"]
+MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "braintree~=4.18.1", "pendulum~=1.5.1", "inflection~=0.5.1", "backoff~=1.11.0"]
 
 TEST_REQUIREMENTS = ["pytest~=6.1", "connector-acceptance-test", "freezegun~=1.1.0", "responses~=0.13.3"]
 
