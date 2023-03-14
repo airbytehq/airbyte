@@ -62,17 +62,11 @@ MANIFEST = {
     "check": {"type": "CheckStream", "stream_names": ["lists"]},
 }
 
-<<<<<<< HEAD
 RESOLVE_MANIFEST_CONFIG = {
-=======
-
-CONFIG = {
->>>>>>> master
     "__injected_declarative_manifest": MANIFEST,
     "__command": "resolve_manifest",
 }
 
-<<<<<<< HEAD
 TEST_READ_CONFIG = {
     "__injected_declarative_manifest": MANIFEST,
     "__command": "read",
@@ -147,30 +141,18 @@ def dummy_catalog(tmp_path):
 def configured_catalog(tmp_path):
     config_file = tmp_path / "catalog.json"
     config_file.write_text(json.dumps(CONFIGURED_CATALOG))
-=======
-
-@pytest.fixture
-def valid_config_file(tmp_path):
-    config_file = tmp_path / "config.json"
-    config_file.write_text(json.dumps(CONFIG))
->>>>>>> master
     return config_file
 
 
 @pytest.fixture
 def invalid_config_file(tmp_path):
-<<<<<<< HEAD
     invalid_config = copy.deepcopy(RESOLVE_MANIFEST_CONFIG)
-=======
-    invalid_config = copy.deepcopy(CONFIG)
->>>>>>> master
     invalid_config["__command"] = "bad_command"
     config_file = tmp_path / "config.json"
     config_file.write_text(json.dumps(invalid_config))
     return config_file
 
 
-<<<<<<< HEAD
 def test_handle_resolve_manifest(valid_resolve_manifest_config_file, dummy_catalog):
     with mock.patch.object(connector_builder.main, "handle_connector_builder_request") as patch:
         handle_request(["read", "--config", str(valid_resolve_manifest_config_file), "--catalog", str(dummy_catalog)])
@@ -188,19 +170,6 @@ def test_resolve_manifest(valid_resolve_manifest_config_file):
     config["__command"] = "resolve_manifest"
     source = ManifestDeclarativeSource(MANIFEST)
     resolved_manifest = handle_connector_builder_request(source, config, create_configured_catalog("dummy_stream"))
-=======
-def test_handle_resolve_manifest(valid_config_file):
-    with mock.patch.object(connector_builder.main, "handle_connector_builder_request") as patch:
-        handle_request(["read", "--config", str(valid_config_file), "--catalog", ""])
-        assert patch.call_count == 1
-
-
-def test_resolve_manifest(valid_config_file):
-    config = copy.deepcopy(CONFIG)
-    config["__command"] = "resolve_manifest"
-    source = ManifestDeclarativeSource(MANIFEST)
-    resolved_manifest = handle_connector_builder_request(source, config)
->>>>>>> master
 
     expected_resolved_manifest = {
         "type": "DeclarativeSource",
@@ -329,7 +298,6 @@ def test_resolve_manifest_error_returns_error_response():
     assert "Error resolving manifest" in response.trace.error.message
 
 
-<<<<<<< HEAD
 def test_read():
     config = TEST_READ_CONFIG
     source = ManifestDeclarativeSource(MANIFEST)
@@ -369,8 +337,6 @@ def test_read_returns_error_response():
     assert "Error reading" in response.trace.error.message
 
 
-=======
->>>>>>> master
 @pytest.mark.parametrize(
     "command",
     [
@@ -381,7 +347,6 @@ def test_read_returns_error_response():
         pytest.param("", id="test_command_is_empty_error"),
     ],
 )
-<<<<<<< HEAD
 def test_invalid_protocol_command(command, valid_resolve_manifest_config_file):
     config = copy.deepcopy(RESOLVE_MANIFEST_CONFIG)
     config["__command"] = "list_streams"
