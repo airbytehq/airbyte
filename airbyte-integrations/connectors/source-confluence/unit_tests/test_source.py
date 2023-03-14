@@ -24,6 +24,12 @@ def test_check_connection(config):
     assert source.check_connection(logger_mock, config) == (True, None)
 
 
+def test_check_connection_failed(config):
+    source = SourceConfluence()
+    logger_mock = MagicMock()
+    assert source.check_connection(logger_mock, config)[0] is False
+
+
 def test_streams_count(mocker):
     source = SourceConfluence()
     config_mock = MagicMock()

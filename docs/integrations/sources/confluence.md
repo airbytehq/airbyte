@@ -35,7 +35,9 @@ This page contains the setup guide and reference information for the Confluence 
 * [Space](https://developer.atlassian.com/cloud/confluence/rest/api-group-space/#api-wiki-rest-api-space-get)
 * [Group](https://developer.atlassian.com/cloud/confluence/rest/api-group-group/#api-wiki-rest-api-group-get)
 * [Audit](https://developer.atlassian.com/cloud/confluence/rest/api-group-audit/#api-wiki-rest-api-audit-get)
-
+:::warning
+Stream Audit requires Standard or Premium plan.
+:::
 ## Data type map
 The [Confluence API](https://developer.atlassian.com/cloud/confluence/rest/intro/#about) uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
 
