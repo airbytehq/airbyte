@@ -3,6 +3,7 @@
 #
 
 import copy
+import json
 from abc import ABC
 from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
@@ -165,6 +166,7 @@ class UserInsights(InstagramIncrementalStream):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._end_date = pendulum.now()
+        self.time_to_exit_gracefully = False
 
     def read_records(
         self,
@@ -203,8 +205,12 @@ class UserInsights(InstagramIncrementalStream):
             if not insight_record.get(self.cursor_field):
                 insight_record[self.cursor_field] = insight.get("values")[0]["end_time"]
 
-        # if insight_list is empty, we don't want to yield an incomplete record
-        complete_records = [insight_record] if insight_list else []
+        complete_records = [insight_record]
+        # if insight_list is empty, we don't want to yield an incomplete record and want to stop syncing this stream gracefully
+        if not insight_list:
+            complete_records = []
+            self.logger.warning(f"No data received for base params {json.dumps(base_params)}. It is time to exit gracefully.")
+            self.time_to_exit_gracefully = True
         yield from complete_records
 
     def stream_slices(
@@ -224,6 +230,9 @@ class UserInsights(InstagramIncrementalStream):
                 continue
             for since in pendulum.period(start_date, self._end_date).range("days", self.days_increment):
                 until = since.add(days=self.days_increment)
+                if self.time_to_exit_gracefully:
+                    self.logger.warning("Exiting gracefully")
+                    return
                 self.logger.info(f"Reading insights between {since.date()} and {until.date()}")
                 yield {
                     **stream_slice,
