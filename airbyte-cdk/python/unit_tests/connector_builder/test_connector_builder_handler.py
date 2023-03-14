@@ -3,10 +3,9 @@
 #
 
 import copy
-import dataclasses
 import json
 from unittest import mock
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import connector_builder
 import pytest
@@ -17,14 +16,6 @@ from connector_builder.connector_builder_handler import resolve_manifest
 from connector_builder.main import handle_connector_builder_request, handle_request, read_stream
 from connector_builder.models import StreamRead, StreamReadSlicesInner, StreamReadSlicesInnerPagesInner
 from unit_tests.connector_builder.utils import create_configured_catalog
-import json
-from unittest import mock
-
-import connector_builder
-import pytest
-from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
-from connector_builder.connector_builder_handler import resolve_manifest
-from connector_builder.main import handle_connector_builder_request, handle_request
 
 _stream_name = "stream_with_custom_requester"
 _stream_primary_key = "id"

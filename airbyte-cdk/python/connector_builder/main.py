@@ -6,16 +6,12 @@
 import sys
 from typing import Any, List, Mapping, Tuple
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
-from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
-from connector_builder.connector_builder_handler import read_stream
-
-from typing import Any, List, Mapping
-
 from airbyte_cdk.connector import BaseConnector
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
-from connector_builder.connector_builder_handler import resolve_manifest
+from connector_builder.connector_builder_handler import read_stream, resolve_manifest
+
 
 def create_source(config: Mapping[str, Any], debug: bool) -> ManifestDeclarativeSource:
     manifest = config.get("__injected_declarative_manifest")

@@ -6,8 +6,8 @@ import dataclasses
 from datetime import datetime
 from typing import Any, Mapping
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, Type
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import Type
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
