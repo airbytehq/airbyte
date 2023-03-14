@@ -1,7 +1,8 @@
 # Tripletex Api Source
 
 This is the repository for the Tripletex Api source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/tripletex-api).
+For information about how to use this connector within Airbyte,
+see [the documentation](https://docs.airbyte.io/integrations/sources/tripletex-api).
 
 ## Local development
 
@@ -30,9 +31,11 @@ pip install '.[tests]'
 
 If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
 
-Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
+Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your
+dependencies. `requirements.txt` is
 used for editable installs (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`.
-If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
+If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install
+using `pip install -r requirements.txt` and everything
 should work as you expect.
 
 #### Building via Gradle
@@ -47,12 +50,16 @@ To build using Gradle, from the Airbyte repository root, run:
 
 #### Create credentials
 
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/tripletex-api)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_tripletex_api/spec.yaml` file.
-Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
+**If you are a community contributor**, follow the instructions in
+the [documentation](https://docs.airbyte.io/integrations/sources/tripletex-api)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to
+the `source_tripletex_api/spec.yaml` file.
+Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of
+accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source tripletex-api test creds`
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret
+name `source tripletex-api test creds`
 and place them into `secrets/config.json`.
 
 ### Locally running the connector
@@ -76,12 +83,15 @@ docker build . -t airbyte/source-tripletex-api:dev
 
 If you are on Apple M-chips (arm64), add `-- platform linux/amd64` tag at the end of the above command.
 
-```
-docker build . -t airbyte/source-tripletex-api:dev --platform linux/amd64
-```
 ```shell
-docker tag airbyte/source-tripletex-api:2.0.0 askeladden/source-tripletex-api:2.0.0
-docker push askeladden/source-tripletex-api:2.0.0
+IMAGE_TAG="2.0.1"
+```
+
+```
+docker build . -t airbyte/source-tripletex-api:$IMAGE_TAG  --platform linux/amd64
+
+docker tag airbyte/source-tripletex-api:$IMAGE_TAG askeladden/source-tripletex-api:$IMAGE_TAG
+docker push askeladden/source-tripletex-api:$IMAGE_TAG
 ```
 
 You can also build the connector image via Gradle:
@@ -90,7 +100,8 @@ You can also build the connector image via Gradle:
 ./gradlew :airbyte-integrations:connectors:source-tripletex-api:airbyteDocker
 ```
 
-When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
+When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name`
+and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
 
 #### Run
@@ -106,7 +117,9 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 
 ## Testing
 
-Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
+Make sure to familiarize yourself
+with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test
+files and methods should be named.
 First install test dependencies into your virtual environment:
 
 ```
@@ -123,7 +136,8 @@ python -m pytest unit_tests
 
 ### Integration Tests
 
-There are two types of integration tests: Acceptance Tests (Airbyte's test suite for all source connectors) and custom integration tests (which are specific to this connector).
+There are two types of integration tests: Acceptance Tests (Airbyte's test suite for all source connectors) and custom
+integration tests (which are specific to this connector).
 
 #### Custom Integration tests
 
@@ -135,8 +149,11 @@ python -m pytest integration_tests
 
 #### Acceptance Tests
 
-Customize `acceptance-test-config.yml` file to configure tests. See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference) for more information.
-If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
+Customize `acceptance-test-config.yml` file to configure tests.
+See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+for more information.
+If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and
+place them inside integration_tests/acceptance.py.
 To run your integration tests with acceptance tests, from the connector root, run
 
 ```
@@ -162,7 +179,8 @@ To run acceptance and custom integration tests:
 
 ## Dependency Management
 
-All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
+All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect
+internal Airbyte dependencies in the monorepo for local development.
 We split dependencies between two groups, dependencies that are:
 
 - required for your connector to work need to go to `MAIN_REQUIREMENTS` list.
@@ -170,10 +188,12 @@ We split dependencies between two groups, dependencies that are:
 
 ### Publishing a new version of the connector
 
-You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
+You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the
+world. Now what?
 
 1. Make sure your changes are passing unit and integration tests.
-1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use [SemVer](https://semver.org/)).
+1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version`
+   appropriately (we use [SemVer](https://semver.org/)).
 1. Create a Pull Request.
 1. Pat yourself on the back for being an awesome contributor.
 1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.

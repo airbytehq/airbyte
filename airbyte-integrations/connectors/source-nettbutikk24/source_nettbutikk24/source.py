@@ -78,6 +78,9 @@ class Nettbutikk24Stream(HttpStream, ABC):
         :return an iterable containing each record in the response
         """
 
+        if response.status_code == 404:
+            yield from []
+
         yield from response.json().get("data", [])
 
     def update_uri_params(self, next_page_token: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None):
