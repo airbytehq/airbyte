@@ -41,6 +41,7 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
@@ -82,8 +83,9 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
         new RedshiftS3StagingSqlOperations(nameTransformer, s3Config.getS3Client(), s3Config, encryptionConfig);
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
-      final String outputSchema = super.getNamingResolver().getIdentifier(config.get(JdbcUtils.SCHEMA_KEY).asText());
-      attemptTableOperations(outputSchema, database, nameTransformer, redshiftS3StagingSqlOperations, false);
+      for (String outputSchema : getOutputSchemas(config, catalog)) {
+        attemptTableOperations(outputSchema, database, nameTransformer, redshiftS3StagingSqlOperations, false);
+      }
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final ConnectionErrorException e) {
       final String message = getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);
@@ -105,6 +107,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
         SSL_JDBC_PARAMETERS);
   }
 
+  // TODO: This should not be overriden - a RedshiftSQLNameTransformer instance is passed to the constructor
+  // So this is needlessly creating new instances on each call
   @Override
   protected NamingConventionTransformer getNamingResolver() {
     return new RedshiftSQLNameTransformer();

@@ -23,6 +23,7 @@ import io.airbyte.integrations.destination.mysql.MySQLSqlOperations.VersionCompa
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
@@ -57,9 +58,9 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     try {
       final JdbcDatabase database = getDatabase(dataSource);
       final MySQLSqlOperations mySQLSqlOperations = (MySQLSqlOperations) getSqlOperations();
-
-      final String outputSchema = getNamingResolver().getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
-      attemptTableOperations(outputSchema, database, getNamingResolver(), mySQLSqlOperations, false);
+      for (String outputSchema : getOutputSchemas(config, catalog)) {
+        attemptTableOperations(outputSchema, database, getNamingResolver(), mySQLSqlOperations, false);
+      }
 
       mySQLSqlOperations.verifyLocalFileEnabled(database);
 

@@ -87,9 +87,8 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
     try {
     final JdbcDatabase database = getDatabase(dataSource);
-    final List<String> outputSchema = getOutputSchemas(config, catalog);
-    for (String schema : outputSchema) {
-      attemptTableOperations(schema, database, namingResolver, sqlOperations, false);
+    for (String outputSchema : getOutputSchemas(config, catalog)) {
+      attemptTableOperations(outputSchema, database, namingResolver, sqlOperations, false);
     }
     return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
