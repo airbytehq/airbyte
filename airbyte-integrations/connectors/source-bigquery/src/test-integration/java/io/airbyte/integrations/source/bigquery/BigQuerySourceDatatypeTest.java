@@ -26,7 +26,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 
-@TestInstance(Lifecycle.PER_METHOD)
 public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
