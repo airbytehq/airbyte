@@ -1,17 +1,21 @@
 # Airtable
 
-This page contains the setup guide and reference information for the Airtable source connector.
-This source syncs data from the [Airtable API](https://airtable.com/api).
+This page contains the setup guide and reference information for the [Airtable](https://airtable.com/api) source connector.
+
+:::caution
+Currently, this source connector works with `Standard` subscription plan only. `Enterprise` level accounts are not supported yet.
+:::
 
 ## Prerequisites
 
 * An active Airtable account
-* [Personal Access Token](https://airtable.com/developers/web/guides/personal-access-tokens) with next scopes:
+* [Personal Access Token](https://airtable.com/developers/web/guides/personal-access-tokens) with the following scopes:
   - `data.records:read`
   - `data.recordComments:read`
   - `schema.bases:read`
 
 ## Setup guide
+
 ### Step 1: Set up Airtable
 
 ### For Airbyte Cloud:
@@ -43,13 +47,9 @@ The airtable source connector supports the following [sync modes](https://docs.a
 | Incremental Sync  | No                   |       |
 
 
-## Supported Tables and Plans
+## Supported Tables
 
 This source allows you to pull all available tables and bases using `Metadata API` for a given authenticated user. In case you rename or add a column to any existing table, you will need to recreate the source to update the Airbyte catalog. 
-
-Currently, this source connector works with `standard` subscription plan only.
-
-The `Enterprise` level accounts are not supported yet.
 
 ## Data type map
 
@@ -92,7 +92,6 @@ The `Enterprise` level accounts are not supported yet.
     - string
     - number/integer
     - nested lists/objects
-    - etc
 
 ### Performance Considerations (Airbyte Open-Source)
 
