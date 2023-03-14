@@ -203,7 +203,9 @@ class UserInsights(InstagramIncrementalStream):
             if not insight_record.get(self.cursor_field):
                 insight_record[self.cursor_field] = insight.get("values")[0]["end_time"]
 
-        yield insight_record
+        # if insight_list is empty, we don't want to yield an incomplete record
+        complete_records = [insight_record] if insight_list else []
+        yield from complete_records
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
