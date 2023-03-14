@@ -276,11 +276,13 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
               resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
           Preconditions.checkState(jsonNodes.size() == 1);
           nullValExist = jsonNodes.get(0).get(resultColName).booleanValue();
-          LOGGER.debug("null value exist: {}", nullValExist);
+          LOGGER.info("null cursor value for MsSQL source : {}, shema {} , tableName {}, columnName {} ", nullValExist, schema, tableName, columnName);
         }
       }
     }
-    return !nullValExist;
+//    return !nullValExist;
+//    will enable after we have sent comms to users this affects
+    return true;
   }
 
   private boolean isTableInRequestedSchema(final TableInfo<CommonField<JDBCType>> tableInfo) {
