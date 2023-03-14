@@ -27,7 +27,7 @@ def test_get_updated_state(patch_incremental_base_class):
     stream = IncrementalXeroStream(tenant_id="tenant_id", start_date=datetime.datetime.now())
     date = datetime.datetime.now().replace(microsecond=0)
     inputs = {"current_stream_state": {"date": "2022-01-01"}, "latest_record": {"UpdatedDateUTC": date.isoformat()}}
-    expected_state = {"date": date.isoformat()}
+    expected_state = {"UpdatedDateUTC": date.isoformat()}
     assert stream.get_updated_state(**inputs) == expected_state
 
 

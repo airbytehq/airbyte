@@ -132,7 +132,7 @@ class IncrementalXeroStream(XeroStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         request_headers = super().request_headers(stream_state, stream_slice, next_page_token)
-        stream_date = stream_state.get("date") or self.start_date
+        stream_date = stream_state.get(self.cursor_field) or self.start_date
         if isinstance(stream_date, str):
             stream_date = pendulum.parse(stream_date)
         request_headers["If-Modified-Since"] = stream_date.strftime("%Y-%m-%dT%H:%M:%S")
@@ -140,11 +140,11 @@ class IncrementalXeroStream(XeroStream, ABC):
         return request_headers
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_state = latest_record.get(self.cursor_field)
-        current_state = current_stream_state.get(self.cursor_field) or latest_state
-        if current_state:
-            return {"date": max(latest_state, current_state)}
-        return {}
+        record_cursor_value = latest_record[self.cursor_field]
+        state_cursor_value = current_stream_state.get(self.cursor_field)
+        if state_cursor_value:
+            record_cursor_value = max(record_cursor_value, state_cursor_value)
+        return {self.cursor_field: record_cursor_value}
 
 
 class BankTransactions(IncrementalXeroStream):

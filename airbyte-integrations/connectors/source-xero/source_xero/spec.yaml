@@ -17,6 +17,8 @@ connectionSpecification:
         - client_id
         - client_secret
         - refresh_token
+        - access_token
+        - token_expiry_date
       properties:
         client_id:
           type: string
@@ -44,6 +46,7 @@ connectionSpecification:
       title: Tenant ID
       type: string
       description: "Enter your Xero organization's Tenant ID"
+      airbyte_secret: true
       order: 1
     start_date:
       type: string
