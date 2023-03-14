@@ -25,7 +25,7 @@ class TrustpilotApikeyAuthenticator(TokenAuthenticator):
 
 class TrustpilotOauth2Authenticator(SingleUseRefreshTokenOauth2Authenticator):
     """
-    Requesting data from the Consumer API requires OAuth2 with refresh.
+    Requesting data from APIs which require OAuth2 with refresh.
 
     See also https://documentation-apidocumentation.trustpilot.com/#Auth
     """

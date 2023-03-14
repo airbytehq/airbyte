@@ -20,10 +20,11 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams: []
   incremental: 
-    bypass_reason: "This connector does not implement incremental sync"
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+        cursor_paths:
+          private_reviews: ["5f5e954ec15b2700017c834f_createdAt"]
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:

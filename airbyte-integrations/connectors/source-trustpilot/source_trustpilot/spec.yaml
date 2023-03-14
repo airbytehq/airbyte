@@ -14,7 +14,7 @@ connectionSpecification:
       order: 0
       oneOf:
         - type: object
-          title: "OAuth2.0"
+          title: "OAuth 2.0"
           required:
             - client_id
             - client_secret
@@ -37,15 +37,33 @@ connectionSpecification:
               airbyte_secret: true
             access_token:
               type: string
+              title: Access Token
               description: Access Token for making authenticated requests.
               airbyte_secret: true
             token_expiry_date:
               type: string
+              title: Token expiry date time
               description: The date-time when the access token should be refreshed.
               format: date-time
             refresh_token:
               type: string
+              title: Refresh token
               description: The key to refresh the expired access_token.
+              airbyte_secret: true
+
+        - type: object
+          title: "API Key"
+          description: The API key authentication method gives you access to only the streams which are part of the Public API. When you want to get streams available via the Consumer API (e.g. the private reviews) you need to use authentication method OAuth 2.0.
+          required:
+            - client_id
+          properties:
+            auth_type:
+              type: string
+              const: "apikey"
+            client_id:
+              type: string
+              title: API key
+              description: The API key of the Trustpilot API application.
               airbyte_secret: true
 
     business_units:
@@ -53,7 +71,7 @@ connectionSpecification:
       items:
         type: string
       title: Business Unit names
-      description: The names of business units which shall be synchronized.
+      description: The names of business units which shall be synchronized. Some streams e.g. configured_business_units or private_reviews use this configuration.
       examples:
         - mydomain.com
         - www.mydomain.com
