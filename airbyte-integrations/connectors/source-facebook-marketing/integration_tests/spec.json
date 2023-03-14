@@ -7,7 +7,7 @@
     "properties": {
       "account_id": {
         "title": "Account ID",
-        "description": "The Facebook Ad account ID to use when pulling data from the Facebook Marketing API.",
+        "description": "The Facebook Ad account ID to use when pulling data from the Facebook Marketing API. Open your Meta Ads Manager. The Ad account ID number is in the account dropdown menu or in your browser's address bar. See the <a href=\"https://www.facebook.com/business/help/1492627900875762\">docs</a> for more information.",
         "order": 0,
         "examples": ["111111111111111"],
         "type": "string"
@@ -23,7 +23,7 @@
       },
       "end_date": {
         "title": "End Date",
-        "description": "The date until which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z. All data generated between start_date and this date will be replicated. Not setting this option will result in always syncing the latest data.",
+        "description": "The date until which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z. All data generated between the start date and this end date will be replicated. Not setting this option will result in always syncing the latest data.",
         "order": 2,
         "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "examples": ["2017-01-26T00:00:00Z"],
@@ -31,28 +31,28 @@
       },
       "access_token": {
         "title": "Access Token",
-        "description": "The value of the access token generated. See the <a href=\"https://docs.airbyte.com/integrations/sources/facebook-marketing\">docs</a> for more information",
+        "description": "The value of the generated access token. From your App’s Dashboard, click on \"Marketing API\" then \"Tools\". Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on \"Get token\". See the <a href=\"https://docs.airbyte.com/integrations/sources/facebook-marketing\">docs</a> for more information.",
         "order": 3,
         "airbyte_secret": true,
         "type": "string"
       },
       "include_deleted": {
-        "title": "Include Deleted",
-        "description": "Include data from deleted Campaigns, Ads, and AdSets",
+        "title": "Include Deleted Campaigns, Ads, and AdSets",
+        "description": "Set to active if you want to include data from deleted Campaigns, Ads, and AdSets.",
         "default": false,
         "order": 4,
         "type": "boolean"
       },
       "fetch_thumbnail_images": {
-        "title": "Fetch Thumbnail Images",
-        "description": "In each Ad Creative, fetch the thumbnail_url and store the result in thumbnail_data_url",
+        "title": "Fetch Thumbnail Images from Ad Creative",
+        "description": "Set to active if you want to fetch the thumbnail_url and store the result in thumbnail_data_url for each Ad Creative.",
         "default": false,
         "order": 5,
         "type": "boolean"
       },
       "custom_insights": {
         "title": "Custom Insights",
-        "description": "A list which contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)",
+        "description": "A list which contains ad statistics entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns. Click on \"add\" to fill this field.",
         "order": 6,
         "type": "array",
         "items": {
@@ -287,7 +287,7 @@
             },
             "end_date": {
               "title": "End Date",
-              "description": "The date until which you'd like to replicate data for this stream, in the format YYYY-MM-DDT00:00:00Z. All data generated between the start date and this date will be replicated. Not setting this option will result in always syncing the latest data.",
+              "description": "The date until which you'd like to replicate data for this stream, in the format YYYY-MM-DDT00:00:00Z. All data generated between the start date and this end date will be replicated. Not setting this option will result in always syncing the latest data.",
               "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
               "examples": ["2017-01-26T00:00:00Z"],
               "type": "string",
@@ -316,7 +316,7 @@
       },
       "insights_lookback_window": {
         "title": "Insights Lookback Window",
-        "description": "The attribution window",
+        "description": "The attribution window. Facebook freezes insight data 28 days after it was generated, which means that all data from the past 28 days may have changed since we last emitted it, so you can retrieve refreshed insights from the past by setting this parameter. If you set a custom lookback window value in Facebook account, please provide the same value here.",
         "default": 28,
         "order": 8,
         "maximum": 28,

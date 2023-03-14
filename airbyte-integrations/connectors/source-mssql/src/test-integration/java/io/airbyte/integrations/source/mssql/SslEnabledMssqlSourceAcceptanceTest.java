@@ -37,7 +37,7 @@ public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTe
       db = new MSSQLServerContainer<>(DockerImageName
           .parse("airbyte/mssql_ssltest:dev")
           .asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
-          .acceptLicense();
+              .acceptLicense();
       db.start();
     }
 
