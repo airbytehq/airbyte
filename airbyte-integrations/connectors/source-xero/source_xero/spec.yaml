@@ -19,19 +19,26 @@ connectionSpecification:
         - refresh_token
       properties:
         client_id:
-          title: Client ID
           type: string
+          title: Client ID
           description: "Enter your Xero application's Client ID"
         client_secret:
-          title: Client Secret
           type: string
+          title: Client Secret
           description: "Enter your Xero application's Client Secret"
           airbyte_secret: true
         refresh_token:
-          title: Refresh Token
           type: string
+          title: Refresh Token
           description: "Enter your Xero application's refresh token"
           airbyte_secret: true
+        access_token:
+          type: string
+          description: "Enter your Xero application's access token"
+          airbyte_secret: true
+        token_expiry_date:
+          type: string
+          description: "The date-time when the access token should be refreshed"
       order: 0
     tenant_id:
       title: Tenant ID
@@ -59,6 +66,17 @@ advanced_auth:
           path_in_connector_config:
             - authentication
             - refresh_token
+        access_token:
+          type: string
+          path_in_connector_config:
+            - authentication
+            - access_token
+        token_expiry_date:
+          type: string
+          path_in_connector_config:
+            - authentication
+            - token_expiry_date
+          format: date-time
     complete_oauth_server_input_specification:
       type: object
       additionalProperties: false

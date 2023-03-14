@@ -12,6 +12,8 @@ def config_fixture():
             "client_id": "client_id",
             "client_secret": "client_secret",
             "refresh_token": "refresh_token",
+            "access_token": "access_token",
+            "token_expiry_date": "2099-01-01T12:00:00.000000+00:00"
         },
         "tenant_id": "tenant_id",
         "start_date": "2020-01-01T00:00:00Z",

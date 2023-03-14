@@ -9,12 +9,12 @@ from typing import Any, Mapping
 import backoff
 import requests
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
-from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import SingleUseRefreshTokenOauth2Authenticator
 
 logger = logging.getLogger("airbyte")
 
 
-class XeroOauth2Authenticator(Oauth2Authenticator):
+class XeroSingleUseRefreshTokenOauth2Authenticator(SingleUseRefreshTokenOauth2Authenticator):
     """
     Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials.
     The generated access token is attached to each request via the Authorization header.
