@@ -64,7 +64,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   @Override
-  protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config) throws Exception {
+  protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
     final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
     final EncryptionConfig encryptionConfig =
         config.has(UPLOADING_METHOD) ? EncryptionConfig.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
@@ -83,7 +83,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
       final String outputSchema = super.getNamingResolver().getIdentifier(config.get(JdbcUtils.SCHEMA_KEY).asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, redshiftS3StagingSqlOperations);
+      attemptTableOperations(outputSchema, database, nameTransformer, redshiftS3StagingSqlOperations, false);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final ConnectionErrorException e) {
       final String message = getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);
