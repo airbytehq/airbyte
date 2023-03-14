@@ -1,9 +1,13 @@
-# Connector Development Kit (Python)
+# Connector Development Kit
 
 :::info
 Developer updates will be announced via our #using-the-cdk Slack channel. If you are using the CDK, please join to stay up to date on changes and issues.
 :::
 
+:::info
+This section is for the Python CDK. See our [community-maintained CDKs section](../README.md#community-maintained-cdks) 
+if you want to write connectors in other languages. 
+:::
 The Airbyte Python CDK is a framework for rapidly developing production-grade Airbyte connectors. The CDK currently offers helpers specific for creating Airbyte source connectors for:
 
 * HTTP APIs \(REST APIs, GraphQL, etc..\)
