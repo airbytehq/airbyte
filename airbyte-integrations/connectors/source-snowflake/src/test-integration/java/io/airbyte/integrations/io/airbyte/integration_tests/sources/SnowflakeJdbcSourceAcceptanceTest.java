@@ -257,8 +257,8 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     assertFalse(actual.getStreams().isEmpty());
 
     var streams = actual.getStreams().stream()
-            .filter(s -> !s.getNamespace().equals(SCHEMA_NAME))
-                .collect(Collectors.toList());
+        .filter(s -> !s.getNamespace().equals(SCHEMA_NAME))
+        .collect(Collectors.toList());
 
     assertTrue(streams.isEmpty());
 
@@ -272,4 +272,5 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
     assertTrue(streams.isEmpty());
   }
+
 }

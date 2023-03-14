@@ -173,7 +173,7 @@ class FieldMeta(FromDictMixin):
             # `Tag` is defined as string, but is actually an object
             typedef["items"] = {
                 "type": "object",
-                "additionalProperties": False,
+                "additionalProperties": True,
                 "required": ["name", "id"],
                 "properties": {"name": {"type": "string"}, "id": {"type": "string"}},
             }
@@ -199,7 +199,7 @@ class FieldMeta(FromDictMixin):
     def _jsonobject_field(self) -> FieldType:
         lookup_typedef = {
             "type": ["null", "object"],
-            "additionalProperties": False,
+            "additionalProperties": True,
             "required": ["name", "id"],
             "properties": {"name": {"type": ["null", "string"]}, "id": {"type": "string"}},
             **self._default_type_kwargs(),

@@ -124,7 +124,7 @@ datatype_inputs = pytest.mark.parametrize(
             [],
             None,
             {
-                "additionalProperties": False,
+                "additionalProperties": True,
                 "properties": {
                     "email": {"format": "email", "type": "string"},
                     "id": {"type": "string"},
@@ -146,7 +146,7 @@ datatype_inputs = pytest.mark.parametrize(
             [],
             None,
             {
-                "additionalProperties": False,
+                "additionalProperties": True,
                 "properties": {"id": {"type": "string"}, "name": {"type": ["null", "string"]}},
                 "required": ["name", "id"],
                 "title": "Field",
@@ -203,7 +203,7 @@ datatype_inputs = pytest.mark.parametrize(
             None,
             {
                 "items": {
-                    "additionalProperties": False,
+                    "additionalProperties": True,
                     "properties": {"id": {"type": "string"}, "name": {"type": "string"}},
                     "required": ["name", "id"],
                     "type": "object",
