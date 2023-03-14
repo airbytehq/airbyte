@@ -4,21 +4,15 @@ In Airbyte Cloud, you can set the default data residency and choose the data res
 
 ## Choose your default data residency
 
-Default data residency allows you to choose where your data is processed.
-
-:::note 
-
-To ensure your data is processed in the correct region, set your default data residency before creating a new connection as some workflows rely on the default data residency. When you set the default data residency, it applies to new connections and does not affect existing ones. If you do not set the default data residency, the [Airbyte Default](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud/#united-states-and-airbyte-default) region is used. 
-
-:::
-
-For individual connections, you can choose a data residency that is different from the default through [connection settings](#choose-the-data-residency-for-a-connection) or when you create a [new connection](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#set-up-a-connection).
+Default data residency allows you to choose where your data is processed. Some workflows, such as fetching the schema or testing the source destination, use the default data residency before creating a new connection. To ensure your data is processed in the correct region, set your default data residency before creating a new connection. 
 
 :::note 
 
 While the data is processed in a data plane in the chosen residency, the cursor and primary key data is stored in the US control plane. If you have data that cannot be stored in the US, do not use it as a cursor or primary key.
 
 :::
+
+When you set the default data residency, it applies to new connections only. If you do not set the default data residency, the [Airbyte Default](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud/#united-states-and-airbyte-default) region is used. You can choose a different default residency for each connection in its [connection settings](#choose-the-data-residency-for-a-connection) or when creating a [new connection](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#set-up-a-connection).
 
 To choose your default data residency:
 
