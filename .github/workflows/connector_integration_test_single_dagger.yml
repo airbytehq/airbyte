@@ -17,7 +17,11 @@ jobs:
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+      pipeline-start-timestamp: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
     steps:
+      - name: Get start timestamp
+        id: get-start-timestamp
+        run: echo "::set-output name=start-timestamp::$(date +%s)"
       - name: Checkout Airbyte
         uses: actions/checkout@v3
       - name: Check PAT rate limits
@@ -67,6 +71,8 @@ jobs:
           CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
           CI_GIT_REVISION: ${{ github.sha }}
+          CI_CONTEXT: "manual"
+          CI_PIPELINE_START_TIMESTAMP: ${{ needs.start-runner.outputs.pipeline-start-timestamp }}
       - name: Run connectors-ci test-connectors [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         run: connectors-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} test-connectors --modified
@@ -79,6 +85,9 @@ jobs:
           CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           CI_GIT_BRANCH: ${{ github.head_ref }}
           CI_GIT_REVISION: ${{ github.event.pull_request.head.sha }}
+          CI_CONTEXT: "pull-request"
+          CI_PIPELINE_START_TIMESTAMP: ${{ needs.start-runner.outputs.pipeline-start-timestamp }}
+
   stop-runner:
     name: "Connectors Integration Test: Stop Build EC2 Runner"
     timeout-minutes: 10
