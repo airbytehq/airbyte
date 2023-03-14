@@ -5,7 +5,7 @@
     "title": "OneSignal Source Spec",
     "type": "object",
     "required": ["user_auth_key", "start_date", "outcome_names", "applications"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "user_auth_key": {
         "type": "string",
@@ -21,9 +21,14 @@
         "items": {
           "type": "object",
           "properties": {
+            "app_name": {
+              "type": "string",
+              "title": "OneSignal App Name"
+            },
             "app_id": {
               "type": "string",
-              "title": "OneSignal App ID"
+              "title": "OneSignal App ID",
+              "airbyte_secret": true
             },
             "app_api_key": {
               "type": "string",
