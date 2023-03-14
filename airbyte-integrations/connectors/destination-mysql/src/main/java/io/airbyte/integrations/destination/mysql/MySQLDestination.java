@@ -53,7 +53,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   @Override
-  protected AirbyteConnectionStatus checkedConnectionStatus(DataSource dataSource, JsonNode config) throws Exception {
+  protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config) throws Exception {
     try {
       final JdbcDatabase database = getDatabase(dataSource);
       final MySQLSqlOperations mySQLSqlOperations = (MySQLSqlOperations) getSqlOperations();

@@ -40,7 +40,7 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
 
 
   @Override
-  protected AirbyteConnectionStatus checkedConnectionStatus(DataSource dataSource, JsonNode config) throws Exception {
+  protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config) throws Exception {
     final JdbcDatabase database = getDatabase(dataSource);
     final MariadbColumnstoreSqlOperations mariadbColumnstoreSqlOperations = (MariadbColumnstoreSqlOperations) getSqlOperations();
     final String outputSchema = getNamingResolver().getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());

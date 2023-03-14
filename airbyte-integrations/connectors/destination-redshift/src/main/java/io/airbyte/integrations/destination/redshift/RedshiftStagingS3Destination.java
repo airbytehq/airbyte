@@ -64,7 +64,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   @Override
-  protected AirbyteConnectionStatus checkedConnectionStatus(DataSource dataSource, JsonNode config) throws Exception {
+  protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config) throws Exception {
     final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
     final EncryptionConfig encryptionConfig =
         config.has(UPLOADING_METHOD) ? EncryptionConfig.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
