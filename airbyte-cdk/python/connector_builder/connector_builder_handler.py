@@ -27,7 +27,7 @@ def read_stream(source: DeclarativeSource, config: Mapping[str, Any], configured
         max_slices = command_config["max_slices"]
         max_records = command_config["max_records"]
         handler = MessageGrouper(max_pages_per_slice, max_slices)
-        stream_name = configured_catalog.streams[0].stream  # The connector builder only supports a single stream
+        stream_name = configured_catalog.streams[0].stream.name  # The connector builder only supports a single stream
         stream_read = handler.get_message_groups(source, config, configured_catalog, max_records)
         return AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(
             data=dataclasses.asdict(stream_read),
