@@ -90,4 +90,5 @@ docker-compose.yaml
 docker-compose.debug.yaml
 .env
 .env.dev
+.env.develop
 flags.yml
