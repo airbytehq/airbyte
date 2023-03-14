@@ -29,11 +29,16 @@ services:
       - airbyte_public
   worker:
     environment:
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006
       - DEBUG_CONTAINER_IMAGE=${DEBUG_CONTAINER_IMAGE}
-      - DEBUG_CONTAINER_JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
+      - DEBUG_CONTAINER_JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*
+    ports:
+      - 5006:5006
   server:
     # You will need to create a remote JVM debugging Run Configuration
     # If you're on a Mac you will need to obtain the IP address of the container
     # The value of DEBUG_SERVER_JAVA_OPTIONS should be the same as DEBUG_CONTAINER_JAVA_OPTS above
     environment:
-      - JAVA_TOOL_OPTIONS=${DEBUG_SERVER_JAVA_OPTIONS}
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5007
+    ports:
+      - 5007:5007

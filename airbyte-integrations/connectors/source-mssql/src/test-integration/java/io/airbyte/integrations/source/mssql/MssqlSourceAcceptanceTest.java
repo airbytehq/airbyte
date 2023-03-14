@@ -79,8 +79,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-  }
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {}
 
   @Override
   protected String getImageName() {
