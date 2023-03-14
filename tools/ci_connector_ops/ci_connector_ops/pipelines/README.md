@@ -98,9 +98,6 @@ flowchart TB
             bld[[Build connector dev image]]-->ta-->upsec[[Upload updated secrets to GSM]]
         end
     end
-    subgraph Code format
-        fmt[Run code format checks]
-    end
 ```
 
 This is the DAG we expect for every connector for which the pipeline is triggered.
