@@ -3,12 +3,11 @@
 #
 
 
-import argparse
 import sys
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.connector import BaseConnector
-from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
+from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from connector_builder.connector_builder_handler import resolve_manifest, read_stream
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
@@ -19,34 +18,40 @@ def create_source(config: Mapping[str, Any], debug: bool) -> ManifestDeclarative
     return ManifestDeclarativeSource(manifest, debug)
 
 
+def get_config_and_catalog_from_args(args: List[str]) -> Tuple[Mapping[str, Any], ConfiguredAirbyteCatalog]:
+    parsed_args = AirbyteEntrypoint.parse_args(args)
+    config_path, catalog_path = parsed_args.config, parsed_args.catalog
+    if parsed_args.command != "read":
+        raise ValueError("Only read commands are allowed for Connector Builder requests.")
+
+    config = BaseConnector.read_config(parsed_args.config)
+    catalog = ConfiguredAirbyteCatalog.parse_obj(BaseConnector.read_config(catalog_path))
+
+    if "__injected_declarative_manifest" not in config:
+        raise ValueError(
+            f"Invalid config: `__injected_declarative_manifest` should be provided at the root of the config but config only has keys {list(config.keys())}"
+        )
+
+    return config, catalog
+
+
 def handle_connector_builder_request(source: ManifestDeclarativeSource, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog):
-    command = config["__command"]
+    command = config.get("__command")
     if command == "resolve_manifest":
-        result = resolve_manifest(source)
+        return resolve_manifest(source)
     elif command == "read":
-        result = read_stream(source, config, catalog)
+        return read_stream(source, config, catalog)
     else:
         raise ValueError(f"Unrecognized command {command}.")
-    print(result)
-
-
-def handle_connector_request(source: ManifestDeclarativeSource, args: List[str]):
-    # Verify that the correct args are present for the production codepaths.
-    AirbyteEntrypoint.parse_args(args)
-    launch(source, sys.argv[1:])
 
 
 def handle_request(args: List[str]):
-    parser = AirbyteEntrypoint.parse_args(args)
-    config_path, catalog_path = parser.config, parser.catalog
-    config = BaseConnector.read_config(config_path)
-    catalog = ConfiguredAirbyteCatalog.parse_obj(BaseConnector.read_config(catalog_path))
+    config, catalog = get_config_and_catalog_from_args(args)
     if "__command" in config:
         source = create_source(config, True)
-        handle_connector_builder_request(source, config, catalog)
+        print(handle_connector_builder_request(source, config, catalog))
     else:
-        source = create_source(config, False)
-        handle_connector_request(source, args)
+        raise ValueError("Missing __command argument in config file.")
 
 
 if __name__ == "__main__":

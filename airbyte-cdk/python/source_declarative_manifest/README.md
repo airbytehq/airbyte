@@ -7,8 +7,6 @@ This entrypoint is used for connectors created by the connector builder. These c
 
 The spec operation is not supported because the config is not known when running a spec.
 
-This entrypoint is also the entrypoint for requests from the [Connector Builder](https://docs.airbyte.com/connector-development/config-based/connector-builder-ui/) Server. In addition to the `__injected_declarative_manifest`, the [Connector Builder backend](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/connector_builder/README.md) config requires the `__command` key, whose value is one of the commands handled by the ConnectorBuilderHandler (`stream_read`, `list_streams`, or `resolve_manifest`).
-
 ## Local development
 
 #### Building
