@@ -3,6 +3,7 @@
   "properties": {
     "type": { "type": "string" },
     "id": { "type": "string" },
+    "updated": { "type": "string", "format": "date-time" },
     "attributes": {
       "type": "object",
       "properties": {

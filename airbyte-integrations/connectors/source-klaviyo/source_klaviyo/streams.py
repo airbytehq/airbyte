@@ -73,7 +73,13 @@ class KlaviyoStreamLatest(HttpStream, ABC):
         """:return an iterable containing each record in the response"""
         response_json = response.json()
         for record in response_json.get("data", []):  # API returns records in a container array "data"
+            record = self.map_record(record)
             yield record
+
+
+    def map_record(self, record: Mapping):
+        """Subclasses can override this to apply custom mappings to a record"""
+        return record
 
 
 class IncrementalKlaviyoStreamLatest(KlaviyoStreamLatest, ABC):
@@ -93,14 +99,6 @@ class IncrementalKlaviyoStreamLatest(KlaviyoStreamLatest, ABC):
 
         :return str: The name of the cursor field.
         """
-
-    def get_cursor_field_from_record(self, record: Mapping[str, Any]) -> str:
-        """Override to extract the cursor field value from a record since it may not be a top-level attribute
-
-        :return str: The name of the cursor field.
-        """
-
-        record.get(self.cursor_field)
 
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
         """Add incremental filters"""
@@ -124,7 +122,7 @@ class IncrementalKlaviyoStreamLatest(KlaviyoStreamLatest, ABC):
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
 
-        latest_record_cursor_value = self.get_cursor_field_from_record(latest_record)
+        latest_record_cursor_value = latest_record[self.cursor_field]
         latest_cursor = max(pendulum.parse(latest_record_cursor_value), pendulum.parse(current_stream_state[self.cursor_field]))
         return {self.cursor_field: latest_cursor.isoformat()}
 
@@ -137,8 +135,9 @@ class Profiles(IncrementalKlaviyoStreamLatest):
     def path(self, *args, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return "profiles"
 
-    def get_cursor_field_from_record(self, record: Mapping[str, Any]) -> str:
-        return record.get("attributes").get(self.cursor_field)
+    def map_record(self, record: Mapping):
+        record[self.cursor_field] = record["attributes"][self.cursor_field]
+        return record
 
 
 class KlaviyoStreamV1(HttpStream, ABC):
