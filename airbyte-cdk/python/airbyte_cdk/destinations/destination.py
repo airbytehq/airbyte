@@ -7,7 +7,7 @@ import io
 import logging
 import sys
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping
+from typing import Any, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.connector import Connector
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
@@ -28,8 +28,11 @@ class Destination(Connector, ABC):
     ) -> Iterable[AirbyteMessage]:
         """Implement to define how the connector writes data to the destination"""
 
-    def _run_check(self, config: Mapping[str, Any]) -> AirbyteMessage:
-        check_result = self.check(logger, config)
+    def _run_check(self, config: Mapping[str, Any], configured_catalog: Optional[ConfiguredAirbyteCatalog]) -> AirbyteMessage:
+        if configured_catalog:
+            self.check_with_catalog(logger, config, configured_catalog)
+        else:
+            check_result = self.check(logger, config)
         return AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=check_result)
 
     def _parse_input_stream(self, input_stream: io.TextIOWrapper) -> Iterable[AirbyteMessage]:
@@ -66,6 +69,7 @@ class Destination(Connector, ABC):
         check_parser = subparsers.add_parser("check", help="checks the config can be used to connect", parents=[parent_parser])
         required_check_parser = check_parser.add_argument_group("required named arguments")
         required_check_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
+        check_parser.add_argument("--catalog", type=str, required=False, help="path to the configured catalog JSON file", default=None)
 
         # write
         write_parser = subparsers.add_parser("write", help="Writes data to the destination", parents=[parent_parser])
@@ -77,7 +81,7 @@ class Destination(Connector, ABC):
         cmd = parsed_args.command
         if not cmd:
             raise Exception("No command entered. ")
-        elif cmd not in ["spec", "check", "write"]:
+        elif cmd not in self.VALID_CMDS:
             # This is technically dead code since parse_args() would fail if this was the case
             # But it's non-obvious enough to warrant placing it here anyways
             raise Exception(f"Unknown command entered: {cmd}")
