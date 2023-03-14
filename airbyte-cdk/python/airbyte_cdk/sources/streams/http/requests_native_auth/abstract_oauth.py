@@ -35,10 +35,9 @@ class AbstractOauth2Authenticator(AuthBase):
     def get_access_token(self) -> str:
         """Returns the access token"""
         if self.token_has_expired():
-            current_datetime = pendulum.now()
             token, expires_in = self.refresh_access_token()
             self.access_token = token
-            self.set_token_expiry_date(current_datetime, expires_in)
+            self.set_token_expiry_date(expires_in)
 
         return self.access_token
 
@@ -124,7 +123,7 @@ class AbstractOauth2Authenticator(AuthBase):
         """Expiration date of the access token"""
 
     @abstractmethod
-    def set_token_expiry_date(self, initial_time: pendulum.DateTime, value: Union[str, int]):
+    def set_token_expiry_date(self, value: Union[str, int]):
         """Setter for access token expiration date"""
 
     @abstractmethod
