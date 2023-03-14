@@ -14,7 +14,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;

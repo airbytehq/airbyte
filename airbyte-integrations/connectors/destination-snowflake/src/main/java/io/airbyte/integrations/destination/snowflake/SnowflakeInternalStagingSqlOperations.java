@@ -70,7 +70,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
     boolean succeeded = false;
     while (exceptionsThrown.size() < UPLOAD_RETRY_LIMIT && !succeeded) {
       try {
-        loadDataIntoStage(database, stageName, stagingPath, recordsData);
+        uploadRecordsToBucket(database, stageName, stagingPath, recordsData);
         succeeded = true;
       } catch (final Exception e) {
         LOGGER.error("Failed to upload records into stage {}", stagingPath, e);
@@ -84,10 +84,14 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
       throw new RuntimeException(
           String.format("Exceptions thrown while uploading records into stage: %s", Strings.join(exceptionsThrown, "\n")));
     }
+    LOGGER.info("Successfully loaded records to stage {} with {} re-attempt(s)", stagingPath, exceptionsThrown.size());
     return recordsData.getFilename();
   }
 
-  private void loadDataIntoStage(final JdbcDatabase database, final String stageName, final String stagingPath, final SerializableBuffer recordsData)
+  private void uploadRecordsToBucket(final JdbcDatabase database,
+                                     final String stageName,
+                                     final String stagingPath,
+                                     final SerializableBuffer recordsData)
       throws Exception {
     final String query = getPutQuery(stageName, stagingPath, recordsData.getFile().getAbsolutePath());
     LOGGER.debug("Executing query: {}", query);
@@ -132,7 +136,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
     LOGGER.debug("Executing query: {}", query);
     try {
       database.execute(query);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
   }

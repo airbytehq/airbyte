@@ -13,7 +13,7 @@ This page guides you through the process of setting up the Stripe source connect
 
 ## Set up the Stripe source connector
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**. 
 3. On the Set up the source page, select **Stripe** from the Source type dropdown.
 4. Enter a name for your source.
@@ -53,7 +53,7 @@ The Stripe source connector supports the following streams:
 - [Coupons](https://stripe.com/docs/api/coupons/list) \(Incremental\)
 - [Customer Balance Transactions](https://stripe.com/docs/api/customer_balance_transactions/list)
 - [Customers](https://stripe.com/docs/api/customers/list) \(Incremental\)
-   - This endpoint does not include deleted customers 
+   - This endpoint does not include deleted customers
 - [Disputes](https://stripe.com/docs/api/disputes/list) \(Incremental\)
 - [Events](https://stripe.com/docs/api/events/list) \(Incremental\)
    - The Stripe API does not guarantee access to events older than 30 days, so this stream will only pull events created from the 30 days prior to the initial sync and not from the Replication start date.
@@ -82,6 +82,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.1   | 2023-02-22 | [22898](https://github.com/airbytehq/airbyte/pull/22898) | Add missing column to Subscriptions stream                                                                                                           |
 | 3.0.0   | 2023-02-21 | [23295](https://github.com/airbytehq/airbyte/pull/23295) | Fix invoice schema                                                                                                                                   |
 | 2.0.0   | 2023-02-14 | [22312](https://github.com/airbytehq/airbyte/pull/22312) | Another fix of `Invoices` stream schema + Remove http urls from openapi_spec.json                                                                    |
 | 1.0.2   | 2023-02-09 | [22659](https://github.com/airbytehq/airbyte/pull/22659) | Set `AvailabilityStrategy` for all streams                                                                                                           |

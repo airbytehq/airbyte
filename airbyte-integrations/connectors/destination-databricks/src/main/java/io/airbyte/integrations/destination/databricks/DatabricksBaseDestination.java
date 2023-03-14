@@ -10,7 +10,7 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.CopyConsumerFactory;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
@@ -53,7 +53,7 @@ public abstract class DatabricksBaseDestination extends CopyDestination {
   protected abstract DatabricksStreamCopierFactory getStreamCopierFactory();
 
   @Override
-  public ExtendedNameTransformer getNameTransformer() {
+  public StandardNameTransformer getNameTransformer() {
     return new DatabricksNameTransformer();
   }
 
