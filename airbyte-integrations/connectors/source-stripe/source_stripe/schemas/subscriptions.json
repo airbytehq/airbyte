@@ -8,6 +8,9 @@
     "canceled_at": {
       "type": ["null", "number"]
     },
+    "cancel_at": {
+      "type": ["null", "number"]
+    },
     "livemode": {
       "type": ["null", "boolean"]
     },
