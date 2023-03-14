@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.mariadb_columnstore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -18,6 +17,7 @@ import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.mariadb_columnstore.MariadbColumnstoreSqlOperations.VersionCompatibility;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
@@ -40,7 +40,7 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
 
 
   @Override
-  protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config) throws Exception {
+  protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
     final JdbcDatabase database = getDatabase(dataSource);
     final MariadbColumnstoreSqlOperations mariadbColumnstoreSqlOperations = (MariadbColumnstoreSqlOperations) getSqlOperations();
     final String outputSchema = getNamingResolver().getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
@@ -53,12 +53,7 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
     }
 
     mariadbColumnstoreSqlOperations.verifyLocalFileEnabled(database);
-
-    attemptSQLCreateAndDropTableOperations(
-        outputSchema,
-        database,
-        getNamingResolver(),
-        mariadbColumnstoreSqlOperations);
+    attemptTableOperations(outputSchema, database, getNamingResolver(), mariadbColumnstoreSqlOperations, false);
     return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
   }
 

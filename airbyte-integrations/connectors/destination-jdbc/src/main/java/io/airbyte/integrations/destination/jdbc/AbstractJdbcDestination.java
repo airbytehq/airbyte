@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.jdbc;
 import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Preconditions;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
@@ -17,24 +18,31 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
+import io.airbyte.integrations.base.Check;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractJdbcDestination extends BaseConnector implements Destination {
+public abstract class AbstractJdbcDestination extends BaseConnector implements Destination, Check {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcDestination.class);
 
@@ -58,11 +66,31 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     this.sqlOperations = sqlOperations;
   }
 
-  protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config) throws Exception {
+  protected List<String> getOutputSchemas(final JsonNode config, final ConfiguredAirbyteCatalog catalog) {
+    if (sqlOperations.isSchemaRequired()) {
+      Preconditions.checkState(config.has(JdbcUtils.SCHEMA_KEY), "jdbc destinations must specify a schema.");
+    }
+    final String schemaDefaultConfigKey = sqlOperations.isSchemaRequired() ? JdbcUtils.SCHEMA_KEY : JdbcUtils.DATABASE_KEY;
+    final String defaultSchemaName = namingResolver.getIdentifier(config.get(schemaDefaultConfigKey).asText());
+    List<String> outputSchemas = new ArrayList<>();
+    outputSchemas.add(defaultSchemaName);
+    if (catalog != null) {
+      catalog.getStreams().stream()
+        .map(ConfiguredAirbyteStream::getStream)
+        .map(AirbyteStream::getNamespace)
+        .filter(Objects::nonNull)
+        .forEach(outputSchemas::add);
+    }
+    return outputSchemas;
+  }
+
+  protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
     try {
     final JdbcDatabase database = getDatabase(dataSource);
-    final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.SCHEMA_KEY).asText());
-    attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
+    final List<String> outputSchema = getOutputSchemas(config, catalog);
+    for (String schema : outputSchema) {
+      attemptTableOperations(schema, database, namingResolver, sqlOperations, false);
+    }
     return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
       final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
@@ -74,10 +102,10 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   }
 
   @Override
-  public AirbyteConnectionStatus check(final JsonNode config) {
+  public AirbyteConnectionStatus check(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
     final DataSource dataSource = getDataSource(config);
     try {
-      return checkedConnectionStatus(dataSource, config);
+      return checkedConnectionStatus(dataSource, config, catalog);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
@@ -92,17 +120,9 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     }
   }
 
-  /**
-   * This method is deprecated. It verifies table creation, but not insert right to a newly created
-   * table. Use attemptTableOperations with the attemptInsert argument instead.
-   */
-  @Deprecated
-  public static void attemptSQLCreateAndDropTableOperations(final String outputSchema,
-                                                            final JdbcDatabase database,
-                                                            final NamingConventionTransformer namingResolver,
-                                                            final SqlOperations sqlOps)
-      throws Exception {
-    attemptTableOperations(outputSchema, database, namingResolver, sqlOps, false);
+  @Override
+  public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
+    return check(config, null);
   }
 
   /**
