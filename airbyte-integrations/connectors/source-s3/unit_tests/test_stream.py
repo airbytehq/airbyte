@@ -9,7 +9,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
-from source_s3.exceptions import S3Exception
 from source_s3.source_files_abstract.file_info import FileInfo
 from source_s3.source_files_abstract.storagefile import StorageFile
 from source_s3.source_files_abstract.stream import IncrementalFileStream
@@ -516,151 +515,15 @@ class TestIncrementalFileStream:
             for file_info in stream_instance.filepath_iterator():
                 assert file_info == next(expected_info)
 
-    @pytest.mark.parametrize(
-        ("user_schema", "min_datetime", "ordered_file_infos", "file_schemas", "expected_schema", "log_expected", "error_expected"),
-        (
-            (  # first file skipped due to min datetime constraint
-                """{"id": "string", "first_name": "string", "last_name": "string", "single": "boolean"}""",
-                datetime(2022, 5, 5, 13, 5, 5),
-                [
-                    FileInfo(last_modified=datetime(2022, 1, 1, 13, 5, 5), key="first", size=128),
-                    FileInfo(last_modified=datetime(2022, 6, 7, 8, 9, 10), key="second", size=128),
-                ],
-                [{"pets": "array", "hobbies": "array"}],  # this is the second file schema as call for the first one will be skipped
-                {"id": "string", "first_name": "string", "last_name": "string", "single": "boolean", "pets": "array", "hobbies": "array"},
-                False,
-                False,
-            ),
-            (  # first file schema == user schema
-                """{"id": "string", "first_name": "string", "last_name": "string", "single": "boolean"}""",
-                datetime(2020, 5, 5, 13, 5, 5),
-                [
-                    FileInfo(last_modified=datetime(2022, 1, 1, 13, 5, 5), key="first", size=128),
-                    FileInfo(last_modified=datetime(2022, 6, 7, 8, 9, 10), key="second", size=128),
-                ],
-                [
-                    {"id": "string", "first_name": "string", "last_name": "string", "single": "boolean"},
-                    {"pets": "array", "hobbies": "array"},
-                ],
-                {"id": "string", "first_name": "string", "last_name": "string", "single": "boolean", "pets": "array", "hobbies": "array"},
-                False,
-                False,
-            ),
-            (  # warning log expected
-                """{"id": "string", "first_name": "string", "last_name": "string", "single": "boolean"}""",
-                datetime(2020, 5, 5, 13, 5, 5),
-                [
-                    FileInfo(last_modified=datetime(2022, 1, 1, 13, 5, 5), key="first", size=128),
-                    FileInfo(last_modified=datetime(2022, 6, 7, 8, 9, 10), key="second", size=128),
-                ],
-                [
-                    {"id": "integer", "first_name": "string", "last_name": "string", "single": "boolean"},
-                    {"pets": "array", "hobbies": "array"},
-                ],
-                {"id": "string", "first_name": "string", "last_name": "string", "single": "boolean", "pets": "array", "hobbies": "array"},
-                True,
-                False,
-            ),
-            (  # error expected
-                """{"id": "string", "first_name": "string", "last_name": "string", "single": "boolean"}""",
-                datetime(2020, 5, 5, 13, 5, 5),
-                [
-                    FileInfo(last_modified=datetime(2022, 1, 1, 13, 5, 5), key="first", size=128),
-                    FileInfo(last_modified=datetime(2022, 6, 7, 8, 9, 10), key="second", size=128),
-                ],
-                [{"pets": "boolean", "hobbies": "boolean"}, {"pets": "array", "hobbies": "array"}],
-                {},
-                False,
-                True,
-            ),
-            (  # successful merge of 3 schemas
-                """{"id": "string", "first_name": "string", "last_name": "string", "single": "boolean"}""",
-                datetime(2020, 5, 5, 13, 5, 5),
-                [
-                    FileInfo(last_modified=datetime(2022, 1, 1, 13, 5, 5), key="first", size=128),
-                    FileInfo(last_modified=datetime(2022, 6, 7, 8, 9, 10), key="second", size=128),
-                ],
-                [{"company": "string", "gender": "string"}, {"pets": "array", "hobbies": "array"}],
-                {
-                    "id": "string",
-                    "first_name": "string",
-                    "last_name": "string",
-                    "single": "boolean",
-                    "pets": "array",
-                    "hobbies": "array",
-                    "company": "string",
-                    "gender": "string",
-                },
-                False,
-                False,
-            ),
-            (  # int becomes str in case of type mismatch in different files
-                "{}",
-                datetime(2020, 5, 5, 13, 5, 5),
-                [
-                    FileInfo(last_modified=datetime(2022, 1, 1, 13, 5, 5), key="first", size=128),
-                    FileInfo(last_modified=datetime(2022, 6, 7, 8, 9, 10), key="second", size=128),
-                ],
-                [
-                    {
-                        "pk": "string",
-                        "full_name": "string",
-                        "street_address": "string",
-                        "customer_code": "integer",
-                        "email": "string",
-                        "dob": "string",
-                    },
-                    {
-                        "pk": "integer",
-                        "full_name": "string",
-                        "street_address": "string",
-                        "customer_code": "integer",
-                        "email": "string",
-                        "dob": "string",
-                    },
-                ],
-                {
-                    "pk": "string",
-                    "full_name": "string",
-                    "street_address": "string",
-                    "customer_code": "integer",
-                    "email": "string",
-                    "dob": "string",
-                },
-                True,
-                False,
-            ),
-        ),
-    )
-    @patch("source_s3.stream.IncrementalFileStreamS3.storagefile_class", MagicMock())
-    def test_master_schema(
-        self, capsys, user_schema, min_datetime, ordered_file_infos, file_schemas, expected_schema, log_expected, error_expected
-    ):
-        file_format_parser_mock = MagicMock(return_value=MagicMock(get_inferred_schema=MagicMock(side_effect=file_schemas)))
-        with patch.object(IncrementalFileStreamS3, "fileformatparser_class", file_format_parser_mock):
-            with patch.object(IncrementalFileStreamS3, "get_time_ordered_file_infos", MagicMock(return_value=ordered_file_infos)):
-                stream_instance = IncrementalFileStreamS3(
-                    dataset="dummy", provider={}, format={"filetype": "csv"}, schema=user_schema, path_pattern="**/prefix*.csv"
-                )
-                if error_expected:
-                    with pytest.raises(S3Exception):
-                        stream_instance._get_master_schema(min_datetime=min_datetime)
-                else:
-                    assert stream_instance._get_master_schema(min_datetime=min_datetime) == expected_schema
-                    if log_expected:
-                        captured = capsys.readouterr()
-                        assert "Detected mismatched datatype" in captured.out
-
-    @patch.object(
-        IncrementalFileStreamS3,
-        "_get_master_schema",
-        MagicMock(return_value={"column_A": "string", "column_B": "integer", "column_C": "boolean"}),
-    )
-    def test_get_schema_map(self):
+    def test_get_schema(self):
         stream_instance = IncrementalFileStreamS3(
-            dataset="dummy", provider={}, format={"filetype": "csv"}, schema={}, path_pattern="**/prefix*.csv"
+            dataset="dummy",
+            provider={},
+            format={"filetype": "csv"},
+            schema="{\"column_A\": \"string\", \"column_B\": \"integer\", \"column_C\": \"boolean\"}",
+            path_pattern="**/prefix*.csv"
         )
-        assert stream_instance._get_schema_map() == {
+        assert stream_instance._schema == {
             "_ab_additional_properties": "object",
             "_ab_source_file_last_modified": "string",
             "_ab_source_file_url": "string",
@@ -691,23 +554,13 @@ class TestIncrementalFileStream:
         else:
             assert stream_instance.fileformatparser_class
 
-    @patch.object(
-        IncrementalFileStreamS3,
-        "_get_schema_map",
-        MagicMock(
-            return_value={
-                "_ab_additional_properties": "object",
-                "_ab_source_file_last_modified": "string",
-                "_ab_source_file_url": "string",
-                "column_A": "string",
-                "column_B": "integer",
-                "column_C": "boolean",
-            }
-        ),
-    )
     def test_get_json_schema(self):
         stream_instance = IncrementalFileStreamS3(
-            dataset="dummy", provider={}, format={"filetype": "csv"}, schema={}, path_pattern="**/prefix*.csv"
+            dataset="dummy",
+            provider={},
+            format={"filetype": "csv"},
+            schema="{\"column_A\": \"string\", \"column_B\": \"integer\", \"column_C\": \"boolean\"}",
+            path_pattern="**/prefix*.csv"
         )
         assert stream_instance.get_json_schema() == {
             "properties": {

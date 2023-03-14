@@ -118,7 +118,7 @@ class AbstractTestIncrementalFileStream(ABC):
             LOGGER.info(f"Testing stream_records() in SyncMode:{sync_mode.value}")
 
             # check we return correct schema from get_json_schema()
-            assert fs._get_schema_map() == full_expected_schema
+            assert fs._schema == full_expected_schema
 
             records = []
             for stream_slice in fs.stream_slices(sync_mode=sync_mode, stream_state=current_state):
@@ -304,22 +304,6 @@ class AbstractTestIncrementalFileStream(ABC):
                 {"id": "boolean", "name": "boolean", "valid": "boolean"},
                 False,
                 True,
-            ),
-            # multiple file tests (different but merge-able schemas)
-            (  # auto-infer
-                [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_1.csv"),
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_2.csv"),
-                ],
-                "**",
-                True,
-                6,
-                17,
-                {"id": "integer", "name": "string", "valid": "boolean", "location": "string", "percentage": "number", "nullable": "string"},
-                None,
-                False,
-                False,
             ),
             (  # provided schema, not containing all columns (extra columns should go into FileStream.ab_additional_col)
                 [
