@@ -423,14 +423,18 @@ class TestSpec(BaseTest):
             if definition.get("type") != "object":
                 # unrelated "properties", not an actual object definition
                 continue
-            used_orders = set()
+            used_orders: Dict[str, Set[int]] = {}
             for property in properties.values():
                 if "order" not in property:
                     continue
                 order = property.get("order")
-                if order in used_orders:
+                group = property.get("group", "")
+                if group not in used_orders:
+                    used_orders[group] = set()
+                orders_for_group = used_orders[group]
+                if order in orders_for_group:
                     errors.append(f"{properties_path} has duplicate order: {order}")
-                used_orders.add(order)
+                orders_for_group.add(order)
         self._fail_on_errors(errors)
 
     def test_nested_group(self, connector_spec: ConnectorSpecification):

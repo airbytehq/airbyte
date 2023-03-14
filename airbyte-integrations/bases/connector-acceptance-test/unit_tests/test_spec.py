@@ -840,6 +840,31 @@ def test_object_not_empty(mocker, connector_spec, should_fail):
         (
             {
                 "type": "object",
+                "properties": {"jwt": {"type": "object", "order": 2}, "roken": {"type": "string", "group": "x", "order": 2}},
+            },
+            False,
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {"jwt": {"type": "object", "group": "y", "order": 2}, "roken": {"type": "string", "group": "x", "order": 2}},
+            },
+            False,
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "jwt": {"type": "object", "group": "y", "order": 2},
+                    "jwt2": {"type": "object", "group": "y", "order": 2},
+                    "roken": {"type": "string", "group": "x", "order": 2},
+                },
+            },
+            True,
+        ),
+        (
+            {
+                "type": "object",
                 "properties": {
                     "jwt": {
                         "type": "object",
@@ -867,6 +892,24 @@ def test_object_not_empty(mocker, connector_spec, should_fail):
                 },
             },
             True,
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "jwt": {
+                        "type": "object",
+                        "order": 1,
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {"a": {"type": "string", "order": 1}, "b": {"type": "string", "order": 1, "group": "b"}},
+                            },
+                        ],
+                    }
+                },
+            },
+            False,
         ),
     ),
 )
