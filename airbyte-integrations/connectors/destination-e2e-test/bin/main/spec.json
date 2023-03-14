@@ -1,0 +1,171 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/e2e-test",
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["overwrite", "append"],
+  "protocol_version": "0.2.1",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "E2E Test Destination Spec",
+    "type": "object",
+    "oneOf": [
+      {
+        "title": "Logging",
+        "required": ["type", "logging_config"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "LOGGING",
+            "default": "LOGGING"
+          },
+          "logging_config": {
+            "title": "Logging Configuration",
+            "type": "object",
+            "description": "Configurate how the messages are logged.",
+            "oneOf": [
+              {
+                "title": "First N Entries",
+                "description": "Log first N entries per stream.",
+                "type": "object",
+                "required": ["logging_type", "max_entry_count"],
+                "properties": {
+                  "logging_type": {
+                    "type": "string",
+                    "enum": ["FirstN"],
+                    "default": "FirstN"
+                  },
+                  "max_entry_count": {
+                    "title": "N",
+                    "description": "Number of entries to log. This destination is for testing only. So it won't make sense to log infinitely. The maximum is 1,000 entries.",
+                    "type": "number",
+                    "default": 100,
+                    "examples": [100],
+                    "minimum": 1,
+                    "maximum": 1000
+                  }
+                }
+              },
+              {
+                "title": "Every N-th Entry",
+                "description": "For each stream, log every N-th entry with a maximum cap.",
+                "type": "object",
+                "required": [
+                  "logging_type",
+                  "nth_entry_to_log",
+                  "max_entry_count"
+                ],
+                "properties": {
+                  "logging_type": {
+                    "type": "string",
+                    "enum": ["EveryNth"],
+                    "default": "EveryNth"
+                  },
+                  "nth_entry_to_log": {
+                    "title": "N",
+                    "description": "The N-th entry to log for each stream. N starts from 1. For example, when N = 1, every entry is logged; when N = 2, every other entry is logged; when N = 3, one out of three entries is logged.",
+                    "type": "number",
+                    "example": [3],
+                    "minimum": 1,
+                    "maximum": 1000
+                  },
+                  "max_entry_count": {
+                    "title": "Max Log Entries",
+                    "description": "Max number of entries to log. This destination is for testing only. So it won't make sense to log infinitely. The maximum is 1,000 entries.",
+                    "type": "number",
+                    "default": 100,
+                    "examples": [100],
+                    "minimum": 1,
+                    "maximum": 1000
+                  }
+                }
+              },
+              {
+                "title": "Random Sampling",
+                "description": "For each stream, randomly log a percentage of the entries with a maximum cap.",
+                "type": "object",
+                "required": [
+                  "logging_type",
+                  "sampling_ratio",
+                  "max_entry_count"
+                ],
+                "properties": {
+                  "logging_type": {
+                    "type": "string",
+                    "enum": ["RandomSampling"],
+                    "default": "RandomSampling"
+                  },
+                  "sampling_ratio": {
+                    "title": "Sampling Ratio",
+                    "description": "A positive floating number smaller than 1.",
+                    "type": "number",
+                    "default": 0.001,
+                    "examples": [0.001],
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "seed": {
+                    "title": "Random Number Generator Seed",
+                    "description": "When the seed is unspecified, the current time millis will be used as the seed.",
+                    "type": "number",
+                    "examples": [1900]
+                  },
+                  "max_entry_count": {
+                    "title": "Max Log Entries",
+                    "description": "Max number of entries to log. This destination is for testing only. So it won't make sense to log infinitely. The maximum is 1,000 entries.",
+                    "type": "number",
+                    "default": 100,
+                    "examples": [100],
+                    "minimum": 1,
+                    "maximum": 1000
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "title": "Silent",
+        "required": ["type"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "SILENT",
+            "default": "SILENT"
+          }
+        }
+      },
+      {
+        "title": "Throttled",
+        "required": ["type", "millis_per_record"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "THROTTLED",
+            "default": "THROTTLED"
+          },
+          "millis_per_record": {
+            "description": "Number of milli-second to pause in between records.",
+            "type": "integer"
+          }
+        }
+      },
+      {
+        "title": "Failing",
+        "required": ["type", "num_messages"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "FAILING",
+            "default": "FAILING"
+          },
+          "num_messages": {
+            "description": "Number of messages after which to fail.",
+            "type": "integer"
+          }
+        }
+      }
+    ]
+  }
+}

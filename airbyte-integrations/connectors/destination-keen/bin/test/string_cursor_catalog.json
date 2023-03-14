@@ -1,0 +1,19 @@
+{
+  "streams": [
+    {
+      "name": "StringTypeStream",
+      "source_defined_cursor": true,
+      "default_cursor_field": ["cursorProperty"],
+      "json_schema": {
+        "properties": {
+          "cursorProperty": {
+            "type": "string"
+          },
+          "otherProperty": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  ]
+}

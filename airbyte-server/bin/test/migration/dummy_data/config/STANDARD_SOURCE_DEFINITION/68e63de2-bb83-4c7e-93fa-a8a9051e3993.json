@@ -1,0 +1,11 @@
+{
+  "sourceDefinitionId": "68e63de2-bb83-4c7e-93fa-a8a9051e3993",
+  "name": "Jira",
+  "dockerRepository": "airbyte/source-jira",
+  "dockerImageTag": "0.2.0",
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-jira",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/jira",
+    "connectionSpecification": {}
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "Using a source definition deleted",
+  "sourceDefinitionId": "4eb22946-2a79-4d20-a3e6-effd234613c3",
+  "workspaceId": "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6",
+  "sourceId": "e48cae1a-1f5c-42cc-9ec1-a44ff7fb4969",
+  "configuration": {
+    "username": "root",
+    "password": "password",
+    "database": "localhost_test",
+    "port": 3306,
+    "host": "host.docker.internal"
+  },
+  "tombstone": false
+}

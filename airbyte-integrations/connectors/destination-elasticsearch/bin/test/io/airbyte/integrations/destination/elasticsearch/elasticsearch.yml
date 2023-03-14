@@ -1,0 +1,4 @@
+node.data : true
+network.host : 0.0.0.0
+discovery.seed_hosts : []
+cluster.initial_master_nodes : []

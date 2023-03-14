@@ -1,0 +1,37 @@
+{
+  "properties": {
+    "nestedObject": {
+      "type": "object",
+      "properties": {
+        "binary": { "type": ["string", "array"] },
+        "boolean": { "type": ["boolean", "array"] },
+        "keyword": { "type": ["string", "array", "number", "integer"] },
+        "constant_keyword": {
+          "type": ["string", "array", "number", "integer"]
+        },
+        "wildcard": { "type": ["string", "array", "number", "integer"] },
+        "long": { "type": ["integer", "array"] },
+        "unsigned_long": { "type": ["integer", "array"] },
+        "integer": { "type": ["integer", "array"] },
+        "short": { "type": ["integer", "array"] },
+        "byte": { "type": ["integer", "array"] },
+        "double": { "type": ["number", "array"] },
+        "float": { "type": ["number", "array"] },
+        "half_float": { "type": ["number", "array"] },
+        "scaled_float": { "type": ["number", "array"] },
+        "date": { "type": ["string", "array"] },
+        "date_nanos": { "type": ["number", "array"] },
+        "object": { "type": ["object", "array"] },
+        "flattened": { "type": ["object", "array"] },
+        "nested": { "type": ["object", "string"] },
+        "join": { "type": ["object", "string"] },
+        "text": { "type": ["string", "array"] },
+        "geo_point": { "type": ["object", "array"] },
+        "geo_shape": { "type": ["object", "array"] },
+        "shape": { "type": ["object", "array"] },
+        "point": { "type": ["object", "array"] }
+      }
+    }
+  },
+  "type": "object"
+}

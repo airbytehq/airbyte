@@ -1,0 +1,126 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/oracle",
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["overwrite", "append"],
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Oracle Destination Spec",
+    "type": "object",
+    "required": ["host", "port", "username", "sid"],
+    "additionalProperties": true,
+    "properties": {
+      "host": {
+        "title": "Host",
+        "description": "The hostname of the database.",
+        "type": "string",
+        "order": 0
+      },
+      "port": {
+        "title": "Port",
+        "description": "The port of the database.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 1521,
+        "examples": ["1521"],
+        "order": 1
+      },
+      "sid": {
+        "title": "SID",
+        "description": "The System Identifier uniquely distinguishes the instance from any other instance on the same computer.",
+        "type": "string",
+        "order": 2
+      },
+      "username": {
+        "title": "User",
+        "description": "The username to access the database. This user must have CREATE USER privileges in the database.",
+        "type": "string",
+        "order": 3
+      },
+      "password": {
+        "title": "Password",
+        "description": "The password associated with the username.",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 4
+      },
+      "jdbc_url_params": {
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "title": "JDBC URL Params",
+        "type": "string",
+        "order": 5
+      },
+      "schema": {
+        "title": "Default Schema",
+        "description": "The default schema is used as the target schema for all statements issued from the connection that do not explicitly specify a schema name. The usual value for this field is \"airbyte\".  In Oracle, schemas and users are the same thing, so the \"user\" parameter is used as the login credentials and this is used for the default Airbyte message schema.",
+        "type": "string",
+        "examples": ["airbyte"],
+        "default": "airbyte",
+        "order": 6
+      },
+      "encryption": {
+        "title": "Encryption",
+        "type": "object",
+        "description": "The encryption method which is used when communicating with the database.",
+        "order": 7,
+        "oneOf": [
+          {
+            "title": "Unencrypted",
+            "description": "Data transfer will not be encrypted.",
+            "required": ["encryption_method"],
+            "properties": {
+              "encryption_method": {
+                "type": "string",
+                "const": "unencrypted",
+                "enum": ["unencrypted"],
+                "default": "unencrypted"
+              }
+            }
+          },
+          {
+            "title": "Native Network Encryption (NNE)",
+            "description": "The native network encryption gives you the ability to encrypt database connections, without the configuration overhead of TCP/IP and SSL/TLS and without the need to open and listen on different ports.",
+            "required": ["encryption_method"],
+            "properties": {
+              "encryption_method": {
+                "type": "string",
+                "const": "client_nne",
+                "enum": ["client_nne"],
+                "default": "client_nne"
+              },
+              "encryption_algorithm": {
+                "type": "string",
+                "description": "This parameter defines the database encryption algorithm.",
+                "title": "Encryption Algorithm",
+                "default": "AES256",
+                "enum": ["AES256", "RC4_56", "3DES168"]
+              }
+            }
+          },
+          {
+            "title": "TLS Encrypted (verify certificate)",
+            "description": "Verify and use the certificate provided by the server.",
+            "required": ["encryption_method", "ssl_certificate"],
+            "properties": {
+              "encryption_method": {
+                "type": "string",
+                "const": "encrypted_verify_certificate",
+                "enum": ["encrypted_verify_certificate"],
+                "default": "encrypted_verify_certificate"
+              },
+              "ssl_certificate": {
+                "title": "SSL PEM file",
+                "description": "Privacy Enhanced Mail (PEM) files are concatenated certificate containers frequently used in certificate installations.",
+                "type": "string",
+                "airbyte_secret": true,
+                "multiline": true
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "streams": [
+    {
+      "name": "streamWithCamelCase",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "type": "string"
+          }
+        }
+      }
+    },
+
+    {
+      "name": "stream_with_underscores",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "STREAM_WITH_ALL_CAPS",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "stream_with_edge_case_field_names",
+      "json_schema": {
+        "properties": {
+          "fieldWithCamelCase": {
+            "type": "string"
+          },
+          "field_with_underscore": {
+            "type": "string"
+          },
+          "FIELD_WITH_ALL_CAPS": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "stream-with:spécial:character_names",
+      "json_schema": {
+        "properties": {
+          "field_with_spécial_character": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "CapitalCase",
+      "json_schema": {
+        "properties": {
+          "deleted": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    {
+      "name": "reserved_keywords",
+      "json_schema": {
+        "properties": {
+          "order": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "groups",
+      "json_schema": {
+        "properties": {
+          "authorization": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "ProperCase",
+      "json_schema": {
+        "properties": {
+          "ProperCase": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    {
+      "name": "stream_name",
+      "json_schema": {
+        "properties": {
+          "some_id": {
+            "type": "integer"
+          },
+          "some_field": {
+            "type": "string"
+          },
+          "some_next_field": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "stream_name_next",
+      "json_schema": {
+        "properties": {
+          "some_id": {
+            "type": "integer"
+          },
+          "next_field_name": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "stream_with_binary_data",
+      "json_schema": {
+        "properties": {
+          "some_id": {
+            "type": "integer"
+          },
+          "binary_field_name": {
+            "type": "string",
+            "contentEncoding": "base64"
+          }
+        }
+      }
+    }
+  ]
+}

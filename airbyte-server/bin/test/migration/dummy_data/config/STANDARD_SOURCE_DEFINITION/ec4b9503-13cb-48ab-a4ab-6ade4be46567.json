@@ -1,0 +1,11 @@
+{
+  "sourceDefinitionId": "ec4b9503-13cb-48ab-a4ab-6ade4be46567",
+  "name": "Freshdesk",
+  "dockerRepository": "airbyte/source-freshdesk",
+  "dockerImageTag": "0.2.0",
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-freshdesk",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/freshdesk",
+    "connectionSpecification": {}
+  }
+}
