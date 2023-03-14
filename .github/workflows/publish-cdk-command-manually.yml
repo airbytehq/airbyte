@@ -292,7 +292,8 @@ jobs:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
       - name: Update CDK version
         run: |
-          sed -i '' -E 's/BUILDER_CDK_VERSION=.*/BUILDER_CDK_VERSION=${{needs.bump-version.outputs.new_cdk_version}}/' oss/.env
+          echo ${{needs.bump-version.outputs.new_cdk_version}} > oss/airbyte-connector-builder-resources/CDK_VERSION
+          cd oss/airbyte-connector-builder
           pip install pip-tools
           pip-compile
           pip-compile --extra tests --output-file requirements-tests.txt
