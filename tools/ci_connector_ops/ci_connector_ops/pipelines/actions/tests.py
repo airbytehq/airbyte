@@ -69,7 +69,7 @@ async def connector_install_check(context: ConnectorTestContext, step=Step.PACKA
     Returns:
         Tuple[StepResult, Container]: Failure or success of the package installation and the connector under test container (with the connector package installed).
     """
-    connector_under_test = await environments.with_airbyte_connector(context, install=True)
+    connector_under_test = await environments.with_installed_airbyte_connector(context)
     return await get_step_result(connector_under_test, step), connector_under_test
 
 

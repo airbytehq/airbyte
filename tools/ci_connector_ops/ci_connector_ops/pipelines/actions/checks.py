@@ -58,7 +58,7 @@ async def run_code_format_checks(context: ConnectorTestContext, step=Step.CODE_F
         StepResult: Failure or success of the code format checks with stdout and stdout.
     """
 
-    connector_under_test = await environments.with_airbyte_connector(context, install=False)
+    connector_under_test = environments.with_airbyte_connector(context)
     connector_under_test = step.get_dagger_pipeline(connector_under_test)
     formatter = (
         connector_under_test.with_exec(["echo", "Running black"])
