@@ -425,7 +425,7 @@ class TestSpec(BaseTest):
                 continue
             used_orders = set()
             for property in properties.values():
-                if not "order" in property:
+                if "order" not in property:
                     continue
                 order = property.get("order")
                 if order in used_orders:
