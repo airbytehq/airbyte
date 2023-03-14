@@ -37,6 +37,7 @@ def read_csv_file(blob: Blob, read_header_only=False):
     file_obj.close()
     return df
 
+
 def construct_file_schema(df):
     # Fix all columns to string for maximum compability
 
@@ -48,10 +49,11 @@ def construct_file_schema(df):
     }
     return schema
 
+
 def get_stream_name(blob):
     blob_name = blob.name
     # Remove path from stream name
-    blob_name_without_path = blob_name.split('/')[-1]
+    blob_name_without_path = blob_name.split("/")[-1]
     # Remove file extension from stream name
     stream_name = blob_name_without_path.replace(".csv", "")
     return stream_name

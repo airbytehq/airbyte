@@ -4,11 +4,9 @@
 
 import unittest
 from io import BytesIO
-from unittest.mock import MagicMock
 
 import pandas as pd
-from google.cloud.storage.blob import Blob
-from source_gcs.helpers import construct_file_schema, read_csv_file
+from source_gcs.helpers import construct_file_schema
 
 
 class TestGCSFunctions(unittest.TestCase):

@@ -20,7 +20,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import Source
 
-from .helpers import construct_file_schema, get_gcs_blobs, read_csv_file, get_stream_name
+from .helpers import construct_file_schema, get_gcs_blobs, get_stream_name, read_csv_file
 
 
 class SourceGCS(Source):
@@ -45,8 +45,7 @@ class SourceGCS(Source):
             df = read_csv_file(blob, read_header_only=True)
             stream_name = get_stream_name(blob)
             json_schema = construct_file_schema(df)
-            streams.append(AirbyteStream(
-                name=stream_name, json_schema=json_schema, supported_sync_modes=["full_refresh"]))
+            streams.append(AirbyteStream(name=stream_name, json_schema=json_schema, supported_sync_modes=["full_refresh"]))
 
         return AirbyteCatalog(streams=streams)
 
@@ -55,11 +54,11 @@ class SourceGCS(Source):
     ) -> Generator[AirbyteMessage, None, None]:
         logger.info("Start reading")
         blobs = get_gcs_blobs(config)
-        
+
         # Read only selected stream(s)
         selected_streams = [configged_stream.stream.name for configged_stream in catalog.streams]
         selected_blobs = [blob for blob in blobs if get_stream_name(blob) in selected_streams]
-        
+
         for blob in selected_blobs:
             logger.info(blob.name)
             df = read_csv_file(blob)
@@ -69,6 +68,5 @@ class SourceGCS(Source):
                 row_dict = {k: str(v) for k, v in row_dict.items()}
                 yield AirbyteMessage(
                     type=Type.RECORD,
-                    record=AirbyteRecordMessage(stream=stream_name, data=row_dict, emitted_at=int(
-                        datetime.now().timestamp()) * 1000),
+                    record=AirbyteRecordMessage(stream=stream_name, data=row_dict, emitted_at=int(datetime.now().timestamp()) * 1000),
                 )
