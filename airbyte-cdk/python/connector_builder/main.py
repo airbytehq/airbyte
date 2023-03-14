@@ -54,7 +54,8 @@ def handle_request(args: List[str]):
     if "__command" in config:
         source = create_source(config, True)
         print(handle_connector_builder_request(source, config, catalog))
-    return config
+    else:
+        raise ValueError("Missing __command argument in config file.")
 
 
 if __name__ == "__main__":
