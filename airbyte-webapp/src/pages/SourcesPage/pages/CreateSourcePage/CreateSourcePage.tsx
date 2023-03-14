@@ -83,16 +83,19 @@ const CreateSourcePage: React.FC = () => {
       <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />
       <ConnectionStep lightMode type="source" />
       <ConnectorDocumentationWrapper>
-        <FormPageContent>
-          {currentStep === CreateStepTypes.TEST_CONNECTION && (
+        {currentStep === CreateStepTypes.TEST_CONNECTION && (
+          <>
+            {" "}
             <TestConnection
               onBack={handleBackButton}
               onFinish={handleFinishButton}
               isLoading={isLoading}
               type="source"
             />
-          )}
-          {currentStep === CreateStepTypes.CREATE_SOURCE && (
+          </>
+        )}
+        {currentStep === CreateStepTypes.CREATE_SOURCE && (
+          <FormPageContent>
             <SourceForm
               onSubmit={onSubmitSourceStep}
               sourceDefinitions={sourceDefinitions}
@@ -102,8 +105,8 @@ const CreateSourcePage: React.FC = () => {
               onBack={handleBackButton}
               formValues={formValues}
             />
-          )}
-        </FormPageContent>
+          </FormPageContent>
+        )}
       </ConnectorDocumentationWrapper>
     </>
   );

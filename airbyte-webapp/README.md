@@ -33,6 +33,9 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2023.03.14
+1. Add a source page UI optimization
+2. UI related changes - source/destination testing page
 #### 2023.03.13
 1. Frontend translation update
 2. UI related changes - config page UI(create_connection bgColor)

@@ -1,7 +1,7 @@
 import React, { Suspense, useState } from "react";
 import { Navigate, Route, Routes, useParams } from "react-router-dom";
 
-import { LoadingPage, MainPageWithScroll } from "components";
+import { LoadingPage } from "components"; // MainPageWithScroll
 import MessageBox from "components/base/MessageBox";
 import HeadTitle from "components/HeadTitle";
 
@@ -81,7 +81,19 @@ const ConnectionItemPage: React.FC = () => {
   return (
     <>
       <MessageBox message={messageId} onClose={() => setMessageId("")} type="info" position="center" />
-      <MainPageWithScroll
+      <HeadTitle
+        titles={[
+          { id: "connection.pageTitle" },
+          {
+            id: "connection.fromTo",
+            values: {
+              source: source.name,
+              destination: destination.name,
+            },
+          },
+        ]}
+      />
+      {/* <MainPageWithScroll
         withPadding
         headTitle={
           <HeadTitle
@@ -106,48 +118,48 @@ const ConnectionItemPage: React.FC = () => {
         //   //     onStatusUpdating={setStatusUpdating}
         //   //   />
         // }
-      >
-        <ConnectionPageTitle
-          source={source}
-          destination={destination}
-          connection={connection}
-          currentStep={currentStep}
-          onStatusUpdating={setStatusUpdating}
-          onSync={onSync}
-          disabled={disabled}
-          lastSyncTime={lastSyncTime}
-        />
-        <Suspense fallback={<LoadingPage />}>
-          <Routes>
-            <Route
-              path={ConnectionSettingsRoutes.STATUS}
-              element={
-                <StatusView
-                  onOpenMessageBox={onOpenMessageBox}
-                  connection={connection}
-                  isStatusUpdating={isStatusUpdating}
-                  isSync={isSync}
-                  afterSync={afterSync}
-                  getLastSyncTime={getLastSyncTime}
-                />
-              }
-            />
-            <Route
-              path={ConnectionSettingsRoutes.CONFIGURATIONS}
-              element={<ReplicationView onAfterSaveSchema={onAfterSaveSchema} connectionId={connectionId} />}
-            />
-            {/* <Route
+      > */}
+      <ConnectionPageTitle
+        source={source}
+        destination={destination}
+        connection={connection}
+        currentStep={currentStep}
+        onStatusUpdating={setStatusUpdating}
+        onSync={onSync}
+        disabled={disabled}
+        lastSyncTime={lastSyncTime}
+      />
+      <Suspense fallback={<LoadingPage />}>
+        <Routes>
+          <Route
+            path={ConnectionSettingsRoutes.STATUS}
+            element={
+              <StatusView
+                onOpenMessageBox={onOpenMessageBox}
+                connection={connection}
+                isStatusUpdating={isStatusUpdating}
+                isSync={isSync}
+                afterSync={afterSync}
+                getLastSyncTime={getLastSyncTime}
+              />
+            }
+          />
+          <Route
+            path={ConnectionSettingsRoutes.CONFIGURATIONS}
+            element={<ReplicationView onAfterSaveSchema={onAfterSaveSchema} connectionId={connectionId} />}
+          />
+          {/* <Route
             path={ConnectionSettingsRoutes.TRANSFORMATION}
             element={<TransformationView connection={connection} />}
           /> */}
-            <Route
-              path={ConnectionSettingsRoutes.DANGERZONE}
-              element={isConnectionDeleted ? <Navigate replace to=".." /> : <SettingsView connection={connection} />}
-            />
-            <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace />} />
-          </Routes>
-        </Suspense>
-      </MainPageWithScroll>
+          <Route
+            path={ConnectionSettingsRoutes.DANGERZONE}
+            element={isConnectionDeleted ? <Navigate replace to=".." /> : <SettingsView connection={connection} />}
+          />
+          <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace />} />
+        </Routes>
+      </Suspense>
+      {/* </MainPageWithScroll> */}
     </>
   );
 };
