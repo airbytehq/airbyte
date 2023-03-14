@@ -26,8 +26,6 @@ class ZohoOauth2Authenticator(Oauth2Authenticator):
         This method is overridden because token parameters should be passed via URL params, not via the request payload.
         Returns a tuple of (access_token, token_lifespan_in_seconds)
         """
-        attrs = vars(self)
-        print(", ".join("%s: %s" % item for item in attrs.items()))
         try:
             response = requests.request(method="POST", url=self._token_refresh_endpoint, params=self._prepare_refresh_token_params())
             response.raise_for_status()

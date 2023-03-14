@@ -155,7 +155,8 @@ class FieldMeta(FromDictMixin):
         elif self.data_type == ZohoDataType.bigint:
             typedef["airbyte_type"] = "big_integer"
         elif self.data_type == ZohoDataType.autonumber:
-            if self.auto_number.prefix or self.auto_number.suffix:
+            print(self.auto_number)
+            if self.auto_number.get("prefix") or self.auto_number.get("suffix"):
                 typedef["format"] = "string"
             else:
                 typedef["airbyte_type"] = "big_integer"
@@ -181,7 +182,7 @@ class FieldMeta(FromDictMixin):
         if self.data_type in (ZohoDataType.text, *ZohoDataType.numeric_string_types()):
             typedef["items"] = {"type": "string"}
             if self.data_type == ZohoDataType.autonumber:
-                if self.auto_number.prefix or self.auto_number.suffix:
+                if self.auto_number.get("prefix") or self.auto_number.get("suffix"):
                     typedef["items"]["format"] = "string"
                 else:
                     typedef["items"]["airbyte_type"] = "big_integer"
