@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Generic, List, Mapping, Optional, Protocol, TypeVar, Union
 
 import yaml
-from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification
+from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification, ConfiguredAirbyteCatalog
 
 
 def load_optional_package_file(package: str, filename: str) -> Optional[bytes]:
@@ -103,6 +103,12 @@ class BaseConnector(ABC, Generic[TConfig]):
         Tests if the input configuration can be used to successfully connect to the integration e.g: if a provided Stripe API token can be used to connect
         to the Stripe API.
         """
+
+
+    def check_with_catalog(self, logger: logging.Logger, config: TConfig, configured_catalog: ConfiguredAirbyteCatalog):
+        """Same as the check method without the catalog but includes a configured catalog for additional checks"""
+        logger.info(f"Ignoring Catalog {configured_catalog}")
+        return self.check(logger, config)
 
 
 class _WriteConfigProtocol(Protocol):
