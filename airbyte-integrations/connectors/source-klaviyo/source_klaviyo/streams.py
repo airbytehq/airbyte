@@ -76,7 +76,6 @@ class KlaviyoStreamLatest(HttpStream, ABC):
             record = self.map_record(record)
             yield record
 
-
     def map_record(self, record: Mapping):
         """Subclasses can override this to apply custom mappings to a record"""
         return record
