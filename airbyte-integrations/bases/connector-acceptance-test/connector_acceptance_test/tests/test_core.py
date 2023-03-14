@@ -412,6 +412,61 @@ class TestSpec(BaseTest):
                         f"{pattern_path} is defining a pattern that looks like a date-time without setting the format to `date-time`. Consider specifying the format to make it easier for users to edit this field in the UI."
                     )
 
+    def test_duplicate_order(self, connector_spec: ConnectorSpecification):
+        """
+        Custom ordering of properties is not allowed to have duplicates
+        """
+        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        errors = []
+        for properties_path, properties in dpath.util.search(connector_spec.connectionSpecification, "**/properties", yielded=True):
+            definition = schema_helper.get_parent(properties_path)
+            if definition.get("type") != "object":
+                # unrelated "properties", not an actual object definition
+                continue
+            used_orders = set()
+            for property in properties.values():
+                if not "order" in property:
+                    continue
+                order = property.get("order")
+                if order in used_orders:
+                   errors.append(f"{properties_path} has duplicate order: {order}") 
+                used_orders.add(order)
+        self._fail_on_errors(errors)
+
+    def test_nested_group(self, connector_spec: ConnectorSpecification):
+        """
+        Groups can only be defined on the top level properties
+        """
+        errors = []
+        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        for result in dpath.util.search(connector_spec.connectionSpecification, "/properties/**/group", yielded=True):
+            group_path = result[0]
+            parent_path = schema_helper.get_parent_path(group_path)
+            is_property_named_group = parent_path.endswith("properties")
+            grandparent_path = schema_helper.get_parent_path(parent_path)
+            if grandparent_path != "/properties" and not is_property_named_group:
+                errors.append(f"Groups can only be defined on top level, is defined at {group_path}") 
+        self._fail_on_errors(errors)
+
+    def test_required_always_show(self, connector_spec: ConnectorSpecification):
+        """
+        Fields with always_show are not allowed to be required
+        """
+        errors = []
+        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        for result in dpath.util.search(connector_spec.connectionSpecification, "/properties/**/always_show", yielded=True):
+            always_show_path = result[0]
+            parent_path = schema_helper.get_parent_path(always_show_path)
+            is_property_named_always_show = parent_path.endswith("properties")
+            if is_property_named_always_show:
+                continue
+            property_name = parent_path.rsplit(sep="/", maxsplit=1)[1]
+            properties_path = schema_helper.get_parent_path(parent_path)
+            parent_object = schema_helper.get_parent(properties_path)
+            if "required" in parent_object and isinstance(parent_object.get("required"), List) and property_name in parent_object.get("required"):
+                errors.append(f"always_show is only allowed on optional properties, but is set on {always_show_path}") 
+        self._fail_on_errors(errors)
+
     def test_defined_refs_exist_in_json_spec_file(self, connector_spec_dict: dict):
         """Checking for the presence of unresolved `$ref`s values within each json spec file"""
         check_result = list(find_all_values_for_key_in_schema(connector_spec_dict, "$ref"))
