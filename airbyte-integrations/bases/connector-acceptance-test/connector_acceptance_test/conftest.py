@@ -296,12 +296,16 @@ def discovered_catalog_fixture(
 
 @pytest.fixture(name="previous_discovered_catalog")
 def previous_discovered_catalog_fixture(
-    connector_config, previous_connector_docker_runner: ConnectorRunner, previous_cached_schemas, cache_discovered_catalog: bool
+    connector_config,
+    previous_connector_image_name,
+    previous_connector_docker_runner: ConnectorRunner,
+    previous_cached_schemas,
+    cache_discovered_catalog: bool,
 ) -> MutableMapping[str, AirbyteStream]:
     """JSON schemas for each stream"""
     if previous_connector_docker_runner is None:
         logging.warning(
-            "\n We could not retrieve the previous discovered catalog as a connector runner for the previous connector version could not be instantiated."
+            f"\n We could not retrieve the previous discovered catalog as a connector runner for the previous connector version ({previous_connector_image_name}) could not be instantiated."
         )
         return None
     previous_cached_schemas = previous_cached_schemas.setdefault(make_hashable(connector_config), {})
