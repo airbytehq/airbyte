@@ -58,7 +58,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     this.sqlOperations = sqlOperations;
   }
 
-  protected AirbyteConnectionStatus checkedConnectionStatus(DataSource dataSource, JsonNode config) throws Exception {
+  protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config) throws Exception {
     try {
     final JdbcDatabase database = getDatabase(dataSource);
     final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.SCHEMA_KEY).asText());
