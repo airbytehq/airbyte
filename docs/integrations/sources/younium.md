@@ -33,6 +33,7 @@ The Younium source connector supports the following [sync modes](https://docs.ai
 
 ## Supported Streams
 
+- [Bookings](https://developer.younium.com/api-details#api=Production_API2-0&operation=Get-Bookings)
 - [Subscriptions](https://developer.younium.com/api-details#api=Production_API2-0&operation=Get-Subscriptions)
 - [Products](https://developer.younium.com/api-details#api=Production_API2-0&operation=Get-Products)
 - [Invoices](https://developer.younium.com/api-details#api=Production_API2-0&operation=Get-Invoices)

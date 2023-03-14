@@ -1,0 +1,345 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "type" : "object",
+  "properties" : {
+    "id" : {
+      "type" : "string",
+      "format" : "uuid"
+    },
+    "currency" : {
+      "type" : "string",
+      "nullable" : true
+    },
+    "bookingType" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/BookingType"
+        }
+      ]
+    },
+    "accountCategory" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/AccountCategory"
+        }
+      ]
+    },
+    "changeType" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ChangeType"
+        }
+      ]
+    },
+    "cmrr" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/AmountWithBaseCurrency"
+        }
+      ],
+      "nullable" : true
+    },
+    "acv" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/AmountWithBaseCurrency"
+        }
+      ],
+      "nullable" : true
+    },
+    "emrr" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/AmountWithBaseCurrency"
+        }
+      ],
+      "nullable" : true
+    },
+    "oneTimeFees" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/AmountWithBaseCurrency"
+        }
+      ],
+      "nullable" : true
+    },
+    "tcv" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/AmountWithBaseCurrency"
+        }
+      ],
+      "nullable" : true
+    },
+    "fmrr" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/AmountWithBaseCurrency"
+        }
+      ],
+      "nullable" : true
+    },
+    "effectiveDate" : {
+      "type" : "string",
+      "format" : "date-time"
+    },
+    "bookingLines" : {
+      "type" : "array",
+      "items" : {
+        "$ref" : "#/$defs/BookingLineResponse"
+      },
+      "nullable" : true
+    },
+    "classification" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/BookingClassificationResponse"
+        }
+      ],
+      "nullable" : true
+    },
+    "order" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/SimpleOrderModel"
+        }
+      ],
+      "nullable" : true
+    },
+    "notes" : {
+      "type" : "string",
+      "nullable" : true
+    }
+  },
+  "additionalProperties" : false,
+  "$defs" : {
+    "AccountCategory" : {
+      "enum" : [
+        "New",
+        "Existing",
+        "Lost"
+      ],
+      "type" : "string"
+    },
+    "AmountWithBaseCurrency" : {
+      "type" : "object",
+      "properties" : {
+        "amount" : {
+          "type" : "number",
+          "format" : "double",
+          "nullable" : true
+        },
+        "amountInBaseCurrency" : {
+          "type" : "number",
+          "format" : "double",
+          "nullable" : true
+        }
+      },
+      "additionalProperties" : false
+    },
+    "BookingClassificationResponse" : {
+      "type" : "object",
+      "properties" : {
+        "name" : {
+          "type" : "string",
+          "nullable" : true
+        },
+        "description" : {
+          "type" : "string",
+          "nullable" : true
+        },
+        "chartColor" : {
+          "type" : "string",
+          "nullable" : true
+        },
+        "isSystemClassification" : {
+          "type" : "boolean"
+        },
+        "classificationType" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/BookingClassificationType"
+            }
+          ],
+          "nullable" : true
+        }
+      },
+      "additionalProperties" : false
+    },
+    "BookingClassificationType" : {
+      "enum" : [
+        "NewCustomer",
+        "Expansion",
+        "Contraction",
+        "CustomerChurn",
+        "NoChange",
+        "SplitOrder"
+      ],
+      "type" : "string"
+    },
+    "BookingLineResponse" : {
+      "type" : "object",
+      "properties" : {
+        "charge" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/SimpleOrderChargeModel"
+            }
+          ],
+          "nullable" : true
+        },
+        "cmrr" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/CurrencyAmount"
+            }
+          ],
+          "nullable" : true
+        },
+        "acv" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/CurrencyAmount"
+            }
+          ],
+          "nullable" : true
+        },
+        "emrr" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/CurrencyAmount"
+            }
+          ],
+          "nullable" : true
+        },
+        "oneTimeFees" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/CurrencyAmount"
+            }
+          ],
+          "nullable" : true
+        },
+        "tcv" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/CurrencyAmount"
+            }
+          ],
+          "nullable" : true
+        },
+        "fmrr" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/CurrencyAmount"
+            }
+          ],
+          "nullable" : true
+        }
+      },
+      "additionalProperties" : false
+    },
+    "BookingType" : {
+      "enum" : [
+        "New",
+        "Change",
+        "Churn"
+      ],
+      "type" : "string"
+    },
+    "ChangeType" : {
+      "enum" : [
+        "Upsell",
+        "Downsell",
+        "Renewal",
+        "None",
+        "PriceAdjustment",
+        "Milestone",
+        "CancelledDelivery",
+        "AssociatedCharge",
+        "SplitOrder"
+      ],
+      "type" : "string"
+    },
+    "CurrencyAmount" : {
+      "type" : "object",
+      "properties" : {
+        "amount" : {
+          "type" : "number",
+          "format" : "double"
+        },
+        "currencyCode" : {
+          "type" : "string",
+          "nullable" : true
+        },
+        "currencyConversionDate" : {
+          "type" : "string",
+          "format" : "date-time",
+          "nullable" : true
+        },
+        "baseCurrencyAmount" : {
+          "type" : "number",
+          "format" : "double"
+        },
+        "baseCurrencyCode" : {
+          "type" : "string",
+          "nullable" : true
+        }
+      },
+      "additionalProperties" : false
+    },
+    "SimpleOrderChargeModel" : {
+      "type" : "object",
+      "properties" : {
+        "name" : {
+          "type" : "string",
+          "nullable" : true
+        },
+        "chargeNumber" : {
+          "type" : "string",
+          "nullable" : true,
+          "example" : "OPC-000001"
+        },
+        "description" : {
+          "type" : "string",
+          "nullable" : true
+        },
+        "id" : {
+          "type" : "string",
+          "format" : "uuid"
+        },
+        "externalERPId" : {
+          "type" : "string",
+          "nullable" : true
+        },
+        "externalCRMId" : {
+          "type" : "string",
+          "nullable" : true
+        }
+      },
+      "additionalProperties" : false
+    },
+    "SimpleOrderModel" : {
+      "type" : "object",
+      "properties" : {
+        "orderNumber" : {
+          "type" : "string",
+          "nullable" : true
+        },
+        "id" : {
+          "type" : "string",
+          "format" : "uuid"
+        },
+        "externalERPId" : {
+          "type" : "string",
+          "nullable" : true
+        },
+        "externalCRMId" : {
+          "type" : "string",
+          "nullable" : true
+        }
+      },
+      "additionalProperties" : false
+    }
+  }
+}
