@@ -1,11 +1,15 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 import pytest
 
+<<<<<<< HEAD
 pytest_plugins = ("source_acceptance_test.plugin",)
+=======
+pytest_plugins = ("connector_acceptance_test.plugin",)
+>>>>>>> upstream/master
 
 
 @pytest.fixture(scope="session", autouse=True)

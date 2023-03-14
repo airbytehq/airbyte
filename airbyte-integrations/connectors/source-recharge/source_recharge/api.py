@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -67,10 +67,6 @@ class RechargeStream(HttpStream, ABC):
 
         if incomplete_data_response:
             return True
-        elif response.status_code == requests.codes.FORBIDDEN:
-            setattr(self, "raise_on_http_errors", False)
-            self.logger.error(f"Skiping stream {self.name} because of a 403 error.")
-            return False
 
         return super().should_retry(response)
 

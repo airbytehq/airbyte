@@ -6,19 +6,17 @@ The BigCommerce source supports both Full Refresh and Incremental syncs. You can
 
 This source can sync data for the [BigCommerce API](https://developer.bigcommerce.com/api-docs/getting-started/making-requests).
 
-This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
-
 ### Output schema
 
 This Source is capable of syncing the following core Streams:
 
 - [Customers](https://developer.bigcommerce.com/api-reference/store-management/customers-v3/customers/customersget)
 - [Orders](https://developer.bigcommerce.com/api-reference/store-management/orders/orders/getallorders)
-- [Transactions](https://developer.bigcommerce.com/api-reference/store-management/order-transactions/transactions/gettransactions)
+- [Transactions](https://developer.bigcommerce.com/docs/rest-management/transactions#get-transactions)
 - [Pages](https://developer.bigcommerce.com/api-reference/store-management/store-content/pages/getallpages)
 - [Products](https://developer.bigcommerce.com/api-reference/store-management/catalog/products/getproducts)
 - [Channels](https://developer.bigcommerce.com/api-reference/d2298071793d6-get-all-channels)
-- [Store](https://developer.bigcommerce.com/api-reference/bb1daaaeccae0-get-store-information)
+- [Store](https://developer.bigcommerce.com/docs/rest-management/store-information#get-store-information)
 - [OrderProducts](https://developer.bigcommerce.com/api-reference/3b4dfef625708-list-order-products)
 - [Brands](https://developer.bigcommerce.com/api-reference/c2610608c20c8-get-all-brands)
 - [Categories](https://developer.bigcommerce.com/api-reference/9cc3a53863922-get-all-categories)

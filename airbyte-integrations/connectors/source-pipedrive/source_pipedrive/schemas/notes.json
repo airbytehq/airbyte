@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "http://json-schema.org/schema#",
   "type": "object",
   "properties": {
     "id": {
@@ -11,23 +11,87 @@
     "deal_id": {
       "type": ["null", "integer"]
     },
-    "last_update_user_id":{
+    "person_id": {
       "type": ["null", "integer"]
-    },
-    "update_time": {
-      "type": ["null", "string"]
     },
     "org_id": {
       "type": ["null", "integer"]
     },
-    "person_id": {
+    "lead_id": {
       "type": ["null", "integer"]
+    },
+    "content": {
+      "type": ["null", "string"]
     },
     "add_time": {
       "type": ["null", "string"]
     },
-    "content": {
-      "type": ["null", "string"]
+    "update_time": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "active_flag": {
+      "type": ["null", "boolean"]
+    },
+    "pinned_to_deal_flag": {
+      "type": ["null", "boolean"]
+    },
+    "pinned_to_person_flag": {
+      "type": ["null", "boolean"]
+    },
+    "pinned_to_organization_flag": {
+      "type": ["null", "boolean"]
+    },
+    "pinned_to_lead_flag": {
+      "type": ["null", "boolean"]
+    },
+    "last_update_user_id": {
+      "type": ["null", "integer"]
+    },
+    "organization": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "person": {
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "deal": {
+      "type": ["null", "object"],
+      "properties": {
+        "title": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "lead": {
+      "type": ["null", "object"]
+    },
+    "user": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "icon_url": {
+          "type": ["null", "string"]
+        },
+        "is_you": {
+          "type": ["null", "boolean"]
+        }
+      }
     }
   }
 }

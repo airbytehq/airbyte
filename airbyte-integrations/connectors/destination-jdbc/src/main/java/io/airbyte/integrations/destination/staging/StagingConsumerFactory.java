@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.staging;
@@ -45,7 +45,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Uses both Factory and Consumer design pattern to create a single point of creation for consuming {@link AirbyteMessage} for processing
+ * Uses both Factory and Consumer design pattern to create a single point of creation for consuming
+ * {@link AirbyteMessage} for processing
  */
 public class StagingConsumerFactory {
 
@@ -84,12 +85,15 @@ public class StagingConsumerFactory {
   }
 
   /**
-   * Creates a list of all {@link WriteConfig} for each stream within a {@link ConfiguredAirbyteCatalog}. Each write config represents the configuration
-   * settings for writing to a destination connector
+   * Creates a list of all {@link WriteConfig} for each stream within a
+   * {@link ConfiguredAirbyteCatalog}. Each write config represents the configuration settings for
+   * writing to a destination connector
    *
-   * @param namingResolver {@link NamingConventionTransformer} used to transform names that are acceptable by each destination connector
+   * @param namingResolver {@link NamingConventionTransformer} used to transform names that are
+   *        acceptable by each destination connector
    * @param config destination connector configuration parameters
-   * @param catalog {@link ConfiguredAirbyteCatalog} collection of configured {@link ConfiguredAirbyteStream}
+   * @param catalog {@link ConfiguredAirbyteCatalog} collection of configured
+   *        {@link ConfiguredAirbyteStream}
    * @return list of all write configs for each stream in a {@link ConfiguredAirbyteCatalog}
    */
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,
@@ -132,25 +136,36 @@ public class StagingConsumerFactory {
                                           final StagingOperations stagingOperations,
                                           final List<WriteConfig> writeConfigs) {
     return () -> {
-      LOGGER.info("Preparing tmp tables in destination started for {} streams", writeConfigs.size());
+      LOGGER.info("Preparing raw tables in destination started for {} streams", writeConfigs.size());
+      final List<String> queryList = new ArrayList<>();
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schema = writeConfig.getOutputSchemaName();
         final String stream = writeConfig.getStreamName();
-        final String tmpTable = writeConfig.getTmpTableName();
+        final String dstTableName = writeConfig.getOutputTableName();
         final String stageName = stagingOperations.getStageName(schema, stream);
         final String stagingPath = stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schema, stream, writeConfig.getWriteDatetime());
 
-        LOGGER.info("Preparing staging area in destination started for schema {} stream {}: tmp table: {}, stage: {}",
-            schema, stream, tmpTable, stagingPath);
+        LOGGER.info("Preparing staging area in destination started for schema {} stream {}: target table: {}, stage: {}",
+            schema, stream, dstTableName, stagingPath);
 
         stagingOperations.createSchemaIfNotExists(database, schema);
-        stagingOperations.createTableIfNotExists(database, schema, tmpTable);
+        stagingOperations.createTableIfNotExists(database, schema, dstTableName);
         stagingOperations.createStageIfNotExists(database, stageName);
+
+        /*
+         * When we're in OVERWRITE, clear out the table at the start of a sync, this is an expected side
+         * effect of checkpoint and the removal of temporary tables
+         */
+        switch (writeConfig.getSyncMode()) {
+          case OVERWRITE -> queryList.add(stagingOperations.truncateTableQuery(database, schema, dstTableName));
+          case APPEND, APPEND_DEDUP -> {}
+          default -> throw new IllegalStateException("Unrecognized sync mode: " + writeConfig.getSyncMode());
+        }
 
         LOGGER.info("Preparing staging area in destination completed for schema {} stream {}", schema, stream);
       }
-
-      LOGGER.info("Preparing tmp tables in destination completed.");
+      LOGGER.info("Executing finalization of tables.");
+      stagingOperations.executeTransaction(database, queryList);
     };
   }
 
@@ -169,10 +184,10 @@ public class StagingConsumerFactory {
    */
   @VisibleForTesting
   CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> flushBufferFunction(
-                                                                                                               final JdbcDatabase database,
-                                                                                                               final StagingOperations stagingOperations,
-                                                                                                               final List<WriteConfig> writeConfigs,
-                                                                                                               final ConfiguredAirbyteCatalog catalog) {
+                                                                                                       final JdbcDatabase database,
+                                                                                                       final StagingOperations stagingOperations,
+                                                                                                       final List<WriteConfig> writeConfigs,
+                                                                                                       final ConfiguredAirbyteCatalog catalog) {
     final Set<WriteConfig> conflictingStreams = new HashSet<>();
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig = new HashMap<>();
     for (final WriteConfig config : writeConfigs) {
@@ -189,11 +204,9 @@ public class StagingConsumerFactory {
     if (!conflictingStreams.isEmpty()) {
       final String message = String.format(
           "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using ${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. Affected streams: %s",
-          conflictingStreams.stream().map(config -> config.getNamespace() + "." + config.getStreamName()).collect(joining(", "))
-      );
+          conflictingStreams.stream().map(config -> config.getNamespace() + "." + config.getStreamName()).collect(joining(", ")));
       throw new ConfigErrorException(message);
     }
-
     return (pair, writer) -> {
       LOGGER.info("Flushing buffer for stream {} ({}) to staging", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
       if (!pairToWriteConfig.containsKey(pair)) {
@@ -208,24 +221,45 @@ public class StagingConsumerFactory {
           stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schemaName, writeConfig.getStreamName(), writeConfig.getWriteDatetime());
       try (writer) {
         writer.flush();
-        writeConfig.addStagedFile(stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath));
+        final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath);
+        copyIntoTableFromStage(database, stageName, stagingPath, List.of(stagedFile), writeConfig.getOutputTableName(), schemaName,
+            stagingOperations);
       } catch (final Exception e) {
-        LOGGER.error("Failed to flush and upload buffer to stage:", e);
-        throw new RuntimeException("Failed to upload buffer to stage", e);
+        LOGGER.error("Failed to flush and commit buffer data into destination's raw table", e);
+        throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);
       }
     };
   }
 
   /**
-   * Upon processing all {@link AirbyteMessage} wrap up lingering logic. This logic includes:
-   * <li>Migrating data stored in staging area to temporary tables</li>
-   * <li>Creates a final table (if one does not already exist)</li>
-   * <li>Inserts all data from the temporary table into the final table</li>
+   * Handles copying data from staging area to destination table and clean up of staged files if
+   * upload was unsuccessful
+   */
+  private void copyIntoTableFromStage(final JdbcDatabase database,
+                                      final String stageName,
+                                      final String stagingPath,
+                                      final List<String> stagedFiles,
+                                      final String tableName,
+                                      final String schemaName,
+                                      final StagingOperations stagingOperations)
+      throws Exception {
+    try {
+      stagingOperations.copyIntoTableFromStage(database, stageName, stagingPath, stagedFiles,
+          tableName, schemaName);
+    } catch (final Exception e) {
+      stagingOperations.cleanUpStage(database, stageName, stagedFiles);
+      LOGGER.info("Cleaning stage path {}", stagingPath);
+      throw new RuntimeException("Failed to upload data from stage " + stagingPath, e);
+    }
+  }
+
+  /**
+   * Tear down process, will attempt to try to clean out any staging area
    *
    * @param database database used for syncing
-   * @param stagingOperations SQL queries used to write and delete data from the staging folder
-   * @param writeConfigs list of all write configs for each stream in a {@link ConfiguredAirbyteCatalog}
-   * @param purgeStagingData purges staging data if true otherwise data retained
+   * @param stagingOperations collection of SQL queries necessary for writing data into a staging area
+   * @param writeConfigs configuration settings for all destination connectors needed to write
+   * @param purgeStagingData drop staging area if true, keep otherwise
    * @return
    */
   private OnCloseFunction onCloseFunction(final JdbcDatabase database,
@@ -234,52 +268,14 @@ public class StagingConsumerFactory {
                                           final boolean purgeStagingData) {
     return (hasFailed) -> {
       if (!hasFailed) {
-        final List<String> queryList = new ArrayList<>();
-        LOGGER.info("Copying into tables in destination started for {} streams", writeConfigs.size());
-
-        for (final WriteConfig writeConfig : writeConfigs) {
-          final String schemaName = writeConfig.getOutputSchemaName();
-          final String streamName = writeConfig.getStreamName();
-          final String srcTableName = writeConfig.getTmpTableName();
-          final String dstTableName = writeConfig.getOutputTableName();
-          final String stageName = stagingOperations.getStageName(schemaName, streamName);
-          final String stagingPath = stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schemaName, streamName, writeConfig.getWriteDatetime());
-          LOGGER.info("Copying stream {} of schema {} into tmp table {} to final table {} from stage path {} with {} file(s) [{}]",
-              streamName, schemaName, srcTableName, dstTableName, stagingPath, writeConfig.getStagedFiles().size(),
-              String.join(",", writeConfig.getStagedFiles()));
-
-          // Copies all the data stored in the staging files into a temporary table and creates final table if nonexistent
-          try {
-            stagingOperations.copyIntoTmpTableFromStage(database, stageName, stagingPath, writeConfig.getStagedFiles(), srcTableName, schemaName);
-          } catch (final Exception e) {
-            stagingOperations.cleanUpStage(database, stageName, writeConfig.getStagedFiles());
-            LOGGER.info("Cleaning stage path {}", stagingPath);
-            throw new RuntimeException("Failed to upload data from stage " + stagingPath, e);
-          }
-          writeConfig.clearStagedFiles();
-          stagingOperations.createTableIfNotExists(database, schemaName, dstTableName);
-          switch (writeConfig.getSyncMode()) {
-            case OVERWRITE -> queryList.add(stagingOperations.truncateTableQuery(database, schemaName, dstTableName));
-            case APPEND, APPEND_DEDUP -> {}
-            default -> throw new IllegalStateException("Unrecognized sync mode: " + writeConfig.getSyncMode());
-          }
-          queryList.add(stagingOperations.insertTableQuery(database, schemaName, srcTableName, dstTableName));
-        }
         stagingOperations.onDestinationCloseOperations(database, writeConfigs);
-        LOGGER.info("Executing finalization of tables.");
-        // copies data from temporary table into final table (airbyte_raw)
-        stagingOperations.executeTransaction(database, queryList);
         LOGGER.info("Finalizing tables in destination completed.");
       }
-      // After moving data from staging area to the finalized table (airybte_raw) clean up temporary tables and the staging area (if user configured)
+      // After moving data from staging area to the target table (airybte_raw) clean up the staging
+      // area (if user configured)
       LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schemaName = writeConfig.getOutputSchemaName();
-        final String tmpTableName = writeConfig.getTmpTableName();
-        LOGGER.info("Cleaning tmp table in destination started for stream {}. schema {}, tmp table name: {}", writeConfig.getStreamName(), schemaName,
-            tmpTableName);
-
-        stagingOperations.dropTableIfExists(database, schemaName, tmpTableName);
         if (purgeStagingData) {
           final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
           LOGGER.info("Cleaning stage in destination started for stream {}. schema {}, stage: {}", writeConfig.getStreamName(), schemaName,

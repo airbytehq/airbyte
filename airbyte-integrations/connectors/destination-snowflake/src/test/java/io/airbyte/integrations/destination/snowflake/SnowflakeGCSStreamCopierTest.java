@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -12,7 +12,7 @@ import static org.mockito.Mockito.verify;
 import com.google.cloud.storage.Storage;
 import com.google.common.collect.Lists;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsConfig;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
@@ -40,7 +40,7 @@ public class SnowflakeGCSStreamCopierTest {
         storageClient,
         db,
         new GcsConfig("fake-project-id", "fake-bucket-name", "fake-credentials"),
-        new ExtendedNameTransformer(),
+        new StandardNameTransformer(),
         sqlOperations);
   }
 
