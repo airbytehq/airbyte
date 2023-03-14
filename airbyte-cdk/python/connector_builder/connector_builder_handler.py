@@ -19,12 +19,19 @@ def list_streams() -> AirbyteMessage:
     raise NotImplementedError
 
 
+DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE = 5
+DEFAULT_MAXIMUM_NUMBER_OF_SLICES = 5
+DEFAULT_MAX_RECORDS = 100
+
+
 def read_stream(source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog) -> AirbyteMessage:
     try:
-        command_config = config["__test_read_config"]
-        max_pages_per_slice = command_config["max_pages_per_slice"]
-        max_slices = command_config["max_slices"]
-        max_records = command_config["max_records"]
+        if "__test_read_config" not in config:
+            raise ValueError("Missing __test_read_config field in config file")
+        command_config = config.get("__test_read_config", {})
+        max_pages_per_slice = command_config.get("max_pages_per_slice", DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE)
+        max_slices = command_config.get("max_slices", DEFAULT_MAXIMUM_NUMBER_OF_SLICES)
+        max_records = command_config.get("max_records", DEFAULT_MAX_RECORDS)
         handler = MessageGrouper(max_pages_per_slice, max_slices)
         stream_name = configured_catalog.streams[0].stream.name  # The connector builder only supports a single stream
         stream_read = handler.get_message_groups(source, config, configured_catalog, max_records)

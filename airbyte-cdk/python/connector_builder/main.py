@@ -43,7 +43,7 @@ def handle_connector_builder_request(source: ManifestDeclarativeSource, config: 
     command = config.get("__command")
     if command == "resolve_manifest":
         return resolve_manifest(source)
-    elif command == "read":
+    elif command == "test_read":
         return read_stream(source, config, catalog)
     else:
         raise ValueError(f"Unrecognized command {command}.")

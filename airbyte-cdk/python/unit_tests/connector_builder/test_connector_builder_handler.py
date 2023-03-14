@@ -69,7 +69,7 @@ RESOLVE_MANIFEST_CONFIG = {
 
 TEST_READ_CONFIG = {
     "__injected_declarative_manifest": MANIFEST,
-    "__command": "read",
+    "__command": "test_read",
     "__test_read_config": {
         "max_pages_per_slice": 2,
         "max_slices": 5,
