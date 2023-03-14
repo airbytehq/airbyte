@@ -18,6 +18,7 @@ Currently, this source connector works with `Standard` subscription plan only. `
 
 ### Step 1: Set up Airtable
 
+<!-- env:cloud -->
 ### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
@@ -26,15 +27,18 @@ Currently, this source connector works with `Standard` subscription plan only. `
 4. You can use OAuth or an API key to authenticate your Airtable account. We recommend using OAuth for Airbyte Cloud.
    - To authenticate using OAuth, select **OAuth2.0** from the Authentication dropdown click **Authenticate your Airtable account** to sign in with Airtable, select required workspaces you want to sync and authorize your account. 
    - To authenticate using an API key, select **API key** from the Authentication dropdown and enter the Access Token for your Airtable account.
-5. Click `Set up source`.
+5. Click **Set up source**.
+<!-- /env:cloud -->
 
+<!-- env:oss -->
 ### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Airtable connector and select **Airtable** from the Source type dropdown.
 4. Select **API key** from the Authentication dropdown and enter the Access Token for your Airtable account.
-5. Click `Set up source`.
+5. Click **Set up source**.
+<!-- /env:oss -->
 
 
 ## Supported sync modes
