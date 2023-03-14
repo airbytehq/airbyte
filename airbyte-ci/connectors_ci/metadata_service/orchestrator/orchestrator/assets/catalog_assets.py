@@ -81,7 +81,7 @@ def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_da
 
     # Merge the two catalogs on the 'image' and 'version' columns, keeping only the unique pairs
     merged_catalog = pd.merge(
-        cloud_destinations_dataframe, oss_destinations_dataframe, how="outer", suffixes=["cloud", "oss"], on=composite_key
+        cloud_destinations_dataframe, oss_destinations_dataframe, how="outer", on=composite_key
     ).drop_duplicates(subset=composite_key)
 
     # Replace NaN values in the 'is_cloud' and 'is_oss' columns with False
@@ -107,7 +107,7 @@ def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe) -> pd.
 
     # Merge the two catalogs on the 'image' and 'version' columns, keeping only the unique pairs
     merged_catalog = pd.merge(
-        cloud_sources_dataframe, oss_sources_dataframe, how="outer", suffixes=["cloud", "oss"], on=composite_key
+        cloud_sources_dataframe, oss_sources_dataframe, how="outer", on=composite_key
     ).drop_duplicates(subset=composite_key)
 
     # Replace NaN values in the 'is_cloud' and 'is_oss' columns with False
