@@ -21,47 +21,46 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.txt"
           extra_records: yes
-          ignored_fields:
-            account_performance_report:
-              - name: AccountName
-                bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
-              - name: AccountNumber
-                bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
-            ad_group_performance_report:
-              - name: AccountName
-                bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
-              - name: CampaignName
-                bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
-              - name: CampaignType
-                bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
-              - name: AdGroupName
-                bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
-              - name: AdGroupType
-                bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
-            ad_performance_performance_report:
-              - name: AccountName
-                bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
-              - name: CampaignName
-                bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
-              - name: CampaignType
-                bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
-              - name: AdGroupName
-                bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
-            campaign_performance_report:
-              - name: AccountName
-                bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
-              - name: CampaignName
-                bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
-              - name: CampaignType
-                bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
-            keyword_performance_report:
-              - name: AccountName
-                bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
-              - name: CampaignName
-                bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
-              - name: AdGroupName
-                bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
-
+        ignored_fields:
+          account_performance_report:
+            - name: AccountName
+              bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
+            - name: AccountNumber
+              bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
+          ad_group_performance_report:
+            - name: AccountName
+              bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
+            - name: CampaignName
+              bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
+            - name: CampaignType
+              bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
+            - name: AdGroupName
+              bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
+            - name: AdGroupType
+              bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
+          ad_performance_performance_report:
+            - name: AccountName
+              bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
+            - name: CampaignName
+              bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
+            - name: CampaignType
+              bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
+            - name: AdGroupName
+              bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
+          campaign_performance_report:
+            - name: AccountName
+              bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
+            - name: CampaignName
+              bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
+            - name: CampaignType
+              bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
+          keyword_performance_report:
+            - name: AccountName
+              bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
+            - name: CampaignName
+              bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
+            - name: AdGroupName
+              bypass_reason: "Community contributed field, please update with Airbyte sandbox account data" # https://github.com/airbytehq/airbyte/pull/23868
         empty_streams:
           - name: account_performance_report_hourly
             bypass_reason: "Hourly reports are disabled, because sync is too long"
