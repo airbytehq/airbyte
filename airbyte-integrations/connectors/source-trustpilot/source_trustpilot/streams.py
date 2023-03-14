@@ -88,7 +88,7 @@ class TrustpilotIncrementalStream(TrustpilotPaginagedStream, ABC):
         self._start_date = pendulum.instance(start_date)
 
     @property
-    def state_cursor_field(self):
+    def state_field(self):
         if 'business_unit_id' in self._current_stream_slice:
             return f"{self._current_stream_slice['business_unit_id']}_{self.cursor_field}"
         else:
@@ -99,9 +99,9 @@ class TrustpilotIncrementalStream(TrustpilotPaginagedStream, ABC):
         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
-        latest_state = current_stream_state.get(self.state_cursor_field)
+        latest_state = current_stream_state.get(self.state_field)
         new_cursor_value = max(latest_record[self.cursor_field], latest_state or latest_record[self.cursor_field])
-        return {self.state_cursor_field: new_cursor_value}
+        return {self.state_field: new_cursor_value}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -114,7 +114,7 @@ class TrustpilotIncrementalStream(TrustpilotPaginagedStream, ABC):
         if self.filter_param not in params:
             # use cursor as filter value only if it is not already a parameter (i.e. we are in the middle of the pagination)
             stream_state = stream_state or {}
-            state_str = stream_state.get(self.state_cursor_field)
+            state_str = stream_state.get(self.state_field)
             state = pendulum.parse(state_str) if state_str else self._start_date
                 # Note: The Trustpilot API does not specify here the time zone. But
                 #       since we take the value from the records, we don't care about
@@ -159,6 +159,8 @@ class BusinessUnits(TrustpilotStream):
     """
     primary_key = "id"
 
+    _current_business_unit_id = None
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
@@ -175,8 +177,15 @@ class BusinessUnits(TrustpilotStream):
             business_unit_names=self._business_unit_names)
         for stream_slice in business_units_find.stream_slices(sync_mode=SyncMode.full_refresh):
             for busines_unit_data in business_units_find.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+                self._current_business_unit_id = busines_unit_data['id']
                 yield {'business_unit_id': busines_unit_data['id']}
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        for row in super().parse_response(response=response, **kwargs):
+            # the profile does not provide the primary key, so we patch it here ...
+            if 'id' not in row:
+                row['id'] = self._current_business_unit_id
+            yield row
 
 class PrivateReviews(TrustpilotIncrementalStream):
     """
