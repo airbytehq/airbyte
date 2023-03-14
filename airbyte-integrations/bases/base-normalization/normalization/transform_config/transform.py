@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -59,6 +59,7 @@ class TransformConfig:
             DestinationType.MSSQL.value: self.transform_mssql,
             DestinationType.CLICKHOUSE.value: self.transform_clickhouse,
             DestinationType.TIDB.value: self.transform_tidb,
+            DestinationType.DUCKDB.value: self.transform_duckdb,
         }[integration_type.value](config)
 
         # merge pre-populated base_profile with destination-specific configuration.
@@ -324,10 +325,14 @@ class TransformConfig:
             "port": config["port"],
             "schema": config["database"],
             "user": config["username"],
-            "secure": config["ssl"],
         }
         if "password" in config:
             dbt_config["password"] = config["password"]
+
+        # ssl is an optional configuration and is not present in strict-encrypt config
+        # if ssl option is not present in the config - default to True
+        dbt_config["secure"] = config.get("ssl", True)
+
         return dbt_config
 
     @staticmethod
@@ -342,6 +347,16 @@ class TransformConfig:
             "database": config["database"],
             "username": config["username"],
             "password": config.get("password", ""),
+        }
+        return dbt_config
+
+    @staticmethod
+    def transform_duckdb(config: Dict[str, Any]):
+        print("transform_duckdb")
+        dbt_config = {
+            "type": "duckdb",
+            "path": config["destination_path"],
+            "schema": config["schema"] if "schema" in config else "main",
         }
         return dbt_config
 

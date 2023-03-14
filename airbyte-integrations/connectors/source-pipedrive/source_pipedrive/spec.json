@@ -61,7 +61,7 @@
               }
             }
           }
-        ]
+        ]}
       },
       "replication_start_date" : {
         "order": 0,
@@ -72,15 +72,6 @@
         ],
         "type" : "string"
       }
-    }
   },
-  "supportsIncremental": true,
-  "authSpecification": {
-    "auth_type": "oauth2.0",
-    "oauth2Specification": {
-      "rootObject": ["authorization", 0],
-      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-      "oauthFlowOutputParameters": [["refresh_token"]]
-    }
-  }
+  "supportsIncremental": true
 }

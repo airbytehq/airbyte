@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -10,7 +10,7 @@ MAIN_REQUIREMENTS = ["airbyte-cdk~=0.2", "feedparser~=6.0.10", "pytz~=2022.6"]
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
     "pytest-mock~=3.6.1",
-    "source-acceptance-test",
+    "connector-acceptance-test",
 ]
 
 setup(

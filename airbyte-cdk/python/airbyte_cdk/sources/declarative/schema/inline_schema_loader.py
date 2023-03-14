@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import InitVar, dataclass
@@ -13,7 +13,7 @@ class InlineSchemaLoader(SchemaLoader):
     """Describes a stream's schema"""
 
     schema: Dict[str, Any]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return self.schema

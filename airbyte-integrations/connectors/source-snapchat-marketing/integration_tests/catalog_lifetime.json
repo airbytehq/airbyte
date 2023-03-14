@@ -8,6 +8,7 @@
         "source_defined_primary_key": [["id"], ["granularity"]]
       },
       "sync_mode": "full_refresh",
+      "primary_key": [["id"], ["granularity"]],
       "destination_sync_mode": "overwrite"
     },
     {
@@ -18,6 +19,7 @@
         "source_defined_primary_key": [["id"], ["granularity"]]
       },
       "sync_mode": "full_refresh",
+      "primary_key": [["id"], ["granularity"]],
       "destination_sync_mode": "overwrite"
     },
     {
@@ -27,6 +29,7 @@
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
+      "primary_key": [["id"], ["granularity"]],
       "destination_sync_mode": "overwrite"
     },
     {
@@ -36,6 +39,7 @@
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
+      "primary_key": [["id"], ["granularity"]],
       "destination_sync_mode": "overwrite"
     }
   ]

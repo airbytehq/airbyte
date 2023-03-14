@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.yugabytedb;
@@ -10,7 +10,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
@@ -30,7 +30,7 @@ public class YugabytedbDestinationAcceptanceTest extends JdbcDestinationAcceptan
 
   private YugabytedbContainerInitializr.YugabytedbContainer yugabytedbContainer;
 
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   private JsonNode jsonConfig;
 

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import dataclass
@@ -25,7 +25,7 @@ class CustomPageIncrement(PageIncrement):
         else:
             return None
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         self._page = 1
 
     def reset(self):

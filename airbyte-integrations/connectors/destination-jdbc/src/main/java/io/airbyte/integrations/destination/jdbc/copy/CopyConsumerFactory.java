@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy;
@@ -9,7 +9,7 @@ import static io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeC
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.CheckAndRemoveRecordWriter;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
@@ -39,7 +39,7 @@ public class CopyConsumerFactory {
                                                   final DataSource dataSource,
                                                   final JdbcDatabase database,
                                                   final SqlOperations sqlOperations,
-                                                  final ExtendedNameTransformer namingResolver,
+                                                  final StandardNameTransformer namingResolver,
                                                   final T config,
                                                   final ConfiguredAirbyteCatalog catalog,
                                                   final StreamCopierFactory<T> streamCopierFactory,
@@ -66,7 +66,7 @@ public class CopyConsumerFactory {
         sqlOperations::isValidData);
   }
 
-  private static <T> Map<AirbyteStreamNameNamespacePair, StreamCopier> createWriteConfigs(final ExtendedNameTransformer namingResolver,
+  private static <T> Map<AirbyteStreamNameNamespacePair, StreamCopier> createWriteConfigs(final StandardNameTransformer namingResolver,
                                                                                           final T config,
                                                                                           final ConfiguredAirbyteCatalog catalog,
                                                                                           final StreamCopierFactory<T> streamCopierFactory,

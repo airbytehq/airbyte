@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import concurrent.futures
@@ -201,6 +201,7 @@ UNSUPPORTED_FILTERING_STREAMS = [
     "UriEvent",
 ]
 
+<<<<<<< HEAD
 RESOURCE_PRIMARY_KEY_MAP = {
     "PlatformEventUsageMetric": None, # PlatformEventUsageMetric does not have a primary key
     "FormulaFunctionAllowedType": "DurableId", # https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_formulafunctionallowedtype.htm
@@ -210,6 +211,9 @@ RESOURCE_PRIMARY_KEY_MAP = {
     "Publisher": "DurableId", # https://developer.salesforce.com/docs/atlas.en-us.api_tooling.meta/api_tooling/tooling_api_objects_publisher.htm
     "ApexPageInfo": "DurableId" # https://developer.salesforce.com/docs/atlas.en-us.api_tooling.meta/api_tooling/tooling_api_objects_apexpageinfo.htm
 }
+=======
+UNSUPPORTED_STREAMS = ["ActivityMetric", "ActivityMetricRollup"]
+>>>>>>> upstream/master
 
 
 class Salesforce:
@@ -266,7 +270,7 @@ class Salesforce:
         """
         stream_objects = {}
         for stream_object in self.describe()["sobjects"]:
-            if stream_object["name"].lower() == "activitymetric":
+            if stream_object["name"] in UNSUPPORTED_STREAMS:
                 self.logger.warning(f"Stream {stream_object['name']} can not be used without object ID therefore will be ignored.")
                 continue
             if stream_object["queryable"]:

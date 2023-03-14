@@ -28,7 +28,13 @@
         "type": "string",
         "title": "Replication Start Date",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+<<<<<<< HEAD
         "examples": ["2021-01-25T00:00:00Z"]
+=======
+        "description": "UTC date and time in the format 2021-01-25T00:00:00Z. Any data before this date will not be replicated.",
+        "examples": ["2021-01-25T00:00:00Z"],
+        "format": "date-time"
+>>>>>>> upstream/master
       }
     }
   }
