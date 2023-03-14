@@ -13,6 +13,7 @@ class HttpResponse:
     body: Optional[str] = None
     headers: Optional[Dict[str, Any]] = None
 
+
 @dataclass
 class HttpRequest:
     url: str
@@ -20,23 +21,27 @@ class HttpRequest:
     body: Optional[Dict[str, Any]]
     headers: Optional[Dict[str, Any]]
     http_method: str
+
+
 @dataclass
 class StreamReadPages:
     records: List[object]
     request: Optional[HttpRequest] = None
     response: Optional[HttpResponse] = None
 
+
 @dataclass
 class StreamReadSlicesInnerPagesInner:
-
     records: List[object]
     request: Optional[HttpRequest]
     response: Optional[HttpResponse]
+
 
 @dataclass
 class StreamReadSlicesInnerSliceDescriptor:
     start_datetime: Optional[datetime]
     list_item: Optional[str]
+
 
 @dataclass
 class StreamReadSlicesInner:
@@ -44,12 +49,14 @@ class StreamReadSlicesInner:
     slice_descriptor: Optional[StreamReadSlicesInnerSliceDescriptor]
     state: Optional[Dict[str, Any]]
 
+
 @dataclass
 class StreamRead(object):
     logs: List[object]
     slices: List[StreamReadSlicesInner]
     test_read_limit_reached: bool
     inferred_schema: Optional[Dict[str, Any]]
+
 
 @dataclass
 class StreamReadRequestBody:
@@ -59,14 +66,15 @@ class StreamReadRequestBody:
     state: Optional[Dict[str, Any]]
     record_limit: Optional[int]
 
+
 @dataclass
 class StreamReadSliceDescriptor:
     start_datetime: Optional[datetime] = None
     list_item: Optional[str] = None
+
 
 @dataclass
 class StreamReadSlices:
     pages: List[StreamReadPages]
     slice_descriptor: Optional[StreamReadSliceDescriptor] = None
     state: Optional[Dict[str, Any]] = None
-

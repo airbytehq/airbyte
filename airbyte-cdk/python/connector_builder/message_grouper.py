@@ -41,7 +41,7 @@ class MessageGrouper:
 
         slices = []
         log_messages = []
-        state = {} # No support for incremental sync
+        state = {}  # No support for incremental sync
         for message_group in self._get_message_groups(
                 source.read(self.logger, config, configured_catalog, state),
                 schema_inferrer,
@@ -56,7 +56,7 @@ class MessageGrouper:
             logs=log_messages,
             slices=slices,
             test_read_limit_reached=self._has_reached_limit(slices),
-            inferred_schema=schema_inferrer.get_stream_schema(configured_catalog.streams[0].stream.name) # The connector builder currently only supports reading from a single stream at a time
+            inferred_schema=schema_inferrer.get_stream_schema(configured_catalog.streams[0].stream.name)  # The connector builder currently only supports reading from a single stream at a time
         )
 
     def _get_message_groups(

@@ -375,7 +375,7 @@ def test_get_grouped_messages_invalid_group_format():
 
     api = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
 
-    with pytest.raises(ValueError) as actual_exception:
+    with pytest.raises(ValueError):
         api.get_message_groups(source=mock_source, config=CONFIG, configured_catalog=create_configured_catalog("hashiras"))
 
 

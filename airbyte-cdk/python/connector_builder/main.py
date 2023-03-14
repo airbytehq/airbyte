@@ -24,8 +24,8 @@ def get_config_and_catalog_from_args(args: List[str]) -> Tuple[Mapping[str, Any]
     if parsed_args.command != "read":
         raise ValueError("Only read commands are allowed for Connector Builder requests.")
 
-    config = BaseConnector.read_config(parsed_args.config)
-    catalog = ConfiguredAirbyteCatalog.parse_obj(BaseConnector.read_config(parsed_args.catalog))
+    config = BaseConnector.read_config(config_path)
+    catalog = ConfiguredAirbyteCatalog.parse_obj(BaseConnector.read_config(catalog_path))
 
     if "__injected_declarative_manifest" not in config:
         raise ValueError(
