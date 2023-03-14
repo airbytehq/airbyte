@@ -305,8 +305,17 @@ def test_read():
                              test_read_limit_reached=False, inferred_schema=None)
 
     expected_airbyte_message = AirbyteMessage(type=MessageType.RECORD,
-                                     record=AirbyteRecordMessage(stream=_stream_name, data=dataclasses.asdict(stream_read), emitted_at=1))
-    with patch("connector_builder.message_grouper.MessageGrouper.get_message_groups", return_value=stream_read) as mock_message_grouper:
+                                     record=AirbyteRecordMessage(stream=_stream_name, data={
+                                         "logs": [{"message": "here be a log message"}],
+                                         "slices": [{
+                                             "pages": [{"records": [real_record], "request": None, "response": None}],
+                                             "slice_descriptor": None,
+                                             "state": None
+                                         }],
+                                         "test_read_limit_reached": False,
+                                         "inferred_schema": None
+                                     }, emitted_at=1))
+    with patch("connector_builder.message_grouper.MessageGrouper.get_message_groups", return_value=stream_read):
         output_record = handle_connector_builder_request(source, config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG))
         output_record.record.emitted_at = 1
         assert output_record == expected_airbyte_message
