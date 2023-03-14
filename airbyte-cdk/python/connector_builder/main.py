@@ -3,11 +3,11 @@
 #
 
 
-import argparse
 import sys
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping
 
 from airbyte_cdk.connector import BaseConnector
+from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from connector_builder.connector_builder_handler import resolve_manifest
 
@@ -18,11 +18,11 @@ def create_source(config: Mapping[str, Any]) -> ManifestDeclarativeSource:
 
 
 def get_config_from_args(args: List[str]) -> Mapping[str, Any]:
-    command, config_filepath = preparse(args)
-    if command != "read":
+    parsed_args = AirbyteEntrypoint.parse_args(args)
+    if parsed_args.command != "read":
         raise ValueError("Only read commands are allowed for Connector Builder requests.")
 
-    config = BaseConnector.read_config(config_filepath)
+    config = BaseConnector.read_config(parsed_args.config)
 
     if "__injected_declarative_manifest" not in config:
         raise ValueError(
@@ -30,15 +30,6 @@ def get_config_from_args(args: List[str]) -> Mapping[str, Any]:
         )
 
     return config
-
-
-def preparse(args: List[str]) -> Tuple[str, str]:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("command", type=str, help="Airbyte Protocol command")
-    parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
-    parser.add_argument("--catalog", type=str, required=True, help="path to the catalog file, if it exists (otherwise empty string)")
-    parsed, _ = parser.parse_known_args(args)
-    return parsed.command, parsed.config
 
 
 def handle_connector_builder_request(source: ManifestDeclarativeSource, config: Mapping[str, Any]):

@@ -223,7 +223,7 @@ def test_resolve_manifest_error_returns_error_response():
 def test_invalid_protocol_command(command, valid_config_file):
     config = copy.deepcopy(CONFIG)
     config["__command"] = "list_streams"
-    with pytest.raises(ValueError):
+    with pytest.raises(SystemExit):
         handle_request([command, "--config", str(valid_config_file), "--catalog", ""])
 
 
