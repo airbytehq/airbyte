@@ -46,8 +46,9 @@ public class TiDBDestination extends AbstractJdbcDestination implements Destinat
   @Override
   protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
     final JdbcDatabase database = getDatabase(dataSource);
-    final String outputSchema = getNamingResolver().getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
-    attemptTableOperations(outputSchema, database, getNamingResolver(), getSqlOperations(), false);
+    for (String schema : getOutputSchemas(config, catalog)) {
+      attemptTableOperations(schema, database, getNamingResolver(), getSqlOperations(), false);
+    }
     return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
   }
 

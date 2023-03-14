@@ -44,10 +44,11 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     final NamingConventionTransformer nameTransformer = getNamingResolver();
     final SnowflakeInternalStagingSqlOperations snowflakeInternalStagingSqlOperations = new SnowflakeInternalStagingSqlOperations(nameTransformer);
     final JdbcDatabase database = getDatabase(dataSource);
-    final String outputSchema = nameTransformer.getIdentifier(config.get("schema").asText());
-    attemptTableOperations(outputSchema, database, nameTransformer,
-        snowflakeInternalStagingSqlOperations, true);
-    attemptStageOperations(outputSchema, database, nameTransformer, snowflakeInternalStagingSqlOperations);
+    for (String outputSchema : getOutputSchemas(config, catalog)) {
+      attemptTableOperations(outputSchema, database, nameTransformer,
+          snowflakeInternalStagingSqlOperations, true);
+      attemptStageOperations(outputSchema, database, nameTransformer, snowflakeInternalStagingSqlOperations);
+    }
     return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
   }
 

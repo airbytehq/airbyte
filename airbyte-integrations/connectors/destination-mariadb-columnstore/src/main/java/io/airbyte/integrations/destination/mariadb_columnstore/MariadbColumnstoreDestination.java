@@ -18,6 +18,7 @@ import io.airbyte.integrations.destination.mariadb_columnstore.MariadbColumnstor
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
@@ -43,7 +44,6 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
   protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
     final JdbcDatabase database = getDatabase(dataSource);
     final MariadbColumnstoreSqlOperations mariadbColumnstoreSqlOperations = (MariadbColumnstoreSqlOperations) getSqlOperations();
-    final String outputSchema = getNamingResolver().getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
 
     final VersionCompatibility compatibility = mariadbColumnstoreSqlOperations.isCompatibleVersion(database);
     if (!compatibility.isCompatible()) {
@@ -51,9 +51,12 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
           .format("Your MariaDB Columnstore version %s is not compatible with Airbyte",
               compatibility.getVersion()));
     }
-
     mariadbColumnstoreSqlOperations.verifyLocalFileEnabled(database);
-    attemptTableOperations(outputSchema, database, getNamingResolver(), mariadbColumnstoreSqlOperations, false);
+
+    for (String outputSchema : getOutputSchemas(config, catalog)) {
+      attemptTableOperations(outputSchema, database, getNamingResolver(), mariadbColumnstoreSqlOperations, false);
+    }
+
     return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
   }
 
