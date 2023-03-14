@@ -86,7 +86,7 @@ class IncrementalKlaviyoStreamLatest(KlaviyoStreamLatest, ABC):
 
     def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
-        self._start_ts = pendulum.parse(start_date)
+        self._start_ts = start_date
 
     @property
     @abstractmethod
@@ -106,7 +106,7 @@ class IncrementalKlaviyoStreamLatest(KlaviyoStreamLatest, ABC):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
 
         if not params.get("filter"):
-            latest_cursor = self._start_ts
+            latest_cursor = pendulum.parse(self._start_ts)
             stream_state_cursor_value = stream_state.get(self.cursor_field)
             if stream_state_cursor_value:
                 latest_cursor = max(latest_cursor, pendulum.parse(stream_state[self.cursor_field]))
@@ -120,9 +120,9 @@ class IncrementalKlaviyoStreamLatest(KlaviyoStreamLatest, ABC):
         This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
-
+        current_stream_cursor_value = current_stream_state.get(self.cursor_field, self._start_ts)
         latest_record_cursor_value = latest_record[self.cursor_field]
-        latest_cursor = max(pendulum.parse(latest_record_cursor_value), pendulum.parse(current_stream_state[self.cursor_field]))
+        latest_cursor = max(pendulum.parse(latest_record_cursor_value), pendulum.parse(current_stream_cursor_value))
         return {self.cursor_field: latest_cursor.isoformat()}
 
 
