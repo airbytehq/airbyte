@@ -127,10 +127,16 @@ class AdsInsights(FBMarketingIncrementalStream):
 
 
         # job = InsightAsyncJob(api=job._api, interval=job.interval, edge_object=job.edge_object, params=job._params)
-        # job = ParentAsyncJob(jobs=[job], api=job._api, interval=job.interval)
+        # job = ParentAsyncJob(jobs=[], api=job._api, interval=job.interval)
         if type(job) != ParentAsyncJob:
             account_id = job.edge_object.get("account_id")
-        else:
+
+            self._completed_slices[account_id] = self._completed_slices.get(account_id, set())
+            self._completed_slices[account_id].add(job.interval.start)
+            if job.interval.start == self._next_cursor_value.get(account_id, self._next_cursor_value.get(None)):
+                self._advance_cursor(account_id)
+
+        elif len(job._jobs) > 0:
             # TODO: At this point we would sometimes get ParentAsyncJob. Should not happen. To debug.
             # In the meantime we get the account ID of the 1st job
             self.logger.error("This job {} has no edge_object. It is of type {}".format(str(job), str(type(job))))
@@ -141,10 +147,13 @@ class AdsInsights(FBMarketingIncrementalStream):
             self.logger.error("We will select the account ID of the first job of the list of jobs")
             account_id = job._jobs[0].edge_object.get("account_id")
 
-        self._completed_slices[account_id] = self._completed_slices.get(account_id, set())
-        self._completed_slices[account_id].add(job.interval.start)
-        if job.interval.start == self._next_cursor_value.get(account_id, self._next_cursor_value.get(None)):
-            self._advance_cursor(account_id)
+            self._completed_slices[account_id] = self._completed_slices.get(account_id, set())
+            self._completed_slices[account_id].add(job.interval.start)
+            if job.interval.start == self._next_cursor_value.get(account_id, self._next_cursor_value.get(None)):
+                self._advance_cursor(account_id)
+
+        elif len(job._jobs) == 0:
+            self.logger.error("This group of jobs {} is over. Continue...".format(str(job), str(type(job))))
 
     @property
     def state(self) -> MutableMapping[str, Any]:

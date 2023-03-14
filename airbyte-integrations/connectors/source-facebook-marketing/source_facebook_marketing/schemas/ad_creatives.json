@@ -484,17 +484,7 @@
           }
         },
         "optimization_type": {
-          "oneOf": [
-            {
-              "type": ["null", "array"],
-              "items": {
-                "type": ["null", "string"]
-              }
-            },
-            {
-              "type": ["null", "string"]
-            }
-          ]
+          "type": "string"
         },
         "titles": {
           "type": ["null", "array"],

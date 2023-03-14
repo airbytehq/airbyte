@@ -191,7 +191,7 @@ class API:
             query = bq_client.query(query="SELECT DISTINCT publisher_account_id "
                                           "FROM `dolead-gsp-2020.dbt_mart.new_core_ppc_accounts` "
                                           "WHERE publisher = 'FB_ADS' "
-                                          "AND is_active = TRUE")
+                                          "AND is_active = TRUE ")
             results = query.result()
             for res in results:
                 id = str(res.publisher_account_id)

@@ -1,68 +1,23 @@
 {
-  "properties": {
-    "100x100": {
-      "items": {
-        "items": {
-          "type": ["null", "integer"]
-        },
-        "type": ["null", "array"]
-      },
-      "type": ["null", "array"]
-    },
-    "100x72": {
-      "items": {
-        "items": {
-          "type": ["null", "integer"]
-        },
-        "type": ["null", "array"]
-      },
-      "type": ["null", "array"]
-    },
-    "191x100": {
-      "items": {
-        "items": {
-          "type": ["null", "integer"]
-        },
-        "type": ["null", "array"]
-      },
-      "type": ["null", "array"]
-    },
-    "400x150": {
-      "items": {
-        "items": {
-          "type": ["null", "integer"]
-        },
-        "type": ["null", "array"]
-      },
-      "type": ["null", "array"]
-    },
-    "400x500": {
-      "items": {
-        "items": {
-          "type": ["null", "integer"]
-        },
-        "type": ["null", "array"]
-      },
-      "type": ["null", "array"]
-    },
-    "600x360": {
-      "items": {
-        "items": {
-          "type": ["null", "integer"]
-        },
-        "type": ["null", "array"]
-      },
-      "type": ["null", "array"]
-    },
-    "90x160": {
-      "items": {
-        "items": {
-          "type": ["null", "integer"]
-        },
-        "type": ["null", "array"]
-      },
-      "type": ["null", "array"]
-    }
+  "100x100": {
+    "type": "string"
   },
-  "type": ["null", "object"]
+  "100x72": {
+    "type": "string"
+  },
+  "191x100": {
+    "type": "string"
+  },
+  "400x150": {
+    "type": "string"
+  },
+  "400x500": {
+    "type": "string"
+  },
+  "600x360": {
+    "type": "string"
+  },
+  "90x160": {
+    "type": "string"
+  }
 }

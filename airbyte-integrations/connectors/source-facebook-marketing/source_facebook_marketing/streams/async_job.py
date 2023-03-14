@@ -181,8 +181,10 @@ class ParentAsyncJob(AsyncJob):
 
     def __str__(self) -> str:
         """String representation of the job wrapper."""
-        return f"ParentAsyncJob({self._jobs[0]} ... {len(self._jobs) - 1} jobs more)"
-
+        if len(self._jobs) > 0:
+            return f"ParentAsyncJob({self._jobs[0]} ... {len(self._jobs) - 1} jobs more)"
+        else:
+            return f"No ParentAsyncJob Job left"
 
 class InsightAsyncJob(AsyncJob):
     """AsyncJob wraps FB AdReport class and provides interface to restart/retry the async job"""
