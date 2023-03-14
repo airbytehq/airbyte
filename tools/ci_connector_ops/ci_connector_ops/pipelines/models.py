@@ -106,6 +106,12 @@ class ConnectorTestReport:
                 "success": self.success,
                 "failed_step": [failed_step_result.step.name for failed_step_result in self.failed_steps],
                 "gha_workflow_run_url": self.connector_test_context.gha_workflow_run_url,
+                "pipeline_start_timestamp": self.connector_test_context.pipeline_start_timestamp,
+                "pipeline_end_timestamp": round(self.created_at.timestamp()),
+                "pipeline_duration": round(self.created_at.timestamp()) - self.connector_test_context.pipeline_start_timestamp,
+                "git_branch": self.connector_test_context.git_branch,
+                "git_revision": self.connector_test_context.git_revision,
+                "ci_context": self.connector_test_context.ci_context,
             }
         )
 
