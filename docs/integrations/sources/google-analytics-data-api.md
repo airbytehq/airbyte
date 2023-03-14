@@ -74,12 +74,6 @@ This connector outputs the following incremental streams:
 * When using segments, make sure you add the `ga:segment` dimension.
 * Custom reports: [Dimensions and metrics explorer](https://ga-dev-tools.web.app/dimensions-metrics-explorer/)
 
-## Rate Limits & Performance Considerations \(Airbyte Open-Source\)
-
-[Google Analytics Data API](https://developers.google.com/analytics/devguides/reporting/data/v1/quotas)
-
-* Number of requests per day per project: 50,000
-
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                            |
