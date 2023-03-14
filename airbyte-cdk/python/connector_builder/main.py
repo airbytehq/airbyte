@@ -13,9 +13,9 @@ from airbyte_cdk.sources.declarative.manifest_declarative_source import Manifest
 from connector_builder.connector_builder_handler import read_stream, resolve_manifest
 
 
-def create_source(config: Mapping[str, Any], debug: bool) -> ManifestDeclarativeSource:
+def create_source(config: Mapping[str, Any]) -> ManifestDeclarativeSource:
     manifest = config.get("__injected_declarative_manifest")
-    return ManifestDeclarativeSource(manifest, debug)
+    return ManifestDeclarativeSource(manifest, True)
 
 
 def get_config_and_catalog_from_args(args: List[str]) -> Tuple[Mapping[str, Any], ConfiguredAirbyteCatalog]:
@@ -48,7 +48,7 @@ def handle_connector_builder_request(source: ManifestDeclarativeSource, config: 
 def handle_request(args: List[str]):
     config, catalog = get_config_and_catalog_from_args(args)
     if "__command" in config:
-        source = create_source(config, True)
+        source = create_source(config)
         print(handle_connector_builder_request(source, config, catalog))
     else:
         raise ValueError("Missing __command argument in config file.")
