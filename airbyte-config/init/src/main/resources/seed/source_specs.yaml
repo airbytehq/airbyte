@@ -4735,6 +4735,38 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-gcs:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Gcs Spec"
+      type: "object"
+      required:
+      - "gcs_bucket"
+      - "gcs_path"
+      - "service_account"
+      properties:
+        gcs_bucket:
+          type: "string"
+          title: "GCS bucket"
+          description: "GCS bucket name"
+        gcs_path:
+          type: "string"
+          title: "GCS Path"
+          description: "GCS path to data"
+        service_account:
+          type: "string"
+          title: "Service Account Information."
+          description: "Enter your Google Cloud <a href=\"https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys\"\
+            >service account key</a> in JSON format"
+          airbyte_secret: true
+          examples:
+          - "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"\
+            private_key_id\": YOUR_PRIVATE_KEY, ... }"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-genesys:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/genesys"
@@ -8357,7 +8389,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:1.0.0"
+- dockerImage: "airbyte/source-mssql:1.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
@@ -9232,7 +9264,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:2.0.0"
+- dockerImage: "airbyte/source-mysql:2.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -12897,7 +12929,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:1.0.2"
+- dockerImage: "airbyte/source-s3:2.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
