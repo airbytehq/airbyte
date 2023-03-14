@@ -154,7 +154,6 @@ async def run_acceptance_tests(
         .with_exec(["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
     )
     docker_host = await dockerd.endpoint(scheme="tcp")
-
     acceptance_test_cache_buster = str(uuid.uuid4())
     if context.connector.acceptance_test_config["connector_image"].endswith(":dev"):
         inspect_output = await (

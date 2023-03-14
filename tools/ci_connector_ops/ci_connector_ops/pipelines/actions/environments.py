@@ -170,4 +170,6 @@ async def with_ci_connector_ops(context: ConnectorTestContext) -> Container:
     """
     python_base_environment: Container = await with_python_base(context, "python:3-alpine")
     python_with_git = python_base_environment.with_exec(["apk", "add", "gcc", "libffi-dev", "musl-dev", "git"])
-    return await with_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH, exclude=["pipelines"])
+    return await with_python_package(
+        context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH, exclude=["ci_connector_ops/pipelines", "test_reports", "__pycache__"]
+    )

@@ -36,6 +36,8 @@ async def download(context: ConnectorTestContext, gcp_gsm_env_variable_name: str
             "CACHEBUSTER", datetime.datetime.now().isoformat()
         )  # Secrets can be updated on GSM anytime, we can't cache this step...
         .with_exec(["ci_credentials", context.connector.technical_name, "write-to-storage"])
+        # Set all files in the directory to the same creation timestamp (for caching).
+        .with_exec(["find", secrets_path, "-exec", "touch", "-t", "199206191310.00", "{}", "+"])
         .directory(secrets_path)
     )
 
