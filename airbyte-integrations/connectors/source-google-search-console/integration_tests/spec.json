@@ -133,7 +133,6 @@
     },
     "required": ["authorization", "site_urls", "start_date"]
   },
-  "supported_destination_sync_modes": ["append"],
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
     "predicate_key": ["authorization", "auth_type"],
