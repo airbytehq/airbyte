@@ -71,7 +71,8 @@ class TestProfilesStream:
                   "id": "00AA0A0AA0AA000AAAAAAA0AA0",
                   "attributes": {
                     "email": "name@airbyte.io",
-                    "phone_number": "+11111111111"
+                    "phone_number": "+11111111111",
+                    "updated": "2023-03-10T20:36:36+00:00"
                   },
                   "properties": {
                     "Status": "onboarding_complete"
@@ -82,7 +83,8 @@ class TestProfilesStream:
                   "id": "AAAA1A1AA1AA111AAAAAAA1AA1",
                   "attributes": {
                     "email": "name2@airbyte.io",
-                    "phone_number": "+2222222222"
+                    "phone_number": "+2222222222",
+                    "updated": "2023-02-10T20:36:36+00:00"
                   },
                   "properties": {
                     "Status": "onboarding_started"
@@ -100,9 +102,11 @@ class TestProfilesStream:
             {
               "type": "profile",
               "id": "00AA0A0AA0AA000AAAAAAA0AA0",
+              "updated": "2023-03-10T20:36:36+00:00",
               "attributes": {
                 "email": "name@airbyte.io",
-                "phone_number": "+11111111111"
+                "phone_number": "+11111111111",
+                "updated": "2023-03-10T20:36:36+00:00"
               },
               "properties": {
                 "Status": "onboarding_complete"
@@ -111,9 +115,11 @@ class TestProfilesStream:
             {
               "type": "profile",
               "id": "AAAA1A1AA1AA111AAAAAAA1AA1",
+              "updated": "2023-02-10T20:36:36+00:00",
               "attributes": {
                 "email": "name2@airbyte.io",
-                "phone_number": "+2222222222"
+                "phone_number": "+2222222222",
+                "updated": "2023-02-10T20:36:36+00:00"
               },
               "properties": {
                 "Status": "onboarding_started"
