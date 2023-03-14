@@ -124,7 +124,7 @@ class IncrementalKlaviyoStreamLatest(KlaviyoStreamLatest, ABC):
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
 
-        latest_record_cursor_value = self.get_cursor_field_from_record(self, latest_record)
+        latest_record_cursor_value = self.get_cursor_field_from_record(latest_record)
         latest_cursor = max(pendulum.parse(latest_record_cursor_value), pendulum.parse(current_stream_state[self.cursor_field]))
         return {self.cursor_field: latest_cursor.isoformat()}
 
