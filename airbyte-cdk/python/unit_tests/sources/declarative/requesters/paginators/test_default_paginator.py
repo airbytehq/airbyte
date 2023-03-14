@@ -15,8 +15,8 @@ from airbyte_cdk.sources.declarative.requesters.paginators.default_paginator imp
     RequestOption,
     RequestOptionType,
 )
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies.offset_increment import OffsetIncrement
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import CursorPaginationStrategy
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies.offset_increment import OffsetIncrement
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 
 
