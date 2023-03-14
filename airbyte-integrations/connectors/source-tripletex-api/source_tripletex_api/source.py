@@ -75,9 +75,9 @@ class DateRequiredStream(TripletexApiStream, ABC):
         last_date = pendulum.parse(self.date_to or self.start_date)
 
         if last_date < self.today:
-            self.date_to = last_date.add(days=8).format("YYYY-MM-DD")
+            self.date_to = last_date.add(days=3).format("YYYY-MM-DD")
             return {
-                self.date_from_key_name: last_date.add(days=1).format("YYYY-MM-DD"),
+                self.date_from_key_name: last_date.format("YYYY-MM-DD"),
                 self.date_to_key_name: self.date_to
             }
 
@@ -88,7 +88,7 @@ class DateRequiredStream(TripletexApiStream, ABC):
     ) -> MutableMapping[str, Any]:
         params = {
             self.date_from_key_name: self.start_date,
-            self.date_to_key_name: pendulum.parse(self.start_date).add(days=7).format("YYYY-MM-DD"),
+            self.date_to_key_name: pendulum.parse(self.start_date).add(days=3).format("YYYY-MM-DD"),
             "count": 10000
         }
 
