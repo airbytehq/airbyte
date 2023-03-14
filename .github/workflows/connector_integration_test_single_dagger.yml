@@ -9,11 +9,6 @@ on:
   pull_request:
     paths:
       - "airbyte-integrations/connectors/**"
-  push:
-    paths:
-      - "airbyte-integrations/connectors/**"
-    branches:
-      - "master"
 jobs:
   start-runner:
     name: "Connectors Integration Test: Start Build EC2 Runner"
