@@ -42,7 +42,11 @@ jobs:
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+      pipeline-start-timestamp: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
     steps:
+      - name: Get start timestamp
+        id: get-start-timestamp
+        run: echo "::set-output name=start-timestamp::$(date +%s)"
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
@@ -166,6 +170,18 @@ jobs:
       - name: Report Status
         if: github.event.inputs.gitref == 'master' && always()
         run: ./tools/status/report.sh ${{ github.event.inputs.connector }} ${{github.repository}} ${{github.run_id}} ${{steps.test.outcome}} ${{steps.qa_checks.outcome}}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "us-east-2"
+      - name: Extract branch name
+        shell: bash
+        if: github.event_name == 'workflow_dispatch'
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+      - name: Report Observability
+        if: always()
+        run: ./tools/status/report_observability.sh ${{ github.event.inputs.connector }} ${{github.run_id}} ${{ needs.start-test-runner.outputs.pipeline-start-timestamp }} ${{ steps.extract_branch.outputs.branch }} ${{ github.sha }} ${{steps.test.outcome}} ${{steps.qa_checks.outcome}}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
