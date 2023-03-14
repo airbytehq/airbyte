@@ -34,10 +34,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.jooq.DSLContext;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.testcontainers.containers.MSSQLServerContainer;
 
 class MssqlSourceTest {
@@ -115,6 +112,7 @@ class MssqlSourceTest {
   }
 
   @Test
+  @Disabled("See https://github.com/airbytehq/airbyte/pull/23908#issuecomment-1463753684, enable once communication is out")
   public void testTableWithNullCursorValueShouldThrowException() throws Exception {
     try (final DSLContext dslContext = getDslContext(configWithoutDbName)) {
       final Database database = getDatabase(dslContext);

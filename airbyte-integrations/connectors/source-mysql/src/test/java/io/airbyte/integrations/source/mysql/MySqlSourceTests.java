@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.jooq.DSLContext;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,6 +106,7 @@ public class MySqlSourceTests {
   }
 
   @Test
+  @Disabled("See https://github.com/airbytehq/airbyte/pull/23908#issuecomment-1463753684, enable once communication is out")
   public void testTableWithNullCursorValueShouldThrowException() throws SQLException {
     try (final MySQLContainer<?> db = new MySQLContainer<>("mysql:8.0")
         .withUsername(TEST_USER)
@@ -147,6 +149,7 @@ public class MySqlSourceTests {
   }
 
   @Test
+  @Disabled("See https://github.com/airbytehq/airbyte/pull/23908#issuecomment-1463753684, enable once communication is out")
   public void viewWithNullValueCursorShouldThrowException() throws SQLException {
     try (final MySQLContainer<?> db = new MySQLContainer<>("mysql:8.0")
             .withUsername(TEST_USER)
