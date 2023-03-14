@@ -38,7 +38,6 @@ public class TiDBDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest
     return "airbyte/destination-tidb:dev";
   }
 
-
   @Override
   protected boolean implementsNamespaces() {
     return true;

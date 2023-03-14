@@ -48,7 +48,6 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
     config = Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
     ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, SCHEMA_NAME);
 
-
     dslContext = DSLContextFactory.create(
         config.get("credentials").get(JdbcUtils.USERNAME_KEY).asText(),
         config.get("credentials").get(JdbcUtils.PASSWORD_KEY).asText(),

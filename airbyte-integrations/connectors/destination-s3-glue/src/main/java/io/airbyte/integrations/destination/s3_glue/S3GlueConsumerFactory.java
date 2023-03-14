@@ -87,8 +87,8 @@ public class S3GlueConsumerFactory {
       final String fullOutputPath = storageOperations.getBucketObjectPath(namespace, streamName, SYNC_DATETIME, customOutputFormat);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
       final JsonNode jsonSchema = abStream.getJsonSchema();
-      ((ObjectNode)jsonSchema.get("properties")).putPOJO(JavaBaseConstants.COLUMN_NAME_AB_ID, Map.of("type", "string"));
-      ((ObjectNode)jsonSchema.get("properties")).putPOJO(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, Map.of("type", "string"));
+      ((ObjectNode) jsonSchema.get("properties")).putPOJO(JavaBaseConstants.COLUMN_NAME_AB_ID, Map.of("type", "string"));
+      ((ObjectNode) jsonSchema.get("properties")).putPOJO(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, Map.of("type", "string"));
       final String location = "s3://" + s3Config.getBucketName() + "/" +
           fullOutputPath.substring(0, fullOutputPath.lastIndexOf("/") + 1);
       final S3GlueWriteConfig writeConfig =

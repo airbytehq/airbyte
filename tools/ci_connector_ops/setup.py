@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from pathlib import Path
+
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
@@ -9,18 +11,40 @@ MAIN_REQUIREMENTS = [
     "requests",
     "PyYAML~=6.0",
     "GitPython~=3.1.29",
-    "pandas~=1.5.3",
-    "pandas-gbq~=0.19.0",
     "pydantic~=1.10.4",
-    "fsspec~=2023.1.0",
-    "gcsfs~=2023.1.0",
-    "pytablewriter~=0.64.2",
+    "PyGithub~=1.58.0",
+    "rich",
 ]
+
+
+def local_pkg(name: str) -> str:
+    """Returns a path to a local package."""
+    return f"{name} @ file://{Path.cwd().parent / name}"
+
+
+# These internal packages are not yet published to a Pypi repository.
+LOCAL_REQUIREMENTS = [local_pkg("ci_credentials")]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.2.5",
     "pytest-mock~=3.10.0",
     "freezegun",
+]
+
+DEV_REQUIREMENTS = ["pyinstrument"]
+# It is hard to containerize Pandas, it's only used in the QA engine, so I declared it as an extra requires
+# TODO update the GHA that install the QA engine to install this extra
+QA_ENGINE_REQUIREMENTS = [
+    "pandas~=1.5.3",
+    "pandas-gbq~=0.19.0",
+    "fsspec~=2023.1.0",
+    "gcsfs~=2023.1.0",
+    "pytablewriter~=0.64.2",
+]
+
+PIPELINES_REQUIREMENTS = [
+    "dagger-io==0.4.0",
+    "asyncer",
 ]
 
 setup(
@@ -30,11 +54,14 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=MAIN_REQUIREMENTS,
+    install_requires=MAIN_REQUIREMENTS + LOCAL_REQUIREMENTS,
     extras_require={
-        "tests": TEST_REQUIREMENTS,
+        "tests": QA_ENGINE_REQUIREMENTS + TEST_REQUIREMENTS,
+        "dev": QA_ENGINE_REQUIREMENTS + TEST_REQUIREMENTS + DEV_REQUIREMENTS,
+        "pipelines": MAIN_REQUIREMENTS + PIPELINES_REQUIREMENTS,
+        "qa_engine": MAIN_REQUIREMENTS + QA_ENGINE_REQUIREMENTS,
     },
-    python_requires=">=3.9",
+    # python_requires=">=3.10", TODO upgrade all our CI packages + GHA env to 3.10
     package_data={"ci_connector_ops.qa_engine": ["connector_adoption.sql"]},
     entry_points={
         "console_scripts": [
@@ -44,6 +71,7 @@ setup(
             "allowed-hosts-checks = ci_connector_ops.allowed_hosts_checks:check_allowed_hosts",
             "run-qa-engine = ci_connector_ops.qa_engine.main:main",
             "run-qa-checks = ci_connector_ops.qa_checks:run_qa_checks",
+            "connectors-ci = ci_connector_ops.pipelines.connectors_ci:connectors_ci",
         ],
     },
 )
