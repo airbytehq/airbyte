@@ -21,18 +21,22 @@ def list_streams() -> AirbyteMessage:
 
 
 def read_stream(source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog) -> AirbyteMessage:
-    command_config = config["__test_read_config"]
-    max_pages_per_slice = command_config["max_pages_per_slice"]
-    max_slices = command_config["max_slices"]
-    max_records = command_config["max_records"]
-    handler = MessageGrouper(max_pages_per_slice, max_slices)
-    stream_name = configured_catalog.streams[0].stream  # The connector builder only supports a single stream
-    stream_read = handler.get_message_groups(source, config, configured_catalog, max_records)
-    return AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(
-        data=dataclasses.asdict(stream_read),
-        stream=stream_name,
-        emitted_at=_emitted_at()
-    ))
+    try:
+        command_config = config["__test_read_config"]
+        max_pages_per_slice = command_config["max_pages_per_slice"]
+        max_slices = command_config["max_slices"]
+        max_records = command_config["max_records"]
+        handler = MessageGrouper(max_pages_per_slice, max_slices)
+        stream_name = configured_catalog.streams[0].stream  # The connector builder only supports a single stream
+        stream_read = handler.get_message_groups(source, config, configured_catalog, max_records)
+        return AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(
+            data=dataclasses.asdict(stream_read),
+            stream=stream_name,
+            emitted_at=_emitted_at()
+        ))
+    except Exception as exc:
+        error = AirbyteTracedException.from_exception(exc, message=f"Error reading stream with catalog={configured_catalog}")
+        return error.as_airbyte_message()
 
 
 def resolve_manifest(source: ManifestDeclarativeSource) -> AirbyteMessage:
