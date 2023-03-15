@@ -30,10 +30,12 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -66,13 +68,13 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     this.sqlOperations = sqlOperations;
   }
 
-  protected List<String> getOutputSchemas(final JsonNode config, final ConfiguredAirbyteCatalog catalog) {
+  protected Set<String> getOutputSchemas(final JsonNode config, final ConfiguredAirbyteCatalog catalog) {
     if (sqlOperations.isSchemaRequired()) {
       Preconditions.checkState(config.has(JdbcUtils.SCHEMA_KEY), "jdbc destinations must specify a schema.");
     }
     final String schemaDefaultConfigKey = sqlOperations.isSchemaRequired() ? JdbcUtils.SCHEMA_KEY : JdbcUtils.DATABASE_KEY;
     final String defaultSchemaName = namingResolver.getIdentifier(config.get(schemaDefaultConfigKey).asText());
-    List<String> outputSchemas = new ArrayList<>();
+    Set<String> outputSchemas = new HashSet<>();
     outputSchemas.add(defaultSchemaName);
     if (catalog != null) {
       catalog.getStreams().stream()
@@ -84,13 +86,14 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     return outputSchemas;
   }
 
-  protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
+  protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config, ConfiguredAirbyteCatalog catalog)
+      throws Exception {
     try {
-    final JdbcDatabase database = getDatabase(dataSource);
-    for (String outputSchema : getOutputSchemas(config, catalog)) {
-      attemptTableOperations(outputSchema, database, namingResolver, sqlOperations, false);
-    }
-    return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
+      final JdbcDatabase database = getDatabase(dataSource);
+      for (String outputSchema : getOutputSchemas(config, catalog)) {
+        attemptTableOperations(outputSchema, database, namingResolver, sqlOperations, false);
+      }
+      return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
       final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, message);

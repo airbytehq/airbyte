@@ -20,6 +20,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
@@ -44,7 +45,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     final NamingConventionTransformer nameTransformer = getNamingResolver();
     final SnowflakeInternalStagingSqlOperations snowflakeInternalStagingSqlOperations = new SnowflakeInternalStagingSqlOperations(nameTransformer);
     final JdbcDatabase database = getDatabase(dataSource);
-    for (String outputSchema : getOutputSchemas(config, catalog)) {
+    for (final String outputSchema : getOutputSchemas(config, catalog)) {
       attemptTableOperations(outputSchema, database, nameTransformer,
           snowflakeInternalStagingSqlOperations, true);
       attemptStageOperations(outputSchema, database, nameTransformer, snowflakeInternalStagingSqlOperations);
