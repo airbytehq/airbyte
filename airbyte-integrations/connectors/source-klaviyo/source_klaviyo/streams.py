@@ -88,11 +88,9 @@ class IncrementalKlaviyoStreamLatest(KlaviyoStreamLatest, ABC):
     @property
     @abstractmethod
     def cursor_field(self) -> Union[str, List[str]]:
-        """Override to return the cursor field used by this stream
-
-        e.g: an API entity might always use created_at as the cursor field. This is
+        """
+        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
         usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
         :return str: The name of the cursor field.
         """
 
@@ -112,9 +110,8 @@ class IncrementalKlaviyoStreamLatest(KlaviyoStreamLatest, ABC):
         return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """Override to determine the latest state after reading the latest record.
-
-        This typically compared the cursor_field from the latest record and
+        """
+        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
         current_stream_cursor_value = current_stream_state.get(self.cursor_field, self._start_ts)
@@ -165,10 +162,9 @@ class KlaviyoStreamV1(HttpStream, ABC):
         return custom_transform_date_rfc3339
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests.
-
-        This dict is passed to most other methods in this class to help you form headers, request bodies, query params, etc..
-
+        """
+        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
+        to most other methods in this class to help you form headers, request bodies, query params, etc..
         :param response: the most recent response from the API
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
@@ -206,11 +202,9 @@ class IncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
     @property
     @abstractmethod
     def cursor_field(self) -> Union[str, List[str]]:
-        """Override to return the cursor field used by this stream
-
-        e.g: an API entity might always use created_at as the cursor field. This is
+        """
+        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
         usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
         :return str: The name of the cursor field.
         """
 
@@ -227,12 +221,10 @@ class IncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
         return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """Override to determine the latest state after reading the latest record.
-
-        This typically compared the cursor_field from the latest record and
+        """
+        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
-
         state_ts = int(current_stream_state.get(self.cursor_field, 0))
         latest_record = latest_record.get(self.cursor_field)
 
@@ -243,10 +235,9 @@ class IncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
         return {self.cursor_field: max(latest_record, state_ts)}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests.
-
-        This dict is passed to most other methods in this class to help you form headers, request bodies, query params, etc..
-
+        """
+        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
+        to most other methods in this class to help you form headers, request bodies, query params, etc..
         :param response: the most recent response from the API
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
@@ -276,11 +267,9 @@ class ReverseIncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
     @property
     @abstractmethod
     def cursor_field(self) -> Union[str, List[str]]:
-        """Override to return the cursor field used by this stream
-
-        e.g: an API entity might always use created_at as the cursor field. This is
+        """
+        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
         usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
         :return str: The name of the cursor field.
         """
 
@@ -296,9 +285,8 @@ class ReverseIncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
         return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """Override to determine the latest state after reading the latest record.
-
-        This typically compared the cursor_field from the latest record and
+        """
+        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
 
@@ -308,10 +296,9 @@ class ReverseIncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
         return {self.cursor_field: latest_cursor.isoformat()}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests.
-
-        This dict is passed to most other methods in this class to help you form headers, request bodies, query params, etc..
-
+        """
+        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
+        to most other methods in this class to help you form headers, request bodies, query params, etc..
         :param response: the most recent response from the API
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
