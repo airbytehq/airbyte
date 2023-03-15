@@ -13,12 +13,12 @@ from .auth import TrustpilotApikeyAuthenticator
 
 
 class TrustpilotStream(HttpStream, ABC):
+    url_base = "https://api.trustpilot.com/v1/"
+
     def __init__(self, api_key: str = None, authenticator: AuthBase = None, business_unit_names: List[str] = None):
         super().__init__(authenticator=authenticator)
         self._api_key = api_key
         self._business_unit_names = business_unit_names
-
-    url_base = "https://api.trustpilot.com/v1/"
 
     @property
     def data_field(self) -> str:
@@ -65,12 +65,11 @@ class TrustpilotStream(HttpStream, ABC):
 
 
 class TrustpilotPaginagedStream(TrustpilotStream):
-    @property
-    def per_page(self) -> int:
-        """
-        How many entries shall be get per page. Suggested to use always
-        the API max. page size to avoid too many API requests."""
-        return 20
+    per_page: int = 20
+    """
+    How many entries shall be get per page. Suggested to use always
+    the API max. page size to avoid too many API requests.
+    """
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
                        next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
