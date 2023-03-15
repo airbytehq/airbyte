@@ -112,18 +112,18 @@ class Data(BaseModel):
     githubIssueLabel: str
     sourceType: str
     releaseStage: ReleaseStage
-    catalogs: List[ConnectorMetadataDefinition]
+    catalogs: List[ConnectorMetadataDefinitionV0]
     allowedHosts: Optional[AllowedHosts] = None
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
     suggestedStreams: Optional[SuggestedStreams] = None
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
 
 
-class ConnectorMetadataDefinition(BaseModel):
+class ConnectorMetadataDefinitionV0(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    metadataSpecVersion: float
+    metadataSpecVersion: str
     data: Data
 
 
