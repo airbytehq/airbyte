@@ -289,6 +289,8 @@ jobs:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
       - name: Update CDK version
         run: echo ${{needs.bump-version.outputs.new_cdk_version}} > oss/airbyte-connector-builder-server/CDK_VERSION
+      - name: Update CDK version for connector-atelier-server
+        run: echo ${{needs.bump-version.outputs.new_cdk_version}} > oss/airbyte-connector-atelier-server/src/main/resources/CDK_VERSION
       - name: Create Pull Request
         id: create-pull-request
         uses: peter-evans/create-pull-request@v4
