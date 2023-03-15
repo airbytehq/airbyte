@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 public class MySqlCdcProperties {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlCdcProperties.class);
-  private static final int HEARTBEAT_FREQUENCY_SEC = 10;
+  private static final Duration HEARTBEAT_FREQUENCY = Duration.ofSeconds(10);
 
   static Properties getDebeziumProperties(final JdbcDatabase database) {
     final JsonNode sourceConfig = database.getSourceConfig();
@@ -59,7 +59,7 @@ public class MySqlCdcProperties {
     props.setProperty("converters", "boolean, datetime");
     props.setProperty("boolean.type", "io.airbyte.integrations.debezium.internals.CustomMySQLTinyIntOneToBooleanConverter");
     props.setProperty("datetime.type", "io.airbyte.integrations.debezium.internals.MySQLDateTimeConverter");
-    props.setProperty("heartbeat.interval.ms", Long.toString(Duration.ofSeconds(HEARTBEAT_FREQUENCY_SEC).toMillis()));
+    props.setProperty("heartbeat.interval.ms", Long.toString(HEARTBEAT_FREQUENCY.toMillis()));
 
     // For CDC mode, the user cannot provide timezone arguments as JDBC parameters - they are
     // specifically defined in the replication_method
