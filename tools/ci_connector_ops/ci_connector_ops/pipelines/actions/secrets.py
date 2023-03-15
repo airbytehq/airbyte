@@ -27,7 +27,7 @@ async def download(context: ConnectorTestContext, gcp_gsm_env_variable_name: str
         Directory: A directory with the downloaded secrets.
     """
     gsm_secret = context.dagger_client.host().env_variable(gcp_gsm_env_variable_name).secret()
-    secrets_path = "/" + str(context.connector.code_directory) + "/secrets"
+    secrets_path = f"/{context.connector.code_directory}/secrets"
 
     ci_credentials = await environments.with_ci_credentials(context, gsm_secret)
     return (
@@ -51,7 +51,7 @@ async def upload(context: ConnectorTestContext, gcp_gsm_env_variable_name: str =
         int: The exit code of the ci-credentials update-secrets command.
     """
     gsm_secret = context.dagger_client.host().env_variable(gcp_gsm_env_variable_name).secret()
-    secrets_path = "/" + str(context.connector.code_directory) + "/secrets"
+    secrets_path = f"/{context.connector.code_directory}/secrets"
 
     ci_credentials = await environments.with_ci_credentials(context, gsm_secret)
 
