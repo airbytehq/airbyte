@@ -22,7 +22,9 @@ DEFAULT_PAGE_SIZE = 100
 
 
 class GithubStream(HttpStream, ABC):
-    url_base = "https://api.github.com/"
+    @property
+    def url_base(self) -> str:
+        return f"https://{self.api_url}/"
 
     primary_key = "id"
 
@@ -237,8 +239,9 @@ class SemiIncrementalMixin:
     # supporting this.
     is_sorted = False
 
-    def __init__(self, start_date: str = "", **kwargs):
+    def __init__(self, api_url: str, **kwargs, start_date: str = "", **kwargs):
         super().__init__(**kwargs)
+        self.api_url = api_url
         self._start_date = start_date
         self._starting_point_cache = {}
 
