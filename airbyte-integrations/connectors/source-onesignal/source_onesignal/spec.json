@@ -23,16 +23,19 @@
           "properties": {
             "app_name": {
               "type": "string",
-              "title": "OneSignal App Name"
+              "title": "OneSignal App Name",
+              "order": 0
             },
             "app_id": {
               "type": "string",
               "title": "OneSignal App ID",
+              "order": 1,
               "airbyte_secret": true
             },
             "app_api_key": {
               "type": "string",
               "title": "REST API Key",
+              "order": 2,
               "airbyte_secret": true
             }
           },
