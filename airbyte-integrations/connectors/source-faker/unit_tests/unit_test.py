@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import jsonschema
@@ -19,13 +19,16 @@ class MockLogger:
         print(b)
         return None
 
+    def isEnabledFor(a, b, **kwargs):
+        return False
+
 
 logger = MockLogger()
 
 
 def schemas_are_valid():
     source = SourceFaker()
-    config = {"count": 1}
+    config = {"count": 1, "parallelism": 1}
     catalog = source.discover(None, config)
     catalog = AirbyteMessage(type=Type.CATALOG, catalog=catalog).dict(exclude_unset=True)
     schemas = [stream["json_schema"] for stream in catalog["catalog"]["streams"]]
@@ -36,7 +39,7 @@ def schemas_are_valid():
 
 def test_source_streams():
     source = SourceFaker()
-    config = {"count": 1}
+    config = {"count": 1, "parallelism": 1}
     catalog = source.discover(None, config)
     catalog = AirbyteMessage(type=Type.CATALOG, catalog=catalog).dict(exclude_unset=True)
     schemas = [stream["json_schema"] for stream in catalog["catalog"]["streams"]]
@@ -64,7 +67,7 @@ def test_source_streams():
 
 def test_read_small_random_data():
     source = SourceFaker()
-    config = {"count": 10}
+    config = {"count": 10, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             {
@@ -98,7 +101,7 @@ def test_read_small_random_data():
 
 def test_no_read_limit_hit():
     source = SourceFaker()
-    config = {"count": 10}
+    config = {"count": 10, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             {
@@ -128,7 +131,7 @@ def test_no_read_limit_hit():
 
 def test_read_big_random_data():
     source = SourceFaker()
-    config = {"count": 1000, "records_per_slice": 100, "records_per_sync": 1000}
+    config = {"count": 1000, "records_per_slice": 100, "records_per_sync": 1000, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             {
@@ -163,7 +166,7 @@ def test_read_big_random_data():
 
 def test_with_purchases():
     source = SourceFaker()
-    config = {"count": 1000, "records_per_sync": 1000}
+    config = {"count": 1000, "records_per_sync": 1000, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             {
@@ -205,7 +208,7 @@ def test_with_purchases():
 
 def test_sync_ends_with_limit():
     source = SourceFaker()
-    config = {"count": 100, "records_per_sync": 5}
+    config = {"count": 100, "records_per_sync": 5, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             {
@@ -239,7 +242,7 @@ def test_read_with_seed():
     """
 
     source = SourceFaker()
-    config = {"count": 1, "seed": 100}
+    config = {"count": 1, "seed": 100, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             {
@@ -253,14 +256,14 @@ def test_read_with_seed():
     iterator = source.read(logger, config, catalog, state)
 
     records = [row for row in iterator if row.type is Type.RECORD]
-    assert records[0].record.data["occupation"] == "Roadworker"
-    assert records[0].record.data["email"] == "reproduce1856@outlook.com"
+    assert records[0].record.data["occupation"] == "Cartoonist"
+    assert records[0].record.data["email"] == "reflect1958+1@yahoo.com"
 
 
 def test_ensure_no_purchases_without_users():
     with pytest.raises(ValueError):
         source = SourceFaker()
-        config = {"count": 100}
+        config = {"count": 100, "parallelism": 1}
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 {"stream": {"name": "purchases", "json_schema": {}}, "sync_mode": "incremental", "destination_sync_mode": "overwrite"},

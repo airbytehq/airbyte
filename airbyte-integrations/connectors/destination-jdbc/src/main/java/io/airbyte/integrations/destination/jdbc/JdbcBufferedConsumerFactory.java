@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc;
@@ -18,13 +18,13 @@ import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunct
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -175,7 +175,7 @@ public class JdbcBufferedConsumerFactory {
             case APPEND_DEDUP -> {}
             default -> throw new IllegalStateException("Unrecognized sync mode: " + writeConfig.getSyncMode());
           }
-          queryList.add(sqlOperations.copyTableQuery(database, schemaName, srcTableName, dstTableName));
+          queryList.add(sqlOperations.insertTableQuery(database, schemaName, srcTableName, dstTableName));
         }
 
         LOGGER.info("Executing finalization of tables.");

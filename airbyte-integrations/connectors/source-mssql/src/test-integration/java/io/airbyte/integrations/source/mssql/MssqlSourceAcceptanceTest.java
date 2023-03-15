@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -11,19 +11,22 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Map;
 import org.jooq.DSLContext;
+import org.junit.jupiter.api.AfterAll;
 import org.testcontainers.containers.MSSQLServerContainer;
 
 public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
@@ -33,10 +36,20 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   protected static MSSQLServerContainer<?> db;
   protected JsonNode config;
 
+  @AfterAll
+  public static void closeContainer() {
+    if (db != null) {
+      db.close();
+      db.stop();
+    }
+  }
+
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
-    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
-    db.start();
+    if (db == null) {
+      db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
+      db.start();
+    }
 
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, db.getHost())
@@ -62,13 +75,11 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
     config = Jsons.clone(configWithoutDbName);
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
+    ((ObjectNode) config).put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "unencrypted")));
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    db.stop();
-    db.close();
-  }
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {}
 
   @Override
   protected String getImageName() {
@@ -101,14 +112,14 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private static DSLContext getDslContext(final JsonNode config) {
-    return DSLContextFactory.create(
+    return DSLContextFactory.create(DataSourceFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt()),
-        null);
+        Map.of("encrypt", "false")), null);
   }
 
   private static Database getDatabase(final DSLContext dslContext) {

@@ -14,13 +14,13 @@ dependencies {
 
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:connectors:source-mysql')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
 
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     testImplementation project(':airbyte-test-utils')
-    testImplementation 'uk.org.webcompere:system-stubs-jupiter:2.0.1'
+    testImplementation libs.junit.jupiter.system.stubs
 
     testImplementation libs.connectors.testcontainers.mysql
 

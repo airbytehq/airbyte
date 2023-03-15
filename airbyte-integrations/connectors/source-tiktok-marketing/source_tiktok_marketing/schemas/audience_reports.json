@@ -47,7 +47,7 @@
           "type": ["null", "string"]
         },
         "tt_app_id": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         },
         "tt_app_name": {
           "type": ["null", "string"]
@@ -62,64 +62,64 @@
           "type": ["null", "string"]
         },
         "spend": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "cpc": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "cpm": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "impressions": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         },
         "clicks": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         },
         "ctr": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "reach": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         },
         "cost_per_1000_reached": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "conversion": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         },
         "cost_per_conversion": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "conversion_rate": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "real_time_conversion": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         },
         "real_time_cost_per_conversion": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "real_time_conversion_rate": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "result": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "cost_per_result": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "result_rate": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "real_time_result": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "real_time_cost_per_result": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "real_time_result_rate": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         }
       }
     },

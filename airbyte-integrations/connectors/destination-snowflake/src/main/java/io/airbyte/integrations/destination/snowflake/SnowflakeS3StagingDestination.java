@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -19,10 +19,10 @@ import io.airbyte.integrations.destination.s3.EncryptionConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeS3StagingDestination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeS3StagingDestination.class);
-  private String airbyteEnvironment;
+  private final String airbyteEnvironment;
 
   public SnowflakeS3StagingDestination(final String airbyteEnvironment) {
     this(new SnowflakeSQLNameTransformer(), airbyteEnvironment);
@@ -90,7 +90,14 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
     final String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID());
     final String stageName = sqlOperations.getStageName(outputSchema, outputTableName);
     sqlOperations.createStageIfNotExists(database, stageName);
-    sqlOperations.dropStageIfExists(database, stageName);
+
+    // try to make test write to make sure we have required role
+    try {
+      sqlOperations.attemptWriteToStage(outputSchema, stageName, database);
+    } finally {
+      // drop created tmp stage
+      sqlOperations.dropStageIfExists(database, stageName);
+    }
   }
 
   @Override

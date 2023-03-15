@@ -43,7 +43,7 @@
     },
     "creator": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]
@@ -55,7 +55,7 @@
     },
     "owner": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]
@@ -67,7 +67,7 @@
     },
     "bounced_stage": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]
@@ -79,7 +79,7 @@
     },
     "replied_stage": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]
@@ -91,7 +91,7 @@
     },
     "added_stage": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]
@@ -103,7 +103,7 @@
     },
     "finished_stage": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]

@@ -1,4 +1,4 @@
-# HTTP Request (Graveyarded)
+# HTTP Request
 
 :::caution
 

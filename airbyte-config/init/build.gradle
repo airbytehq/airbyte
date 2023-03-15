@@ -3,28 +3,25 @@ plugins {
 }
 
 dependencies {
-    implementation 'commons-cli:commons-cli:1.4'
+    annotationProcessor libs.bundles.micronaut.annotation.processor
+    api libs.bundles.micronaut.annotation
 
+    implementation 'commons-cli:commons-cli:1.4'
     implementation project(':airbyte-config:config-models')
-    implementation project(':airbyte-config:config-persistence')
-    implementation project(':airbyte-persistence:job-persistence')
-    implementation project(':airbyte-protocol:protocol-models')
-    implementation project(':airbyte-commons-docker')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-json-validation')
+    implementation libs.lombok
+    implementation libs.micronaut.cache.caffeine
 
     testImplementation project(':airbyte-test-utils')
     testImplementation 'com.squareup.okhttp3:mockwebserver:4.9.1'
 }
 
-task copyScripts(type: Copy) {
-    dependsOn copyDocker
-
-    from('scripts')
-    into 'build/docker/bin/scripts'
-}
-
-tasks.named("buildDockerImage") {
-    dependsOn copyScripts
-}
-
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
+
+task validateIcons(type: JavaExec, dependsOn: [compileJava]) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'io.airbyte.config.init.IconValidationTask'
+}
+
+validateIcons.shouldRunAfter processResources

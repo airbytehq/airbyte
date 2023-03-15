@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -52,6 +52,14 @@ public class PostgresUtils {
         && config.get("replication_method").hasNonNull("publication");
     LOGGER.info("using CDC: {}", isCdc);
     return isCdc;
+  }
+
+  public static boolean shouldFlushAfterSync(final JsonNode config) {
+    final boolean shouldFlushAfterSync = config.hasNonNull("replication_method")
+        && config.get("replication_method").hasNonNull("lsn_commit_behaviour")
+        && config.get("replication_method").get("lsn_commit_behaviour").asText().equals("After loading Data in the destination");
+    LOGGER.info("Should flush after sync: {}", shouldFlushAfterSync);
+    return shouldFlushAfterSync;
   }
 
   public static Optional<Integer> getFirstRecordWaitSeconds(final JsonNode config) {

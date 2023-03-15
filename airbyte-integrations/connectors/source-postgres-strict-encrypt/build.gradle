@@ -14,7 +14,7 @@ dependencies {
 
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:connectors:source-postgres')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     // todo (cgardens): why are these needed?
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-integrations:connectors:source-relational-db')

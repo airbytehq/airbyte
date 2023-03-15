@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redshift.operations;
@@ -14,7 +14,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -112,7 +112,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
 
     // check VARCHAR limits for VARCHAR fields within the SUPER object, if overall object is valid
     if (isValid) {
-      final Map<String, Object> dataMap = Jsons.flatten(data);
+      final Map<String, Object> dataMap = Jsons.flatten(data, true);
       for (final Object value : dataMap.values()) {
         if (value instanceof String stringValue) {
           final int stringDataSize = stringValue.getBytes(StandardCharsets.UTF_8).length;

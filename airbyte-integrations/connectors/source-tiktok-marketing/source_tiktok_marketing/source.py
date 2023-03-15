@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, List, Mapping, Tuple
@@ -61,15 +61,20 @@ class SourceTiktokMarketing(AbstractSource):
         """Converts an input configure to stream arguments"""
 
         credentials = config.get("credentials")
+
         if credentials:
             # used for new config format
+            is_sandbox = credentials["auth_type"] == "sandbox_access_token"
             access_token = credentials["access_token"]
             secret = credentials.get("secret")
             app_id = int(credentials.get("app_id", 0))
             advertiser_id = int(credentials.get("advertiser_id", 0))
         else:
+            # old config only has advertiser id in environment object
+            # if there is a secret it is a prod config
             access_token = config["access_token"]
             secret = config.get("environment", {}).get("secret")
+            is_sandbox = secret is None
             app_id = int(config.get("environment", {}).get("app_id", 0))
             advertiser_id = int(config.get("environment", {}).get("advertiser_id", 0))
 
@@ -81,6 +86,7 @@ class SourceTiktokMarketing(AbstractSource):
             "app_id": app_id,
             "secret": secret,
             "access_token": access_token,
+            "is_sandbox": is_sandbox,
         }
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
@@ -88,7 +94,9 @@ class SourceTiktokMarketing(AbstractSource):
         Tests if the input configuration can be used to successfully connect to the integration
         """
         try:
-            next(Advertisers(**self._prepare_stream_args(config)).read_records(SyncMode.full_refresh))
+            advertisers = Advertisers(**self._prepare_stream_args(config))
+            for slice_ in advertisers.stream_slices():
+                next(advertisers.read_records(SyncMode.full_refresh, stream_slice=slice_))
         except Exception as err:
             return False, err
         return True, None
@@ -96,7 +104,7 @@ class SourceTiktokMarketing(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         args = self._prepare_stream_args(config)
 
-        is_production = not (args["advertiser_id"])
+        is_production = not (args["is_sandbox"])
 
         report_granularity = config.get("report_granularity")
 
@@ -158,18 +166,23 @@ class SourceTiktokMarketing(AbstractSource):
 
             # 2. Basic report streams:
             reports = [AdsReports, AdGroupsReports, CampaignsReports]
+            audience_reports = [AdsAudienceReports, AdGroupAudienceReports, CampaignsAudienceReportsByCountry]
             if is_production:
                 # 2.1 streams work only in prod env
-                reports.extend([AdvertisersReports, AdvertisersAudienceReports])
+                reports.append(AdvertisersReports)
+                audience_reports.append(AdvertisersAudienceReports)
 
             for Report in reports:
                 for Granularity in [Hourly, Daily, Lifetime]:
                     streams.append(get_report_stream(Report, Granularity)(**args))
 
             # 3. Audience report streams:
-            # Audience report supports lifetime metrics only at the ADVERTISER level (see 2.1).
-            for Report in [AdsAudienceReports, AdGroupAudienceReports, CampaignsAudienceReportsByCountry]:
-                for Granularity in [Hourly, Daily]:
-                    streams.append(get_report_stream(Report, Granularity)(**args))
+            for Report in audience_reports:
+                # As per TikTok's documentation, audience reports only support daily (not hourly) time dimension for metrics
+                streams.append(get_report_stream(Report, Daily)(**args))
+
+                # Audience report supports lifetime metrics only at the ADVERTISER level (see 2.1).
+                if Report == AdvertisersAudienceReports:
+                    streams.append(get_report_stream(Report, Lifetime)(**args))
 
         return streams

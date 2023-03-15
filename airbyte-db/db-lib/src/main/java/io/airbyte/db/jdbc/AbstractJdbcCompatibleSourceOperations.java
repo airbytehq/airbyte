@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
@@ -15,7 +15,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
 import java.math.BigDecimal;
-import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,12 +23,12 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.chrono.IsoEra;
+import java.time.format.DateTimeParseException;
 import java.util.Collections;
-import java.util.List;
-import java.util.StringJoiner;
 import javax.xml.bind.DatatypeConverter;
 
 /**
@@ -58,7 +57,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
       }
 
       // convert to java types that will convert into reasonable json.
-      setJsonField(queryContext, i, jsonNode);
+      copyToJsonField(queryContext, i, jsonNode);
     }
 
     return jsonNode;
@@ -124,11 +123,11 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DataTypeUtils.toISO8601String(resultSet.getDate(index)));
+    node.put(columnName, DateTimeConverter.convertToDate(getObject(resultSet, index, LocalDate.class)));
   }
 
   protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DataTypeUtils.toISO8601String(resultSet.getTime(index)));
+    node.put(columnName, DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime.class)));
   }
 
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
@@ -146,7 +145,11 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   protected void setTime(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    setTimestamp(preparedStatement, parameterIndex, value);
+    try {
+      preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      setTimestamp(preparedStatement, parameterIndex, value);
+    }
   }
 
   protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
@@ -178,6 +181,14 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
 
   protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     try {
+      preparedStatement.setObject(parameterIndex, LocalDate.parse(value));
+    } catch (final DateTimeParseException e) {
+      setDateAsTimestamp(preparedStatement, parameterIndex, value);
+    }
+  }
+
+  private void setDateAsTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    try {
       final Timestamp from = Timestamp.from(DataTypeUtils.getDateFormat().parse(value).toInstant());
       preparedStatement.setDate(parameterIndex, new Date(from.getTime()));
     } catch (final ParseException e) {
@@ -206,7 +217,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   protected void setBigInteger(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    preparedStatement.setLong(parameterIndex, Long.parseLong(value));
+    preparedStatement.setLong(parameterIndex, new BigDecimal(value).toBigInteger().longValue());
   }
 
   protected void setDouble(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
@@ -227,35 +238,6 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
 
   protected void setBinary(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     preparedStatement.setBytes(parameterIndex, DatatypeConverter.parseHexBinary(value));
-  }
-
-  @Override
-  public String enquoteIdentifierList(final Connection connection, final List<String> identifiers) throws SQLException {
-    final StringJoiner joiner = new StringJoiner(",");
-    for (final String col : identifiers) {
-      final String s = enquoteIdentifier(connection, col);
-      joiner.add(s);
-    }
-    return joiner.toString();
-  }
-
-  @Override
-  public String enquoteIdentifier(final Connection connection, final String identifier) throws SQLException {
-    final String identifierQuoteString = connection.getMetaData().getIdentifierQuoteString();
-
-    return identifierQuoteString + identifier + identifierQuoteString;
-  }
-
-  @Override
-  public String getFullyQualifiedTableName(final String schemaName, final String tableName) {
-    return JdbcUtils.getFullyQualifiedTableName(schemaName, tableName);
-  }
-
-  @Override
-  public String getFullyQualifiedTableNameWithQuoting(final Connection connection, final String schemaName, final String tableName)
-      throws SQLException {
-    final String quotedTableName = enquoteIdentifier(connection, tableName);
-    return schemaName != null ? enquoteIdentifier(connection, schemaName) + "." + quotedTableName : quotedTableName;
   }
 
   protected <ObjectType> ObjectType getObject(final ResultSet resultSet, final int index, final Class<ObjectType> clazz) throws SQLException {

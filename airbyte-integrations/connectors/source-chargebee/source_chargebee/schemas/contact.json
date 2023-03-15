@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "Customer",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": ["string", "null"]
+    },
+    "enabled": {
+      "type": ["boolean", "null"]
+    },
+    "first_name": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "label": {
+      "type": ["string", "null"]
+    },
+    "last_name": {
+      "type": ["string", "null"]
+    },
+    "object": {
+      "type": ["string", "null"]
+    },
+    "send_account_email": {
+      "type": ["boolean", "null"]
+    },
+    "send_billing_email": {
+      "type": ["boolean", "null"]
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -14,11 +14,11 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.util.HostPortResolver;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.List;
 import java.util.Set;
 import org.jooq.SQLDialect;
@@ -30,7 +30,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   private static final String SCHEMA_NAME = "test";
   private static final String SLOT_NAME_BASE = "debezium_slot";
   private static final String PUBLICATION = "publication";
-  private static final int INITIAL_WAITING_SECONDS = 5;
+  private static final int INITIAL_WAITING_SECONDS = 15;
   private JsonNode stateAfterFirstSync;
 
   @Override
@@ -147,6 +147,28 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
 
   public boolean testCatalog() {
     return true;
+  }
+
+  @Override
+  protected void addMoneyTest() {
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("money")
+            .airbyteType(JsonSchemaType.NUMBER)
+            .addInsertValues(
+                "null",
+                "'999.99'", "'1,001.01'", "'-1,000'",
+                "'$999.99'", "'$1001.01'", "'-$1,000'"
+            // max values for Money type: "-92233720368547758.08", "92233720368547758.07"
+            // Debezium has wrong parsing for values more than 999999999999999 and less than -999999999999999
+            // https://github.com/airbytehq/airbyte/issues/7338
+            /* "'-92233720368547758.08'", "'92233720368547758.07'" */)
+            .addExpectedValues(
+                null,
+                "999.99", "1001.01", "-1000.00",
+                "999.99", "1001.01", "-1000.00"
+            /* "-92233720368547758.08", "92233720368547758.07" */)
+            .build());
   }
 
   @Override

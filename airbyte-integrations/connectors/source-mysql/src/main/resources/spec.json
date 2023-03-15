@@ -56,13 +56,13 @@
       },
       "ssl_mode": {
         "title": "SSL modes",
-        "description": "SSL connection modes. <li><b>preferred</b> - Automatically attempt SSL connection. If the MySQL server does not support SSL, continue with a regular connection.</li><li><b>required</b> - Always connect with SSL. If the MySQL server doesn’t support SSL, the connection will not be established. Certificate Authority (CA) and Hostname are not verified.</li><li><b>verify-ca</b> - Always connect with SSL. Verifies CA, but allows connection even if Hostname does not match.</li><li><b>Verify Identity</b> - Always connect with SSL. Verify both CA and Hostname.</li></ul>Read more <a href=\"https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-using-ssl.html\"> in the docs</a>.",
+        "description": "SSL connection modes. Read more <a href=\"https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-using-ssl.html\"> in the docs</a>.",
         "type": "object",
         "order": 7,
         "oneOf": [
           {
             "title": "preferred",
-            "description": "Preferred SSL mode.",
+            "description": "Automatically attempt SSL connection. If the MySQL server does not support SSL, continue with a regular connection.",
             "required": ["mode"],
             "properties": {
               "mode": {
@@ -74,7 +74,7 @@
           },
           {
             "title": "required",
-            "description": "Require SSL mode.",
+            "description": "Always connect with SSL. If the MySQL server doesn’t support SSL, the connection will not be established. Certificate Authority (CA) and Hostname are not verified.",
             "required": ["mode"],
             "properties": {
               "mode": {
@@ -86,7 +86,7 @@
           },
           {
             "title": "Verify CA",
-            "description": "Verify CA SSL mode.",
+            "description": "Always connect with SSL. Verifies CA, but allows connection even if Hostname does not match.",
             "required": ["mode", "ca_certificate"],
             "properties": {
               "mode": {
@@ -129,7 +129,7 @@
           },
           {
             "title": "Verify Identity",
-            "description": "Verify-full SSL mode.",
+            "description": "Always connect with SSL. Verify both CA and Hostname.",
             "required": ["mode", "ca_certificate"],
             "properties": {
               "mode": {

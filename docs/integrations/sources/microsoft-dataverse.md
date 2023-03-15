@@ -14,7 +14,7 @@ This source will automatically discover the schema of the Entities of your Datav
 ### Data type mapping
 
 | Integration Type   | Airbyte Type              | Notes                 |
-|:-------------------|:--------------------------|:----------------------|
+| :----------------- | :------------------------ | :-------------------- |
 | `String`           | `string`                  |                       |
 | `UniqueIdentifier` | `string`                  |                       |
 | `DateTime`         | `timestamp with timezone` |                       |
@@ -33,7 +33,7 @@ Other types are defined as `string`.
 ### Features
 
 | Feature                       | Supported?\(Yes/No\) | Notes                                                      |
-|:------------------------------|:---------------------|:-----------------------------------------------------------|
+| :---------------------------- | :------------------- | :--------------------------------------------------------- |
 | Full Refresh Sync             | Yes                  |                                                            |
 | Incremental Sync              | Yes                  |                                                            |
 | CDC                           | Yes                  | Not all entities support it. Deleted data only have the ID |
@@ -45,9 +45,9 @@ Other types are defined as `string`.
 
 ### Requirements
 
-* Application \(client\) ID
-* Directory \(tenant\) ID
-* Client secrets
+- Application \(client\) ID
+- Directory \(tenant\) ID
+- Client secrets
 
 ### Setup guide
 
@@ -57,8 +57,8 @@ https://learn.microsoft.com/en-us/power-apps/developer/data-platform/authenticat
 The procedure to generate the credentials and setup the necessary permissions is well described in this post from Magnetism blog:
 https://blog.magnetismsolutions.com/blog/paulnieuwelaar/2021/9/21/setting-up-an-application-user-in-dynamics-365
 
-
 ## CHANGELOG
 
-| Version | Date | Pull Request | Subject |
-|:--------|:-----|:-------------|:--------|
+| Version | Date       | Pull Request                                             | Subject                                         |
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
+| 0.1.0   | 2022-11-14 | [18646](https://github.com/airbytehq/airbyte/pull/18646) | 🎉 New Source: Microsoft Dataverse [python cdk] |

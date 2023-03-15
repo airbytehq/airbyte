@@ -75,7 +75,30 @@
       "type": ["null", "string"]
     },
     "extended_credit_invoice_group": {
-      "type": ["null", "number"]
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "auto_enroll": {
+          "type": ["null", "boolean"]
+        },
+        "customer_po_number": {
+          "type": ["null", "string"]
+        },
+        "email": {
+          "type": ["null", "string"]
+        },
+        "emails": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "failed_delivery_checks": {
       "type": ["null", "array"],

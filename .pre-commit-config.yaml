@@ -6,7 +6,8 @@ repos:
     rev: v0.8.8
     hooks:
       - id: licenseheaders
-        args: ["--tmpl=LICENSE_SHORT", "--ext=py", "-f"]
+        args:
+          ["--tmpl=LICENSE_SHORT", "--ext=py", "-x=**/models/__init__.py", "-f"]
   - repo: https://github.com/psf/black
     rev: 22.3.0
     hooks:

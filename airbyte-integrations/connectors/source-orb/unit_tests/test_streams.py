@@ -1,9 +1,9 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
-from source_orb.source import CreditsLedgerEntries, OrbStream
+from source_orb.source import CreditsLedgerEntries, OrbStream, SubscriptionUsage
 
 
 @pytest.fixture
@@ -70,3 +70,16 @@ def test_credit_ledger_entries_schema(patch_base_class, mocker, event_properties
     else:
         for property_key in event_properties_keys:
             assert property_key in json_schema["properties"]["event"]["properties"]["properties"]["properties"]
+
+
+@pytest.mark.parametrize("group_by_key", ["foo-key", None])
+def test_subscription_usage_schema(patch_base_class, mocker, group_by_key):
+    stream = SubscriptionUsage(start_date="2022-01-01T00:00:00Z", subscription_usage_grouping_key=group_by_key)
+    json_schema = stream.get_json_schema()
+
+    if group_by_key is None:
+        # no additional key added to schema
+        assert len(json_schema["properties"]) == 6
+    else:
+        assert len(json_schema["properties"]) == 7
+        assert group_by_key in json_schema["properties"]

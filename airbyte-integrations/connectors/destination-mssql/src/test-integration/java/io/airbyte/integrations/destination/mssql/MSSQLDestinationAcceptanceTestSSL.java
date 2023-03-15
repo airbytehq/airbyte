@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql;
@@ -14,7 +14,7 @@ import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.integrations.util.HostPortResolver;
@@ -32,7 +32,7 @@ import org.testcontainers.utility.DockerImageName;
 public class MSSQLDestinationAcceptanceTestSSL extends JdbcDestinationAcceptanceTest {
 
   private static MSSQLServerContainer<?> db;
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
   private JsonNode configWithoutDbName;
   private JsonNode config;
   private DSLContext dslContext;
@@ -40,16 +40,6 @@ public class MSSQLDestinationAcceptanceTestSSL extends JdbcDestinationAcceptance
   @Override
   protected String getImageName() {
     return "airbyte/destination-mssql:dev";
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
-    return true;
   }
 
   private JsonNode getConfig(final MSSQLServerContainer<?> db) {
@@ -103,7 +93,7 @@ public class MSSQLDestinationAcceptanceTestSSL extends JdbcDestinationAcceptance
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
-    // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
+    // Temporarily disabling the behavior of the StandardNameTransformer, see (issue #1785) so we don't
     // use quoted names
     // if (!tableName.startsWith("\"")) {
     // // Currently, Normalization always quote tables identifiers

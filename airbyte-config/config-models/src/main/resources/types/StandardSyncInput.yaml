@@ -6,7 +6,9 @@ description: job sync config
 type: object
 additionalProperties: false
 required:
+  - sourceId
   - sourceConfiguration
+  - destinationId
   - destinationConfiguration
   - catalog
 properties:
@@ -19,6 +21,14 @@ properties:
   prefix:
     description: Prefix that will be prepended to the name of each stream when it is written to the destination.
     type: string
+  sourceId:
+    description: Actor ID for the source used in the sync - this is used to update the actor configuration when requested.
+    type: string
+    format: uuid
+  destinationId:
+    description: Actor ID for the destination used in the sync - this is used to update the actor configuration when requested.
+    type: string
+    format: uuid
   sourceConfiguration:
     description: Integration specific blob. Must be a valid JSON string.
     type: object
@@ -56,3 +66,11 @@ properties:
     description: optional resource requirements to use in dest container - this is used instead of `resourceRequirements` for the dest container
     type: object
     "$ref": ResourceRequirements.yaml
+  workspaceId:
+    description: The id of the workspace associated with this sync
+    type: string
+    format: uuid
+  connectionId:
+    description: The id of the connection associated with this sync
+    type: string
+    format: uuid

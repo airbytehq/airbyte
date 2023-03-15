@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
@@ -11,11 +11,11 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.destination.s3.avro.JsonSchemaType;
 import io.airbyte.integrations.standardtest.destination.argproviders.NumberDataTypeTestArgumentProvider;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -84,7 +84,7 @@ public abstract class S3AvroParquetDestinationAcceptanceTest extends S3Destinati
   }
 
   private Set<Type> getExpectedSchemaType(JsonNode fieldDefinition) {
-    final JsonNode typeProperty = fieldDefinition.get("type");
+    final JsonNode typeProperty = fieldDefinition.get("type") == null ? fieldDefinition.get("$ref") : fieldDefinition.get("type");
     final JsonNode airbyteTypeProperty = fieldDefinition.get("airbyte_type");
     final String airbyteTypePropertyText = airbyteTypeProperty == null ? null : airbyteTypeProperty.asText();
     return Arrays.stream(JsonSchemaType.values())
