@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "GitHub Source Spec",
     "type": "object",
-    "required": ["api_url", "start_date", "repository"],
+    "required": ["start_date", "repository"],
     "additionalProperties": true,
     "properties": {
       "credentials": {
@@ -93,7 +93,7 @@
     "examples": ["api.github.com"],
     "title": "API URL",
     "default": "api.github.com",
-    "description": "Please enter your basic URL from Github.",
+    "description": "Please enter your self-hosted URL from Github.",
     "order": 1
   },
   "advanced_auth": {
