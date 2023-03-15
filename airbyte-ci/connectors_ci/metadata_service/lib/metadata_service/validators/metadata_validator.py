@@ -18,5 +18,3 @@ def validate_metadata_file(file_path):
             click.echo(f"{file_path} is not a valid ConnectorMetadataDefinitionV0 YAML file.")
             click.echo(str(e))
 
-if __name__ == '__main__':
-    validate_metadata_file()
