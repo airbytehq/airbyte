@@ -260,7 +260,9 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         .executeQuery(descQuery),
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet))
         .stream()
-        .filter(x -> x.get("TABLE_OWNER").asText().equals(schema))
+            .filter(x -> x.get("TABLE_OWNER")!=null)
+            .filter(x -> x.get("COLUMN_NAME")!=null)
+            .filter(x -> x.get("TABLE_OWNER").asText().equals(schema))
         .filter(x -> x.get("COLUMN_NAME").asText().equalsIgnoreCase(columnName))
         .findFirst();
     if (field.isPresent()) {

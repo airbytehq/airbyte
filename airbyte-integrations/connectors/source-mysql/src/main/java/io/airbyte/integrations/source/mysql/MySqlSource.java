@@ -342,7 +342,9 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     final Optional<JsonNode> field = database.bufferedResultSetQuery(conn -> conn.createStatement()
                             .executeQuery(descQuery),
                     resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet))
-            .stream().filter(x -> x.get("Field").asText().equalsIgnoreCase(columnName))
+            .stream()
+            .filter(x -> x.get("Field")!=null)
+            .filter(x -> x.get("Field").asText().equalsIgnoreCase(columnName))
             .findFirst();
     if(field.isPresent()){
       final JsonNode jsonNode = field.get();
