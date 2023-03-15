@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# This script is only used to provide a temporary but common reporting of connector tests.
+# TODO: This script is only used to provide a temporary but common reporting of connector tests.
 # Used test-command.yml 
 
 set -e
