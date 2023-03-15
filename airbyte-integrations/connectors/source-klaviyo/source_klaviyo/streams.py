@@ -49,10 +49,7 @@ class KlaviyoStreamLatest(HttpStream, ABC):
         """
         decoded_response = response.json()
 
-        links = decoded_response.get("links")
-        if not links:
-            return None
-
+        links = decoded_response.get("links", {})
         next = links.get("next")
         if not next:
             return None

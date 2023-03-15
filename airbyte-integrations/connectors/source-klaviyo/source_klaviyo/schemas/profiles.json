@@ -17,10 +17,10 @@
         "last_event_date": { "type": "string", "format": "date-time" }
       }
     },
-    "properties": { "type": "object" },
-    "subscriptions": { "type": "object" },
-    "links": { "type": "object" },
-    "relationships":  { "type": "object" },
-    "segments":  { "type": "object" }
+    "properties": { "type": ["null", "object"] },
+    "subscriptions": { "type": ["null", "object"] },
+    "links": { "type": ["null", "object"] },
+    "relationships":  { "type": ["null", "object"] },
+    "segments":  { "type": ["null", "object"] }
   }
 }
