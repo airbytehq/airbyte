@@ -764,6 +764,12 @@
   icon: google-analytics.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - oauth2.googleapis.com
+      - www.googleapis.com
+      - analyticsdata.googleapis.com
+      - analyticsreporting.googleapis.com
 - name: Google Analytics 4 (GA4)
   sourceDefinitionId: 3cc2eafd-84aa-4dca-93af-322d9dfeec1a
   dockerRepository: airbyte/source-google-analytics-data-api
