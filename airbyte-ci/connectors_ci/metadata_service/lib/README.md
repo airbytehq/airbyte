@@ -22,6 +22,15 @@ poetry poe generate-models
 
 ```
 
-
 This will read the JSON Schema specifications in `models/src` and generate Python models in `models/generated`.
 
+
+## Running Tests
+```bash
+poetry run pytest
+```
+
+## Validating Metadata Files
+```bash
+poetry run validate_metadata_file tests/fixtures/valid/metadata_catalog_override.yaml
+```
