@@ -50,7 +50,9 @@ definitions:
       $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
-
+    transformations:
+      - type: CustomTransformation
+        class_name: source_facebook_pages.components.CustomFieldTransformation
   page_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -304,8 +306,7 @@ definitions:
       record_selector:
         type: RecordSelector
         extractor:
-          class_name: source_facebook_pages.components.NestedDpathExtractor
-          field_path: ["data", "insights", "data"]
+          field_path: ["data", "*", "insights", "data", "*"]
       requester:
         $ref: "#/definitions/requester"
         request_parameters:

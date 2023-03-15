@@ -4,6 +4,8 @@ The connector builder UI provides an ergonomic iteration interface on top of the
 
 :::caution
 The connector builder UI is in alpha, which means it’s still in active development and may include backward-incompatible changes. Share feedback and requests with us on our Slack channel or email us at feedback@airbyte.io
+
+**Developer updates will be announced via our #using-the-cdk Slack channel. If you are using the CDK, please join to stay up to date on changes and issues.**
 :::
 
 ## Getting started

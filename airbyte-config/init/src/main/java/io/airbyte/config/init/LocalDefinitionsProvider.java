@@ -11,7 +11,6 @@ import io.airbyte.config.CatalogDefinitionsConfig;
 import io.airbyte.config.CombinedConnectorCatalog;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
