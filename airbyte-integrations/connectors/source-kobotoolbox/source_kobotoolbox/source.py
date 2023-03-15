@@ -6,7 +6,7 @@
 import json
 import re
 import requests
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qsl, urlparse
 from abc import ABC
 from datetime import datetime
 from typing import Dict, Generator
@@ -22,19 +22,19 @@ from .helpers import Helpers
 
 class KoboToolStream(HttpStream):
     primary_key = None
-    PAGINATION_LIMIT = 30000
 
-    def __init__(self, config: Mapping[str, Any], form_id, schema, name, **kwargs):
+    def __init__(self, config: Mapping[str, Any], form_id, schema, name, api_url, pagination_limit, auth_token, **kwargs):
         super().__init__()
         self.form_id = form_id
-        token = self.get_access_token(config)
-        self.auth_token = token[0]
+        self.auth_token = auth_token
         self.schema = schema
         self.stream_name = name
+        self.API_URL = api_url
+        self.PAGINATION_LIMIT = pagination_limit
 
     @property
     def url_base(self) -> str:
-        return f"https://kf.kobotoolbox.org/api/v2/assets/{self.form_id}/"
+        return f"{self.API_URL}/assets/{self.form_id}/"
 
     @property
     def name(self) -> str:
@@ -46,18 +46,6 @@ class KoboToolStream(HttpStream):
 
     def get_json_schema(self):
         return self.schema
-
-    def get_access_token(self, config) -> Tuple[str, any]:
-        url = f"https://kf.kobotoolbox.org/token/?format=json"
-
-        try:
-            response = requests.post(url, auth=(
-                config["username"], config["password"]))
-            response.raise_for_status()
-            json_response = response.json()
-            return json_response.get("token", None), None if json_response is not None else None, None
-        except requests.exceptions.RequestException as e:
-            return None, e
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -75,7 +63,7 @@ class KoboToolStream(HttpStream):
         params = None
         if next_url is not None:
             parsed_url = urlparse(next_url)
-            params = dict(parse_qs(parsed_url.query))
+            params = dict(parse_qsl(parsed_url.query))
         return params
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -93,28 +81,79 @@ class KoboToolStream(HttpStream):
         for a in result:
             yield a
 
-
 class SourceKobotoolbox(AbstractSource):
+    API_URL = "https://kf.kobotoolbox.org/api/v2"
+    TOKEN_URL = "https://kf.kobotoolbox.org/token/?format=json"
+    PAGINATION_LIMIT = 30000
+
+    @classmethod
+    def _check_credentials(cls, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        # check if the credentials are provided correctly, because for now these value are not required in spec
+        if not config.get("username"):
+            return False, "username in credentials is not provided"
+
+        if not config.get("password"):
+            return False, "password in credentials is not provided"
+                
+        return True, None
+    
+    def get_access_token(self, config) -> Tuple[str, any]:
+        url = self.TOKEN_URL
+
+        try:
+            response = requests.post(url, auth=(
+                config["username"], config["password"]))
+            response.raise_for_status()
+            json_response = response.json()
+            return (json_response.get("token", None), None) if json_response is not None else (None, None)
+        except requests.exceptions.RequestException as e:
+            return None, e
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
+        is_valid_credentials, msg = self._check_credentials(config)
+        if not is_valid_credentials:
+            return is_valid_credentials, msg
+        
+        url = f"{self.API_URL}/assets.json"
+        response = requests.get(url, auth=(
+            config["username"], config["password"]))
+
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as err:
+            return False, 'Something went wrong. Please check your credentials'
+
         return True, None
 
     def base_schema(self):
         return Helpers.get_json_schema()
 
-    def generate_streams(self, config: str) -> List[Stream]:
-        url = f"https://kf.kobotoolbox.org/api/v2/assets.json"
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+
+        # Fetch all assets(forms)
+        url =  f"{self.API_URL}/assets.json"
         response = requests.get(url, auth=(
             config["username"], config["password"]))
         json_response = response.json()
         key_list = json_response.get('results')
+
+        # Generate a auth token for all streams
+        auth_token, msg = self.get_access_token(config)
+        if auth_token is None:
+            return []
+
+        # Generate array of stream objects
         streams = []
         for form_dict in key_list:
             stream = KoboToolStream(
-                config=config, form_id=form_dict['uid'], schema=self.base_schema(), name=form_dict['name'])
+                config=config, 
+                form_id=form_dict['uid'], 
+                schema=self.base_schema(), 
+                name=form_dict['name'],
+                api_url=self.API_URL,
+                pagination_limit=self.PAGINATION_LIMIT,
+                auth_token=auth_token
+            )
             streams.append(stream)
 
-        return streams
-
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        streams = self.generate_streams(config=config)
         return streams
