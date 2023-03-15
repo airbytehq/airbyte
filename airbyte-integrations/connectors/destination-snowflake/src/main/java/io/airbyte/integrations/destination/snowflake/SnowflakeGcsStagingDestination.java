@@ -61,7 +61,7 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
     final SnowflakeGcsStagingSqlOperations snowflakeGcsStagingSqlOperations =
         new SnowflakeGcsStagingSqlOperations(nameTransformer, gcsConfig);
     final JdbcDatabase database = getDatabase(dataSource);
-    for (String outputSchema : getOutputSchemas(config, catalog)) {
+    for (final String outputSchema : getOutputSchemas(config, catalog)) {
       attemptTableOperations(outputSchema, database, nameTransformer, snowflakeGcsStagingSqlOperations,
           true);
       attemptWriteAndDeleteGcsObject(gcsConfig, outputSchema);

@@ -83,7 +83,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
         new RedshiftS3StagingSqlOperations(nameTransformer, s3Config.getS3Client(), s3Config, encryptionConfig);
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
-      for (String outputSchema : getOutputSchemas(config, catalog)) {
+      for (final String outputSchema : getOutputSchemas(config, catalog)) {
         attemptTableOperations(outputSchema, database, nameTransformer, redshiftS3StagingSqlOperations, false);
       }
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
