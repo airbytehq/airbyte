@@ -63,14 +63,25 @@ properties:
           - source
 
       catalogs:
-        type: array
-        items:
-          $ref: "#"
+        anyOf:
+          - type: object
+            additionalProperties: false
+            properties:
+              oss:
+                anyOf:
+                  - "$ref": CatalogOverrides.yaml
+                  - type: null
+              cloud:
+                anyOf:
+                  - "$ref": CatalogOverrides.yaml
+                  - type: null
+          - type: null
+
       allowedHosts:
-        $ref: AllowedHosts.yaml
+        "$ref": AllowedHosts.yaml
       normalizationConfig:
         "$ref": NormalizationDestinationDefinitionConfig.yaml
       suggestedStreams:
-        $ref: SuggestedStreams.yaml
+        "$ref": SuggestedStreams.yaml
       resourceRequirements:
-        $ref: ActorDefinitionResourceRequirements.yaml
+        "$ref": ActorDefinitionResourceRequirements.yaml

@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import List, Optional
+from typing import Any, List, Optional, Union
 from uuid import UUID
 
 from pydantic import AnyUrl, BaseModel, Extra, Field
@@ -99,6 +99,32 @@ class ActorDefinitionResourceRequirements(BaseModel):
     jobSpecific: Optional[List[JobTypeResourceLimit]] = None
 
 
+class CatalogOverrides(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    name: Optional[str] = None
+    dockerRepository: Optional[str] = None
+    dockerImageTag: Optional[str] = None
+    supportsDbt: Optional[bool] = None
+    supportsNormalization: Optional[bool] = None
+    license: Optional[str] = None
+    supportUrl: Optional[AnyUrl] = None
+    sourceType: Optional[str] = None
+    allowedHosts: Optional[AllowedHosts] = None
+    normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
+    suggestedStreams: Optional[SuggestedStreams] = None
+    resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
+
+
+class Catalog(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    oss: Optional[Union[CatalogOverrides, Any]] = None
+    cloud: Optional[Union[CatalogOverrides, Any]] = None
+
+
 class Data(BaseModel):
     name: str
     definitionId: UUID
@@ -112,7 +138,7 @@ class Data(BaseModel):
     githubIssueLabel: str
     sourceType: str
     releaseStage: ReleaseStage
-    catalogs: List[ConnectorMetadataDefinitionV0]
+    catalogs: Union[Catalog, Any]
     allowedHosts: Optional[AllowedHosts] = None
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
     suggestedStreams: Optional[SuggestedStreams] = None
@@ -125,6 +151,3 @@ class ConnectorMetadataDefinitionV0(BaseModel):
 
     metadataSpecVersion: str
     data: Data
-
-
-Data.update_forward_refs()
