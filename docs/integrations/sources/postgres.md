@@ -273,7 +273,7 @@ In [Step 2](#step-2-set-up-the-postgres-connector-in-airbyte) of the connector s
 
 The Postgres source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
@@ -396,6 +396,7 @@ The root causes is that the WALs needed for the incremental sync has been remove
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.2   | 2022-03-13 | [23112](https://github.com/airbytehq/airbyte/pull/21727) | Add state checkpointing for CDC sync.                                                                                                                                      |
 | 2.0.0   | 2022-03-06 | [23112](https://github.com/airbytehq/airbyte/pull/23112) | Upgrade Debezium version to 2.1.2                                                                                                                                          |
 | 1.0.51  | 2022-03-02 | [23642](https://github.com/airbytehq/airbyte/pull/23642) | Revert : Support JSONB datatype for Standard sync mode                                                                                                                     |
 | 1.0.50  | 2022-02-27 | [21695](https://github.com/airbytehq/airbyte/pull/21695) | Support JSONB datatype for Standard sync mode                                                                                                                              |
