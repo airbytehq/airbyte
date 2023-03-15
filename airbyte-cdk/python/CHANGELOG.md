@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.30.3
+Fix reset pagination issue on test reads
+
+## 0.30.2
+* Low-code CDK: Override refresh_access_token logic DeclarativeOAuthAuthenticator
+
 ## 0.30.1
 Releasing using the new release flow. No change to the CDK per se
 

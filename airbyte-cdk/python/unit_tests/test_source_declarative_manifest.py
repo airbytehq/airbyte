@@ -13,35 +13,11 @@ CONFIG = {
     "__injected_declarative_manifest": {
         "version": "0.1.0",
         "definitions": {
-            "selector": {
-                "extractor": {
-                    "field_path": []
-                }
-            },
-            "requester": {
-                "url_base": "https://test.com/api",
-                "http_method": "GET"
-            },
-            "retriever": {
-                "record_selector": {
-                    "$ref": "#/definitions/selector"
-                },
-                "requester": {
-                    "$ref": "#/definitions/requester"
-                }
-            },
-            "base_stream": {
-                "retriever": {
-                    "$ref": "#/definitions/retriever"
-                }
-            },
-            "data_stream": {
-                "$ref": "#/definitions/base_stream",
-                "$parameters": {
-                    "name": "data",
-                    "path": "/data"
-                }
-            },
+            "selector": {"extractor": {"field_path": []}},
+            "requester": {"url_base": "https://test.com/api", "http_method": "GET"},
+            "retriever": {"record_selector": {"$ref": "#/definitions/selector"}, "requester": {"$ref": "#/definitions/requester"}},
+            "base_stream": {"retriever": {"$ref": "#/definitions/retriever"}},
+            "data_stream": {"$ref": "#/definitions/base_stream", "$parameters": {"name": "data", "path": "/data"}},
         },
         "streams": [
             "#/definitions/data_stream",
@@ -59,9 +35,9 @@ CONFIG = {
                 "title": "Test Spec",
                 "type": "object",
                 "additionalProperties": True,
-                "properties": {}
-            }
-        }
+                "properties": {},
+            },
+        },
     }
 }
 
