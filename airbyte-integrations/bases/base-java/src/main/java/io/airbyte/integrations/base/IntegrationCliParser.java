@@ -143,8 +143,7 @@ public class IntegrationCliParser {
             .orElse(null);
         return IntegrationConfig.check(
             Path.of(argsMap.get(JavaBaseConstants.ARGS_CONFIG_KEY)),
-            catalogPath
-        );
+            catalogPath);
       }
       case DISCOVER -> {
         return IntegrationConfig.discover(Path.of(argsMap.get(JavaBaseConstants.ARGS_CONFIG_KEY)));
