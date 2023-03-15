@@ -104,43 +104,20 @@ This is the DAG we expect for every connector for which the pipeline is triggere
 The Airbyte git repo will be the local one if you use `--is-local=True` command line option.
 The connector secrets won't be downloaded nor uploaded if you use the `--use-remote-secrets=False` command line option.
 
-## Questions for the Dagger team (in priority order)
+## Questions for the Dagger team 
 
-Dear Dagger team. You should be able to execute the code we pushed with the instructions above.
-Please ignore the `Set your environment variables` step and focus on running `connectors-ci test-connectors source-pokeapi` to reproduce the problems I mention below.
+**Remaining questions:**
+TLDR; how can I benefit from caching in [this function](https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/pipelines/tests.py#L79). I've the impression no cache is used on each execution.
+After using the "proxy docker host" to build and tag images + run acceptance tests ([here](https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/pipelines/tests.py#L79)) I have the impression the docker build I'm running is never cached. Is it possible to have this step cached? The acceptance tests are also never cached, possibly because the secret directory is filled with fresh files on a each execution. Does the Python SDK has a feature to set file timestamps on a Directory or should I use a `touch` command `with_exec` after writing these file to the directory (happening [here](https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/pipelines/actions/secrets.py#L38))? 
 
-**First batch of questions**:
-
-1. ~~How to handle exit codes: if exit_code != 0 an exception is thrown and stops the other pipeline execution. Code context [here](https://github.com/airbytehq/airbyte/blob/7d7e48b2a342a328fa74c6fd11a9268e1dcdcd64/tools/ci_connector_ops/ci_connector_ops/pipelines/actions/tests.py#L25)~~ A stop-gap solution was implemented waiting for this [issue](https://github.com/dagger/dagger/issues/3192) to be fixed.
-2. Can we make with_mounted_directory writable so that the container can write to the host FS? Code context [here](https://github.com/airbytehq/airbyte/blob/7d7e48b2a342a328fa74c6fd11a9268e1dcdcd64/tools/ci_connector_ops/ci_connector_ops/pipelines/actions/tests.py#L119)
-Dagger team answer: We'll implement a flag to run privileged `with_exec` that will allow containers to write on the host FS.
-3. How to get access to visualizations: We'd love to have dynamic status checks on our GitHub PRs, with links to pipeline visualization [like](https://propeller.fly.dev/runs/da68273e-48d8-4354-8d8b-efaccf2792b9).
-Dagger team answer: coming soon. 
-4. Can we build and tag an image in Dagger?
-Dagger team answer: Run a local docker registry and publish images to this directory during the pipeline execution.
-5. What are the best practices to report success failure details?
-I built a custom models (`ConnectorTestReport`) to store test results. I archive tests results to S3. Do you have other suggestions? 
-6. What are the best practices to write tests for pipelines?
-Dagger team answer: Get inspirations from their own repo [here](https://github.com/dagger/dagger/tree/main/sdk/python/tests). 
-I'll write test once the code architecture is ratified.
-
-7. What would be your suggestion to run `docker scan` from dagger to spot vulnerabilities on our connectors?
-Dagger team answer: A scanning tool should be wrapped in a container to scan images from Dagger.
-8. Do you have a tool to re-order logs line by order of pipeline after execution?
-A log grouping tool is under construction: https://www.youtube.com/watch&ab_channel=Dagger
-
-**Second batch of questions**:
-
-1. I used the stopgap to handle exit-code != 0 but I think as dagger considers the execution as failed this step is always re-run. (cf `run_integration_tests`). Am I understanding this problem correctly, is there a workaround?
-2. `run_acceptance_tests` runs at every execution even if the artifacts passed to it did not change: the connector image id is not changing on rebuild of the same code and the secrets I download from GSM are not changing (but re-downloaded everytime because they might change). Is it because the directory instance I mount to it is different on each run? cf (`run_acceptance-tests`)
-3. I tried to leverage concurrency as much as possible with `asyncio.create_task` and `asyncio.gather`. Is it something you expect developer to implement or is it not something I should bother with and consider Dagger will take care of concurrency at a lower level. (I noted performance improvement while using `asyncio.create_task` etc.)  
-
-### Airbyte specific context that could help you understand our workflow.
-- We always use a :dev tag to tag images of connector we build locally. We try to never publish these images to a public repository.
-- We run a container called connector-acceptance-test which is a global test suite for all our connectors. This test suite is ran against a connector under test container, (usually using its :dev image).
-- Connector-acceptance-test is a customizable test suite (built with pytest) configured with per-connector `acceptance-test-config.yml` files ([e.g.](https://github.com/airbytehq/airbyte/blob/b0c5f14db6a905899d0f9c043954abcc5ec296f0/airbyte-integrations/connectors/source-pokeapi/acceptance-test-config.yml#L1))
-- As connector-acceptance-test is running connector containers, it triggers actual HTTP requests the public API of our source/destination connector. This is why we need to load secrets configuration with our test account credentials to these connector containers. connector-acceptance-test is also generating dynamic connector configurations to check the behavior of a connector under test when it is  it different structure of configuration files. 
-
+### Dagger feature requests
+This is a list of nice to have features that are not blocking because we found workarounds or are not an immediate need:
+1. Handle `with_exec` error gracefully: when a `with_exec` status code is not 0 an error is raised. It's preventing interaction with the container after this `with_exec`. E.G It's not possible to list the entries of a directory if a `with_exec` failed before. We worked around this by assessing pytest success failure from its log and not from the `exit_code` and by installing a pytest plugin to always return 0 exit code.
+2. Build and tag a container without publishing it to a registry.
+[Current workaround](https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/pipelines/tests.py#L109): build and tag the image from a docker-cli container using a proxy docker host which is also containerized with Dagger. Dagger team also suggested to run a local docker registry and publish images to this directory during the pipeline execution.
+3. Reorder log lines by pipeline number after execution?
+[A log grouping tool is under construction](https://www.youtube.com/watch&ab_channel=Dagger) but I'm not sure its meant to be used in a CI logging context.
+4. How to get access to visualizations: We'd love to have dynamic status checks on our GitHub PRs, with links to pipeline visualization [like](https://propeller.fly.dev/runs/da68273e-48d8-4354-8d8b-efaccf2792b9).
 
 ### Performance benchmarks
 
