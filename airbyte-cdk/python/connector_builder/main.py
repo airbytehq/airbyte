@@ -50,7 +50,7 @@ def handle_request(args: List[str]):
     config, catalog = get_config_and_catalog_from_args(args)
     if "__command" in config:
         source = create_source(config)
-        return handle_connector_builder_request(source, config, catalog).json()
+        return handle_connector_builder_request(source, config, catalog).json(exclude_unset=True)
     else:
         raise ValueError("Missing __command argument in config file.")
 
@@ -61,4 +61,4 @@ if __name__ == "__main__":
     except Exception as exc:
         error = AirbyteTracedException.from_exception(exc, message="Error handling request.")
         m = error.as_airbyte_message()
-        print(error.as_airbyte_message().json())
+        print(error.as_airbyte_message().json(exclude_unset=True))
