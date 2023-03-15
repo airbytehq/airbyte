@@ -17,6 +17,7 @@ def config():
         "region": "NA",
         "look_back_window": 3,
         "look_back_window_stream": False,
+        "report_record_types": []
     }
 
 
