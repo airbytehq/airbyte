@@ -1108,6 +1108,9 @@
   icon: mailchimp.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "*.api.mailchimp.com"
 - name: Mailjet Mail
   sourceDefinitionId: 56582331-5de2-476b-b913-5798de77bbdf
   dockerRepository: airbyte/source-mailjet-mail
