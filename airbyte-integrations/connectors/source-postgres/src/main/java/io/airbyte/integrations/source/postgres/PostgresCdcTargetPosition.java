@@ -18,7 +18,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PostgresCdcTargetPosition implements CdcTargetPosition {
+public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcTargetPosition.class);
   @VisibleForTesting
@@ -72,8 +72,8 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
   }
 
   @Override
-  public boolean reachedTargetPosition(final Long lsn) {
-    return lsn != null && lsn.compareTo(targetLsn.asLong()) >= 0;
+  public boolean reachedTargetPosition(final Long positionFromHeartbeat) {
+    return positionFromHeartbeat != null && positionFromHeartbeat.compareTo(targetLsn.asLong()) >= 0;
   }
 
   private PgLsn extractLsn(final JsonNode valueAsJson) {
@@ -90,8 +90,8 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
   }
 
   @Override
-  public Object getHeartbeatPositon(Map<String, ?> sourceOffset) {
-    return sourceOffset.get("lsn");
+  public Long extractPositionFromHeartbeatOffset(final Map<String, ?> sourceOffset) {
+    return (long) sourceOffset.get("lsn");
   }
 
 }

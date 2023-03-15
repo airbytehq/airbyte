@@ -11,38 +11,21 @@ import io.airbyte.integrations.debezium.internals.SnapshotMetadata;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MySqlCdcTargetPosition implements CdcTargetPosition {
+public class MySqlCdcTargetPosition implements CdcTargetPosition<MySqlCdcPosition> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlCdcTargetPosition.class);
-  public final String fileName;
-  public final Integer position;
+  private final MySqlCdcPosition targetPosition;
 
   public MySqlCdcTargetPosition(final String fileName, final Integer position) {
-    this.fileName = fileName;
-    this.position = position;
+    this(new MySqlCdcPosition(fileName, position));
   }
 
-  @Override
-  public boolean equals(final Object obj) {
-    if (obj instanceof final MySqlCdcTargetPosition cdcTargetPosition) {
-      return fileName.equals(cdcTargetPosition.fileName) && cdcTargetPosition.position.equals(position);
-    }
-    return false;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(fileName, position);
-  }
-
-  @Override
-  public String toString() {
-    return "FileName: " + fileName + ", Position : " + position;
+  public MySqlCdcTargetPosition(final MySqlCdcPosition targetPosition) {
+    this.targetPosition = targetPosition;
   }
 
   public static MySqlCdcTargetPosition targetPosition(final JdbcDatabase database) {
@@ -78,11 +61,12 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition {
     } else {
       final int eventPosition = valueAsJson.get("source").get("pos").asInt();
       final boolean isEventPositionAfter =
-          eventFileName.compareTo(fileName) > 0 || (eventFileName.compareTo(fileName) == 0 && eventPosition >= position);
+          eventFileName.compareTo(targetPosition.fileName) > 0 || (eventFileName.compareTo(
+              targetPosition.fileName) == 0 && eventPosition >= targetPosition.position);
       if (isEventPositionAfter) {
         LOGGER.info("Signalling close because record's binlog file : " + eventFileName + " , position : " + eventPosition
             + " is after target file : "
-            + fileName + " , target position : " + position);
+            + targetPosition.fileName + " , target position : " + targetPosition.position);
       }
       return isEventPositionAfter;
     }
@@ -90,8 +74,10 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition {
   }
 
   @Override
-  public boolean reachedTargetPosition(final String eventFileName, final Long eventPosition) {
-    return eventFileName.compareTo(fileName) > 0 || (eventFileName.compareTo(fileName) == 0 && eventPosition >= position);
+  public boolean reachedTargetPosition(final MySqlCdcPosition positionFromHeartbeat) {
+    return positionFromHeartbeat.fileName.compareTo(targetPosition.fileName) > 0 ||
+        (positionFromHeartbeat.fileName.compareTo(targetPosition.fileName) == 0
+            && positionFromHeartbeat.position >= targetPosition.position);
   }
 
   @Override
@@ -100,8 +86,8 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition {
   }
 
   @Override
-  public Object getHeartbeatPositon(Map<String, ?> sourceOffset) {
-    return sourceOffset.get("pos");
+  public MySqlCdcPosition extractPositionFromHeartbeatOffset(final Map<String, ?> sourceOffset) {
+    return new MySqlCdcPosition(sourceOffset.get("file").toString(), (Integer) sourceOffset.get("pos"));
   }
 
 }

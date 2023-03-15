@@ -14,7 +14,7 @@ import java.util.Map;
  * we might end up syncing forever. In order to tackle that, we need to define a point to end at the
  * beginning of the sync
  */
-public interface CdcTargetPosition {
+public interface CdcTargetPosition<T> {
 
   /**
    * Reads a position value (lsn) from a change event and compares it to target lsn
@@ -22,26 +22,9 @@ public interface CdcTargetPosition {
    * @param valueAsJson json representation of a change event
    * @return true if event lsn is equal or greater than targer lsn, or if last snapshot event
    */
-  boolean reachedTargetPosition(JsonNode valueAsJson);
+  boolean reachedTargetPosition(final JsonNode valueAsJson);
 
-  /**
-   * Checks if a specified lsn has reached the target lsn.
-   *
-   * @param lsn an lsn value
-   * @return true if lsn is equal or greater than target lsn
-   */
-  default boolean reachedTargetPosition(final Long lsn) {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * Checks if a specified pos has reached the target pos in binlog file.
-   *
-   * @param filename a binlog file name
-   * @param pos an position value
-   * @return true if pos is equal or greater than target pos
-   */
-  default boolean reachedTargetPosition(final String filename, final Long pos) {
+  default boolean reachedTargetPosition(final T positionFromHeartbeat) {
     throw new UnsupportedOperationException();
   }
 
@@ -58,8 +41,8 @@ public interface CdcTargetPosition {
    * Returns a position value from a heartbeat event offset.
    *
    * @param sourceOffset source offset params from heartbeat change event
-   * @return the hearbeat position in a heartbeat change event or null
+   * @return the heartbeat position in a heartbeat change event or null
    */
-  Object getHeartbeatPositon(Map<String, ?> sourceOffset);
+  T extractPositionFromHeartbeatOffset(final Map<String, ?> sourceOffset);
 
 }
