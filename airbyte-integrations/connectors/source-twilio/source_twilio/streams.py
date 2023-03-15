@@ -375,13 +375,16 @@ class ConversationMessages(IncrementalTwilioStream, TwilioNestedStream):
     upper_boundary_filter_field = None
     cursor_field = "date_created"
     url_base = TWILIO_CONVERSATION_BASE
-    uri_from_subresource = False
+    # uri_from_subresource = False
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs):
         return f"Conversations/{stream_slice['conversation_sid']}/Messages"
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {"conversation_sid": record["messages"]["conversation_sid"]}
+        if(record["conversation_sid"]):
+            return {"conversation_sid": record["conversation_sid"]}
+        else:
+            return True
 
 class Calls(IncrementalTwilioStream, TwilioNestedStream):
     """https://www.twilio.com/docs/voice/api/call-resource#create-a-call-resource"""
