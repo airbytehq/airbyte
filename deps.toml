@@ -1,5 +1,5 @@
 [versions]
-airbyte-protocol = "1.0.1"
+airbyte-protocol = "1.0.0"
 commons_io = "2.7"
 connectors-destination-testcontainers-clickhouse = "1.17.3"
 connectors-destination-testcontainers-elasticsearch = "1.17.3"

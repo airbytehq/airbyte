@@ -91,6 +91,23 @@ class SalesforceStream(HttpStream, ABC):
         return super().get_error_display_message(exception)
 
 
+class PropertyChunk:
+    """
+    Object that is used to keep track of the current state of a chunk of properties for the stream of records being synced.
+    """
+
+    properties: Mapping[str, Any]
+    first_time: bool
+    record_counter: int
+    next_page: Optional[Mapping[str, Any]]
+
+    def __init__(self, properties: Mapping[str, Any]):
+        self.properties = properties
+        self.first_time = True
+        self.record_counter = 0
+        self.next_page = None
+
+
 class RestSalesforceStream(SalesforceStream):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -155,6 +172,22 @@ class RestSalesforceStream(SalesforceStream):
         if local_properties:
             yield local_properties
 
+    @staticmethod
+    def _next_chunk_id(property_chunks: Mapping[int, PropertyChunk]) -> Optional[int]:
+        """
+        Figure out which chunk is going to be read next.
+        It should be the one with the least number of records read by the moment.
+        """
+        non_exhausted_chunks = {
+            # We skip chunks that have already attempted a sync before and do not have a next page
+            chunk_id: property_chunk.record_counter
+            for chunk_id, property_chunk in property_chunks.items()
+            if property_chunk.first_time or property_chunk.next_page
+        }
+        if not non_exhausted_chunks:
+            return None
+        return min(non_exhausted_chunks, key=non_exhausted_chunks.get)
+
     def _read_pages(
         self,
         records_generator_fn: Callable[
@@ -164,54 +197,67 @@ class RestSalesforceStream(SalesforceStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[StreamData]:
         stream_state = stream_state or {}
-        pagination_complete = False
-        records = {}
-        next_pages = {}
+        records_by_primary_key = {}
+        property_chunks: Mapping[int, PropertyChunk] = {
+            index: PropertyChunk(properties=properties) for index, properties in enumerate(self.chunk_properties())
+        }
+        while True:
+            chunk_id = self._next_chunk_id(property_chunks)
+            if chunk_id is None:
+                # pagination complete
+                break
 
-        while not pagination_complete:
-            index = 0
-            for index, property_chunk in enumerate(self.chunk_properties()):
-                request, response = self._fetch_next_page(stream_slice, stream_state, next_pages.get(index), property_chunk)
-                next_pages[index] = self.next_page_token(response)
-                chunk_page_records = records_generator_fn(request, response, stream_state, stream_slice)
-                if not self.too_many_properties:
-                    # this is the case when a stream has no primary key
-                    # (is allowed when properties length does not exceed the maximum value)
-                    # so there would be a single iteration, therefore we may and should yield records immediately
-                    yield from chunk_page_records
-                    break
-                chunk_page_records = {record[self.primary_key]: record for record in chunk_page_records}
+            property_chunk = property_chunks[chunk_id]
+            request, response = self._fetch_next_page_for_chunk(
+                stream_slice, stream_state, property_chunk.next_page, property_chunk.properties
+            )
 
-                for record_id, record in chunk_page_records.items():
-                    if record_id not in records:
-                        records[record_id] = (record, 1)
-                        continue
-                    incomplete_record, counter = records[record_id]
-                    incomplete_record.update(record)
-                    counter += 1
-                    records[record_id] = (incomplete_record, counter)
+            # When this is the first time we're getting a chunk's records, we set this to False to be used when deciding the next chunk
+            if property_chunk.first_time:
+                property_chunk.first_time = False
+            property_chunk.next_page = self.next_page_token(response)
+            chunk_page_records = records_generator_fn(request, response, stream_state, stream_slice)
+            if not self.too_many_properties:
+                # this is the case when a stream has no primary key
+                # (it is allowed when properties length does not exceed the maximum value)
+                # so there would be a single chunk, therefore we may and should yield records immediately
+                for record in chunk_page_records:
+                    property_chunk.record_counter += 1
+                    yield record
+                continue
 
-            for record_id, (record, counter) in records.items():
-                if counter != index + 1:
-                    # Because we make multiple calls to query N records (each call to fetch X properties of all the N records),
-                    # there's a chance that the number of records corresponding to the query may change between the calls. This
-                    # may result in data inconsistency. We skip such records for now and log a warning message.
-                    self.logger.warning(
-                        f"Inconsistent record with primary key {record_id} found. It consists of {counter} chunks instead of {index + 1}. "
-                        f"Skipping it."
-                    )
+            # stick together different parts of records by their primary key and emit if a record is complete
+            for record in chunk_page_records:
+                property_chunk.record_counter += 1
+                record_id = record[self.primary_key]
+                if record_id not in records_by_primary_key:
+                    records_by_primary_key[record_id] = (record, 1)
                     continue
-                yield record
+                partial_record, counter = records_by_primary_key[record_id]
+                partial_record.update(record)
+                counter += 1
+                if counter == len(property_chunks):
+                    yield partial_record  # now it's complete
+                    records_by_primary_key.pop(record_id)
+                else:
+                    records_by_primary_key[record_id] = (partial_record, counter)
 
-            records = {}
-
-            if not any(next_pages.values()):
-                pagination_complete = True
+        # Process what's left.
+        # Because we make multiple calls to query N records (each call to fetch X properties of all the N records),
+        # there's a chance that the number of records corresponding to the query may change between the calls.
+        # Select 'a', 'b' from table order by pk -> returns records with ids `1`, `2`
+        #   <insert smth.>
+        # Select 'c', 'd' from table order by pk -> returns records with ids `1`, `3`
+        # Then records `2` and `3` would be incomplete.
+        # This may result in data inconsistency. We skip such records for now and log a warning message.
+        incomplete_record_ids = ",".join([str(key) for key in records_by_primary_key])
+        if incomplete_record_ids:
+            self.logger.warning(f"Inconsistent record(s) with primary keys {incomplete_record_ids} found. Skipping them.")
 
         # Always return an empty generator just in case no records were ever yielded
         yield from []
 
-    def _fetch_next_page(
+    def _fetch_next_page_for_chunk(
         self,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
@@ -229,7 +275,6 @@ class RestSalesforceStream(SalesforceStream):
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
         )
         request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-
         response = self._send_request(request, request_kwargs)
         return request, response
 

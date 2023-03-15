@@ -173,7 +173,6 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         case "path" -> putObject(json, columnName, resultSet, colIndex, PGpath.class);
         case "point" -> putObject(json, columnName, resultSet, colIndex, PGpoint.class);
         case "polygon" -> putObject(json, columnName, resultSet, colIndex, PGpolygon.class);
-        case "jsonb" -> putJsonb(json, columnName, resultSet, colIndex);
         case "_varchar", "_char", "_bpchar", "_text", "_name" -> putArray(json, columnName, resultSet, colIndex);
         case "_int2", "_int4", "_int8", "_oid" -> putLongArray(json, columnName, resultSet, colIndex);
         case "_numeric", "_decimal" -> putBigDecimalArray(json, columnName, resultSet, colIndex);
@@ -187,7 +186,6 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         case "_timestamp" -> putTimestampArray(json, columnName, resultSet, colIndex);
         case "_timetz" -> putTimeTzArray(json, columnName, resultSet, colIndex);
         case "_time" -> putTimeArray(json, columnName, resultSet, colIndex);
-        case "_jsonb" -> putJsonbArray(json, columnName, resultSet, colIndex);
         default -> {
           switch (columnInfo.columnType) {
             case BOOLEAN -> json.put(columnName, value.equalsIgnoreCase("t"));
@@ -208,33 +206,6 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
           }
         }
       }
-    }
-  }
-
-  private void putJsonbArray(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
-    final ArrayNode arrayNode = Jsons.arrayNode();
-    final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
-
-    while (arrayResultSet.next()) {
-      final PGobject object = getObject(arrayResultSet, colIndex, PGobject.class);
-      final JsonNode value;
-      try {
-        value = new ObjectMapper().readTree(object.getValue());
-      } catch (JsonProcessingException e) {
-        throw new RuntimeException("Could not parse 'jsonb' value:" + e);
-      }
-      arrayNode.add(value);
-    }
-    node.set(columnName, arrayNode);
-  }
-
-  private void putJsonb(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
-    final PGobject object = getObject(resultSet, colIndex, PGobject.class);
-
-    try {
-      node.put(columnName, new ObjectMapper().readTree(object.getValue()));
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException("Could not parse 'jsonb' value:" + e);
     }
   }
 
@@ -422,13 +393,11 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         case "_time" -> PostgresType.TIME_ARRAY;
         case "_date" -> PostgresType.DATE_ARRAY;
         case "_bytea" -> PostgresType.BYTEA_ARRAY;
-        case "_jsonb" -> PostgresType.JSONB_ARRAY;
         case "bool", "boolean" -> PostgresType.BOOLEAN;
         // BYTEA is variable length binary string with hex output format by default (e.g. "\x6b707a").
         // It should not be converted to base64 binary string. So it is represented as JDBC VARCHAR.
         // https://www.postgresql.org/docs/14/datatype-binary.html
         case "bytea" -> PostgresType.VARCHAR;
-        case "jsonb" -> PostgresType.JSONB;
         case TIMESTAMPTZ -> PostgresType.TIMESTAMP_WITH_TIMEZONE;
         case TIMETZ -> PostgresType.TIME_WITH_TIMEZONE;
         default -> PostgresType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt(), POSTGRES_TYPE_DICT);
@@ -527,10 +496,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
       case DATE_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
           .withItems(JsonSchemaType.STRING_DATE)
           .build();
-      case JSONB_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.JSONB)
-          .build();
-      case JSONB -> JsonSchemaType.JSONB;
+
       case DATE -> JsonSchemaType.STRING_DATE;
       case TIME -> JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
       case TIME_WITH_TIMEZONE -> JsonSchemaType.STRING_TIME_WITH_TIMEZONE;

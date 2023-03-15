@@ -20,7 +20,6 @@ definitions:
       dates_are_gmt: "true"
   date_incremental_sync:
     type: DatetimeBasedCursor
-    lookback_window: "P{{ config.get('conversion_window_days', 0) }}D"
     start_datetime:
       datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S"
@@ -48,7 +47,7 @@ definitions:
       page_token_option:
         type: RequestOption
         inject_into: "request_parameter"
-        field_name: "page"
+        field_name: "offset"
       page_size_option:
         inject_into: "request_parameter"
         field_name: "per_page"
