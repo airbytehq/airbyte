@@ -1442,6 +1442,14 @@
   allowedHosts:
     hosts:
       - "api.paystack.co"
+- name: Pendo
+  sourceDefinitionId: b1ccb590-e84f-46c0-83a0-2048ccfffdae
+  dockerRepository: airbyte/source-pendo
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pendo
+  icon: pendo.svg
+  sourceType: api
+  releaseStage: alpha
 - name: PersistIq
   sourceDefinitionId: 3052c77e-8b91-47e2-97a0-a29a22794b4b
   dockerRepository: airbyte/source-persistiq
