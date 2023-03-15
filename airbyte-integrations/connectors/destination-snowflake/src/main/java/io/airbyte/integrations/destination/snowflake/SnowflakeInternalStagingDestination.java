@@ -20,7 +20,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
