@@ -26,8 +26,6 @@ DEFAULT_MAX_RECORDS = 100
 
 def read_stream(source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog) -> AirbyteMessage:
     try:
-        if "__test_read_config" not in config:
-            raise ValueError("Missing __test_read_config field in config file")
         command_config = config.get("__test_read_config", {})
         max_pages_per_slice = command_config.get("max_pages_per_slice", DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE)
         max_slices = command_config.get("max_slices", DEFAULT_MAXIMUM_NUMBER_OF_SLICES)
