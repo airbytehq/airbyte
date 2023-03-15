@@ -9,17 +9,14 @@
 .container {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
   width: 100%;
   height: 100%;
-  background-color: #eff0f5;
-
-  // background-color: #fff;
+  background-color: #fff;
 }
 
 .form {
-  width: 33%;
+  width: 80%;
 }
 
 .formTitle {
@@ -27,12 +24,29 @@
   padding-top: 35px;
   font-style: normal;
   font-weight: 600;
-  font-size: 30px;
-  line-height: 27px;
+  font-size: 24px;
+  line-height: 28px;
 }
 
-.signupLink {
-  text-align: center;
-  margin-top: 30px;
-  color: #6b6b6f;
+@media screen and (min-width: 769px) {
+  .form {
+    width: 66%;
+  }
+
+  .formTitle {
+    font-size: 30px;
+    line-height: 32px;
+  }
+}
+
+@media screen and (min-width: 1025px) {
+  .form {
+    width: 50%;
+  }
+}
+
+@media screen and (min-width: 1400px) {
+  .form {
+    width: 33%;
+  }
 }

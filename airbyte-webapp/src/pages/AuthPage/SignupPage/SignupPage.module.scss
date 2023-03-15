@@ -1,11 +1,81 @@
-@use "../../../scss/colors";
-@use "../../../scss/variables";
-
-.title {
-  width: 250px;
-  margin-bottom: variables.$spacing-md;
+.container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #fff;
 }
 
-.highlight {
-  color: colors.$blue;
+.informationContent {
+  display: none;
+  width: 40%;
+  background: linear-gradient(75.03deg, #313e6a 1.54%, #0e1331 100%);
+  position: relative;
+  font-size: 16px;
+  line-height: 28px;
+}
+
+.titleContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.titleText {
+  font-weight: bold;
+  font-size: 24px;
+  color: white;
+}
+
+.firstListItem {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  padding-top: 50px;
+}
+
+.text {
+  font-weight: normal;
+  color: white;
+  padding-left: 15px;
+}
+
+.listItem {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  padding-top: 30px;
+}
+
+.rightContent {
+  width: 100%;
+  margin: 0 auto;
+}
+
+@media screen and (min-width: 769px) {
+  .informationContent {
+    display: block;
+  }
+
+  .context {
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-top: 10px;
+  }
+}
+
+@media screen and (min-width: 1025px) {
+  .context {
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+}
+
+@media screen and (min-width: 1400px) {
+  .context {
+    padding-left: 50px;
+    padding-right: 50px;
+  }
 }

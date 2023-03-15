@@ -1,5 +1,6 @@
 @use "../../../../scss/colors";
 @use "../../../../scss/variables";
+@use "../../../../scss/fonts";
 
 .signUpButton {
   width: 100% !important;
@@ -14,18 +15,46 @@
   color: colors.$red;
 }
 
+.formContent {
+  width: 100%;
+}
+
 .form {
-  width: 65%;
+  width: 80%;
+  margin: 0 auto;
   padding: 0 0 variables.$spacing-xl 0;
 }
 
+.title {
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 39px;
+  text-align: center;
+  color: #374151;
+  margin-bottom: 40px;
+  font-family: fonts.$highlightFont;
+}
+
 .termsAndPrivacy {
-  padding-top: 20px;
+  padding: 20px 0;
   color: #6b6b6f;
   text-align: center;
 }
 
-// .link {
-//   padding-right: 5px;
-//   padding-left: 5px;
-// }
+@media screen and (min-width: 769px) {
+  .title {
+    display: none;
+  }
+}
+
+@media screen and (min-width: 1025px) {
+  .form {
+    width: 65%;
+  }
+}
+
+@media screen and (min-width: 1400px) {
+  .form {
+    width: 55%;
+  }
+}

@@ -651,6 +651,7 @@
   "signup.description": "By submitting this form I agree to Daspire’s {termLink} and {privacyLink}",
   "signup.terms": "Terms of Service",
   "signup.privacy": "Privacy Policy",
+  "signup.mobile.title": "Start you {text}",
 
   "login.pageTitle": "Sign In",
   "login.title": "Sign in to your account",
@@ -661,7 +662,7 @@
   "login.yourPassword.placeholder": "Enter your password",
   "login.email.error": "Please enter a valid email",
   "login.signup": "Sign up",
-  "login.signupDescription": "Don’t have an account yet? {signupLink} here",
+  "login.signupDescription": "Don’t have an account yet?",
   "sidebar.DaspireLogo": "Daspire",
   "sidebar.DaspireDashboard": "Dashboard",
   "sidebar.DaspireSetting": "Settings",
