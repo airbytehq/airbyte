@@ -343,7 +343,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         .executeQuery(descQuery),
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet))
         .stream()
-        .peek(x -> LOGGER.info("MySQL Table Structure {}, {}", schema, tableName))
+        .peek(x -> LOGGER.info("MySQL Table Structure {}, {}, {}", x, schema, tableName))
         .filter(x -> x.get("Field") != null)
         .filter(x -> x.get("Field").asText().equalsIgnoreCase(columnName))
         .findFirst();

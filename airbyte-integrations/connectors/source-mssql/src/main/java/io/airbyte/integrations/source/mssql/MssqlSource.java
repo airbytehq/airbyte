@@ -260,7 +260,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         .executeQuery(descQuery),
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet))
         .stream()
-        .peek(x -> LOGGER.info("MsSQL Table Structure {}, {}", schema, tableName))
+        .peek(x -> LOGGER.info("MsSQL Table Structure {}, {}, {}", x, schema, tableName))
         .filter(x -> x.get("TABLE_OWNER") != null)
         .filter(x -> x.get("COLUMN_NAME") != null)
         .filter(x -> x.get("TABLE_OWNER").asText().equals(schema))
