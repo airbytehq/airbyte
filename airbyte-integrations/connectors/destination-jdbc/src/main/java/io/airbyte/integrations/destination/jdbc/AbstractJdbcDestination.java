@@ -30,14 +30,11 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,21 +73,22 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     outputSchemas.add(defaultSchemaName);
     if (catalog != null) {
       catalog.getStreams().stream()
-        .map(ConfiguredAirbyteStream::getStream)
-        .map(AirbyteStream::getNamespace)
-        .filter(Objects::nonNull)
-        .forEach(outputSchemas::add);
+          .map(ConfiguredAirbyteStream::getStream)
+          .map(AirbyteStream::getNamespace)
+          .filter(Objects::nonNull)
+          .forEach(outputSchemas::add);
     }
     return outputSchemas;
   }
 
-  protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
+  protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config, ConfiguredAirbyteCatalog catalog)
+      throws Exception {
     try {
-    final JdbcDatabase database = getDatabase(dataSource);
-    for (String outputSchema : getOutputSchemas(config, catalog)) {
-      attemptTableOperations(outputSchema, database, namingResolver, sqlOperations, false);
-    }
-    return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
+      final JdbcDatabase database = getDatabase(dataSource);
+      for (String outputSchema : getOutputSchemas(config, catalog)) {
+        attemptTableOperations(outputSchema, database, namingResolver, sqlOperations, false);
+      }
+      return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
       final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, message);

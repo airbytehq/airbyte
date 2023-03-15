@@ -18,7 +18,6 @@ import io.airbyte.integrations.destination.mariadb_columnstore.MariadbColumnstor
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
@@ -39,9 +38,9 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
     super(DRIVER_CLASS, new MariadbColumnstoreNameTransformer(), new MariadbColumnstoreSqlOperations());
   }
 
-
   @Override
-  protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
+  protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config, ConfiguredAirbyteCatalog catalog)
+      throws Exception {
     final JdbcDatabase database = getDatabase(dataSource);
     final MariadbColumnstoreSqlOperations mariadbColumnstoreSqlOperations = (MariadbColumnstoreSqlOperations) getSqlOperations();
 

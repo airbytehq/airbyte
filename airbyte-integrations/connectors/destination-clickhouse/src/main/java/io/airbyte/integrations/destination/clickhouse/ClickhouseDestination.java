@@ -81,7 +81,8 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
   }
 
   @Override
-  protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
+  protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config, ConfiguredAirbyteCatalog catalog)
+      throws Exception {
     final JdbcDatabase database = getDatabase(dataSource);
     final NamingConventionTransformer namingResolver = getNamingResolver();
     for (String outputSchema : getOutputSchemas(config, catalog)) {

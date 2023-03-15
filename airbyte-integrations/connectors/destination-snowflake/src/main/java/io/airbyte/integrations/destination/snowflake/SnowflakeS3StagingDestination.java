@@ -48,7 +48,8 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
   }
 
   @Override
-  protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
+  protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config, ConfiguredAirbyteCatalog catalog)
+      throws Exception {
     final S3DestinationConfig s3Config = getS3DestinationConfig(config);
     final EncryptionConfig encryptionConfig = EncryptionConfig.fromJson(config.get("loading_method").get("encryption"));
     if (!isPurgeStagingData(config) && encryptionConfig instanceof AesCbcEnvelopeEncryption c && c.keyType() == KeyType.EPHEMERAL) {
@@ -59,7 +60,7 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
     }
     final NamingConventionTransformer nameTransformer = getNamingResolver();
     final SnowflakeS3StagingSqlOperations snowflakeS3StagingSqlOperations =
-      new SnowflakeS3StagingSqlOperations(nameTransformer, s3Config.getS3Client(), s3Config, encryptionConfig);
+        new SnowflakeS3StagingSqlOperations(nameTransformer, s3Config.getS3Client(), s3Config, encryptionConfig);
     final JdbcDatabase database = getDatabase(dataSource);
     for (String outputSchema : getOutputSchemas(config, catalog)) {
       attemptTableOperations(outputSchema, database, nameTransformer, snowflakeS3StagingSqlOperations, true);

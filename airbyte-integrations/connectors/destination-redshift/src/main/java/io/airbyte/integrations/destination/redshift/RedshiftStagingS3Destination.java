@@ -41,7 +41,6 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
@@ -65,7 +64,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   @Override
-  protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
+  protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config, ConfiguredAirbyteCatalog catalog)
+      throws Exception {
     final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
     final EncryptionConfig encryptionConfig =
         config.has(UPLOADING_METHOD) ? EncryptionConfig.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
@@ -107,7 +107,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
         SSL_JDBC_PARAMETERS);
   }
 
-  // TODO: This should not be overriden - a RedshiftSQLNameTransformer instance is passed to the constructor
+  // TODO: This should not be overriden - a RedshiftSQLNameTransformer instance is passed to the
+  // constructor
   // So this is needlessly creating new instances on each call
   @Override
   protected NamingConventionTransformer getNamingResolver() {
