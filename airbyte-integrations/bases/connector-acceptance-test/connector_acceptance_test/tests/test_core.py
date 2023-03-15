@@ -414,7 +414,9 @@ class TestSpec(BaseTest):
 
     def test_duplicate_order(self, connector_spec: ConnectorSpecification):
         """
-        Custom ordering of properties is not allowed to have duplicates
+        Custom ordering of field (via the "order" property defined in the field) is not allowed to have duplicates within the same group.
+        `{ "a": { "order": 1 }, "b": { "order": 1 } }` is invalid because there are two fields with order 1
+        `{ "a": { "order": 1 }, "b": { "order": 1, "group": "x" } }` is valid because the fields with the same order are in different groups
         """
         schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
         errors = []
@@ -440,6 +442,8 @@ class TestSpec(BaseTest):
     def test_nested_group(self, connector_spec: ConnectorSpecification):
         """
         Groups can only be defined on the top level properties
+        `{ "a": { "group": "x" }}` is valid because field "a" is a top level field
+        `{ "a": { "oneOf": [{ "type": "object", "properties": { "b": { "group": "x" } } }] }}` is invalid because field "b" is nested in a oneOf
         """
         errors = []
         schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
@@ -454,7 +458,7 @@ class TestSpec(BaseTest):
 
     def test_required_always_show(self, connector_spec: ConnectorSpecification):
         """
-        Fields with always_show are not allowed to be required
+        Fields with always_show are not allowed to be required fields because only optional fields can be hidden in the form in the first place.
         """
         errors = []
         schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
