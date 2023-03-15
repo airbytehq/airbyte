@@ -61,7 +61,7 @@
       "type": ["null", "string"]
     },
     "ixUpdate": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "enterpriseOwned": {
       "type": ["null", "boolean"]
