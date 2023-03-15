@@ -925,7 +925,7 @@
 - name: Instagram
   sourceDefinitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
   dockerRepository: airbyte/source-instagram
-  dockerImageTag: 1.0.2
+  dockerImageTag: 1.0.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/instagram
   icon: instagram.svg
   sourceType: api
@@ -2041,7 +2041,7 @@
 - name: Trello
   sourceDefinitionId: 8da67652-004c-11ec-9a03-0242ac130003
   dockerRepository: airbyte/source-trello
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/trello
   icon: trello.svg
   sourceType: api
@@ -2343,7 +2343,7 @@
 - name: ZohoCRM
   sourceDefinitionId: 4942d392-c7b5-4271-91f9-3b4f4e51eb3e
   dockerRepository: airbyte/source-zoho-crm
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/zoho-crm
   icon: zohocrm.svg
   sourceType: api
