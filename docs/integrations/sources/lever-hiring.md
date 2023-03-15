@@ -11,11 +11,15 @@ This source can sync data for the [Lever Hiring API](https://hire.lever.co/devel
 This Source is capable of syncing the following core Streams:
 
 * [Applications](https://hire.lever.co/developer/documentation#list-all-applications)
+* [ArchiveReasons](https://hire.lever.co/developer/documentation#archive-reasons)
 * [Interviews](https://hire.lever.co/developer/documentation#list-all-interviews)
 * [Notes](https://hire.lever.co/developer/documentation#list-all-notes)
 * [Offers](https://hire.lever.co/developer/documentation#list-all-offers)
 * [Opportunities](https://hire.lever.co/developer/documentation#list-all-opportunities)
+* [Postings](https://hire.lever.co/developer/documentation#postings)
 * [Referrals](https://hire.lever.co/developer/documentation#list-all-referrals)
+* [Sources](https://hire.lever.co/developer/documentation#sources)
+* [Stages](https://hire.lever.co/developer/documentation#stages)
 * [Users](https://hire.lever.co/developer/documentation#list-all-users)
 
 ### Features
@@ -43,6 +47,7 @@ The Lever Hiring connector should not run into Lever Hiring API limitations unde
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.4 | 2023-03-15 | [24102](https://github.com/airbytehq/airbyte/pull/24102) | Source Lever: add sources, stages, postings, archivereasons streams |
 | 0.1.3 | 2022-10-14 | [17996](https://github.com/airbytehq/airbyte/pull/17996) | Add Basic Auth management |
 | 0.1.2 | 2021-12-30 | [9214](https://github.com/airbytehq/airbyte/pull/9214) | Update title and descriptions |
 | 0.1.1 | 2021-12-16 | [7677](https://github.com/airbytehq/airbyte/pull/7677) | OAuth Automated Authentication |
