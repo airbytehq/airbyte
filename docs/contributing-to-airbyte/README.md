@@ -77,9 +77,9 @@ The CDK currently does not support creating destinations, but it will very soon.
 
 Changes to connector behavior should always be accompanied by a version bump and a changelog entry. We use [semantic versioning](https://semver.org/) to version changes to connectors. Since connectors are a bit different from APIs, we have our own take on semantic versioning, focusing on maintaining the best user experience of using a connector.
 
-- Major: version when you make a change which requires manual intervention (update to config or configured catalog) for an existing connection to continue to succeed, or one in which data that was previously being synced will no longer be synced
-- Minor: version when you add user-facing functionality in a backwards compatible manner
-- Patch: version when you make backwards compatible bug fixes or performance improvements
+- Major: a version in which a change is made which requires manual intervention (update to config or configured catalog) for an existing connection to continue to succeed, or one in which data that was previously being synced will no longer be synced
+- Minor: a version that introduces user-facing functionality in a backwards compatible manner
+- Patch: a version that introduces backwards compatible bug fixes or performance improvements
 
 ## Examples
 
@@ -96,6 +96,8 @@ Here are some examples of code changes and their respective version changes:
 | Updating the format of the connector's `STATE`                            | Incremental streams will automatically run a full refresh only for the next sync                                 | Patch          |
 | Optimizing a connector's performance                                      | Syncs will be faster                                                                                             | Patch          |
 | Fixing a bug in a connector                                               | Some syncs that would have failed will now succeed                                                               | Patch          |
+
+Trying to contribute, and don't see the change you want to make in this list? Call it out in your PR and your reviewer will help you pick the correct type of version change. Feel free to contribute the results back to this list!
 
 ### **Documentation**
 
