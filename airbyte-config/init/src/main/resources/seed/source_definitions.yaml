@@ -65,7 +65,7 @@
 - name: Amazon Ads
   sourceDefinitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
   dockerRepository: airbyte/source-amazon-ads
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
   icon: amazonads.svg
   sourceType: api
@@ -79,7 +79,7 @@
 - name: Amazon Seller Partner
   sourceDefinitionId: e55879a8-0ef8-4557-abcf-ab34c53ec460
   dockerRepository: airbyte/source-amazon-seller-partner
-  dockerImageTag: 0.2.33
+  dockerImageTag: 1.0.0
   sourceType: api
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-seller-partner
   icon: amazonsellerpartner.svg
@@ -649,6 +649,13 @@
   icon: freshservice.svg
   sourceType: api
   releaseStage: alpha
+- name: GCS
+  sourceDefinitionId: 2a8c41ae-8c23-4be0-a73f-2ab10ca1a820
+  dockerRepository: airbyte/source-gcs
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gcs
+  icon: gcs.svg
+  sourceType: file
 - name: Genesys
   sourceDefinitionId: 5ea4459a-8f1a-452a-830f-a65c38cc438d
   dockerRepository: airbyte/source-genesys
@@ -753,7 +760,7 @@
   sourceDefinitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
   dockerRepository: airbyte/source-google-analytics-v4
   dockerImageTag: 0.1.34
-  documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-universal-analytics
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-v4/
   icon: google-analytics.svg
   sourceType: api
   releaseStage: generally_available
@@ -761,7 +768,7 @@
   sourceDefinitionId: 3cc2eafd-84aa-4dca-93af-322d9dfeec1a
   dockerRepository: airbyte/source-google-analytics-data-api
   dockerImageTag: 0.1.2
-  documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-v4
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-data-api/
   icon: google-analytics.svg
   sourceType: api
   releaseStage: beta
@@ -918,7 +925,7 @@
 - name: Instagram
   sourceDefinitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
   dockerRepository: airbyte/source-instagram
-  dockerImageTag: 1.0.2
+  dockerImageTag: 1.0.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/instagram
   icon: instagram.svg
   sourceType: api
@@ -1163,11 +1170,15 @@
 - name: Microsoft SQL Server (MSSQL)
   sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   dockerRepository: airbyte/source-mssql
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
   icon: mssql.svg
   sourceType: database
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${host}"
+      - "${tunnel_method.tunnel_host}"
 - name: Microsoft teams
   sourceDefinitionId: eaf50f04-21dd-4620-913b-2a83f5635227
   dockerRepository: airbyte/source-microsoft-teams
@@ -1222,11 +1233,15 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 2.0.0
+  dockerImageTag: 2.0.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - "${host}"
+      - "${tunnel_method.tunnel_host}"
 - name: n8n
   sourceDefinitionId: 4a961f66-5e99-4430-8320-a73afe52f7a2
   dockerRepository: airbyte/source-n8n
@@ -1696,7 +1711,7 @@
 - name: S3
   sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   dockerRepository: airbyte/source-s3
-  dockerImageTag: 1.0.2
+  dockerImageTag: 2.0.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/s3
   icon: s3.svg
   sourceType: file
@@ -2026,7 +2041,7 @@
 - name: Trello
   sourceDefinitionId: 8da67652-004c-11ec-9a03-0242ac130003
   dockerRepository: airbyte/source-trello
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/trello
   icon: trello.svg
   sourceType: api
@@ -2328,7 +2343,7 @@
 - name: ZohoCRM
   sourceDefinitionId: 4942d392-c7b5-4271-91f9-3b4f4e51eb3e
   dockerRepository: airbyte/source-zoho-crm
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/zoho-crm
   icon: zohocrm.svg
   sourceType: api

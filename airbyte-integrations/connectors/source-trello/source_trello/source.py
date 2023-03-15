@@ -10,7 +10,7 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+from requests_oauthlib import OAuth1
 
 from .utils import TrelloRequestRateLimits as balancer
 
@@ -167,38 +167,19 @@ class Actions(ChildStreamMixin, IncrementalTrelloStream):
         return f"boards/{stream_slice['id']}/actions"
 
 
-class TrelloAuthenticator(HttpAuthenticator):
-    """
-    Generate auth header for start making requests from API token and API key.
-    """
-
-    def __init__(
-        self,
-        token: str,
-        key: str,
-        auth_header: str = "Authorization",
-        key_header: str = "oauth_consumer_key",
-        token_header: str = "oauth_token",
-    ):
-        self.auth_header = auth_header
-        self.key_header = key_header
-        self.token_header = token_header
-        self._key = key
-        self._token = token
-
-    def get_auth_header(self) -> Mapping[str, Any]:
-        return {self.auth_header: f'OAuth {self.key_header}="{self._key}", {self.token_header}="{self._token}"'}
-
-
 class SourceTrello(AbstractSource):
     """
     Source Trello fetch date from web-based, Kanban-style, list-making application.
     """
 
     @staticmethod
-    def _get_authenticator(config: dict) -> TrelloAuthenticator:
-        key, token = config["key"], config["token"]
-        return TrelloAuthenticator(token=token, key=key)
+    def _get_authenticator(config: dict):
+        return OAuth1(
+            client_key=config["client_id"],
+            client_secret=config["client_secret"],
+            resource_owner_key=config["token"],
+            resource_owner_secret=config["key"],
+        )
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
@@ -210,7 +191,7 @@ class SourceTrello(AbstractSource):
 
             authenticator = self._get_authenticator(config)
 
-            response = requests.get(url, headers=authenticator.get_auth_header())
+            response = requests.get(url, auth=authenticator)
             response.raise_for_status()
             available_boards = {row.get("id") for row in response.json()}
             for board_id in config.get("board_ids", []):
