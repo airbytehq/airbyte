@@ -10,7 +10,8 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 
 /**
  * The Check method of the Airbyte Protocol is used by Airbyte Actors to verify proper connectivity.
- * This can include verifying hosts are reachable, proper authentication, ability to read or write, etc.
+ * This can include verifying hosts are reachable, proper authentication, ability to read or write,
+ * etc.
  */
 @FunctionalInterface
 public interface Check {
