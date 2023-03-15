@@ -56,7 +56,7 @@ If this is a community PR, the Airbyte engineer reviewing this PR is responsible
 - [ ] Unit & integration tests added and passing. Community members, please provide proof of success locally e.g: screenshot or copy-paste unit, integration, and acceptance test output. To run acceptance tests for a Python connector, follow instructions in the README. For java connectors run `./gradlew :airbyte-integrations:connectors:<name>:integrationTest`.
 - [ ] Code reviews completed
 - [ ] Connector version has been incremented
-    - [ ] Version has been bumped according to our [Semantic Versioning for Connectors](TODO LINK) guidelines
+    - [ ] Version has been bumped according to our [Semantic Versioning for Connectors](https://docs.airbyte.com/contributing-to-airbyte/semantic-versioning-for-connectors) guidelines
     - [ ] `Dockerfile` has updated version
 - [ ] Documentation updated
     - [ ] Connector's `README.md`

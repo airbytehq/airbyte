@@ -97,8 +97,6 @@ Here are some examples of code changes and their respective version changes:
 | Optimizing a connector's performance                                      | Syncs will be faster                                                                                             | Patch          |
 | Fixing a bug in a connector                                               | Some syncs that would have failed will now succeed                                                               | Patch          |
 
-All changes to the connector in the PR should be added to the changelog entry. When in doubt,   release unrelated changes in separate pull requests and connector versions, so that each change has the potential to be rolled back independently if necessary.
-
 ### **Documentation**
 
 Our goal is to keep our docs comprehensive and updated. If you would like to help us in doing so, we are grateful for any kind of contribution:
