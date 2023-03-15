@@ -59,13 +59,6 @@
         "title" : "JDBC URL Params",
         "type" : "string",
         "order" : 6
-      },
-      "ssl" : {
-        "title" : "SSL Connection",
-        "description" : "Encrypt data using SSL.",
-        "type" : "boolean",
-        "default" : false,
-        "order" : 7
       }
     }
   }

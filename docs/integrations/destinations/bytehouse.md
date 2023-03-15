@@ -5,47 +5,45 @@
 
 ### Output schema
 
-Is the output schema fixed (e.g: for an API like Stripe)? If so, point to the connector's schema (e.g: link to Stripe’s documentation) or describe the schema here directly (e.g: include a diagram or paragraphs describing the schema).
+#### Output Schema
 
-Describe how the connector's schema is mapped to Airbyte concepts. An example description might be: "MagicDB tables become Airbyte Streams and MagicDB columns become Airbyte Fields. In addition, an extracted\_at column is appended to each row being read."
+Each stream will be output into its own table in ByteHouse. Each table will contain 3 columns:
 
-### Data type mapping
-
-This section should contain a table mapping each of the connector's data types to Airbyte types. At the moment, Airbyte uses the same types used by [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html). `string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number` are the most commonly used data types.
-
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-
+* `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in ByteHouse is `String`.
+* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in ByteHouse is `DateTime64`.
+* `_airbyte_data`: a json blob representing with the event data. The column type in ByteHouse is `String`.
 
 ### Features
 
 This section should contain a table with the following format:
 
 | Feature | Supported?(Yes/No) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync |  |  |
-| Incremental Sync |  |  |
-| Replicate Incremental Deletes |  |  |
-| For databases, WAL/Logical replication |  |  |
-| SSL connection |  |  |
-| SSH Tunnel Support |  |  |
-| (Any other source-specific features) |  |  |
-
-### Performance considerations
-
-Could this connector hurt the user's database/API/etc... or put too much strain on it in certain circumstances? For example, if there are a lot of tables or rows in a table? What is the breaking point (e.g: 100mm&gt; records)? What can the user do to prevent this? (e.g: use a read-only replica, or schedule frequent syncs, etc..)
+| :--- |:-------------------| :--- |
+| Full Refresh Sync | Yes                |  |
+| Incremental Sync | Yes                |  |
+| SSL connection | Yes                |  |
 
 ## Getting started
 
 ### Requirements
 
-* What versions of this connector does this implementation support? (e.g: `postgres v3.14 and above`)
-* What configurations, if any, are required on the connector? (e.g: `buffer_size > 1024`)
-* Network accessibility requirements
-* Credentials/authentication requirements? (e.g: A  DB user with read permissions on certain tables)
+To use the ByteHouse destination, you'll need:
 
-### Setup guide
+* ByteHouse 1.15.0 and above
+* A user with permission to create tables, read & write rows to involved tables.
 
-For each of the above high-level requirements as appropriate, add or point to a follow-along guide. See existing source or destination guides for an example.
+#### Target Database
 
-For each major cloud provider we support, also add a follow-along guide for setting up Airbyte to connect to that destination. See the Postgres destination guide for an example of what this should look like.
+You will need to choose an existing database or create a new database that will be used to store synced data from Airbyte.
+
+### Setup the ByteHouse Destination in Airbyte
+
+You should now have all the requirements needed to configure ByteHouse as a destination in the UI. You'll need the following information to configure the ClickHouse destination:
+
+* **Host**
+* **Port**
+* **Account**
+* **Username**
+* **Password**
+* **Database**
+* **Jdbc_url_params**
