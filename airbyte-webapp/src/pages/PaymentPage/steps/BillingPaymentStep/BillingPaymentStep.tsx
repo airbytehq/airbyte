@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { LoadingButton } from "components";
+// import { LoadingButton } from "components";
 import { Separator } from "components/Separator";
 
 import { GetUpgradeSubscriptionDetail } from "core/domain/payment";
@@ -12,8 +12,8 @@ interface IProps {
   productPrice: number;
   selectedProductPrice: number;
   planDetail?: GetUpgradeSubscriptionDetail;
-  onUpdadePlan: () => void;
-  updatePlanLoading: boolean;
+  // onUpdadePlan: () => void;
+  // updatePlanLoading: boolean;
 }
 
 const Container = styled.div`
@@ -70,20 +70,20 @@ const ContentText = styled.div`
   color: ${({ theme }) => theme.black300};
 `;
 
-const FooterContainer = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-`;
+// const FooterContainer = styled.div`
+//   width: 100%;
+//   display: flex;
+//   flex-direction: row;
+//   align-items: center;
+//   justify-content: center;
+// `;
 
 const BillingPaymentStep: React.FC<IProps> = ({
   productPrice,
   selectedProductPrice,
   planDetail,
-  onUpdadePlan,
-  updatePlanLoading,
+  // onUpdadePlan,
+  // updatePlanLoading,
 }) => {
   const { formatMessage } = useIntl();
   const seperatorHeight = "47px";
@@ -148,12 +148,12 @@ const BillingPaymentStep: React.FC<IProps> = ({
           </ContentItem>
         </ContentContainer>
       </Container>
-      <Separator height={seperatorHeight} />
+      {/* <Separator height={seperatorHeight} />
       <FooterContainer>
         <LoadingButton size="xl" onClick={onUpdadePlan} isLoading={updatePlanLoading}>
           <FormattedMessage id="plan.update.btn" />
         </LoadingButton>
-      </FooterContainer>
+      </FooterContainer> */}
     </>
   );
 };

@@ -5,14 +5,15 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button, DropDownRow } from "components";
+import { ConfirmationModal } from "components/ConfirmationModal";
 import { Separator } from "components/Separator";
 
 import { ROLES, ROLES_ZH } from "core/Constants/roles";
 import { useRoleOptions } from "services/roles/RolesService";
 import { useListUsers, useUserAsyncAction } from "services/users/UsersService";
 
-import ChangeRoleModal from "./components/ChangeRoleModal";
-import DeleteUserModal from "./components/DeleteUserModal";
+// import ChangeRoleModal from "./components/ChangeRoleModal";
+// import DeleteUserModal from "./components/DeleteUserModal";
 import InviteUserModal from "./components/InviteUserModal";
 import UserTable from "./components/UserTable";
 
@@ -97,14 +98,18 @@ const UserManagementPage: React.FC<IProps> = ({ setMessageId, setMessageType }) 
   // Change role user functionality
   const [changeRoleModal, setChangeRoleModal] = useState<boolean>(false);
   const [changeRoleLoading, setChangeRoleLoading] = useState<boolean>(false);
-  const toggleChangeRoleModal = () => setChangeRoleModal(!changeRoleModal);
+
   const onChangeRole = (userId: string, option: DropDownRow.IDataItem) => {
+    onCancelChangeRole();
     if (users.find((user) => user.id === userId)?.roleIndex !== option.value) {
       toggleChangeRoleModal();
       setUserId(userId);
       setUserRole(option.value);
     }
   };
+
+  const toggleChangeRoleModal = () => setChangeRoleModal(!changeRoleModal);
+
   const onConfirmChangeRole = useCallback(async () => {
     setChangeRoleLoading(true);
     onUpdateRole({ id: userId, roleIndex: userRole as number })
@@ -118,6 +123,7 @@ const UserManagementPage: React.FC<IProps> = ({ setMessageId, setMessageType }) 
         setChangeRoleLoading(false);
       });
   }, [userId, userRole]);
+
   const onCancelChangeRole = () => {
     toggleChangeRoleModal();
     setUserId("");
@@ -156,22 +162,45 @@ const UserManagementPage: React.FC<IProps> = ({ setMessageId, setMessageType }) 
           setMessageType={setMessageType}
         />
       )}
+
       {changeRoleModal && (
+        <ConfirmationModal
+          title="user.changeRoleModal.heading"
+          text="user.changeRoleModal.confirmationMessage"
+          submitButtonText="user.changeRoleModal.changeBtn"
+          loading={changeRoleLoading}
+          onClose={toggleChangeRoleModal}
+          onSubmit={onConfirmChangeRole}
+        />
+      )}
+
+      {deleteModal && (
+        <ConfirmationModal
+          title="user.deleteModal.heading"
+          text="user.deleteModal.confirmationMessage"
+          submitButtonText="user.deleteModal.deleteBtn"
+          loading={deleteLoading}
+          onClose={toggleDeleteModal}
+          onSubmit={onConfirmDelete}
+        />
+      )}
+
+      {/* {changeRoleModal && (
         <ChangeRoleModal
           onClose={toggleChangeRoleModal}
           onChangeRole={onConfirmChangeRole}
           onCancel={onCancelChangeRole}
           isLoading={changeRoleLoading}
         />
-      )}
-      {deleteModal && (
+      )} */}
+      {/* {deleteModal && (
         <DeleteUserModal
           onClose={toggleDeleteModal}
           onDelete={onConfirmDelete}
           onCancel={onCancelDelete}
           isLoading={deleteLoading}
         />
-      )}
+      )} */}
     </>
   );
 };

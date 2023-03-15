@@ -33,6 +33,19 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2023.03.14
+1. Add a source page UI optimization
+2. UI related changes - source/destination testing page
+#### 2023.03.13
+1. Frontend translation update
+2. UI related changes - config page UI(create_connection bgColor)
+#### 2023.03.10
+1. UI related changes - change plan page(add back button)
+2. UI related changes - modal size(change CancelPlanModal/DeleteUserModal/ChangeRoleModal)
+#### 2023.03.09
+1. Sign out confirmation message.
+2. UI related changes - sign out button location
+3. UI related changes - add/edit source/destination page (Change the phrase to: Expand this form to continue setting up your integration )
 #### 2023.03.08
 1. Overall size improvements
 #### 2023.03.07

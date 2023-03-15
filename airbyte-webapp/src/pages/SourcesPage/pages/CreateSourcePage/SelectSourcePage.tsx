@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { BigButton, ButtonRows } from "components/base/Button/BigButton";
 import { ConnectionStep } from "components/ConnectionStep";
 import DefinitionCard from "components/DataPanel";
+import HeadTitle from "components/HeadTitle";
 
 import { Action, Namespace } from "core/analytics";
 import { Connector, ConnectorDefinition } from "core/domain/connector";
@@ -64,6 +65,7 @@ const SelectNewSourceCard: React.FC = () => {
   };
   return (
     <>
+      <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />
       <ConnectionStep lightMode type="source" />
       <Container>
         <DefinitionCard

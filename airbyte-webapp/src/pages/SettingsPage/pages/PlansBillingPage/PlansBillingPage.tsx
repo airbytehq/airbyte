@@ -4,6 +4,7 @@ import { FormattedMessage, FormattedDate } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components";
+import { ConfirmationModal } from "components/ConfirmationModal";
 import { CalendarIcon } from "components/icons/CalendarIcon";
 import { Separator } from "components/Separator";
 
@@ -16,7 +17,7 @@ import { RoutePaths } from "pages/routePaths";
 import { useAuthDetail, useAuthenticationService } from "services/auth/AuthSpecificationService";
 import { useUserPlanDetail, useAsyncAction } from "services/payments/PaymentsService";
 
-import { CancelPlanModal } from "./components/CancelPlanModal";
+// import { CancelPlanModal } from "./components/CancelPlanModal";
 import PlanClause from "./components/PlanClause";
 import styles from "./style.module.scss";
 
@@ -126,7 +127,7 @@ const PlansBillingPage: React.FC<IProps> = ({ setMessageId, setMessageType }) =>
 
   return (
     <>
-      {toggleCancel && (
+      {/* {toggleCancel && (
         <CancelPlanModal
           onClose={toggleCancleSuscriptionModal}
           onConfirm={onCancelSubscription}
@@ -134,7 +135,29 @@ const PlansBillingPage: React.FC<IProps> = ({ setMessageId, setMessageType }) =>
           confirmLoading={confirmLoading}
           expiresOn={userPlanDetail.expiresTime}
         />
+      )} */}
+      {toggleCancel && (
+        <ConfirmationModal
+          title="subscription.cancelSubscriptionModal.title"
+          text="subscription.cancelSubscriptionModal.content"
+          submitButtonText="cancelSubscription.modal.btn.confirm"
+          cancelButtonText="cancelSubscription.modal.btn.notNow"
+          onSubmit={onCancelSubscription}
+          onClose={toggleCancleSuscriptionModal}
+          loading={confirmLoading}
+          contentValues={{
+            expiryDate: (
+              <FormattedDate
+                value={(userPlanDetail.expiresTime as number) * 1000}
+                day="numeric"
+                month="long"
+                year="numeric"
+              />
+            ),
+          }}
+        />
       )}
+
       <div className={styles.container}>
         <div className={styles.header}>
           <CalendarIcon />

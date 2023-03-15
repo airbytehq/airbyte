@@ -6,6 +6,7 @@ import styled from "styled-components";
 import { BigButton, ButtonRows } from "components/base/Button/BigButton";
 import { ConnectionStep, CreateStepTypes } from "components/ConnectionStep";
 import DataPanel from "components/DataPanel";
+import HeadTitle from "components/HeadTitle";
 
 import { Connector, ConnectorDefinition } from "core/domain/connector";
 import useRouter from "hooks/useRouter";
@@ -208,6 +209,7 @@ const SelectNewConnectionCard: React.FC<{
   };
   return (
     <>
+      <HeadTitle titles={[{ id: "connection.newConnectionTitle" }]} />
       <ConnectionStep lightMode type="connection" activeStep={currentStep} />
       <Container>
         {currentStep === CreateStepTypes.CREATE_SOURCE && (

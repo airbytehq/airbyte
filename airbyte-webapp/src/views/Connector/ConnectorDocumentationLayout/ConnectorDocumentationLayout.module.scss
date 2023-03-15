@@ -31,6 +31,12 @@
   text-align: center;
 }
 
+.pageContainer {
+  // height: calc(100% - 80px);
+  flex: 1;
+  height: 1px;
+}
+
 .container {
   overflow: auto;
   height: 100%;
@@ -64,4 +70,13 @@
   margin: auto;
   height: 25px;
   color: colors.$grey-100;
+}
+
+.panelGrabber {
+  // height: calc(100vh - 70px);
+  padding: 6px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

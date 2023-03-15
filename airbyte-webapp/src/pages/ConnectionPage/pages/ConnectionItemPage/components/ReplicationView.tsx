@@ -77,6 +77,8 @@ const Content = styled.div`
   // max-width: 1279px;
   margin: 0 26px;
   padding-bottom: 10px;
+  height: 1px;
+  flex: 1;
 `;
 
 const TryArrow = styled(FontAwesomeIcon)`
