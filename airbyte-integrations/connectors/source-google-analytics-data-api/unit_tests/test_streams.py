@@ -87,6 +87,7 @@ def test_request_body_json(patch_base_class):
             {"name": "browser"},
         ],
         "dateRanges": [request_body_params["stream_slice"]],
+        "returnPropertyQuota": True,
     }
 
     request_body_json = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"]).request_body_json(**request_body_params)
@@ -258,7 +259,7 @@ def test_http_method(patch_base_class):
     [
         (HTTPStatus.OK, False),
         (HTTPStatus.BAD_REQUEST, False),
-        (HTTPStatus.TOO_MANY_REQUESTS, False),
+        (HTTPStatus.TOO_MANY_REQUESTS, True),
         (HTTPStatus.INTERNAL_SERVER_ERROR, True),
     ],
 )
