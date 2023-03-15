@@ -13,7 +13,7 @@ From your top-level `/airbyte` directory, run the following to perform a load te
 
 
 By default, the script assumes that the Airbyte instance's server is accessible at `localhost:8001`. This is the default server location when
-deploying Airbyte with `docker-compose up`.
+deploying Airbyte with `docker compose up`.
 
 Additionally, the E2E Test Source created by the script will take 10 minutes to complete a sync by default.
 

@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.db.PgLsn;
 import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -19,7 +20,8 @@ import org.slf4j.LoggerFactory;
 public class PostgresCdcTargetPosition implements CdcTargetPosition {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcTargetPosition.class);
-  private final PgLsn targetLsn;
+  @VisibleForTesting
+  final PgLsn targetLsn;
 
   public PostgresCdcTargetPosition(final PgLsn targetLsn) {
     this.targetLsn = targetLsn;
@@ -51,15 +53,26 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
 
   @Override
   public boolean reachedTargetPosition(final JsonNode valueAsJson) {
-    final PgLsn eventLsn = extractLsn(valueAsJson);
+    final SnapshotMetadata snapshotMetadata = SnapshotMetadata.fromString(valueAsJson.get("source").get("snapshot").asText());
 
-    if (targetLsn.compareTo(eventLsn) > 0) {
+    if (SnapshotMetadata.isSnapshotEventMetadata(snapshotMetadata)) {
       return false;
+    } else if (SnapshotMetadata.LAST == snapshotMetadata) {
+      LOGGER.info("Signalling close because Snapshot is complete");
+      return true;
     } else {
-      final SnapshotMetadata snapshotMetadata = SnapshotMetadata.valueOf(valueAsJson.get("source").get("snapshot").asText().toUpperCase());
-      // if not snapshot or is snapshot but last record in snapshot.
-      return SnapshotMetadata.TRUE != snapshotMetadata;
+      final PgLsn eventLsn = extractLsn(valueAsJson);
+      boolean isEventLSNAfter = targetLsn.compareTo(eventLsn) <= 0;
+      if (isEventLSNAfter) {
+        LOGGER.info("Signalling close because record's LSN : " + eventLsn + " is after target LSN : " + targetLsn);
+      }
+      return isEventLSNAfter;
     }
+  }
+
+  @Override
+  public boolean reachedTargetPosition(final Long lsn) {
+    return lsn != null && lsn.compareTo(targetLsn.asLong()) >= 0;
   }
 
   private PgLsn extractLsn(final JsonNode valueAsJson) {
@@ -68,6 +81,11 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
         .map(Long::parseLong)
         .map(PgLsn::fromLong)
         .orElseThrow(() -> new IllegalStateException("Could not find LSN"));
+  }
+
+  @Override
+  public boolean isHeartbeatSupported() {
+    return true;
   }
 
 }

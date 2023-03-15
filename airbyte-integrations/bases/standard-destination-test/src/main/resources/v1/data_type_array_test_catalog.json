@@ -1,0 +1,61 @@
+{
+  "streams": [
+    {
+      "name": "array_test_1",
+      "json_schema": {
+        "properties": {
+          "string_array": {
+            "type": ["array"],
+            "items": [
+              {
+                "$ref": "WellKnownTypes.json#/definitions/String"
+              }
+            ]
+          },
+          "array_date": {
+            "type": ["array"],
+            "items": {
+              "$ref": "WellKnownTypes.json#/definitions/Date"
+            }
+          },
+          "array_timestamp_with_timezone": {
+            "type": ["array"],
+            "items": {
+              "$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"
+            }
+          },
+          "array_timestamp_without_timezone": {
+            "type": ["array"],
+            "items": {
+              "$ref": "WellKnownTypes.json#/definitions/TimestampWithoutTimezone"
+            }
+          },
+          "array_number": {
+            "type": ["array"],
+            "items": {
+              "$ref": "WellKnownTypes.json#/definitions/Number"
+            }
+          },
+          "array_integer": {
+            "type": ["array"],
+            "items": {
+              "$ref": "WellKnownTypes.json#/definitions/Integer"
+            }
+          },
+          "array_boolean": {
+            "type": ["array"],
+            "items": {
+              "$ref": "WellKnownTypes.json#/definitions/Boolean"
+            }
+          },
+          "array_binary_data": {
+            "type": ["array"],
+            "items": {
+              "$ref": "WellKnownTypes.json#/definitions/BinaryData"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

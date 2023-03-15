@@ -1,0 +1,123 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "CampsiteID": {
+      "type": "string"
+    },
+    "FacilityID": {
+      "type": "string"
+    },
+    "CampsiteName": {
+      "type": "string"
+    },
+    "CampsiteType": {
+      "type": "string"
+    },
+    "TypeOfUse": {
+      "type": "string"
+    },
+    "Loop": {
+      "type": "string"
+    },
+    "CampsiteAccessible": {
+      "type": "boolean"
+    },
+    "CampsiteLongitude": {
+      "type": "number"
+    },
+    "CampsiteLatitude": {
+      "type": "number"
+    },
+    "CreatedDate": {
+      "type": "string"
+    },
+    "LastUpdatedDate": {
+      "type": "string"
+    },
+    "ATTRIBUTES": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "AttributeID": {
+            "type": "integer"
+          },
+          "AttributeName": {
+            "type": "string"
+          },
+          "AttributeValue": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "PERMITTEDEQUIPMENT": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "EquipmentName": {
+            "type": "string"
+          },
+          "MaxLength": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "ENTITYMEDIA": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "EntityMediaID": {
+            "type": "string"
+          },
+          "MediaType": {
+            "type": "string"
+          },
+          "EntityID": {
+            "type": "string"
+          },
+          "EntityType": {
+            "type": "string"
+          },
+          "Title": {
+            "type": "string"
+          },
+          "Subtitle": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "EmbedCode": {
+            "type": "string"
+          },
+          "Height": {
+            "type": "integer"
+          },
+          "Width": {
+            "type": "integer"
+          },
+          "IsPrimary": {
+            "type": "boolean"
+          },
+          "IsPreview": {
+            "type": "boolean"
+          },
+          "IsGallery": {
+            "type": "boolean"
+          },
+          "URL": {
+            "type": "string"
+          },
+          "Credits": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

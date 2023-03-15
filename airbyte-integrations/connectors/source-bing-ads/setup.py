@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -9,7 +9,7 @@ MAIN_REQUIREMENTS = ["airbyte-cdk", "bingads~=13.0.13", "vcrpy==4.1.1", "backoff
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
-    "source-acceptance-test",
+    "connector-acceptance-test",
 ]
 
 setup(

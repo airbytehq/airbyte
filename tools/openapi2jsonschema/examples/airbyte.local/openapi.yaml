@@ -2493,6 +2493,8 @@ components:
           $ref: "#/components/schemas/CatalogDiff"
         breakingChange:
           type: boolean
+        connectionStatus:
+          $ref: "#/components/schemas/ConnectionStatus"
       required:
         - jobInfo
       type: object
@@ -2638,6 +2640,11 @@ components:
           $ref: "#/components/schemas/ConnectionStatus"
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
+        nonBreakingChangesPreference:
+          enum:
+            - ignore
+            - disable
+          type: string
       required:
         - connection
         - sourceId

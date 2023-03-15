@@ -95,6 +95,8 @@ Your database user should now be ready for use with Airbyte.
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :--- | :--- |
+| 0.1.20  | 2023-03-06 | [23455](https://github.com/airbytehq/airbyte/pull/23455) | For network isolation, source connector accepts a list of hosts it is allowed to connect |
+| 0.1.19  | 2022-12-14 | [20436](https://github.com/airbytehq/airbyte/pull/20346)   | Consolidate date/time values mapping for JDBC sources                          |
 |         | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
 | 0.1.18  | 2022-09-01 | [16394](https://github.com/airbytehq/airbyte/pull/16394) | Added custom jdbc properties field |
 | 0.1.17  | 2022-09-01 | [16238](https://github.com/airbytehq/airbyte/pull/16238) | Emit state messages more frequently |

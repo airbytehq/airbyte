@@ -1,23 +1,41 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import hashlib
 import logging
 from functools import cached_property
 from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
 
 import smartsheet
+from airbyte_cdk.sources.streams.http.requests_native_auth import SingleUseRefreshTokenOauth2Authenticator
 
 
 class SmartSheetAPIWrapper:
     def __init__(self, config: Mapping[str, Any]):
         self._spreadsheet_id = config["spreadsheet_id"]
-        self._access_token = config["access_token"]
-        api_client = smartsheet.Smartsheet(self._access_token)
-        api_client.errors_as_exceptions(True)
+        self._config = config
+        self.api_client = smartsheet.Smartsheet(self.get_access_token(config))
+        self.api_client.errors_as_exceptions(True)
         # each call to `Sheets` makes a new instance, so we save it here to make no more new objects
-        self._get_sheet = api_client.Sheets.get_sheet
+        self._get_sheet = self.api_client.Sheets.get_sheet
         self._data = None
+
+    def get_token_hash(self, config: Mapping[str, Any]):
+        credentials = config.get("credentials")
+        return {"hash": hashlib.sha256(f"{credentials.get('client_secret')}|{credentials.get('refresh_token')}".encode()).hexdigest()}
+
+    def get_access_token(self, config: Mapping[str, Any]):
+        credentials = config.get("credentials")
+        if config.get("credentials", {}).get("auth_type") == "oauth2.0":
+            authenticator = SingleUseRefreshTokenOauth2Authenticator(
+                config, token_refresh_endpoint="https://api.smartsheet.com/2.0/token", refresh_request_body=self.get_token_hash(config)
+            )
+            return authenticator.get_access_token()
+
+        else:
+            access_token = credentials.get("access_token")
+        return access_token
 
     def _fetch_sheet(self, from_dt: Optional[str] = None) -> None:
         kwargs = {"rows_modified_since": from_dt}
@@ -43,6 +61,7 @@ class SmartSheetAPIWrapper:
     @property
     def data(self) -> smartsheet.models.Row:
         if not self._data:
+            self.api_client._access_token = self.get_access_token(self._config)
             self._fetch_sheet()
         return self._data
 

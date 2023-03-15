@@ -1,29 +1,47 @@
-connector_image: airbyte/source-recharge:dev
-tests:
-  spec:
-    - spec_path: "source_recharge/spec.json"
-  connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
-  discovery:
-    # schemas were changed in `0.2.1` compare to `0.2.0`,
-    # plase remove this bypass, once updated to the newer version!
-    - config_path: "secrets/config.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.2.0"
+acceptance_tests:
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/streams_with_output_records_catalog.json"
+    tests:
+    - config_path: secrets/config.json
+      empty_streams:
+      - name: collections
+        bypass_reason: "volatile data"
+      - name: discounts
+        bypass_reason: "volatile data"
+      - name: metafields
+        bypass_reason: "no data from stream"
+      - name: onetimes
+        bypass_reason: "no data from stream"
       timeout_seconds: 1200
-      empty_streams: ["collections", "discounts"]
-  incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/streams_with_output_records_catalog.json"
-      future_state_path: "integration_tests/abnormal_state.json"
-      timeout_seconds: 900
+      expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
+  connection:
+    tests:
+    - config_path: secrets/config.json
+      status: succeed
+    - config_path: integration_tests/invalid_config.json
+      status: failed
+  discovery:
+    tests:
+    - backward_compatibility_tests_config:
+        disable_for_version: 0.2.0
+      config_path: secrets/config.json
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    tests:
+    - config_path: secrets/config.json
+      configured_catalog_path: integration_tests/configured_catalog.json
       timeout_seconds: 1200
+  incremental:
+    tests:
+    - config_path: secrets/config.json
+      configured_catalog_path: integration_tests/streams_with_output_records_catalog.json
+      future_state:
+        future_state_path: integration_tests/abnormal_state.json
+      timeout_seconds: 900
+  spec:
+    tests:
+    - spec_path: source_recharge/spec.json
+connector_image: airbyte/source-recharge:dev
+test_strictness_level: high

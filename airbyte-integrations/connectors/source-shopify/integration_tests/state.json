@@ -11,6 +11,9 @@
   "products": {
     "updated_at": "2022-10-10T06:21:56-07:00"
   },
+  "products_graph_ql": {
+    "updated_at": "2022-11-16T16:00:00-07:00"
+  },
   "abandoned_checkouts": {},
   "metafields": {
     "updated_at": "2022-05-30T23:42:02-07:00"

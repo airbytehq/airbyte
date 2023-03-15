@@ -1,0 +1,146 @@
+{
+  "values": [
+    {
+      "componentBean": {
+        "self": "https://airbyteio.atlassian.net/rest/api/3/component/10047",
+        "id": "10047",
+        "name": "Component 0",
+        "description": "This is a Jira component",
+        "lead": {
+          "self": "https://airbyteio.atlassian.net/rest/api/3/user?accountId=5fc9e78d2730d800760becc4",
+          "accountId": "5fc9e78d2730d800760becc4",
+          "avatarUrls": {
+            "48x48": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+            "24x24": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+            "16x16": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+            "32x32": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png"
+          },
+          "displayName": "integration test",
+          "active": true
+        },
+        "assigneeType": "PROJECT_LEAD",
+        "assignee": {
+          "self": "https://airbyteio.atlassian.net/rest/api/3/user?accountId=5fc9e78d2730d800760becc4",
+          "accountId": "5fc9e78d2730d800760becc4",
+          "avatarUrls": {
+            "48x48": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+            "24x24": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+            "16x16": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+            "32x32": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png"
+          },
+          "displayName": "integration test",
+          "active": true
+        },
+        "realAssigneeType": "PROJECT_LEAD",
+        "realAssignee": {
+          "self": "https://airbyteio.atlassian.net/rest/api/3/user?accountId=5fc9e78d2730d800760becc4",
+          "accountId": "5fc9e78d2730d800760becc4",
+          "avatarUrls": {
+            "48x48": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+            "24x24": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+            "16x16": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+            "32x32": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png"
+          },
+          "displayName": "integration test",
+          "active": true
+        },
+        "isAssigneeTypeValid": true,
+        "project": "IT",
+        "projectId": 10000
+      },
+      "issueCount": 0,
+      "realAssignee": {
+        "self": "https://airbyteio.atlassian.net/rest/api/3/user?accountId=5fc9e78d2730d800760becc4",
+        "accountId": "5fc9e78d2730d800760becc4",
+        "avatarUrls": {
+          "48x48": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+          "24x24": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+          "16x16": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+          "32x32": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png"
+        },
+        "displayName": "integration test",
+        "active": true
+      },
+      "isAssigneeTypeValid": true,
+      "realAssigneeType": "PROJECT_LEAD",
+      "description": "This is a Jira component",
+      "name": "Component 0",
+      "id": "10047",
+      "self": "https://airbyteio.atlassian.net/rest/api/3/component/10047",
+      "projectId": 10000,
+      "project": "IT",
+      "assignee": {
+        "self": "https://airbyteio.atlassian.net/rest/api/3/user?accountId=5fc9e78d2730d800760becc4",
+        "accountId": "5fc9e78d2730d800760becc4",
+        "avatarUrls": {
+          "48x48": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+          "24x24": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+          "16x16": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+          "32x32": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png"
+        },
+        "displayName": "integration test",
+        "active": true
+      },
+      "assigneeType": "PROJECT_LEAD",
+      "lead": {
+        "self": "https://airbyteio.atlassian.net/rest/api/3/user?accountId=5fc9e78d2730d800760becc4",
+        "accountId": "5fc9e78d2730d800760becc4",
+        "avatarUrls": {
+          "48x48": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+          "24x24": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+          "16x16": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+          "32x32": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png"
+        },
+        "displayName": "integration test",
+        "active": true
+      }
+    },
+    {
+      "componentBean": {
+        "self": "https://airbyteio.atlassian.net/rest/api/3/component/10000",
+        "id": "10000",
+        "name": "Component 1",
+        "description": "Component 1",
+        "lead": {
+          "self": "https://airbyteio.atlassian.net/rest/api/3/user?accountId=5fc9e78d2730d800760becc4",
+          "accountId": "5fc9e78d2730d800760becc4",
+          "avatarUrls": {
+            "48x48": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+            "24x24": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+            "16x16": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+            "32x32": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png"
+          },
+          "displayName": "integration test",
+          "active": true
+        },
+        "assigneeType": "PROJECT_DEFAULT",
+        "realAssigneeType": "PROJECT_DEFAULT",
+        "isAssigneeTypeValid": false,
+        "project": "IT",
+        "projectId": 10000
+      },
+      "issueCount": 0,
+      "isAssigneeTypeValid": false,
+      "realAssigneeType": "PROJECT_DEFAULT",
+      "description": "Component 1",
+      "name": "Component 1",
+      "id": "10000",
+      "self": "https://airbyteio.atlassian.net/rest/api/3/component/10000",
+      "projectId": 10000,
+      "project": "IT",
+      "assigneeType": "PROJECT_DEFAULT",
+      "lead": {
+        "self": "https://airbyteio.atlassian.net/rest/api/3/user?accountId=5fc9e78d2730d800760becc4",
+        "accountId": "5fc9e78d2730d800760becc4",
+        "avatarUrls": {
+          "48x48": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+          "24x24": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+          "16x16": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+          "32x32": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png"
+        },
+        "displayName": "integration test",
+        "active": true
+      }
+    }
+  ]
+}

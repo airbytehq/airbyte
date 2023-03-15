@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "contacts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "companyAddress": {
+            "type": ["null", "string"]
+          },
+          "companyName": {
+            "type": ["null", "string"]
+          },
+          "contactEmail": {
+            "type": ["null", "string"]
+          },
+          "contactName": {
+            "type": ["null", "string"]
+          },
+          "contactPhone": {
+            "type": ["null", "string"]
+          },
+          "contactTitle": {
+            "type": ["null", "string"]
+          },
+          "friendlyName": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "size": {
+      "type": ["null", "integer"]
+    }
+  }
+}

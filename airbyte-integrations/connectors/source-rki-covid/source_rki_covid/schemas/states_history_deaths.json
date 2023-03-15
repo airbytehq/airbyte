@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "deaths": {
+      "type": ["integer", "null"]
+    },
+    "date": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "abbreviation": {
+      "type": ["string", "null"]
+    }
+  },
+  "required": ["abbreviation", "date", "deaths", "name"]
+}

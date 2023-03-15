@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -129,9 +129,9 @@ class ResourceSchemaLoader:
         except ValueError as err:
             raise RuntimeError(f"Invalid JSON file format for file {schema_filename}") from err
 
-        return self.__resolve_schema_references(raw_schema)
+        return self._resolve_schema_references(raw_schema)
 
-    def __resolve_schema_references(self, raw_schema: dict) -> dict:
+    def _resolve_schema_references(self, raw_schema: dict) -> dict:
         """
         Resolve links to external references and move it to local "definitions" map.
 
@@ -186,7 +186,7 @@ def split_config(config: Mapping[str, Any]) -> Tuple[dict, InternalConfig]:
      config - Dict object that has been loaded from config file.
 
     :return tuple of user defined config dict with filtered out internal
-    parameters and SAT internal config object.
+    parameters and connector acceptance test internal config object.
     """
     main_config = {}
     internal_config = {}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -144,7 +144,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
             .sourceType("date")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'0001-01-01'", "'9999-12-31'", "'1999-01-08'", "null")
-            .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z", "1999-01-08T00:00:00Z", null)
+            .addExpectedValues("0001-01-01", "9999-12-31", "1999-01-08", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 

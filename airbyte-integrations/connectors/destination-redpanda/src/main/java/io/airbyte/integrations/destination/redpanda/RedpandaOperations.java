@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.redpanda;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,122 +25,120 @@ import org.slf4j.LoggerFactory;
 
 public class RedpandaOperations implements Closeable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RedpandaOperations.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RedpandaOperations.class);
 
-    private final Admin adminClient;
+  private final Admin adminClient;
 
-    private final KafkaProducer<String, JsonNode> kafkaProducer;
+  private final KafkaProducer<String, JsonNode> kafkaProducer;
 
+  public RedpandaOperations(RedpandaConfig redpandaConfig) {
+    this.adminClient = redpandaConfig.createAdminClient();
+    this.kafkaProducer = redpandaConfig.createKafkaProducer();
+  }
 
-    public RedpandaOperations(RedpandaConfig redpandaConfig) {
-        this.adminClient = redpandaConfig.createAdminClient();
-        this.kafkaProducer = redpandaConfig.createKafkaProducer();
-    }
+  public void createTopic(Collection<TopicInfo> topics) {
+    var newTopics = topics.stream()
+        .map(tf -> new NewTopic(tf.name(), tf.numPartitions(), tf.replicationFactor()))
+        .collect(Collectors.toSet());
 
-    public void createTopic(Collection<TopicInfo> topics) {
-        var newTopics = topics.stream()
-            .map(tf -> new NewTopic(tf.name(), tf.numPartitions(), tf.replicationFactor()))
-            .collect(Collectors.toSet());
+    var createTopicsResult = adminClient.createTopics(newTopics);
 
-        var createTopicsResult = adminClient.createTopics(newTopics);
+    // we need to wait for results since data replication is directly dependent on topic creation
 
-
-        // we need to wait for results since data replication is directly dependent on topic creation
-
-        createTopicsResult.values().values().forEach(f -> {
-            try {
-                syncWrapper(() -> f);
-            } catch (ExecutionException e) {
-                // errors related to already existing topics should be ignored
-                if (!(e.getCause() instanceof TopicExistsException)) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-    }
-
-    public void deleteTopic(Collection<String> topics) {
-
-        var deleteTopicsResult = adminClient.deleteTopics(topics);
-
-        try {
-            syncWrapper(deleteTopicsResult::all);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
+    createTopicsResult.values().values().forEach(f -> {
+      try {
+        syncWrapper(() -> f);
+      } catch (ExecutionException e) {
+        // errors related to already existing topics should be ignored
+        if (!(e.getCause() instanceof TopicExistsException)) {
+          throw new RuntimeException(e);
         }
+      }
+    });
+  }
+
+  public void deleteTopic(Collection<String> topics) {
+
+    var deleteTopicsResult = adminClient.deleteTopics(topics);
+
+    try {
+      syncWrapper(deleteTopicsResult::all);
+    } catch (ExecutionException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public Set<String> listTopics() {
+
+    var listTopics = adminClient.listTopics();
+
+    try {
+      return syncWrapper(listTopics::names);
+    } catch (ExecutionException e) {
+      throw new RuntimeException(e);
     }
 
-    public Set<String> listTopics() {
+  }
 
-        var listTopics = adminClient.listTopics();
+  public void putRecord(String topic, String key, JsonNode data, Consumer<Exception> consumer) {
+    var producerRecord = new ProducerRecord<>(topic, key, data);
 
-        try {
-            return syncWrapper(listTopics::names);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        }
+    kafkaProducer.send(producerRecord, ((metadata, exception) -> {
+      if (exception != null) {
+        consumer.accept(exception);
+      }
+    }));
 
+  }
+
+  // used when testing write permissions on check
+  public void putRecordBlocking(String topic, String key, JsonNode data) {
+
+    var producerRecord = new ProducerRecord<>(topic, key, data);
+
+    try {
+      syncWrapper(kafkaProducer::send, producerRecord);
+    } catch (ExecutionException e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    public void putRecord(String topic, String key, JsonNode data, Consumer<Exception> consumer) {
-        var producerRecord = new ProducerRecord<>(topic, key, data);
+  public void flush() {
+    kafkaProducer.flush();
+  }
 
-        kafkaProducer.send(producerRecord, ((metadata, exception) -> {
-            if (exception != null) {
-                consumer.accept(exception);
-            }
-        }));
-
+  private <T> T syncWrapper(Supplier<Future<T>> asyncFunction) throws ExecutionException {
+    try {
+      return asyncFunction.get().get();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new RuntimeException(e);
     }
+  }
 
-    //used when testing write permissions on check
-    public void putRecordBlocking(String topic, String key, JsonNode data) {
+  private <T> T syncWrapper(Function<ProducerRecord<String, JsonNode>, Future<T>> asyncFunction,
+                            ProducerRecord<String, JsonNode> producerRecord)
+      throws ExecutionException {
+    return syncWrapper(() -> asyncFunction.apply(producerRecord));
+  }
 
-        var producerRecord = new ProducerRecord<>(topic, key, data);
+  public record TopicInfo(
 
-        try {
-            syncWrapper(kafkaProducer::send, producerRecord);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        }
-    }
+                          String name,
 
-    public void flush() {
-        kafkaProducer.flush();
-    }
+                          Optional<Integer> numPartitions,
 
-    private <T> T syncWrapper(Supplier<Future<T>> asyncFunction) throws ExecutionException {
-        try {
-            return asyncFunction.get().get();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException(e);
-        }
-    }
+                          Optional<Short> replicationFactor
 
-    private <T> T syncWrapper(Function<ProducerRecord<String, JsonNode>, Future<T>> asyncFunction,
-                              ProducerRecord<String, JsonNode> producerRecord) throws ExecutionException {
-        return syncWrapper(() -> asyncFunction.apply(producerRecord));
-    }
+  ) {
 
-    public record TopicInfo(
+  }
 
-        String name,
-
-        Optional<Integer> numPartitions,
-
-        Optional<Short> replicationFactor
-
-    ) {
-
-
-    }
-
-    @Override
-    public void close() {
-        kafkaProducer.flush();
-        kafkaProducer.close();
-        adminClient.close();
-    }
+  @Override
+  public void close() {
+    kafkaProducer.flush();
+    kafkaProducer.close();
+    adminClient.close();
+  }
 
 }

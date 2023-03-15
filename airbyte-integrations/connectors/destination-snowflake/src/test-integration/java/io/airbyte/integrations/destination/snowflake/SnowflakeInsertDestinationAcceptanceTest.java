@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -21,14 +21,14 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -47,7 +47,10 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
       "No active warehouse selected in the current session.  Select an active warehouse with the 'use warehouse' command.";
 
   protected static final String NO_USER_PRIVILEGES_ERR_MSG =
-      "Schema 'TEXT_SCHEMA' already exists, but current role has no privileges on it.";
+      "Encountered Error with Snowflake Configuration: Current role does not have permissions on the target schema please verify your privileges";
+
+  protected static final String IP_NOT_IN_WHITE_LIST_ERR_MSG = "not allowed to access Snowflake."
+      + " Contact your local security administrator or please create a case with Snowflake Support or reach us on our support line";
 
   // this config is based on the static config, and it contains a random
   // schema name that is different for each test run
@@ -112,16 +115,6 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
-
-  @Override
   protected boolean implementsNamespaces() {
     return true;
   }
@@ -151,7 +144,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     return database.bufferedResultSetQuery(
         connection -> {
           try (final ResultSet tableInfo = connection.createStatement()
-              .executeQuery(String.format("SHOW TABLES LIKE '%s' IN SCHEMA %s;", tableName, schema));) {
+              .executeQuery(String.format("SHOW TABLES LIKE '%s' IN SCHEMA %s;", tableName, schema))) {
             assertTrue(tableInfo.next());
             // check that we're creating permanent tables. DBT defaults to transient tables, which have
             // `TRANSIENT` as the value for the `kind` column.
@@ -210,6 +203,18 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Test
+  public void testCheckIpNotInWhiteListConnection() throws Exception {
+    // Config to user(creds) that has no warehouse assigned
+    final JsonNode config = Jsons.deserialize(IOs.readFile(
+        Path.of("secrets/insert_ip_not_in_whitelist_config.json")));
+
+    StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
+
+    assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
+    assertThat(standardCheckConnectionOutput.getMessage()).contains(IP_NOT_IN_WHITE_LIST_ERR_MSG);
+  }
+
+  @Test
   public void testBackwardCompatibilityAfterAddingOauth() {
     final JsonNode deprecatedStyleConfig = Jsons.clone(config);
     final JsonNode password = deprecatedStyleConfig.get("credentials").get("password");
@@ -237,7 +242,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
-        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).toList();
 
     final List<AirbyteMessage> largeNumberRecords =
         Collections.nCopies(15000000, messages).stream().flatMap(List::stream).collect(Collectors.toList());

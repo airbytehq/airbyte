@@ -28,7 +28,7 @@ Visit the [Google Support](https://support.google.com/accounts/answer/27441?hl=e
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.
 3. On the source setup page, select **Google Sheets** from the Source type dropdown and enter a name for this connector.
 4. Select `Sign in with Google`.
@@ -107,12 +107,12 @@ Please be aware of the [Google Spreadsheet limitations](#limitations) before you
 
 ### <a name="limitations"></a>Google Sheets Limitations
 
-During the upload process and from the data storage perspective there are some limitations that should be considered beforehands:
+During the upload process and from the data storage perspective there are some limitations that should be considered beforehand as [determined by Google here](https://support.google.com/drive/answer/37603):
 
-- **Maximum of 5 Million Cells**
+- **Maximum of 10 Million Cells**
 
-A Google Sheets document can have a maximum of 5 million cells. These can be in a single worksheet or in multiple sheets.
-In case you already have the 5 million limit reached in fewer columns, it will not allow you to add more columns (and vice versa, i.e., if 5 million cells limit is reached with a certain number of rows, it will not allow more rows).
+A Google Sheets document can have a maximum of 10 million cells. These can be in a single worksheet or in multiple sheets.
+In case you already have the 10 million limit reached in fewer columns, it will not allow you to add more columns (and vice versa, i.e., if 10 million cells limit is reached with a certain number of rows, it will not allow more rows).
 
 - **Maximum of 18,278 Columns**
 

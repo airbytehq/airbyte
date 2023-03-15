@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery.uploader;
@@ -20,7 +20,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.s3.writer.DestinationWriter;
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.io.IOException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -128,6 +128,21 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
     copyTable(bigQuery, tmpTable, table, syncMode);
   }
 
+  /**
+   * Creates a partitioned table if the table previously was not partitioned
+   *
+   * <p>
+   * Note: this logic is deprecated since it was used for the functionality of migrating unpartitioned
+   * tables to partitioned tables for performance. Since this change was introduced in Oct 2021 there
+   * is a well founded belief that any customer's that would have ran a sync in between end of 2022
+   * and Oct 2021 would have migrated to a partition table
+   * </p>
+   *
+   * @param bigQuery BigQuery interface
+   * @param schema Schema of the data table
+   * @param destinationTableId identifier for a table
+   */
+  @Deprecated
   public static void partitionIfUnpartitioned(final BigQuery bigQuery, final Schema schema, final TableId destinationTableId) {
     try {
       final QueryJobConfiguration queryConfig = QueryJobConfiguration
@@ -170,7 +185,18 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
     }
   }
 
-  // https://cloud.google.com/bigquery/docs/managing-tables#copying_a_single_source_table
+  /**
+   * Copies table from source to destination, while also creating the destination table if not already
+   * existing
+   * <p>
+   * https://cloud.google.com/bigquery/docs/managing-tables#copying_a_single_source_table
+   * </p>
+   *
+   * @param bigQuery BigQuery interface
+   * @param sourceTableId source table
+   * @param destinationTableId destination table
+   * @param syncMode mapping of Airbyte's sync mode to BigQuery's write mode
+   */
   public static void copyTable(final BigQuery bigQuery,
                                final TableId sourceTableId,
                                final TableId destinationTableId,

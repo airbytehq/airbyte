@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.snowflake;
@@ -30,7 +30,9 @@ class SnowflakeDataSourceUtilsTest {
                                 }
                                 """;
   private final String expectedJdbcUrl =
-      "jdbc:snowflake://host/?role=role&warehouse=WAREHOUSE&database=DATABASE&schema=SOURCE_SCHEMA&JDBC_QUERY_RESULT_FORMAT=JSON&CLIENT_SESSION_KEEP_ALIVE=true&application=airbyte_oss";
+      "jdbc:snowflake://host/?role=role&warehouse=WAREHOUSE&database=DATABASE"
+          + "&JDBC_QUERY_RESULT_FORMAT=JSON&CLIENT_SESSION_KEEP_ALIVE=true&application=airbyte_oss"
+          + "&schema=SOURCE_SCHEMA&CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX=true";
 
   @Test
   void testBuildJDBCUrl() {

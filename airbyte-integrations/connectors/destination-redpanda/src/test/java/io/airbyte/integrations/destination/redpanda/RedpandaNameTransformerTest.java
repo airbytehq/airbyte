@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.redpanda;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -6,15 +10,15 @@ import org.junit.jupiter.api.Test;
 
 class RedpandaNameTransformerTest {
 
-    @Test
-    void testTransformTopicName() {
+  @Test
+  void testTransformTopicName() {
 
-        var redpandaNameTransformer = new RedpandaNameTransformer();
+    var redpandaNameTransformer = new RedpandaNameTransformer();
 
-        String topicName = redpandaNameTransformer.topicName("namespace", "stream");
+    String topicName = redpandaNameTransformer.topicName("namespace", "stream");
 
-        assertThat(topicName).isEqualTo("namespace_stream");
+    assertThat(topicName).isEqualTo("namespace_stream");
 
-    }
+  }
 
 }

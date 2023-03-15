@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.init;
@@ -14,15 +14,14 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.http.HttpTimeoutException;
 import java.nio.charset.Charset;
-import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,14 +30,14 @@ import org.junit.jupiter.api.Test;
 class RemoteDefinitionsProviderTest {
 
   private MockWebServer webServer;
-  private static MockResponse validCatalogResponse;
-  private static URI catalogUrl;
-  private static JsonNode jsonCatalog;
+  private MockResponse validCatalogResponse;
+  private String catalogUrl;
+  private JsonNode jsonCatalog;
 
   @BeforeEach
   void setup() throws IOException {
     webServer = new MockWebServer();
-    catalogUrl = URI.create(webServer.url("/connector_catalog.json").toString());
+    catalogUrl = webServer.url("/connector_catalog.json").toString();
 
     final URL testCatalog = Resources.getResource("connector_catalog.json");
     final String jsonBody = Resources.toString(testCatalog, Charset.defaultCharset());
@@ -53,7 +52,7 @@ class RemoteDefinitionsProviderTest {
   @SuppressWarnings({"PMD.AvoidDuplicateLiterals"})
   void testGetSourceDefinition() throws Exception {
     webServer.enqueue(validCatalogResponse);
-    final RemoteDefinitionsProvider remoteDefinitionsProvider = new RemoteDefinitionsProvider(catalogUrl);
+    final RemoteDefinitionsProvider remoteDefinitionsProvider = new RemoteDefinitionsProvider(catalogUrl, TimeUnit.SECONDS.toMillis(30));
     final UUID stripeSourceId = UUID.fromString("e094cb9a-26de-4645-8761-65c0c425d1de");
     final StandardSourceDefinition stripeSource = remoteDefinitionsProvider.getSourceDefinition(stripeSourceId);
     assertEquals(stripeSourceId, stripeSource.getSourceDefinitionId());
@@ -70,7 +69,7 @@ class RemoteDefinitionsProviderTest {
   @SuppressWarnings({"PMD.AvoidDuplicateLiterals"})
   void testGetDestinationDefinition() throws Exception {
     webServer.enqueue(validCatalogResponse);
-    final RemoteDefinitionsProvider remoteDefinitionsProvider = new RemoteDefinitionsProvider(catalogUrl);
+    final RemoteDefinitionsProvider remoteDefinitionsProvider = new RemoteDefinitionsProvider(catalogUrl, TimeUnit.SECONDS.toMillis(30));
     final UUID s3DestinationId = UUID.fromString("4816b78f-1489-44c1-9060-4b19d5fa9362");
     final StandardDestinationDefinition s3Destination = remoteDefinitionsProvider
         .getDestinationDefinition(s3DestinationId);
@@ -86,7 +85,9 @@ class RemoteDefinitionsProviderTest {
   @Test
   void testGetInvalidDefinitionId() throws Exception {
     webServer.enqueue(validCatalogResponse);
-    final RemoteDefinitionsProvider remoteDefinitionsProvider = new RemoteDefinitionsProvider(catalogUrl, Duration.ofSeconds(1));
+    webServer.enqueue(validCatalogResponse);
+
+    final RemoteDefinitionsProvider remoteDefinitionsProvider = new RemoteDefinitionsProvider(catalogUrl, TimeUnit.SECONDS.toMillis(30));
     final UUID invalidDefinitionId = UUID.fromString("1a7c360c-1289-4b96-a171-2ac1c86fb7ca");
 
     assertThrows(
@@ -100,7 +101,7 @@ class RemoteDefinitionsProviderTest {
   @Test
   void testGetSourceDefinitions() throws Exception {
     webServer.enqueue(validCatalogResponse);
-    final RemoteDefinitionsProvider remoteDefinitionsProvider = new RemoteDefinitionsProvider(catalogUrl);
+    final RemoteDefinitionsProvider remoteDefinitionsProvider = new RemoteDefinitionsProvider(catalogUrl, TimeUnit.SECONDS.toMillis(30));
     final List<StandardSourceDefinition> sourceDefinitions = remoteDefinitionsProvider.getSourceDefinitions();
     final int expectedNumberOfSources = MoreIterators.toList(jsonCatalog.get("sources").elements()).size();
     assertEquals(expectedNumberOfSources, sourceDefinitions.size());
@@ -110,7 +111,7 @@ class RemoteDefinitionsProviderTest {
   @Test
   void testGetDestinationDefinitions() throws Exception {
     webServer.enqueue(validCatalogResponse);
-    final RemoteDefinitionsProvider remoteDefinitionsProvider = new RemoteDefinitionsProvider(catalogUrl);
+    final RemoteDefinitionsProvider remoteDefinitionsProvider = new RemoteDefinitionsProvider(catalogUrl, TimeUnit.SECONDS.toMillis(30));
     final List<StandardDestinationDefinition> destinationDefinitions = remoteDefinitionsProvider.getDestinationDefinitions();
     final int expectedNumberOfDestinations = MoreIterators.toList(jsonCatalog.get("destinations").elements()).size();
     assertEquals(expectedNumberOfDestinations, destinationDefinitions.size());
@@ -120,17 +121,23 @@ class RemoteDefinitionsProviderTest {
   @Test
   void testBadResponseStatus() {
     webServer.enqueue(new MockResponse().setResponseCode(404));
-    assertThrows(IOException.class, () -> {
-      new RemoteDefinitionsProvider(catalogUrl, Duration.ofSeconds(1));
+    final RuntimeException ex = assertThrows(RuntimeException.class, () -> {
+      new RemoteDefinitionsProvider(catalogUrl, TimeUnit.SECONDS.toMillis(1)).getDestinationDefinitions();
     });
+
+    assertTrue(ex.getMessage().contains("Failed to fetch remote definitions"));
+    assertTrue(ex.getCause() instanceof IOException);
   }
 
   @Test
   void testTimeOut() {
     // No request enqueued -> Timeout
-    assertThrows(HttpTimeoutException.class, () -> {
-      new RemoteDefinitionsProvider(catalogUrl, Duration.ofSeconds(1));
+    final RuntimeException ex = assertThrows(RuntimeException.class, () -> {
+      new RemoteDefinitionsProvider(catalogUrl, TimeUnit.SECONDS.toMillis(1)).getDestinationDefinitions();
     });
+
+    assertTrue(ex.getMessage().contains("Failed to fetch remote definitions"));
+    assertTrue(ex.getCause() instanceof HttpTimeoutException);
   }
 
   @Test
@@ -141,7 +148,7 @@ class RemoteDefinitionsProviderTest {
         .setBody("not json");
     webServer.enqueue(notJson);
     assertThrows(RuntimeException.class, () -> {
-      new RemoteDefinitionsProvider(catalogUrl, Duration.ofSeconds(1));
+      new RemoteDefinitionsProvider(catalogUrl, TimeUnit.SECONDS.toMillis(1)).getDestinationDefinitions();
     });
   }
 

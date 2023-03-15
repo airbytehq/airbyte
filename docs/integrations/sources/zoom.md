@@ -59,3 +59,9 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 Please read [How to generate your JWT Token](https://marketplace.zoom.us/docs/guides/build/jwt-app).
 
+## Changelog
+
+| Version | Date       | Pull Request                                             | Subject                                                                |
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
+| 0.1.1   | 2022-11-30 | [19939](https://github.com/airbytehq/airbyte/pull/19939) | Upgrade CDK version to fix bugs with SubStreamSlicer |
+| 0.1.0   | 2022-10-25 | [18179](https://github.com/airbytehq/airbyte/pull/18179) | Initial Release                                                        |

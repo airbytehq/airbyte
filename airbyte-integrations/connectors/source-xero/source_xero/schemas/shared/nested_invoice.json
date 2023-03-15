@@ -1,217 +1,125 @@
 {
-  "type": [
-    "null",
-    "object"
-  ],
+  "type": ["null", "object"],
   "properties": {
     "Type": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "Contact": {
       "$ref": "contacts.json"
     },
     "Date": {
       "format": "date-time",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "DueDate": {
       "format": "date-time",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "Status": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "LineAmountTypes": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "LineItems": {
-      "type": [
-        "null",
-        "array"
-      ],
+      "type": ["null", "array"],
       "items": {
         "$ref": "line_items.json"
       }
     },
     "SubTotal": {
-      "type": [
-        "null",
-        "number"
-      ],
-      "minimum": -1e+33,
-      "maximum": 1e+33
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
     },
     "TotalTax": {
-      "type": [
-        "null",
-        "number"
-      ],
-      "minimum": -1e+33,
-      "maximum": 1e+33
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
     },
     "Total": {
-      "type": [
-        "null",
-        "number"
-      ],
-      "minimum": -1e+33,
-      "maximum": 1e+33
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
     },
     "TotalDiscount": {
-      "type": [
-        "null",
-        "number"
-      ],
-      "minimum": -1e+33,
-      "maximum": 1e+33
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
     },
     "UpdatedDateUTC": {
       "format": "date-time",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "CurrencyCode": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "CurrencyRate": {
-      "type": [
-        "null",
-        "number"
-      ],
-      "minimum": -1e+33,
-      "maximum": 1e+33
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
     },
     "InvoiceID": {
-      "type": [
-        "string"
-      ]
+      "type": ["string"]
     },
     "InvoiceNumber": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "Reference": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "BrandingThemeID": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "Url": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "SentToContact": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "ExpectedPaymentDate": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "PlannedPaymentDate": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "HasAttachments": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "AmountDue": {
-      "type": [
-        "null",
-        "number"
-      ],
-      "minimum": -1e+33,
-      "maximum": 1e+33
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
     },
     "AmountPaid": {
-      "type": [
-        "null",
-        "number"
-      ],
-      "minimum": -1e+33,
-      "maximum": 1e+33
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
     },
     "FullyPaidOnDate": {
       "format": "date-time",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "AmountCredited": {
-      "type": [
-        "null",
-        "number"
-      ],
-      "minimum": -1e+33,
-      "maximum": 1e+33
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
     },
     "DueDateString": {
       "format": "date-time",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "IsDiscounted": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "HasErrors": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "DateString": {
       "format": "date-time",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     }
   },
   "additionalProperties": true

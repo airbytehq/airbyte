@@ -1,15 +1,8 @@
 {
-  "type": [
-    "null",
-    "array"
-  ],
+  "type": ["null", "array"],
   "items": {
-    "type": [
-      "null",
-      "object"
-    ],
-    "properties": {
-    },
+    "type": ["null", "object"],
+    "properties": {},
     "additionalProperties": true
   }
 }

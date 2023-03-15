@@ -4,10 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Dynamodb Source Spec",
     "type": "object",
-    "required": [
-      "access_key_id",
-      "secret_access_key"
-    ],
+    "required": ["access_key_id", "secret_access_key"],
     "additionalProperties": false,
     "properties": {
       "endpoint": {
@@ -15,9 +12,7 @@
         "type": "string",
         "default": "",
         "description": "the URL of the Dynamodb database",
-        "examples": [
-          "https://{aws_dynamo_db_url}.com"
-        ]
+        "examples": ["https://{aws_dynamo_db_url}.com"]
       },
       "region": {
         "title": "Dynamodb Region",
@@ -58,18 +53,21 @@
         "type": "string",
         "description": "The access key id to access Dynamodb. Airbyte requires read permissions to the database",
         "airbyte_secret": true,
-        "examples": [
-          "A012345678910EXAMPLE"
-        ]
+        "examples": ["A012345678910EXAMPLE"]
       },
       "secret_access_key": {
         "title": "Dynamodb Access Key",
         "type": "string",
         "description": "The corresponding secret to the access key id.",
         "airbyte_secret": true,
-        "examples": [
-          "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
-        ]
+        "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"]
+      },
+      "reserved_attribute_names": {
+        "title": "Reserved attribute names",
+        "type": "string",
+        "description": "Comma separated reserved attribute names present in your tables",
+        "airbyte_secret": true,
+        "examples": ["name, field_name, field-name"]
       }
     }
   }
