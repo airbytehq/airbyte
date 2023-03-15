@@ -178,11 +178,11 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-airtable:2.0.3"
+- dockerImage: "airbyte/source-airtable:2.0.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/airtable"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Airtable Source Spec"
       type: "object"
       additionalProperties: true
@@ -224,7 +224,7 @@
                 title: "Refresh token"
                 description: "The key to refresh the expired access token."
                 airbyte_secret: true
-          - title: "API Key"
+          - title: "Personal Access Token"
             type: "object"
             required:
             - "api_key"
@@ -234,10 +234,10 @@
                 const: "api_key"
               api_key:
                 type: "string"
-                description: "The API Key or PAT for the Airtable account. See the\
-                  \ <a href=\"https://airtable.com/developers/web/guides/personal-access-tokens\"\
-                  >Support Guide</a> for more information on how to obtain this key."
-                title: "API Key"
+                description: "The Personal Access Token for the Airtable account.\
+                  \ See the <a href=\"https://airtable.com/developers/web/guides/personal-access-tokens\"\
+                  >Support Guide</a> for more information on how to obtain this token."
+                title: "Personal Access Token"
                 airbyte_secret: true
                 examples:
                 - "key1234567890"
@@ -7000,7 +7000,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-intercom:0.1.31"
+- dockerImage: "airbyte/source-intercom:0.1.32"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/intercom"
     connectionSpecification:
@@ -8074,7 +8074,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mailchimp:0.3.4"
+- dockerImage: "airbyte/source-mailchimp:0.3.5"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mailchimp"
     connectionSpecification:
@@ -8411,7 +8411,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:1.0.2"
+- dockerImage: "airbyte/source-mssql:1.0.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
@@ -9286,7 +9286,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:2.0.2"
+- dockerImage: "airbyte/source-mysql:2.0.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -14693,7 +14693,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-stripe:3.0.1"
+- dockerImage: "airbyte/source-stripe:3.0.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
     connectionSpecification:
