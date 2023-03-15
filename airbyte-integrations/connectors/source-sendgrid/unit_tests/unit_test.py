@@ -28,7 +28,6 @@ from source_sendgrid.streams import (
     SuppressionGroupMembers,
     SuppressionGroups,
     Templates,
-    UnsubscribeGroups,
 )
 
 FAKE_NOW = pendulum.DateTime(2022, 1, 1, tzinfo=pendulum.timezone("utc"))
