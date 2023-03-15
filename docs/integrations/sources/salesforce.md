@@ -43,7 +43,7 @@ To create a dedicated read only Salesforce user:
 
 To set up Salesforce as a source in Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, select **Salesforce** from the **Source type** dropdown.
 4. For Name, enter a name for the Salesforce connector.
@@ -72,7 +72,7 @@ To set up Salesforce as a source in Airbyte Open Source:
 
 The Salesforce source connector supports the following sync modes:
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 * [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 * [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 * (Recommended)[ Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
