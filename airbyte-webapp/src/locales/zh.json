@@ -731,6 +731,7 @@
   "user.signup.and": "和",
   "user.resendInvite.message": "邀请已发送！",
   "user.changeRole.message": "用户权限已更改！",
+  "user.remove": "移除",
 
   "signup.google": "用谷歌注册",
 

@@ -57,6 +57,7 @@ const UserTableBody: React.FC<IProps> = ({ users, roles, onDelete, onChangeRole,
     <>
       {users.map((user, index) => (
         <BodyRow
+          key={user.id}
           isBackgroundTransparent={index % 2 === 0 ? true : false}
           isLastRow={users.length === index + 1 ? true : false}
         >

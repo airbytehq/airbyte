@@ -10,3 +10,4 @@ export * from "./TagInput";
 export * from "./Switch";
 export * from "./TextArea";
 export * from "./Titles";
+export * from "./Tooltip";
