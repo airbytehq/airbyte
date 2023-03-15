@@ -46,7 +46,9 @@ public class SelectdbConnectionOptions {
                 config.get(PWD_KEY) == null ? "" : config.get(PWD_KEY).asText());
 
     }
-    public SelectdbConnectionOptions(String db, String table, String loadUrl, String jdbcUrl, String clusterName, String username, String password) {
+
+    public SelectdbConnectionOptions(String db, String table, String loadUrl, String jdbcUrl, String clusterName,
+            String username, String password) {
         this.db = db;
         this.table = table;
         this.loadUrl = Preconditions.checkNotNull(loadUrl, "loadUrl  is empty");
@@ -64,7 +66,7 @@ public class SelectdbConnectionOptions {
         return jdbcUrl;
     }
 
-    public String getClusterName(){
+    public String getClusterName() {
         return clusterName;
     }
 

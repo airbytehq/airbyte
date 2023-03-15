@@ -44,11 +44,11 @@ public class SelectdbDestinationAcceptanceTest extends DestinationAcceptanceTest
   @BeforeAll
   public static void getConnect() {
     JsonNode config = Jsons.deserialize(IOs.readFile(Paths.get("../../../secrets/config.json")));
-    String dbUrl = String.format(DB_URL_PATTERN, config.get("jdbcURL").asText());
+    String dbUrl = String.format(DB_URL_PATTERN, config.get("jdbc_url").asText());
     try {
       Class.forName(JDBC_DRIVER);
       conn =
-              DriverManager.getConnection(dbUrl, config.get("username").asText(), config.get("password") == null ? "" : config.get("password").asText());
+              DriverManager.getConnection(dbUrl, config.get("user_name").asText(), config.get("password") == null ? "" : config.get("password").asText());
     } catch (Exception e) {
       e.printStackTrace();
     }

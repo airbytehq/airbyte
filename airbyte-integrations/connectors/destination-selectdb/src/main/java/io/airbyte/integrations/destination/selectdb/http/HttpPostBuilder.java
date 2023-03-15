@@ -21,6 +21,7 @@ public class HttpPostBuilder {
     String url;
     Map<String, String> header;
     HttpEntity httpEntity;
+
     public HttpPostBuilder() {
         header = new HashMap<>();
     }

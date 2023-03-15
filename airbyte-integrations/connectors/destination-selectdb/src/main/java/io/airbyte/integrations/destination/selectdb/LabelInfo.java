@@ -8,17 +8,16 @@ import java.util.UUID;
 
 public class LabelInfo {
 
-  private String prefix;
+    private String prefix;
 
-  private String table;
+    private String table;
 
+    public LabelInfo(String labelPrefix, String table) {
+        this.prefix = labelPrefix;
+        this.table = table;
+    }
 
-  public LabelInfo(String labelPrefix, String table) {
-    this.prefix = labelPrefix;
-    this.table = table;
-  }
-
-  public String label() {
-    return prefix + "_" + table + "_" + UUID.randomUUID() + System.currentTimeMillis();
-  }
+    public String label() {
+        return prefix + "_" + table + "_" + UUID.randomUUID() + System.currentTimeMillis();
+    }
 }

@@ -15,30 +15,32 @@ public class SelectdbOperations {
     private static final Logger LOGGER = LoggerFactory.getLogger(SelectdbOperations.class);
 
     private static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
-    private static final String DB_URL_PATTERN = "jdbc:mysql://%s/%s?rewriteBatchedStatements=true&useUnicode=true&characterEncoding=utf8";
+    private static final String DB_URL_PATTERN
+            = "jdbc:mysql://%s/%s?rewriteBatchedStatements=true&useUnicode=true&characterEncoding=utf8";
 
-    private JsonNode config;
+    //    private JsonNode config;
     private Connection conn = null;
 
-    public SelectdbOperations(JsonNode config){
-        this.config = config;
+    public SelectdbOperations() {
+        //this.config = config;
     }
 
-    public Connection getConn() throws SQLException, ClassNotFoundException {
-        if (conn == null){
-            checkSelectdbAndConnect();
+    public Connection getConn(JsonNode config) throws SQLException, ClassNotFoundException {
+        if (conn == null) {
+            checkSelectdbAndConnect(config);
         }
         return conn;
     }
 
     public void closeConn() throws SQLException {
-        if (conn != null)
+        if (conn != null) {
             conn.close();
+        }
     }
 
 
-    private void checkSelectdbAndConnect() throws ClassNotFoundException, SQLException {
-        SelectdbConnectionOptions selectdbConnection = SelectdbConnectionOptions.getSelectdbConnection(this.config, "");
+    private void checkSelectdbAndConnect(JsonNode config) throws ClassNotFoundException, SQLException {
+        SelectdbConnectionOptions selectdbConnection = SelectdbConnectionOptions.getSelectdbConnection(config, "");
         String dbUrl = String.format(DB_URL_PATTERN, selectdbConnection.getJdbcUrl(), selectdbConnection.getDb());
         Class.forName(JDBC_DRIVER);
         conn = DriverManager.getConnection(dbUrl, selectdbConnection.getUser(), selectdbConnection.getPwd());
@@ -57,10 +59,13 @@ public class SelectdbOperations {
                 + "`" + JavaBaseConstants.COLUMN_NAME_AB_ID + "` varchar(40),\n"
                 + "`" + JavaBaseConstants.COLUMN_NAME_EMITTED_AT + "` BIGINT,\n"
                 + "`" + JavaBaseConstants.COLUMN_NAME_DATA + "` String)\n"
-                + "DUPLICATE KEY(`" + JavaBaseConstants.COLUMN_NAME_AB_ID + "`,`" + JavaBaseConstants.COLUMN_NAME_EMITTED_AT + "`) \n"
+                + "DUPLICATE KEY(`" + JavaBaseConstants.COLUMN_NAME_AB_ID + "`,`"
+                + JavaBaseConstants.COLUMN_NAME_EMITTED_AT + "`) \n"
                 + "DISTRIBUTED BY HASH(`" + JavaBaseConstants.COLUMN_NAME_AB_ID + "`) BUCKETS 16 ;";
         LOGGER.info("create selectdb table SQL :  \n " + s);
         return s;
     }
 
 }
+
+
