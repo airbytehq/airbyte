@@ -10,6 +10,7 @@ def get_all_valid_metadata_yaml_files() -> List[str]:
     # list the absolute paths of all files in the directory
     return [os.path.join(file_path, file_name) for file_name in os.listdir(file_path)]
 
+
 def get_all_invalid_metadata_yaml_files() -> List[str]:
     file_path = os.path.join(os.path.dirname(__file__), "fixtures", "invalid")
     # list the absolute paths of all files in the directory
@@ -26,6 +27,7 @@ def test_valid_metadata_yaml_files():
         result = runner.invoke(validate_metadata_file, [file_path])
         assert result.exit_code == 0, f"Validation failed for {file_path} with error: {result.output}"
 
+
 def test_invalid_metadata_yaml_files():
     runner = CliRunner()
     invalid_file_paths = get_all_invalid_metadata_yaml_files()
@@ -36,9 +38,8 @@ def test_invalid_metadata_yaml_files():
         result = runner.invoke(validate_metadata_file, [file_path])
         assert result.exit_code == 1, f"Validation succeeded (when it shouldve failed) for {file_path}"
 
+
 def test_file_not_found_fails():
     runner = CliRunner()
     result = runner.invoke(validate_metadata_file, ["non_existent_file.yaml"])
     assert result.exit_code == 1, "Validation succeeded (when it shouldve failed) for non_existent_file.yaml"
-
-
