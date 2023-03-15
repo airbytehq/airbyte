@@ -188,6 +188,7 @@ class EmailActivity(IncrementalMailChimpStream):
             for activity_item in item.pop("activity", []):
                 yield {**item, **activity_item}
 
+
 class Reports(IncrementalMailChimpStream):
     cursor_field = "send_time"
     data_field = "reports"
