@@ -209,7 +209,10 @@ class UserInsights(InstagramIncrementalStream):
         # if insight_list is empty, we don't want to yield an incomplete record and want to stop syncing this stream gracefully
         if not insight_list:
             complete_records = []
-            self.logger.warning(f"No data received for base params {json.dumps(base_params)}. It is time to exit gracefully.")
+            # https://developers.facebook.com/docs/instagram-api/guides/insights/
+            # If insights data you are requesting does not exist or is currently unavailable
+            # the API will return an empty data set instead of 0 for individual metrics.
+            self.logger.warning(f"No data received for base params {json.dumps(base_params)}. Since we can't know whether there is no data or the data is temporarily unavailable, stop syncing so as not to miss temporarily unavailable data.")
             self.time_to_exit_gracefully = True
         yield from complete_records
 
