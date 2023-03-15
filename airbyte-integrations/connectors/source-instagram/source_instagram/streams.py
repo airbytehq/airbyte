@@ -231,7 +231,7 @@ class UserInsights(InstagramIncrementalStream):
             for since in pendulum.period(start_date, self._end_date).range("days", self.days_increment):
                 until = since.add(days=self.days_increment)
                 if self.time_to_exit_gracefully:
-                    self.logger.warning("Exiting gracefully")
+                    self.logger.info(f"Stopping syncing stream '{self.name}'")
                     return
                 self.logger.info(f"Reading insights between {since.date()} and {until.date()}")
                 yield {
