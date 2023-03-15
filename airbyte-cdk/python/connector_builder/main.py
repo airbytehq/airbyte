@@ -9,6 +9,7 @@ from typing import Any, List, Mapping
 from airbyte_cdk.connector import BaseConnector
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from connector_builder.connector_builder_handler import resolve_manifest
 
 
@@ -43,10 +44,15 @@ def handle_request(args: List[str]):
     config = get_config_from_args(args)
     source = create_source(config)
     if "__command" in config:
-        print(handle_connector_builder_request(source, config))
+        return handle_connector_builder_request(source, config).json()
     else:
         raise ValueError("Missing __command argument in config file.")
 
 
 if __name__ == "__main__":
-    handle_request(sys.argv[1:])
+    try:
+        print(handle_request(sys.argv[1:]))
+    except Exception as exc:
+        error = AirbyteTracedException.from_exception(exc, message="Error handling request.")
+        m = error.as_airbyte_message()
+        print(error.as_airbyte_message().json())
