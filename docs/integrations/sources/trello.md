@@ -4,8 +4,6 @@
 
 The Trello source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
-
 ### Output schema
 
 Several output streams are available from this source:
@@ -49,6 +47,7 @@ Please read [How to get your APIs Token and Key](https://developer.atlassian.com
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.0 | 2023-03-15 | [24045](https://github.com/airbytehq/airbyte/pull/24045) | Fix schema for boards and cards streams |
 | 0.1.6 | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628) | Updated fields in source-connector specifications |
 | 0.1.3 | 2021-11-25 | [8183](https://github.com/airbytehq/airbyte/pull/8183) | Enable specifying board ids in configuration |
 | 0.1.2 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |

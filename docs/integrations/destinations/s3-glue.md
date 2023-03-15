@@ -21,7 +21,7 @@ List of required fields:
 
 ## Step 1: Set up S3
 
-[Sign in](https://signin.aws.amazon.com/signin) to your AWS account.
+[Sign in](https://console.aws.amazon.com/iam/) to your AWS account.
 Use an existing or create new [Access Key ID and Secret Access Key](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#:~:text=IAM%20User%20Guide.-,Programmatic%20access,-You%20must%20provide).
 
 Prepare S3 bucket that will be used as destination, see [this](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) to create an S3 bucket.
@@ -39,7 +39,7 @@ Prepare the Glue database that will be used as destination, see [this](https://d
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.
 3. On the destination setup page, select **S3** from the Destination type dropdown and enter a name for this connector.
 4. Configure fields:
