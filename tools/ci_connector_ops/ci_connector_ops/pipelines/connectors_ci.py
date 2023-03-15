@@ -17,6 +17,7 @@ from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.models import ConnectorTestReport, Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.utils import (
     DAGGER_CONFIG,
+    get_current_epoch_time,
     get_current_git_branch,
     get_current_git_revision,
     get_modified_connectors,
@@ -114,6 +115,8 @@ async def run_connectors_test_pipelines(test_contexts: List[ConnectorTestContext
     type=str,
 )
 @click.option("--gha-workflow-run-id", help="[CI Only] The run id of the GitHub action workflow", default=None, type=str)
+@click.option("--ci-context", default="manual", envvar="CI_CONTEXT", type=click.Choice(["manual", "pull_request", "nightly_builds"]))
+@click.option("--pipeline-start-timestamp", default=get_current_epoch_time, envvar="CI_PIPELINE_START_TIMESTAMP", type=int)
 @click.pass_context
 def connectors_ci(
     ctx: click.Context,
@@ -123,6 +126,8 @@ def connectors_ci(
     git_revision: str,
     diffed_branch: str,
     gha_workflow_run_id: str,
+    ci_context: str,
+    pipeline_start_timestamp: int,
 ):
     """A command group to gather all the connectors-ci command"""
 
@@ -137,7 +142,8 @@ def connectors_ci(
     ctx.obj["gha_workflow_run_url"] = (
         f"https://github.com/airbytehq/airbyte/actions/runs/{gha_workflow_run_id}" if gha_workflow_run_id else None
     )
-
+    ctx.obj["ci_context"] = ci_context
+    ctx.obj["pipeline_start_timestamp"] = pipeline_start_timestamp
     update_commit_status_check(
         ctx.obj["git_revision"],
         "pending",
@@ -202,6 +208,8 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
             ctx.obj["git_revision"],
             ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
+            pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
+            ci_context=ctx.obj.get("ci_context"),
         )
         for connector in connectors_under_test
         if connector.language
