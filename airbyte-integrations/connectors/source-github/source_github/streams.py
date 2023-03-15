@@ -239,7 +239,7 @@ class SemiIncrementalMixin:
     # supporting this.
     is_sorted = False
 
-    def __init__(self, api_url: str, **kwargs, start_date: str = "", **kwargs):
+    def __init__(self, api_url: str, start_date: str = "", **kwargs):
         super().__init__(**kwargs)
         self.api_url = api_url
         self._start_date = start_date
