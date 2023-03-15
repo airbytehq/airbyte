@@ -53,7 +53,7 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
     }
     mariadbColumnstoreSqlOperations.verifyLocalFileEnabled(database);
 
-    for (String outputSchema : getOutputSchemas(config, catalog)) {
+    for (final String outputSchema : getOutputSchemas(config, catalog)) {
       attemptTableOperations(outputSchema, database, getNamingResolver(), mariadbColumnstoreSqlOperations, false);
     }
 

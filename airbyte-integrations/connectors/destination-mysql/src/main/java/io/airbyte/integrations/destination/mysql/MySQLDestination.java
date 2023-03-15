@@ -58,7 +58,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     try {
       final JdbcDatabase database = getDatabase(dataSource);
       final MySQLSqlOperations mySQLSqlOperations = (MySQLSqlOperations) getSqlOperations();
-      for (String outputSchema : getOutputSchemas(config, catalog)) {
+      for (final String outputSchema : getOutputSchemas(config, catalog)) {
         attemptTableOperations(outputSchema, database, getNamingResolver(), mySQLSqlOperations, false);
       }
 
