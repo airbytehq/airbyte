@@ -50,7 +50,7 @@ def handle_request(args: List[str]):
     config, catalog = get_config_and_catalog_from_args(args)
     if "__command" in config:
         source = create_source(config)
-        return handle_connector_builder_request(source, config).json()
+        return handle_connector_builder_request(source, config, catalog).json()
     else:
         raise ValueError("Missing __command argument in config file.")
 
