@@ -1103,11 +1103,14 @@
 - name: Mailchimp
   sourceDefinitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
   dockerRepository: airbyte/source-mailchimp
-  dockerImageTag: 0.3.4
+  dockerImageTag: 0.3.5
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailchimp
   icon: mailchimp.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "*.api.mailchimp.com"
 - name: Mailjet Mail
   sourceDefinitionId: 56582331-5de2-476b-b913-5798de77bbdf
   dockerRepository: airbyte/source-mailjet-mail
