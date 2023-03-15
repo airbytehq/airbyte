@@ -1,0 +1,315 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "type" : "object",
+  "properties" : {
+    "id" : {
+      "type" : "string",
+      "format" : "uuid"
+    },
+    "parentAccountId" : {
+      "type" : "string",
+      "format" : "uuid",
+      "nullable" : true
+    },
+    "accountNumber" : {
+      "type" : "string",
+      "nullable" : true
+    },
+    "accountType" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/AccountType"
+        }
+      ]
+    },
+    "inactive" : {
+      "type" : "boolean"
+    },
+    "invoiceDeliveryMethod" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/InvoiceDeliveryMethod"
+        }
+      ]
+    },
+    "accountsReceivable" : {
+      "type" : "string",
+      "nullable" : true
+    },
+    "currencyCode" : {
+      "type" : "string",
+      "nullable" : true
+    },
+    "defaultPaymentTerm" : {
+      "type" : "string",
+      "nullable" : true
+    },
+    "domain" : {
+      "type" : "string",
+      "nullable" : true
+    },
+    "electronicInvoiceAddress" : {
+      "type" : "string",
+      "nullable" : true
+    },
+    "electronicInvoiceAddressScheme" : {
+      "type" : "string",
+      "description" : "Electronic Invoice Scheme (EAS) code list.  Read more on: https://docs.peppol.eu/poacc/billing/3.0/codelist/eas/",
+      "nullable" : true,
+      "example" : "0007"
+    },
+    "imageUrl" : {
+      "type" : "string",
+      "nullable" : true
+    },
+    "invoiceEmailAddress" : {
+      "type" : "string",
+      "nullable" : true
+    },
+    "invoiceEmailCcAddresses" : {
+      "type" : "string",
+      "nullable" : true
+    },
+    "reminderEmailAddress" : {
+      "type" : "string",
+      "nullable" : true
+    },
+    "name" : {
+      "type" : "string",
+      "nullable" : true
+    },
+    "organizationNumber" : {
+      "type" : "string",
+      "nullable" : true
+    },
+    "ourReference" : {
+      "type" : "string",
+      "nullable" : true
+    },
+    "taxRegistrationNumber" : {
+      "type" : "string",
+      "nullable" : true
+    },
+    "taxTemplate" : {
+      "type" : "string",
+      "nullable" : true
+    },
+    "yourReference" : {
+      "type" : "string",
+      "nullable" : true
+    },
+    "invoiceTemplateId" : {
+      "type" : "string",
+      "format" : "uuid",
+      "nullable" : true
+    },
+    "invoiceBatchGroupId" : {
+      "type" : "string",
+      "format" : "uuid",
+      "nullable" : true
+    },
+    "defaultInvoiceAddress" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/AddressResponse"
+        }
+      ],
+      "nullable" : true
+    },
+    "defaultDeliveryAddress" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/AddressResponse"
+        }
+      ],
+      "nullable" : true
+    },
+    "addresses" : {
+      "type" : "array",
+      "items" : {
+        "$ref" : "#/$defs/AddressResponse"
+      },
+      "nullable" : true
+    },
+    "customFields" : {
+      "type" : "object",
+      "additionalProperties" : {},
+      "nullable" : true
+    },
+    "onlinePaymentDetails" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/OnlinePaymentDetailsResponse"
+        }
+      ],
+      "nullable" : true
+    },
+    "externalERPId" : {
+      "type" : "string",
+      "nullable" : true
+    },
+    "externalCRMId" : {
+      "type" : "string",
+      "nullable" : true
+    },
+    "cmrr" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/CurrencyAmount"
+        }
+      ],
+      "nullable" : true
+    },
+    "acv" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/CurrencyAmount"
+        }
+      ],
+      "nullable" : true
+    },
+    "emrr" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/CurrencyAmount"
+        }
+      ],
+      "nullable" : true
+    },
+    "oneTimeFees" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/CurrencyAmount"
+        }
+      ],
+      "nullable" : true
+    },
+    "tcv" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/CurrencyAmount"
+        }
+      ],
+      "nullable" : true
+    }
+  },
+  "additionalProperties" : false,
+  "$defs" : {
+    "AccountType" : {
+      "enum" : [
+        "Customer",
+        "Reseller",
+        "Subsidiary",
+        "Prospect",
+        "Other"
+      ],
+      "type" : "string"
+    },
+    "AddressResponse" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "string",
+          "format" : "uuid",
+          "nullable" : true
+        },
+        "description" : {
+          "type" : "string",
+          "nullable" : true
+        },
+        "name" : {
+          "type" : "string",
+          "nullable" : true
+        },
+        "street" : {
+          "type" : "string",
+          "nullable" : true
+        },
+        "street2" : {
+          "type" : "string",
+          "nullable" : true
+        },
+        "city" : {
+          "type" : "string",
+          "nullable" : true
+        },
+        "county" : {
+          "type" : "string",
+          "nullable" : true
+        },
+        "state" : {
+          "type" : "string",
+          "nullable" : true
+        },
+        "zip" : {
+          "type" : "string",
+          "nullable" : true
+        },
+        "country" : {
+          "type" : "string",
+          "nullable" : true
+        }
+      },
+      "additionalProperties" : false
+    },
+    "CurrencyAmount" : {
+      "type" : "object",
+      "properties" : {
+        "amount" : {
+          "type" : "number",
+          "format" : "double"
+        },
+        "currencyCode" : {
+          "type" : "string",
+          "nullable" : true
+        },
+        "currencyConversionDate" : {
+          "type" : "string",
+          "format" : "date-time",
+          "nullable" : true
+        },
+        "baseCurrencyAmount" : {
+          "type" : "number",
+          "format" : "double"
+        },
+        "baseCurrencyCode" : {
+          "type" : "string",
+          "nullable" : true
+        }
+      },
+      "additionalProperties" : false
+    },
+    "InvoiceDeliveryMethod" : {
+      "enum" : [
+        "Email",
+        "Print",
+        "ElectronicInvoice",
+        "ExternalPrint",
+        "AutomaticElectronicRouting"
+      ],
+      "type" : "string"
+    },
+    "OnlinePaymentDetailsResponse" : {
+      "type" : "object",
+      "properties" : {
+        "created" : {
+          "type" : "string",
+          "format" : "date-time"
+        },
+        "modified" : {
+          "type" : "string",
+          "format" : "date-time"
+        },
+        "stripeCustomerId" : {
+          "type" : "string",
+          "nullable" : true
+        },
+        "stripePaymentMethodId" : {
+          "type" : "string",
+          "nullable" : true
+        }
+      },
+      "additionalProperties" : false
+    }
+  }
+}
