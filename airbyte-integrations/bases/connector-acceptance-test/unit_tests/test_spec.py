@@ -835,19 +835,19 @@ def test_object_not_empty(mocker, connector_spec, should_fail):
     "connector_spec, should_fail",
     (
         ({"type": "object", "properties": {"refresh_token": {"type": "boolean", "airbyte_secret": True}}}, False),
-        ({"type": "object", "properties": {"jwt": {"type": "object", "order": 1}, "roken": {"type": "string", "order": 2}}}, False),
-        ({"type": "object", "properties": {"jwt": {"type": "object", "order": 2}, "roken": {"type": "string", "order": 2}}}, True),
+        ({"type": "object", "properties": {"jwt": {"type": "object", "order": 1}, "token": {"type": "string", "order": 2}}}, False),
+        ({"type": "object", "properties": {"jwt": {"type": "object", "order": 2}, "token": {"type": "string", "order": 2}}}, True),
         (
             {
                 "type": "object",
-                "properties": {"jwt": {"type": "object", "order": 2}, "roken": {"type": "string", "group": "x", "order": 2}},
+                "properties": {"jwt": {"type": "object", "order": 2}, "token": {"type": "string", "group": "x", "order": 2}},
             },
             False,
         ),
         (
             {
                 "type": "object",
-                "properties": {"jwt": {"type": "object", "group": "y", "order": 2}, "roken": {"type": "string", "group": "x", "order": 2}},
+                "properties": {"jwt": {"type": "object", "group": "y", "order": 2}, "token": {"type": "string", "group": "x", "order": 2}},
             },
             False,
         ),
@@ -857,7 +857,7 @@ def test_object_not_empty(mocker, connector_spec, should_fail):
                 "properties": {
                     "jwt": {"type": "object", "group": "y", "order": 2},
                     "jwt2": {"type": "object", "group": "y", "order": 2},
-                    "roken": {"type": "string", "group": "x", "order": 2},
+                    "token": {"type": "string", "group": "x", "order": 2},
                 },
             },
             True,
