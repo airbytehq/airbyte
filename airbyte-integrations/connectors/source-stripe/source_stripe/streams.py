@@ -5,7 +5,7 @@
 import math
 from abc import ABC, abstractmethod
 from itertools import chain
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Type, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type
 
 import pendulum
 import requests
