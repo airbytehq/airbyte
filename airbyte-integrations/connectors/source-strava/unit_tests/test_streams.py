@@ -6,8 +6,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_strava.streams import StravaStream
-
+from source_strava.streams import StravaStream, Activities, AthleteStats
 
 @pytest.fixture
 def patch_base_class(mocker):
@@ -65,3 +64,12 @@ def test_backoff_time(patch_base_class):
     stream = StravaStream()
     expected_backoff_time = None
     assert stream.backoff_time(response_mock) == expected_backoff_time
+
+
+def test_path_activities(config):
+    assert Activities(authenticator=None, after=config["start_date"]).path() == 'athlete/activities'
+
+
+def test_path_athlete_stats(config):
+    assert AthleteStats(authenticator=None, athlete_id=config["athlete_id"]).path() == 'athletes/12345678/stats'\
+
