@@ -145,7 +145,7 @@ definitions:
         pagination_strategy:
           type: "CursorPagination"
           cursor_value: "{{ response['next'] }}"
-          page_size: 100
+          page_size: 10000
         page_token_option:
           type: RequestPath
         $parameters:
