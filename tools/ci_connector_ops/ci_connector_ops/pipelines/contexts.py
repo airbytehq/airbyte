@@ -39,6 +39,8 @@ class ConnectorTestContext:
         use_remote_secrets: bool = True,
         connector_acceptance_test_image: Optional[str] = DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE,
         gha_workflow_run_url: Optional[str] = None,
+        pipeline_start_timestamp: Optional[int] = None,
+        ci_context: Optional[str] = None,
     ):
         self.connector = connector
         self.is_local = is_local
@@ -47,8 +49,9 @@ class ConnectorTestContext:
         self.use_remote_secrets = use_remote_secrets
         self.connector_acceptance_test_image = connector_acceptance_test_image
         self.gha_workflow_run_url = gha_workflow_run_url
-
+        self.pipeline_start_timestamp = pipeline_start_timestamp
         self.created_at = datetime.utcnow()
+        self.ci_context = ci_context
 
         self.state = ContextState.INITIALIZED
         self.logger = logging.getLogger(self.main_pipeline_name)
