@@ -188,4 +188,4 @@ def test_exit_gracefully(api, config, requests_mock, caplog):
     records = read_incremental(stream, {})
     assert not records
     assert requests_mock.call_count == 6  # 4 * 1 per `metric_to_period` map + 1 `summary` request + 1 `business_account_id` request
-    assert "Exiting gracefully" in caplog.text
+    assert "Stopping syncing stream 'user_insights'" in caplog.text
