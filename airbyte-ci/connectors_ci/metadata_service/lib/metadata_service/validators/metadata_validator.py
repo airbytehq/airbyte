@@ -17,4 +17,5 @@ def validate_metadata_file(file_path):
         except ValidationError as e:
             click.echo(f"{file_path} is not a valid ConnectorMetadataDefinitionV0 YAML file.")
             click.echo(str(e))
+            exit(1)
 
