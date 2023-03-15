@@ -10,8 +10,8 @@ from typing import Optional
 from anyio import Path
 from asyncer import asyncify
 from ci_connector_ops.pipelines.actions import remote_storage, secrets
+from ci_connector_ops.pipelines.bases import ConnectorTestReport
 from ci_connector_ops.pipelines.github import update_commit_status_check
-from ci_connector_ops.pipelines.models import ConnectorTestReport
 from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL
 from ci_connector_ops.utils import Connector
 from dagger import Client, Directory
@@ -60,6 +60,14 @@ class ConnectorTestContext:
         self._updated_secrets_dir = None
         self._test_report = None
         update_commit_status_check(**self.github_commit_status)
+
+    @property
+    def secrets_dir(self) -> Directory:
+        return self._secrets_dir
+
+    @secrets_dir.setter
+    def secrets_dir(self, secrets_dir: Directory):
+        self._secrets_dir = secrets_dir
 
     @property
     def updated_secrets_dir(self) -> Directory:
@@ -130,8 +138,6 @@ class ConnectorTestContext:
     async def __aenter__(self):
         if self.dagger_client is None:
             raise Exception("A ConnectorTestContext can't be entered with an undefined dagger_client")
-        self.secrets_dir = await secrets.get_connector_secret_dir(self)
-        self.updated_secrets_dir = None
         self.state = ContextState.RUNNING
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         return self
@@ -165,7 +171,11 @@ class ConnectorTestContext:
             if self.test_report.should_be_saved:
                 s3_reports_path_root = "python-poc/tests/history/"
                 s3_key = s3_reports_path_root + suffix
-                await remote_storage.upload_to_s3(teardown_pipeline, str(local_report_path), s3_key, os.environ["TEST_REPORTS_BUCKET_NAME"])
+                report_upload_exit_code = await remote_storage.upload_to_s3(
+                    teardown_pipeline, str(local_report_path), s3_key, os.environ["TEST_REPORTS_BUCKET_NAME"]
+                )
+                if report_upload_exit_code != 0:
+                    self.logger.error("Uploading the report to S3 failed.")
 
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         return True
