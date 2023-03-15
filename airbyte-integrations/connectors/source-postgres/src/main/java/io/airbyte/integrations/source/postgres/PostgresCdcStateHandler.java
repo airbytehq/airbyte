@@ -13,11 +13,10 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.debezium.engine.ChangeEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Map;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PostgresCdcStateHandler implements CdcStateHandler {
 
@@ -64,7 +63,7 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
   }
 
   @Override
-  public boolean isSnapshotEvent(final ChangeEvent<String, String> event){
+  public boolean isSnapshotEvent(final ChangeEvent<String, String> event) {
     JsonNode isSnapshotEvent = Jsons.deserialize(event.value()).get("source").get("snapshot");
     return isSnapshotEvent != null && isSnapshotEvent.asBoolean();
   }
@@ -77,30 +76,27 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
 
     final JsonNode offsetJson = Jsons.deserialize((String) offset.values().toArray()[0]);
 
-    final String offset_lsn = offsetJson.get("lsn_commit") != null ?
-        String.valueOf(offsetJson.get("lsn_commit")) :
-        String.valueOf(offsetJson.get("lsn"));
+    final String offset_lsn =
+        offsetJson.get("lsn_commit") != null ? String.valueOf(offsetJson.get("lsn_commit")) : String.valueOf(offsetJson.get("lsn"));
     final String event_lsn = String.valueOf(Jsons.deserialize(event.value()).get("source").get("lsn"));
     return Integer.parseInt(event_lsn) > Integer.parseInt(offset_lsn);
   }
 
   @Override
   public boolean isSameOffset(final Map<String, String> offsetA, final Map<String, String> offsetB) {
-    if (offsetA == null || offsetA.size() != 1){
+    if (offsetA == null || offsetA.size() != 1) {
       return false;
     }
-    if (offsetB == null || offsetB.size() != 1){
+    if (offsetB == null || offsetB.size() != 1) {
       return false;
     }
     final JsonNode offsetJsonA = Jsons.deserialize((String) offsetA.values().toArray()[0]);
     final JsonNode offsetJsonB = Jsons.deserialize((String) offsetB.values().toArray()[0]);
 
-    final String lsnA = offsetJsonA.get("lsn_commit") != null ?
-        String.valueOf(offsetJsonA.get("lsn_commit")) :
-        String.valueOf(offsetJsonA.get("lsn"));
-    final String lsnB = offsetJsonB.get("lsn_commit") != null ?
-        String.valueOf(offsetJsonB.get("lsn_commit")) :
-        String.valueOf(offsetJsonB.get("lsn"));
+    final String lsnA =
+        offsetJsonA.get("lsn_commit") != null ? String.valueOf(offsetJsonA.get("lsn_commit")) : String.valueOf(offsetJsonA.get("lsn"));
+    final String lsnB =
+        offsetJsonB.get("lsn_commit") != null ? String.valueOf(offsetJsonB.get("lsn_commit")) : String.valueOf(offsetJsonB.get("lsn"));
 
     return Integer.parseInt(lsnA) == Integer.parseInt(lsnB);
   }
