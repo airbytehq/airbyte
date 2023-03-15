@@ -153,7 +153,6 @@ class Orders(LinioBase):
     def __init__(
             self,
             config: Mapping[str, Any],
-            CreatedAfter: datetime,
             **kwargs
     ):
         super().__init__(config)
@@ -204,7 +203,6 @@ class Products(LinioBase):
     def __init__(
             self,
             config: Mapping[str, Any],
-            CreatedAfter: datetime,
             **kwargs
     ):
         super().__init__(config)
@@ -270,7 +268,6 @@ class Statistics(LinioBase):
     def __init__(
             self,
             config: Mapping[str, Any],
-            CreatedAfter: datetime,
             **kwargs
     ):
         super().__init__(config)
@@ -359,12 +356,11 @@ class SourceLinio(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
         auth = NoAuth()
-        CreatedAfter = datetime.strptime(config['CreatedAfter'], '%Y-%m-%d')
 
         return [
-            Orders(authenticator=auth, config=config, CreatedAfter=CreatedAfter),
-            Products(authenticator=auth, config=config, CreatedAfter=CreatedAfter),
-            Statistics(authenticator=auth, config=config, CreatedAfter=CreatedAfter)
+            Orders(authenticator=auth, config=config),
+            Products(authenticator=auth, config=config),
+            Statistics(authenticator=auth, config=config)
         ]
 
 # Durante a emissão da Credencial Plena, o titular poderá incluir dependentes, contudo, a Credencial Plena de dependentes maiores de 18 anos só estará disponível para uso
