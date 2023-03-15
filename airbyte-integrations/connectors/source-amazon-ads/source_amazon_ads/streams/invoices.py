@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -10,7 +10,6 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from pendulum import Date
-
 from source_amazon_ads.schemas import InvoicePayload
 from source_amazon_ads.streams.common import AmazonAdsStream
 
@@ -43,6 +42,9 @@ class Invoices(AmazonAdsStream):
 
     def __init__(self, config: Mapping[str, Any], *args, **kwargs):
         self._start_date: Optional[Date] = config.get("start_date")
+        if not self._start_date:
+            self._start_date = pendulum.now().subtract(days=2).date()
+
         super().__init__(config, *args, **kwargs)
 
         # create object of _Invoice class

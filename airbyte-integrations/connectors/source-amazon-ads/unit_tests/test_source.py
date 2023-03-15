@@ -5,8 +5,8 @@
 import responses
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConnectorSpecification, Status, Type
 from jsonschema import Draft4Validator
-
 from source_amazon_ads import SourceAmazonAds
+
 from .utils import command_check, url_strip_query
 
 

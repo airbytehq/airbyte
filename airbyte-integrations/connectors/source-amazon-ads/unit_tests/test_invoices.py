@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -72,6 +72,7 @@ def get_stream_by_name(streams, stream_name):
         ("2023-01-27", 3),
         ("2023-01-26", 4),
         ("2023-01-30", 0),
+        ("", 0),
     ],
 )
 @responses.activate
