@@ -42,6 +42,7 @@ class AWSEnvironment(str, Enum):
 class AWSRegion(str, Enum):
     AE = "AE"
     AU = "AU"
+    BE = "BE"
     BR = "BR"
     CA = "CA"
     DE = "DE"
@@ -61,7 +62,6 @@ class AWSRegion(str, Enum):
     TR = "TR"
     UK = "UK"
     US = "US"
-    BE = "BE"
 
 
 def get_aws_base_url(aws_env: AWSEnvironment) -> str:
