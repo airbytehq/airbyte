@@ -46,12 +46,16 @@ acceptance_tests:
             - name: receipt_url
               bypass_reason: "URL changes upon each request for privacy/security"
             - name: receipt_number
-              bypass_reason: "fast changing data"
+              bypass_reason: "Fast changing data"
+            - name: network_token
+              bypass_reason: "Randomly added to the record"
           payment_intents:
             - name: receipt_url
               bypass_reason: "URL changes upon each request for privacy/security"
             - name: charges/data/*/receipt_url
               bypass_reason: "URL changes upon each request for privacy/security"
+            - name: network_token
+              bypass_reason: "Randomly added to the record"
   incremental:
     tests:
       - config_path: "secrets/config.json"

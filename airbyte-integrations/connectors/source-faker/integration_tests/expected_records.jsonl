@@ -13,7 +13,7 @@
 {"stream": "purchases", "data": {"id": 3, "product_id": 28,"user_id": 3,"added_to_cart_at": "2021-09-06T00:23:29+00:00","purchased_at": "2022-02-15T00:23:29+00:00","returned_at": null}, "emitted_at": 1677617526568}
 {"stream": "purchases", "data": {"id": 4,"product_id": 82,"user_id": 4,"added_to_cart_at": "2016-01-27T05:20:11+00:00","purchased_at": null,"returned_at": null}, "emitted_at": 1677617526568}
 {"stream": "purchases", "data":  {"id": 5,"product_id": 66,"user_id": 5,"added_to_cart_at": "2020-02-14T11:54:28+00:00","purchased_at": "2022-08-13T11:54:28+00:00","returned_at": null}, "emitted_at": 1677617526568}
-{"stream": "purchases", "data": {"id": 6,"product_id": 35,"user_id": 6,"added_to_cart_at": "2023-02-01T14:41:33+00:00","purchased_at": "2023-02-28T14:41:33+00:00","returned_at": "2023-03-01T14:41:33+00:00"}, "emitted_at": 1677617526569}
+{"stream": "purchases", "data": {"id": 6,"product_id": 35,"user_id": 6,"added_to_cart_at": "2023-02-01T14:41:33+00:00","purchased_at": "2023-02-02T14:41:33+00:00","returned_at": null}, "emitted_at": 1677617526569}
 {"stream": "purchases", "data": {"id": 7,"product_id": 60,"user_id": 8,"added_to_cart_at": "2018-12-14T17:46:29+00:00","purchased_at": "2021-04-29T17:46:29+00:00","returned_at": null}, "emitted_at": 1677617526569}
 {"stream": "purchases", "data": {"id": 8,"product_id": 22,"user_id": 9,"added_to_cart_at": "2022-07-15T15:19:19+00:00","purchased_at": "2022-09-13T15:19:19+00:00","returned_at": null}, "emitted_at": 1677617526569}
 {"stream": "purchases", "data": {"id": 9,"product_id": 4,"user_id": 9,"added_to_cart_at": "2019-07-06T23:13:31+00:00","purchased_at": "2020-06-25T23:13:31+00:00","returned_at": null}, "emitted_at": 1677617526569}

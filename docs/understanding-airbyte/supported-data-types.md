@@ -2,7 +2,7 @@
 
 AirbyteRecords are required to conform to the Airbyte type system. This means that all sources must produce schemas and records within these types, and all destinations must handle records that conform to this type system.
 
-Because Airbyte's interfaces are JSON-based, this type system is realized using [JSON schemas](https://json-schema.org/). In order to work around some limitations of JSON schemas, we define our own types - see [well_known_types.yaml](https://github.com/airbytehq/airbyte/blob/111131a193359027d0081de1290eb4bb846662ef/airbyte-protocol/protocol-models/src/main/resources/airbyte_protocol/well_known_types.yaml). Sources should use `$ref` to reference these types, rather than directly defining JsonSchema entries.
+Because Airbyte's interfaces are JSON-based, this type system is realized using [JSON schemas](https://json-schema.org/). In order to work around some limitations of JSON schemas, we define our own types - see [well_known_types.yaml](https://github.com/airbytehq/airbyte-protocol/blob/main/protocol-models/src/main/resources/airbyte_protocol/well_known_types.yaml). Sources should use `$ref` to reference these types, rather than directly defining JsonSchema entries.
 
 In an older version of the protocol, we relied on an `airbyte_type` property in schemas. This has been replaced by the well-known type schemas. All "old-style" types map onto well-known types. For example, a legacy connector producing a field of type `{"type": "string", "airbyte_type": "timestamp_with_timezone"}` is treated as producing `{"$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"}`.
 
