@@ -29,7 +29,6 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Collection;
 import java.util.List;
@@ -68,6 +67,12 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     this.sqlOperations = sqlOperations;
   }
 
+  /**
+   * Returns any schemas which may be written to and need verification
+   * @param config configuration for the destination which contains default schemas
+   * @param catalog {@link ConfiguredAirbyteCatalog} which may contain options for overriding defaults
+   * @return a set of schema names to run through verification
+   */
   protected Set<String> getOutputSchemas(final JsonNode config, final ConfiguredAirbyteCatalog catalog) {
     if (sqlOperations.isSchemaRequired()) {
       Preconditions.checkState(config.has(JdbcUtils.SCHEMA_KEY), "jdbc destinations must specify a schema.");
@@ -86,6 +91,14 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     return outputSchemas;
   }
 
+  /**
+   * Performs required checks to validate the JDBC destination
+   * @param dataSource the datasource to check
+   * @param config the configuration for the destination connector
+   * @param catalog a {@link ConfiguredAirbyteCatalog} which may modify configuration options, such as the namespace
+   * @return An {@link AirbyteConnectionStatus} with the result of the checks
+   * @throws Exception if an uncaught exception occurs
+   */
   protected AirbyteConnectionStatus checkedConnectionStatus(final DataSource dataSource, final JsonNode config, ConfiguredAirbyteCatalog catalog)
       throws Exception {
     try {

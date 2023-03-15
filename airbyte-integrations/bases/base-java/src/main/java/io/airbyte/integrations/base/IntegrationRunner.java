@@ -159,7 +159,7 @@ public class IntegrationRunner {
       try {
         final JsonNode config = getValidatedConfig(parsed, CHECK.toString());
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-        return new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(((Check)integration).check(config, catalog));
+        return new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(((Check) integration).check(config, catalog));
       } catch (final ConfigValidationException e) {
         // if validation fails don't throw an exception, return a failed connection check message
         return failedConnectionStatusMessage(e.getMessage());
@@ -197,8 +197,7 @@ public class IntegrationRunner {
 
   private void handleRunInternalException(final IntegrationConfig parsed, final Exception e) throws Exception {
     // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An attempt is made
-    // to
-    // find the root exception that corresponds to a configuration error. If that does not exist, we
+    // to find the root exception that corresponds to a configuration error. If that does not exist, we
     // just return the original exception.
     final Throwable rootThrowable = ConnectorExceptionUtil.getRootConfigError(e);
     final String displayMessage = ConnectorExceptionUtil.getDisplayMessage(rootThrowable);
@@ -259,7 +258,7 @@ public class IntegrationRunner {
    * This method calls a runMethod and make sure that it won't produce orphan non-daemon active
    * threads once it is done. Active non-daemon threads blocks JVM from exiting when the main thread
    * is done, whereas daemon ones don't.
-   *
+   * <p>
    * If any active non-daemon threads would be left as orphans, this method will schedule some
    * interrupt/exit hooks after giving it some time delay to close up properly. It is generally
    * preferred to have a proper closing sequence from children threads instead of interrupting or
@@ -315,7 +314,7 @@ public class IntegrationRunner {
 
   /**
    * Consumes an {@link AirbyteMessage} for processing.
-   *
+   * <p>
    * If the provided JSON string is invalid AND represents a {@link AirbyteMessage.Type#STATE}
    * message, processing is halted. Otherwise, the invalid message is logged and execution continues.
    *
