@@ -1,4 +1,3 @@
-import json
 import os
 from click.testing import CliRunner
 
@@ -25,7 +24,7 @@ def test_valid_metadata_yaml_files():
 
     for file_path in valid_file_paths:
         result = runner.invoke(validate_metadata_file, [file_path])
-        assert result.exit_code == 0, f"Validation failed for {file_path}"
+        assert result.exit_code == 0, f"Validation failed for {file_path} with error: {result.output}"
 
 def test_invalid_metadata_yaml_files():
     runner = CliRunner()

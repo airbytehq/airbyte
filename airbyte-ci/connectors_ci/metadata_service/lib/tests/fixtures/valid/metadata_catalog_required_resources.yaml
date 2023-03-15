@@ -10,4 +10,10 @@ data:
   sourceType: database
   releaseStage: generally_available
   license: MIT
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_request: 1Gi
+          memory_limit: 1Gi
 

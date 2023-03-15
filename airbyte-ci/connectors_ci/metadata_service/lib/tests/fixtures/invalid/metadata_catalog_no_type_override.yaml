@@ -10,4 +10,12 @@ data:
   sourceType: database
   releaseStage: generally_available
   license: MIT
+  allowedHosts:
+    hosts:
+      - "${host}"
+      - "${tunnel_method.tunnel_host}"
+  catalogs:
+    oss:
+      enabled: true
+      connectorType: destination
 
