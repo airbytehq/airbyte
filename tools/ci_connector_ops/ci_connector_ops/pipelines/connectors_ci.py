@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import itertools
 import logging
 import os
 import sys
@@ -11,10 +12,10 @@ import anyio
 import asyncer
 import click
 import dagger
-from ci_connector_ops.pipelines.actions import checks, tests
+from ci_connector_ops.pipelines import checks, tests
+from ci_connector_ops.pipelines.bases import ConnectorTestReport
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.pipelines.github import update_commit_status_check
-from ci_connector_ops.pipelines.models import ConnectorTestReport
 from ci_connector_ops.pipelines.utils import (
     DAGGER_CONFIG,
     get_current_git_branch,
@@ -27,14 +28,7 @@ from rich.logging import RichHandler
 
 GITHUB_GLOBAL_CONTEXT = "[POC please ignore] Connectors CI"
 GITHUB_GLOBAL_DESCRIPTION = "Running connectors tests"
-REQUIRED_ENV_VARS_FOR_CI = [
-    "GCP_GSM_CREDENTIALS",
-    "AWS_ACCESS_KEY_ID",
-    "AWS_SECRET_ACCESS_KEY",
-    "AWS_DEFAULT_REGION",
-    "TEST_REPORTS_BUCKET_NAME",
-    "CI_GITHUB_ACCESS_TOKEN",
-]
+
 
 logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
 
@@ -53,9 +47,14 @@ async def run(context: ConnectorTestContext) -> ConnectorTestReport:
     """
     async with context:
         async with asyncer.create_task_group() as task_group:
-            soon_checks_results = task_group.soonify(checks.run_checks)(context)
-            soon_tests_results = task_group.soonify(tests.run_tests)(context)
-        context.test_report = ConnectorTestReport(context, steps_results=soon_tests_results.value + soon_checks_results.value)
+            tasks = [
+                task_group.soonify(checks.QaChecks(context).run)(),
+                task_group.soonify(checks.CodeFormatChecks(context).run)(),
+                task_group.soonify(tests.run_all_tests)(context),
+            ]
+        results = list(itertools.chain(*(task.value for task in tasks)))
+
+        context.test_report = ConnectorTestReport(context, steps_results=results)
 
     return context.test_report
 
@@ -203,11 +202,20 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
 
 
 def validate_environment(is_local: bool, use_remote_secrets: bool):
+
     if is_local:
         if not (os.getcwd().endswith("/airbyte") and Path(".git").is_dir()):
             raise click.UsageError("You need to run this command from the airbyte repository root.")
     else:
-        for required_env_var in REQUIRED_ENV_VARS_FOR_CI:
+        required_env_vars_for_ci = [
+            "GCP_GSM_CREDENTIALS",
+            "AWS_ACCESS_KEY_ID",
+            "AWS_SECRET_ACCESS_KEY",
+            "AWS_DEFAULT_REGION",
+            "TEST_REPORTS_BUCKET_NAME",
+            "CI_GITHUB_ACCESS_TOKEN",
+        ]
+        for required_env_var in required_env_vars_for_ci:
             if os.getenv(required_env_var) is None:
                 raise click.UsageError(f"When running in a CI context a {required_env_var} environment variable must be set.")
     if use_remote_secrets and os.getenv("GCP_GSM_CREDENTIALS") is None:

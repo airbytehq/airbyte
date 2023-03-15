@@ -4,11 +4,14 @@
 from __future__ import annotations
 
 import json
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, ClassVar, List, Optional, Union
 
+import asyncer
+from ci_connector_ops.pipelines.utils import with_exit_code, with_stderr, with_stdout
 from ci_connector_ops.utils import console
 from dagger import Client, Container
 from rich.console import Group
@@ -19,19 +22,6 @@ from rich.text import Text
 
 if TYPE_CHECKING:
     from ci_connector_ops.pipelines.contexts import ConnectorTestContext
-
-
-class Step(Enum):
-    CODE_FORMAT_CHECKS = "Code format checks"
-    PACKAGE_INSTALL = "Package install"
-    UNIT_TESTS = "Unit tests"
-    INTEGRATION_TESTS = "Integration tests"
-    DOCKER_BUILD = "Docker Build"
-    ACCEPTANCE_TESTS = "Acceptance tests"
-    QA_CHECKS = "QA Checks"
-
-    def get_dagger_pipeline(self, dagger_client_or_container: Union[Client, Container]) -> Union[Client, Container]:
-        return dagger_client_or_container.pipeline(self.value)
 
 
 class StepStatus(Enum):
@@ -62,6 +52,40 @@ class StepStatus(Enum):
         return self.value
 
 
+class Step(ABC):
+    title: ClassVar
+
+    def __init__(self, context: ConnectorTestContext) -> None:
+        self.context = context
+
+    @abstractmethod
+    async def run(self) -> StepResult:
+        ...
+
+    def skip(self, reason: str = None) -> StepResult:
+        return StepResult(self, StepStatus.SKIPPED, stdout=reason)
+
+    def get_dagger_pipeline(self, dagger_client_or_container: Union[Client, Container]) -> Union[Client, Container]:
+        return dagger_client_or_container.pipeline(self.title)
+
+    async def get_step_result(self, container: Container) -> StepResult:
+        """Concurrent retrieval of exit code, stdout and stdout of a container.
+        Create a StepResult object from these objects.
+
+        Args:
+            container (Container): The container from which we want to infer a step result/
+            step (Step): The step that was ran to build the step result.
+
+        Returns:
+            StepResult: Failure or success with stdout and stderr.
+        """
+        async with asyncer.create_task_group() as task_group:
+            soon_exit_code = task_group.soonify(with_exit_code)(container)
+            soon_stderr = task_group.soonify(with_stderr)(container)
+            soon_stdout = task_group.soonify(with_stdout)(container)
+        return StepResult(self, StepStatus.from_exit_code(soon_exit_code.value), stderr=soon_stderr.value, stdout=soon_stdout.value)
+
+
 @dataclass(frozen=True)
 class StepResult:
     step: Step
@@ -71,7 +95,7 @@ class StepResult:
     stdout: Optional[str] = None
 
     def __repr__(self) -> str:
-        return f"{self.step.value}: {self.status.value}"
+        return f"{self.step.title}: {self.status.value}"
 
 
 @dataclass(frozen=True)
@@ -104,7 +128,7 @@ class ConnectorTestReport:
                 "run_timestamp": self.created_at.isoformat(),
                 "run_duration": self.run_duration,
                 "success": self.success,
-                "failed_step": [failed_step_result.step.name for failed_step_result in self.failed_steps],
+                "failed_step": [failed_step_result.step.__class__.__name__ for failed_step_result in self.failed_steps],
                 "gha_workflow_run_url": self.connector_test_context.gha_workflow_run_url,
             }
         )
@@ -120,18 +144,18 @@ class ConnectorTestReport:
         step_results_table.add_column("Finished after")
 
         for step_result in self.steps_results:
-            step = Text(step_result.step.value)
+            step = Text(step_result.step.title)
             step.stylize(step_result.status.get_rich_style())
             result = Text(step_result.status.value)
             result.stylize(step_result.status.get_rich_style())
-            step_results_table.add_row(step, result, str(round((self.created_at - step_result.created_at).total_seconds())) + "s")
+            step_results_table.add_row(step, result, f"{round((self.created_at - step_result.created_at).total_seconds())}s")
 
         to_render = [step_results_table]
         if self.failed_steps:
             sub_panels = []
             for failed_step in self.failed_steps:
                 errors = Text(failed_step.stderr)
-                panel_title = Text(f"{connector_name} {failed_step.step.value.lower()} failures")
+                panel_title = Text(f"{connector_name} {failed_step.step.title.lower()} failures")
                 panel_title.stylize(Style(color="red", bold=True))
                 sub_panel = Panel(errors, title=panel_title)
                 sub_panels.append(sub_panel)
