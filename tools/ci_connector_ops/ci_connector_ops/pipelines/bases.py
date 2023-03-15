@@ -60,6 +60,11 @@ class Step(ABC):
 
     @abstractmethod
     async def run(self) -> StepResult:
+        """Run the step and output a step result.
+
+        Returns:
+            StepResult: The result of the step run.
+        """
         ...
 
     def skip(self, reason: str = None) -> StepResult:
@@ -74,7 +79,6 @@ class Step(ABC):
 
         Args:
             container (Container): The container from which we want to infer a step result/
-            step (Step): The step that was ran to build the step result.
 
         Returns:
             StepResult: Failure or success with stdout and stderr.
