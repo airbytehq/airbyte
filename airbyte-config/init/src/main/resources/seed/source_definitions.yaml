@@ -1408,6 +1408,9 @@
   icon: paystack.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "api.paystack.co"
 - name: PersistIq
   sourceDefinitionId: 3052c77e-8b91-47e2-97a0-a29a22794b4b
   dockerRepository: airbyte/source-persistiq
