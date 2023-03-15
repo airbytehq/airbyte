@@ -91,6 +91,7 @@
   "api_url": {
     "type": "string",
     "examples": ["api.github.com"],
+    "pattern": "^(?!http(s)?:)[a-z0-9-]+:\/\/.+$|^\/.*$",
     "title": "API URL",
     "default": "api.github.com",
     "description": "Please enter your self-hosted URL from Github.",
@@ -107,7 +108,7 @@
         "properties": {
           "access_token": {
             "type": "string",
-            "path_in_connector_config": ["credentials", "access_token", "api_url"]
+            "path_in_connector_config": ["credentials", "access_token"]
           }
         }
       },
