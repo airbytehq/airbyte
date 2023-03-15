@@ -14,7 +14,7 @@ This page contains the setup guide and reference information for the Confluence 
 2. Click **Sources** and then click **+ New source**. 
 3. On the Set up the source page, select **Confluence** from the Source type dropdown.
 4. Enter a name for your source.
-5. For **API Tokene** follow the Jira confluence for generating an  [API Token](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)
+5. For **API Token** follow the Jira confluence for generating an  [API Token](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)
 6. For **Domain name** enter your Confluence domain name.
 7. For **Email** enter your Confluence login email.
 
@@ -49,7 +49,7 @@ The Confluence connector should not run into Confluence API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------|
-| 0.1.3   | 2023-03-13 | []() | Add view and storage to pages body                   |
+| 0.1.3   | 2023-03-13 | [23988](https://github.com/airbytehq/airbyte/pull/23988) | Add view and storage to pages body                   |
 | 0.1.2   | 2023-03-06 | [23775](https://github.com/airbytehq/airbyte/pull/23775) | Set additionalProperties: true, update docs and spec |
 | 0.1.1   | 2022-01-31 | [9831](https://github.com/airbytehq/airbyte/pull/9831)   | Fix: Spec was not pushed to cache                    |
 | 0.1.0   | 2021-11-05 | [7241](https://github.com/airbytehq/airbyte/pull/7241)   | 🎉 New Source: Confluence                            |
