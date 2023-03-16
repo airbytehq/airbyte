@@ -11176,7 +11176,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-paystack:0.1.1"
+- dockerImage: "airbyte/source-paystack:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/paystack"
     connectionSpecification:
@@ -11186,7 +11186,7 @@
       required:
       - "secret_key"
       - "start_date"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         secret_key:
           type: "string"
