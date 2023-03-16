@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.source.relationaldb;
 
+import static io.airbyte.protocol.models.v0.CatalogHelpers.fieldsToJsonSchema;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.Field;
@@ -11,6 +14,8 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.Collections;
 import java.util.List;
@@ -18,8 +23,46 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+/**
+ * Contains utilities and helper classes for discovering schemas in database sources.
+ */
 public class DbSourceDiscoverUtil {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(DbSourceDiscoverUtil.class);
+
+  // In case of user manually modified source table schema but did not refresh it and save into the
+  // catalog - it can lead to sync failure. This method compare actual schema vs catalog schema
+  public static <DataType> void logSourceSchemaChange(final Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo,
+                                                      final ConfiguredAirbyteCatalog catalog,
+                                                      final Function<DataType, JsonSchemaType> airbyteTypeConverter) {
+    for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
+      final AirbyteStream stream = airbyteStream.getStream();
+      final String fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.getNamespace(),
+          stream.getName());
+      if (!fullyQualifiedTableNameToInfo.containsKey(fullyQualifiedTableName)) {
+        continue;
+      }
+      final TableInfo<CommonField<DataType>> table = fullyQualifiedTableNameToInfo.get(fullyQualifiedTableName);
+      final List<Field> fields = table.getFields()
+          .stream()
+          .map(commonField -> toField(commonField, airbyteTypeConverter))
+          .distinct()
+          .collect(Collectors.toList());
+      final JsonNode currentJsonSchema = fieldsToJsonSchema(fields);
+
+      final JsonNode catalogSchema = stream.getJsonSchema();
+      if (!catalogSchema.equals(currentJsonSchema)) {
+        LOGGER.warn(
+            "Source schema changed for table  {}! Actual schema: {}. Catalog schema:  {}",
+            fullyQualifiedTableName,
+            currentJsonSchema,
+            catalogSchema);
+      }
+    }
+  }
 
   public static <DataType> AirbyteCatalog convertTableInfosToAirbyteCatalog(final List<TableInfo<CommonField<DataType>>> tableInfos,
                                                                             final Map<String, List<String>> fullyQualifiedTableNameToPrimaryKeys,
@@ -71,7 +114,7 @@ public class DbSourceDiscoverUtil {
     return nameSpace != null ? nameSpace + "." + tableName : tableName;
   }
 
-  public static <DataType> Field toField(final CommonField<DataType> commonField, final Function<DataType, JsonSchemaType> airbyteTypeConverter) {
+  private static <DataType> Field toField(final CommonField<DataType> commonField, final Function<DataType, JsonSchemaType> airbyteTypeConverter) {
     if (airbyteTypeConverter.apply(commonField.getType()) == JsonSchemaType.OBJECT && commonField.getProperties() != null
         && !commonField.getProperties().isEmpty()) {
       final var properties = commonField.getProperties().stream().map(commField -> toField(commField, airbyteTypeConverter)).toList();
