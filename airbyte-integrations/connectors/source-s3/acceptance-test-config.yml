@@ -1,33 +1,4 @@
-connector_image: airbyte/source-s3:dev
-test_strictness_level: high
 acceptance_tests:
-  spec:
-    tests:
-      - spec_path: integration_tests/spec.json
-
-  connection:
-    tests:
-    - config_path: secrets/config.json
-      status: succeed
-    - config_path: secrets/parquet_config.json
-      status: succeed
-    - config_path: secrets/avro_config.json
-      status: succeed
-    - config_path: secrets/jsonl_config.json
-      status: succeed
-    - config_path: secrets/jsonl_newlines_config.json
-      status: succeed
-    - config_path: integration_tests/invalid_config.json
-      status: failed
-
-  discovery:
-    tests:
-    - config_path: secrets/config.json
-    - config_path: secrets/parquet_config.json
-    - config_path: secrets/avro_config.json
-    - config_path: secrets/jsonl_config.json
-    - config_path: secrets/jsonl_newlines_config.json
-
   basic_read:
     tests:
     - config_path: secrets/config.json
@@ -51,6 +22,27 @@ acceptance_tests:
         path: integration_tests/expected_records/jsonl_newlines.jsonl
       timeout_seconds: 1800
 
+  connection:
+    tests:
+    - config_path: secrets/config.json
+      status: succeed
+    - config_path: secrets/parquet_config.json
+      status: succeed
+    - config_path: secrets/avro_config.json
+      status: succeed
+    - config_path: secrets/jsonl_config.json
+      status: succeed
+    - config_path: secrets/jsonl_newlines_config.json
+      status: succeed
+    - config_path: integration_tests/invalid_config.json
+      status: failed
+  discovery:
+    tests:
+    - config_path: secrets/config.json
+    - config_path: secrets/parquet_config.json
+    - config_path: secrets/avro_config.json
+    - config_path: secrets/jsonl_config.json
+    - config_path: secrets/jsonl_newlines_config.json
   full_refresh:
     tests:
     - config_path: secrets/config.json
@@ -111,3 +103,8 @@ acceptance_tests:
       future_state:
         future_state_path: integration_tests/abnormal_state.json
       timeout_seconds: 1800
+  spec:
+    tests:
+    - spec_path: integration_tests/spec.json
+connector_image: airbyte/source-s3:dev
+test_strictness_level: high

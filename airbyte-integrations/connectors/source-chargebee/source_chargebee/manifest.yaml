@@ -1,11 +1,11 @@
-version: "0.1.0"
+version: "0.29.0"
 
 definitions:
   nested_selector:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: [ "list", '*', "{{ parameters.get('name') }}" ]
+      field_path: ["list", "*", "{{ parameters.get('name') }}"]
   custom_field_transformation:
     type: CustomTransformation
     class_name: source_chargebee.components.CustomFieldTransformation
