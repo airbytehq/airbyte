@@ -94,8 +94,6 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
 
     def refresh_access_token(self) -> Tuple[str, Any]:
         """
-        Returns the refresh token and its lifespan in seconds
-
         This overrides the parent class method because the parent class assumes the "expires_in" field is always an int representing
          seconds till token expiry.
 

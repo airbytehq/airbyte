@@ -12,7 +12,7 @@
       "dc_region",
       "edition"
     ],
-    "additionalProperties": true,
+    "additionalProperties": false,
     "properties": {
       "client_id": {
         "type": "string",
