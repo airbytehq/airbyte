@@ -4,244 +4,52 @@
 
 package io.airbyte.integrations.performance;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.json.Jsons;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 public class Main {
 
+  private  static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
+
   public static void main(final String[] args) {
-    log.info("performance harness");
+
+    if (!Files.exists(CREDENTIALS_PATH)) {
+      throw new IllegalStateException("{module-root}/" + CREDENTIALS_PATH + " not found. Must provide path to a source-harness credentials file.");
+    }
+
+    final JsonNode config = Jsons.deserialize(IOs.readFile(CREDENTIALS_PATH));
+
+    final JsonNode catalog;
+    try {
+      catalog = getCatalog();
+    } catch (final IOException ex) {
+      throw new IllegalStateException("Failed to read catalog", ex);
+    }
+
+    final String image = (args.length > 0) ? args[0] : "airbyte/source-postgres:dev";
+    if (StringUtils.isAnyBlank(config.toString(), catalog.toString(), image)) {
+      throw new IllegalStateException("Missing harness configuration");
+    }
+
+    log.info("Starting performance harness for {}", image);
     try {
       final PerformanceTest test = new PerformanceTest(
-          "airbyte/source-postgres:dev",
-          """
-              {
-                  "ssl": false,
-                  "host": "34.106.53.173",
-                  "port": 5432,
-                  "schemas": [
-                      "10m_users"
-                  ],
-                  "database": "performance",
-                  "password": "$Y'>3TI='{|Fl\\"')",
-                  "ssl_mode": {
-                      "mode": "disable"
-                  },
-                  "username": "postgres",
-                  "tunnel_method": {
-                      "tunnel_method": "NO_TUNNEL"
-                  },
-                  "replication_method": {
-                      "method": "Standard"
-                  }
-              }
-           """,
-          """
-   {
-  "streams": [
-    {
-      "stream": {
-        "name": "purchases",
-        "namespace": "10m_users",
-        "json_schema": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "number",
-              "airbyte_type": "integer"
-            },
-            "user_id": {
-              "type": "number",
-              "airbyte_type": "integer"
-            },
-            "product_id": {
-              "type": "number",
-              "airbyte_type": "integer"
-            },
-            "returned_at": {
-              "type": "string",
-              "format": "date-time",
-              "airbyte_type": "timestamp_with_timezone"
-            },
-            "purchased_at": {
-              "type": "string",
-              "format": "date-time",
-              "airbyte_type": "timestamp_with_timezone"
-            },
-            "added_to_cart_at": {
-              "type": "string",
-              "format": "date-time",
-              "airbyte_type": "timestamp_with_timezone"
-            }
-          }
-        },
-        "default_cursor_field": [],
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
-      },
-      "sync_mode": "full_refresh",
-      "primary_key": [
-        [
-          "id"
-        ]
-      ],
-      "cursor_field": [
-        "id"
-      ],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "users",
-        "namespace": "10m_users",
-        "json_schema": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "number",
-              "airbyte_type": "integer"
-            },
-            "age": {
-              "type": "number",
-              "airbyte_type": "integer"
-            },
-            "name": {
-              "type": "string"
-            },
-            "email": {
-              "type": "string"
-            },
-            "title": {
-              "type": "string"
-            },
-            "gender": {
-              "type": "string"
-            },
-            "height": {
-              "type": "number"
-            },
-            "weight": {
-              "type": "number",
-              "airbyte_type": "integer"
-            },
-            "language": {
-              "type": "string"
-            },
-            "telephone": {
-              "type": "string"
-            },
-            "blood_type": {
-              "type": "string"
-            },
-            "created_at": {
-              "type": "string",
-              "format": "date-time",
-              "airbyte_type": "timestamp_with_timezone"
-            },
-            "occupation": {
-              "type": "string"
-            },
-            "updated_at": {
-              "type": "string",
-              "format": "date-time",
-              "airbyte_type": "timestamp_with_timezone"
-            },
-            "nationality": {
-              "type": "string"
-            },
-            "academic_degree": {
-              "type": "string"
-            }
-          }
-        },
-        "default_cursor_field": [],
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
-      },
-      "sync_mode": "full_refresh",
-      "primary_key": [
-        [
-          "id"
-        ]
-      ],
-      "cursor_field": [
-        "updated_at"
-      ],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "products",
-        "namespace": "10m_users",
-        "json_schema": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "number",
-              "airbyte_type": "integer"
-            },
-            "make": {
-              "type": "string"
-            },
-            "year": {
-              "type": "string"
-            },
-            "model": {
-              "type": "string"
-            },
-            "price": {
-              "type": "number"
-            },
-            "created_at": {
-              "type": "string",
-              "format": "date-time",
-              "airbyte_type": "timestamp_with_timezone"
-            }
-          }
-        },
-        "default_cursor_field": [],
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
-      },
-      "sync_mode": "full_refresh",
-      "primary_key": [
-        [
-          "id"
-        ]
-      ],
-      "cursor_field": [
-        "created_at"
-      ],
-      "destination_sync_mode": "append"
-    }
-  ]
-}
-              """);
+          "airbyte/source-postgres:latest",
+          config.toString(),
+          catalog.toString());
+
       final ExecutorService executors = Executors.newFixedThreadPool(2);
       final CompletableFuture<Void> readSrcAndWriteDstThread = CompletableFuture.runAsync(() -> {
         try {
@@ -251,23 +59,29 @@ public class Main {
         }
       }, executors);
 
-      final CompletableFuture<Void> readFromDstThread = CompletableFuture.runAsync(() -> {
+      //Uncomment to add destination
+/*      final CompletableFuture<Void> readFromDstThread = CompletableFuture.runAsync(() -> {
         try {
           Thread.sleep(20_000);
           test.readFromDst();
         } catch (final InterruptedException e) {
           throw new RuntimeException(e);
         }
-      }, executors);
+      }, executors);*/
 
-      CompletableFuture.allOf(readSrcAndWriteDstThread, readFromDstThread).get();
+      CompletableFuture.allOf(readSrcAndWriteDstThread
+          /*, readFromDstThread*/).get();
 
-//      test.runTest();
-//      test.dirtyStart();
     } catch (final Exception e) {
       throw new RuntimeException(e);
 
     }
   }
 
+  static JsonNode getCatalog() throws IOException {
+    final ObjectMapper objectMapper = new ObjectMapper();
+    final String catalogFilename = "catalogs/catalog.json";
+    final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(catalogFilename);
+    return objectMapper.readTree(is);
+  }
 }

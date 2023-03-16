@@ -3,43 +3,30 @@ package io.airbyte.integrations.performance;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AllowedHosts;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
-import io.airbyte.config.StandardSyncInput;
-import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.internal.DefaultAirbyteDestination;
 import io.airbyte.workers.internal.DefaultAirbyteSource;
 import io.airbyte.workers.internal.HeartbeatMonitor;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
-import io.airbyte.workers.test_utils.TestConfigHelpers;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import java.io.BufferedWriter;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.net.InetAddress;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -64,7 +51,7 @@ public class PerformanceTest {
   private final JsonNode config;
   private final ConfiguredAirbyteCatalog catalog;
 
-  private DefaultAirbyteDestination destination;
+//  private DefaultAirbyteDestination destination;
 
   PerformanceTest(final String imageName, final String config, final String catalog) throws JsonProcessingException {
     final ObjectMapper mapper = new ObjectMapper();
@@ -84,8 +71,8 @@ public class PerformanceTest {
     final ResourceRequirements resourceReqs = new ResourceRequirements()
         .withCpuLimit("1")
         .withCpuRequest("1")
-        .withMemoryLimit("1000Mi")
-        .withMemoryRequest("1000Mi");
+        .withMemoryLimit("2Gi")
+        .withMemoryRequest("2Gi");
     final var heartbeatMonitor = new HeartbeatMonitor(Duration.ofMillis(1));
     final var allowedHosts = new AllowedHosts().withHosts(List.of("*"));
     final var integrationLauncher =
@@ -97,12 +84,16 @@ public class PerformanceTest {
         .withState(null)
         .withCatalog(convertProtocolObject(this.catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
 
+    //Uncomment to add destination
+    /*
     /////////// destiantion ///////////
     final var dstIntegtationLauncher = new AirbyteIntegrationLauncher("2", 0, "airbyte/destination-dev-null:0.2.7", processFactory, resourceReqs, allowedHosts, false, new EnvVariableFeatureFlags());
     this.destination = new DefaultAirbyteDestination(dstIntegtationLauncher);
     final WorkerDestinationConfig dstConfig = new WorkerDestinationConfig()
         .withDestinationConnectionConfiguration(Jsons.jsonNode(Collections.singletonMap("type", "SILENT")));
     destination.start(dstConfig, Path.of(jobRoot));
+    ///////////////////////////////////
+    */
 
     final ConcurrentHashMap<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors = new ConcurrentHashMap();
     final Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields = new HashMap();
@@ -126,11 +117,10 @@ public class PerformanceTest {
             sourceConfig.getCatalog().getStreams().get(2).getStream().getJsonSchema()
         ),
         true);
-    ///////////////////////////////////
+
 
     source.start(sourceConfig, Path.of(jobRoot));
     var totalBytes = 0.0;
-//    var totalBytesAlt = 0.0;
     var counter = 0L;
     final var start = System.currentTimeMillis();
     log.info("Starting Test");
@@ -141,12 +131,13 @@ public class PerformanceTest {
 
         if (airbyteMessage.getRecord() != null) {
           totalBytes += Jsons.getEstimatedByteSize(airbyteMessage.getRecord().getData());
-//          totalBytesAlt += airbyteMessage.getRecord().getData().toString().getBytes(Charset.defaultCharset()).length;
           counter++;
 
           validateSchema(recordSchemaValidator, streamToAllFields, unexpectedFields, validationErrors, airbyteMessage);
           airbyteMessage.getRecord().setStream(airbyteMessage.getRecord().getStream() + "SUFFIX");
-          destination.accept(airbyteMessage);
+          ((ObjectNode)airbyteMessage.getRecord().getData()).retain("id", "user_id", "product_id", "added_to_cart_at", "purchased_at","name","email",
+              "title", "gender", "height", "language", "blood_type", "created_at", "occupation", "updated_at", "nationality");
+//          destination.accept(airbyteMessage);
         }
 
       }
@@ -217,7 +208,8 @@ public class PerformanceTest {
     return Jsons.object(Jsons.jsonNode(v1), klass);
   }
 
-  void readFromDst() {
+  //Uncomment to add destination
+/*  void readFromDst() {
     if (this.destination != null) {
       log.info("Start read from destination");
       while (!this.destination.isFinished()) {
@@ -233,5 +225,5 @@ public class PerformanceTest {
       }
     }
     log.info("Done read from destination");
-  }
+  }*/
 }
