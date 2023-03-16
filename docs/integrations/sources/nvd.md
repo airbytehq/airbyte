@@ -65,4 +65,4 @@ Refer to the [full schema](https://csrc.nist.gov/schema/nvd/api/2.0/cpe_api_json
 ​
 | Version | Date       | Pull Request                                              | Subject                                    |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
-| 0.1.0   | 2022-12-19 | [#20647](https://github.com/airbytehq/airbyte/pull/20647) | 🎉 New Source: NVD API [Python CDK] |
+| 0.0.1   | 2022-12-19 | [#20647](https://github.com/airbytehq/airbyte/pull/20647) | 🎉 New Source: NVD API [Python CDK] |

@@ -19,6 +19,7 @@ acceptance_tests:
         empty_streams: []
         expect_records:
           bypass_reason: "Results from API change often so cannot be reliably compared"
+        timeout_seconds: 1800
   incremental: 
     tests:
       - config_path: "secrets/config.json"
