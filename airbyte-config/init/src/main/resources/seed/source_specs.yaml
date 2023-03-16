@@ -7894,7 +7894,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-linkedin-pages:0.1.0"
+- dockerImage: "airbyte/source-linkedin-pages:1.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/linkedin-pages/"
     connectionSpecification:
@@ -7907,7 +7907,7 @@
       properties:
         org_id:
           title: "Organization ID"
-          type: "integer"
+          type: "string"
           airbyte_secret: true
           description: "Specify the Organization ID"
           examples:
