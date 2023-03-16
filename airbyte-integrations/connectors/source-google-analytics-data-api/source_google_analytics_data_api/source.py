@@ -339,6 +339,6 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
 
     @staticmethod
     def instantiate_report_class(report: dict, config: Mapping[str, Any]) -> GoogleAnalyticsDataApiBaseStream:
-        return type(report["name"], (GoogleAnalyticsDataApiBaseStream, ), {})(
-                config=dict(**config, metrics=report["metrics"], dimensions=report["dimensions"]), authenticator=config["authenticator"]
-            )
+        return type(report["name"], (GoogleAnalyticsDataApiBaseStream,), {})(
+            config=dict(**config, metrics=report["metrics"], dimensions=report["dimensions"]), authenticator=config["authenticator"]
+        )
