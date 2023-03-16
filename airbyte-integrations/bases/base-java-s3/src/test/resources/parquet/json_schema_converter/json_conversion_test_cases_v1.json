@@ -376,7 +376,7 @@
             "null",
             {
               "type": "array",
-              "items": ["null", "string", "int", "boolean"]
+              "items": ["null", "string", "long", "boolean"]
             }
           ],
           "default": null
@@ -430,15 +430,7 @@
       "fields": [
         {
           "name": "created_at",
-          "type": [
-            "null",
-            {
-              "type": "long",
-              "logicalType": "timestamp-micros"
-            },
-            "string",
-            "int"
-          ],
+          "type": ["null", "string", "long"],
           "default": null
         },
         {
@@ -455,7 +447,7 @@
       ]
     },
     "avroObject": {
-      "created_at": 1642901025000000,
+      "created_at": "2022-01-23T01:23:45Z",
       "_airbyte_additional_properties": null
     }
   },
@@ -506,15 +498,7 @@
               "fields": [
                 {
                   "name": "created_at",
-                  "type": [
-                    "null",
-                    {
-                      "type": "long",
-                      "logicalType": "timestamp-micros"
-                    },
-                    "string",
-                    "int"
-                  ],
+                  "type": ["null", "string", "long"],
                   "default": null
                 },
                 {
@@ -548,7 +532,7 @@
     },
     "avroObject": {
       "user": {
-        "created_at": 1642901025000000,
+        "created_at": "2022-01-23T01:23:45Z",
         "_airbyte_additional_properties": null
       },
       "_airbyte_additional_properties": null
@@ -594,7 +578,7 @@
             "null",
             {
               "type": "array",
-              "items": ["null", "int", "string", "boolean"]
+              "items": ["null", "long", "string", "boolean"]
             }
           ],
           "default": null
@@ -968,7 +952,7 @@
               "fields": [
                 {
                   "name": "id",
-                  "type": ["null", "int"],
+                  "type": ["null", "long"],
                   "default": null
                 },
                 {
@@ -1257,7 +1241,7 @@
                       "type": "array",
                       "items": [
                         "null",
-                        "int",
+                        "long",
                         "boolean",
                         {
                           "type": "record",
@@ -1275,12 +1259,12 @@
                                   "fields": [
                                     {
                                       "name": "id_part_1",
-                                      "type": ["null", "int", "string"],
+                                      "type": ["null", "long", "string"],
                                       "default": null
                                     },
                                     {
                                       "name": "id_part_2",
-                                      "type": ["null", "string", "int"],
+                                      "type": ["null", "string", "long"],
                                       "default": null
                                     },
                                     {

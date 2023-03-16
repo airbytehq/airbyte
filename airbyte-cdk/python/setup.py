@@ -15,7 +15,9 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="airbyte-cdk",
-    version="0.30.1",
+    # The version of the airbyte-cdk package is used at runtime to validate manifests. That validation must be
+    # updated if our semver format changes such as using release candidate versions.
+    version="0.30.3",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
