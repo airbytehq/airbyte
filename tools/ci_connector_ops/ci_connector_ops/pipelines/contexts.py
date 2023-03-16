@@ -151,12 +151,9 @@ class ConnectorTestContext:
             self.state = ContextState.ERROR
             return True
         else:
-            teardown_pipeline = self.dagger_client.pipeline(f"Teardown {self.connector.technical_name}")
+            self.dagger_client = self.dagger_client.pipeline(f"Teardown {self.connector.technical_name}")
             if self.should_save_updated_secrets:
-                await secrets.upload(
-                    teardown_pipeline,
-                    self.connector,
-                )
+                await secrets.upload(self)
             self.test_report.print()
             self.logger.info(self.test_report.to_json())
             local_test_reports_path_root = "tools/ci_connector_ops/test_reports/"
@@ -172,7 +169,7 @@ class ConnectorTestContext:
                 s3_reports_path_root = "python-poc/tests/history/"
                 s3_key = s3_reports_path_root + suffix
                 report_upload_exit_code = await remote_storage.upload_to_s3(
-                    teardown_pipeline, str(local_report_path), s3_key, os.environ["TEST_REPORTS_BUCKET_NAME"]
+                    self.dagger_client, str(local_report_path), s3_key, os.environ["TEST_REPORTS_BUCKET_NAME"]
                 )
                 if report_upload_exit_code != 0:
                     self.logger.error("Uploading the report to S3 failed.")
