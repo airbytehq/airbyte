@@ -1,4 +1,4 @@
-FROM python:3.9.11-alpine3.15 as base
+FROM python:3.9.13-alpine3.15 as base
 
 # build and load all requirements
 FROM base as builder
@@ -29,10 +29,10 @@ RUN apk --no-cache add bash
 
 # copy payload code only
 COPY main.py ./
-COPY source_linkedin_pages ./source_linkedin_pages
+COPY source_trustpilot ./source_trustpilot
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=1.0.0
-LABEL io.airbyte.name=airbyte/source-linkedin-pages
+LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.name=airbyte/source-trustpilot
