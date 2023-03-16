@@ -731,6 +731,7 @@
   "user.signup.and": "and",
   "user.resendInvite.message": "Invite has been sent!",
   "user.changeRole.message": "User role has been changed!",
+  "user.remove": "Remove",
 
   "signup.google": "Sign up with Google",
 
