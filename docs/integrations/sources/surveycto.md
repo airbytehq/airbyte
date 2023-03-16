@@ -5,7 +5,7 @@ This page guides you through the process of setting up the SurveyCTO source conn
 ## Prerequisites
 
 - Server Name `The name of the ServerCTO server`
-- Your SurveCTO `Username`
+- Your SurveyCTO `Username`
 - Your SurveyCTO `Password`
 - Form ID `Unique Identifier for one of your forms`
 - Start Date `Start Date default`
@@ -30,7 +30,7 @@ This page guides you through the process of setting up the SurveyCTO source conn
 
 ## Supported sync modes
 
-The Commcare source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The SurveyCTO source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 * [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 * [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -39,9 +39,9 @@ The Commcare source connector supports the following [sync modes](https://docs.a
 
 ## Supported Streams
 
-The Commcare source connector supports the following streams:
+The SurveyCTO source connector supports the following streams:
 
-- Forms
+- Surveycto
 
 ## Changelog
 
