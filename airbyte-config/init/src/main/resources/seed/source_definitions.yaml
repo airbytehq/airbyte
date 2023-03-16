@@ -681,7 +681,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.4.2
+  dockerImageTag: 0.4.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -700,8 +700,8 @@
       - users
   allowedHosts:
     hosts:
-      - api.github.com
-      - ${api_url}
+      - "api.github.com"
+      - "${api_url}"
 - name: Gitlab
   sourceDefinitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
   dockerRepository: airbyte/source-gitlab
