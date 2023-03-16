@@ -4,7 +4,6 @@
 
 package io.airbyte.db.jdbc;
 
-import static io.airbyte.db.DataTypeUtils.TIMESTAMPTZ_FORMATTER;
 import static io.airbyte.db.DataTypeUtils.TIMETZ_FORMATTER;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -24,7 +23,6 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.chrono.IsoEra;
 import java.time.format.DateTimeParseException;
@@ -251,9 +249,11 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
 
   protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
       throws SQLException {
-    /*final OffsetDateTime timestamptz = getObject(resultSet, index, OffsetDateTime.class);
-    final LocalDate localDate = timestamptz.toLocalDate();
-    node.put(columnName, resolveEra(localDate, timestamptz.format(TIMESTAMPTZ_FORMATTER)));*/
+    /*
+     * final OffsetDateTime timestamptz = getObject(resultSet, index, OffsetDateTime.class); final
+     * LocalDate localDate = timestamptz.toLocalDate(); node.put(columnName, resolveEra(localDate,
+     * timestamptz.format(TIMESTAMPTZ_FORMATTER)));
+     */
     node.put(columnName, resultSet.getString(index)); // TEMP
   }
 
