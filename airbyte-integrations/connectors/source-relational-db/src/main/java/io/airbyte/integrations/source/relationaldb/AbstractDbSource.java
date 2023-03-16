@@ -26,6 +26,7 @@ import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.InvalidCursorInfoUtil.InvalidCursorInfo;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
+import io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.integrations.util.ConnectorExceptionUtil;
