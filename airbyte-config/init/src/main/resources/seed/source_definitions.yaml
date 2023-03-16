@@ -79,7 +79,7 @@
 - name: Amazon Seller Partner
   sourceDefinitionId: e55879a8-0ef8-4557-abcf-ab34c53ec460
   dockerRepository: airbyte/source-amazon-seller-partner
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.1
   sourceType: api
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-seller-partner
   icon: amazonsellerpartner.svg
@@ -319,7 +319,7 @@
 - name: Cockroachdb
   sourceDefinitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
   dockerRepository: airbyte/source-cockroachdb
-  dockerImageTag: 0.1.20
+  dockerImageTag: 0.1.21
   documentationUrl: https://docs.airbyte.com/integrations/sources/cockroachdb
   icon: cockroachdb.svg
   sourceType: database
@@ -764,10 +764,16 @@
   icon: google-analytics.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - oauth2.googleapis.com
+      - www.googleapis.com
+      - analyticsdata.googleapis.com
+      - analyticsreporting.googleapis.com
 - name: Google Analytics 4 (GA4)
   sourceDefinitionId: 3cc2eafd-84aa-4dca-93af-322d9dfeec1a
   dockerRepository: airbyte/source-google-analytics-data-api
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-data-api
   icon: google-analytics.svg
   sourceType: api
@@ -1338,6 +1344,13 @@
   icon: openweather.svg
   sourceType: api
   releaseStage: alpha
+- name: Opsgenie
+  sourceDefinitionId: 06bdb480-2598-40b8-8b0f-fc2e2d2abdda
+  dockerRepository: airbyte/source-opsgenie
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/opsgenie
+  sourceType: api
+  releaseStage: alpha
 - name: Oracle DB
   sourceDefinitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
   dockerRepository: airbyte/source-oracle
@@ -1421,11 +1434,14 @@
 - name: Paystack
   sourceDefinitionId: 193bdcb8-1dd9-48d1-aade-91cadfd74f9b
   dockerRepository: airbyte/source-paystack
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/paystack
   icon: paystack.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "api.paystack.co"
 - name: PersistIq
   sourceDefinitionId: 3052c77e-8b91-47e2-97a0-a29a22794b4b
   dockerRepository: airbyte/source-persistiq
@@ -1530,7 +1546,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 2.0.2
+  dockerImageTag: 2.0.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -1725,15 +1741,18 @@
 - name: SalesLoft
   sourceDefinitionId: 41991d12-d4b5-439e-afd0-260a31d4c53f
   dockerRepository: airbyte/source-salesloft
-  dockerImageTag: 0.1.6
+  dockerImageTag: 1.0.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesloft
   icon: salesloft.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "api.salesloft.com"
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 2.0.6
+  dockerImageTag: 2.0.7
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
@@ -2174,7 +2193,7 @@
 - name: Xero
   sourceDefinitionId: 6fd1e833-dd6e-45ec-a727-ab917c5be892
   dockerRepository: airbyte/source-xero
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/xero
   icon: xero.svg
   sourceType: api
