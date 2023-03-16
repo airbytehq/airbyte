@@ -437,7 +437,6 @@ class BaseResource(abc.ABC):
 
 
 class SourceAndDestination(BaseResource):
-
     @property
     @abc.abstractmethod
     def definition(

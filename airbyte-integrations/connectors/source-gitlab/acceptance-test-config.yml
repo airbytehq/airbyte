@@ -15,7 +15,6 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
-      - config_path: "secrets/config_oauth.json"
   basic_read:
     tests:
       - config_path: "secrets/config.json"

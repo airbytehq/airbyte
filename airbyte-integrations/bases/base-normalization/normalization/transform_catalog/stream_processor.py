@@ -8,7 +8,7 @@ import re
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
+from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode  # type: ignore
 from jinja2 import Template
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog import dbt_macro

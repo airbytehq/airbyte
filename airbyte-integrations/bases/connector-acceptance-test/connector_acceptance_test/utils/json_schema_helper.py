@@ -109,7 +109,7 @@ class JsonSchemaHelper:
         """
         return CatalogField(schema=self.get_property(path), path=path)
 
-    def get_node(self, path: List[str]) -> Any:
+    def get_node(self, path: List[Union[str, int]]) -> Any:
         """Return part of schema by specified path
 
         :param path: list of fields in the order of navigation
@@ -132,7 +132,7 @@ class JsonSchemaHelper:
             return self._schema
         return dpath.util.get(self._schema, parent_path)
 
-    def find_nodes(self, keys: List[str]) -> List[List[str]]:
+    def find_nodes(self, keys: List[str]) -> List[List[Union[str, int]]]:
         """Find all paths that lead to nodes with the specified keys.
 
         :param keys: list of keys
