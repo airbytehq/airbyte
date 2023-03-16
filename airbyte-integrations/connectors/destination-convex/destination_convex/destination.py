@@ -3,8 +3,9 @@
 #
 
 
+import time
 from logging import Logger
-from typing import Any, Iterable, List, Mapping, cast
+from typing import Any, Iterable, List, Mapping, Optional, cast
 
 import requests
 from airbyte_cdk.destinations import Destination
@@ -44,18 +45,20 @@ class DestinationConvex(Destination):
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
         config = cast(ConvexConfig, config)
-        writer = ConvexWriter(ConvexClient(config, self.__stream_metadata(configured_catalog.streams)))
+        timestamp = str(int(time.time()))
+        writer = ConvexWriter(ConvexClient(config, self.table_metadata(configured_catalog.streams, timestamp)))
 
         # Setup: Clear tables if in overwrite mode; add indexes if in append_dedup mode.
-        streams_to_delete = []
+        streams_to_replace = {}
         indexes_to_add = {}
+        sync_mode_for_table = {}
         for configured_stream in configured_catalog.streams:
+            table_name = self.table_name_for_stream(configured_stream.stream.namespace, configured_stream.stream.name)
+            sync_mode_for_table[table_name] = configured_stream.destination_sync_mode
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                streams_to_delete.append(configured_stream.stream.name)
+                streams_to_replace[self.temp_table_name(table_name, timestamp)] = table_name
             elif configured_stream.destination_sync_mode == DestinationSyncMode.append_dedup and configured_stream.primary_key:
                 indexes_to_add[configured_stream.stream.name] = configured_stream.primary_key
-        if len(streams_to_delete) != 0:
-            writer.delete_stream_entries(streams_to_delete)
         if len(indexes_to_add) != 0:
             writer.add_indexes(indexes_to_add)
 
@@ -67,9 +70,16 @@ class DestinationConvex(Destination):
                 writer.flush()
                 yield message
             elif message.type == Type.RECORD and message.record is not None:
-                if message.record.namespace is not None:
-                    message.record.stream = f"{message.record.namespace}_{message.record.stream}"
-                msg = message.record.dict()
+                table_name = self.table_name_for_stream(
+                    message.record.namespace,
+                    message.record.stream,
+                )
+                if sync_mode_for_table[table_name] == DestinationSyncMode.overwrite:
+                    table_name = self.temp_table_name(table_name, timestamp)
+                msg = {
+                    "tableName": table_name,
+                    "data": message.record.data,
+                }
                 writer.queue_write_operation(msg)
             else:
                 # ignore other message types for now
@@ -78,8 +88,23 @@ class DestinationConvex(Destination):
         # Make sure to flush any records still in the queue
         writer.flush()
 
-    def __stream_metadata(self, streams: List[ConfiguredAirbyteStream]) -> Mapping[str, Any]:
-        stream_metadata = {}
+        if len(streams_to_replace) != 0:
+            writer.replace_streams(streams_to_replace)
+
+    def table_name_for_stream(self, namespace: Optional[str], stream_name: str) -> str:
+        if namespace is not None:
+            return f"{namespace}_{stream_name}"
+        return stream_name
+
+    def temp_table_name(self, table_name: str, timestamp: str) -> str:
+        return f"temp_{timestamp}_{table_name}"
+
+    def table_metadata(
+        self,
+        streams: List[ConfiguredAirbyteStream],
+        timestamp: str,
+    ) -> Mapping[str, Any]:
+        table_metadata = {}
         for s in streams:
             # Only send a primary key for dedup sync
             if s.destination_sync_mode != DestinationSyncMode.append_dedup:
@@ -88,12 +113,14 @@ class DestinationConvex(Destination):
                 "primaryKey": s.primary_key,
                 "jsonSchema": s.stream.json_schema,
             }
-            if s.stream.namespace is not None:
-                name = f"{s.stream.namespace}_{s.stream.name}"
-            else:
-                name = s.stream.name
-            stream_metadata[name] = stream
-        return stream_metadata
+            name = self.table_name_for_stream(
+                s.stream.namespace,
+                s.stream.name,
+            )
+            if s.destination_sync_mode == DestinationSyncMode.overwrite:
+                name = self.temp_table_name(name, timestamp)
+            table_metadata[name] = stream
+        return table_metadata
 
     def check(self, logger: Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """

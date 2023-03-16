@@ -9,34 +9,38 @@ from destination_convex.config import ConvexConfig
 
 
 class ConvexClient:
-    def __init__(self, config: ConvexConfig, stream_metadata: Mapping[str, Any]):
+    def __init__(self, config: ConvexConfig, table_metadata: Mapping[str, Any]):
         self.deployment_url = config["deployment_url"]
         self.access_key = config["access_key"]
-        self.stream_metadata = stream_metadata
+        self.table_metadata = table_metadata
 
     def batch_write(self, records: List[Mapping[str, Any]]) -> requests.Response:
         """
-        See Convex docs: https://docs.convex.dev/http-api/#post-apistreaming_importimport_airbyte_records
+        See Convex docs: https://docs.convex.dev/http-api/#post-apiairbyte_ingress
         """
-        request_body = {"streams": self.stream_metadata, "messages": records}
+        request_body = {"tables": self.table_metadata, "messages": records}
         return self._request("POST", endpoint="import_airbyte_records", json=request_body)
 
-    def delete(self, keys: List[str]) -> requests.Response:
+    @staticmethod
+    def temp_table_name(table_name: str, timestamp: str) -> str:
+        return f"temp_{timestamp}_{table_name}"
+
+    def replace_tables(self, table_names: Mapping[str, str]) -> requests.Response:
         """
-        See Convex docs: https://docs.convex.dev/http-api/#put-apistreaming_importclear_tables
+        See Convex docs: https://docs.convex.dev/http-api/#post-apireplace_tables
         """
-        request_body = {"tableNames": keys}
-        return self._request("PUT", endpoint="clear_tables", json=request_body)
+        request_body = {"tableNames": table_names}
+        return self._request("POST", endpoint="replace_tables", json=request_body)
 
     def add_primary_key_indexes(self, indexes: Mapping[str, List[List[str]]]) -> requests.Response:
         """
-        See Convex docs: https://docs.convex.dev/http-api/#put-apistreaming_importadd_primary_key_indexes
+        See Convex docs: https://docs.convex.dev/http-api/#put-apiadd_primary_key_indexes
         """
         return self._request("PUT", "add_primary_key_indexes", json={"indexes": indexes})
 
     def primary_key_indexes_ready(self, tables: List[str]) -> requests.Response:
         """
-        See Convex docs: https://docs.convex.dev/http-api/#get-apistreaming_importprimary_key_indexes_ready
+        See Convex docs: https://docs.convex.dev/http-api/#get-apiprimary_key_indexes_ready
         """
         return self._request("GET", "primary_key_indexes_ready", json={"tables": tables})
 
