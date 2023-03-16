@@ -28,6 +28,12 @@ A source is an API, file, database, or data warehouse that you want to ingest da
 
 To set up a source:
 
+:::note
+
+Set your [default data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-data-residency#choose-your-default-data-residency) before creating a new source to ensure your data is processed in the correct region.
+
+:::
+
 1. On the Airbyte Cloud dashboard, click **Sources** and then click **+ New source**.
 2. On the Set up the source page, select the source you want to set up from the **Source type** dropdown.
 
@@ -82,6 +88,12 @@ If you need to use [cron scheduling](http://www.quartz-scheduler.org/documentati
 :::
 
 To set up a connection:
+
+:::note
+
+Set your [default data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-data-residency#choose-your-default-data-residency) before creating a new connection to ensure your data is processed in the correct region.
+
+:::
 
 1. On the Airbyte Cloud dashboard, click **Connections** and then click **+ New connection**.
 2. On the New connection page, select a source:

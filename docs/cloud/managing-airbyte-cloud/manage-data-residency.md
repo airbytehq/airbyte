@@ -4,7 +4,7 @@ In Airbyte Cloud, you can set the default data residency and choose the data res
 
 ## Choose your default data residency
 
-Default data residency allows you to choose where your data is processed. Set the default data residency before creating a new connection so workflows that rely on the default data residency, such as fetching the schema or testing the source or destination, can process data in the correct region. 
+Default data residency allows you to choose where your data is processed. Set the default data residency before creating a new source or connection so workflows that rely on the default data residency, such as fetching the schema or testing the source or destination, can process data in the correct region. 
 
 :::note 
 
