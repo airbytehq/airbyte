@@ -19,9 +19,6 @@ from .fields import HitsFields, VisitsFields
 
 STATE_CHECKPOINT_INTERVAL = 20
 
-# Full refresh streams
-
-
 class YandexMetricaStream(HttpStream, ABC):
     url_base = "https://api-metrica.yandex.net/management/v1/counter/"
 
@@ -100,7 +97,6 @@ class YandexMetricaStream(HttpStream, ABC):
             print(f"Exception occurred while trying to fetch records: {e}")
 
 
-# Incremental streams
 class IncrementalYandexMetricaStream(YandexMetricaStream, IncrementalMixin):
     state_checkpoint_interval = STATE_CHECKPOINT_INTERVAL
 
@@ -230,15 +226,13 @@ class Sessions(IncrementalYandexMetricaStream):
         yield from self.fetch_records(response, stream_state)
 
 
-# Substreams
-"""
-Evaluates the possibility of creating a logs request according to its approximate size.
-
-See: https://yandex.com/dev/metrika/doc/api2/logs/queries/evaluate.html
-"""
-
-
 class Evaluate(YandexMetricaStream):
+    """
+    Evaluates the possibility of creating a logs request according to its approximate size.
+
+    See: https://yandex.com/dev/metrika/doc/api2/logs/queries/evaluate.html
+    """
+
     primary_key = None
 
     def __init__(self, counter_id: str, params: dict, source: str, **kwargs):
@@ -272,14 +266,13 @@ class Evaluate(YandexMetricaStream):
         yield data
 
 
-"""
-Creates logs request.
-
-See: https://yandex.com/dev/metrika/doc/api2/logs/queries/createlogrequest.html
-"""
-
-
 class Create(YandexMetricaStream):
+    """
+    Creates logs request.
+
+    See: https://yandex.com/dev/metrika/doc/api2/logs/queries/createlogrequest.html
+    """
+
     primary_key = None
 
     def __init__(self, counter_id: str, params: dict, **kwargs):
@@ -315,14 +308,15 @@ class Create(YandexMetricaStream):
         yield data
 
 
-"""
-Returns information about logs request.
 
-See: https://yandex.com/dev/metrika/doc/api2/logs/queries/getlogrequest.html
-"""
 
 
 class Check(YandexMetricaStream):
+    """
+    Returns information about logs request.
+
+    See: https://yandex.com/dev/metrika/doc/api2/logs/queries/getlogrequest.html
+    """
     primary_key = None
 
     def __init__(self, counter_id: str, params: dict, logrequest_id: int, **kwargs):
@@ -356,14 +350,12 @@ class Check(YandexMetricaStream):
         yield data
 
 
-"""
-Download prepared logs of the processed request.
-
-See: https://yandex.com/dev/metrika/doc/api2/logs/queries/download.html
-"""
-
-
 class Download(YandexMetricaStream):
+    """
+    Download prepared logs of the processed request.
+
+    See: https://yandex.com/dev/metrika/doc/api2/logs/queries/download.html
+    """
     def __init__(self, counter_id: str, params: dict, logrequest_id: int, last_page: int, **kwargs):
         self.logrequest_id = logrequest_id
         self.last_page = last_page
