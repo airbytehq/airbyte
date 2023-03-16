@@ -231,7 +231,7 @@ class Products(LinioBase):
         item_list = []
         self.new_initial_date = self.CreatedAfter
 
-        if self.record_list_name_4 in response_json[self.record_list_name_2][self.record_list_name_3].keys():
+        if isinstance(response_json[self.record_list_name_2][self.record_list_name_3].keys(), dict):
             timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
 
             for item in response_json[self.record_list_name_2][self.record_list_name_3][self.record_list_name_4]:
@@ -251,6 +251,8 @@ class Products(LinioBase):
                 item_list.append(item_json)
 
         self.totalCount = self.totalCount + len(item_list)
+        logger.info('Products TotalCount')
+        logger.info(self.totalCount)
 
         return item_list
 
