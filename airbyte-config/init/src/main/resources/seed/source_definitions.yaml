@@ -2068,6 +2068,9 @@
   icon: trello.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - api.trello.com
 - name: TVMaze Schedule
   sourceDefinitionId: bd14b08f-9f43-400f-b2b6-7248b5c72561
   dockerRepository: airbyte/source-tvmaze-schedule
