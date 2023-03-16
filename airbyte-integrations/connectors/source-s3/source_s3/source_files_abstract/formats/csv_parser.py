@@ -212,7 +212,7 @@ class CsvParser(AbstractFileParser):
         quote_char = self.format.quote_char
         reader = csv.reader([six.ensure_text(file.readline())], delimiter=delimiter, quotechar=quote_char)
         field_names = next(reader)
-        file.seek(0)
+        file.seek(0)  # the file may be reused later so return the cursor to the very beginning of the file as if nothing happened here
         return {field_name.strip(): pyarrow.string() for field_name in field_names}
 
     @wrap_exception((ValueError,))
