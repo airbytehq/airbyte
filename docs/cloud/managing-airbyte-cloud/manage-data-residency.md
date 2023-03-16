@@ -12,7 +12,7 @@ While the data is processed in a data plane of the chosen residency, the cursor 
 
 :::
 
-When you set the default data residency, it applies to new connections only. If you do not set the default data residency, the [Airbyte Default](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud/#united-states-and-airbyte-default) region is used. If you want to change the default residency for a connection, you can do so in its [connection settings](#choose-the-data-residency-for-a-connection).
+When you set the default data residency, it applies to new connections only. If you do not set the default data residency, the [Airbyte Default](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud/#united-states-and-airbyte-default) region is used. If you want to change the data residency for a connection, you can do so in its [connection settings](#choose-the-data-residency-for-a-connection).
 
 To choose your default data residency:
 
