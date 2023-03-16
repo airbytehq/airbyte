@@ -922,6 +922,14 @@
   icon: klaviyo.svg
   sourceType: api
   releaseStage: generally_available
+- name: Kobotoolbox
+  sourceDefinitionId: d2648a70-30ff-49d6-af45-d0b11fe06c47
+  dockerRepository: airbyte/source-kobotoolbox
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/kobotoolbox
+  icon: kobotoolbox.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Kyriba
   sourceDefinitionId: 547dc08e-ab51-421d-953b-8f3745201a8c
   dockerRepository: airbyte/source-kyriba
