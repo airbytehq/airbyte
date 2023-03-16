@@ -154,7 +154,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
                 f"The manifest version {manifest_version} is greater than the airbyte-cdk package version ({cdk_version}). Your "
                 f"manifest may contain features that are not in the current CDK version."
             )
-        elif manifest_major == 0 and manifest_minor < 29 and (0 < cdk_major or 29 <= cdk_minor):
+        elif manifest_major == 0 and manifest_minor < 29:
             raise ValidationError(
                 f"The low-code framework was promoted to Beta in airbyte-cdk version 0.29.0 and contains many breaking changes to the "
                 f"language. The manifest version {manifest_version} is incompatible with the airbyte-cdk package version "

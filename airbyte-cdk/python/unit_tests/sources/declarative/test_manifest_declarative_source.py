@@ -445,7 +445,6 @@ class TestManifestDeclarativeSource:
                 ValidationError,
                 id="manifest_version_before_beta_that_uses_package_later_major_version_than_beta_0.29.0_cdk_package_should_throw_error",
             ),
-            pytest.param("0.28.0", "0.25.0", None, id="manifest_version_before_beta_0.29.0_using_earlier_cdk_package_should_run"),
             pytest.param("0.34.0", "0.35.0", ValidationError, id="manifest_version_greater_than_cdk_package_should_throw_error"),
             pytest.param("0.29.0", "-1.5.0", ValidationError, id="manifest_version_has_invalid_major_format"),
             pytest.param("0.29.0", "0.invalid.0", ValidationError, id="manifest_version_has_invalid_minor_format"),
