@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.destination.postgres;
 
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 
-public class PostgresSQLNameTransformer extends ExtendedNameTransformer {
+public class PostgresSQLNameTransformer extends StandardNameTransformer {
 
   @Override
   public String applyDefaultCase(final String input) {
