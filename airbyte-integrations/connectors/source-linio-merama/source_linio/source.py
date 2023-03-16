@@ -69,7 +69,10 @@ class LinioBase(HttpStream):
 
         if stream_state and (self.cursor_field in stream_state):
             if isinstance(stream_state[self.cursor_field], str):
-                current_stream_state_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%d %H:%M:%S')
+                try:
+                    current_stream_state_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%d %H:%M:%S')
+                except:
+                    current_stream_state_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S')
             else:
                 current_stream_state_date = stream_state[self.cursor_field]
             param_CreatedAfter = datetime.strftime(current_stream_state_date - timedelta(days=15), '%Y-%m-%d')
@@ -176,13 +179,19 @@ class Orders(LinioBase):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
 
-        latest_record_date = datetime.strptime(latest_record['data'][self.record_creation_date_key], '%Y-%m-%d %H:%M:%S')
+        try:
+            latest_record_date = datetime.strptime(latest_record['data'][self.record_creation_date_key], '%Y-%m-%d %H:%M:%S')
+        except:
+            latest_record_date = datetime.strptime(latest_record['data'][self.record_creation_date_key], '%Y-%m-%dT%H:%M:%S')
         logger.info('get_updated_state log:')
         logger.info(latest_record_date)
         logger.info(current_stream_state)
         if current_stream_state.get(self.cursor_field):
             if isinstance(current_stream_state[self.cursor_field], str):
-                current_stream_state_date = datetime.strptime(current_stream_state[self.cursor_field], '%Y-%m-%d %H:%M:%S')
+                try:
+                    current_stream_state_date = datetime.strptime(current_stream_state[self.cursor_field], '%Y-%m-%d %H:%M:%S')
+                except:
+                    current_stream_state_date = datetime.strptime(current_stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S')
             else:
                 current_stream_state_date = current_stream_state[self.cursor_field]
 
