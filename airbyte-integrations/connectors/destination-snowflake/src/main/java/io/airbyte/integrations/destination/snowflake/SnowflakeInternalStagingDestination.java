@@ -76,7 +76,14 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     final String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
     final String stageName = sqlOperations.getStageName(outputSchema, outputTableName);
     sqlOperations.createStageIfNotExists(database, stageName);
-    sqlOperations.dropStageIfExists(database, stageName);
+
+    // try to make test write to make sure we have required role
+    try {
+      sqlOperations.attemptWriteToStage(outputSchema, stageName, database);
+    } finally {
+      // drop created tmp stage
+      sqlOperations.dropStageIfExists(database, stageName);
+    }
   }
 
   @Override
