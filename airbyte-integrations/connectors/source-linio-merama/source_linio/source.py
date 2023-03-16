@@ -13,6 +13,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from datetime import datetime, timedelta, timezone
 from airbyte_cdk.sources.streams.http.auth import NoAuth
+import pytz
 # from airbyte_cdk.models import SyncMode
 # import xmltodict
 # from time import sleep
@@ -25,6 +26,12 @@ class LinioBase(HttpStream):
                         'CO': 'https://sellercenter-api.linio.com.co',
                         'PE': 'https://sellercenter-api.linio.com.pe'
                         }
+    timezone_options = {
+        'MX': pytz.timezone('America/Mexico_City'),
+        'CL': pytz.timezone('America/Santiago'),
+        'CO': pytz.timezone('America/Bogota'),
+        'PE': pytz.timezone('America/Lima')
+    }
     def __init__(
             self,
             config: Mapping[str, Any],
@@ -75,7 +82,7 @@ class LinioBase(HttpStream):
             'Version': '1.0',
             'Format': 'JSON',
             'Limit': self.limit,
-            'Timestamp': datetime.now().isoformat(),
+            'Timestamp': datetime.now(self.timezone_options[self.country]).isoformat(),
             'CreatedAfter': param_CreatedAfter,
             'Offset': self.offset
         }
@@ -297,7 +304,7 @@ class Statistics(LinioBase):
             'UserID': self.user_id,
             'Version': '1.0',
             'Format': 'JSON',
-            'Timestamp': datetime.now().isoformat()
+            'Timestamp': datetime.now(self.timezone_options[self.country]).isoformat()
         }
         concatenated = urllib.parse.urlencode(sorted(params.items()))
         self.Signature = HMAC(self.api_key.encode(), concatenated.encode('utf-8'), sha256).hexdigest()
