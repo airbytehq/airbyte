@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import json
 import logging
 from typing import Any, Dict
 
@@ -29,8 +28,10 @@ DEDUP_INDEX_FIELD = "int_col"
 
 @pytest.fixture(name="config")
 def config_fixture() -> ConvexConfig:
-    with open("secrets/local_config.json", "r") as f:
-        return json.loads(f.read())
+    return {
+        "deployment_url": "http://deployment_url.convex.cloud",
+        "access_key": "abcdef01236789",
+    }
 
 
 @pytest.fixture(name="client")
