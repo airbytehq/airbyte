@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
@@ -33,7 +34,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -50,17 +50,6 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
 
   private JsonNode dbConfig;
   private final BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
-
-  @Override
-  public JsonNode toDatabaseConfig(final JsonNode config) {
-    final var conf = ImmutableMap.builder()
-        .put(CONFIG_PROJECT_ID, config.get(CONFIG_PROJECT_ID).asText())
-        .put(CONFIG_CREDS, config.get(CONFIG_CREDS).asText());
-    if (config.hasNonNull(CONFIG_DATASET_ID)) {
-      conf.put(CONFIG_DATASET_ID, config.get(CONFIG_DATASET_ID).asText());
-    }
-    return Jsons.jsonNode(conf.build());
-  }
 
   @Override
   protected BigQueryDatabase createDatabase(final JsonNode sourceConfig) {
@@ -100,31 +89,21 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
   }
 
   @Override
-  public Set<String> getExcludedInternalNameSpaces() {
-    return Collections.emptySet();
-  }
-
-  @Override
   protected List<TableInfo<CommonField<StandardSQLTypeName>>> discoverInternal(final BigQueryDatabase database) throws Exception {
-    return discoverInternal(database, null);
-  }
-
-  @Override
-  protected List<TableInfo<CommonField<StandardSQLTypeName>>> discoverInternal(final BigQueryDatabase database, final String schema) {
     final String projectId = dbConfig.get(CONFIG_PROJECT_ID).asText();
     final List<Table> tables =
         (isDatasetConfigured(database) ? database.getDatasetTables(getConfigDatasetId(database)) : database.getProjectTables(projectId));
     final List<TableInfo<CommonField<StandardSQLTypeName>>> result = new ArrayList<>();
     tables.stream().map(table -> TableInfo.<CommonField<StandardSQLTypeName>>builder()
-        .nameSpace(table.getTableId().getDataset())
-        .name(table.getTableId().getTable())
-        .fields(Objects.requireNonNull(table.getDefinition().getSchema()).getFields().stream()
-            .map(f -> {
-              final StandardSQLTypeName standardType = f.getType().getStandardType();
-              return new CommonField<>(f.getName(), standardType);
-            })
-            .collect(Collectors.toList()))
-        .build())
+            .nameSpace(table.getTableId().getDataset())
+            .name(table.getTableId().getTable())
+            .fields(Objects.requireNonNull(table.getDefinition().getSchema()).getFields().stream()
+                .map(f -> {
+                  final StandardSQLTypeName standardType = f.getType().getStandardType();
+                  return new CommonField<>(f.getName(), standardType);
+                })
+                .collect(Collectors.toList()))
+            .build())
         .forEach(result::add);
     return result;
   }
@@ -135,8 +114,7 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
     return Collections.emptyMap();
   }
 
-  @Override
-  protected String getQuoteString() {
+  private String getQuoteString() {
     return QUOTE;
   }
 
@@ -190,6 +168,17 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
 
   private String getConfigDatasetId(final SqlDatabase database) {
     return (isDatasetConfigured(database) ? database.getSourceConfig().get(CONFIG_DATASET_ID).asText() : "");
+  }
+
+  @VisibleForTesting
+  protected JsonNode toDatabaseConfig(final JsonNode config) {
+    final var conf = ImmutableMap.builder()
+        .put(CONFIG_PROJECT_ID, config.get(CONFIG_PROJECT_ID).asText())
+        .put(CONFIG_CREDS, config.get(CONFIG_CREDS).asText());
+    if (config.hasNonNull(CONFIG_DATASET_ID)) {
+      conf.put(CONFIG_DATASET_ID, config.get(CONFIG_DATASET_ID).asText());
+    }
+    return Jsons.jsonNode(conf.build());
   }
 
   public static void main(final String[] args) throws Exception {

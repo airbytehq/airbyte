@@ -79,7 +79,7 @@ public class AbstractDbSourceTest {
 
     final List<AirbyteStateMessage> result = dbSource.deserializeInitialState(null, config, false);
     assertEquals(1, result.size());
-    assertEquals(dbSource.getSupportedStateType(config), result.get(0).getType());
+    assertEquals(AirbyteStateType.LEGACY, result.get(0).getType());
   }
 
 }
