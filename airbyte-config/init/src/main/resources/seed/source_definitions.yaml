@@ -17,7 +17,7 @@
 - name: Airtable
   sourceDefinitionId: 14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212
   dockerRepository: airbyte/source-airtable
-  dockerImageTag: 2.0.3
+  dockerImageTag: 2.0.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/airtable
   icon: airtable.svg
   sourceType: api
@@ -79,7 +79,7 @@
 - name: Amazon Seller Partner
   sourceDefinitionId: e55879a8-0ef8-4557-abcf-ab34c53ec460
   dockerRepository: airbyte/source-amazon-seller-partner
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.1
   sourceType: api
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-seller-partner
   icon: amazonsellerpartner.svg
@@ -319,7 +319,7 @@
 - name: Cockroachdb
   sourceDefinitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
   dockerRepository: airbyte/source-cockroachdb
-  dockerImageTag: 0.1.20
+  dockerImageTag: 0.1.21
   documentationUrl: https://docs.airbyte.com/integrations/sources/cockroachdb
   icon: cockroachdb.svg
   sourceType: database
@@ -760,15 +760,21 @@
   sourceDefinitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
   dockerRepository: airbyte/source-google-analytics-v4
   dockerImageTag: 0.1.34
-  documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-universal-analytics
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-v4/
   icon: google-analytics.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - oauth2.googleapis.com
+      - www.googleapis.com
+      - analyticsdata.googleapis.com
+      - analyticsreporting.googleapis.com
 - name: Google Analytics 4 (GA4)
   sourceDefinitionId: 3cc2eafd-84aa-4dca-93af-322d9dfeec1a
   dockerRepository: airbyte/source-google-analytics-data-api
   dockerImageTag: 0.1.2
-  documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-v4
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-data-api/
   icon: google-analytics.svg
   sourceType: api
   releaseStage: beta
@@ -925,7 +931,7 @@
 - name: Instagram
   sourceDefinitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
   dockerRepository: airbyte/source-instagram
-  dockerImageTag: 1.0.2
+  dockerImageTag: 1.0.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/instagram
   icon: instagram.svg
   sourceType: api
@@ -944,7 +950,7 @@
 - name: Intercom
   sourceDefinitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
   dockerRepository: airbyte/source-intercom
-  dockerImageTag: 0.1.31
+  dockerImageTag: 0.1.32
   documentationUrl: https://docs.airbyte.com/integrations/sources/intercom
   icon: intercom.svg
   sourceType: api
@@ -1103,11 +1109,14 @@
 - name: Mailchimp
   sourceDefinitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
   dockerRepository: airbyte/source-mailchimp
-  dockerImageTag: 0.3.4
+  dockerImageTag: 0.3.5
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailchimp
   icon: mailchimp.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "*.api.mailchimp.com"
 - name: Mailjet Mail
   sourceDefinitionId: 56582331-5de2-476b-b913-5798de77bbdf
   dockerRepository: airbyte/source-mailjet-mail
@@ -1170,7 +1179,7 @@
 - name: Microsoft SQL Server (MSSQL)
   sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   dockerRepository: airbyte/source-mssql
-  dockerImageTag: 1.0.2
+  dockerImageTag: 1.0.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
   icon: mssql.svg
   sourceType: database
@@ -1233,7 +1242,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 2.0.2
+  dockerImageTag: 2.0.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -1333,6 +1342,13 @@
   dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.com/integrations/sources/openweather
   icon: openweather.svg
+  sourceType: api
+  releaseStage: alpha
+- name: Opsgenie
+  sourceDefinitionId: 06bdb480-2598-40b8-8b0f-fc2e2d2abdda
+  dockerRepository: airbyte/source-opsgenie
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/opsgenie
   sourceType: api
   releaseStage: alpha
 - name: Oracle DB
@@ -1527,7 +1543,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 2.0.2
+  dockerImageTag: 2.0.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -1924,7 +1940,7 @@
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 3.0.1
+  dockerImageTag: 3.0.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api
@@ -2044,7 +2060,7 @@
 - name: Trello
   sourceDefinitionId: 8da67652-004c-11ec-9a03-0242ac130003
   dockerRepository: airbyte/source-trello
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/trello
   icon: trello.svg
   sourceType: api
@@ -2346,7 +2362,7 @@
 - name: ZohoCRM
   sourceDefinitionId: 4942d392-c7b5-4271-91f9-3b4f4e51eb3e
   dockerRepository: airbyte/source-zoho-crm
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/zoho-crm
   icon: zohocrm.svg
   sourceType: api
