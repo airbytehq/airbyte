@@ -35,6 +35,7 @@ Note: needs to be run from the root directory of the Airbyte project.
 ## Change log:
 #### 2023.03.16
 1. UI related changes - add new user
+2. UI related changes - error message popup
 #### 2023.03.15
 1. Sign up / sign in page responsiveness
 2. UI related changes - add new user
