@@ -27,6 +27,7 @@ interface State {
 const Container = styled.div`
   max-width: 758px;
   margin: 0 auto 40px auto;
+  flex: 1;
 `;
 
 const hasSourceId = (state: unknown): state is { sourceId: string } => {

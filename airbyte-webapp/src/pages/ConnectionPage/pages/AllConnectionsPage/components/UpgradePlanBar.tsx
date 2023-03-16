@@ -25,6 +25,7 @@ const Container = styled.div`
   position: sticky;
   top: 0;
   z-index: 1000;
+  flex-shrink: 0;
 `;
 
 const Text = styled.div`

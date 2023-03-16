@@ -5,20 +5,31 @@ export const Form = styled(FormikForm)`
   margin-top: 40px;
 `;
 
-export const FieldItem = styled.div`
-  margin-bottom: 21px;
+export const FieldItem = styled.div<{
+  bottom?: string;
+}>`
+  margin-bottom: ${({ bottom }) => (bottom ? bottom : 21)}px;
 `;
 
 export const RowFieldItem = styled(FieldItem)`
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
 
   & > div {
     flex: 1 0 0;
     margin-right: 14px;
+    margin-bottom: ${({ bottom }) => (bottom ? bottom : 21)}px;
 
     &:last-child {
       margin-right: 0;
+      margin-bottom: 0;
+    }
+  }
+
+  @media screen and (min-width: 769px) {
+    flex-direction: row;
+    & > div {
+      margin-bottom: 0;
     }
   }
 `;

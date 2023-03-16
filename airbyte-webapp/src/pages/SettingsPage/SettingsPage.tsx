@@ -24,7 +24,7 @@ const PageContainer = styled.div`
   height: auto;
   display: flex;
   flex-direction: row;
-  height: 1px;
+  // height: 1px;
   flex: 1;
 `;
 

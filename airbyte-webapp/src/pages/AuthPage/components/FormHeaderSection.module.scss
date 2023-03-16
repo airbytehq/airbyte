@@ -1,0 +1,100 @@
+@use "../../../scss/colors";
+
+.head {
+  width: 90%;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  flex-direction: column;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+// .languageBox {
+//     width: 144px;
+//     height: 40px;
+//     background: #ffffff;
+//     border: 1px solid #d1d5db;
+//     box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
+//     border-radius: 6px;
+//     display: flex;
+//     align-items: center;
+//     justify-content: center;
+// }
+
+.selectBox {
+  position: relative;
+}
+
+.globalIcon {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 10px;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.select {
+  display: block;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  color: #374151;
+  padding: 9px 10px 9px 25px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 5%);
+  border-radius: 6px;
+
+  &:focus-visible {
+    border-color: #4f46e5;
+    outline: none;
+  }
+}
+
+.headRight {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.headRightText {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 30px;
+  color: #6b6b6f;
+  padding-right: 12px;
+}
+
+.button {
+  background-color: #fff;
+  padding: 5px 10px;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 17px;
+  color: colors.$blue;
+  border-radius: 5px;
+  border: 1px solid #4f46e5;
+}
+
+@media screen and (min-width: 769px) {
+  .head {
+    width: 100%;
+    padding: 0 70px;
+    display: flex;
+    align-items: flex-end;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 24px 0 5%;
+  }
+
+  .headRight {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+  }
+}
