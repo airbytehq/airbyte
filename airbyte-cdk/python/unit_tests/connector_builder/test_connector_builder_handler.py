@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 import connector_builder
 import pytest
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, Level
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from connector_builder.connector_builder_handler import resolve_manifest
@@ -318,14 +318,21 @@ def test_read():
         assert output_record == expected_airbyte_message
 
 
-def test_read_returns_error_response():
+@patch("connector_builder.utils.error_formatter.ErrorFormatter")
+def test_read_returns_error_response(error_formatter):
     class MockManifestDeclarativeSource:
         def read(self, logger, config, catalog, state):
-            raise ValueError
+            raise ValueError("a stack trace")
+    stack_trace = "a stack trace"
+    error_formatter.get_stacktrace_as_string.return_value = stack_trace
 
     source = MockManifestDeclarativeSource()
     response = read_stream(source, TEST_READ_CONFIG, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG))
-    assert "Error reading" in response.trace.error.message
+    expected_message = AirbyteMessage(
+        type=MessageType.LOG,
+        log=AirbyteLogMessage(level=Level.ERROR, message=f"error_message - {stack_trace}")
+    )
+    assert "Could not perform read with error" in response.trace.error.message
 
 
 @pytest.mark.parametrize(

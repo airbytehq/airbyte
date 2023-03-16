@@ -6,13 +6,14 @@ import dataclasses
 from datetime import datetime
 from typing import Any, Mapping
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, Level
 from airbyte_cdk.models import Type
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from connector_builder.message_grouper import MessageGrouper
+from connector_builder.utils.error_formatter import ErrorFormatter
 
 
 def list_streams() -> AirbyteMessage:
@@ -39,8 +40,8 @@ def read_stream(source: DeclarativeSource, config: Mapping[str, Any], configured
             emitted_at=_emitted_at()
         ))
     except Exception as exc:
-        error = AirbyteTracedException.from_exception(exc, message=f"Error reading stream with config={config} and catalog={configured_catalog}")
-        return error.as_airbyte_message()
+        error_message = f"{exc.args[0] if len(exc.args) > 0 else str(exc)} - {ErrorFormatter.get_stacktrace_as_string(exc)}"
+        return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=error_message))
 
 
 def resolve_manifest(source: ManifestDeclarativeSource) -> AirbyteMessage:

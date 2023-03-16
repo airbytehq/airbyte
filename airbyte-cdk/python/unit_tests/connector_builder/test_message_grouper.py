@@ -10,7 +10,7 @@ import pytest
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, Level
 from airbyte_cdk.models import Type as MessageType
 from connector_builder.message_grouper import MessageGrouper
-from connector_builder.models import HttpRequest, HttpResponse, StreamRead, StreamReadPages
+from connector_builder.models import HttpRequest, HttpResponse, StreamRead, StreamReadPages, LogMessage
 from unit_tests.connector_builder.utils import create_configured_catalog
 
 MAX_PAGES_PER_SLICE = 4
@@ -166,9 +166,9 @@ def test_get_grouped_messages_with_logs():
         ),
     ]
     expected_logs = [
-        {"message": "log message before the request"},
-        {"message": "log message during the page"},
-        {"message": "log message after the response"},
+        LogMessage(**{"message": "log message before the request", "level": "INFO"}),
+        LogMessage(**{"message": "log message during the page", "level": "INFO"}),
+        LogMessage(**{"message": "log message after the response", "level": "INFO"}),
     ]
 
     mock_source = make_mock_source(

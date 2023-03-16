@@ -13,7 +13,7 @@ from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
 from airbyte_protocol.models.airbyte_protocol import ConfiguredAirbyteCatalog
-from connector_builder.models import HttpRequest, HttpResponse, StreamRead, StreamReadPages, StreamReadSlices
+from connector_builder.models import HttpRequest, HttpResponse, LogMessage, StreamRead, StreamReadPages, StreamReadSlices
 
 
 class MessageGrouper:
@@ -48,7 +48,7 @@ class MessageGrouper:
                 record_limit,
         ):
             if isinstance(message_group, AirbyteLogMessage):
-                log_messages.append({"message": message_group.message})
+                log_messages.append(LogMessage(**{"message": message_group.message, "level": message_group.level.value}))
             else:
                 slices.append(message_group)
 
