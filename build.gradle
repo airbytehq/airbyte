@@ -49,7 +49,7 @@ repositories {
 }
 
 Properties env = new Properties()
-rootProject.file('.env').withInputStream { env.load(it) }
+rootProject.file('gradle.properties').withInputStream { env.load(it) }
 
 if (!env.containsKey('VERSION')) {
     throw new Exception('Version not specified in .env file...')
@@ -342,6 +342,7 @@ subprojects { subproj ->
     // make tag accessible in submodules.
     ext {
         cloudStorageTestTagName = 'cloud-storage'
+        numberThreads = project.hasProperty('numberThreads') ? project.getProperty('numberThreads') as int : Runtime.runtime.availableProcessors() ?: 1
     }
 
     spotbugs {
@@ -354,6 +355,9 @@ subprojects { subproj ->
     }
 
     test {
+        //This allows to set up a `gradle.properties` file inside the connector folder to reduce number of threads and reduce parallelization.
+        //Specially useful for connectors that shares resources (like Redshift or Snowflake).
+        maxParallelForks = numberThreads
         jacoco {
             enabled = true
             excludes = ['**/*Test*', '**/generated*']
@@ -504,16 +508,6 @@ subprojects {
         }
     }
     task listAllDependencies(type: DependencyReportTask) {}
-}
-
-task('generate-docker') {
-    dependsOn(':airbyte-bootloader:assemble')
-    dependsOn(':airbyte-workers:assemble')
-    dependsOn(':airbyte-webapp:assemble')
-    dependsOn(':airbyte-server:assemble')
-    dependsOn(':airbyte-db:db-lib:assemble')
-    dependsOn(':airbyte-config:init:assemble')
-    dependsOn(':airbyte-temporal:assemble')
 }
 
 // produce reproducible archives

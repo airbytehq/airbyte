@@ -1,10 +1,32 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
+
 class AirbyteConnectorAcceptanceTestPlugin implements Plugin<Project> {
+        
     void apply(Project project) {
+        
         project.task('connectorAcceptanceTest') {
+            dependsOn project.build
+            dependsOn project.airbyteDocker
+            
+            if (!project.hasProperty('connectorAcceptanceTestVersion')) {
+                project.ext.connectorAcceptanceTestVersion = 'latest'
+            }
+
+            if (project.connectorAcceptanceTestVersion == 'dev') {
+                project.connectorAcceptanceTest.dependsOn(':airbyte-integrations:bases:connector-acceptance-test:airbyteDocker')
+            }
+
             doFirst {
+                if (project.connectorAcceptanceTestVersion != 'dev') {
+                    project.exec {
+                        def args = [
+                            'docker', 'pull', "airbyte/connector-acceptance-test:${project.connectorAcceptanceTestVersion}"
+                        ]
+                        commandLine args
+                    }
+                }
                 project.exec {
                     def targetMountDirectory = "/test_input"
                     def args = [
@@ -18,19 +40,22 @@ class AirbyteConnectorAcceptanceTestPlugin implements Plugin<Project> {
                         '-v', "${project.projectDir.absolutePath}:${targetMountDirectory}",
                         '-w', "$targetMountDirectory",
                         '-e', "AIRBYTE_SAT_CONNECTOR_DIR=${project.projectDir.absolutePath}",
-                        'airbyte/connector-acceptance-test:dev',
-                        '-p', 'integration_tests.acceptance',
+                        "airbyte/connector-acceptance-test:${project.connectorAcceptanceTestVersion}",
                     ]
+                    if (project.file('integration_tests/acceptance.py').exists()) {
+                        // if integration_tests/acceptance.py exists, use it for setup/tear down external test dependencies
+                        args.add('-p')
+                        args.add('integration_tests.acceptance')
+                    }
                     commandLine args
                 }
             }
 
             outputs.upToDateWhen { false }
         }
+        
 
-        project.connectorAcceptanceTest.dependsOn(':airbyte-integrations:bases:connector-acceptance-test:airbyteDocker')
-        project.connectorAcceptanceTest.dependsOn(project.build)
-        project.connectorAcceptanceTest.dependsOn(project.airbyteDocker)
+
         if (project.hasProperty('airbyteDockerTest')){
             project.connectorAcceptanceTest.dependsOn(project.airbyteDockerTest)
         }
