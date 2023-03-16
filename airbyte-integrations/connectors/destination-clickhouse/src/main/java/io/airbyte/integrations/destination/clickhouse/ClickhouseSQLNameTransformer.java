@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.destination.clickhouse;
 
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 
-public class ClickhouseSQLNameTransformer extends ExtendedNameTransformer {
+public class ClickhouseSQLNameTransformer extends StandardNameTransformer {
 
   @Override
   public String applyDefaultCase(final String input) {
