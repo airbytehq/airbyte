@@ -240,7 +240,7 @@ class Products(LinioBase):
         item_list = []
         self.new_initial_date = self.CreatedAfter
 
-        if isinstance(response_json[self.record_list_name_2][self.record_list_name_3].keys(), dict):
+        if isinstance(response_json[self.record_list_name_2][self.record_list_name_3], dict):
             timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
 
             for item in response_json[self.record_list_name_2][self.record_list_name_3][self.record_list_name_4]:
