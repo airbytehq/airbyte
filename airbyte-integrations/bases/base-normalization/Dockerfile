@@ -30,5 +30,5 @@ ENTRYPOINT ["/airbyte/entrypoint.sh"]
 
 # 0.3.x is tombstoned.
 # The next minor bump should go directly to 0.4.0
-LABEL io.airbyte.version=0.2.26
+LABEL io.airbyte.version=0.2.27
 LABEL io.airbyte.name=airbyte/normalization
