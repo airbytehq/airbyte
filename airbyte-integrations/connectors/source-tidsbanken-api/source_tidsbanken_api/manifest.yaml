@@ -146,7 +146,7 @@ streams:
       cursor_field: endretDato
       datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       cursor_granularity: PT1S
-      end_datetime: '{{ config[''end_time''] }}'
+      end_datetime: '{{ config[''end_date''] }}'
       start_datetime: '{{ config[''start_date''] }}'
       step: P1D
   - type: DeclarativeStream
@@ -545,7 +545,7 @@ streams:
       cursor_field: endretDato
       datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       cursor_granularity: PT1S
-      end_datetime: '{{ config[''end_time''] }}'
+      end_datetime: '{{ config[''end_date''] }}'
       start_datetime: '{{ config[''start_date''] }}'
       step: P1D
 spec:
@@ -574,7 +574,7 @@ spec:
         default: '2023-03-07T00:00:00Z'
       end_date:
         title: end_date
-        description: '2023-03-13T09:30:00.000Z'
+        description: '%Y-%m-%dT%H:%M:%SZ'
         type: string
         default: '2023-03-14T00:00:00Z'
       api_key:

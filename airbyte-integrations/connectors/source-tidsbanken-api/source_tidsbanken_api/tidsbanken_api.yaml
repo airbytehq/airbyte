@@ -537,6 +537,6 @@ streams:
       cursor_field: endretDato
       datetime_format: '%Y-%m-%dT%H:%M:%SZ'
       cursor_granularity: PT1S
-      end_datetime: '{{ config[''end_time''] }}'
+      end_datetime: '{{ config[''end_date''] }}'
       start_datetime: '{{ config[''start_date''] }}'
       step: P1D
