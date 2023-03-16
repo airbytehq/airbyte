@@ -48,4 +48,4 @@ The Kobotoolbox connector supports **forms** as the streams.
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
-| 0.1.0   | 2023-03-16 | [22024](https://github.com/airbytehq/airbyte/pull/22024) | Initial Release |
+| 0.1.0   | 2023-03-16 | [24138](https://github.com/airbytehq/airbyte/pull/22024) | Initial Release |
