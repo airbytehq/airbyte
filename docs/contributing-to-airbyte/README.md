@@ -108,8 +108,7 @@ Trying to contribute, and don't see the change you want to make in this list? Ca
 ### Airbyte CI workflows
 * [Testing by SonarQube](sonar-qube-workflow.md)
 
-
-## **Contributing to documentation**
+## Contributing to documentation
 
 Our goal is to keep our docs comprehensive and updated. If you would like to help us in doing so, we are grateful for any kind of contribution:
 
@@ -119,7 +118,7 @@ Our goal is to keep our docs comprehensive and updated. If you would like to hel
 
 The contributing guide for docs can be found [here](updating-documentation.md).
 
-## **Contributing community content**
+## Contributing community content
 
 We welcome contributions as new tutorials / showcases / articles, or to any of the existing guides on our [tutorials page](https://airbyte.com/tutorials):
 
