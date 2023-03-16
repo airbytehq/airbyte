@@ -46,6 +46,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
 
   private final Map<Class<? extends ChangeEvent>, Field> heartbeatEventSourceField;
   private final LinkedBlockingQueue<ChangeEvent<String, String>> queue;
+  private final LinkedBlockingQueue<ChangeEvent<String, String>> targetQueue;
   private final CdcTargetPosition targetPosition;
   private final Supplier<Boolean> publisherStatusSupplier;
   private final VoidCallable requestClose;
@@ -56,6 +57,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   private LocalDateTime tsLastHeartbeat;
   private long lastHeartbeatPosition;
   private int maxInstanceOfNoRecordsFound;
+  private boolean signalledClose;
 
   public DebeziumRecordIterator(final LinkedBlockingQueue<ChangeEvent<String, String>> queue,
                                 final CdcTargetPosition targetPosition,
@@ -74,6 +76,8 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     this.tsLastHeartbeat = null;
     this.lastHeartbeatPosition = -1;
     this.maxInstanceOfNoRecordsFound = 0;
+    this.targetQueue = new LinkedBlockingQueue<>();
+    this.signalledClose = false;
   }
 
   // The following logic incorporates heartbeat (CDC postgres only for now):
@@ -102,8 +106,8 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
       // shutdown.
       if (next == null) {
         if (!receivedFirstRecord || hasSnapshotFinished || maxInstanceOfNoRecordsFound >= 10) {
-          LOGGER.info("No records were returned by Debezium in the timeout seconds {}, closing the engine and iterator", waitTime.getSeconds());
-          requestClose();
+          requestClose(String.format("No records were returned by Debezium in the timeout seconds %s, closing the engine and iterator",
+              waitTime.getSeconds()));
         }
         LOGGER.info("no record found. polling again.");
         maxInstanceOfNoRecordsFound++;
@@ -119,8 +123,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
         // wrap up sync if heartbeat position crossed the target OR heartbeat position hasn't changed for
         // too long
         if (hasSyncFinished(heartbeatPos)) {
-          LOGGER.info("Closing: Heartbeat indicates sync is done");
-          requestClose();
+          requestClose("Closing: Heartbeat indicates sync is done");
         }
         if (heartbeatPos != this.lastHeartbeatPosition) {
           this.tsLastHeartbeat = LocalDateTime.now();
@@ -134,14 +137,21 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
 
       // if the last record matches the target file position, it is time to tell the producer to shutdown.
       if (targetPosition.reachedTargetPosition(eventAsJson)) {
-        LOGGER.info("Closing: Change event reached target position");
-        requestClose();
+        requestClose("Closing: Change event reached target position");
       }
       this.tsLastHeartbeat = null;
       this.lastHeartbeatPosition = -1L;
       this.receivedFirstRecord = true;
       this.maxInstanceOfNoRecordsFound = 0;
       return next;
+    }
+
+    while (!targetQueue.isEmpty()) {
+      final ChangeEvent<String, String> event = targetQueue.poll();
+      if (event == null || isHeartbeatEvent(event)) {
+        continue;
+      }
+      return event;
     }
     return endOfData();
   }
@@ -169,8 +179,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
    */
   @Override
   public void close() throws Exception {
-    LOGGER.info("Closing: Iterator closing");
-    requestClose();
+    requestClose("Closing: Iterator closing");
   }
 
   private boolean isHeartbeatEvent(final ChangeEvent<String, String> event) {
@@ -189,11 +198,30 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     return !SnapshotMetadata.isSnapshotEventMetadata(snapshotMetadata);
   }
 
-  private void requestClose() {
+  private void requestClose(final String closeLogMessage) {
+    if (signalledClose) {
+      return;
+    }
+    signalledClose = true;
+    LOGGER.info(closeLogMessage);
+    final TransferDataFromQueue<ChangeEvent<String, String>> transferDataFromQueue = new TransferDataFromQueue<>(queue, targetQueue,
+        publisherStatusSupplier);
+    Exception exceptionDuringEngineClose = null;
     try {
+      transferDataFromQueue.initiateTransfer();
       requestClose.call();
     } catch (final Exception e) {
+      exceptionDuringEngineClose = e;
       throw new RuntimeException(e);
+    } finally {
+      try {
+        transferDataFromQueue.shutdown();
+      } catch (final Exception e) {
+        if (exceptionDuringEngineClose != null) {
+          e.addSuppressed(exceptionDuringEngineClose);
+          throw e;
+        }
+      }
     }
     throwExceptionIfSnapshotNotFinished();
   }
