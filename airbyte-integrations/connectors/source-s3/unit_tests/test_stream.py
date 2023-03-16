@@ -573,3 +573,20 @@ class TestIncrementalFileStream:
             },
             "type": "object",
         }
+
+    def test_schema_no_files(self, mocker):
+        stream_instance = IncrementalFileStreamS3(
+            dataset="dummy",
+            provider={"bucket": "empty"},
+            format={"filetype": "csv"},
+            path_pattern="**/prefix*.csv"
+        )
+        mocker.patch.object(stream_instance, "_list_bucket", MagicMock(return_value=[]))
+        assert stream_instance.get_json_schema() == {
+            "properties": {
+                "_ab_additional_properties": {"type": "object"},
+                "_ab_source_file_last_modified": {"format": "date-time", "type": "string"},
+                "_ab_source_file_url": {"type": "string"}
+            },
+            "type": "object",
+        }
