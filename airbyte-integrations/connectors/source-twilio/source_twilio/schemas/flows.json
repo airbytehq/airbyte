@@ -1,0 +1,31 @@
+{
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {
+      "sid": {
+        "type": ["null", "string"]
+      },
+      "account_sid": {
+        "type": ["null", "string"]
+      },
+      "date_created": {
+        "format": "date-time",
+        "type": ["null", "string"]
+      },
+      "date_updated": {
+        "format": "date-time",
+        "type": ["null", "string"]
+      },
+      "friendly_name": {
+        "type": ["null", "string"]
+      },
+      "status": {
+        "type": ["string", "null"],
+        "enum": ["published", "draft"]
+      },
+      "version": {
+        "type": ["null", "integer"]
+      }
+    }
+  }
+  
