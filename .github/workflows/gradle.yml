@@ -172,7 +172,7 @@ jobs:
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
         with:
-          cache-key: ${{ secrets.CACHE_VERSION }}
+          cache-key: ${{ secrets.CACHE_VERSION }}-cdk
 
       - uses: actions/setup-java@v3
         with:
@@ -264,7 +264,7 @@ jobs:
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
         with:
-          cache-key: ${{ secrets.CACHE_VERSION }}
+          cache-key: ${{ secrets.CACHE_VERSION }}-connectors
 
       - uses: actions/setup-java@v3
         with:

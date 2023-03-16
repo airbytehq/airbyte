@@ -15,6 +15,7 @@ import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
@@ -63,7 +64,14 @@ import org.slf4j.LoggerFactory;
 public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlSource.class);
-
+  public static final String DESCRIBE_TABLE_QUERY =
+      """
+      sp_columns "%s"
+      """;
+  public static final String NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY =
+      """
+        SELECT CAST(IIF(EXISTS(SELECT TOP 1 1 FROM "%s"."%s" WHERE "%s" IS NULL), 1, 0) AS BIT) AS %s
+      """;
   static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.getDriverClassName();
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
@@ -239,6 +247,46 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       LOGGER.info("No schemas explicitly set on UI to process, so will process all of existing schemas in DB");
       return internals;
     }
+  }
+
+  @Override
+  protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName)
+      throws SQLException {
+
+    boolean nullValExist = false;
+    final String resultColName = "nullValue";
+    final String descQuery = String.format(DESCRIBE_TABLE_QUERY, tableName);
+    final Optional<JsonNode> field = database.bufferedResultSetQuery(conn -> conn.createStatement()
+        .executeQuery(descQuery),
+        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet))
+        .stream()
+        .peek(x -> LOGGER.info("MsSQL Table Structure {}, {}, {}", x.toString(), schema, tableName))
+        .filter(x -> x.get("TABLE_OWNER") != null)
+        .filter(x -> x.get("COLUMN_NAME") != null)
+        .filter(x -> x.get("TABLE_OWNER").asText().equals(schema))
+        .filter(x -> x.get("COLUMN_NAME").asText().equalsIgnoreCase(columnName))
+        .findFirst();
+    if (field.isPresent()) {
+      final JsonNode jsonNode = field.get();
+      final JsonNode isNullable = jsonNode.get("IS_NULLABLE");
+      if (isNullable != null) {
+        if (isNullable.asText().equalsIgnoreCase("YES")) {
+          final String query = String.format(NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY,
+              schema, tableName, columnName, resultColName);
+
+          LOGGER.debug("null value query: {}", query);
+          final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(query),
+              resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+          Preconditions.checkState(jsonNodes.size() == 1);
+          nullValExist = jsonNodes.get(0).get(resultColName).booleanValue();
+          LOGGER.info("null cursor value for MsSQL source : {}, shema {} , tableName {}, columnName {} ", nullValExist, schema, tableName,
+              columnName);
+        }
+      }
+    }
+    // return !nullValExist;
+    // will enable after we have sent comms to users this affects
+    return true;
   }
 
   private boolean isTableInRequestedSchema(final TableInfo<CommonField<JDBCType>> tableInfo) {
