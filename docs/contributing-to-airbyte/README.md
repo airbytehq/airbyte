@@ -85,17 +85,21 @@ Changes to connector behavior should always be accompanied by a version bump and
 
 Here are some examples of code changes and their respective version changes:
 
-| Change                                                                    | Impact                                                                                                           | Version Change |
-|---------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|----------------|
-| Adding a required parameter to a connector's `config`                     | Users will have to add the new parameter to their `config`                                                       | Major          |
-| Removing a stream from a connector's `catalog`                            | Data that was being synced will no longer be synced                                                              | Major          |
-| Removing a column from a stream in a connector's `catalog`                | Users will have to remove that column from their `catalog`, data that was being synced will no longer be synced  | Major          |
-| Changing the datatype for a column of a stream in a connector's `catalog` | Users will have to update that data type in their `catalog`, data that was being synced will have changed format | Major          |
-| Adding a stream in a connector's `catalog`                                | Additional data will be synced                                                                                   | Minor          |
-| Adding a column to a stream's schema in a connector's `catalog`           | Additional data will be synced                                                                                   | Minor          |
-| Updating the format of the connector's `STATE`                            | Incremental streams will automatically run a full refresh only for the next sync                                 | Patch          |
-| Optimizing a connector's performance                                      | Syncs will be faster                                                                                             | Patch          |
-| Fixing a bug in a connector                                               | Some syncs that would have failed will now succeed                                                               | Patch          |
+| Change                                                                                        | Impact                                                                                                           | Version Change |
+|-----------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|----------------|
+| Adding a required parameter to a connector's `spec`                                           | Users will have to add the new parameter to their `config`                                                       | Major          |
+| Changing a format of a parameter in a connector's `spec` from a single parameter to a `oneOf` | Users will have to edit their `config` to define their old parameter value in the `oneOf` format                 | Major          |
+| Removing a stream from a connector's `catalog`                                                | Data that was being synced will no longer be synced                                                              | Major          |
+| Renaming a stream in a connector's `catalog`                                                  | Users will have to update the name of the stream in their `catalog`                                              | Major          |
+| Removing a column from a stream in a connector's `catalog`                                    | Users will have to remove that column from their `catalog`, data that was being synced will no longer be synced  | Major          |
+| Renaming a column from a stream in a connector's `catalog`                                    | Users will have to update the name of the column in their `catalog`                                              | Major          |
+| Changing the datatype for a column of a stream in a connector's `catalog`                     | Users will have to update that data type in their `catalog`, data that was being synced will have changed format | Major          |
+| Adding a non-required parameter to a connector's `spec`                                       | Users will have the option to use the required parameter in the future                                           | Minor          |
+| Adding a stream in a connector's `catalog`                                                    | Additional data will be synced                                                                                   | Minor          |
+| Adding a column to a stream's schema in a connector's `catalog`                               | Additional data will be synced                                                                                   | Minor          |
+| Updating the format of the connector's `STATE`                                                | Incremental streams will automatically run a full refresh only for the next sync                                 | Patch          |
+| Optimizing a connector's performance                                                          | Syncs will be faster                                                                                             | Patch          |
+| Fixing a bug in a connector                                                                   | Some syncs that would have failed will now succeed                                                               | Patch          |
 
 Trying to contribute, and don't see the change you want to make in this list? Call it out in your PR and your reviewer will help you pick the correct type of version change. Feel free to contribute the results back to this list!
 
