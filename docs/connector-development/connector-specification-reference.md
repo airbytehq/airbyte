@@ -49,13 +49,15 @@ will result in the following configuration on the UI:
 
 Within an object definition, if some fields have the `order` property defined, and others don't, then the fields without the `order` property defined should be rendered last in the UI. Among those elements (which don't have `order` defined), no ordering is guaranteed.
 
+Additionally, `order` values cannot be duplicated within the same object or group. See the [Grouping fields](#grouping-fields) section for more info on field groups.
+
 :::
 
 ### Collapsing optional fields
 
 By default, all optional fields will be collapsed into an `Optional fields` section which can be expanded or collapsed by the user. This helps streamline the UI for setting up a connector by initially focusing attention on the required fields only.
 
-Optional fields can be ordered just like other fields by setting the `order` property on the field. If optional fields are ordered before required fields, an `Optional fields` section will be placed in the corresponding location in the form. Consecutive optional fields will be grouped into the same section in this situation.
+Optional fields can be ordered just like other fields by setting the `order` property on the field. If optional fields are ordered before required fields, an `Optional fields` section will be placed in the corresponding location in the form. Consecutive optional fields will be grouped into the same section in this situation. If an optional field does not have an `order` set, it will be placed below all other fields that either have an `order` or are required.
 
 Optional fields can also be configured to never be placed in a collapsed section, by setting `always_show: true` on the field. **Note:** `always_show` is only allowed on optional fields.
 
@@ -106,11 +108,15 @@ will result in the following configuration on the UI (left side shows initial co
 
 Fields in the connector spec can be grouped into cards in the UI by utilizing the `group` property on a field. All fields that share the same `group` value will be grouped into the same card in the UI, and fields without a `group` will be placed into their own group card.
 
-Within a group, the `order` values set in each field determine how they are ordered, and therefore cannot be duplicated within a group.
+:::info
 
-**Note:** `group` can only be set on top-level properties in the connectionSpecification; it is not allowed on fields of objects nested inside the connectionSpecification.
+`group` can only be set on top-level properties in the connectionSpecification; it is not allowed on fields of objects nested inside the connectionSpecification.
 
-Groups can also be ordered and titled by setting the `groups` property on the connectorSpecification. The value of this field is an array containing objects with `id` that matches the `group` values that were set on fields, and optionally a `title` which causes the Airbyte UI to render that title at the top of the group's card.
+Additionally, within a group the `order` values set on each field determine how they are ordered in the UI, and therefore an `order` value cannot be duplicated within a group.
+
+:::
+
+Groups themselves can also be ordered and titled by setting the `groups` property on the connectorSpecification. The value of this field is an array containing objects with `id` that matches the `group` values that were set on fields, and optionally a `title` which causes the Airbyte UI to render that title at the top of the group's card.
 
 The order of entries in this `groups` array decides the order of the cards; `group` IDs that are set on fields which do not appear in this `groups` array will be ordered after those that do appear and will be ordered alphanumerically.
 
