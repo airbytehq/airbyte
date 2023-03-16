@@ -46,6 +46,18 @@ class YandexMetricaStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
+    def clean_logrequest(self, counter_id: str, logrequest_id: str):
+        """
+        Clean logs of the processed request prepared for downloading.
+
+        See: https://yandex.com/dev/metrika/doc/api2/logs/queries/clean.html
+        """
+        request_headers = self.request_headers(stream_state={})
+        request = requests.Request("POST", f"{self.url_base}{counter_id}/logrequest/{logrequest_id}/clean",
+                                   headers=dict(request_headers, **self.authenticator.get_auth_header()))
+        prepared_request = self._session.prepare_request(request)
+        self._send_request(prepared_request, {})
+
     def fetch_records(self, response: requests.Response, stream_state: Mapping[str, Any] = {}) -> Iterable[Mapping]:
         try:
             # Configure state
@@ -81,14 +93,9 @@ class YandexMetricaStream(HttpStream, ABC):
             download_response = download.read_records(sync_mode=SyncMode.full_refresh)
 
             yield from download_response
-            # 5. Clean logrequest
-            clean = Clean(
-                authenticator=self._authenticator,
-                counter_id=self.counter_id,
-                params=self.params,
-                logrequest_id=logrequest_id,
-            )
-            next(clean.read_records(sync_mode=SyncMode.full_refresh))
+
+            self.clean_logrequest(counter_id=self.counter_id, logrequest_id=logrequest_id)
+
         except Exception as e:
             print(f"Exception occurred while trying to fetch records: {e}")
 
@@ -196,7 +203,6 @@ class Sessions(IncrementalYandexMetricaStream):
         return f"{self.counter_id}/logrequests/evaluate"
 
     def get_json_schema(self) -> Mapping[str, any]:
-        schema = super().get_json_schema()
         schema = {"$schema": "https://json-schema.org/draft-04/schema#", "type": "object", "properties": {}}
         fields = {key: VisitsFields.get_all_fields()[key] for key in self.fields_list}
         for key, value in fields.items():
@@ -397,38 +403,3 @@ class Download(YandexMetricaStream):
                 print(f"Something went wrong while transforming datetime fields. {e}")
 
             yield row
-
-
-"""
-Clears logs of the processed request prepared for downloading.
-
-See: https://yandex.com/dev/metrika/doc/api2/logs/queries/clean.html
-"""
-
-
-class Clean(YandexMetricaStream):
-    primary_key = None
-
-    def __init__(self, counter_id: str, logrequest_id: int, params: dict, **kwargs):
-        self.counter_id = counter_id
-        self.logrequest_id = logrequest_id
-        super().__init__(counter_id, params, **kwargs)
-
-    @property
-    def http_method(self) -> str:
-        return "POST"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"{self.counter_id}/logrequest/{self.logrequest_id}/clean"
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-        data = response.json()
-        return data
