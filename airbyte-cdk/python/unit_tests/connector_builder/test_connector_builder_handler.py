@@ -23,7 +23,7 @@ _stream_url_base = "https://api.sendgrid.com"
 _stream_options = {"name": _stream_name, "primary_key": _stream_primary_key, "url_base": _stream_url_base}
 
 MANIFEST = {
-    "version": "version",
+    "version": "0.30.3",
     "definitions": {
         "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"},
         "retriever": {
@@ -164,7 +164,7 @@ def test_resolve_manifest(valid_resolve_manifest_config_file):
 
     expected_resolved_manifest = {
         "type": "DeclarativeSource",
-        "version": "version",
+        "version": "0.30.3",
         "definitions": {
             "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"},
             "retriever": {
