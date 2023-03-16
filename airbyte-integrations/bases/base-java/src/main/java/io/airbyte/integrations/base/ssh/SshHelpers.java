@@ -22,7 +22,8 @@ public class SshHelpers {
     return injectSshIntoSpec(connectorSpecification, Optional.empty());
   }
 
-  public static ConnectorSpecification injectSshIntoSpec(final ConnectorSpecification connectorSpecification, final Optional<String> group) throws IOException {
+  public static ConnectorSpecification injectSshIntoSpec(final ConnectorSpecification connectorSpecification, final Optional<String> group)
+      throws IOException {
     final ConnectorSpecification originalSpec = Jsons.clone(connectorSpecification);
     final ObjectNode propNode = (ObjectNode) originalSpec.getConnectionSpecification().get("properties");
     final ObjectNode tunnelMethod = (ObjectNode) Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json"));
