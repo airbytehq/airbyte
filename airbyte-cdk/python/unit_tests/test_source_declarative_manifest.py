@@ -11,7 +11,7 @@ from source_declarative_manifest.main import create_manifest
 
 CONFIG = {
     "__injected_declarative_manifest": {
-        "version": "0.1.0",
+        "version": "0.29.0",
         "definitions": {
             "selector": {"extractor": {"field_path": []}},
             "requester": {"url_base": "https://test.com/api", "http_method": "GET"},
