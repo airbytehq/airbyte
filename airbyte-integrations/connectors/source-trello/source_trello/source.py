@@ -10,8 +10,8 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from requests_oauthlib import OAuth1
 
+from .auth import TrelloAuthenticator
 from .utils import TrelloRequestRateLimits as balancer
 
 
@@ -174,12 +174,7 @@ class SourceTrello(AbstractSource):
 
     @staticmethod
     def _get_authenticator(config: dict):
-        return OAuth1(
-            client_key=config["client_id"],
-            client_secret=config["client_secret"],
-            resource_owner_key=config["token"],
-            resource_owner_secret=config["key"],
-        )
+        return TrelloAuthenticator(apiKey=config["key"], apiToken=config["token"])
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
