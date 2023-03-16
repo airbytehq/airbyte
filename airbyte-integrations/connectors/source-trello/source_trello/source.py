@@ -64,22 +64,29 @@ class IncrementalTrelloStream(TrelloStream, ABC):
     cursor_field = "date"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        json_response = response.json()
-        last_record = next(reversed(json_response), {})
-        next_page = last_record.get("id")
-        if next_page:
-            return {"before": next_page}
+        response_json = response.json()
+        if response_json:
+            return {"before": response_json[-1]["id"]}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         if stream_state:
-            params["since"] = stream_state[self.cursor_field]
+            board_id = stream_slice["id"]
+            since = stream_state.get(board_id, {}).get(self.cursor_field)
+            if since:
+                params["since"] = since
         return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
+        board_id = latest_record["data"]["board"]["id"]
+        updated_state = latest_record[self.cursor_field]
+        stream_state_value = current_stream_state.get(board_id, {}).get(self.cursor_field)
+        if stream_state_value:
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state.setdefault(board_id, {})[self.cursor_field] = updated_state
+        return current_stream_state
 
 
 class Boards(TrelloStream):

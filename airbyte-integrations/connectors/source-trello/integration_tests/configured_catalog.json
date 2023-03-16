@@ -4,7 +4,7 @@
       "stream": {
         "name": "actions",
         "json_schema": {},
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true
       },
       "sync_mode": "incremental",
