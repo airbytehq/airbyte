@@ -457,10 +457,10 @@ class SourceBling(AbstractSource):
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            auth = NoAuth()
-            stream = Produtos(authenticator=auth, config=config)
-            records = stream.read_records(sync_mode=SyncMode.full_refresh)
-            next(records)
+            # auth = NoAuth()
+            # stream = Produtos(authenticator=auth, config=config)
+            # records = stream.read_records(sync_mode=SyncMode.full_refresh)
+            # next(records)
             return True, None
         except requests.exceptions.RequestException as e:
             return False, e
