@@ -3,6 +3,7 @@
 #
 
 
+import datetime
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -172,6 +173,10 @@ class SourceTrello(AbstractSource):
     Source Trello fetch date from web-based, Kanban-style, list-making application.
     """
 
+    def _validate_and_transform(self, config: Mapping[str, Any]):
+        datetime.datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%S.%fZ")
+        return config
+
     @staticmethod
     def _get_authenticator(config: dict):
         return TrelloAuthenticator(apiKey=config["key"], apiToken=config["token"])
@@ -181,6 +186,7 @@ class SourceTrello(AbstractSource):
         Testing connection availability for the connector by granting the credentials.
         """
 
+        config = self._validate_and_transform(config)
         try:
             url = f"{TrelloStream.url_base}members/me/boards"
 
