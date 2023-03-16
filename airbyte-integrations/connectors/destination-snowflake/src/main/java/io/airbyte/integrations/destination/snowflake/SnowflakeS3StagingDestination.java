@@ -13,18 +13,15 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
-import io.airbyte.integrations.destination.record_buffer.InMemoryBuffer;
 import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption;
 import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption.KeyType;
 import io.airbyte.integrations.destination.s3.EncryptionConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
-import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.Collections;
 import java.util.Map;
@@ -96,19 +93,7 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
 
     // try to make test write to make sure we have required role
     try {
-      final CsvSerializedBuffer csvSerializedBuffer = new CsvSerializedBuffer(
-          new InMemoryBuffer(".csv"),
-          new StagingDatabaseCsvSheetGenerator(),
-          true);
-
-      // create a dummy stream\records that will bed used to test uploading
-      csvSerializedBuffer.accept(new AirbyteRecordMessage()
-          .withData(Jsons.jsonNode(Map.of("testKey", "testValue")))
-          .withEmittedAt(System.currentTimeMillis()));
-      csvSerializedBuffer.flush();
-
-      sqlOperations.uploadRecordsToStage(database, csvSerializedBuffer, outputSchema, stageName,
-          stageName.endsWith("/") ? stageName : stageName + "/");
+      sqlOperations.attemptWriteToStage(outputSchema, stageName, database);
     } finally {
       // drop created tmp stage
       sqlOperations.dropStageIfExists(database, stageName);
