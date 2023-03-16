@@ -2068,6 +2068,14 @@
   icon: trello.svg
   sourceType: api
   releaseStage: alpha
+- name: TrustPilot
+  sourceDefinitionId: d7e23ea6-d741-4314-9209-a33c91a2e945
+  dockerRepository: airbyte/source-trustpilot
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/trustpilot
+  icon: trustpilot.svg
+  sourceType: api
+  releaseStage: alpha
 - name: TVMaze Schedule
   sourceDefinitionId: bd14b08f-9f43-400f-b2b6-7248b5c72561
   dockerRepository: airbyte/source-tvmaze-schedule
