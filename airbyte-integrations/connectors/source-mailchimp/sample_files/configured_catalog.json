@@ -753,271 +753,203 @@
           "description": "A summary of an individual campaign's settings and content.",
           "properties": {
             "id": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "create_time": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "start_time": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "status": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "emails_sent": {
-              "type": "number"
+              "type": ["null", "number"]
             },
             "recipients": {
               "type": "object",
               "properties": {
                 "list_id": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "list_is_active": {
-                  "type": "boolean"
+                  "type": ["null", "boolean"]
                 },
                 "list_name": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "segment_opts": {
                   "type": "object",
                   "properties": {
                     "saved_segment_id": {
-                      "type": "number"
+                      "type": ["null", "number"]
                     },
                     "match": {
-                      "type": "string"
+                      "type": ["null", "string"]
                     },
                     "conditions": {
-                      "type": "array",
+                      "type": ["null", "array"],
                       "items": {}
                     }
-                  },
-                  "required": [
-                    "saved_segment_id",
-                    "match",
-                    "conditions"
-                  ]
+                  }
                 },
                 "store_id": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 }
-              },
-              "required": [
-                "list_id",
-                "list_is_active",
-                "list_name",
-                "segment_opts",
-                "store_id"
-              ]
+              }
             },
             "settings": {
               "type": "object",
               "properties": {
                 "title": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "from_name": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "reply_to": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "use_conversation": {
-                  "type": "boolean"
+                  "type": ["null", "boolean"]
                 },
                 "to_name": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "authenticate": {
-                  "type": "boolean"
+                  "type": ["null", "boolean"]
                 },
                 "auto_footer": {
-                  "type": "boolean"
+                  "type": ["null", "boolean"]
                 },
                 "inline_css": {
-                  "type": "boolean"
+                  "type": ["null", "boolean"]
                 }
-              },
-              "required": [
-                "title",
-                "from_name",
-                "reply_to",
-                "use_conversation",
-                "to_name",
-                "authenticate",
-                "auto_footer",
-                "inline_css"
-              ]
+              }
             },
             "tracking": {
               "type": "object",
               "properties": {
                 "opens": {
-                  "type": "boolean"
+                  "type": ["null", "boolean"]
                 },
                 "html_clicks": {
-                  "type": "boolean"
+                  "type": ["null", "boolean"]
                 },
                 "text_clicks": {
-                  "type": "boolean"
+                  "type": ["null", "boolean"]
                 },
                 "goal_tracking": {
-                  "type": "boolean"
+                  "type": ["null", "boolean"]
                 },
                 "ecomm360": {
-                  "type": "boolean"
+                  "type": ["null", "boolean"]
                 },
                 "google_analytics": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "clicktale": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "salesforce": {
                   "type": "object",
                   "properties": {
                     "campaign": {
-                      "type": "boolean"
+                      "type": ["null", "boolean"]
                     },
                     "notes": {
-                      "type": "boolean"
+                      "type": ["null", "boolean"]
                     }
-                  },
-                  "required": [
-                    "campaign",
-                    "notes"
-                  ]
+                  }
                 },
                 "capsule": {
                   "type": "object",
                   "properties": {
                     "notes": {
-                      "type": "boolean"
+                      "type": ["null", "boolean"]
                     }
-                  },
-                  "required": [
-                    "notes"
-                  ]
+                  }
                 }
-              },
-              "required": [
-                "opens",
-                "html_clicks",
-                "text_clicks",
-                "goal_tracking",
-                "ecomm360",
-                "google_analytics",
-                "clicktale",
-                "salesforce",
-                "capsule"
-              ]
+              }
             },
             "trigger_settings": {
               "type": "object",
               "properties": {
                 "workflow_type": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "workflow_title": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "runtime": {
                   "type": "object",
                   "properties": {
                     "days": {
-                      "type": "array",
+                      "type": ["null", "array"],
                       "items": {
-                        "type": "string"
+                        "type": ["null", "string"]
                       }
                     },
                     "hours": {
                       "type": "object",
                       "properties": {
                         "type": {
-                          "type": "string"
+                          "type": ["null", "string"]
                         }
-                      },
-                      "required": [
-                        "type"
-                      ]
+                      }
                     }
-                  },
-                  "required": [
-                    "days",
-                    "hours"
-                  ]
+                  }
                 },
                 "workflow_emails_count": {
-                  "type": "number"
+                  "type": ["null", "number"]
                 }
-              },
-              "required": [
-                "workflow_type",
-                "workflow_title",
-                "runtime",
-                "workflow_emails_count"
-              ]
+              }
             },
             "report_summary": {
               "type": "object",
               "properties": {
                 "opens": {
-                  "type": "number"
+                  "type": ["null", "number"]
                 },
                 "unique_opens": {
-                  "type": "number"
+                  "type": ["null", "number"]
                 },
                 "open_rate": {
-                  "type": "number"
+                  "type": ["null", "number"]
                 },
                 "clicks": {
-                  "type": "number"
+                  "type": ["null", "number"]
                 },
                 "subscriber_clicks": {
-                  "type": "number"
+                  "type": ["null", "number"]
                 },
                 "click_rate": {
-                  "type": "number"
+                  "type": ["null", "number"]
                 }
-              },
-              "required": [
-                "opens",
-                "unique_opens",
-                "open_rate",
-                "clicks",
-                "subscriber_clicks",
-                "click_rate"
-              ]
+              }
             },
             "_links": {
-              "type": "array",
+              "type": ["null", "array"],
               "items": {
                 "type": "object",
                 "properties": {
                   "rel": {
-                    "type": "string"
+                    "type": ["null", "string"]
                   },
                   "href": {
-                    "type": "string"
+                    "type": ["null", "string"]
                   },
                   "method": {
-                    "type": "string"
+                    "type": ["null", "string"]
                   },
                   "targetSchema": {
-                    "type": "string"
+                    "type": ["null", "string"]
                   },
                   "schema": {
-                    "type": "string"
+                    "type": ["null", "string"]
                   }
-                },
-                "required": [
-                  "rel",
-                  "href",
-                  "method",
-                  "targetSchema",
-                  "schema"
-                ]
+                }
               }
             }
           }
