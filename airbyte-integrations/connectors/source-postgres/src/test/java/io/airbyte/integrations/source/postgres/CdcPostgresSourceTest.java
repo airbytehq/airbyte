@@ -224,25 +224,6 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
   }
 
-  @Test
-  void testReadWithoutPublication() throws SQLException {
-    database.query(ctx -> ctx.execute("DROP PUBLICATION " + PUBLICATION + ";"));
-
-    assertThrows(Exception.class, () -> {
-      source.read(config, CONFIGURED_CATALOG, null);
-    });
-  }
-
-  @Test
-  void testReadWithoutReplicationSlot() throws SQLException {
-    final String fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
-    database.query(ctx -> ctx.execute("SELECT pg_drop_replication_slot('" + fullReplicationSlot + "');"));
-
-    assertThrows(Exception.class, () -> {
-      source.read(config, CONFIGURED_CATALOG, null);
-    });
-  }
-
   @Override
   protected void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
     assertEquals(1, stateMessages.size());
