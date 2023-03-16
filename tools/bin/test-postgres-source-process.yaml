@@ -9,6 +9,7 @@ spec:
   - name: main
     # image: airbyte/source-postgres:dev
     image: rodireich/perftestrepo:15
+    args: ["airbyte/source-postgres:dev"]
     # imagePullPolicy: Never
     #image: airbyte/source-postgres-private-test:final-1
     # command: ["/bin/sh", "-c"]

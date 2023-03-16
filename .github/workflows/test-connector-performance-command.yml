@@ -119,8 +119,6 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY # this is a blank line
           kind load docker-image airbyte/source-postgres:dev --name chart-testing
           echo "Loading connector image into kind" >> $GITHUB_STEP_SUMMARY
-          docker pull airbyte/source-postgres:1.0.35
-          kind load docker-image airbyte/source-postgres:1.0.35 --name chart-testing
           echo "pulling harness image..."
           docker pull rodireich/perftestrepo:15
           echo "Loading harness image into kind" >> $GITHUB_STEP_SUMMARY
