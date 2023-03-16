@@ -14,11 +14,11 @@ def patch_incremental_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(TrustpilotIncrementalStream, "path", "v0/example_endpoint")
     mocker.patch.object(TrustpilotIncrementalStream, "primary_key", "test_primary_key")
-    mocker.patch.object(TrustpilotIncrementalStream, "_start_date", \
+    mocker.patch.object(TrustpilotIncrementalStream, "_start_date",
                         pendulum.now("UTC").add(years=-1))
-    mocker.patch.object(TrustpilotIncrementalStream, "_current_stream_slice", \
+    mocker.patch.object(TrustpilotIncrementalStream, "_current_stream_slice",
                         {'business_unit_id': '5f5e954ec15b2700017c834f'})
-    
+
     mocker.patch.object(TrustpilotIncrementalStream, "__abstractmethods__", set())
 
 
