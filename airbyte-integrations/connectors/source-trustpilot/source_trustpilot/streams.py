@@ -98,12 +98,14 @@ class TrustpilotPaginagedStream(TrustpilotStream):
 class TrustpilotIncrementalStream(TrustpilotPaginagedStream, ABC):
     cursor_field = "createdAt"
     filter_param = "startDateTime"
+    _start_date: pendulum.DateTime = None
 
     _current_stream_slice: Mapping[str, any] = None
 
-    def __init__(self, start_date: datetime, **kargs):
+    def __init__(self, start_date: datetime = None, **kargs):
         super().__init__(**kargs)
-        self._start_date = pendulum.instance(start_date)
+        if start_date:
+            self._start_date = pendulum.instance(start_date)
 
     @property
     def state_field(self):

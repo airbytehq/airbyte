@@ -4,9 +4,10 @@
 
 from http import HTTPStatus
 from unittest.mock import MagicMock
+import json
 
 import pytest
-from source_trustpilot.source import TrustpilotStream
+from source_trustpilot.streams import TrustpilotStream
 
 
 @pytest.fixture
@@ -19,9 +20,7 @@ def patch_base_class(mocker):
 
 def test_request_params(patch_base_class):
     stream = TrustpilotStream()
-    # TODO: replace this with your input parameters
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request parameters
     expected_params = {}
     assert stream.request_params(**inputs) == expected_params
 
@@ -37,25 +36,31 @@ def test_next_page_token(patch_base_class):
 
 def test_parse_response(patch_base_class):
     stream = TrustpilotStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected parced object
-    expected_parsed_object = {}
+    response = MagicMock()
+    response.json = lambda: json.loads(b"""{
+    "links": {
+        "rel": "next-page",
+        "href": "http://..."
+    },
+    "id": "12351241"
+}""")
+    inputs = {"response": response}
+
+    expected_parsed_object = {
+        "id": "12351241"
+    }
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
 def test_request_headers(patch_base_class):
     stream = TrustpilotStream()
-    # TODO: replace this with your input parameters
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request headers
     expected_headers = {}
     assert stream.request_headers(**inputs) == expected_headers
 
 
 def test_http_method(patch_base_class):
     stream = TrustpilotStream()
-    # TODO: replace this with your expected http request method
     expected_method = "GET"
     assert stream.http_method == expected_method
 
