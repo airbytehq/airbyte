@@ -99,4 +99,5 @@ Using this feature requires additional configuration, when creating the destinat
 
 | Version | Date       | Pull Request                                                  | Subject                 |
 |:--------|:-----------|:--------------------------------------------------------------|:------------------------|
+| 0.2.0   | 2023-03-16 | [#21511](https://github.com/airbytehq/airbyte/pull/21511)     | Add connection attribute |
 | 0.1.0   | 2022-08-12 | [#15592](https://github.com/airbytehq/airbyte/pull/15592)     | Added TiDB destination. |

@@ -128,6 +128,7 @@ Now that you have set up the TiDB source connector, check out the following TiDB
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | ------- |
+| 0.3.0 | 2023-03-16 | [21511](https://github.com/airbytehq/airbyte/pull/21511)   | Add connection attribute |
 | 0.2.3 | 2023-03-06 | [23455](https://github.com/airbytehq/airbyte/pull/23455)   | For network isolation, source connector accepts a list of hosts it is allowed to connect to |
 | 0.2.2 | 2022-12-14 | [20436](https://github.com/airbytehq/airbyte/pull/20346)   | Consolidate date/time values mapping for JDBC sources                          |
 |       | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
