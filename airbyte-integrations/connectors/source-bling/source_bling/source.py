@@ -393,7 +393,7 @@ class NotaFiscal(IncrementalBlingBase):
                 "type": f"{self.merchant.lower()}_{self.record_key_name}",
                 "id": item[self.record_key_name][self.record_primary_key],
                 "timeline": "historic",
-                "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                "created_at": item[self.record_key_name]['dataEmissao'],
                 "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
                 "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
                 "sensible": False
