@@ -1,0 +1,340 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "accounts",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "budgets",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "classes",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "credit_memos",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "bills",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "bill_payments",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "sales_receipts",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "purchases",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "payments",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "purchase_orders",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "payment_methods",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "journal_entries",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "items",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "invoices",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "customers",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "refund_receipts",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "deposits",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "departments",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "employees",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "estimates",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "tax_agencies",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "tax_codes",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "tax_rates",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "terms",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "time_activities",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "transfers",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "vendor_credits",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    },
+    {
+      "stream": {
+        "name": "vendors",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["airbyte_cursor"],
+        "source_defined_primary_key": [["Id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["airbyte_cursor"]
+    }
+  ]
+}
