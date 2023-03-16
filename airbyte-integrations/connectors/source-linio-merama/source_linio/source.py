@@ -186,7 +186,7 @@ class Orders(LinioBase):
 
 class Products(LinioBase):
 
-    cursor_field = 'CreatedAt'
+    # cursor_field = 'CreatedAt'
     endpoint_name = 'GetProducts'
     record_list_name_1 = 'SuccessResponse'
     record_list_name_2 = 'Body'
@@ -254,7 +254,7 @@ class Products(LinioBase):
 
 class Statistics(LinioBase):
 
-    cursor_field = None
+    # cursor_field = 'CreatedAt'
     endpoint_name = 'GetStatistics'
     record_list_name_1 = 'SuccessResponse'
     record_list_name_2 = 'Body'
