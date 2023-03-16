@@ -1,0 +1,48 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Breezy Spec",
+    "type": "object",
+    "required": ["company_id", "credentials"],
+    "additionalProperties": false,
+    "properties": {
+      "credentials": {
+        "type": "object",
+        "title": "API key",
+        "required": ["cookie", "credentials_title"],
+        "properties": {
+          "credentials_title": {
+            "type": "string",
+            "title": "Credentials title",
+            "description": "Name of the credentials set",
+            "const": "Cookie srid",
+            "enum": ["Cookie srid"],
+            "default": "Cookie srid",
+            "order": 0
+          },
+          "cookie": {
+            "title": "Cookie",
+            "description": "Breezy session cookie",
+            "type": "string",
+            "airbyte_secret": true
+          }
+        }
+      },
+      "start_time": {
+        "type": "string",
+        "title": "Start of sync",
+        "order": 1,
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
+        "examples": ["2017-01-25T00:00:00Z"]
+      },
+      "company_id": {
+        "type": "string",
+        "title": "Company ID",
+        "description": "ID of your company ",
+        "order": 2
+      }
+    }
+  }
+}
