@@ -4,14 +4,14 @@ connectionSpecification:
   title: Source NVD Spec
   type: object
   properties:
-    apiKey:
+    apikey:
       type: string
       description: The API key used to retrieve data from the NVD API.
       title: API key
       airbyte_secret: true
-    modStartDate:
+    start_date:
       type: string
-      description: Ingest data starting from this date (UTC).
+      description: Start date starting from this date (UTC).
       pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
       examples:
         - "2021-08-04T13:00:00"

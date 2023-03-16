@@ -21,7 +21,7 @@ def patch_base_class(mocker):
 
 @pytest.fixture
 def stream_config():
-    return {"modStartDate": "2022-01-01T00:00:00"}
+    return {"start_date": "2022-01-01T00:00:00"}
 
 
 def test_request_params(patch_base_class, stream_config):

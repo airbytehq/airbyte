@@ -33,7 +33,7 @@ class NvdStream(HttpStream, IncrementalMixin, ABC):
 
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
-        self.start_date = datetime.strptime(config["modStartDate"], TIME_FORMAT)
+        self.start_date = datetime.strptime(config["start_date"], TIME_FORMAT)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         reponse_json = response.json()
@@ -170,7 +170,7 @@ class SourceNvd(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         # Input validation
         try:
-            start = datetime.strptime(config["modStartDate"], TIME_FORMAT)
+            start = datetime.strptime(config["start_date"], TIME_FORMAT)
             if start > datetime.utcnow():
                 return False, "Start date cannot be in the future"
         except ValueError:
@@ -178,8 +178,8 @@ class SourceNvd(AbstractSource):
 
         # Check if API is online
         try:
-            if "apiKey" in config:
-                auth = NvdAuthenticator(config["apiKey"])
+            if "apikey" in config:
+                auth = NvdAuthenticator(config["apikey"])
             else:
                 auth = None
             stream = Cves(config=config, authenticator=auth)
@@ -192,8 +192,8 @@ class SourceNvd(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        if "apiKey" in config:
-            auth = NvdAuthenticator(config["apiKey"])
+        if "apikey" in config:
+            auth = NvdAuthenticator(config["apikey"])
         else:
             auth = None
         return [Cves(config=config, authenticator=auth), Cpes(config=config, authenticator=auth)]
