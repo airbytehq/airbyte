@@ -104,6 +104,11 @@ Here are some examples of code changes and their respective version changes:
 
 Trying to contribute, and don't see the change you want to make in this list? Call it out in your PR and your reviewer will help you pick the correct type of version change. Feel free to contribute the results back to this list!
 
+
+### Airbyte CI workflows
+* [Testing by SonarQube](sonar-qube-workflow.md)
+
+
 ## **Contributing to documentation**
 
 Our goal is to keep our docs comprehensive and updated. If you would like to help us in doing so, we are grateful for any kind of contribution:
@@ -160,6 +165,3 @@ To see what has already been proposed by the community, you can look [here](http
 ### Reporting security issues
 
 Please do not create a public GitHub issue. If you've found a security issue, please email us directly at [security@airbyte.io](mailto:security@airbyte.io) instead of raising an issue.
-
-## Airbyte CI workflows
-* [Testing by SonarQube](sonar-qube-workflow.md)
