@@ -17,6 +17,16 @@ spec:
         title: skip
         default: 100
         type: number
+      start_date:
+        title: start_date
+        description: '%Y-%m-%dT%H:%M:%SZ'
+        type: string
+        default: '2023-03-07T00:00:00Z'
+      end_date:
+        title: end_date
+        description: '2023-03-13T09:30:00.000Z'
+        type: string
+        default: '2023-03-14T00:00:00Z'
       api_key:
         type: string
         title: API Key

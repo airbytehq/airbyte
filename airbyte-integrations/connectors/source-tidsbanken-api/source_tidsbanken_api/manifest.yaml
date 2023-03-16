@@ -133,7 +133,7 @@ streams:
         page_token_option:
           type: RequestOption
           inject_into: request_parameter
-          field_name: $skip
+          field_name: $skiptoken
         page_size_option:
           inject_into: request_parameter
           type: RequestOption
@@ -141,6 +141,14 @@ streams:
         pagination_strategy:
           type: OffsetIncrement
           page_size: 100
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: endretDato
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      cursor_granularity: PT1S
+      end_datetime: '{{ config[''end_time''] }}'
+      start_datetime: '{{ config[''start_date''] }}'
+      step: P1D
   - type: DeclarativeStream
     name: ansatte
     primary_key:
@@ -506,7 +514,7 @@ streams:
         url_base: https://api.tidsbanken.net/v2
         path: >-
           /timelister?$filter=endretDato ge {{ config['start_date'] }} and
-          endretDato lt {{ config['end_time'] }}
+          endretDato lt {{ config['end_date'] }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -525,7 +533,7 @@ streams:
         page_token_option:
           type: RequestOption
           inject_into: request_parameter
-          field_name: $skip
+          field_name: $skiptoken
         page_size_option:
           inject_into: request_parameter
           type: RequestOption
@@ -533,6 +541,14 @@ streams:
         pagination_strategy:
           type: OffsetIncrement
           page_size: 100
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: endretDato
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      cursor_granularity: PT1S
+      end_datetime: '{{ config[''end_time''] }}'
+      start_datetime: '{{ config[''start_date''] }}'
+      step: P1D
 spec:
   documentation_url: https://docs.airbyte.com/integrations/sources/tidsbanken-api
   type: Spec
@@ -557,8 +573,8 @@ spec:
         description: '%Y-%m-%dT%H:%M:%SZ'
         type: string
         default: '2023-03-07T00:00:00Z'
-      end_time:
-        title: end_time
+      end_date:
+        title: end_date
         description: '2023-03-13T09:30:00.000Z'
         type: string
         default: '2023-03-14T00:00:00Z'
