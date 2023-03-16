@@ -22,11 +22,11 @@ We appreciate first time contributors and we are happy to assist you in getting 
 
 Here is a list of easy [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to do.
 
-## Areas for contributing
+## Steps to contributing
 
 We gladly welcome all improvements existing on the codebase. 
 
-#### 1. Open an issue, or find a similar one.
+### 1. Open an issue, or find a similar one.
 Before jumping into the code please first:
 1. Verify if an existing [connector](https://github.com/airbytehq/airbyte/issues) or [platform](https://github.com/airbytehq/airbyte-platform/issues) GitHub issue matches your contribution project.
 2. If you don't find an existing issue, create a new [connector](https://github.com/airbytehq/airbyte/issues/new/choose) or [platform](https://github.com/airbytehq/airbyte-platform/issues/new/choose) issue to explain what you want to achieve.
@@ -35,11 +35,12 @@ Before jumping into the code please first:
 This will enable our team to make sure your contribution does not overlap with existing works and will comply with the design orientation we are currently heading the product toward.
 If you do not receive an update on the issue from our team, please ping us on [Slack](https://slack.airbyte.io)!
 
-#### 2. Let's code
+### 2. Let's code
 1. To contribute to a connector, fork the [Connector repository](https://github.com/airbytehq/airbyte). To contribute to the Airbyte platform, fork our [Platform repository](https://github.com/airbytehq/airbyte-platform).  
 2. Open a branch for your work.
 3. Code, and please write **tests**.
 4. Ensure all tests pass. For connectors, this includes acceptance tests as well. 
+5. For connectors, make sure to increment the connector's version according to our [Semantic Versioning](#semantic-versioning-for-connectors) guidelines.
 
 ### 3. Open a pull request
 1. Rebase master with your branch before submitting a pull request.
@@ -72,6 +73,35 @@ The CDK currently does not support creating destinations, but it will very soon.
 
 **Please note that, at no point in time, we will ask you to maintain your connector.** The goal is that the Airbyte team and the community helps maintain the connector.
 
+### Semantic Versioning for Connectors
+
+Changes to connector behavior should always be accompanied by a version bump and a changelog entry. We use [semantic versioning](https://semver.org/) to version changes to connectors. Since connectors are a bit different from APIs, we have our own take on semantic versioning, focusing on maintaining the best user experience of using a connector.
+
+- Major: a version in which a change is made which requires manual intervention (update to config or configured catalog) for an existing connection to continue to succeed, or one in which data that was previously being synced will no longer be synced
+- Minor: a version that introduces user-facing functionality in a backwards compatible manner
+- Patch: a version that introduces backwards compatible bug fixes or performance improvements
+
+## Examples
+
+Here are some examples of code changes and their respective version changes:
+
+| Change                                                                                        | Impact                                                                                                           | Version Change |
+|-----------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|----------------|
+| Adding a required parameter to a connector's `spec`                                           | Users will have to add the new parameter to their `config`                                                       | Major          |
+| Changing a format of a parameter in a connector's `spec` from a single parameter to a `oneOf` | Users will have to edit their `config` to define their old parameter value in the `oneOf` format                 | Major          |
+| Removing a stream from a connector's `catalog`                                                | Data that was being synced will no longer be synced                                                              | Major          |
+| Renaming a stream in a connector's `catalog`                                                  | Users will have to update the name of the stream in their `catalog`                                              | Major          |
+| Removing a column from a stream in a connector's `catalog`                                    | Users will have to remove that column from their `catalog`, data that was being synced will no longer be synced  | Major          |
+| Renaming a column from a stream in a connector's `catalog`                                    | Users will have to update the name of the column in their `catalog`                                              | Major          |
+| Changing the datatype for a column of a stream in a connector's `catalog`                     | Users will have to update that data type in their `catalog`, data that was being synced will have changed format | Major          |
+| Adding a non-required parameter to a connector's `spec`                                       | Users will have the option to use the required parameter in the future                                           | Minor          |
+| Adding a stream in a connector's `catalog`                                                    | Additional data will be synced                                                                                   | Minor          |
+| Adding a column to a stream's schema in a connector's `catalog`                               | Additional data will be synced                                                                                   | Minor          |
+| Updating the format of the connector's `STATE`                                                | Incremental streams will automatically run a full refresh only for the next sync                                 | Patch          |
+| Optimizing a connector's performance                                                          | Syncs will be faster                                                                                             | Patch          |
+| Fixing a bug in a connector                                                                   | Some syncs that would have failed will now succeed                                                               | Patch          |
+
+Trying to contribute, and don't see the change you want to make in this list? Call it out in your PR and your reviewer will help you pick the correct type of version change. Feel free to contribute the results back to this list!
 
 ### **Documentation**
 
