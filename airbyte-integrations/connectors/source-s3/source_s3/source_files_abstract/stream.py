@@ -374,9 +374,9 @@ class IncrementalFileStream(FileStream, ABC):
         """
         state_dict: Dict[str, Any] = {}
         current_parsed_datetime = self._get_datetime_from_stream_state(current_stream_state)
-        latest_record_datetime = pytz.utc.localize(datetime.strptime(
-            latest_record.get(self.cursor_field, "1970-01-01T00:00:00Z"), self.datetime_format_string
-        ))
+        latest_record_datetime = pytz.utc.localize(
+            datetime.strptime(latest_record.get(self.cursor_field, "1970-01-01T00:00:00Z"), self.datetime_format_string)
+        )
         state_dict[self.cursor_field] = datetime.strftime(max(current_parsed_datetime, latest_record_datetime), self.datetime_format_string)
 
         state_date = self._get_datetime_from_stream_state(state_dict).date()
