@@ -5,6 +5,7 @@
 import csv
 import io
 import re
+import pendulum
 from abc import ABC
 from datetime import datetime, timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
@@ -14,26 +15,28 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 
-from .enums import YMCursor, YMPrimaryKey, YMSource, YMStatus
-from .fields import HitsFields, VisitsFields
 
 STATE_CHECKPOINT_INTERVAL = 20
 
+
 class YandexMetricaStream(HttpStream, ABC):
     url_base = "https://api-metrica.yandex.net/management/v1/counter/"
-
-    @property
-    def primary_key(self):
-        return YMPrimaryKey.VIEWS if self.params["source"] == YMSource.VIEWS else YMPrimaryKey.SESSIONS
-
-    @property
-    def cursor_field(self) -> str:
-        return YMCursor.VIEWS if self.params["source"] == YMSource.VIEWS else YMCursor.SESSIONS
 
     def __init__(self, counter_id: str, params: dict, **kwargs):
         self.counter_id = counter_id
         self.params = params
         super().__init__(**kwargs)
+
+    def get_json_schema(self, ) -> Mapping[str, any]:
+        schema = super().get_json_schema()
+        schema["properties"] = {re.sub(r"(ym:s:|ym:pv:)", "", key): schema["properties"].pop(key) for key in
+                                schema["properties"].copy()}
+
+        return schema
+
+    def get_request_fields(self) -> List[str]:
+        schema = super().get_json_schema()
+        return list(schema.get("properties"))
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -62,7 +65,8 @@ class YandexMetricaStream(HttpStream, ABC):
             self.params["end_date"] = stream_state.get("end_date", self.params["end_date"])
             # 1. Evaluate a logrequest is valid
             evaluate = Evaluate(
-                authenticator=self._authenticator, counter_id=self.counter_id, params=self.params, source=self.params["source"]
+                authenticator=self._authenticator, counter_id=self.counter_id, params=self.params,
+                source=self.params["source"]
             )
             evaluate_response = next(evaluate.read_records(sync_mode=SyncMode.full_refresh))
             if not evaluate_response["log_request_evaluation"]["possible"]:
@@ -74,7 +78,8 @@ class YandexMetricaStream(HttpStream, ABC):
             if not logrequest_id:
                 yield {}
             # 3. Check logrequest status
-            check = Check(authenticator=self._authenticator, counter_id=self.counter_id, params=self.params, logrequest_id=logrequest_id)
+            check = Check(authenticator=self._authenticator, counter_id=self.counter_id, params=self.params,
+                          logrequest_id=logrequest_id)
             check_response = next(check.read_records(sync_mode=SyncMode.full_refresh))
             if not check_response:
                 yield {}
@@ -99,6 +104,7 @@ class YandexMetricaStream(HttpStream, ABC):
 
 class IncrementalYandexMetricaStream(YandexMetricaStream, IncrementalMixin):
     state_checkpoint_interval = STATE_CHECKPOINT_INTERVAL
+    cursor_field = "dateTime"
 
     def __init__(self, counter_id: str, params: dict, **kwargs):
         super().__init__(counter_id, params, **kwargs)
@@ -134,7 +140,7 @@ class IncrementalYandexMetricaStream(YandexMetricaStream, IncrementalMixin):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
             yield record
             self._cursor_value = max(record[self.cursor_field], self._cursor_value)
@@ -144,10 +150,10 @@ class IncrementalYandexMetricaStream(YandexMetricaStream, IncrementalMixin):
 
 
 class Views(IncrementalYandexMetricaStream):
+    primary_key = "watchID"
     def __init__(self, counter_id: str, params: dict, **kwargs):
-        self.fields_list = params["fields"]
-        fields = ",".join(params["fields"])
-        params["source"] = YMSource.VIEWS
+        fields = self.get_request_fields()
+        params["source"] = "hits"
         params["fields"] = fields
         super().__init__(counter_id, params, **kwargs)
 
@@ -155,16 +161,6 @@ class Views(IncrementalYandexMetricaStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"{self.counter_id}/logrequests/evaluate"
-
-    def get_json_schema(self) -> Mapping[str, any]:
-        schema = super().get_json_schema()
-        schema = {"$schema": "https://json-schema.org/draft-04/schema#", "type": "object", "properties": {}}
-        fields = {key: HitsFields.get_all_fields()[key] for key in self.fields_list}
-        for key, value in fields.items():
-            key = re.sub(r"(ym:s:|ym:pv:)", "", key)
-            schema["properties"][key] = value
-
-        return schema
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -186,26 +182,17 @@ class Views(IncrementalYandexMetricaStream):
 
 
 class Sessions(IncrementalYandexMetricaStream):
+    primary_key = "visitID"
+
     def __init__(self, counter_id: str, params: dict, **kwargs):
-        self.fields_list = params["fields"]
-        fields = ",".join(params["fields"])
-        params["source"] = YMSource.SESSIONS
-        params["fields"] = fields
+        params["source"] = "visits"
+        params["fields"] = self.get_request_fields()
         super().__init__(counter_id, params, **kwargs)
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"{self.counter_id}/logrequests/evaluate"
-
-    def get_json_schema(self) -> Mapping[str, any]:
-        schema = {"$schema": "https://json-schema.org/draft-04/schema#", "type": "object", "properties": {}}
-        fields = {key: VisitsFields.get_all_fields()[key] for key in self.fields_list}
-        for key, value in fields.items():
-            key = re.sub(r"(ym:s:|ym:pv:)", "", key)
-            schema["properties"][key] = value
-
-        return schema
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -308,9 +295,6 @@ class Create(YandexMetricaStream):
         yield data
 
 
-
-
-
 class Check(YandexMetricaStream):
     """
     Returns information about logs request.
@@ -334,7 +318,7 @@ class Check(YandexMetricaStream):
 
     def should_retry(self, response: requests.Response) -> bool:
         data = response.json()
-        return data["log_request"]["status"] != YMStatus.PROCESSED
+        return data["log_request"]["status"] != "processed"
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         return 30
@@ -388,10 +372,7 @@ class Download(YandexMetricaStream):
         for row in reader:
             # Remove 'ym:s:' or 'ym:pv:' prefix
             row = {re.sub(r"(ym:s:|ym:pv:)", "", key): value for key, value in row.items()}
-            try:
-                # Transform datetime fields
-                row[self.cursor_field] = row[self.cursor_field].replace(" ", "T")
-            except Exception as e:
-                print(f"Something went wrong while transforming datetime fields. {e}")
+
+            row[self.cursor_field] = pendulum.parse(row[self.cursor_field]).to_rfc3339_string()
 
             yield row

@@ -8,7 +8,6 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .fields import HitsFields, VisitsFields
 from .streams import Evaluate, Sessions, Views, YandexMetricaStream
 
 
@@ -20,7 +19,6 @@ class SourceYandexMetrica(AbstractSource):
                 **{
                     "counter_id": config["counter_id"],
                     "params": {
-                        "fields": HitsFields.get_all_fields_keys(),
                         "start_date": config["start_date"],
                         "end_date": config["end_date"],
                     },
@@ -32,7 +30,6 @@ class SourceYandexMetrica(AbstractSource):
                 **{
                     "counter_id": config["counter_id"],
                     "params": {
-                        "fields": VisitsFields.get_all_fields_keys(),
                         "start_date": config["start_date"],
                         "end_date": config["end_date"],
                     },
@@ -52,7 +49,6 @@ class SourceYandexMetrica(AbstractSource):
         views_stream_args = {
             "counter_id": config["counter_id"],
             "params": {
-                "fields": HitsFields.get_all_fields_keys(),
                 "start_date": config["start_date"],
                 "end_date": config["end_date"],
             },
@@ -61,7 +57,6 @@ class SourceYandexMetrica(AbstractSource):
         sessions_stream_args = {
             "counter_id": config["counter_id"],
             "params": {
-                "fields": VisitsFields.get_all_fields_keys(),
                 "start_date": config["start_date"],
                 "end_date": config["end_date"],
             },
