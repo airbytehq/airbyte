@@ -10,6 +10,7 @@ const BreadcrumbsContainer = styled.div`
   align-items: center;
   height: 70px;
   font-size: 15px;
+  flex-shrink: 0;
 `;
 
 const BreadcrumbsItem = styled.div<{ active: boolean }>`
