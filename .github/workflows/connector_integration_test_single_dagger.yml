@@ -85,7 +85,7 @@ jobs:
           CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           CI_GIT_BRANCH: ${{ github.head_ref }}
           CI_GIT_REVISION: ${{ github.event.pull_request.head.sha }}
-          CI_CONTEXT: "pull-request"
+          CI_CONTEXT: "pull_request"
           CI_PIPELINE_START_TIMESTAMP: ${{ needs.start-runner.outputs.pipeline-start-timestamp }}
 
   stop-runner:
