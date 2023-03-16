@@ -182,7 +182,9 @@ class FileStream(Stream, ABC):
     def _auto_inferred_schema(self) -> Dict[str, Any]:
         file_reader = self.fileformatparser_class(self._format)
         file_info_iterator = iter(list(self.get_time_ordered_file_infos()))
-        file_info = next(file_info_iterator)
+        file_info = next(file_info_iterator, None)
+        if not file_info:
+            return {}
         storage_file = self.storagefile_class(file_info, self._provider)
         with storage_file.open(file_reader.is_binary) as f:
             return file_reader.get_inferred_schema(f, file_info)
