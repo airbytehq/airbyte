@@ -5,26 +5,26 @@
 
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_trustpilot.streams import IncrementalTrustpilotStream
+from source_trustpilot.streams import TrustpilotIncrementalStream
 
 
 @fixture
 def patch_incremental_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(IncrementalTrustpilotStream, "path", "v0/example_endpoint")
-    mocker.patch.object(IncrementalTrustpilotStream, "primary_key", "test_primary_key")
-    mocker.patch.object(IncrementalTrustpilotStream, "__abstractmethods__", set())
+    mocker.patch.object(TrustpilotIncrementalStream, "path", "v0/example_endpoint")
+    mocker.patch.object(TrustpilotIncrementalStream, "primary_key", "test_primary_key")
+    mocker.patch.object(TrustpilotIncrementalStream, "__abstractmethods__", set())
 
 
 def test_cursor_field(patch_incremental_base_class):
-    stream = IncrementalTrustpilotStream()
+    stream = TrustpilotIncrementalStream()
     # TODO: replace this with your expected cursor field
     expected_cursor_field = []
     assert stream.cursor_field == expected_cursor_field
 
 
 def test_get_updated_state(patch_incremental_base_class):
-    stream = IncrementalTrustpilotStream()
+    stream = TrustpilotIncrementalStream()
     # TODO: replace this with your input parameters
     inputs = {"current_stream_state": None, "latest_record": None}
     # TODO: replace this with your expected updated stream state
@@ -33,7 +33,7 @@ def test_get_updated_state(patch_incremental_base_class):
 
 
 def test_stream_slices(patch_incremental_base_class):
-    stream = IncrementalTrustpilotStream()
+    stream = TrustpilotIncrementalStream()
     # TODO: replace this with your input parameters
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
     # TODO: replace this with your expected stream slices list
@@ -42,18 +42,18 @@ def test_stream_slices(patch_incremental_base_class):
 
 
 def test_supports_incremental(patch_incremental_base_class, mocker):
-    mocker.patch.object(IncrementalTrustpilotStream, "cursor_field", "dummy_field")
-    stream = IncrementalTrustpilotStream()
+    mocker.patch.object(TrustpilotIncrementalStream, "cursor_field", "dummy_field")
+    stream = TrustpilotIncrementalStream()
     assert stream.supports_incremental
 
 
 def test_source_defined_cursor(patch_incremental_base_class):
-    stream = IncrementalTrustpilotStream()
+    stream = TrustpilotIncrementalStream()
     assert stream.source_defined_cursor
 
 
 def test_stream_checkpoint_interval(patch_incremental_base_class):
-    stream = IncrementalTrustpilotStream()
+    stream = TrustpilotIncrementalStream()
     # TODO: replace this with your expected checkpoint interval
     expected_checkpoint_interval = None
     assert stream.state_checkpoint_interval == expected_checkpoint_interval
