@@ -1097,6 +1097,13 @@
   icon: ebay.svg
   sourceType: api
   releaseStage: alpha
+- name: Netsuite
+  sourceDefinitionId: 4f2f093d-ce44-4121-8118-9d13b7bfccd0
+  dockerRepository: yuanrui2014/source-netsuite
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/netsuite
+  icon: netsuite.svg
+  sourceType: api
 - name: Webflow
   sourceDefinitionId: ef580275-d9a9-48bb-af5e-db0f5855be04
   dockerRepository: airbyte/source-webflow
