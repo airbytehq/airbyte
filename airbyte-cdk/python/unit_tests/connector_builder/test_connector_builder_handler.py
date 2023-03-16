@@ -5,12 +5,17 @@
 import copy
 import json
 from unittest import mock
+from unittest.mock import patch
 
 import connector_builder
 import pytest
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from connector_builder.connector_builder_handler import resolve_manifest
-from connector_builder.main import handle_connector_builder_request, handle_request
+from connector_builder.main import handle_connector_builder_request, handle_request, read_stream
+from connector_builder.models import StreamRead, StreamReadSlicesInner, StreamReadSlicesInnerPagesInner
+from unit_tests.connector_builder.utils import create_configured_catalog
 
 _stream_name = "stream_with_custom_requester"
 _stream_primary_key = "id"
@@ -48,40 +53,114 @@ MANIFEST = {
     "check": {"type": "CheckStream", "stream_names": ["lists"]},
 }
 
-
-CONFIG = {
+RESOLVE_MANIFEST_CONFIG = {
     "__injected_declarative_manifest": MANIFEST,
     "__command": "resolve_manifest",
 }
 
+TEST_READ_CONFIG = {
+    "__injected_declarative_manifest": MANIFEST,
+    "__command": "test_read",
+    "__test_read_config": {
+        "max_pages_per_slice": 2,
+        "max_slices": 5,
+        "max_records": 10
+    }
+}
+
+DUMMY_CATALOG = {
+    "streams": [
+        {
+            "stream": {
+                "name": "dummy_stream",
+                "json_schema": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "properties": {}
+                },
+                "supported_sync_modes": ["full_refresh"],
+                "source_defined_cursor": False
+            },
+            "sync_mode": "full_refresh",
+            "destination_sync_mode": "overwrite"
+        }
+    ]
+}
+
+CONFIGURED_CATALOG = {
+    "streams": [
+        {
+            "stream": {
+                "name": _stream_name,
+                "json_schema": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "properties": {}
+                },
+                "supported_sync_modes": ["full_refresh"],
+                "source_defined_cursor": False
+            },
+            "sync_mode": "full_refresh",
+            "destination_sync_mode": "overwrite"
+        }
+    ]
+}
+
 
 @pytest.fixture
-def valid_config_file(tmp_path):
+def valid_resolve_manifest_config_file(tmp_path):
     config_file = tmp_path / "config.json"
-    config_file.write_text(json.dumps(CONFIG))
+    config_file.write_text(json.dumps(RESOLVE_MANIFEST_CONFIG))
+    return config_file
+
+
+@pytest.fixture
+def valid_read_config_file(tmp_path):
+    config_file = tmp_path / "config.json"
+    config_file.write_text(json.dumps(TEST_READ_CONFIG))
+    return config_file
+
+
+@pytest.fixture
+def dummy_catalog(tmp_path):
+    config_file = tmp_path / "catalog.json"
+    config_file.write_text(json.dumps(DUMMY_CATALOG))
+    return config_file
+
+
+@pytest.fixture
+def configured_catalog(tmp_path):
+    config_file = tmp_path / "catalog.json"
+    config_file.write_text(json.dumps(CONFIGURED_CATALOG))
     return config_file
 
 
 @pytest.fixture
 def invalid_config_file(tmp_path):
-    invalid_config = copy.deepcopy(CONFIG)
+    invalid_config = copy.deepcopy(RESOLVE_MANIFEST_CONFIG)
     invalid_config["__command"] = "bad_command"
     config_file = tmp_path / "config.json"
     config_file.write_text(json.dumps(invalid_config))
     return config_file
 
 
-def test_handle_resolve_manifest(valid_config_file):
+def test_handle_resolve_manifest(valid_resolve_manifest_config_file, dummy_catalog):
     with mock.patch.object(connector_builder.main, "handle_connector_builder_request") as patch:
-        handle_request(["read", "--config", str(valid_config_file), "--catalog", ""])
+        handle_request(["read", "--config", str(valid_resolve_manifest_config_file), "--catalog", str(dummy_catalog)])
         assert patch.call_count == 1
 
 
-def test_resolve_manifest(valid_config_file):
-    config = copy.deepcopy(CONFIG)
+def test_handle_test_read(valid_read_config_file, configured_catalog):
+    with mock.patch.object(connector_builder.main, "handle_connector_builder_request") as patch:
+        handle_request(["read", "--config", str(valid_read_config_file), "--catalog", str(configured_catalog)])
+        assert patch.call_count == 1
+
+
+def test_resolve_manifest(valid_resolve_manifest_config_file):
+    config = copy.deepcopy(RESOLVE_MANIFEST_CONFIG)
     config["__command"] = "resolve_manifest"
     source = ManifestDeclarativeSource(MANIFEST)
-    resolved_manifest = handle_connector_builder_request(source, config)
+    resolved_manifest = handle_connector_builder_request(source, config, create_configured_catalog("dummy_stream"))
 
     expected_resolved_manifest = {
         "type": "DeclarativeSource",
@@ -210,6 +289,45 @@ def test_resolve_manifest_error_returns_error_response():
     assert "Error resolving manifest" in response.trace.error.message
 
 
+def test_read():
+    config = TEST_READ_CONFIG
+    source = ManifestDeclarativeSource(MANIFEST)
+
+    real_record = AirbyteRecordMessage(data={"id": "1234", "key": "value"}, emitted_at=1, stream=_stream_name)
+    stream_read = StreamRead(logs=[{"message": "here be a log message"}],
+                             slices=[StreamReadSlicesInner(pages=[
+                                 StreamReadSlicesInnerPagesInner(records=[real_record], request=None, response=None)],
+                                 slice_descriptor=None, state=None)
+                             ],
+                             test_read_limit_reached=False, inferred_schema=None)
+
+    expected_airbyte_message = AirbyteMessage(type=MessageType.RECORD,
+                                              record=AirbyteRecordMessage(stream=_stream_name, data={
+                                                  "logs": [{"message": "here be a log message"}],
+                                                  "slices": [{
+                                                      "pages": [{"records": [real_record], "request": None, "response": None}],
+                                                      "slice_descriptor": None,
+                                                      "state": None
+                                                  }],
+                                                  "test_read_limit_reached": False,
+                                                  "inferred_schema": None
+                                              }, emitted_at=1))
+    with patch("connector_builder.message_grouper.MessageGrouper.get_message_groups", return_value=stream_read):
+        output_record = handle_connector_builder_request(source, config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG))
+        output_record.record.emitted_at = 1
+        assert output_record == expected_airbyte_message
+
+
+def test_read_returns_error_response():
+    class MockManifestDeclarativeSource:
+        def read(self, logger, config, catalog, state):
+            raise ValueError
+
+    source = MockManifestDeclarativeSource()
+    response = read_stream(source, TEST_READ_CONFIG, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG))
+    assert "Error reading" in response.trace.error.message
+
+
 @pytest.mark.parametrize(
     "command",
     [
@@ -220,28 +338,28 @@ def test_resolve_manifest_error_returns_error_response():
         pytest.param("", id="test_command_is_empty_error"),
     ],
 )
-def test_invalid_protocol_command(command, valid_config_file):
-    config = copy.deepcopy(CONFIG)
+def test_invalid_protocol_command(command, valid_resolve_manifest_config_file):
+    config = copy.deepcopy(RESOLVE_MANIFEST_CONFIG)
     config["__command"] = "list_streams"
     with pytest.raises(SystemExit):
-        handle_request([command, "--config", str(valid_config_file), "--catalog", ""])
+        handle_request([command, "--config", str(valid_resolve_manifest_config_file), "--catalog", ""])
 
 
-def test_missing_command(valid_config_file):
+def test_missing_command(valid_resolve_manifest_config_file):
     with pytest.raises(SystemExit):
-        handle_request(["--config", str(valid_config_file), "--catalog", ""])
+        handle_request(["--config", str(valid_resolve_manifest_config_file), "--catalog", ""])
 
 
-def test_missing_catalog(valid_config_file):
+def test_missing_catalog(valid_resolve_manifest_config_file):
     with pytest.raises(SystemExit):
-        handle_request(["read", "--config", str(valid_config_file)])
+        handle_request(["read", "--config", str(valid_resolve_manifest_config_file)])
 
 
-def test_missing_config(valid_config_file):
+def test_missing_config(valid_resolve_manifest_config_file):
     with pytest.raises(SystemExit):
-        handle_request(["read", "--catalog", str(valid_config_file)])
+        handle_request(["read", "--catalog", str(valid_resolve_manifest_config_file)])
 
 
-def test_invalid_config_command(invalid_config_file):
+def test_invalid_config_command(invalid_config_file, dummy_catalog):
     with pytest.raises(ValueError):
-        handle_request(["read", "--config", str(invalid_config_file), "--catalog", ""])
+        handle_request(["read", "--config", str(invalid_config_file), "--catalog", str(dummy_catalog)])
