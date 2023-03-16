@@ -6,7 +6,8 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_strava.streams import StravaStream, Activities, AthleteStats
+from source_strava.streams import Activities, AthleteStats, StravaStream
+
 
 @pytest.fixture
 def patch_base_class(mocker):
@@ -71,5 +72,4 @@ def test_path_activities(config):
 
 
 def test_path_athlete_stats(config):
-    assert AthleteStats(authenticator=None, athlete_id=config["athlete_id"]).path() == 'athletes/12345678/stats'\
-
+    assert AthleteStats(authenticator=None, athlete_id=config["athlete_id"]).path() == 'athletes/12345678/stats'
