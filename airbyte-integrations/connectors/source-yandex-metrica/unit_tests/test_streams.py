@@ -132,7 +132,7 @@ def test_views_path(patch_base_class):
 def test_views_schema(patch_base_class):
     stream = patch_base_class["views_stream"]
     expected_schema = {
-        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$schema": "https://json-schema.org/draft-04/schema#",
         "type": "object",
         "properties": {
             "watchID": {"type": "string"},
@@ -179,7 +179,7 @@ def test_sessions_path(patch_base_class):
 def test_sessions_schema(patch_base_class):
     stream = patch_base_class["sessions_stream"]
     expected_schema = {
-        "$schema": "http://json-schema.org/draft-04/schema#",
+        "$schema": "https://json-schema.org/draft-04/schema#",
         "type": "object",
         "properties": {
             "visitID": {"type": "string"},

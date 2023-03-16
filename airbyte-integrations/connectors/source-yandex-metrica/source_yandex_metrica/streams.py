@@ -155,7 +155,7 @@ class Views(IncrementalYandexMetricaStream):
 
     def get_json_schema(self) -> Mapping[str, any]:
         schema = super().get_json_schema()
-        schema = {"$schema": "http://json-schema.org/draft-04/schema#", "type": "object", "properties": {}}
+        schema = {"$schema": "https://json-schema.org/draft-04/schema#", "type": "object", "properties": {}}
         fields = {key: HitsFields.get_all_fields()[key] for key in self.fields_list}
         for key, value in fields.items():
             key = re.sub(r"(ym:s:|ym:pv:)", "", key)
@@ -197,7 +197,7 @@ class Sessions(IncrementalYandexMetricaStream):
 
     def get_json_schema(self) -> Mapping[str, any]:
         schema = super().get_json_schema()
-        schema = {"$schema": "http://json-schema.org/draft-04/schema#", "type": "object", "properties": {}}
+        schema = {"$schema": "https://json-schema.org/draft-04/schema#", "type": "object", "properties": {}}
         fields = {key: VisitsFields.get_all_fields()[key] for key in self.fields_list}
         for key, value in fields.items():
             key = re.sub(r"(ym:s:|ym:pv:)", "", key)
