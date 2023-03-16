@@ -2,8 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
 import json
+from unittest.mock import MagicMock
 
 from source_trustpilot.source import SourceTrustpilot
 

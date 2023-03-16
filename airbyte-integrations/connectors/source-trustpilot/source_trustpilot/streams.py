@@ -1,13 +1,17 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from abc import ABC
 from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
-import requests
 import pendulum
-from requests.auth import AuthBase
+import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from requests.auth import AuthBase
 
 from .auth import TrustpilotApikeyAuthenticator
 
@@ -24,7 +28,7 @@ class TrustpilotStream(HttpStream, ABC):
     def data_field(self) -> str:
         """
         Specifies root object name in a stream response
-        
+
         If not specified, the whole response is passed as a single row.
         """
         return None
@@ -48,8 +52,8 @@ class TrustpilotStream(HttpStream, ABC):
         store in the stream.
         """
         # We don't want to expose the 'links' in the data
-        if 'links' in row:
-            del row['links']
+        if "links" in row:
+            del row["links"]
 
         return row
 
@@ -60,7 +64,7 @@ class TrustpilotStream(HttpStream, ABC):
             for row in json_content[self.data_field]:
                 yield self._clean_row(row)
         else:  # when no data_field is provided, we assume that each request represents
-               # a single row.
+            # a single row.
             yield self._clean_row(json_content)
 
 
@@ -71,25 +75,26 @@ class TrustpilotPaginagedStream(TrustpilotStream):
     the API max. page size to avoid too many API requests.
     """
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
-                       next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         if self.per_page:
-            params['perPage'] = self.per_page
+            params["perPage"] = self.per_page
         return params
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         content = response.json()
 
         # used in e.g. https://documentation-apidocumentation.trustpilot.com/business-units-api-(public)#get-a-list-of-all-business-units
-        if 'cursor' in content:
-            return {'cursor': content['cursor']}
+        if "cursor" in content:
+            return {"cursor": content["cursor"]}
 
         # search for a 'next-page' URL in the 'links' part
         # used in e.g. https://documentation-apidocumentation.trustpilot.com/business-units-api#business-unit-private-reviews
-        for link in content.get('links', []):
-            if link['method'] == 'GET' and link['rel'] == 'next-page':
-                next_page_url = link['href']
+        for link in content.get("links", []):
+            if link["method"] == "GET" and link["rel"] == "next-page":
+                next_page_url = link["href"]
                 if next_page_url:
                     next_url = urlparse(next_page_url)
                     return parse_qs(next_url.query)
@@ -109,7 +114,7 @@ class TrustpilotIncrementalStream(TrustpilotPaginagedStream, ABC):
 
     @property
     def state_field(self):
-        if 'business_unit_id' in self._current_stream_slice:
+        if "business_unit_id" in self._current_stream_slice:
             return f"{self._current_stream_slice['business_unit_id']}_{self.cursor_field}"
         else:
             return self.cursor_field
@@ -140,10 +145,10 @@ class TrustpilotIncrementalStream(TrustpilotPaginagedStream, ABC):
             stream_state = stream_state or {}
             state_str = stream_state.get(self.state_field)
             state = pendulum.parse(state_str) if state_str else self._start_date
-                # Note: The Trustpilot API does not specify here the time zone. But
-                #       since we take the value from the records, we don't care about
-                #       this ...
-            params[self.filter_param] = max(state, self._start_date).strftime('%Y-%m-%dT%H:%M:%S')
+            # Note: The Trustpilot API does not specify here the time zone. But
+            #       since we take the value from the records, we don't care about
+            #       this ...
+            params[self.filter_param] = max(state, self._start_date).strftime("%Y-%m-%dT%H:%M:%S")
 
         return params
 
@@ -155,6 +160,7 @@ class ConfiguredBusinessUnits(TrustpilotStream):
 
     See also: https://documentation-apidocumentation.trustpilot.com/business-units-api-(public)#find-a-business-unit
     """
+
     primary_key = "id"
 
     def path(
@@ -166,14 +172,12 @@ class ConfiguredBusinessUnits(TrustpilotStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params.update({
-            'name': stream_slice['business_unit_name']
-        })
+        params.update({"name": stream_slice["business_unit_name"]})
         return params
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for business_unit_name in self._business_unit_names:
-            yield {'business_unit_name': business_unit_name}
+            yield {"business_unit_name": business_unit_name}
 
 
 class _AllBusinessUnitsIterator(TrustpilotPaginagedStream):
@@ -183,8 +187,9 @@ class _AllBusinessUnitsIterator(TrustpilotPaginagedStream):
 
     See also https://documentation-apidocumentation.trustpilot.com/business-units-api-(public)#get-a-list-of-all-business-units
     """
+
     primary_key = "id"
-    data_field = 'businessUnits'
+    data_field = "businessUnits"
     per_page = 1000
 
     def path(
@@ -199,6 +204,7 @@ class BusinessUnits(TrustpilotStream):
 
     See also: https://documentation-apidocumentation.trustpilot.com/business-units-api-(public)#get-public-business-unit
     """
+
     primary_key = "id"
 
     def path(
@@ -214,7 +220,7 @@ class BusinessUnits(TrustpilotStream):
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         all_business_units = _AllBusinessUnitsIterator(authenticator=self._session.auth)
         for busines_unit_data in all_business_units.read_records(sync_mode=SyncMode.full_refresh):
-            yield {'business_unit_id': busines_unit_data['id']}
+            yield {"business_unit_id": busines_unit_data["id"]}
 
 
 class PrivateReviews(TrustpilotIncrementalStream):
@@ -223,8 +229,9 @@ class PrivateReviews(TrustpilotIncrementalStream):
 
     See also: https://documentation-apidocumentation.trustpilot.com/business-units-api#business-unit-private-reviews
     """
-    primary_key = 'id'
-    data_field = 'reviews'
+
+    primary_key = "id"
+    data_field = "reviews"
     per_page = 100
 
     def path(
@@ -232,12 +239,11 @@ class PrivateReviews(TrustpilotIncrementalStream):
     ) -> str:
         return f"private/business-units/{stream_slice['business_unit_id']}/reviews"
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
-                       next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params.update({
-            'orderBy': 'createdat.asc'
-        })
+        params.update({"orderBy": "createdat.asc"})
         return params
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
@@ -247,11 +253,11 @@ class PrivateReviews(TrustpilotIncrementalStream):
         it we could add support for generic business units sync.
         """
         business_units_find = ConfiguredBusinessUnits(
-            authenticator=TrustpilotApikeyAuthenticator(token=self._api_key),
-            business_unit_names=self._business_unit_names)
+            authenticator=TrustpilotApikeyAuthenticator(token=self._api_key), business_unit_names=self._business_unit_names
+        )
         for stream_slice in business_units_find.stream_slices(sync_mode=SyncMode.full_refresh):
             for busines_unit_data in business_units_find.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
-                yield {'business_unit_id': busines_unit_data['id']}
+                yield {"business_unit_id": busines_unit_data["id"]}
 
     def _clean_row(self, row: Mapping[str, Any]):
         """
@@ -260,11 +266,11 @@ class PrivateReviews(TrustpilotIncrementalStream):
         row = super()._clean_row(row)
 
         # remove nested 'links'
-        if 'consumer' in row:
-            if 'links' in row['consumer']:
-                del row['consumer']['links']
-        if 'businessUnit' in row:
-            if 'links' in row['businessUnit']:
-                del row['businessUnit']['links']
+        if "consumer" in row:
+            if "links" in row["consumer"]:
+                del row["consumer"]["links"]
+        if "businessUnit" in row:
+            if "links" in row["businessUnit"]:
+                del row["businessUnit"]["links"]
 
         return row

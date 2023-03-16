@@ -10,16 +10,8 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
-from .auth import (
-    TrustpilotApikeyAuthenticator,
-    TrustpilotOauth2Authenticator
-)
-
-from .streams import (
-    ConfiguredBusinessUnits,
-    BusinessUnits,
-    PrivateReviews
-)
+from .auth import TrustpilotApikeyAuthenticator, TrustpilotOauth2Authenticator
+from .streams import BusinessUnits, ConfiguredBusinessUnits, PrivateReviews
 
 
 class SourceTrustpilot(AbstractSource):
@@ -39,31 +31,24 @@ class SourceTrustpilot(AbstractSource):
         See also: https://documentation-apidocumentation.trustpilot.com/#Auth
         """
         if not self.__public_auth_params:
-            auth = TrustpilotApikeyAuthenticator(
-                token=config['credentials']['client_id'])
-            self.__public_auth_params = {
-                'authenticator': auth
-            }
+            auth = TrustpilotApikeyAuthenticator(token=config["credentials"]["client_id"])
+            self.__public_auth_params = {"authenticator": auth}
         return self.__public_auth_params
 
     def _oauth2_auth_params(self, config: MutableMapping[str, Any]):
         if not self.__oauth2_auth_params:
             auth = TrustpilotOauth2Authenticator(
-                config,
-                token_refresh_endpoint="https://api.trustpilot.com/v1/oauth/oauth-business-users-for-applications/refresh"
+                config, token_refresh_endpoint="https://api.trustpilot.com/v1/oauth/oauth-business-users-for-applications/refresh"
             )
-            self.__oauth2_auth_params = {
-                'authenticator': auth,
-                'api_key': config['credentials']['client_id']
-            }
+            self.__oauth2_auth_params = {"authenticator": auth, "api_key": config["credentials"]["client_id"]}
         return self.__oauth2_auth_params
 
     def _configured_business_units_stream(self, config: MutableMapping[str, Any]) -> ConfiguredBusinessUnits:
         if not self.__configured_business_units_stream:
             public_auth_params = self._public_auth_params(config)
             self.__configured_business_units_stream = ConfiguredBusinessUnits(
-                business_unit_names=config['business_units'],
-                **public_auth_params)
+                business_unit_names=config["business_units"], **public_auth_params
+            )
         return self.__configured_business_units_stream
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -85,25 +70,20 @@ class SourceTrustpilot(AbstractSource):
 
         configured_business_units_stream = self._configured_business_units_stream(config)
 
-        business_unit_names = config['business_units']
+        business_unit_names = config["business_units"]
         common_kwargs = {"business_unit_names": business_unit_names}
-        incremental_kwargs = {"start_date": pendulum.parse(config['start_date'])}
+        incremental_kwargs = {"start_date": pendulum.parse(config["start_date"])}
         pubic_common_kwargs = {**common_kwargs, **public_auth_params}
 
         # The Public API streams
-        streams = [
-            configured_business_units_stream,
-            BusinessUnits(**pubic_common_kwargs)
-        ]
+        streams = [configured_business_units_stream, BusinessUnits(**pubic_common_kwargs)]
 
         # API streams requiring OAuth 2.0
-        if config['credentials']['auth_type'] == 'oauth2.0':
+        if config["credentials"]["auth_type"] == "oauth2.0":
             auth_params = self._oauth2_auth_params(config)
             consumer_common_kwargs = {**common_kwargs, **auth_params}
             consumer_incremental_kwargs = {**consumer_common_kwargs, **incremental_kwargs}
 
-            streams.extend([
-                PrivateReviews(**consumer_incremental_kwargs)
-            ])
+            streams.extend([PrivateReviews(**consumer_incremental_kwargs)])
 
         return streams

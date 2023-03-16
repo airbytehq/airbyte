@@ -1,7 +1,10 @@
-from typing import Mapping, Any, Tuple
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from airbyte_cdk.sources.streams.http.requests_native_auth import SingleUseRefreshTokenOauth2Authenticator
+from typing import Any, Mapping, Tuple
+
+from airbyte_cdk.sources.streams.http.requests_native_auth import SingleUseRefreshTokenOauth2Authenticator, TokenAuthenticator
 
 
 class TrustpilotApikeyAuthenticator(TokenAuthenticator):
@@ -10,8 +13,9 @@ class TrustpilotApikeyAuthenticator(TokenAuthenticator):
 
     See also https://documentation-apidocumentation.trustpilot.com/#Auth
     """
+
     def __init__(self, token: str):
-        super().__init__(token, auth_method=None, auth_header='apikey')
+        super().__init__(token, auth_method=None, auth_header="apikey")
 
     @property
     def token(self) -> str:
@@ -29,12 +33,15 @@ class TrustpilotOauth2Authenticator(SingleUseRefreshTokenOauth2Authenticator):
 
     See also https://documentation-apidocumentation.trustpilot.com/#Auth
     """
+
     def get_auth_header(self) -> Mapping[str, Any]:
         headers = super().get_auth_header()
-        headers.update({
-            'apikey': self.get_client_id(),  # The API key is required for OAuth2 requests as well ...
-            'Content-Type': 'application/x-www-form-urlencoded'
-        })
+        headers.update(
+            {
+                "apikey": self.get_client_id(),  # The API key is required for OAuth2 requests as well ...
+                "Content-Type": "application/x-www-form-urlencoded",
+            }
+        )
         return headers
 
     def refresh_access_token(self) -> Tuple[str, int, str]:
@@ -51,7 +58,4 @@ class TrustpilotOauth2Authenticator(SingleUseRefreshTokenOauth2Authenticator):
         )
 
 
-__all__ = [
-    "TrustpilotApikeyAuthenticator",
-    "TrustpilotOauth2Authenticator"
-]
+__all__ = ["TrustpilotApikeyAuthenticator", "TrustpilotOauth2Authenticator"]

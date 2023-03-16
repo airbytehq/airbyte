@@ -2,9 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from http import HTTPStatus
 from unittest.mock import MagicMock
-import json
 
 import pytest
 from source_trustpilot.streams import TrustpilotStream
