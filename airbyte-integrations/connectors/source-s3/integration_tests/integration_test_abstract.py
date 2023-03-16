@@ -104,7 +104,7 @@ class AbstractTestIncrementalFileStream(ABC):
         # emulate state for incremental testing
         # since we're not actually saving state out to file here, we pass schema in to our FileStream creation...
         # this isn't how it will work in Airbyte but it's a close enough emulation
-        current_state = state if state is not None else {FileStream.ab_last_mod_col: "1970-01-01T00:00:00+0000"}
+        current_state = state if state is not None else {FileStream.ab_last_mod_col: "1970-01-01T00:00:00Z"}
         if (user_schema is None) and ("schema" in current_state.keys()):
             user_schema = current_state["schema"]
 
