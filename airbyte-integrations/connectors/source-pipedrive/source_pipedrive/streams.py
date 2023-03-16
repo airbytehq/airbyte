@@ -7,6 +7,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
 PIPEDRIVE_URL_BASE = "https://api.pipedrive.com/v1/"
@@ -106,8 +107,33 @@ class DealFields(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/DealFields#getDealFields"""
 
 
+class Files(PipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/Files#getFiles
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
+
+
+class Filters(PipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/Filters#getFilters
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
+
+
+class LeadLabels(PipedriveStream):
+    """https://developers.pipedrive.com/docs/api/v1/LeadLabels#getLeadLabels"""
+
+
 class Leads(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/Leads#getLeads"""
+
+
+class Notes(PipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/Notes#getNotes
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
 
 
 class Activities(PipedriveStream):
@@ -123,6 +149,19 @@ class ActivityFields(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/ActivityFields#getActivityFields"""
 
 
+class ActivityTypes(PipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/ActivityTypes#getActivityTypes
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
+
+    path_param = "activityType"
+
+
+class Currencies(PipedriveStream):
+    """https://developers.pipedrive.com/docs/api/v1/Currencies#getCurrencies"""
+
+
 class Organizations(PipedriveStream):
     """
     API docs: https://developers.pipedrive.com/docs/api/v1/Organizations#getOrganizations,
@@ -132,6 +171,10 @@ class Organizations(PipedriveStream):
 
 class OrganizationFields(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/OrganizationFields#getOrganizationFields"""
+
+
+class PermissionSets(PipedriveStream):
+    """https://developers.pipedrive.com/docs/api/v1/PermissionSets#getPermissionSets"""
 
 
 class Persons(PipedriveStream):
@@ -150,6 +193,21 @@ class Pipelines(PipedriveStream):
     API docs: https://developers.pipedrive.com/docs/api/v1/Pipelines#getPipelines,
     retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
     """
+
+
+class Products(PipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/Products#getProducts,
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
+
+
+class ProductFields(PipedriveStream):
+    """https://developers.pipedrive.com/docs/api/v1/ProductFields#getProductFields"""
+
+
+class Roles(PipedriveStream):
+    """https://developers.pipedrive.com/docs/api/v1/Roles#getRoles"""
 
 
 class Stages(PipedriveStream):
@@ -171,3 +229,22 @@ class Users(PipedriveStream):
         record_gen = super().parse_response(response=response, **kwargs)
         for records in record_gen:
             yield from records
+
+
+class DealProducts(PipedriveStream):
+    """https://developers.pipedrive.com/docs/api/v1/Deals#getDealProducts"""
+
+    def __init__(self, parent, **kwargs):
+        self.parent = parent
+        super().__init__(**kwargs)
+
+    def path(self, stream_slice, **kwargs) -> str:
+        return f"deals/{stream_slice['deal_id']}/products"
+
+    def stream_slices(self, sync_mode, cursor_field=None, stream_state=None):
+        stream_slices = self.parent.stream_slices(sync_mode=SyncMode.full_refresh)
+        for stream_slice in stream_slices:
+            records = self.parent.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
+            for record in records:
+                if record["products_count"]:
+                    yield {"deal_id": record["id"]}
