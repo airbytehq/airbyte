@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import math
@@ -9,6 +9,7 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 class PaystackStream(HttpStream, ABC):
@@ -93,7 +94,7 @@ class IncrementalPaystackStream(PaystackStream, ABC):
 
 class Customers(IncrementalPaystackStream):
     """
-    API docs: https://paystack.com/docs/api/#customer-list
+    API docs: https://paystack.com/docs/api/customer#list
     """
 
     cursor_field = "createdAt"
@@ -104,7 +105,7 @@ class Customers(IncrementalPaystackStream):
 
 class Disputes(IncrementalPaystackStream):
     """
-    API docs: https://paystack.com/docs/api/#dispute-list
+    API docs: https://paystack.com/docs/api/dispute#list
     """
 
     cursor_field = "createdAt"
@@ -115,7 +116,7 @@ class Disputes(IncrementalPaystackStream):
 
 class Invoices(IncrementalPaystackStream):
     """
-    API docs: https://paystack.com/docs/api/#invoice-list
+    API docs: https://paystack.com/docs/api/payment-request
     """
 
     cursor_field = "created_at"
@@ -126,10 +127,11 @@ class Invoices(IncrementalPaystackStream):
 
 class Refunds(IncrementalPaystackStream):
     """
-    API docs: https://paystack.com/docs/api/#refund-list
+    API docs: https://paystack.com/docs/api/refund
     """
 
     cursor_field = "createdAt"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def path(self, **kwargs) -> str:
         return "refund"
@@ -137,7 +139,7 @@ class Refunds(IncrementalPaystackStream):
 
 class Settlements(IncrementalPaystackStream):
     """
-    API docs: https://paystack.com/docs/api/#settlement
+    API docs: https://paystack.com/docs/api/settlement
     """
 
     cursor_field = "createdAt"
@@ -148,7 +150,7 @@ class Settlements(IncrementalPaystackStream):
 
 class Subscriptions(IncrementalPaystackStream):
     """
-    API docs: https://paystack.com/docs/api/#subscription-list
+    API docs: https://paystack.com/docs/api/subscription
     """
 
     cursor_field = "createdAt"
@@ -159,7 +161,7 @@ class Subscriptions(IncrementalPaystackStream):
 
 class Transactions(IncrementalPaystackStream):
     """
-    API docs: https://paystack.com/docs/api/#transaction-list
+    API docs: https://paystack.com/docs/api/transaction
     """
 
     cursor_field = "createdAt"
@@ -170,7 +172,7 @@ class Transactions(IncrementalPaystackStream):
 
 class Transfers(IncrementalPaystackStream):
     """
-    API docs: https://paystack.com/docs/api/#transfer-list
+    API docs: https://paystack.com/docs/api/transfer
     """
 
     cursor_field = "createdAt"

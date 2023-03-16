@@ -1,16 +1,15 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import InitVar, dataclass
 from typing import Any, Mapping, Optional
 
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class Spec(JsonSchemaMixin):
+class Spec:
     """
     Returns a connection specification made up of information about the connector and how it can be configured
 
@@ -20,7 +19,7 @@ class Spec(JsonSchemaMixin):
     """
 
     connection_specification: Mapping[str, Any]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     documentation_url: Optional[str] = None
 
     def generate_spec(self) -> ConnectorSpecification:

@@ -14,7 +14,7 @@ Airbyte [credits](https://airbyte.com/pricing) are assigned per workspace and ca
 
 To add a user to your workspace:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings**.
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Settings**.
 
 2. Click **Access Management**.
 
@@ -32,7 +32,7 @@ To add a user to your workspace:
 
 To remove a user from your workspace:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings**.
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Settings**.
 
 2. Click **Access Management**.
 
@@ -44,7 +44,7 @@ To remove a user from your workspace:
 
 To rename a workspace:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings**.
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Settings**.
 
 2. Click **General Settings**.
 
@@ -56,7 +56,7 @@ To rename a workspace:
 
 To delete a workspace:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings**.
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Settings**.
 
 2. Click **General Settings**.
 
@@ -82,7 +82,7 @@ You can use one or multiple workspaces with Airbyte Cloud.
 
 To switch between workspaces:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click the current workspace name under the Airbyte logo in the navigation bar.
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click the current workspace name under the Airbyte logo in the navigation bar.
 
 2. Click **View all workspaces**.
 
@@ -108,7 +108,7 @@ While the data is processed in a data plane in the chosen residency, the cursor 
 
 To choose your default data residency:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings**.
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Settings**.
 
 2. Click **Data Residency**.
 
@@ -126,7 +126,7 @@ Depending on your network configuration, you may need to add [IP addresses](http
 
 To set up Slack notifications:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings**.
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Settings**.
 
 2. Click **Notifications**.
 
@@ -156,7 +156,7 @@ Understanding the following limitations will help you better manage Airbyte Clou
 The sync summary displays information about the data moved during a sync.
  
 To view the sync summary:
-1. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections**.   
+1. On the [Airbyte Cloud](http://cloud.airbyte.com/) dashboard, click **Connections**.   
 
 2. Click a connection in the list to view its sync history.
 
@@ -187,7 +187,7 @@ In a successful sync, the number of emitted records and committed records should
 
 ## Edit stream configuration
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** and then click the connection you want to change.   
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Connections** and then click the connection you want to change.   
 
 2. Click the **Replication** tab.
 
@@ -339,7 +339,7 @@ If a connection’s source schema has breaking changes, it will stop syncing. Yo
 ### Enable schema update notifications
 
 To get notified when your source schema changes: 
-1. Make sure you have [webhook notifications](https://docs.airbyte.com/cloud/managing-airbyte-cloud#manage-airbyte-cloud-notifications) set up.
+1. Make sure you have [webhook notifications](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications#set-up-slack-notifications) set up.
 
 2. On the [Airbyte Cloud](http://cloud.airbyte.com/) dashboard, click **Connections** and select the connection you want to receive notifications for.
 
@@ -347,30 +347,25 @@ To get notified when your source schema changes:
 
 4. Toggle **Schema update notifications**.
 
-## Display Connection State
+## Display the connection state
 
-**Connection State** provides additional information about incremental syncs. It includes the most recent values for the global or stream-level cursors, which can aid in debugging or determining which data will be included in the next syncs. 
+Connection state provides additional information about incremental syncs. It includes the most recent values for the global or stream-level cursors, which can aid in debugging or determining which data will be included in the next syncs. 
 
-To display **Connection State**:
+To display the connection state:
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Connections** and then click the connection you want to display.
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings**.
+2. Click the **Settings** tab on the Connection page.
 
-2. Click **General Settings**.
+3. Click the **Advanced** dropdown arrow. 
 
-3. Toggle **Enable advanced mode** and click **Save changes**.
-
-4. Click **Connections** in the navigation bar and then click the connection in the list you want to display.
-
-5. Click the **Settings** tab on the Connection page.
-
-    The **Connection State** displays.
+    **Connection State** displays.
 
 ## Choose the data residency for a connection
 You can choose the data residency for your connection in the connection settings. You can also choose data residency when creating a [new connection](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#set-up-a-connection), or you can set the [default data residency](#choose-your-default-data-residency) for your workspace.
 
 To choose the data residency for your connection: 
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** and then click the connection that you want to change. 
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Connections** and then click the connection that you want to change. 
 
 2. Click the **Settings** tab. 
 

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import concurrent.futures
@@ -201,6 +201,8 @@ UNSUPPORTED_FILTERING_STREAMS = [
     "UriEvent",
 ]
 
+UNSUPPORTED_STREAMS = ["ActivityMetric", "ActivityMetricRollup"]
+
 
 class Salesforce:
     logger = logging.getLogger("airbyte")
@@ -256,7 +258,7 @@ class Salesforce:
         """
         stream_objects = {}
         for stream_object in self.describe()["sobjects"]:
-            if stream_object["name"].lower() == "activitymetric":
+            if stream_object["name"] in UNSUPPORTED_STREAMS:
                 self.logger.warning(f"Stream {stream_object['name']} can not be used without object ID therefore will be ignored.")
                 continue
             if stream_object["queryable"]:

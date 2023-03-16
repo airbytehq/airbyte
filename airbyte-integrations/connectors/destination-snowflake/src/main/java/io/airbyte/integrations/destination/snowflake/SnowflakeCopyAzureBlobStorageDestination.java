@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -9,8 +9,8 @@ import static io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStora
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.CopyConsumerFactory;
@@ -52,7 +52,7 @@ public class SnowflakeCopyAzureBlobStorageDestination extends CopyDestination {
   }
 
   @Override
-  public ExtendedNameTransformer getNameTransformer() {
+  public StandardNameTransformer getNameTransformer() {
     return new SnowflakeSQLNameTransformer();
   }
 

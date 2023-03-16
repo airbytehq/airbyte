@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import ast
@@ -36,8 +36,8 @@ class JinjaInterpolation(Interpolation):
         self._environment.filters.update(**filters)
         self._environment.globals.update(**macros)
 
-    def eval(self, input_str: str, config: Config, default: Optional[str] = None, **additional_options):
-        context = {"config": config, **additional_options}
+    def eval(self, input_str: str, config: Config, default: Optional[str] = None, **additional_parameters):
+        context = {"config": config, **additional_parameters}
         try:
             if isinstance(input_str, str):
                 result = self._eval(input_str, context)

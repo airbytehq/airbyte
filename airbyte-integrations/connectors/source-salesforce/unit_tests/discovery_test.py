@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import Mock
@@ -70,6 +70,7 @@ def test_discovery_filter(stream_config):
             "sobjects": [
                 {"name": "Account", "queryable": True},
                 {"name": "ActivityMetric", "queryable": True},
+                {"name": "ActivityMetricRollup", "queryable": True},
                 {"name": "Leads", "queryable": False},
             ]
         }

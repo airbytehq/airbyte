@@ -214,6 +214,7 @@ font-style: italic;
   <h4><a href="#Attempt">Attempt</a></h4>
   <ul>
   <li><a href="#saveStats"><code><span class="http-method">post</span> /v1/attempt/save_stats</code></a></li>
+  <li><a href="#saveSyncConfig"><code><span class="http-method">post</span> /v1/attempt/save_sync_config</code></a></li>
   <li><a href="#setWorkflowInAttempt"><code><span class="http-method">post</span> /v1/attempt/set_workflow_in_attempt</code></a></li>
   </ul>
   <h4><a href="#Connection">Connection</a></h4>
@@ -273,6 +274,7 @@ font-style: italic;
   <li><a href="#createOrUpdateState"><code><span class="http-method">post</span> /v1/state/create_or_update</code></a></li>
   <li><a href="#getAttemptNormalizationStatusesForJob"><code><span class="http-method">post</span> /v1/jobs/get_normalization_status</code></a></li>
   <li><a href="#saveStats"><code><span class="http-method">post</span> /v1/attempt/save_stats</code></a></li>
+  <li><a href="#saveSyncConfig"><code><span class="http-method">post</span> /v1/attempt/save_sync_config</code></a></li>
   <li><a href="#setWorkflowInAttempt"><code><span class="http-method">post</span> /v1/attempt/set_workflow_in_attempt</code></a></li>
   <li><a href="#writeDiscoverCatalogResult"><code><span class="http-method">post</span> /v1/sources/write_discover_catalog_result</code></a></li>
   </ul>
@@ -434,6 +436,58 @@ font-style: italic;
         <a href="#InternalOperationResult">InternalOperationResult</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="saveSyncConfig"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/attempt/save_sync_config</code></pre></div>
+    <div class="method-summary">For worker to save the AttemptSyncConfig for an attempt. (<span class="nickname">saveSyncConfig</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SaveAttemptSyncConfigRequestBody <a href="#SaveAttemptSyncConfigRequestBody">SaveAttemptSyncConfigRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#InternalOperationResult">InternalOperationResult</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "succeeded" : true
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful Operation
+        <a href="#InternalOperationResult">InternalOperationResult</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="setWorkflowInAttempt"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -552,6 +606,7 @@ font-style: italic;
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -573,6 +628,7 @@ font-style: italic;
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -729,6 +785,7 @@ font-style: italic;
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -750,6 +807,7 @@ font-style: italic;
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -862,6 +920,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -883,6 +942,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -938,6 +998,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -959,6 +1020,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1072,6 +1134,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1093,6 +1156,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1148,6 +1212,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1169,6 +1234,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1474,6 +1540,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1495,6 +1562,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1550,6 +1618,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1571,6 +1640,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1875,6 +1945,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1896,6 +1967,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -4102,6 +4174,58 @@ containing the updated stream needs to be sent.</div>
         <a href="#InternalOperationResult">InternalOperationResult</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="saveSyncConfig"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/attempt/save_sync_config</code></pre></div>
+    <div class="method-summary">For worker to save the AttemptSyncConfig for an attempt. (<span class="nickname">saveSyncConfig</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SaveAttemptSyncConfigRequestBody <a href="#SaveAttemptSyncConfigRequestBody">SaveAttemptSyncConfigRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#InternalOperationResult">InternalOperationResult</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "succeeded" : true
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful Operation
+        <a href="#InternalOperationResult">InternalOperationResult</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="setWorkflowInAttempt"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -6154,6 +6278,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -6175,6 +6300,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -6629,6 +6755,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -6650,6 +6777,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -8839,6 +8967,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -8860,6 +8989,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -9087,6 +9217,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -9108,6 +9239,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -9563,6 +9695,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -9584,6 +9717,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -10387,6 +10521,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#AttemptStats"><code>AttemptStats</code> - </a></li>
     <li><a href="#AttemptStatus"><code>AttemptStatus</code> - </a></li>
     <li><a href="#AttemptStreamStats"><code>AttemptStreamStats</code> - </a></li>
+    <li><a href="#AttemptSyncConfig"><code>AttemptSyncConfig</code> - </a></li>
     <li><a href="#AuthSpecification"><code>AuthSpecification</code> - </a></li>
     <li><a href="#CatalogDiff"><code>CatalogDiff</code> - </a></li>
     <li><a href="#CheckConnectionRead"><code>CheckConnectionRead</code> - </a></li>
@@ -10495,6 +10630,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#ReleaseStage"><code>ReleaseStage</code> - </a></li>
     <li><a href="#ResetConfig"><code>ResetConfig</code> - </a></li>
     <li><a href="#ResourceRequirements"><code>ResourceRequirements</code> - </a></li>
+    <li><a href="#SaveAttemptSyncConfigRequestBody"><code>SaveAttemptSyncConfigRequestBody</code> - </a></li>
     <li><a href="#SaveStatsRequestBody"><code>SaveStatsRequestBody</code> - </a></li>
     <li><a href="#SchemaChange"><code>SchemaChange</code> - </a></li>
     <li><a href="#SelectedFieldInfo"><code>SelectedFieldInfo</code> - </a></li>
@@ -10619,7 +10755,8 @@ containing the updated stream needs to be sent.</div>
 <div class="param">destinationSyncMode </div><div class="param-desc"><span class="param-type"><a href="#DestinationSyncMode">DestinationSyncMode</a></span>  </div>
 <div class="param">primaryKey (optional)</div><div class="param-desc"><span class="param-type"><a href="#array">array[array[String]]</a></span> Paths to the fields that will be used as primary key. This field is REQUIRED if <code>destination_sync_mode</code> is <code>*_dedup</code>. Otherwise it is ignored. </div>
 <div class="param">aliasName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Alias name to the stream to be used in the destination </div>
-<div class="param">selected (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> If this is true, the stream is selected with all of its properties. </div>
+<div class="param">selected (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> If this is true, the stream is selected with all of its properties. For new connections, this considers if the stream is suggested or not </div>
+<div class="param">suggested (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Does the connector suggest that this stream be enabled by default? </div>
 <div class="param">fieldSelectionEnabled (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Whether field selection should be enabled. If this is true, only the properties in <code>selectedFields</code> will be included. </div>
 <div class="param">selectedFields (optional)</div><div class="param-desc"><span class="param-type"><a href="#SelectedFieldInfo">array[SelectedFieldInfo]</a></span> Paths to the fields that will be included in the configured catalog. This must be set if <code>fieldSelectedEnabled</code> is set. An empty list indicates that no properties will be included. </div>
     </div>  <!-- field-items -->
@@ -10723,6 +10860,15 @@ containing the updated stream needs to be sent.</div>
       <div class="param">streamName </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">streamNamespace (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">stats </div><div class="param-desc"><span class="param-type"><a href="#AttemptStats">AttemptStats</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="AttemptSyncConfig"><code>AttemptSyncConfig</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">sourceConfiguration </div><div class="param-desc"><span class="param-type"><a href="#SourceConfiguration">SourceConfiguration</a></span>  </div>
+<div class="param">destinationConfiguration </div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
+<div class="param">state (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionState">ConnectionState</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11719,6 +11865,15 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="SaveAttemptSyncConfigRequestBody"><code>SaveAttemptSyncConfigRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">jobId </div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">attemptNumber </div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  format: int32</div>
+<div class="param">syncConfig </div><div class="param-desc"><span class="param-type"><a href="#AttemptSyncConfig">AttemptSyncConfig</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="SaveStatsRequestBody"><code>SaveStatsRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -11910,6 +12065,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
       <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">connectionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">disable_cache (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">notifySchemaChange (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

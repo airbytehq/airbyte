@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -40,11 +40,6 @@ def config_fixture():
 @pytest.fixture(name="some_credentials")
 def some_credentials_fixture():
     return {"credentials_title": "Private App Credentials", "access_token": "wrong token"}
-
-
-@pytest.fixture(name="creds_with_wrong_permissions")
-def creds_with_wrong_permissions():
-    return {"credentials_title": "Private App Credentials", "access_token": "THIS-IS-THE-ACCESS_TOKEN"}
 
 
 @pytest.fixture(name="fake_properties_list")
