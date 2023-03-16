@@ -121,24 +121,10 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
     try {
       final Database database = createDatabase(config);
-      final List<AirbyteStream> streams = getTables(database).stream()
-          .map(tableInfo -> {
-            final var primaryKeys = tableInfo.getPrimaryKeys().stream()
-                .filter(Objects::nonNull)
-                .map(Collections::singletonList)
-                .collect(Collectors.toList());
-
-            return CatalogHelpers
-                .createAirbyteStream(tableInfo.getName(), tableInfo.getNameSpace(),
-                    tableInfo.getFields())
-                .withSupportedSyncModes(
-                    tableInfo.getCursorFields() != null && tableInfo.getCursorFields().isEmpty()
-                        ? Lists.newArrayList(SyncMode.FULL_REFRESH)
-                        : Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-                .withSourceDefinedPrimaryKey(primaryKeys);
-          })
-          .collect(Collectors.toList());
-      return new AirbyteCatalog().withStreams(streams);
+      final List<TableInfo<CommonField<DataType>>> tableInfos = discoverWithoutSystemTables(database);
+      final Map<String, List<String>> fullyQualifiedTableNameToPrimaryKeys = discoverPrimaryKeys(
+          database, tableInfos);
+      return DbSourceDiscoverUtil.convertTableInfosToAirbyteCatalog(tableInfos, fullyQualifiedTableNameToPrimaryKeys, this::getAirbyteType);
     } finally {
       close();
     }
@@ -198,11 +184,11 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
   // in case of user manually modified source table schema but did not refresh it and save into the
   // catalog - it can lead to sync failure. This method compare actual schema vs catalog schema
-  private void logSourceSchemaChange(Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo,
-                                     ConfiguredAirbyteCatalog catalog) {
+  private void logSourceSchemaChange(final Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo,
+                                     final ConfiguredAirbyteCatalog catalog) {
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
-      final String fullyQualifiedTableName = getFullyQualifiedTableName(stream.getNamespace(),
+      final String fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.getNamespace(),
           stream.getName());
       if (!fullyQualifiedTableNameToInfo.containsKey(fullyQualifiedTableName)) {
         continue;
@@ -234,7 +220,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     final List<InvalidCursorInfo> tablesWithInvalidCursor = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
-      final String fullyQualifiedTableName = getFullyQualifiedTableName(stream.getNamespace(),
+      final String fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.getNamespace(),
           stream.getName());
       final boolean hasSourceDefinedCursor =
           !Objects.isNull(airbyteStream.getStream().getSourceDefinedCursor())
@@ -377,7 +363,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       if (selector.test(airbyteStream)) {
         final AirbyteStream stream = airbyteStream.getStream();
-        final String fullyQualifiedTableName = getFullyQualifiedTableName(stream.getNamespace(),
+        final String fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.getNamespace(),
             stream.getName());
         if (!tableNameToTable.containsKey(fullyQualifiedTableName)) {
           LOGGER
@@ -549,10 +535,6 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     return getMessageIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
   }
 
-  private String getFullyQualifiedTableName(final String nameSpace, final String tableName) {
-    return nameSpace != null ? nameSpace + "." + tableName : tableName;
-  }
-
   private AutoCloseableIterator<AirbyteMessage> getMessageIterator(
                                                                    final AutoCloseableIterator<JsonNode> recordIterator,
                                                                    final String streamName,
@@ -567,43 +549,6 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
             .withData(r)));
   }
 
-  /**
-   * Get list of source tables/data structures for schema discovery.
-   *
-   * @param database instance
-   * @return list of table/data structure info
-   * @throws Exception might throw an error during connection to database
-   */
-  @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
-  private List<TableInfo<Field>> getTables(final Database database) throws Exception {
-    final List<TableInfo<CommonField<DataType>>> tableInfos = discoverWithoutSystemTables(database);
-    final Map<String, List<String>> fullyQualifiedTableNameToPrimaryKeys = discoverPrimaryKeys(
-        database, tableInfos);
-
-    return tableInfos.stream()
-        .map(t -> {
-          // some databases return multiple copies of the same record for a column (e.g. redshift) because
-          // they have at least once delivery guarantees. we want to dedupe these, but first we check that the
-          // records are actually the same and provide a good error message if they are not.
-          assertColumnsWithSameNameAreSame(t.getNameSpace(), t.getName(), t.getFields());
-          final List<Field> fields = t.getFields()
-              .stream()
-              .map(this::toField)
-              .distinct()
-              .collect(Collectors.toList());
-          final String fullyQualifiedTableName = getFullyQualifiedTableName(t.getNameSpace(),
-              t.getName());
-          final List<String> primaryKeys = fullyQualifiedTableNameToPrimaryKeys.getOrDefault(
-              fullyQualifiedTableName, Collections
-                  .emptyList());
-          return TableInfo.<Field>builder().nameSpace(t.getNameSpace()).name(t.getName())
-              .fields(fields).primaryKeys(primaryKeys)
-              .cursorFields(t.getCursorFields())
-              .build();
-        })
-        .collect(Collectors.toList());
-  }
-
   private Field toField(final CommonField<DataType> field) {
     if (getAirbyteType(field.getType()) == JsonSchemaType.OBJECT && field.getProperties() != null
         && !field.getProperties().isEmpty()) {
@@ -612,25 +557,6 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     } else {
       return Field.of(field.getName(), getAirbyteType(field.getType()));
     }
-  }
-
-  private void assertColumnsWithSameNameAreSame(final String nameSpace,
-                                                final String tableName,
-                                                final List<CommonField<DataType>> columns) {
-    columns.stream()
-        .collect(Collectors.groupingBy(CommonField<DataType>::getName))
-        .values()
-        .forEach(columnsWithSameName -> {
-          final CommonField<DataType> comparisonColumn = columnsWithSameName.get(0);
-          columnsWithSameName.forEach(column -> {
-            if (!column.equals(comparisonColumn)) {
-              throw new RuntimeException(
-                  String.format(
-                      "Found multiple columns with same name: %s in table: %s.%s but the columns are not the same. columns: %s",
-                      comparisonColumn.getName(), nameSpace, tableName, columns));
-            }
-          });
-        });
   }
 
   /**

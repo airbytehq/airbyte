@@ -340,23 +340,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   @Override
-  @Trace(operationName = READ_TRACE_OPERATION_NAME)
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
-                                                    final ConfiguredAirbyteCatalog catalog,
-                                                    final JsonNode state)
-      throws Exception {
-    // this check is used to ensure that have the pgoutput slot available so Debezium won't attempt to
-    // create it.
-    final AirbyteConnectionStatus check = check(config);
-
-    if (check.getStatus().equals(Status.FAILED)) {
-      throw new RuntimeException("Unable establish a connection: " + check.getMessage());
-    }
-
-    return super.read(config, catalog, state);
-  }
-
-  @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
                                                                              final ConfiguredAirbyteCatalog catalog,
                                                                              final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
