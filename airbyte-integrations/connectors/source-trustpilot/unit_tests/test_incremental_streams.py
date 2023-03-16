@@ -5,7 +5,7 @@
 
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_trustpilot.source import IncrementalTrustpilotStream
+from source_trustpilot.streams import IncrementalTrustpilotStream
 
 
 @fixture
