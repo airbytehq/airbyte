@@ -66,10 +66,10 @@ import org.slf4j.LoggerFactory;
  * This class contains helper functions and boilerplate for implementing a source connector for a DB
  * source of both non-relational and relational type
  */
-public abstract class AbstractDbSource<DataType, Database extends AbstractDatabase> extends
+public abstract class AbstractNonJdbcSource<DataType, Database extends AbstractDatabase> extends
     BaseConnector implements Source, AutoCloseable {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDbSource.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractNonJdbcSource.class);
   // TODO: Remove when the flag is not use anymore
   private final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
@@ -506,7 +506,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   /**
    * Read incremental data from a table. Incremental read should return only records where cursor
    * column value is bigger than cursor. Note that if the connector needs to emit intermediate state
-   * (i.e. {@link AbstractDbSource#getStateEmissionFrequency} > 0), the incremental query must be
+   * (i.e. {@link AbstractNonJdbcSource#getStateEmissionFrequency} > 0), the incremental query must be
    * sorted by the cursor field.
    *
    * @return iterator with read data

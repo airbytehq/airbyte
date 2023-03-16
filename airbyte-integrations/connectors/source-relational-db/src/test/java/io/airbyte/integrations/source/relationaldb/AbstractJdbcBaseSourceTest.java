@@ -23,7 +23,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 /**
- * Test suite for the {@link AbstractDbSource} class.
+ * Test suite for the {@link AbstractJdbcBaseSource} class.
  */
 @ExtendWith(SystemStubsExtension.class)
 public class AbstractJdbcBaseSourceTest {
