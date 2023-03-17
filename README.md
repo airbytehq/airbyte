@@ -72,3 +72,8 @@ If the Airbyte service is down and we need to start it up again. Follow the next
         a. From the root of this repo run `make store_passwords`. You need to have the AWS credentials for the Data Science prod Account to run this command. As it gets the passwords from AWS Secret Manager.
     2. From the root of this repo run `make octavia_apply`. Once it is done, go to the Airbyte UI and enable all the connections.
 8. Remember to go to `data-airflow` repo and change the connection Ids in the data_replication_airbyte_qogita_db_public_to_snowflake_raw and data_replication_airbyte_revenue_db_public_to_snowflake_raw DAGs
+
+### How to upgrade Airbyte or change environment variables in the service:
+
+1. Make the changes you want to apply in the `.env.prod` file.
+2. From the root of the repo run `make apply_new_envs`. PLEASE, TAKE INTO ACCCOUNT THAT THIS WILL STOP THE SERVICE AND RESTART IT.

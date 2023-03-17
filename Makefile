@@ -1,9 +1,9 @@
 .PHONY:
 
-SERVER = ec2-35-176-43-3.eu-west-2.compute.amazonaws.com
+SERVER = 
 USER = ec2-user
 DIR := ${CURDIR}
-KEY = airbyte_test.pem
+KEY = airbyte.pem
 TEMP_DIR = temp_dir
 
 forward_ec2_port:
@@ -11,6 +11,9 @@ forward_ec2_port:
 
 create_temp_dir:
 	ssh -i $(HOME)/.ssh/$(KEY) $(USER)@$(SERVER) 'mkdir ~/$(TEMP_DIR)';
+
+remove_temp_dir:
+	ssh -i $(HOME)/.ssh/$(KEY) $(USER)@$(SERVER) 'rm -rf ~/$(TEMP_DIR)';
 
 create_data_dir:
 	ssh -i $(HOME)/.ssh/$(KEY) $(USER)@$(SERVER) 'sudo mkdir /data';
@@ -42,6 +45,9 @@ move_env_file_to_data_folder:
 
 run_docker_compose_up:
 	ssh -i $(HOME)/.ssh/$(KEY) $(USER)@$(SERVER) "cd /data ; docker-compose up -d;";
+
+run_docker_compose_down:
+	ssh -i $(HOME)/.ssh/$(KEY) $(USER)@$(SERVER) "cd /data ; docker-compose down;";
 	
 check_running_containers:
 	ssh -i $(HOME)/.ssh/$(KEY) $(USER)@$(SERVER) 'docker ps';
@@ -76,3 +82,10 @@ octavia_apply:
 	--env OCTAVIA_ENABLE_TELEMETRY=False \
 	--env AIRBYTE_URL=http://host.docker.internal:8000 \
 	airbyte/octavia-cli:0.40.28 apply;
+
+apply_new_envs: remove_temp_dir \
+	create_temp_dir \
+	copy_env_file \
+	move_env_file_to_data_folder \
+	run_docker_compose_down \
+	run_docker_compose_up;
