@@ -2,9 +2,17 @@ import pandas as pd
 import json
 
 from dagster import MetadataValue, Output, asset, OpExecutionContext
+from jinja2 import Environment, PackageLoader
 
-from ..utils.html import html_body
+def render_connector_catalog_locations_html(destinations_table, sources_table):
+    env = Environment(loader=PackageLoader("orchestrator", "templates"))
+    template = env.get_template("connector_catalog_locations.html")
+    return template.render(destinations_table=destinations_table, sources_table=sources_table)
 
+def render_connector_catalog_locations_markdown(destinations_markdown, sources_markdown):
+    env = Environment(loader=PackageLoader("orchestrator", "templates"))
+    template = env.get_template("connector_catalog_locations.md")
+    return template.render(destinations_markdown=destinations_markdown, sources_markdown=sources_markdown)
 
 @asset(required_resource_keys={"catalog_report_directory_manager"})
 def connector_catalog_location_html(context, all_destinations_dataframe, all_sources_dataframe):
@@ -18,19 +26,16 @@ def connector_catalog_location_html(context, all_destinations_dataframe, all_sou
     all_sources_dataframe.replace({True: "✅", False: "❌"}, inplace=True)
     all_destinations_dataframe.replace({True: "✅", False: "❌"}, inplace=True)
 
-    title = "Connector Catalogs"
-    content = f"<h1>{title}</h1>"
-    content += "<h2>Sources</h2>"
-    content += all_sources_dataframe[columns_to_show].to_html()
-    content += "<h2>Destinations</h2>"
-    content += all_destinations_dataframe[columns_to_show].to_html()
-
-    html = html_body(title, content)
+    html = render_connector_catalog_locations_html(
+        destinations_table=all_destinations_dataframe[columns_to_show].to_html(),
+        sources_table=all_sources_dataframe[columns_to_show].to_html(),
+    )
 
     catalog_report_directory_manager = context.resources.catalog_report_directory_manager
     file_handle = catalog_report_directory_manager.write_data(html.encode(), ext="html", key="connector_catalog_locations")
 
     metadata = {
+        "preview": html,
         "gcs_path": MetadataValue.url(file_handle.gcs_path),
     }
 
@@ -49,11 +54,10 @@ def connector_catalog_location_markdown(context, all_destinations_dataframe, all
     all_sources_dataframe.replace({True: "✅", False: "❌"}, inplace=True)
     all_destinations_dataframe.replace({True: "✅", False: "❌"}, inplace=True)
 
-    markdown = "# Connector Catalog Locations\n\n"
-    markdown += "## Sources\n"
-    markdown += all_sources_dataframe[columns_to_show].to_markdown()
-    markdown += "\n\n## Destinations\n"
-    markdown += all_destinations_dataframe[columns_to_show].to_markdown()
+    markdown = render_connector_catalog_locations_markdown(
+        destinations_markdown=all_destinations_dataframe[columns_to_show].to_markdown(),
+        sources_markdown=all_sources_dataframe[columns_to_show].to_markdown(),
+    )
 
     catalog_report_directory_manager = context.resources.catalog_report_directory_manager
     file_handle = catalog_report_directory_manager.write_data(markdown.encode(), ext="md", key="connector_catalog_locations")

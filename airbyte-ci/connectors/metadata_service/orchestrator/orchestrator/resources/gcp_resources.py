@@ -7,13 +7,13 @@ from dagster import StringSource, InitResourceContext, resource
 from dagster_gcp.gcs.file_manager import GCSFileManager
 
 
-@resource(config_schema={"gcp_gsm_cred_string": StringSource})
+@resource(config_schema={"gcp_gcs_cred_string": StringSource})
 def gcp_gcs_client(resource_context: InitResourceContext) -> storage.Client:
     """Create a connection to gcs."""
 
     resource_context.log.info("retrieving gcp_gcs_client")
-    gcp_gsm_cred_string = resource_context.resource_config["gcp_gsm_cred_string"]
-    gcp_gsm_cred_json = json.loads(gcp_gsm_cred_string)
+    gcp_gcs_cred_string = resource_context.resource_config["gcp_gcs_cred_string"]
+    gcp_gsm_cred_json = json.loads(gcp_gcs_cred_string)
     credentials = service_account.Credentials.from_service_account_info(gcp_gsm_cred_json)
     return storage.Client(
         credentials=credentials,

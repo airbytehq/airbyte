@@ -35,7 +35,7 @@ ASSETS = [
 RESOURCES = {
     "gcp_gcs_client": gcp_gcs_client.configured(
         {
-            "gcp_gsm_cred_string": {"env": "GCP_GCS_CREDENTIALS"},
+            "gcp_gcs_cred_string": {"env": "GCS_CREDENTIALS"},
         }
     ),
     "gcs_bucket_manager": gcs_bucket_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}}),

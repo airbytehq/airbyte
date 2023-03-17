@@ -61,13 +61,13 @@ To create a development bucket:
     - Storage Object Viewer
 4. Add the following environment variables to your `.env` file:
     - `METADATA_BUCKET`
-    - `GCP_GCS_CREDENTIALS`
+    - `GCS_CREDENTIALS`
 
-Note that the `GCP_GCS_CREDENTIALS` should be the raw json string of the service account credentials.
+Note that the `GCS_CREDENTIALS` should be the raw json string of the service account credentials.
 
 Here is an example of how to import the service account credentials into your environment:
 ```bash
-export GCP_GCS_CREDENTIALS=`cat /path/to/credentials.json`
+export GCS_CREDENTIALS=`cat /path/to/credentials.json`
 ```
 
 ## The Orchestrator
