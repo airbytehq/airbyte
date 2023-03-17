@@ -1745,7 +1745,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesloft
   icon: salesloft.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
   allowedHosts:
     hosts:
       - "api.salesloft.com"
