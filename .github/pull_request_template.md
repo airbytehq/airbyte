@@ -23,10 +23,12 @@ Expand the relevant checklist and delete the others.
 - [ ] Secrets in the connector's spec are annotated with `airbyte_secret`
 - [ ] Unit & integration tests added and passing. Community members, please provide proof of success locally e.g: screenshot or copy-paste unit, integration, and acceptance test output. To run acceptance tests for a Python connector, follow instructions in the README. For java connectors run `./gradlew :airbyte-integrations:connectors:<name>:integrationTest`.
 - [ ] Code reviews completed
+- [ ] Connector version is set to `0.0.1`
+    - [ ] `Dockerfile` has version `0.0.1`
 - [ ] Documentation updated
     - [ ] Connector's `README.md`
     - [ ] Connector's `bootstrap.md`. See [description and examples](https://docs.google.com/document/d/1ypdgmwmEHWv-TrO4_YOQ7pAJGVrMp5BOkEVh831N260/edit?usp=sharing)
-    - [ ] `docs/integrations/<source or destination>/<name>.md` including changelog. See changelog [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
+    - [ ] `docs/integrations/<source or destination>/<name>.md` including changelog with an entry for the initial version. See changelog [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
     - [ ] `docs/integrations/README.md`
     - [ ] `airbyte-integrations/builds.md`
 - [ ] PR name follows [PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/issues-and-pull-requests)
@@ -53,10 +55,14 @@ If this is a community PR, the Airbyte engineer reviewing this PR is responsible
 - [ ] Secrets in the connector's spec are annotated with `airbyte_secret`
 - [ ] Unit & integration tests added and passing. Community members, please provide proof of success locally e.g: screenshot or copy-paste unit, integration, and acceptance test output. To run acceptance tests for a Python connector, follow instructions in the README. For java connectors run `./gradlew :airbyte-integrations:connectors:<name>:integrationTest`.
 - [ ] Code reviews completed
+- [ ] Connector version has been incremented
+    - [ ] Version has been bumped according to our [Semantic Versioning for Connectors](https://docs.airbyte.com/contributing-to-airbyte/semantic-versioning-for-connectors) guidelines
+    - [ ] `Dockerfile` has updated version
 - [ ] Documentation updated
     - [ ] Connector's `README.md`
     - [ ] Connector's `bootstrap.md`. See [description and examples](https://docs.google.com/document/d/1ypdgmwmEHWv-TrO4_YOQ7pAJGVrMp5BOkEVh831N260/edit?usp=sharing)
-    - [ ] Changelog updated in `docs/integrations/<source or destination>/<name>.md` including changelog. See changelog [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
+    - [ ] Changelog updated in `docs/integrations/<source or destination>/<name>.md` with an entry for the new version. See changelog [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
+
 - [ ] PR name follows [PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/issues-and-pull-requests)
 
 ### Airbyter

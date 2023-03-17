@@ -8,6 +8,19 @@ acceptance_tests:
         extra_fields: no
         exact_order: no
         extra_records: yes
+      ignored_fields:
+        project_detail:
+        - name: features
+          bypass_reason: "Order features return randomly"
+        - name: organization/features
+          bypass_reason: "Order features return randomly"
+        - name: plugins/*/features
+          bypass_reason: "Order features return randomly"
+        projects:
+          - name: features
+            bypass_reason: "Order features return randomly"
+          - name: organization/features
+            bypass_reason: "Order features return randomly"
   connection:
     tests:
     - config_path: secrets/config.json
