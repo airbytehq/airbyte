@@ -62,7 +62,7 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 * [Calls](https://www.twilio.com/docs/voice/api/call-resource#create-a-call-resource) \(Incremental\)
 * [Conference Participants](https://www.twilio.com/docs/voice/api/conference-participant-resource#read-multiple-participant-resources) \(Incremental\)
 * [Conferences](https://www.twilio.com/docs/voice/api/conference-resource#read-multiple-conference-resources) \(Incremental\)
-* [Conversation Participants](https://www.twilio.com/docs/conversations/api/conversation-participant-resource) \(Incremental\)
+* [Conversation Participants](https://www.twilio.com/docs/conversations/api/conversation-participant-resource)
 * [Dependent Phone Numbers](https://www.twilio.com/docs/usage/api/address?code-sample=code-list-dependent-pns-subresources&code-language=curl&code-sdk-version=json#instance-subresources) \(Incremental\)
 * [Incoming Phone Numbers](https://www.twilio.com/docs/phone-numbers/api/incomingphonenumber-resource#read-multiple-incomingphonenumber-resources) \(Incremental\)
 * [Keys](https://www.twilio.com/docs/usage/api/keys#read-a-key-resource)
