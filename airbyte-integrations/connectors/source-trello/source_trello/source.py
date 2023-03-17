@@ -112,14 +112,20 @@ class Cards(ChildStreamMixin, TrelloStream):
     """
 
     parent_stream_class = Boards
-    limit = 20000
+    limit = 500
     extra_params = {
         "customFieldItems": "true",
         "pluginData": "true",
         "actions_display": "true",
         "members": "true",
         "list": "true",
+        "sort": "-id",
     }
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        response_json = response.json()
+        if response_json:
+            return {"before": response_json[-1]["id"]}
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"boards/{stream_slice['id']}/cards/all"

@@ -3,6 +3,7 @@
 #
 
 
+from itertools import cycle
 from unittest.mock import MagicMock
 
 from airbyte_cdk.sources.streams.http.auth.core import NoAuth
@@ -64,16 +65,26 @@ def test_cards_stream(requests_mock):
         json=[{"id": "b11111111111111111111111", "name": "board_1"}, {"id": "b22222222222222222222222", "name": "board_2"}],
     )
 
+    json_responses1 = cycle([
+        [{"id": "c11111111111111111111111", "name": "card_1"}, {"id": "c22222222222222222222222", "name": "card_2"}],
+        [],
+    ])
+
     mock_cards_request_1 = requests_mock.get(
         "https://api.trello.com/1/boards/b11111111111111111111111/cards/all",
         headers=NO_SLEEP_HEADERS,
-        json=[{"id": "c11111111111111111111111", "name": "card_1"}, {"id": "c22222222222222222222222", "name": "card_2"}],
+        json=lambda request, context: next(json_responses1),
     )
+
+    json_responses2 = cycle([
+        [{"id": "c33333333333333333333333", "name": "card_3"}, {"id": "c44444444444444444444444", "name": "card_4"}],
+        [],
+    ])
 
     mock_cards_request_2 = requests_mock.get(
         "https://api.trello.com/1/boards/b22222222222222222222222/cards/all",
         headers=NO_SLEEP_HEADERS,
-        json=[{"id": "c33333333333333333333333", "name": "card_3"}, {"id": "c44444444444444444444444", "name": "card_4"}],
+        json=lambda request, context: next(json_responses2),
     )
 
     config = {"authenticator": NoAuth(), "start_date": "2021-02-11T08:35:49.540Z"}
@@ -95,5 +106,5 @@ def test_cards_stream(requests_mock):
     assert records == []
 
     assert mock_boards_request.call_count == 3
-    assert mock_cards_request_1.call_count == 1
-    assert mock_cards_request_2.call_count == 2
+    assert mock_cards_request_1.call_count == 2
+    assert mock_cards_request_2.call_count == 4
