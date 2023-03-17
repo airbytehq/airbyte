@@ -202,7 +202,7 @@ class SourceTrello(AbstractSource):
 
         config = self._validate_and_transform(config)
         config["authenticator"] = self._get_authenticator(config)
-        stream = Boards(config)
+        stream = Boards({**config, "board_ids": []})
         available_boards = {board["id"] for board in read_full_refresh(stream)}
         unknown_boards = set(config.get("board_ids", [])) - available_boards
         if unknown_boards:
