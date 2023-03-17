@@ -116,10 +116,6 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEvent<Stri
         }
 
         final T heartbeatPos = getHeartbeatPosition(next);
-
-        if (heartbeatPos == null) {
-          continue;
-        }
         // wrap up sync if heartbeat position crossed the target OR heartbeat position hasn't changed for
         // too long
         if (hasSyncFinished(heartbeatPos)) {
@@ -214,9 +210,6 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEvent<Stri
    */
   @VisibleForTesting
   protected T getHeartbeatPosition(final ChangeEvent<String, String> heartbeatEvent) {
-    if (heartbeatEvent == null) {
-      return null;
-    }
 
     try {
       final Class<? extends ChangeEvent> eventClass = heartbeatEvent.getClass();

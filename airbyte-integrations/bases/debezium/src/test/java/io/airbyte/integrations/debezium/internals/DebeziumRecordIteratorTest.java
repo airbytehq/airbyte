@@ -65,7 +65,6 @@ public class DebeziumRecordIteratorTest {
     });
 
     assertEquals(lsn, 358824993496L);
-    assertNull(debeziumRecordIterator.getHeartbeatPosition(null));
   }
 
 }
