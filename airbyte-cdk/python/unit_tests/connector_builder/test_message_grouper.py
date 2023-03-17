@@ -10,7 +10,7 @@ import pytest
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, Level
 from airbyte_cdk.models import Type as MessageType
 from connector_builder.message_grouper import MessageGrouper
-from connector_builder.models import HttpRequest, HttpResponse, StreamRead, StreamReadPages, LogMessage
+from connector_builder.models import HttpRequest, HttpResponse, LogMessage, StreamRead, StreamReadPages
 from unit_tests.connector_builder.utils import create_configured_catalog
 
 MAX_PAGES_PER_SLICE = 4
