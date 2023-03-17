@@ -9,6 +9,9 @@ spec:
   - name: main
     image: airbyte/source-harness:dev
     args: ["airbyte/source-postgres:dev"]
+    volumeMounts:
+      - name: secrets-volume
+        mountPath: /airbyte/secrets
     resources:
       limits:
         cpu: "2.5"
@@ -16,6 +19,11 @@ spec:
       requests:
         cpu: "2.5"
         memory: "2Gi"
+  volumes:
+    - name: secrets-volume
+      hostPath:
+        path: /actions-runner/_work/airbyte/airbyte/airbyte-integrations/connectors/source-harness/secrets
+        type: Directory
   imagePullSecrets:
   - name: regcred
   restartPolicy: Never
