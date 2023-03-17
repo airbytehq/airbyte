@@ -22,7 +22,7 @@ spec:
   volumes:
     - name: secrets-volume
       hostPath:
-        path: ./airbyte-integrations/connectors/source-harness/secrets/
+        path: ./airbyte-integrations/connectors/source-harness/secrets
         type: Directory
   imagePullSecrets:
   - name: regcred
