@@ -2,7 +2,7 @@
 
 This page guides you through the process of setting up the [Assembled](https://www.assembled.com/) source connector.
 
-## Set up the Insightly connector
+## Set up the Assembled connector
 
 1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
@@ -55,4 +55,4 @@ The connector is restricted by Assembled [requests limitation](https://docs.asse
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------- |
-| 0.1.0   | 2023-02-01 |                                                          | Release Assembled CDK Connector                                                   |
+| 0.1.0   | 2023-02-01 | [22423](https://github.com/airbytehq/airbyte/pull/22423) | Release Assembled CDK Connector                                                   |
