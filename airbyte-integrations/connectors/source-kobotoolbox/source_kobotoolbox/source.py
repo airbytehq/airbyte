@@ -20,8 +20,10 @@ from airbyte_cdk.sources import Source
 from .helpers import Helpers
 
 
-class KoboToolStream(HttpStream):
-    primary_key = None
+class KoboToolStream(HttpStream, IncrementalMixin):
+    primary_key = "_id"
+    cursor_field = "_submission_time"
+    submission_date_format = "%Y-%m-%dT%H:%M:%S"
 
     def __init__(self, config: Mapping[str, Any], form_id, schema, name, api_url, pagination_limit, auth_token, **kwargs):
         super().__init__()
@@ -31,6 +33,8 @@ class KoboToolStream(HttpStream):
         self.stream_name = name
         self.API_URL = api_url
         self.PAGINATION_LIMIT = pagination_limit
+        self._cursor_value = None
+        self.start_time = datetime.strptime(config['start_time'], '%Y-%m-%d')
 
     @property
     def url_base(self) -> str:
@@ -43,6 +47,19 @@ class KoboToolStream(HttpStream):
         s = regex.sub('', self.stream_name)
         s = s.strip()
         return s if len(s) > 0 else self.form_id 
+    
+    # State will be a dict : {'_submission_time': '2023-03-03'}
+    
+    @property
+    def state(self) -> Mapping[str, Any]:
+        if self._cursor_value:
+            return {self.cursor_field: self._cursor_value.strftime('%Y-%m-%d')}
+        else:
+            return {self.cursor_field: self.start_time.strftime('%Y-%m-%d')}
+    
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+       self._cursor_value = datetime.strptime(value[self.cursor_field], self.submission_date_format)
 
     def get_json_schema(self):
         return self.schema
@@ -51,7 +68,12 @@ class KoboToolStream(HttpStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
 
-        params = {"start": 0, "limit": self.PAGINATION_LIMIT}
+        params = {
+            "start": 0, 
+            "limit": self.PAGINATION_LIMIT, 
+            "query": json.dumps({self.cursor_field: {"$gt": self.state[self.cursor_field]}})
+        }
+
         if next_page_token:
             params.update(next_page_token)
 
@@ -80,6 +102,13 @@ class KoboToolStream(HttpStream):
 
         for a in result:
             yield a
+
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(*args, **kwargs):
+            self._cursor_value = record[self.cursor_field]
+            # if self._cursor_value:
+            #     self._cursor_value = max(self._cursor_value, latest_record_date)
+            yield record
 
 class SourceKobotoolbox(AbstractSource):
     API_URL = "https://kf.kobotoolbox.org/api/v2"

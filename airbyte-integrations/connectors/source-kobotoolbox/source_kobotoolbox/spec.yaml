@@ -19,3 +19,9 @@ connectionSpecification:
             description: Password to authenticate into the KoboToolBox server
             airbyte_secret: true
             order: 2
+        start_time:
+            type: string
+            title: Start Time
+            description: Start Time for Kobotoolbox
+            default: "2023-03-15"
+            order: 3
