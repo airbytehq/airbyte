@@ -1764,6 +1764,12 @@
   icon: short.svg
   sourceType: api
   releaseStage: alpha
+- name: Simple Analytics
+  sourceDefinitionId: e54c8d50-d4ea-44d5-9a7f-b10148c63b02
+  dockerRepository: airbyte/source-simple-analytics
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/simple-analytics
+  icon: simpleanalytics.svg
 - name: Slack
   sourceDefinitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
   dockerRepository: airbyte/source-slack

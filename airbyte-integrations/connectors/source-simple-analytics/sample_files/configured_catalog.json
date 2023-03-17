@@ -1,0 +1,208 @@
+{
+  "streams": [
+    {
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append",
+      "stream": {
+        "name": "export",
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_cursor": false,
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "added_unix": {
+              "type": [
+                "null",
+                "integer"
+              ]
+            },
+            "added_date": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date"
+            },
+            "added_iso": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "hostname": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "hostname_original": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "path": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "query": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "is_unique": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "is_robot": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "document_referrer": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "utm_source": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "utm_medium": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "utm_campaign": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "utm_content": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "utm_term": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "scrolled_percentage": {
+              "type": [
+                "null",
+                "integer"
+              ]
+            },
+            "duration_seconds": {
+              "type": [
+                "null",
+                "integer"
+              ]
+            },
+            "viewport_width": {
+              "type": [
+                "null",
+                "integer"
+              ]
+            },
+            "viewport_height": {
+              "type": [
+                "null",
+                "integer"
+              ]
+            },
+            "screen_width": {
+              "type": [
+                "null",
+                "integer"
+              ]
+            },
+            "screen_height": {
+              "type": [
+                "null",
+                "integer"
+              ]
+            },
+            "user_agent": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "device_type": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "country_code": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "browser_name": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "browser_version": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "os_name": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "os_version": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "lang_region": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "lang_language": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "uuid": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}
