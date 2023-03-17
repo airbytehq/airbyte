@@ -43,7 +43,7 @@ To create a dedicated read only Salesforce user:
 
 To set up Salesforce as a source in Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, select **Salesforce** from the **Source type** dropdown.
 4. For Name, enter a name for the Salesforce connector.
@@ -72,7 +72,7 @@ To set up Salesforce as a source in Airbyte Open Source:
 
 The Salesforce source connector supports the following sync modes:
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 * [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 * [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 * (Recommended)[ Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
@@ -129,6 +129,11 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.7   | 2023-03-14 | [24071](https://github.com/airbytehq/airbyte/pull/24071) | Remove regex pattern for start_date, use format validation instead                                                                  |
+| 2.0.6   | 2023-03-03 | [22891](https://github.com/airbytehq/airbyte/pull/22891) | Specified date formatting in specification                                                                  |
+| 2.0.5   | 2023-03-01 | [23610](https://github.com/airbytehq/airbyte/pull/23610) | Handle different Salesforce page size for different queries                                                                      |
+| 2.0.4   | 2023-02-24 | [22636](https://github.com/airbytehq/airbyte/pull/22636) | Turn on default HttpAvailabilityStrategy for all streams that are not of class BulkSalesforceStream                              |
+| 2.0.3   | 2023-02-17 | [23190](https://github.com/airbytehq/airbyte/pull/23190) | In case properties are chunked, fetch primary key in every chunk                                                                 |
 | 2.0.2   | 2023-02-13 | [22896](https://github.com/airbytehq/airbyte/pull/22896) | Count the URL length based on encoded params                                                                                     |
 | 2.0.1   | 2023-02-08 | [22597](https://github.com/airbytehq/airbyte/pull/22597) | Make multiple requests if a REST stream has too many properties                                                                  |
 | 2.0.0   | 2023-02-02 | [22322](https://github.com/airbytehq/airbyte/pull/22322) | Remove `ActivityMetricRollup` stream                                                                                             |
