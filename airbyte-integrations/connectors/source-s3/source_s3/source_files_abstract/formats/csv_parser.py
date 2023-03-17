@@ -212,6 +212,7 @@ class CsvParser(AbstractFileParser):
         quote_char = self.format.quote_char
         reader = csv.reader([six.ensure_text(file.readline())], delimiter=delimiter, quotechar=quote_char)
         field_names = next(reader)
+        file.seek(0)  # the file may be reused later so return the cursor to the very beginning of the file as if nothing happened here
         return {field_name.strip(): pyarrow.string() for field_name in field_names}
 
     @wrap_exception((ValueError,))
@@ -220,11 +221,22 @@ class CsvParser(AbstractFileParser):
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html
         PyArrow returns lists of values for each column so we zip() these up into records which we then yield
         """
+        # In case master_schema is a user defined schema, it may miss some columns.
+        # We set their type to `string` as a default type in order to pass a schema with all the file columns to pyarrow
+        # so that pyarrow wouldn't need to infer data types of missing columns. Type inference may often break syncs:
+        # it reads a block of data and makes suggestions of its type based on that block. So if the next block contains data
+        # of different type, things get broken. To fix it you either have to increase block size or pass a predefined schema.
+        # Even if actual data type is changed because of this hack, it will not break sync because this data is written
+        # to `_ab_additional_properties` column which is not strictly typed ({'type': 'object'}). That's why this is helpful
+        # when a schema is defined by user and there's no space to increase a block size.
+        schema = self._get_schema_dict_without_inference(file)
+        schema.update(self._master_schema)
+
         streaming_reader = pa_csv.open_csv(
             file,
             pa.csv.ReadOptions(**self._read_options()),
             pa.csv.ParseOptions(**self._parse_options()),
-            pa.csv.ConvertOptions(**self._convert_options(self._master_schema)),
+            pa.csv.ConvertOptions(**self._convert_options(schema)),
         )
         still_reading = True
         while still_reading:
