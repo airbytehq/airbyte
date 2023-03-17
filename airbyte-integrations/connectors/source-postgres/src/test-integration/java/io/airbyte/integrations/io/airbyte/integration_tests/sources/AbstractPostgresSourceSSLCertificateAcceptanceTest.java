@@ -110,7 +110,7 @@ public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends
 
   @Override
   protected ConnectorSpecification getSpec() throws Exception {
-    return SshHelpers.getSpecAndInjectSsh();
+    return SshHelpers.getSpecAndInjectSsh(Optional.of("security"));
   }
 
   @Override
