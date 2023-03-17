@@ -89,6 +89,15 @@ class Step(ABC):
             soon_stdout = task_group.soonify(with_stdout)(container)
         return StepResult(self, StepStatus.from_exit_code(soon_exit_code.value), stderr=soon_stderr.value, stdout=soon_stdout.value)
 
+    def pytest_logs_to_step_result(self, logs: str) -> StepResult:
+        last_log_line = logs.split("\n")[-2]
+        if "failed" in last_log_line:
+            return StepResult(self, StepStatus.FAILURE, stderr=logs)
+        elif "no tests ran" in last_log_line:
+            return StepResult(self, StepStatus.SKIPPED, stdout=logs)
+        else:
+            return StepResult(self, StepStatus.SUCCESS, stdout=logs)
+
 
 @dataclass(frozen=True)
 class StepResult:

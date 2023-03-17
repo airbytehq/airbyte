@@ -5,6 +5,7 @@ import logging
 import os
 from datetime import datetime
 from enum import Enum
+from glob import glob
 from typing import Optional
 
 from anyio import Path
@@ -29,6 +30,7 @@ class ConnectorTestContext:
     """The connector test context is used to store configuration for a specific connector pipeline run."""
 
     DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE = "airbyte/connector-acceptance-test:latest"
+    DEFAULT_EXCLUDED_FILES = glob("**/build/**") + [".git"]
 
     def __init__(
         self,
@@ -106,6 +108,10 @@ class ConnectorTestContext:
         return f"CI test for {self.connector.technical_name}"
 
     @property
+    def resources_dir(self) -> Directory:
+        return self.get_repo_dir("tools/ci_connector_ops/ci_connector_ops/pipelines/resources")
+
+    @property
     def test_report(self) -> ConnectorTestReport:
         return self._test_report
 
@@ -127,6 +133,7 @@ class ConnectorTestContext:
         }
 
     def get_repo_dir(self, subdir=".", exclude=None, include=None) -> Directory:
+        exclude = self.DEFAULT_EXCLUDED_FILES if exclude is None else exclude
         if self.is_local:
             return self.dagger_client.host().directory(subdir, exclude=exclude, include=include)
         else:

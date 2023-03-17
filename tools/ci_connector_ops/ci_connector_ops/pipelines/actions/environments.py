@@ -4,6 +4,7 @@
 
 """This modules groups functions made to create reusable environments packaged in dagger containers."""
 
+
 from typing import List, Optional
 
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
@@ -197,3 +198,53 @@ async def with_ci_connector_ops(context: ConnectorTestContext) -> Container:
     python_base_environment: Container = with_python_base(context, "python:3-alpine")
     python_with_git = python_base_environment.with_exec(["apk", "add", "gcc", "libffi-dev", "musl-dev", "git"])
     return await with_installed_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH, exclude=["pipelines"])
+
+
+def with_java_base(context: ConnectorTestContext, jdk_version="17.0.4") -> Container:
+    return context.dagger_client.container().from_(f"amazoncorretto:{jdk_version}")
+
+
+async def with_gradle(context: ConnectorTestContext) -> Container:
+    gradle_cache: CacheVolume = context.dagger_client.cache_volume("gradle_cache")
+
+    include = [
+        ".env",
+        "airbyte-api",
+        "airbyte-commons-cli",
+        "airbyte-commons-protocol",
+        "airbyte-commons",
+        "airbyte-config",
+        "airbyte-connector-test-harnesses",
+        "airbyte-db",
+        "airbyte-integrations/bases",
+        "airbyte-integrations/connectors/source-jdbc",
+        "airbyte-integrations/connectors/source-relational-db",
+        "airbyte-json-validation",
+        "airbyte-protocol",
+        "airbyte-test-utils",
+        "build.gradle",
+        "buildSrc",
+        "deps.toml",
+        "gradle.properties",
+        "gradle",
+        "gradlew",
+        "LICENSE_SHORT",
+        "publish-repositories.gradle",
+        "settings.gradle",
+        "tools/bin/build_image.sh",
+        "tools/lib/lib.sh",
+    ]
+
+    gradle_properties_file = context.resources_dir.file("ci_gradle.properties")
+
+    return (
+        context.dagger_client.container()
+        .from_("docker:23.0.1-cli")
+        .with_exec(["apk", "add", "openjdk17", "bash"])
+        .with_exec(["mkdir", "-p", "~/.gradle/"])
+        .with_file("~/.gradle/gradle.properties", gradle_properties_file)
+        .with_mounted_cache("~/.gradle", gradle_cache, sharing=CacheSharingMode.LOCKED)
+        .with_exec(["mkdir", "/airbyte"])
+        .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
+        .with_workdir("/airbyte")
+    )

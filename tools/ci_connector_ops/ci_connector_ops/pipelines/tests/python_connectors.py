@@ -4,8 +4,6 @@
 
 """This module groups steps made to run tests for a specific connector given a test context."""
 
-import json
-import uuid
 from abc import ABC
 from typing import List, Tuple
 
@@ -13,8 +11,42 @@ import asyncer
 from ci_connector_ops.pipelines.actions import environments, secrets
 from ci_connector_ops.pipelines.bases import Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
+from ci_connector_ops.pipelines.tests.common import AcceptanceTests
 from ci_connector_ops.pipelines.utils import check_path_in_workdir
-from dagger import CacheSharingMode, Container
+from dagger import Container
+
+
+class CodeFormatChecks(Step):
+    title = "Code format checks"
+
+    RUN_BLACK_CMD = ["python", "-m", "black", f"--config=/{environments.PYPROJECT_TOML_FILE_PATH}", "--check", "."]
+    RUN_ISORT_CMD = ["python", "-m", "isort", f"--settings-file=/{environments.PYPROJECT_TOML_FILE_PATH}", "--check-only", "--diff", "."]
+    RUN_FLAKE_CMD = ["python", "-m", "pflake8", f"--config=/{environments.PYPROJECT_TOML_FILE_PATH}", "."]
+
+    async def run(self) -> List[StepResult]:
+        """Run a code format check on the container source code.
+        We call black, isort and flake commands:
+        - Black formats the code: fails if the code is not formatted.
+        - Isort checks the import orders: fails if the import are not properly ordered.
+        - Flake enforces style-guides: fails if the style-guide is not followed.
+        Args:
+            context (ConnectorTestContext): The current test context, providing a connector object, a dagger client and a repository directory.
+            step (Step): The step in which the code format checks are run. Defaults to Step.CODE_FORMAT_CHECKS
+        Returns:
+            List[StepResult]: Failure or success of the code format checks with stdout and stdout in a list.
+        """
+
+        connector_under_test = environments.with_airbyte_connector(self.context)
+        connector_under_test = self.get_dagger_pipeline(connector_under_test)
+        formatter = (
+            connector_under_test.with_exec(["echo", "Running black"])
+            .with_exec(self.RUN_BLACK_CMD)
+            .with_exec(["echo", "Running Isort"])
+            .with_exec(self.RUN_ISORT_CMD)
+            .with_exec(["echo", "Running Flake"])
+            .with_exec(self.RUN_FLAKE_CMD)
+        )
+        return [await self.get_step_result(formatter)]
 
 
 class ConnectorInstallTest(Step):
@@ -31,15 +63,6 @@ class ConnectorInstallTest(Step):
 
 
 class PythonTests(Step, ABC):
-    def pytest_logs_to_step_result(self, logs: str) -> StepResult:
-        last_log_line = logs.split("\n")[-2]
-        if "failed" in last_log_line:
-            return StepResult(self, StepStatus.FAILURE, stderr=logs)
-        elif "no tests ran" in last_log_line:
-            return StepResult(self, StepStatus.SKIPPED, stdout=logs)
-        else:
-            return StepResult(self, StepStatus.SUCCESS, stdout=logs)
-
     async def _run_tests_in_directory(self, connector_under_test: Container, test_directory: str) -> StepResult:
         """Runs the pytest tests in the test_directory that was passed.
         A StepStatus.SKIPPED is returned if no tests were discovered.
@@ -71,82 +94,6 @@ class PythonTests(Step, ABC):
 
         else:
             return StepResult(self, StepStatus.SKIPPED)
-
-
-class AcceptanceTests(PythonTests):
-    title = "Acceptance tests"
-
-    async def run(self) -> StepResult:
-        """Runs the acceptance test suite on a connector dev image.
-        It's rebuilding the connector acceptance test image if the tag is :dev.
-        It's building the connector under test dev image if the connector image is :dev in the acceptance test config.
-
-        Returns:
-            StepResult: Failure or success of the acceptances tests with stdout and stdout.
-        """
-        if not self.context.connector.acceptance_test_config:
-            return StepResult(Step.ACCEPTANCE_TESTS, StepStatus.SKIPPED), None
-
-        dagger_client = self.get_dagger_pipeline(self.context.dagger_client)
-
-        if self.context.connector_acceptance_test_image.endswith(":dev"):
-            cat_container = self.context.connector_acceptance_test_source_dir.docker_build()
-        else:
-            cat_container = dagger_client.container().from_(self.context.connector_acceptance_test_image)
-
-        dockerd = (
-            dagger_client.container()
-            .from_("docker:23.0.1-dind")
-            .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume("docker-lib"), sharing=CacheSharingMode.PRIVATE)
-            .with_mounted_cache("/tmp", dagger_client.cache_volume("share-tmp"))
-            .with_exposed_port(2375)
-            .with_exec(["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
-        )
-        docker_host = await dockerd.endpoint(scheme="tcp")
-
-        acceptance_test_cache_buster = str(uuid.uuid4())
-        if self.context.connector.acceptance_test_config["connector_image"].endswith(":dev"):
-            inspect_output = await (
-                dagger_client.pipeline(f"Building {self.context.connector.acceptance_test_config['connector_image']}")
-                .container()
-                .from_("docker:23.0.1-cli")
-                .with_env_variable("DOCKER_HOST", docker_host)
-                .with_service_binding("docker", dockerd)
-                .with_mounted_directory("/connector_to_build", self.context.get_connector_dir(exclude=[".venv"]))
-                .with_workdir("/connector_to_build")
-                .with_exec(["docker", "build", ".", "-t", f"airbyte/{self.context.connector.technical_name}:dev"])
-                .with_exec(["docker", "image", "inspect", f"airbyte/{self.context.connector.technical_name}:dev"])
-                .stdout()
-            )
-            acceptance_test_cache_buster = json.loads(inspect_output)[0]["Id"]
-
-        cat_container = (
-            cat_container.with_env_variable("DOCKER_HOST", docker_host)
-            .with_entrypoint(["pip"])
-            .with_exec(["install", "pytest-custom_exit_code"])
-            .with_service_binding("docker", dockerd)
-            .with_mounted_cache("/tmp", dagger_client.cache_volume("share-tmp"))
-            .with_mounted_directory("/test_input", self.context.get_connector_dir(exclude=["secrets", ".venv"]))
-            .with_directory("/test_input/secrets", self.context.secrets_dir)
-            .with_workdir("/test_input")
-            .with_entrypoint(["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "--suppress-tests-failed-exit-code"])
-            .with_env_variable("CACHEBUSTER", acceptance_test_cache_buster)
-            .with_exec(["--acceptance-test-config", "/test_input"])
-        )
-
-        secret_dir = cat_container.directory("/test_input/secrets")
-
-        async with asyncer.create_task_group() as task_group:
-            soon_secret_files = task_group.soonify(secret_dir.entries)()
-            soon_cat_container_stdout = task_group.soonify(cat_container.stdout)()
-
-        if secret_files := soon_secret_files.value:
-            for file_path in secret_files:
-                if file_path.startswith("updated_configurations"):
-                    self.context.updated_secrets_dir = secret_dir
-                    break
-
-        return self.pytest_logs_to_step_result(soon_cat_container_stdout.value)
 
 
 class UnitTests(PythonTests):
@@ -203,3 +150,7 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
         ]
 
     return results + [task.value for task in tasks]
+
+
+async def run_code_format_checks(context: ConnectorTestContext) -> List[StepResult]:
+    return await CodeFormatChecks(context).run()

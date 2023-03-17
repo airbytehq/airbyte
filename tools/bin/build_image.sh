@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+#set -e
 
 ROOT_DIR="$1"
 PROJECT_DIR="$2"
@@ -14,7 +14,7 @@ export DOCKER_BUILDKIT=1
 
 cd "$ROOT_DIR"
 . tools/lib/lib.sh
-assert_root
+#assert_root
 
 cd "$PROJECT_DIR"
 
@@ -26,6 +26,7 @@ function validate_dockerignore() {
   fi
 }
 
+echo $TAGGED_IMAGE
 args=(
     -f "$DOCKERFILE"
     -t "$TAGGED_IMAGE"

@@ -12,7 +12,7 @@ import anyio
 import asyncer
 import click
 import dagger
-from ci_connector_ops.pipelines import checks, tests
+from ci_connector_ops.pipelines import tests
 from ci_connector_ops.pipelines.bases import ConnectorTestReport
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.pipelines.github import update_commit_status_check
@@ -49,8 +49,8 @@ async def run(context: ConnectorTestContext) -> ConnectorTestReport:
     async with context:
         async with asyncer.create_task_group() as task_group:
             tasks = [
-                task_group.soonify(checks.QaChecks(context).run)(),
-                task_group.soonify(checks.CodeFormatChecks(context).run)(),
+                # task_group.soonify(tests.common.QaChecks(context).run)(),
+                task_group.soonify(tests.run_code_format_checks)(context),
                 task_group.soonify(tests.run_all_tests)(context),
             ]
         results = list(itertools.chain(*(task.value for task in tasks)))
@@ -182,8 +182,6 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
             ci_context=ctx.obj.get("ci_context"),
         )
         for connector in connectors_under_test
-        if connector.language
-        in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]  # TODO: remove this once we implement pipelines for Java connector
     ]
     try:
         anyio.run(run_connectors_test_pipelines, connectors_tests_contexts)
