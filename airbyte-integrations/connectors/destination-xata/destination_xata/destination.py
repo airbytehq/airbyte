@@ -12,6 +12,8 @@ from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, Configur
 from xata.client import XataClient
 from xata.helpers import BulkProcessor
 
+__version__ = "0.0.1"
+
 class DestinationXata(Destination):
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
@@ -32,7 +34,7 @@ class DestinationXata(Destination):
         """
         
         xata = XataClient(api_key=config["api_key"], db_url=config["db_url"])
-        xata.set_header("user-agent", "airbyte/destination-xata:0.1.0")
+        xata.set_header("user-agent", f"airbyte/destination-xata:{__version__}")
 
         bp = BulkProcessor(xata, flush_interval=1)
         for message in input_messages:
@@ -55,7 +57,7 @@ class DestinationXata(Destination):
         """
         try:
             xata = XataClient(api_key=config["api_key"], db_url=config["db_url"])
-            xata.set_header("user-agent", "airbyte/destination-xata:0.1.0")
+            xata.set_header("user-agent", f"airbyte/destination-xata:{__version__}")
 
             r = xata.users().getUser()
             if r.status_code != 200:
