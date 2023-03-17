@@ -217,6 +217,8 @@ configuration:
             requested_quantity:
               airbyte_type: integer
               type: number
+            quantity_reduction_reason:
+              type: string
             created_at:
               format: date-time
               airbyte_type: timestamp_with_timezone
@@ -329,6 +331,8 @@ configuration:
               type: number
             checked_proforma:
               type: boolean
+            reallocation_status:
+              type: string
             _ab_cdc_lsn:
               type: number
             committed_vat:
@@ -444,43 +448,6 @@ configuration:
         selected: true
         field_selection_enabled: false
     - stream:
-        name: fulfillment_outboundshipment_orders
-        json_schema:
-          type: object
-          properties:
-            _ab_cdc_updated_at:
-              type: string
-            _ab_cdc_deleted_at:
-              type: string
-            _ab_cdc_lsn:
-              type: number
-            outboundshipment_id:
-              airbyte_type: integer
-              type: number
-            id:
-              airbyte_type: integer
-              type: number
-            order_id:
-              airbyte_type: integer
-              type: number
-        supported_sync_modes:
-        - full_refresh
-        - incremental
-        source_defined_cursor: true
-        default_cursor_field: []
-        source_defined_primary_key:
-        - - id
-        namespace: public
-      config:
-        sync_mode: incremental
-        destination_sync_mode: append_dedup
-        cursor_field: []
-        primary_key:
-        - - id
-        alias_name: fulfillment_outboundshipment_orders
-        selected: true
-        field_selection_enabled: false
-    - stream:
         name: claim_claimline
         json_schema:
           type: object
@@ -522,6 +489,8 @@ configuration:
               type: number
             _ab_cdc_updated_at:
               type: string
+            refund_percentage:
+              type: number
             id:
               airbyte_type: integer
               type: number
@@ -542,6 +511,81 @@ configuration:
         primary_key:
         - - id
         alias_name: claim_claimline
+        selected: true
+        field_selection_enabled: false
+    - stream:
+        name: offer_offer
+        json_schema:
+          type: object
+          properties:
+            original_price:
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            _ab_cdc_deleted_at:
+              type: string
+            _ab_cdc_lsn:
+              type: number
+            source:
+              type: string
+            title:
+              type: string
+            inventory:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+            stockfile_received_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            ref:
+              type: string
+            unit:
+              airbyte_type: integer
+              type: number
+            variant_id:
+              type: string
+            processed_timestamp:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            original_price_currency:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            user_id:
+              type: string
+            price:
+              type: number
+            _ab_cdc_updated_at:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            sku:
+              type: string
+            price_currency:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        source_defined_cursor: true
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: incremental
+        destination_sync_mode: append_dedup
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: offer_offer
         selected: true
         field_selection_enabled: false
     - stream:
@@ -584,6 +628,9 @@ configuration:
               type: number
             height:
               type: number
+            delivered_date:
+              format: date
+              type: string
             is_notified:
               type: boolean
             legacy_shipment_id:
@@ -601,6 +648,8 @@ configuration:
             url:
               type: string
             origin_type:
+              type: string
+            shipping_status:
               type: string
             user_id:
               airbyte_type: integer
@@ -837,121 +886,6 @@ configuration:
         primary_key:
         - - id
         alias_name: wallet_walletline
-        selected: true
-        field_selection_enabled: false
-    - stream:
-        name: fulfillment_inboundshipment
-        json_schema:
-          type: object
-          properties:
-            fid:
-              type: string
-            metadata:
-              type: string
-            code:
-              type: string
-            is_pallet:
-              type: boolean
-            length:
-              type: number
-            weight:
-              type: number
-            created_at:
-              format: date-time
-              airbyte_type: timestamp_with_timezone
-              type: string
-            _ab_cdc_deleted_at:
-              type: string
-            delivery_date_estimate:
-              format: date
-              type: string
-            _ab_cdc_lsn:
-              type: number
-            private_metadata:
-              type: string
-            qid:
-              type: string
-            url:
-              type: string
-            carrier_id:
-              airbyte_type: integer
-              type: number
-            updated_at:
-              format: date-time
-              airbyte_type: timestamp_with_timezone
-              type: string
-            user_id:
-              airbyte_type: integer
-              type: number
-            shipment_group_id:
-              airbyte_type: integer
-              type: number
-            width:
-              type: number
-            is_live:
-              type: boolean
-            _ab_cdc_updated_at:
-              type: string
-            id:
-              airbyte_type: integer
-              type: number
-            height:
-              type: number
-            warehouse_id:
-              airbyte_type: integer
-              type: number
-        supported_sync_modes:
-        - full_refresh
-        - incremental
-        source_defined_cursor: true
-        default_cursor_field: []
-        source_defined_primary_key:
-        - - id
-        namespace: public
-      config:
-        sync_mode: incremental
-        destination_sync_mode: append_dedup
-        cursor_field: []
-        primary_key:
-        - - id
-        alias_name: fulfillment_inboundshipment
-        selected: true
-        field_selection_enabled: false
-    - stream:
-        name: fulfillment_inboundshipment_orders
-        json_schema:
-          type: object
-          properties:
-            _ab_cdc_updated_at:
-              type: string
-            _ab_cdc_deleted_at:
-              type: string
-            _ab_cdc_lsn:
-              type: number
-            id:
-              airbyte_type: integer
-              type: number
-            order_id:
-              airbyte_type: integer
-              type: number
-            inboundshipment_id:
-              airbyte_type: integer
-              type: number
-        supported_sync_modes:
-        - full_refresh
-        - incremental
-        source_defined_cursor: true
-        default_cursor_field: []
-        source_defined_primary_key:
-        - - id
-        namespace: public
-      config:
-        sync_mode: incremental
-        destination_sync_mode: append_dedup
-        cursor_field: []
-        primary_key:
-        - - id
-        alias_name: fulfillment_inboundshipment_orders
         selected: true
         field_selection_enabled: false
     - stream:
@@ -1211,6 +1145,8 @@ configuration:
               format: date-time
               airbyte_type: timestamp_with_timezone
               type: string
+            is_strategic:
+              type: boolean
             name:
               type: string
             _ab_cdc_updated_at:
@@ -1245,84 +1181,6 @@ configuration:
         primary_key:
         - - id
         alias_name: product_brand
-        selected: true
-        field_selection_enabled: false
-    - stream:
-        name: fulfillment_outboundshipment
-        json_schema:
-          type: object
-          properties:
-            fid:
-              type: string
-            metadata:
-              type: string
-            code:
-              type: string
-            is_pallet:
-              type: boolean
-            notified:
-              type: boolean
-            length:
-              type: number
-            weight:
-              type: number
-            created_at:
-              format: date-time
-              airbyte_type: timestamp_with_timezone
-              type: string
-            _ab_cdc_deleted_at:
-              type: string
-            delivery_date_estimate:
-              format: date
-              type: string
-            _ab_cdc_lsn:
-              type: number
-            private_metadata:
-              type: string
-            qid:
-              type: string
-            url:
-              type: string
-            carrier_id:
-              airbyte_type: integer
-              type: number
-            updated_at:
-              format: date-time
-              airbyte_type: timestamp_with_timezone
-              type: string
-            user_id:
-              airbyte_type: integer
-              type: number
-            shipment_group_id:
-              airbyte_type: integer
-              type: number
-            width:
-              type: number
-            _ab_cdc_updated_at:
-              type: string
-            id:
-              airbyte_type: integer
-              type: number
-            height:
-              type: number
-            warehouse_id:
-              airbyte_type: integer
-              type: number
-        supported_sync_modes:
-        - full_refresh
-        - incremental
-        source_defined_cursor: true
-        default_cursor_field: []
-        source_defined_primary_key:
-        - - id
-        namespace: public
-      config:
-        sync_mode: incremental
-        destination_sync_mode: append_dedup
-        cursor_field: []
-        primary_key:
-        - - id
-        alias_name: fulfillment_outboundshipment
         selected: true
         field_selection_enabled: false
     - stream:
@@ -2325,8 +2183,9 @@ configuration:
         selected: true
         field_selection_enabled: false
   status: active
-  schema_change: non_breaking
+  schema_change: no_change
   notify_schema_changes: true
+  non_breaking_changes_preference: ignore
   namespace_definition: destination
   namespace_format: ${SOURCE_NAMESPACE}
   prefix: ''
@@ -2337,4 +2196,4 @@ configuration:
       operator_type: normalization
       normalization:
         option: basic
-
+  geography: auto
