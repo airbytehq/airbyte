@@ -136,7 +136,12 @@ jobs:
           echo "get pods..."
           kubectl get po
           pwd
-          ls
+          echo "ls airbyte-integrations"
+          ls airbyte-integrations
+          echo "ls ./airbyte-integrations"
+          ls ./airbyte-integrations
+          echo "ls airbyte-integrations/connectors/source-harness"
+          ls airbyte-integrations/connectors/source-harness
           POD=$(kubectl get pod -l app=source-harness -o jsonpath="{.items[0].metadata.name}")
           echo "pod name is $POD"
           sleep 3
