@@ -20,7 +20,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperations implements StagingOperations {
+public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOperations {
 
   public static final int UPLOAD_RETRY_LIMIT = 3;
 
@@ -88,7 +88,10 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
     return recordsData.getFilename();
   }
 
-  private void uploadRecordsToBucket(final JdbcDatabase database, final String stageName, final String stagingPath, final SerializableBuffer recordsData)
+  private void uploadRecordsToBucket(final JdbcDatabase database,
+                                     final String stageName,
+                                     final String stagingPath,
+                                     final SerializableBuffer recordsData)
       throws Exception {
     final String query = getPutQuery(stageName, stagingPath, recordsData.getFile().getAbsolutePath());
     LOGGER.debug("Executing query: {}", query);
