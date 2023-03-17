@@ -415,6 +415,7 @@
   dockerRepository: airbyte/destination-typesense
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/destinations/typesense
+  icon: typesense.svg
   releaseStage: alpha
 - name: YugabyteDB
   destinationDefinitionId: 2300fdcf-a532-419f-9f24-a014336e7966
