@@ -47,7 +47,7 @@ will result in the following configuration on the UI:
 
 :::info
 
-Within an object definition, if some fields have the `order` property defined, and others don't, then the fields without the `order` property defined should be rendered last in the UI. Among those elements (which don't have `order` defined), they are ordered alphabetically by their field name.
+Within an object definition, if some fields have the `order` property defined, and others don't, then the fields without the `order` property defined should be rendered last in the UI. Among those elements (which don't have `order` defined), required fields are ordered before optional fields, and both categories are further ordered alphabetically by their field name.
 
 Additionally, `order` values cannot be duplicated within the same object or group. See the [Grouping fields](#grouping-fields) section for more info on field groups.
 
