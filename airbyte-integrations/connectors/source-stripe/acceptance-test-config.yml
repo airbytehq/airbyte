@@ -29,10 +29,6 @@ acceptance_tests:
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "checkout_sessions_line_items"
             bypass_reason: "This stream can't be seeded in our sandbox account"
-          - name: "subscription_schedule"
-            bypass_reason: "This stream can't be seeded in our sandbox account"
-          - name: "subscription_schedule_with_id"
-            bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "transfers"
             bypass_reason: "This stream can't be seeded in our sandbox account"
         expect_records:

@@ -67,6 +67,8 @@ The Stripe source connector supports the following streams:
 - [Products](https://stripe.com/docs/api/products/list) \(Incremental\)
 - [Refunds](https://stripe.com/docs/api/refunds/list) \(Incremental\)
 - [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
+- [Subscription Schedule](https://stripe.com/docs/api/subscription_schedules) \(Incremental\)
+- [Subscription Schedule With Id](https://stripe.com/docs/api/subscription_schedules)
 - [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
 - [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 
@@ -82,11 +84,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.5   | 2023-03-25 | [22866](https://github.com/airbytehq/airbyte/pull/22866) | Specified date formatting in specification                                                     |
-| 3.0.4   | 2023-03-24 | [24471](https://github.com/airbytehq/airbyte/pull/24471) | Fix stream slices for single sliced streams                                                                                                          |
-| 3.0.3   | 2023-03-17 | [24179](https://github.com/airbytehq/airbyte/pull/24179) | Get customer's attributes safely                                                                                                                     |
-| 3.0.2   | 2023-03-13 | [24051](https://github.com/airbytehq/airbyte/pull/24051) | Cache `customers` stream; Do not request transactions of customers with zero balance.                                                                |
-| 3.0.1   | 2023-02-22 | [22898](https://github.com/airbytehq/airbyte/pull/22898) | Add missing column to Subscriptions stream                                                                                                           |
+| 3.1.0   | 2023-02-19 | [23624](https://github.com/airbytehq/airbyte/pull/23624) | Add new stream `Subscription Schedule` and `Subscription SWchedule With Id`                                                                          |
 | 3.0.0   | 2023-02-21 | [23295](https://github.com/airbytehq/airbyte/pull/23295) | Fix invoice schema                                                                                                                                   |
 | 2.0.0   | 2023-02-14 | [22312](https://github.com/airbytehq/airbyte/pull/22312) | Another fix of `Invoices` stream schema + Remove http urls from openapi_spec.json                                                                    |
 | 1.0.2   | 2023-02-09 | [22659](https://github.com/airbytehq/airbyte/pull/22659) | Set `AvailabilityStrategy` for all streams                                                                                                           |

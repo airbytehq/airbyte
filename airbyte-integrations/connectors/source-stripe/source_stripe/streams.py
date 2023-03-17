@@ -491,7 +491,7 @@ class SubscriptionScheduleWithId(StripeSubStream):
 
     parent = SubscriptionSchedule
     parent_id: str = "subscription_schedule_id"
-    sub_items_attr = "data"
+    sub_items_attr = "subscription_schedules"
     add_parent_id = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
