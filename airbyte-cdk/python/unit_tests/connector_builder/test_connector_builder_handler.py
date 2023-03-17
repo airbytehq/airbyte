@@ -3,18 +3,19 @@
 #
 
 import copy
+import dataclasses
 import json
 from unittest import mock
 from unittest.mock import patch
 
 import connector_builder
 import pytest
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, Level
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from connector_builder.connector_builder_handler import resolve_manifest
 from connector_builder.main import handle_connector_builder_request, handle_request, read_stream
-from connector_builder.models import StreamRead, StreamReadSlicesInner, StreamReadSlicesInnerPagesInner
+from connector_builder.models import LogMessage, StreamRead, StreamReadSlicesInner, StreamReadSlicesInnerPagesInner
 from unit_tests.connector_builder.utils import create_configured_catalog
 
 _stream_name = "stream_with_custom_requester"
@@ -323,15 +324,25 @@ def test_read_returns_error_response(mock_get_stacktrace_as_string):
     class MockManifestDeclarativeSource:
         def read(self, logger, config, catalog, state):
             raise ValueError("error_message")
+
     stack_trace = "a stack trace"
     mock_get_stacktrace_as_string.return_value = stack_trace
 
     source = MockManifestDeclarativeSource()
     response = read_stream(source, TEST_READ_CONFIG, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG))
+
+    expected_stream_read = StreamRead(logs=[LogMessage("error_message - a stack trace", "ERROR")],
+                                      slices=[StreamReadSlicesInner(
+                                          pages=[StreamReadSlicesInnerPagesInner(records=[], request=None, response=None)],
+                                          slice_descriptor=None, state=None)],
+                                      test_read_limit_reached=False,
+                                      inferred_schema=None)
+
     expected_message = AirbyteMessage(
-        type=MessageType.LOG,
-        log=AirbyteLogMessage(level=Level.ERROR, message=f"error_message - {stack_trace}"),
+        type=MessageType.RECORD,
+        record=AirbyteRecordMessage(stream=_stream_name, data=dataclasses.asdict(expected_stream_read), emitted_at=1),
     )
+    response.record.emitted_at = 1
     assert response == expected_message
 
 

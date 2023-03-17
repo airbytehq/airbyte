@@ -88,7 +88,7 @@ class MessageGrouper:
 
         while records_count < limit and (message := next(messages, None)):
             if self._need_to_close_page(at_least_one_page_in_group, message):
-                self._close_page(current_page_request, current_page_response, current_slice_pages, current_page_records)
+                self._close_page(current_page_request, current_page_response, current_slice_pages, current_page_records, True)
                 current_page_request = None
                 current_page_response = None
 
@@ -141,7 +141,7 @@ class MessageGrouper:
         # the generator can raise an exception
         # iterate over the generated messages. if next raise an exception, catch it and yield it as an AirbyteLogMessage
         try:
-            yield from source.read(logger=self.logger, config=config, catalog=configured_catalog)
+            yield from source.read(logger=self.logger, config=config, catalog=configured_catalog, state={})
         except Exception as e:
             error_message = f"{e.args[0] if len(e.args) > 0 else str(e)} - {ErrorFormatter.get_stacktrace_as_string(e)}"
             yield AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=error_message))
