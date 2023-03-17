@@ -7,7 +7,7 @@ from traceback import format_exc
 from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import ConnectorSpecification
+from airbyte_cdk.models import ConnectorSpecification, SyncMode
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -65,13 +65,14 @@ class SourceFilesAbstract(AbstractSource, ABC):
                 # test that matching on the pattern doesn't error
                 globmatch(file_info.key, config.get("path_pattern"), flags=GLOBSTAR | SPLIT)
                 # just need first file here to test connection and valid patterns
-                return True, None
-
+                break
+            for slice_ in stream.stream_slices(sync_mode=SyncMode.full_refresh):
+                list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_))
+                break
         except Exception as e:
             logger.error(format_exc())
             return False, e
 
-        logger.warn("Found 0 files (but connection is valid).")
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
