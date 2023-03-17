@@ -9,6 +9,7 @@ from unittest.mock import MagicMock
 import pytest
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, Level
 from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from connector_builder.message_grouper import MessageGrouper
 from connector_builder.models import HttpRequest, HttpResponse, LogMessage, StreamRead, StreamReadPages
 from unit_tests.connector_builder.utils import create_configured_catalog
@@ -17,7 +18,7 @@ MAX_PAGES_PER_SLICE = 4
 MAX_SLICES = 3
 
 MANIFEST = {
-    "version": "0.1.0",
+    "version": "0.30.0",
     "type": "DeclarativeSource",
     "definitions": {
         "selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
@@ -505,17 +506,20 @@ def test_get_grouped_messages_given_maximum_number_of_pages_then_test_read_limit
 
     assert stream_read.test_read_limit_reached
 
+
 def test_read_stream_returns_error_if_stream_does_not_exist():
-    expected_status_code = 400
     mock_source = MagicMock()
-    mock_source.read.side_effect=ValueError("error")
+    mock_source.read.side_effect = ValueError("error")
 
-    api = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
-    with pytest.raises(ValueError) as actual_exception:
-        api.get_message_groups(source=mock_source, config=CONFIG, configured_catalog=create_configured_catalog("not_in_manifest"))
+    full_config = {**CONFIG, **{"__injected_declarative_manifest": MANIFEST}}
 
-        assert isinstance(actual_exception, ValueError)
-        assert actual_exception.args[0] == "error"
+    message_grouper = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
+    actual_response = message_grouper.get_message_groups(source=mock_source, config=full_config,
+                                                         configured_catalog=create_configured_catalog("not_in_manifest"))
+
+    assert 1 == len(actual_response.logs)
+    assert "Traceback" in actual_response.logs[0].message
+    assert "ERROR" in actual_response.logs[0].level
 
 
 def make_mock_source(return_value: Iterator) -> MagicMock:
