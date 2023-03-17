@@ -3,6 +3,8 @@
 #
 
 import json
+
+from unittest.mock import Mock
 from typing import Any, Dict, List, Mapping
 
 from destination_xata import DestinationXata
@@ -47,10 +49,10 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
     return ConfiguredAirbyteCatalog(streams=[append_stream,]) # overwrite_stream])
 
 def test_check_valid_config(config: Mapping):
-    outcome = DestinationXata().check(AirbyteLogger(), config)
+    outcome = DestinationXata().check(logger=Mock(), config=config)
     assert outcome.status == Status.SUCCEEDED
 
 
 def test_check_invalid_config():
-    outcome = DestinationXata().check(AirbyteLogger(), {"api_key": "airbyte-tests-no-key-provided"})
+    outcome = DestinationXata().check(logger=Mock(), config={"api_key": "airbyte-tests-no-key-provided"})
     assert outcome.status == Status.FAILED
