@@ -29,13 +29,18 @@ class SourceDiscord(AbstractSource):
         return True, "accepted"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        # print(config["initial_timestamp"])
-        # initial_timestamp = config["initial_timestamp"]
         config["job_time"] = datetime.datetime.now()
+
+        server_preview_stream = ServerPreview(config)
+        channel_stream = Channels(config)
+        message_stream = Messages(config)
+        member_stream = Members(config)
+        role_stream = Roles(config)
+
         return [
-            ServerPreview(config),
-            Channels(config),
-            # Messages(config, initial_timestamp=initial_timestamp),
-            Members(config),
-            Roles(config),
+            server_preview_stream,
+            channel_stream,
+            message_stream,
+            member_stream,
+            role_stream
         ]

@@ -3,43 +3,16 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "string"]
-    },
-    "last_message_id": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "type": {
-      "type": ["null", "integer"]
+      "type": "integer"
     },
     "name": {
-      "type": ["null", "string"]
-    },
-    "position": {
-      "type": ["null", "integer"]
-    },
-    "flags": {
-      "type": ["null", "integer"]
-    },
-    "parent_id": {
-      "type": ["null", "string"]
-    },
-    "topic": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "guild_id": {
-      "type": ["null", "string"]
-    },
-    "rate_limit_per_user": {
-      "type": ["null", "integer"]
-    },
-    "nsfw": {
-      "type": ["null", "boolean"],
-      "default": false
-    },
-    "timestamp": {
-      "type": "string",
-      "format": "date-time",
-      "airbyte_type": "timestamp_with_timezone"
+      "type": "string"
     }
   }
 }
