@@ -11,6 +11,7 @@ from functools import cached_property, lru_cache
 from traceback import format_exc
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
+import pytz
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams import Stream
@@ -49,7 +50,7 @@ class FileStream(Stream, ABC):
     ab_last_mod_col = "_ab_source_file_last_modified"
     ab_file_name_col = "_ab_source_file_url"
     airbyte_columns = [ab_additional_col, ab_last_mod_col, ab_file_name_col]
-    datetime_format_string = "%Y-%m-%dT%H:%M:%S%z"
+    datetime_format_string = "%Y-%m-%dT%H:%M:%SZ"
 
     def __init__(self, dataset: str, provider: dict, format: dict, path_pattern: str, schema: str = None):
         """
@@ -182,7 +183,9 @@ class FileStream(Stream, ABC):
     def _auto_inferred_schema(self) -> Dict[str, Any]:
         file_reader = self.fileformatparser_class(self._format)
         file_info_iterator = iter(list(self.get_time_ordered_file_infos()))
-        file_info = next(file_info_iterator)
+        file_info = next(file_info_iterator, None)
+        if not file_info:
+            return {}
         storage_file = self.storagefile_class(file_info, self._provider)
         with storage_file.open(file_reader.is_binary) as f:
             return file_reader.get_inferred_schema(f, file_info)
@@ -310,11 +313,17 @@ class IncrementalFileStream(FileStream, ABC):
         return False
 
     def _get_datetime_from_stream_state(self, stream_state: Mapping[str, Any] = None) -> datetime:
-        """if no state, we default to 1970-01-01 in order to pick up all files present."""
+        """
+        Returns the datetime from the stream state.
+
+        If there is no state, defaults to 1970-01-01 in order to pick up all files present.
+        The datetime object is localized to UTC to match the timezone of the last_modified attribute of objects in S3.
+        """
         if stream_state is not None and self.cursor_field in stream_state.keys():
-            return datetime.strptime(stream_state[self.cursor_field], self.datetime_format_string)
+            state_datetime = datetime.strptime(stream_state[self.cursor_field], self.datetime_format_string)
         else:
-            return datetime.strptime("1970-01-01T00:00:00+0000", self.datetime_format_string)
+            state_datetime = datetime.strptime("1970-01-01T00:00:00Z", self.datetime_format_string)
+        return pytz.utc.localize(state_datetime)
 
     def get_updated_history(self, current_stream_state, latest_record_datetime, latest_record, current_parsed_datetime, state_date):
         """
@@ -367,8 +376,8 @@ class IncrementalFileStream(FileStream, ABC):
         """
         state_dict: Dict[str, Any] = {}
         current_parsed_datetime = self._get_datetime_from_stream_state(current_stream_state)
-        latest_record_datetime = datetime.strptime(
-            latest_record.get(self.cursor_field, "1970-01-01T00:00:00+0000"), self.datetime_format_string
+        latest_record_datetime = pytz.utc.localize(
+            datetime.strptime(latest_record.get(self.cursor_field, "1970-01-01T00:00:00Z"), self.datetime_format_string)
         )
         state_dict[self.cursor_field] = datetime.strftime(max(current_parsed_datetime, latest_record_datetime), self.datetime_format_string)
 
