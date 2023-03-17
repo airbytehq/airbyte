@@ -5,8 +5,10 @@
 package io.airbyte.integrations.debezium.internals;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.debezium.engine.ChangeEvent;
 import java.time.Duration;
@@ -20,13 +22,24 @@ public class DebeziumRecordIteratorTest {
 
   @Test
   public void getHeartbeatPositionTest() {
-    final DebeziumRecordIterator debeziumRecordIterator = new DebeziumRecordIterator(mock(LinkedBlockingQueue.class),
-        mock(CdcTargetPosition.class),
+    final DebeziumRecordIterator<Long> debeziumRecordIterator = new DebeziumRecordIterator<>(mock(LinkedBlockingQueue.class),
+        new CdcTargetPosition<>() {
+
+          @Override
+          public boolean reachedTargetPosition(JsonNode valueAsJson) {
+            return false;
+          }
+
+          @Override
+          public Long extractPositionFromHeartbeatOffset(final Map<String, ?> sourceOffset) {
+            return (long) sourceOffset.get("lsn");
+          }
+
+        },
         () -> false,
         () -> {},
         Duration.ZERO);
-
-    final Map<String, ?> heartbeatSourceOffset = debeziumRecordIterator.getHeartbeatSourceOffset(new ChangeEvent<String, String>() {
+    final Long lsn = debeziumRecordIterator.getHeartbeatPosition(new ChangeEvent<String, String>() {
 
       private final SourceRecord sourceRecord = new SourceRecord(null, Collections.singletonMap("lsn", 358824993496L), null, null, null);
 
@@ -50,9 +63,9 @@ public class DebeziumRecordIteratorTest {
       }
 
     });
-    final long lsn = (long) heartbeatSourceOffset.get("lsn");
 
     assertEquals(lsn, 358824993496L);
+    assertNull(debeziumRecordIterator.getHeartbeatPosition(null));
   }
 
 }

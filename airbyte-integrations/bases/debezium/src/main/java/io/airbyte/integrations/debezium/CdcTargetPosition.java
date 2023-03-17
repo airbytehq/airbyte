@@ -17,13 +17,21 @@ import java.util.Map;
 public interface CdcTargetPosition<T> {
 
   /**
-   * Reads a position value (lsn) from a change event and compares it to target lsn
+   * Reads a position value (ex: LSN) from a change event and compares it to target position
    *
    * @param valueAsJson json representation of a change event
-   * @return true if event lsn is equal or greater than targer lsn, or if last snapshot event
+   * @return true if event position is equal or greater than target position, or if last snapshot
+   *         event
    */
   boolean reachedTargetPosition(final JsonNode valueAsJson);
 
+  /**
+   * Reads a position value (lsn) from a change event and compares it to target lsn
+   *
+   * @param positionFromHeartbeat is the position extracted out of a heartbeat event (if the connector
+   *        supports heartbeat)
+   * @return true if heartbeat position is equal or greater than target position
+   */
   default boolean reachedTargetPosition(final T positionFromHeartbeat) {
     throw new UnsupportedOperationException();
   }

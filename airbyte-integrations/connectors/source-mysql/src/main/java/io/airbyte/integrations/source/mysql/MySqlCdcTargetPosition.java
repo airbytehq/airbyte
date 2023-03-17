@@ -20,8 +20,26 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition<MySqlCdcPositio
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlCdcTargetPosition.class);
   private final MySqlCdcPosition targetPosition;
 
-  public MySqlCdcTargetPosition(final String fileName, final Integer position) {
+  public MySqlCdcTargetPosition(final String fileName, final Long position) {
     this(new MySqlCdcPosition(fileName, position));
+  }
+
+  @Override
+  public boolean equals(final Object obj) {
+    if (obj instanceof final MySqlCdcTargetPosition cdcTargetPosition) {
+      return targetPosition.equals(cdcTargetPosition.targetPosition);
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return targetPosition.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return targetPosition.toString();
   }
 
   public MySqlCdcTargetPosition(final MySqlCdcPosition targetPosition) {
@@ -33,7 +51,7 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition<MySqlCdcPositio
         connection -> connection.createStatement().executeQuery("SHOW MASTER STATUS"),
         resultSet -> {
           final String file = resultSet.getString("File");
-          final int position = resultSet.getInt("Position");
+          final long position = resultSet.getLong("Position");
           if (file == null || position == 0) {
             return new MySqlCdcTargetPosition(null, null);
           }
@@ -59,7 +77,7 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition<MySqlCdcPositio
       LOGGER.info("Signalling close because Snapshot is complete");
       return true;
     } else {
-      final int eventPosition = valueAsJson.get("source").get("pos").asInt();
+      final long eventPosition = valueAsJson.get("source").get("pos").asLong();
       final boolean isEventPositionAfter =
           eventFileName.compareTo(targetPosition.fileName) > 0 || (eventFileName.compareTo(
               targetPosition.fileName) == 0 && eventPosition >= targetPosition.position);
@@ -87,7 +105,7 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition<MySqlCdcPositio
 
   @Override
   public MySqlCdcPosition extractPositionFromHeartbeatOffset(final Map<String, ?> sourceOffset) {
-    return new MySqlCdcPosition(sourceOffset.get("file").toString(), (Integer) sourceOffset.get("pos"));
+    return new MySqlCdcPosition(sourceOffset.get("file").toString(), (Long) sourceOffset.get("pos"));
   }
 
 }

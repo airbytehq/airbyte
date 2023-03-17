@@ -4,9 +4,9 @@ import java.util.Objects;
 
 public class MySqlCdcPosition {
   public final String fileName;
-  public final Integer position;
+  public final Long position;
 
-  public MySqlCdcPosition(final String fileName, final Integer position) {
+  public MySqlCdcPosition(final String fileName, final Long position) {
     this.fileName = fileName;
     this.position = position;
   }
