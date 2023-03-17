@@ -1,5 +1,6 @@
 {
     "type": ["null", "object"],
+    "additionalProperties": true,
     "properties": {
         "id": {
             "type": ["string"]
@@ -57,7 +58,8 @@
             "type": ["null", "string"]
         },
         "payment_method_options": {
-            "type": ["null", "object"]
+            "type": ["null", "object"],
+            "additionalProperties": true
         },
         "payment_method_types": {
             "type": ["null", "array"],
