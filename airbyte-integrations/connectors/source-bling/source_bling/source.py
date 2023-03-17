@@ -245,8 +245,6 @@ class IncrementalBlingBase(BlingBase):
         
         latest_record_date = datetime.strptime(latest_record['data'][self.record_date_field], self.record_date_field_format)
 
-        logger.info(latest_record_date)
-
         if current_stream_state.get(self.cursor_field):
             if isinstance(current_stream_state[self.cursor_field], str):
                 current_stream_state_date = datetime.strptime(current_stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S')
@@ -381,7 +379,7 @@ class NotaFiscal(IncrementalBlingBase):
 
         item_list = ThreadSafeList()
 
-        number_of_threds = 15
+        number_of_threds = 30
 
         threads = []
 
@@ -426,6 +424,7 @@ class NotaFiscal(IncrementalBlingBase):
                         read_xml = True
                     except:
                         logger.info('Error for xml: %s', item['data']['xml'])
+                        logger.info(xml)
                         pass
             else:
                 logger.info('Missing XML for NF: %s', item['data']['numero'])
@@ -438,19 +437,24 @@ class NotaFiscal(IncrementalBlingBase):
         return [
             {
                 'situacao_filter': None,
-                'tipo_filter': 'tipo[E]',
+                'tipo_filter': 'tipo[S]',
                 'index': 0
             },
             {
                 'situacao_filter': 'situacao[3]',
                 'tipo_filter': 'tipo[S]',
                 'index': 1
-            },
-            {
-                'situacao_filter': None,
-                'tipo_filter': 'tipo[S]',
-                'index': 2
             }
+            # {
+            #     'situacao_filter': None,
+            #     'tipo_filter': 'tipo[E]',
+            #     'index': 1
+            # },
+            # {
+            #     'situacao_filter': 'situacao[3]',
+            #     'tipo_filter': 'tipo[S]',
+            #     'index': 2
+            # }
         ]
 
 class SourceBling(AbstractSource):
