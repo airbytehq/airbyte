@@ -147,7 +147,7 @@ public class PerformanceTest {
       }
 
       if (counter > 0 && counter % 1_000_000 == 0) {
-        log.info("current throughput: {} totalBytes {}", (totalBytes / 1_000_000.0) / ((System.currentTimeMillis() - start) / 1000.0), totalBytes);
+        log.info("current throughput: {} total MB {}", (totalBytes / 1_000_000.0) / ((System.currentTimeMillis() - start) / 1000.0), totalBytes / 1_000_000.0);
       }
     }
     log.info("Test Ended");
@@ -157,6 +157,7 @@ public class PerformanceTest {
     final var rps = counter / totalTimeSecs;
     log.info("total secs: {}. total MB read: {}, rps: {}, throughput: {}", totalTimeSecs, totalMB, rps, totalMB / totalTimeSecs);
     source.close();
+    log.info("Done");
   }
 
   private static void populateStreamToAllFields(final ConfiguredAirbyteCatalog catalog,
