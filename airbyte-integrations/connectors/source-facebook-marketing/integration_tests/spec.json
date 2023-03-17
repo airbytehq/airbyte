@@ -65,6 +65,13 @@
               "description": "The name value of insight",
               "type": "string"
             },
+            "level": {
+              "title": "Level",
+              "description": "Chosen level for API",
+              "default": "ad",
+              "enum": ["ad", "adset", "campaign", "account"],
+              "type": "string"
+            },
             "fields": {
               "title": "Fields",
               "description": "A list of chosen fields for fields parameter",
