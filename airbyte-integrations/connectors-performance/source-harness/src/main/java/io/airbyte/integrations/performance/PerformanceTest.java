@@ -147,7 +147,8 @@ public class PerformanceTest {
       }
 
       if (counter > 0 && counter % 1_000_000 == 0) {
-        log.info("current throughput: {} total MB {}", (totalBytes / 1_000_000.0) / ((System.currentTimeMillis() - start) / 1000.0), totalBytes / 1_000_000.0);
+        log.info("current throughput: {} total MB {}", (totalBytes / 1_000_000.0) / ((System.currentTimeMillis() - start) / 1000.0),
+            totalBytes / 1_000_000.0);
       }
     }
     log.info("Test Ended");
