@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.performance;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -40,6 +44,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 @Slf4j
 public class PerformanceTest {
+
   public static final int PORT1 = 9877;
   public static final int PORT2 = 9878;
   public static final int PORT3 = 9879;
@@ -51,7 +56,7 @@ public class PerformanceTest {
   private final JsonNode config;
   private final ConfiguredAirbyteCatalog catalog;
 
-//  private DefaultAirbyteDestination destination;
+  // private DefaultAirbyteDestination destination;
 
   PerformanceTest(final String imageName, final String config, final String catalog) throws JsonProcessingException {
     final ObjectMapper mapper = new ObjectMapper();
@@ -84,19 +89,19 @@ public class PerformanceTest {
         .withState(null)
         .withCatalog(convertProtocolObject(this.catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
 
-    //Uncomment to add destination
+    // Uncomment to add destination
     /*
-    /////////// destiantion ///////////
-    final var dstIntegtationLauncher = new AirbyteIntegrationLauncher("2", 0, "airbyte/destination-dev-null:0.2.7", processFactory, resourceReqs, allowedHosts, false, new EnvVariableFeatureFlags());
-    this.destination = new DefaultAirbyteDestination(dstIntegtationLauncher);
-    final WorkerDestinationConfig dstConfig = new WorkerDestinationConfig()
-        .withDestinationConnectionConfiguration(Jsons.jsonNode(Collections.singletonMap("type", "SILENT")));
-    destination.start(dstConfig, Path.of(jobRoot));
-    ///////////////////////////////////
-    */
+     * /////////// destiantion /////////// final var dstIntegtationLauncher = new
+     * AirbyteIntegrationLauncher("2", 0, "airbyte/destination-dev-null:0.2.7", processFactory,
+     * resourceReqs, allowedHosts, false, new EnvVariableFeatureFlags()); this.destination = new
+     * DefaultAirbyteDestination(dstIntegtationLauncher); final WorkerDestinationConfig dstConfig = new
+     * WorkerDestinationConfig()
+     * .withDestinationConnectionConfiguration(Jsons.jsonNode(Collections.singletonMap("type",
+     * "SILENT"))); destination.start(dstConfig, Path.of(jobRoot)); ///////////////////////////////////
+     */
 
     final ConcurrentHashMap<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors = new ConcurrentHashMap();
-//    final Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields = new HashMap();
+    // final Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields = new HashMap();
     final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields = new HashMap();
     final Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields = new HashMap();
     populateStreamToAllFields(this.catalog, streamToAllFields);
@@ -114,10 +119,8 @@ public class PerformanceTest {
             new AirbyteStreamNameNamespacePair(streamName1, streamNamespace1),
             sourceConfig.getCatalog().getStreams().get(1).getStream().getJsonSchema(),
             new AirbyteStreamNameNamespacePair(streamName2, streamNamespace2),
-            sourceConfig.getCatalog().getStreams().get(2).getStream().getJsonSchema()
-        ),
+            sourceConfig.getCatalog().getStreams().get(2).getStream().getJsonSchema()),
         true);
-
 
     source.start(sourceConfig, Path.of(jobRoot));
     var totalBytes = 0.0;
@@ -135,15 +138,16 @@ public class PerformanceTest {
 
           validateSchema(recordSchemaValidator, streamToAllFields, unexpectedFields, validationErrors, airbyteMessage);
           airbyteMessage.getRecord().setStream(airbyteMessage.getRecord().getStream() + "SUFFIX");
-          ((ObjectNode)airbyteMessage.getRecord().getData()).retain("id", "user_id", "product_id", "added_to_cart_at", "purchased_at","name","email",
+          ((ObjectNode) airbyteMessage.getRecord().getData()).retain("id", "user_id", "product_id", "added_to_cart_at", "purchased_at", "name",
+              "email",
               "title", "gender", "height", "language", "blood_type", "created_at", "occupation", "updated_at", "nationality");
-//          destination.accept(airbyteMessage);
+          // destination.accept(airbyteMessage);
         }
 
       }
 
       if (counter > 0 && counter % 1_000_000 == 0) {
-        log.info("current throughput: {} totalBytes {}", (totalBytes / 1_000_000.0) / ((System.currentTimeMillis() - start)/ 1000.0), totalBytes);
+        log.info("current throughput: {} totalBytes {}", (totalBytes / 1_000_000.0) / ((System.currentTimeMillis() - start) / 1000.0), totalBytes);
       }
     }
     log.info("Test Ended");
@@ -155,11 +159,12 @@ public class PerformanceTest {
     source.close();
   }
 
-  private static void populateStreamToAllFields(final ConfiguredAirbyteCatalog catalog, final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields) {
+  private static void populateStreamToAllFields(final ConfiguredAirbyteCatalog catalog,
+                                                final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields) {
     final Iterator var2 = catalog.getStreams().iterator();
 
-    while(var2.hasNext()) {
-      final ConfiguredAirbyteStream s = (ConfiguredAirbyteStream)var2.next();
+    while (var2.hasNext()) {
+      final ConfiguredAirbyteStream s = (ConfiguredAirbyteStream) var2.next();
       final Set<String> fields = new HashSet();
       final JsonNode propertiesNode = s.getStream().getJsonSchema().findPath("properties");
       if (!propertiesNode.isObject()) {
@@ -174,28 +179,35 @@ public class PerformanceTest {
 
   }
 
-  private static void validateSchema(final RecordSchemaValidator recordSchemaValidator, final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields, final Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields, final ConcurrentHashMap<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors, final AirbyteMessage message) {
+  private static void validateSchema(final RecordSchemaValidator recordSchemaValidator,
+                                     final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields,
+                                     final Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields,
+                                     final ConcurrentHashMap<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors,
+                                     final AirbyteMessage message) {
     if (message.getRecord() != null) {
       final AirbyteRecordMessage record = message.getRecord();
       final AirbyteStreamNameNamespacePair messageStream = AirbyteStreamNameNamespacePair.fromRecordMessage(record);
-      final boolean streamHasLessThenTenErrs = validationErrors.get(messageStream) == null || (Integer)((ImmutablePair)validationErrors.get(messageStream)).getRight() < 10;
+      final boolean streamHasLessThenTenErrs =
+          validationErrors.get(messageStream) == null || (Integer) ((ImmutablePair) validationErrors.get(messageStream)).getRight() < 10;
       if (streamHasLessThenTenErrs) {
         recordSchemaValidator.validateSchema(record, messageStream, validationErrors);
-        final Set<String> unexpectedFieldNames = (Set)unexpectedFields.getOrDefault(messageStream, new HashSet());
-        populateUnexpectedFieldNames(record, (Set)streamToAllFields.get(messageStream), unexpectedFieldNames);
+        final Set<String> unexpectedFieldNames = (Set) unexpectedFields.getOrDefault(messageStream, new HashSet());
+        populateUnexpectedFieldNames(record, (Set) streamToAllFields.get(messageStream), unexpectedFieldNames);
         unexpectedFields.put(messageStream, unexpectedFieldNames);
       }
 
     }
   }
 
-  private static void populateUnexpectedFieldNames(final AirbyteRecordMessage record, final Set<String> fieldsInCatalog, final Set<String> unexpectedFieldNames) {
+  private static void populateUnexpectedFieldNames(final AirbyteRecordMessage record,
+                                                   final Set<String> fieldsInCatalog,
+                                                   final Set<String> unexpectedFieldNames) {
     final JsonNode data = record.getData();
     if (data.isObject()) {
       final Iterator<String> fieldNamesInRecord = data.fieldNames();
 
-      while(fieldNamesInRecord.hasNext()) {
-        final String fieldName = (String)fieldNamesInRecord.next();
+      while (fieldNamesInRecord.hasNext()) {
+        final String fieldName = (String) fieldNamesInRecord.next();
         if (!fieldsInCatalog.contains(fieldName)) {
           unexpectedFieldNames.add(fieldName);
         }
@@ -208,22 +220,14 @@ public class PerformanceTest {
     return Jsons.object(Jsons.jsonNode(v1), klass);
   }
 
-  //Uncomment to add destination
-/*  void readFromDst() {
-    if (this.destination != null) {
-      log.info("Start read from destination");
-      while (!this.destination.isFinished()) {
-        final Optional messageOptional = this.destination.attemptRead();
-
-        if (messageOptional.isPresent()) {
-          log.info("msg");
-          final AirbyteMessage message = (AirbyteMessage)messageOptional.get();
-          if (message.getType() == Type.STATE) {
-            message.getState();
-          }
-        }
-      }
-    }
-    log.info("Done read from destination");
-  }*/
+  // Uncomment to add destination
+  /*
+   * void readFromDst() { if (this.destination != null) { log.info("Start read from destination");
+   * while (!this.destination.isFinished()) { final Optional messageOptional =
+   * this.destination.attemptRead();
+   *
+   * if (messageOptional.isPresent()) { log.info("msg"); final AirbyteMessage message =
+   * (AirbyteMessage)messageOptional.get(); if (message.getType() == Type.STATE) { message.getState();
+   * } } } } log.info("Done read from destination"); }
+   */
 }
