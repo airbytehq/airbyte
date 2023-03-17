@@ -31,6 +31,7 @@ class DiscordMessagesStream(HttpStream, ABC):
         self.server_token = config["server_token"]
         self.guild_id = config["guild_id"]
         self.job_time = config['job_time']
+        self.channel_ids = config['channel_ids'].split(',') if config['channel_ids'] else []
         self._cursor_value = datetime.utcnow()
         self.channels_stream = Channels(
             config=config
@@ -96,9 +97,11 @@ class Messages(DiscordMessagesStream):
             self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
         incremental_records = self.read_incremental(self.channels_stream, stream_state=stream_state)
-        for issue in incremental_records:
-            stream_slice = {"id": issue["id"]}
-            yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
+        for incremental_record in incremental_records:
+            channel_id = incremental_record['id']
+            if channel_id in self.channel_ids:
+                stream_slice = {"id": channel_id}
+                yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         records = response.json()

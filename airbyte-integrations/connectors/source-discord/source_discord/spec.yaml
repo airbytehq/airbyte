@@ -29,7 +29,10 @@ connectionSpecification:
       title: Guild Name
       default: "default"
       description: The Name of the target guild (also known as Server Name)
-#    channel_ids:
-#      type: string
+    channel_ids:
+      type: string
+      title: channel id
+      description: The channel that needs to be obtained. If more than one please use "," splicing
+      default: ""
 #    initial_timestamp:
 #      type: string
