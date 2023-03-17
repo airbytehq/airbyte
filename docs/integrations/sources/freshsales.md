@@ -49,6 +49,7 @@ Please read [How to find your API key](https://crmsupport.freshworks.com/support
 
 | Version | Date       | Pull Request                                             | Subject                         |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------|
+| 0.1.3   | 2023-03-16 | [24155](https://github.com/airbytehq/airbyte/pull/24155) | Set `additionalProperties` to `True` in `spec` to support BC |
 | 0.1.2   | 2022-07-14 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Tune the `get_view_id` function |
 | 0.1.1   | 2021-12-24 | [9101](https://github.com/airbytehq/airbyte/pull/9101)   | Update fields and descriptions  |
 | 0.1.0   | 2021-11-03 | [6963](https://github.com/airbytehq/airbyte/pull/6963)   | 🎉 New Source: Freshsales       |
