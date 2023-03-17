@@ -33,8 +33,6 @@ acceptance_tests:
             bypass_reason: "stream not filled yet"
           - name: "keys"
             bypass_reason: "stream not filled yet"
-          - name: "conversation_messages"
-            bypass_reason: "stream not filled yet"
           - name: "available_phone_numbers_local"
             bypass_reason: "very volatile data"
           - name: "available_phone_numbers_mobile"

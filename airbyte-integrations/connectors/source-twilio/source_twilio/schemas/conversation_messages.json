@@ -1,108 +1,82 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Generated schema for Root",
+  "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "sid": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "account_sid": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "conversation_sid": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "body": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "media": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "sid": {
-            "type": "string"
-          },
-          "size": {
-            "type": "number"
-          },
-          "content_type": {
-            "type": "string"
-          },
-          "filename": {
-            "type": "string"
-          }
-        },
-        "required": ["sid", "size", "content_type", "filename"]
-      }
+      "type": ["null", "string"]
     },
     "author": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "participant_sid": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "attributes": {
       "type": "object",
       "properties": {
         "importance": {
-          "type": "string"
+          "type": ["null", "string"]
         }
-      },
-      "required": ["importance"]
+      }
     },
     "date_created": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "date_updated": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "index": {
-      "type": "number"
+      "type": "integer"
     },
     "delivery": {
       "type": "object",
       "properties": {
         "total": {
-          "type": "number"
+          "type": "integer"
         },
         "sent": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "delivered": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "read": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "failed": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "undelivered": {
-          "type": "string"
+          "type": ["null", "string"]
         }
-      },
-      "required": [
-        "total",
-        "sent",
-        "delivered",
-        "read",
-        "failed",
-        "undelivered"
-      ]
+      }
     },
-    "content_sid": {},
+    "content_sid": {
+      "type": ["null", "string"]
+    },
     "url": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "links": {
       "type": "object",
       "properties": {
         "delivery_receipts": {
-          "type": "string"
+          "type": ["null", "string"]
         }
-      },
-      "required": ["delivery_receipts"]
+      }
     }
   }
 }
