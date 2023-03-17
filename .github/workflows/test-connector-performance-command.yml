@@ -120,6 +120,8 @@ jobs:
           ./gradlew :airbyte-integrations:connectors:source-postgres:build -x check
       - name: KIND Kubernetes Cluster Setup
         uses: helm/kind-action@v1.4.0
+        with:
+          config: ./tools/bin/source-harness-kind-cluster-config.yaml
       - name: Run harness
         id: run-harness
         shell: bash
