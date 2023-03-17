@@ -95,7 +95,7 @@
     "title": "API URL",
     "default": "api.github.com",
     "description": "Please enter your self-hosted URL from Github.",
-    "order": 1
+    "order": 99
   },
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
