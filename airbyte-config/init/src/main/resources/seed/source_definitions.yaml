@@ -509,7 +509,7 @@
       - apilayer.com
 - name: Everhour
   sourceDefinitionId: 6babfc42-c734-4ef6-a817-6eca15f0f9b7
-  dockerRepository: airbyte/everhour
+  dockerRepository: airbyte/source-everhour
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/everhour
   icon: everhour.svg
