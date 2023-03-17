@@ -41,8 +41,6 @@ acceptance_tests:
             bypass_reason: "very volatile data"
           - name: "usage_records"
             bypass_reason: "very volatile data"
-          - name: "conversations"
-            bypass_reason: "stream not filled yet"
         timeout_seconds: 600
   incremental:
     tests:
