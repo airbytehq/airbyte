@@ -20,10 +20,10 @@ dependencies {
 
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:base-java-s3')
     implementation project(':airbyte-integrations:connectors:destination-gcs')
-    implementation ('com.github.airbytehq:json-avro-converter:1.0.1') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
+    implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
 
     testImplementation project(':airbyte-integrations:bases:standard-destination-test')
 
@@ -33,4 +33,14 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-db:db-lib')
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+}
+
+configurations.all {
+  resolutionStrategy {
+    // at time of writing: deps.toml declares google-cloud-storage 2.17.2
+    // which pulls in google-api-client:2.2.0
+    // which conflicts with google-cloud-bigquery, which requires google-api-client:1.x
+    // google-cloud-storage is OK with downgrading to anything >=1.31.1.
+    force 'com.google.api-client:google-api-client:1.31.5'
+  }
 }

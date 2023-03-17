@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -24,11 +24,11 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -47,7 +47,10 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
       "No active warehouse selected in the current session.  Select an active warehouse with the 'use warehouse' command.";
 
   protected static final String NO_USER_PRIVILEGES_ERR_MSG =
-      "Schema 'TEXT_SCHEMA' already exists, but current role has no privileges on it.";
+      "Encountered Error with Snowflake Configuration: Current role does not have permissions on the target schema please verify your privileges";
+
+  protected static final String IP_NOT_IN_WHITE_LIST_ERR_MSG = "not allowed to access Snowflake."
+      + " Contact your local security administrator or please create a case with Snowflake Support or reach us on our support line";
 
   // this config is based on the static config, and it contains a random
   // schema name that is different for each test run
@@ -109,16 +112,6 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
         .stream()
         .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()))
         .collect(Collectors.toList());
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return true;
   }
 
   @Override
@@ -207,6 +200,18 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
 
     assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
     assertThat(standardCheckConnectionOutput.getMessage()).contains(NO_USER_PRIVILEGES_ERR_MSG);
+  }
+
+  @Test
+  public void testCheckIpNotInWhiteListConnection() throws Exception {
+    // Config to user(creds) that has no warehouse assigned
+    final JsonNode config = Jsons.deserialize(IOs.readFile(
+        Path.of("secrets/insert_ip_not_in_whitelist_config.json")));
+
+    StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
+
+    assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
+    assertThat(standardCheckConnectionOutput.getMessage()).contains(IP_NOT_IN_WHITE_LIST_ERR_MSG);
   }
 
   @Test

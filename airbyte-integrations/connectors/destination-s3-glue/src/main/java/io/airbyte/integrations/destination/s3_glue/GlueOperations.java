@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3_glue;
@@ -57,7 +57,7 @@ public class GlueOperations implements MetastoreOperations {
           .withTableInput(
               new TableInput()
                   .withName(tableName)
-                  // .withTableType("GOVERNED")
+                  .withTableType("EXTERNAL_TABLE")
                   .withStorageDescriptor(
                       new StorageDescriptor()
                           .withLocation(location)
@@ -80,7 +80,7 @@ public class GlueOperations implements MetastoreOperations {
           .withTableInput(
               new TableInput()
                   .withName(tableName)
-                  // .withTableType("GOVERNED")
+                  .withTableType("EXTERNAL_TABLE")
                   .withStorageDescriptor(
                       new StorageDescriptor()
                           .withLocation(location)
@@ -146,13 +146,17 @@ public class GlueOperations implements MetastoreOperations {
         yield arrayType;
       }
       case "object" -> {
-        String objectType = "struct<";
-        Map<String, JsonNode> properties = objectMapper.convertValue(jsonNode.get("properties"), new TypeReference<>() {});
-        String columnTypes = properties.entrySet().stream()
-            .map(p -> p.getKey() + " : " + transformSchemaRecursive(p.getValue()))
-            .collect(Collectors.joining(","));
-        objectType += (columnTypes + ">");
-        yield objectType;
+        if (jsonNode.has("properties")) {
+          String objectType = "struct<";
+          Map<String, JsonNode> properties = objectMapper.convertValue(jsonNode.get("properties"), new TypeReference<>() {});
+          String columnTypes = properties.entrySet().stream()
+              .map(p -> p.getKey() + " : " + transformSchemaRecursive(p.getValue()))
+              .collect(Collectors.joining(","));
+          objectType += (columnTypes + ">");
+          yield objectType;
+        } else {
+          yield "string";
+        }
       }
       default -> type;
     };

@@ -3,12 +3,12 @@
   "type": "object",
   "properties": {
     "id": {
-       "maxLength": 32,
-       "type": "string"
+      "maxLength": 32,
+      "type": "string"
     },
     "parentId": {
       "maxLength": 32,
-       "type": ["string", "null"]
+      "type": ["string", "null"]
     },
     "sessionId": {
       "maxLength": 32,
@@ -24,17 +24,11 @@
     },
     "dateEstablished": {
       "format": "date-time",
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "dateFinished": {
       "format": "date-time",
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "lastUpdated": {
       "type": "string",
@@ -49,16 +43,10 @@
       "type": "string"
     },
     "from": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "to": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "type": {
       "maxLength": 256,
@@ -73,106 +61,79 @@
       "type": "string"
     },
     "duration": {
-      "type": [
-        "integer",
-        "null"
-      ]
+      "type": ["integer", "null"]
     },
     "anonymous": {
-      "type": [
-        "boolean",
-        "null"
-      ]
+      "type": ["boolean", "null"]
     },
     "recordings": {
       "type": ["array", "null"],
       "items": {
         "type": "object",
         "properties": {
-           "id": {
-              "maxLength": 32,
+          "id": {
+            "maxLength": 32,
+            "type": "string"
+          },
+          "dateCreated": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastUpdated": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "duration": {
+            "type": "integer"
+          },
+          "url": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
               "type": "string"
-           },
-           "dateCreated": {
-              "type": "string",
-              "format": "date-time"
-           },
-           "lastUpdated": {
-              "type": "string",
-              "format": "date-time"
-           },
-           "duration": {
-              "type": "integer"
-           },
-           "url": {
-              "type": "string"
-           },
-           "tags": {
-              "type": "array",
-              "items": {
-                 "type": "string"
+            }
+          },
+          "file": {
+            "type": ["object", "null"],
+            "properties": {
+              "id": {
+                "maxLength": 32,
+                "type": "string"
+              },
+              "state": {
+                "type": ["string", "null"]
+              },
+              "name": {
+                "type": ["string", "null"]
+              },
+              "size": {
+                "type": ["integer", "null"]
+              },
+              "contentType": {
+                "type": ["string", "null"]
               }
-           },
-           "file": {
-              "type": ["object", "null"],
-              "properties": {
-                 "id": {
-                    "maxLength": 32,
-                    "type": "string"
-                 },
-                 "state": {
-                    "type": [
-                       "string",
-                       "null"
-                    ]
-                 },
-                 "name": {
-                    "type": [
-                       "string",
-                       "null"
-                    ]
-                 },
-                 "size": {
-                    "type": [
-                       "integer",
-                       "null"
-                    ]
-                 },
-                 "contentType": {
-                    "type": [
-                       "string",
-                       "null"
-                    ]
-                 }
+            }
+          },
+          "state": {
+            "maxLength": 256,
+            "type": "string"
+          },
+          "agent": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": ["string", "null"]
+              },
+              "name": {
+                "type": ["string", "null"]
+              },
+              "number": {
+                "type": ["string", "null"]
               }
-           },
-           "state": {
-              "maxLength": 256,
-              "type": "string"
-           },
-           "agent": {
-              "type": "object",
-              "properties": {
-                 "id": {
-                    "type": [
-                       "string",
-                       "null"
-                    ]
-                 },
-                 "name": {
-                    "type": [
-                       "string",
-                       "null"
-                    ]
-                 },
-                 "number": {
-                    "type": [
-                       "string",
-                       "null"
-                    ]
-                 }
-              }
-           }
+            }
+          }
         }
       }
     },
@@ -180,22 +141,13 @@
       "type": ["object", "null"],
       "properties": {
         "id": {
-          "type": [
-             "string",
-             "null"
-          ]
+          "type": ["string", "null"]
         },
         "name": {
-          "type": [
-             "string",
-             "null"
-          ]
+          "type": ["string", "null"]
         },
         "number": {
-          "type": [
-             "string",
-             "null"
-          ]
+          "type": ["string", "null"]
         }
       }
     }

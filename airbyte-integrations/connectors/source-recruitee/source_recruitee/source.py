@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
@@ -15,4 +15,4 @@ WARNING: Do not modify this file.
 # Declarative Source
 class SourceRecruitee(YamlDeclarativeSource):
     def __init__(self):
-        super().__init__(**{"path_to_yaml": "recruitee.yaml"})
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})

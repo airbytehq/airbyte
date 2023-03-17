@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "order_nr": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "key_string": {
+      "type": ["null", "string"]
+    },
+    "icon_key": {
+      "type": ["null", "string"]
+    },
+    "active_flag": {
+      "type": ["null", "boolean"]
+    },
+    "color": {
+      "type": ["null", "string"]
+    },
+    "is_custom_flag": {
+      "type": ["null", "boolean"]
+    },
+    "add_time": {
+      "type": ["null", "string"]
+    },
+    "update_time": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    }
+  }
+}

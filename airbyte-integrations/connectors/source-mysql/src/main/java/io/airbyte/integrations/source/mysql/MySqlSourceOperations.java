@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
@@ -53,7 +53,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Set;
@@ -72,7 +71,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
    * @param colIndex 1-based column index.
    */
   @Override
-  public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final ResultSetMetaData metaData = (ResultSetMetaData) resultSet.getMetaData();
     final Field field = metaData.getFields()[colIndex - 1];
     final String columnName = field.getName();
@@ -150,10 +149,10 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   }
 
   @Override
-  public void setStatementField(final PreparedStatement preparedStatement,
-                                final int parameterIndex,
-                                final MysqlType cursorFieldType,
-                                final String value)
+  public void setCursorField(final PreparedStatement preparedStatement,
+                             final int parameterIndex,
+                             final MysqlType cursorFieldType,
+                             final String value)
       throws SQLException {
     switch (cursorFieldType) {
       case BIT -> setBit(preparedStatement, parameterIndex, value);
@@ -176,7 +175,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   }
 
   @Override
-  public MysqlType getFieldType(final JsonNode field) {
+  public MysqlType getDatabaseFieldType(final JsonNode field) {
     try {
       // MysqlType#getByName can handle the full MySQL type name
       // e.g. MEDIUMINT UNSIGNED
@@ -208,18 +207,8 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   }
 
   @Override
-  public boolean isCursorType(MysqlType type) {
+  public boolean isCursorType(final MysqlType type) {
     return ALLOWED_CURSOR_TYPES.contains(type);
-  }
-
-  @Override
-  protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DateTimeConverter.convertToDate(getObject(resultSet, index, LocalDate.class)));
-  }
-
-  @Override
-  protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime.class)));
   }
 
   @Override
@@ -228,7 +217,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   }
 
   @Override
-  public JsonSchemaType getJsonType(final MysqlType mysqlType) {
+  public JsonSchemaType getAirbyteType(final MysqlType mysqlType) {
     return switch (mysqlType) {
       case
       // TINYINT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link
@@ -260,7 +249,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   }
 
   @Override
-  protected void setTimestamp(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
+  protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     try {
       preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
     } catch (final DateTimeParseException e) {
@@ -279,18 +268,6 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       // https://github.com/airbytehq/airbyte/pull/15504
       LOGGER.warn("Exception occurred while trying to parse value for timestamp column the new way, trying the old way", e);
       preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
-    }
-  }
-
-  @Override
-  protected void setTime(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    try {
-      preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
-    } catch (final DateTimeParseException e) {
-      LOGGER.warn("Exception occurred while trying to parse value for time column the new way, trying the old way", e);
-      // This is just for backward compatibility for connectors created on versions before PR
-      // https://github.com/airbytehq/airbyte/pull/15504
-      super.setTime(preparedStatement, parameterIndex, value);
     }
   }
 

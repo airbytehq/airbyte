@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import base64
 import json
@@ -181,8 +181,6 @@ class SecretsManager:
             List[Path]: List of paths were the secrets were written
         """
         written_files = []
-        if not secrets:
-            return 0
         for secret in secrets:
             secrets_dir = self.base_folder / secret.directory
             secrets_dir.mkdir(parents=True, exist_ok=True)

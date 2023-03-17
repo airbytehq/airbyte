@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.cli;
@@ -10,8 +10,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
@@ -47,22 +45,6 @@ public class Clis {
 
   public static CommandLine parse(final String[] args, final Options options) {
     return parse(args, options, new DefaultParser());
-  }
-
-  /**
-   * Provide a fluent interface for building an OptionsGroup.
-   *
-   * @param isRequired - is the option group required
-   * @param options - options in the option group
-   * @return the created option group.
-   */
-  public static OptionGroup createOptionGroup(final boolean isRequired, final Option... options) {
-    final OptionGroup optionGroup = new OptionGroup();
-    optionGroup.setRequired(isRequired);
-    for (final Option option : options) {
-      optionGroup.addOption(option);
-    }
-    return optionGroup;
   }
 
   public static CommandLineParser getRelaxedParser() {

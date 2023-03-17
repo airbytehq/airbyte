@@ -1,14 +1,16 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.annotation.VisibleForTesting;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -36,7 +38,7 @@ public class MssqlCdcHelper {
    * The default "SNAPSHOT" mode can prevent other (non-Airbyte) transactions from updating table rows
    * while we snapshot. References:
    * https://docs.microsoft.com/en-us/sql/t-sql/statements/set-transaction-isolation-level-transact-sql?view=sql-server-ver15
-   * https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-property-snapshot-isolation-mode
+   * https://debezium.io/documentation/reference/2.1/connectors/sqlserver.html#sqlserver-property-snapshot-isolation-mode
    */
   public enum SnapshotIsolation {
 
@@ -66,7 +68,7 @@ public class MssqlCdcHelper {
 
   }
 
-  // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-property-snapshot-mode
+  // https://debezium.io/documentation/reference/2.1/connectors/sqlserver.html#sqlserver-property-snapshot-mode
   public enum DataToSync {
 
     EXISTING_AND_NEW("Existing and New", "initial"),
@@ -136,13 +138,16 @@ public class MssqlCdcHelper {
     return DataToSync.EXISTING_AND_NEW;
   }
 
-  static Properties getDebeziumProperties(final JsonNode config, final ConfiguredAirbyteCatalog catalog) {
+  static Properties getDebeziumProperties(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog) {
+    final JsonNode config = database.getSourceConfig();
+    final JsonNode dbConfig = database.getDatabaseConfig();
+
     final Properties props = new Properties();
     props.setProperty("connector.class", "io.debezium.connector.sqlserver.SqlServerConnector");
 
-    // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-property-include-schema-changes
+    // https://debezium.io/documentation/reference/2.1/connectors/sqlserver.html#sqlserver-property-include-schema-changes
     props.setProperty("include.schema.changes", "false");
-    // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-property-provide-transaction-metadata
+    // https://debezium.io/documentation/reference/2.1/connectors/sqlserver.html#sqlserver-property-provide-transaction-metadata
     props.setProperty("provide.transaction.metadata", "false");
 
     props.setProperty("converters", "mssql_converter");
@@ -152,6 +157,31 @@ public class MssqlCdcHelper {
     props.setProperty("snapshot.isolation.mode", getSnapshotIsolationConfig(config).getDebeziumIsolationMode());
 
     props.setProperty("schema.include.list", getSchema(catalog));
+    props.setProperty("database.names", config.get(JdbcUtils.DATABASE_KEY).asText());
+
+    if (config.has("ssl_method")) {
+      final JsonNode sslConfig = config.get("ssl_method");
+      final String sslMethod = sslConfig.get("ssl_method").asText();
+      if ("unencrypted".equals(sslMethod)) {
+        props.setProperty("database.encrypt", "false");
+      } else if ("encrypted_trust_server_certificate".equals(sslMethod)) {
+        props.setProperty("driver.encrypt", "true");
+        props.setProperty("driver.trustServerCertificate", "true");
+      } else if ("encrypted_verify_certificate".equals(sslMethod)) {
+        props.setProperty("driver.encrypt", "true");
+        if (dbConfig.has("trustStore") && !dbConfig.get("trustStore").asText().isEmpty()) {
+          props.setProperty("database.ssl.truststore", dbConfig.get("trustStore").asText());
+        }
+
+        if (dbConfig.has("trustStorePassword") && !dbConfig.get("trustStorePassword").asText().isEmpty()) {
+          props.setProperty("database.ssl.truststore.password", dbConfig.get("trustStorePassword").asText());
+        }
+
+        if (dbConfig.has("hostNameInCertificate") && !dbConfig.get("hostNameInCertificate").asText().isEmpty()) {
+          props.setProperty("driver.hostNameInCertificate", dbConfig.get("hostNameInCertificate").asText());
+        }
+      }
+    }
 
     return props;
   }

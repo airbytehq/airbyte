@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
@@ -53,7 +53,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
   }
 
   public OracleSource() {
-    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new OracleSourceOperations());
   }
 
   public static Source sshWrappedSource() {

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -59,8 +59,17 @@ class S3File(StorageFile):
             config = ClientConfig(signature_version=UNSIGNED)
             params = {"client": make_s3_client(self._provider, config=config)}
         self.logger.debug(f"try to open {self.file_info}")
-        result = smart_open.open(f"s3://{bucket}/{self.url}", transport_params=params, mode=mode)
-
+        # There are rare cases when some keys become unreachable during sync
+        # and we don't know about it, because catalog has been initially formed only once at the beginning
+        # This is happen for example if a file was deleted/moved (or anything else) while we proceed with another file
+        try:
+            result = smart_open.open(f"s3://{bucket}/{self.url}", transport_params=params, mode=mode)
+        except OSError as e:
+            self.logger.warn(
+                f"We don't have access to {self.url}. "
+                f"Check whether key {self.url} exists in `{bucket}` bucket and/or has proper ACL permissions"
+            )
+            raise e
         # see https://docs.python.org/3/library/contextlib.html#contextlib.contextmanager for why we do this
         try:
             yield result

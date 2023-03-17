@@ -1,4 +1,4 @@
-# ActiveCampaign
+# MailerLite
 
 ## Sync overview
 

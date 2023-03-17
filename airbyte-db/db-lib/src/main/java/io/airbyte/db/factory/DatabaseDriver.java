@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.factory;
@@ -19,7 +19,9 @@ public enum DatabaseDriver {
   POSTGRESQL("org.postgresql.Driver", "jdbc:postgresql://%s:%d/%s"),
   REDSHIFT("com.amazon.redshift.jdbc.Driver", "jdbc:redshift://%s:%d/%s"),
   SNOWFLAKE("net.snowflake.client.jdbc.SnowflakeDriver", "jdbc:snowflake://%s/"),
-  YUGABYTEDB("com.yugabyte.Driver", "jdbc:yugabytedb://%s:%d/%s");
+  YUGABYTEDB("com.yugabyte.Driver", "jdbc:yugabytedb://%s:%d/%s"),
+  EXASOL("com.exasol.jdbc.EXADriver", "jdbc:exa:%s:%d"),
+  TERADATA("com.teradata.jdbc.TeraDriver", "jdbc:teradata://%s/");
 
   private final String driverClassName;
   private final String urlFormatString;

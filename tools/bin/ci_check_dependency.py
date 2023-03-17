@@ -17,9 +17,20 @@ IGNORE_LIST = [
     "/integration_tests/", "/unit_tests/",
     # Common
     "acceptance-test-config.yml", "acceptance-test-docker.sh", ".md", ".dockerignore", ".gitignore", "requirements.txt"]
+IGNORED_SOURCES = [
+    re.compile("^source-e2e-test-cloud$"),
+    re.compile("^source-mongodb$"),
+    re.compile("^source-python-http-tutorial$"),
+    re.compile("^source-relational-db$"),
+    re.compile("^source-stock-ticker-api-tutorial$"),
+    re.compile("source-jdbc$"),
+    re.compile("^source-scaffold-.*$"),
+    re.compile(".*-secure$"),
+]
 IGNORED_DESTINATIONS = [
     re.compile(".*-strict-encrypt$"),
     re.compile("^destination-dev-null$"),
+    re.compile("^destination-scaffold-destination-python$"),
     re.compile("^destination-jdbc$")
 ]
 COMMENT_TEMPLATE_PATH = ".github/comment_templates/connector_dependency_template.md"
@@ -35,7 +46,7 @@ def main():
 
     # Get changed files
     changed_files = get_changed_files(git_diff_file_path)
-    # Get changed modules. e.g. source-acceptance-test from airbyte-integrations/bases/
+    # Get changed modules. e.g. connector-acceptance-test from airbyte-integrations/bases/
     # or destination-mysql from airbyte-integrations/connectors/
     changed_modules = get_changed_modules(changed_files)
 
@@ -127,10 +138,16 @@ def get_connector_version_status(connector, version):
 
 
 def get_connector_changelog_status(connector: str, version) -> str:
-    type, name = connector.replace("-strict-encrypt", "").split("-", 1)
+    type, name = connector.replace("-strict-encrypt", "").replace("-denormalized", "").split("-", 1)
     doc_path = f"{DOC_PATH}{type}s/{name}.md"
+
+    if any(regex.match(connector) for regex in IGNORED_SOURCES):
+        return "🔵<br/>(ignored)"
+    if any(regex.match(connector) for regex in IGNORED_DESTINATIONS):
+        return "🔵<br/>(ignored)"
     if not os.path.exists(doc_path):
         return "⚠<br/>(doc not found)"
+
     with open(doc_path) as f:
         after_changelog = False
         for line in f:
@@ -139,10 +156,7 @@ def get_connector_changelog_status(connector: str, version) -> str:
             if after_changelog and version in line:
                 return "✅"
 
-    if any(regex.match(connector) for regex in IGNORED_DESTINATIONS):
-        return "🔵<br/>(ignored)"
-    else:
-        return "❌<br/>(changelog missing)"
+    return "❌<br/>(changelog missing)"
 
 
 def as_bulleted_markdown_list(items):
@@ -159,7 +173,9 @@ def as_markdown_table_rows(connectors: List[str], definitions) -> str:
         version_status = get_connector_version_status(connector, version)
         changelog_status = get_connector_changelog_status(connector, version)
         definition = next((x for x in definitions if x["dockerRepository"].endswith(connector)), None)
-        if any(regex.match(connector) for regex in IGNORED_DESTINATIONS):
+        if any(regex.match(connector) for regex in IGNORED_SOURCES):
+            publish_status = "🔵<br/>(ignored)"
+        elif any(regex.match(connector) for regex in IGNORED_DESTINATIONS):
             publish_status = "🔵<br/>(ignored)"
         elif definition is None:
             publish_status = "⚠<br/>(not in seed)"

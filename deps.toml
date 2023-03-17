@@ -1,57 +1,50 @@
 [versions]
-datadog-version = "0.111.0"
-fasterxml_version = "2.13.3"
-flyway = "7.14.0"
-glassfish_version = "2.31"
-hikaricp = "5.0.1"
+airbyte-protocol = "1.0.0"
 commons_io = "2.7"
-log4j = "2.17.2"
-slf4j = "1.7.36"
-lombok = "1.18.24"
-jooq = "3.13.4"
-junit-jupiter = "5.9.0"
-micronaut = "3.7.4"
-micronaut-test = "3.7.0"
-postgresql = "42.3.5"
+connectors-destination-testcontainers-clickhouse = "1.17.3"
+connectors-destination-testcontainers-elasticsearch = "1.17.3"
+connectors-destination-testcontainers-oracle-xe = "1.17.3"
+connectors-source-testcontainers-clickhouse = "1.17.3"
 connectors-testcontainers = "1.15.3"
 connectors-testcontainers-cassandra = "1.16.0"
 connectors-testcontainers-mariadb = "1.16.2"
 connectors-testcontainers-pulsar = "1.16.2"
 connectors-testcontainers-scylla = "1.16.2"
 connectors-testcontainers-tidb = "1.16.3"
-connectors-destination-testcontainers-clickhouse = "1.17.3"
-connectors-destination-testcontainers-oracle-xe = "1.17.3"
-connectors-destination-testcontainers-elasticsearch = "1.17.3"
-connectors-source-testcontainers-clickhouse = "1.17.3"
+datadog-version = "0.111.0"
+fasterxml_version = "2.14.0"
+flyway = "7.14.0"
+glassfish_version = "2.31"
+hikaricp = "5.0.1"
+jmh = "1.36"
+jooq = "3.13.4"
+junit-jupiter = "5.9.1"
+log4j = "2.17.2"
+lombok = "1.18.24"
+micronaut = "3.8.3"
+micronaut-data = "3.9.4"
+micronaut-jaxrs = "3.4.0"
+micronaut-security = "3.9.2"
+micronaut-test = "3.8.0"
 platform-testcontainers = "1.17.3"
+postgresql = "42.3.5"
+reactor = "3.5.2"
+segment = "2.1.1"
+slf4j = "1.7.36"
 temporal = "1.17.0"
 
 [libraries]
-fasterxml = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "fasterxml_version" }
-glassfish = { module = "org.glassfish.jersey:jackson-bom", version.ref = "glassfish_version" }
-jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "fasterxml_version" }
-jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "fasterxml_version" }
-jackson-dataformat = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "fasterxml_version" }
-jackson-datatype = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "fasterxml_version" }
-guava = { module = "com.google.guava:guava", version = "31.1-jre" }
-commons-io = { module = "commons-io:commons-io", version.ref = "commons_io" }
+airbyte-protocol = { module = "io.airbyte.airbyte-protocol:protocol-models", version.ref = "airbyte-protocol" }
 apache-commons = { module = "org.apache.commons:commons-compress", version = "1.20" }
 apache-commons-lang = { module = "org.apache.commons:commons-lang3", version = "3.11" }
-slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
-log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
-log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
-log4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j" }
-log4j-web = { module = "org.apache.logging.log4j:log4j-web", version.ref = "log4j" }
-jul-to-slf4j = { module = "org.slf4j:jul-to-slf4j", version.ref = "slf4j" }
-jcl-over-slf4j = { module = "org.slf4j:jcl-over-slf4j", version.ref = "slf4j" }
-hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
-java-dogstatsd-client = { module = "com.datadoghq:java-dogstatsd-client", version = "4.1.0" }
-javax-databind = { module = "javax.xml.bind:jaxb-api", version = "2.4.0-b180830.0359" }
-jooq = { module = "org.jooq:jooq", version.ref = "jooq" }
-jooq-codegen = { module = "org.jooq:jooq-codegen", version.ref = "jooq" }
-jooq-meta = { module = "org.jooq:jooq-meta", version.ref = "jooq" }
-postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
-flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+appender-log4j2 = { module = "com.therealvan:appender-log4j2", version = "3.6.0" }
+assertj-core = { module = "org.assertj:assertj-core", version = "3.21.0" }
+aws-java-sdk-s3 = { module = "com.amazonaws:aws-java-sdk-s3", version = "1.12.6" }
+commons-io = { module = "commons-io:commons-io", version.ref = "commons_io" }
+connectors-destination-testcontainers-clickhouse = { module = "org.testcontainers:clickhouse", version.ref = "connectors-destination-testcontainers-clickhouse" }
+connectors-destination-testcontainers-oracle-xe = { module = "org.testcontainers:oracle-xe", version.ref = "connectors-destination-testcontainers-oracle-xe" }
+connectors-source-testcontainers-clickhouse = { module = "org.testcontainers:clickhouse", version.ref = "connectors-source-testcontainers-clickhouse" }
+connectors-source-testcontainers-oracle-xe = { module = "org.testcontainers:oracle-xe", version.ref = "connectors-testcontainers" }
 connectors-testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "connectors-testcontainers" }
 connectors-testcontainers-cassandra = { module = "org.testcontainers:cassandra", version.ref = "connectors-testcontainers-cassandra" }
 connectors-testcontainers-cockroachdb = { module = "org.testcontainers:cockroachdb", version.ref = "connectors-testcontainers" }
@@ -67,36 +60,60 @@ connectors-testcontainers-postgresql = { module = "org.testcontainers:postgresql
 connectors-testcontainers-pulsar = { module = "org.testcontainers:pulsar", version.ref = "connectors-testcontainers-pulsar" }
 connectors-testcontainers-scylla = { module = "org.testcontainers:testcontainers", version.ref = "connectors-testcontainers-scylla" }
 connectors-testcontainers-tidb = { module = "org.testcontainers:testcontainers", version.ref = "connectors-testcontainers-tidb" }
-connectors-destination-testcontainers-clickhouse = { module = "org.testcontainers:clickhouse", version.ref = "connectors-destination-testcontainers-clickhouse" }
-connectors-destination-testcontainers-oracle-xe = { module = "org.testcontainers:oracle-xe", version.ref = "connectors-destination-testcontainers-oracle-xe" }
-connectors-source-testcontainers-clickhouse = { module = "org.testcontainers:clickhouse", version.ref = "connectors-source-testcontainers-clickhouse" }
-connectors-source-testcontainers-oracle-xe = { module = "org.testcontainers:oracle-xe", version.ref = "connectors-testcontainers" }
+datadog-trace-api = { module = "com.datadoghq:dd-trace-api", version.ref = "datadog-version" }
+datadog-trace-ot = { module = "com.datadoghq:dd-trace-ot", version.ref = "datadog-version" }
+fasterxml = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "fasterxml_version" }
+findsecbugs-plugin = { module = "com.h3xstream.findsecbugs:findsecbugs-plugin", version = "1.12.0" }
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+glassfish = { module = "org.glassfish.jersey:jackson-bom", version.ref = "glassfish_version" }
+google-cloud-storage = { module = "com.google.cloud:google-cloud-storage", version = "2.17.2" }
+guava = { module = "com.google.guava:guava", version = "31.1-jre" }
+hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
+jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "fasterxml_version" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "fasterxml_version" }
+jackson-dataformat = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "fasterxml_version" }
+jackson-datatype = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "fasterxml_version" }
+jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "fasterxml_version" }
+java-dogstatsd-client = { module = "com.datadoghq:java-dogstatsd-client", version = "4.1.0" }
+javax-databind = { module = "javax.xml.bind:jaxb-api", version = "2.4.0-b180830.0359" }
+jcl-over-slf4j = { module = "org.slf4j:jcl-over-slf4j", version.ref = "slf4j" }
+jmh-core = { module = "org.openjdk.jmh:jmh-core", version.ref = "jmh" }
+jmh-annotations = { module = "org.openjdk.jmh:jmh-generator-annprocess", version.ref = "jmh" }
+jooq = { module = "org.jooq:jooq", version.ref = "jooq" }
+jooq-codegen = { module = "org.jooq:jooq-codegen", version.ref = "jooq" }
+jooq-meta = { module = "org.jooq:jooq-meta", version.ref = "jooq" }
+jul-to-slf4j = { module = "org.slf4j:jul-to-slf4j", version.ref = "slf4j" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
+junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit-jupiter" }
+junit-jupiter-system-stubs = { module = "uk.org.webcompere:system-stubs-jupiter", version = "2.0.1" }
+junit-pioneer = { module = "org.junit-pioneer:junit-pioneer", version = "1.7.1" }
+launchdarkly = { module = "com.launchdarkly:launchdarkly-java-server-sdk", version = "6.0.1" }
+log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
+log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
+log4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j" }
+log4j-over-slf4j = { module = "org.slf4j:log4j-over-slf4j", version.ref = "slf4j" }
+log4j-web = { module = "org.apache.logging.log4j:log4j-web", version.ref = "log4j" }
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+micrometer-statsd = { module = "io.micrometer:micrometer-registry-statsd", version = "1.9.3" }
+mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version = "4.6.1" }
+mockk = { module = "io.mockk:mockk", version = "1.13.3" }
+otel-bom = { module = "io.opentelemetry:opentelemetry-bom", version = "1.14.0" }
+otel-sdk = { module = "io.opentelemetry:opentelemetry-sdk-metrics", version = "1.14.0" }
+otel-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-metrics-testing", version = "1.13.0-alpha" }
+otel-semconv = { module = "io.opentelemetry:opentelemetry-semconv", version = "1.14.0-alpha" }
 platform-testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "platform-testcontainers" }
 platform-testcontainers-cockroachdb = { module = "org.testcontainers:cockroachdb", version.ref = "platform-testcontainers" }
 platform-testcontainers-jdbc = { module = "org.testcontainers:jdbc", version.ref = "platform-testcontainers" }
 platform-testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "platform-testcontainers" }
-log4j-over-slf4j = { module = "org.slf4j:log4j-over-slf4j", version.ref = "slf4j" }
-appender-log4j2 = { module = "com.therealvan:appender-log4j2", version = "3.6.0" }
-aws-java-sdk-s3 = { module = "com.amazonaws:aws-java-sdk-s3", version = "1.12.6" }
-google-cloud-storage = { module = "com.google.cloud:google-cloud-storage", version = "2.2.2" }
-s3 = { module = "software.amazon.awssdk:s3", version = "2.16.84" }
-lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
-junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
-junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
-junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit-jupiter" }
-mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version = "4.0.0" }
-assertj-core = { module = "org.assertj:assertj-core", version = "3.21.0" }
-junit-pioneer = { module = "org.junit-pioneer:junit-pioneer", version = "1.7.1" }
-findsecbugs-plugin = { module = "com.h3xstream.findsecbugs:findsecbugs-plugin", version = "1.12.0" }
-spotbugs-annotations = { module = "com.github.spotbugs:spotbugs-annotations", version = "4.7.3" }
-otel-bom = { module = "io.opentelemetry:opentelemetry-bom", version = "1.14.0" }
-otel-semconv = { module = "io.opentelemetry:opentelemetry-semconv", version = "1.14.0-alpha" }
-otel-sdk = { module = "io.opentelemetry:opentelemetry-sdk-metrics", version = "1.14.0" }
-otel-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-metrics-testing", version = "1.13.0-alpha" }
-micrometer-statsd = { module = "io.micrometer:micrometer-registry-statsd", version = "1.9.3" }
-datadog-trace-api = { module = "com.datadoghq:dd-trace-api", version.ref = "datadog-version" }
-datadog-trace-ot = { module = "com.datadoghq:dd-trace-ot", version.ref = "datadog-version" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 quartz-scheduler = { module = "org.quartz-scheduler:quartz", version = "2.3.2" }
+reactor-core = { module = "io.projectreactor:reactor-core", version.ref = "reactor" }
+reactor-test = { module = "io.projectreactor:reactor-test", version.ref = "reactor" }
+s3 = { module = "software.amazon.awssdk:s3", version = "2.16.84" }
+segment-java-analytics = { module = "com.segment.analytics.java:analytics", version.ref = "segment" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+spotbugs-annotations = { module = "com.github.spotbugs:spotbugs-annotations", version = "4.7.3" }
 temporal-sdk = { module = "io.temporal:temporal-sdk", version.ref = "temporal" }
 temporal-serviceclient = { module = "io.temporal:temporal-serviceclient", version.ref = "temporal" }
 temporal-testing = { module = "io.temporal:temporal-testing", version.ref = "temporal" }
@@ -107,33 +124,38 @@ hibernate-types = { module = "com.vladmihalcea:hibernate-types-52", version = "2
 jakarta-inject = { module = "jakarta.annotation:jakarta.annotation-api", version = "2.1.1" }
 javax-transaction = { module = "javax.transaction:javax.transaction-api", version = "1.3" }
 micronaut-bom = { module = "io.micronaut:micronaut-bom", version.ref = "micronaut" }
-micronaut-data-processor = { module = "io.micronaut.data:micronaut-data-processor", version = "3.8.1" }
+micronaut-cache-caffeine = { module = "io.micronaut.cache:micronaut-cache-caffeine", version = "3.5.0"}
+micronaut-data-processor = { module = "io.micronaut.data:micronaut-data-processor", version.ref = "micronaut-data" }
+micronaut-data-tx = { module = "io.micronaut.data:micronaut-data-tx", version.ref = "micronaut-data" }
 micronaut-flyway = { module = "io.micronaut.flyway:micronaut-flyway", version = "5.4.1" }
 micronaut-inject = { module = "io.micronaut:micronaut-inject" }
+micronaut-http = { module = "io.micronaut:micronaut-http", version.ref = "micronaut" }
 micronaut-http-client = { module = "io.micronaut:micronaut-http-client" }
-micronaut-http-server-netty = { module = "io.micronaut:micronaut-http-server-netty" }
+micronaut-http-server-netty = { module = "io.micronaut:micronaut-http-server-netty", version.ref = "micronaut" }
 micronaut-inject-java = { module = "io.micronaut:micronaut-inject-java", version.ref = "micronaut" }
-micronaut-jaxrs-processor = { module = "io.micronaut.jaxrs:micronaut-jaxrs-processor", version = "3.4.0" }
-micronaut-jaxrs-server = { module = "io.micronaut.jaxrs:micronaut-jaxrs-server", version = "3.4.0" }
+micronaut-jaxrs-processor = { module = "io.micronaut.jaxrs:micronaut-jaxrs-processor", version.ref = "micronaut-jaxrs" }
+micronaut-jaxrs-server = { module = "io.micronaut.jaxrs:micronaut-jaxrs-server", version.ref = "micronaut-jaxrs" }
+micronaut-jdbc = { module = "io.micronaut.sql:micronaut-jdbc", version = "4.7.2" }
 micronaut-jdbc-hikari = { module = "io.micronaut.sql:micronaut-jdbc-hikari" }
 micronaut-jooq = { module = "io.micronaut.sql:micronaut-jooq" }
 micronaut-management = { module = "io.micronaut:micronaut-management" }
 micronaut-runtime = { module = "io.micronaut:micronaut-runtime" }
-micronaut-security = { module = "io.micronaut.security:micronaut-security", version = "3.8.3" }
+micronaut-security = { module = "io.micronaut.security:micronaut-security", version.ref = "micronaut-security" }
 micronaut-test-core = { module = "io.micronaut.test:micronaut-test-core", version.ref = "micronaut-test" }
 micronaut-test-junit5 = { module = "io.micronaut.test:micronaut-test-junit5", version.ref = "micronaut-test" }
 micronaut-validation = { module = "io.micronaut:micronaut-validation" }
 
 [bundles]
-jackson = ["jackson-databind", "jackson-annotations", "jackson-dataformat", "jackson-datatype"]
 apache = ["apache-commons", "apache-commons-lang"]
 datadog = ["datadog-trace-api", "datadog-trace-ot"]
-log4j = ["log4j-api", "log4j-core", "log4j-impl", "log4j-web"]
-slf4j = ["jul-to-slf4j", "jcl-over-slf4j", "log4j-over-slf4j"]
+jackson = ["jackson-databind", "jackson-annotations", "jackson-dataformat", "jackson-datatype"]
 junit = ["junit-jupiter-api", "junit-jupiter-params", "mockito-junit-jupiter"]
+log4j = ["log4j-api", "log4j-core", "log4j-impl", "log4j-web"]
 micronaut = ["jakarta-inject", "javax-transaction", "micronaut-http-server-netty", "micronaut-http-client", "micronaut-inject", "micronaut-validation", "micronaut-runtime", "micronaut-management", "micronaut-security", "micronaut-jaxrs-server", "micronaut-flyway", "micronaut-jdbc-hikari", "micronaut-jooq"]
 micronaut-annotation = ["jakarta-inject", "micronaut-inject-java"]
 micronaut-annotation-processor = ["micronaut-inject-java", "micronaut-management", "micronaut-validation", "micronaut-data-processor", "micronaut-jaxrs-processor"]
+micronaut-server = ["micronaut-jaxrs-processor", "micronaut-jaxrs-server"]
 micronaut-test = ["micronaut-test-core", "micronaut-test-junit5", "h2-database"]
 micronaut-test-annotation-processor = ["micronaut-inject-java"]
+slf4j = ["jul-to-slf4j", "jcl-over-slf4j", "log4j-over-slf4j"]
 temporal = ["temporal-sdk", "temporal-serviceclient"]

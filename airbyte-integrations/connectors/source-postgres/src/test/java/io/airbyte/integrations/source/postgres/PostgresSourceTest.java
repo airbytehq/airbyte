@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -27,19 +27,22 @@ import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +63,7 @@ class PostgresSourceTest {
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME_PRIVILEGES_TEST_CASE = "id_and_name_3";
+  private static final String STREAM_NAME_WITH_QUOTES = "\"test_dq_table\"";
   private static final String STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW = "id_and_name_3_view";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
@@ -100,6 +104,8 @@ class PostgresSourceTest {
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
+  private static final ConfiguredAirbyteCatalog CONFIGURED_INCR_CATALOG = toIncrementalConfiguredCatalog(CATALOG);
+
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
       createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
       createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
@@ -108,6 +114,10 @@ class PostgresSourceTest {
   private static final Set<AirbyteMessage> UTF8_MESSAGES = Sets.newHashSet(
       createRecord(STREAM_NAME, SCHEMA_NAME, ImmutableMap.of("id", 1, "name", "\u2013 someutfstring")),
       createRecord(STREAM_NAME, SCHEMA_NAME, ImmutableMap.of("id", 2, "name", "\u2215")));
+
+  private static final Set<AirbyteMessage> DOUBLE_QUOTED_MESSAGES = Sets.newHashSet(
+      createRecord(STREAM_NAME_WITH_QUOTES, SCHEMA_NAME, ImmutableMap.of("id", 1, "\"test_column\"", "test1")),
+      createRecord(STREAM_NAME_WITH_QUOTES, SCHEMA_NAME, ImmutableMap.of("id", 2, "\"test_column\"", "test2")));
 
   private static final Set<AirbyteMessage> PRIVILEGE_TEST_CASE_EXPECTED_MESSAGES = Sets.newHashSet(
       createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE, SCHEMA_NAME, ImmutableMap.of("id", 1, "name", "Zed")),
@@ -222,6 +232,39 @@ class PostgresSourceTest {
   @AfterAll
   static void cleanUp() {
     PSQL_DB.close();
+  }
+
+  @Test
+  public void testCanReadTablesAndColumnsWithDoubleQuotes() throws Exception {
+    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
+      db.start();
+
+      final AirbyteCatalog airbyteCatalog = new AirbyteCatalog().withStreams(List.of(
+          CatalogHelpers.createAirbyteStream(
+              STREAM_NAME_WITH_QUOTES,
+              SCHEMA_NAME,
+              Field.of("id", JsonSchemaType.NUMBER),
+              Field.of("\"test_column\"", JsonSchemaType.STRING))
+              .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+              .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
+
+      final JsonNode config = getConfig(db);
+      try (final DSLContext dslContext = getDslContext(config)) {
+        final Database database = getDatabase(dslContext);
+
+        database.query(ctx -> {
+          ctx.fetch("CREATE TABLE \"\"\"test_dq_table\"\"\"(id INTEGER PRIMARY KEY,  \"\"\"test_column\"\"\" varchar);");
+          ctx.fetch("INSERT INTO \"\"\"test_dq_table\"\"\" (id, \"\"\"test_column\"\"\") VALUES (1,'test1'),  (2, 'test2');");
+          return null;
+        });
+      }
+      final Set<AirbyteMessage> actualMessages =
+          MoreIterators.toSet(new PostgresSource().read(config, CatalogHelpers.toDefaultConfiguredCatalog(airbyteCatalog), null));
+      setEmittedAtToNull(actualMessages);
+
+      assertEquals(DOUBLE_QUOTED_MESSAGES, actualMessages);
+      db.stop();
+    }
   }
 
   @Test
@@ -458,6 +501,34 @@ class PostgresSourceTest {
   }
 
   @Test
+  void testReadIncrementalSuccess() throws Exception {
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        CONFIGURED_INCR_CATALOG
+            .withStreams(CONFIGURED_INCR_CATALOG.getStreams().stream().filter(s -> s.getStream().getName().equals(STREAM_NAME)).collect(
+                Collectors.toList()));
+    final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new PostgresSource().read(getConfig(PSQL_DB, dbName), configuredCatalog, null));
+    setEmittedAtToNull(actualMessages);
+
+    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessage(actualMessages);
+
+    setEmittedAtToNull(actualMessages);
+
+    // An extra state message is emitted, in addition to the record messages.
+    assertEquals(actualMessages.size(), ASCII_MESSAGES.size() + 1);
+    assertThat(actualMessages.contains(ASCII_MESSAGES));
+
+    final JsonNode state = Jsons.jsonNode(stateAfterFirstBatch);
+
+    // Incremental sync should only read one new message (where id = 'NaN')
+    final Set<AirbyteMessage> nextSyncMessages = MoreIterators.toSet(new PostgresSource().read(getConfig(PSQL_DB, dbName), configuredCatalog, state));
+    setEmittedAtToNull(nextSyncMessages);
+
+    // An extra state message is emitted, in addition to the record messages.
+    assertEquals(nextSyncMessages.size(), 2);
+    assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", null, "name", "piccolo", "power", null))));
+  }
+
+  @Test
   void testIsCdc() {
     final JsonNode config = getConfig(PSQL_DB, dbName);
 
@@ -520,7 +591,7 @@ class PostgresSourceTest {
         .withSyncMode(SyncMode.INCREMENTAL)
         .withStream(CatalogHelpers.createAirbyteStream(
             "test_table",
-            "public",
+            SCHEMA_NAME,
             Field.of("id", JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
@@ -577,9 +648,9 @@ class PostgresSourceTest {
         .withDestinationSyncMode(DestinationSyncMode.APPEND)
         .withSyncMode(SyncMode.INCREMENTAL)
         .withStream(CatalogHelpers.createAirbyteStream(
-                "test_table_null_cursor",
-                "public",
-                Field.of("id", JsonSchemaType.STRING))
+            "test_table_null_cursor",
+            SCHEMA_NAME,
+            Field.of("id", JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
 
@@ -610,10 +681,10 @@ class PostgresSourceTest {
     database.query(ctx -> {
       ctx.fetch("CREATE TABLE IF NOT EXISTS public.test_table_null_cursor(id INTEGER NULL)");
       ctx.fetch("""
-          CREATE VIEW test_view_null_cursor(id) as
-          SELECT test_table_null_cursor.id
-          FROM test_table_null_cursor
-          """);
+                CREATE VIEW test_view_null_cursor(id) as
+                SELECT test_table_null_cursor.id
+                FROM test_table_null_cursor
+                """);
       ctx.fetch("INSERT INTO public.test_table_null_cursor(id) VALUES (1), (2), (NULL)");
       return null;
     });
@@ -623,12 +694,34 @@ class PostgresSourceTest {
         .withDestinationSyncMode(DestinationSyncMode.APPEND)
         .withSyncMode(SyncMode.INCREMENTAL)
         .withStream(CatalogHelpers.createAirbyteStream(
-                "test_view_null_cursor",
-                "public",
-                Field.of("id", JsonSchemaType.STRING))
+            "test_view_null_cursor",
+            SCHEMA_NAME,
+            Field.of("id", JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
 
+  }
+
+  private static List<AirbyteStateMessage> extractStateMessage(final Set<AirbyteMessage> messages) {
+    return messages.stream().filter(r -> r.getType() == Type.STATE).map(AirbyteMessage::getState)
+        .collect(Collectors.toList());
+  }
+
+  private static ConfiguredAirbyteCatalog toIncrementalConfiguredCatalog(final AirbyteCatalog catalog) {
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(catalog.getStreams()
+            .stream()
+            .map(s -> toIncrementalConfiguredStream(s))
+            .toList());
+  }
+
+  private static ConfiguredAirbyteStream toIncrementalConfiguredStream(final AirbyteStream stream) {
+    return new ConfiguredAirbyteStream()
+        .withStream(stream)
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withCursorField(List.of("id"))
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withPrimaryKey(new ArrayList<>());
   }
 
 }

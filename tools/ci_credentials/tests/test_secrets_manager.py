@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import base64
 import json
@@ -120,6 +120,11 @@ def test_read(matchers, connector_name, gsm_secrets, expected_secrets):
                 "airbyte-integrations/bases/base-normalization/secrets/test.json",
                 "airbyte-integrations/bases/base-normalization/secrets/auth.json",
             ],
+        ),
+        (
+            "source-no-secret",
+            [],
+            [],
         ),
     ),
 )

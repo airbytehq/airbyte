@@ -1,13 +1,19 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from abc import abstractmethod
-from typing import Any, List, Mapping, MutableMapping, Tuple
+from typing import Any, List, Mapping, MutableMapping, Tuple, Union
 
+import backoff
 import pendulum
 import requests
 from requests.auth import AuthBase
+
+from ..exceptions import DefaultBackoffException
+
+logger = logging.getLogger("airbyte")
 
 
 class AbstractOauth2Authenticator(AuthBase):
@@ -29,10 +35,9 @@ class AbstractOauth2Authenticator(AuthBase):
     def get_access_token(self) -> str:
         """Returns the access token"""
         if self.token_has_expired():
-            t0 = pendulum.now()
             token, expires_in = self.refresh_access_token()
             self.access_token = token
-            self.set_token_expiry_date(t0.add(seconds=expires_in))
+            self.set_token_expiry_date(expires_in)
 
         return self.access_token
 
@@ -64,10 +69,25 @@ class AbstractOauth2Authenticator(AuthBase):
 
         return payload
 
+    @backoff.on_exception(
+        backoff.expo,
+        DefaultBackoffException,
+        on_backoff=lambda details: logger.info(
+            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+        ),
+        max_time=300,
+    )
     def _get_refresh_access_token_response(self):
-        response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body())
-        response.raise_for_status()
-        return response.json()
+        try:
+            response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body())
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            if e.response.status_code == 429 or e.response.status_code >= 500:
+                raise DefaultBackoffException(request=e.response.request, response=e.response)
+            raise
+        except Exception as e:
+            raise Exception(f"Error while refreshing access token: {e}") from e
 
     def refresh_access_token(self) -> Tuple[str, int]:
         """
@@ -75,11 +95,8 @@ class AbstractOauth2Authenticator(AuthBase):
 
         :return: a tuple of (access_token, token_lifespan_in_seconds)
         """
-        try:
-            response_json = self._get_refresh_access_token_response()
-            return response_json[self.get_access_token_name()], response_json[self.get_expires_in_name()]
-        except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
+        response_json = self._get_refresh_access_token_response()
+        return response_json[self.get_access_token_name()], int(response_json[self.get_expires_in_name()])
 
     @abstractmethod
     def get_token_refresh_endpoint(self) -> str:
@@ -102,11 +119,11 @@ class AbstractOauth2Authenticator(AuthBase):
         """List of requested scopes"""
 
     @abstractmethod
-    def get_token_expiry_date(self) -> pendulum.datetime:
+    def get_token_expiry_date(self) -> pendulum.DateTime:
         """Expiration date of the access token"""
 
     @abstractmethod
-    def set_token_expiry_date(self, value: pendulum.datetime):
+    def set_token_expiry_date(self, value: Union[str, int]):
         """Setter for access token expiration date"""
 
     @abstractmethod

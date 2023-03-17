@@ -5,7 +5,7 @@ This page guides you through the process of setting up the SurveyCTO source conn
 ## Prerequisites
 
 - Server Name `The name of the ServerCTO server`
-- Your SurveCTO `Username`
+- Your SurveyCTO `Username`
 - Your SurveyCTO `Password`
 - Form ID `Unique Identifier for one of your forms`
 - Start Date `Start Date default`
@@ -17,7 +17,7 @@ This page guides you through the process of setting up the SurveyCTO source conn
 - give your user an API consumer permission to the existing role or create a user with that role and permission.
 
 ## Set up the SurveyCTO source connection
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Survey CTO** from the Source type dropdown.
 4. Enter a name for your source.
@@ -30,18 +30,18 @@ This page guides you through the process of setting up the SurveyCTO source conn
 
 ## Supported sync modes
 
-The Commcare source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The SurveyCTO source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 * [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 * [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 * (Recommended)[ Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
 
-The Commcare source connector supports the following streams:
+The SurveyCTO source connector supports the following streams:
 
-- Forms
+- Surveycto
 
 ## Changelog
 

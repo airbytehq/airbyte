@@ -47,7 +47,7 @@
     },
     "counts": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "sent_emails": {
           "type": ["null", "integer"]
@@ -68,7 +68,7 @@
     },
     "template_owner": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["null", "integer"]
@@ -80,7 +80,7 @@
     },
     "team_template": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["null", "string"]
@@ -92,7 +92,7 @@
     },
     "_links": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "attachments": {
           "type": ["null", "string"]
@@ -101,7 +101,7 @@
     },
     "groups": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["null", "integer"]

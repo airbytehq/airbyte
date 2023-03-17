@@ -6,7 +6,7 @@ description: Start triggering Airbyte jobs with Dagster in minutes
 
 Airbyte is an official integration in the Dagster project. The Airbyte Integration allows you to trigger synchronization jobs in Airbyte, and this tutorial will walk through configuring your Dagster Ops to do so.
 
-The Airbyte Task documentation on Dagster project can be found [here](https://docs.dagster.io/_apidocs/libraries/dagster-airbyte).
+The Airbyte Task documentation on the Dagster project can be found [here](https://docs.dagster.io/_apidocs/libraries/dagster-airbyte). We also have a tutorial on [dynamically configuring Airbyte using `dagster-airbyte`](https://airbyte.com/tutorials/configure-airbyte-with-python-dagster).
 
 ## 1. Set up the tools
 

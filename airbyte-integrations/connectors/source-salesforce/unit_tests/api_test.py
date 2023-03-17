@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -14,13 +14,14 @@ import requests_mock
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
 from conftest import encoding_symbols_parameters, generate_stream
 from requests.exceptions import HTTPError
+from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
 from source_salesforce.streams import (
     CSV_FIELD_SIZE_LIMIT,
     BulkIncrementalSalesforceStream,
     BulkSalesforceStream,
-    IncrementalSalesforceStream,
-    SalesforceStream,
+    IncrementalRestSalesforceStream,
+    RestSalesforceStream,
 )
 
 
@@ -45,17 +46,14 @@ def test_bulk_stream_fallback_to_rest(mocker, requests_mock, stream_config, stre
         "POST",
         "https://fase-account.salesforce.com/services/data/v52.0/jobs/query",
         status_code=400,
-        json=[{
-            "errorCode": "INVALIDENTITY",
-            "message": "CustomEntity is not supported by the Bulk API"
-        }]
+        json=[{"errorCode": "INVALIDENTITY", "message": "CustomEntity is not supported by the Bulk API"}],
     )
     rest_stream_records = [
         {"id": 1, "name": "custom entity", "created": "2010-11-11"},
-        {"id": 11, "name": "custom entity", "created": "2020-01-02"}
+        {"id": 11, "name": "custom entity", "created": "2020-01-02"},
     ]
     # mock REST API
-    mocker.patch("source_salesforce.source.SalesforceStream.read_records", Mock(return_value=rest_stream_records))
+    mocker.patch("source_salesforce.source.RestSalesforceStream.read_records", lambda *args, **kwargs: iter(rest_stream_records))
     assert type(stream) is BulkIncrementalSalesforceStream
     assert list(stream.read_records(sync_mode=SyncMode.full_refresh)) == rest_stream_records
 
@@ -196,12 +194,12 @@ def test_stream_start_date(
 
 
 def test_stream_start_date_should_be_converted_to_datetime_format(stream_config_date_format, stream_api):
-    stream: IncrementalSalesforceStream = generate_stream("ActiveFeatureLicenseMetric", stream_config_date_format, stream_api)
+    stream: IncrementalRestSalesforceStream = generate_stream("ActiveFeatureLicenseMetric", stream_config_date_format, stream_api)
     assert stream.start_date == "2010-01-18T00:00:00Z"
 
 
 def test_stream_start_datetime_format_should_not_changed(stream_config, stream_api):
-    stream: IncrementalSalesforceStream = generate_stream("ActiveFeatureLicenseMetric", stream_config, stream_api)
+    stream: IncrementalRestSalesforceStream = generate_stream("ActiveFeatureLicenseMetric", stream_config, stream_api)
     assert stream.start_date == "2010-01-18T21:18:20Z"
 
 
@@ -335,8 +333,8 @@ def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
     Next streams should not be executed.
     """
 
-    stream_1: IncrementalSalesforceStream = generate_stream("KnowledgeArticle", stream_config, stream_api)
-    stream_2: IncrementalSalesforceStream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
+    stream_1: IncrementalRestSalesforceStream = generate_stream("KnowledgeArticle", stream_config, stream_api)
+    stream_2: IncrementalRestSalesforceStream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
 
     stream_1.state_checkpoint_interval = 3
     configure_request_params_mock(stream_1, stream_2)
@@ -397,7 +395,7 @@ def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
 
 def test_pagination_rest(stream_config, stream_api):
     stream_name = "AcceptedEventRelation"
-    stream: SalesforceStream = generate_stream(stream_name, stream_config, stream_api)
+    stream: RestSalesforceStream = generate_stream(stream_name, stream_config, stream_api)
     stream.DEFAULT_WAIT_TIMEOUT_SECONDS = 6  # maximum wait timeout will be 6 seconds
     next_page_url = "/services/data/v52.0/query/012345"
     with requests_mock.Mocker() as m:
@@ -558,7 +556,7 @@ def test_csv_field_size_limit():
 def test_convert_to_standard_instance(stream_config, stream_api):
     bulk_stream = generate_stream("Account", stream_config, stream_api)
     rest_stream = bulk_stream.get_standard_instance()
-    assert isinstance(rest_stream, IncrementalSalesforceStream)
+    assert isinstance(rest_stream, IncrementalRestSalesforceStream)
 
 
 def test_bulk_stream_paging(stream_config, stream_api_pk):
@@ -615,3 +613,71 @@ def test_bulk_stream_paging(stream_config, stream_api_pk):
 
         q = f"{SELECT} WHERE (LastModifiedDate = {last_modified_date2} AND Id > '4') OR (LastModifiedDate > {last_modified_date2}) {ORDER_BY}"
         assert get_query(12) == q
+
+
+def test_rest_stream_init_with_too_many_properties(stream_config, stream_api_v2_too_many_properties):
+    with pytest.raises(AssertionError):
+        # v2 means the stream is going to be a REST stream.
+        # A missing primary key is not allowed
+        generate_stream("Account", stream_config, stream_api_v2_too_many_properties)
+
+
+def test_too_many_properties(stream_config, stream_api_v2_pk_too_many_properties, requests_mock):
+    stream = generate_stream("Account", stream_config, stream_api_v2_pk_too_many_properties)
+    chunks = list(stream.chunk_properties())
+    for chunk in chunks:
+        assert stream.primary_key in chunk
+    chunks_len = len(chunks)
+    assert stream.too_many_properties
+    assert stream.primary_key
+    assert type(stream) == RestSalesforceStream
+    url = next_page_url = "https://fase-account.salesforce.com/services/data/v52.0/queryAll"
+    requests_mock.get(
+        url,
+        [
+            {
+                "json": {
+                    "records": [
+                        {"Id": 1, "propertyA": "A"},
+                        {"Id": 2, "propertyA": "A"},
+                        {"Id": 3, "propertyA": "A"},
+                        {"Id": 4, "propertyA": "A"},
+                    ]
+                }
+            },
+            {"json": {"nextRecordsUrl": next_page_url, "records": [{"Id": 1, "propertyB": "B"}, {"Id": 2, "propertyB": "B"}]}},
+            # 2 for 2 chunks above
+            *[{"json": {"records": [{"Id": 1}, {"Id": 2}], "nextRecordsUrl": next_page_url}} for _ in range(chunks_len - 2)],
+            {"json": {"records": [{"Id": 3, "propertyB": "B"}, {"Id": 4, "propertyB": "B"}]}},
+            # 2 for 1 chunk above and 1 chunk had no next page
+            *[{"json": {"records": [{"Id": 3}, {"Id": 4}]}} for _ in range(chunks_len - 2)],
+        ],
+    )
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+    assert records == [
+        {"Id": 1, "propertyA": "A", "propertyB": "B"},
+        {"Id": 2, "propertyA": "A", "propertyB": "B"},
+        {"Id": 3, "propertyA": "A", "propertyB": "B"},
+        {"Id": 4, "propertyA": "A", "propertyB": "B"},
+    ]
+    for call in requests_mock.request_history:
+        assert len(call.url) < Salesforce.REQUEST_SIZE_LIMITS
+
+
+def test_stream_with_no_records_in_response(stream_config, stream_api_v2_pk_too_many_properties, requests_mock):
+    stream = generate_stream("Account", stream_config, stream_api_v2_pk_too_many_properties)
+    chunks = list(stream.chunk_properties())
+    for chunk in chunks:
+        assert stream.primary_key in chunk
+    assert stream.too_many_properties
+    assert stream.primary_key
+    assert type(stream) == RestSalesforceStream
+    url = "https://fase-account.salesforce.com/services/data/v52.0/queryAll"
+    requests_mock.get(
+        url,
+        [
+            {"json": {"records": []}},
+        ],
+    )
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+    assert records == []

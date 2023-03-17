@@ -1,14 +1,30 @@
-{
-  "people": {
-    "created_at": "4126108288"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created_at": 4126108288 },
+      "stream_descriptor": { "name": "people" }
+    }
   },
-  "unsubscribes": {
-    "unsubscribed_at": "4126108288"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "unsubscribed_at": 4126108288 },
+      "stream_descriptor": { "name": "unsubscribes" }
+    }
   },
-  "bounces": {
-    "bounced_at": "4126108288"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "bounced_at": 4126108288 },
+      "stream_descriptor": { "name": "bounces" }
+    }
   },
-  "survey_responses": {
-    "updated_at": "4126108288"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 4126108288 },
+      "stream_descriptor": { "name": "survey_responses" }
+    }
   }
-}
+]

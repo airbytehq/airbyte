@@ -1,68 +1,61 @@
 {
-  "properties": {
-    "type": {
-      "type": ["null", "string"]
-    },
-    "text": {
-      "type": ["null", "array"],
-      "items": {
+  "type": ["null", "array"],
+  "items": {
+    "type": ["null", "object"],
+    "additionalProperties": true,
+    "properties": {
+      "type": {
+        "type": ["null", "string"]
+      },
+      "text": {
         "type": ["null", "object"],
-        "additionalProperties": true,
         "properties": {
-          "type": {
+          "content": {
             "type": ["null", "string"]
           },
-          "text": {
-            "type": ["null", "object"],
-            "properties": {
-              "content": {
-                "type": ["null", "string"]
-              },
-              "link": {
-                "type": ["null", "object"],
-                "additionalProperties": true,
-                "properties": {
-                  "type": {
-                    "enum": ["url"]
-                  },
-                  "url": {
-                    "type": ["null", "string"]
-                  }
-                }
-              }
-            }
-          },
-          "annotations": {
+          "link": {
             "type": ["null", "object"],
             "additionalProperties": true,
             "properties": {
-              "bold": {
-                "type": ["null", "boolean"]
+              "type": {
+                "enum": ["url"]
               },
-              "italic": {
-                "type": ["null", "boolean"]
-              },
-              "strikethrough": {
-                "type": ["null", "boolean"]
-              },
-              "underline": {
-                "type": ["null", "boolean"]
-              },
-              "code": {
-                "type": ["null", "boolean"]
-              },
-              "color": {
+              "url": {
                 "type": ["null", "string"]
               }
             }
+          }
+        }
+      },
+      "annotations": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "bold": {
+            "type": ["null", "boolean"]
           },
-          "plain_text": {
-            "type": ["null", "string"]
+          "italic": {
+            "type": ["null", "boolean"]
           },
-          "href": {
+          "strikethrough": {
+            "type": ["null", "boolean"]
+          },
+          "underline": {
+            "type": ["null", "boolean"]
+          },
+          "code": {
+            "type": ["null", "boolean"]
+          },
+          "color": {
             "type": ["null", "string"]
           }
         }
+      },
+      "plain_text": {
+        "type": ["null", "string"]
+      },
+      "href": {
+        "type": ["null", "string"]
       }
     }
   }
