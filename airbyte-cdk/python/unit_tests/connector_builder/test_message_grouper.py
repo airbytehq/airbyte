@@ -505,6 +505,18 @@ def test_get_grouped_messages_given_maximum_number_of_pages_then_test_read_limit
 
     assert stream_read.test_read_limit_reached
 
+def test_read_stream_returns_error_if_stream_does_not_exist():
+    expected_status_code = 400
+    mock_source = MagicMock()
+    mock_source.read.side_effect=ValueError("error")
+
+    api = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
+    with pytest.raises(ValueError) as actual_exception:
+        api.get_message_groups(source=mock_source, config=CONFIG, configured_catalog=create_configured_catalog("not_in_manifest"))
+
+        assert isinstance(actual_exception, ValueError)
+        assert actual_exception.args[0] == "error"
+
 
 def make_mock_source(return_value: Iterator) -> MagicMock:
     mock_source = MagicMock()
