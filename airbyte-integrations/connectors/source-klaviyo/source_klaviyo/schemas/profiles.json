@@ -8,6 +8,7 @@
       "type": "object",
       "properties": {
         "email": { "type": "string" },
+        "phone_number": { "type": "string" },
         "first_name": { "type": "string" },
         "last_name": { "type": "string" },
         "organization": { "type": "string" },
@@ -17,7 +18,7 @@
         "last_event_date": { "type": "string", "format": "date-time" }
       }
     },
-    "properties": { "type": ["null", "object"] },
+    "properties": { "type": "object" },
     "subscriptions": { "type": ["null", "object"] },
     "links": { "type": ["null", "object"] },
     "relationships":  { "type": ["null", "object"] },
