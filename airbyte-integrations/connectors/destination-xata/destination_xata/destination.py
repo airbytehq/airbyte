@@ -36,15 +36,20 @@ class DestinationXata(Destination):
         xata = XataClient(api_key=config["api_key"], db_url=config["db_url"])
         xata.set_header("user-agent", f"airbyte/destination-xata:{__version__}")
         
-        bp = BulkProcessor(xata, flush_interval=1)
+        bp = BulkProcessor(xata)
+        count = 0
         for message in input_messages:
             if message.type == Type.RECORD:
                 # Put record to processing queue
                 bp.put_record(message.record.stream, message.record.data)
+                count += 1
             if message.type == Type.STATE:
                 yield message
         bp.flush_queue()
+        print(f"total: {count}")
         print(bp.get_stats())
+        if count != bp.get_stats()["total"] or bp.get_stats()["failed_batches"] != 0:
+            raise Exception("inconsistency found, expected %d records pushed, actual: %d with %d failures." % (count, bp.get_stats()["total"], bp.get_stats()["failed_batches"]))
         
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
