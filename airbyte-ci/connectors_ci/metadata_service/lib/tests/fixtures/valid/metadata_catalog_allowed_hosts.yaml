@@ -14,4 +14,3 @@ data:
     hosts:
       - "${host}"
       - "${tunnel_method.tunnel_host}"
-
