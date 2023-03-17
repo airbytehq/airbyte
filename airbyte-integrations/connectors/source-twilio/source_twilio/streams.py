@@ -364,13 +364,10 @@ class Keys(TwilioNestedStream):
 
     parent_stream = Accounts
 
-class ConversationParticipants(IncrementalTwilioStream, TwilioNestedStream):
+class ConversationParticipants(TwilioNestedStream):
     """https://www.twilio.com/docs/conversations/api/conversation-participant-resource"""
 
     parent_stream = Accounts
-    lower_boundary_filter_field = None
-    upper_boundary_filter_field = None
-    cursor_field = "date_created"
     url_base = TWILIO_CONVERSATION_BASE
     data_field = "participants"
 
