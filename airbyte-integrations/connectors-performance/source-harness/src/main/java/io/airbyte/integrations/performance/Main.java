@@ -68,7 +68,7 @@ public class Main {
 
       CompletableFuture.anyOf(readSrcAndWriteDstThread
       /* , readFromDstThread */).get();
-//      test.runTest();
+      // test.runTest();
     } catch (final Exception e) {
       throw new RuntimeException(e);
 
