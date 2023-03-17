@@ -43,7 +43,7 @@ public class SelectdbDestinationAcceptanceTest extends DestinationAcceptanceTest
 
   @BeforeAll
   public static void getConnect() {
-    JsonNode config = Jsons.deserialize(IOs.readFile(Paths.get("../../../secrets/config.json")));
+    JsonNode config = Jsons.deserialize(IOs.readFile(Paths.get("secrets/config.json")));
     String dbUrl = String.format(DB_URL_PATTERN, config.get("jdbc_url").asText());
     try {
       Class.forName(JDBC_DRIVER);
@@ -67,7 +67,7 @@ public class SelectdbDestinationAcceptanceTest extends DestinationAcceptanceTest
     // TODO: Generate the configuration JSON file to be used for running the destination during the test
     // configJson can either be static and read from secrets/config.json directly
     // or created in the setup method
-    configJson = Jsons.deserialize(IOs.readFile(Paths.get("../../../secrets/config.json")));
+    configJson = Jsons.deserialize(IOs.readFile(Paths.get("secrets/config.json")));
     return configJson;
   }
 

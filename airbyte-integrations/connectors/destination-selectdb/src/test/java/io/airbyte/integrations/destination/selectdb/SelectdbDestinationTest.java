@@ -84,7 +84,7 @@ class SelectdbDestinationTest {
     @BeforeEach
     void setup() throws IOException {
         destinationPath = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
-        config = Jsons.deserialize(IOs.readFile(Paths.get("../../../secrets/config.json")));
+        config = Jsons.deserialize(IOs.readFile(Paths.get("secrets/config.json")));
     }
 
     private SelectdbDestination getDestination() {
