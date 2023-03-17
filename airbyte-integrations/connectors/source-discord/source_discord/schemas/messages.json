@@ -2,6 +2,74 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "preview": { "type": "object" }
+    "message_id": {
+      "type": ["null", "string"]
+    },
+    "message_type": {
+      "type": ["null", "integer"]
+    },
+    "content": {
+      "type": ["null", "string"]
+    },
+    "message_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "edited_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "channel_id": {
+      "type": ["null", "string"]
+    },
+    "guild_id": {
+      "type": ["null", "string"]
+    },
+    "author_id": {
+      "type": ["null", "string"]
+    },
+    "author_username": {
+      "type": ["null", "string"]
+    },
+    "referenced_message_id": {
+      "type": ["null", "string"]
+    },
+    "referenced_message_type": {
+      "type": ["null", "string"]
+    },
+    "reaction_count": {
+      "type": ["null", "integer"]
+    },
+    "thread_id": {
+      "type": ["null", "string"]
+    },
+    "thread_parent_id": {
+      "type": ["null", "string"]
+    },
+    "thread_owner_id": {
+      "type": ["null", "string"]
+    },
+    "thread_name": {
+      "type": ["null", "string"]
+    },
+    "thread_message_count": {
+      "type": ["null", "integer"]
+    },
+    "thread_message_member_count": {
+      "type": ["null", "integer"]
+    },
+    "mention_count": {
+      "type": ["null", "integer"]
+    },
+    "mention_everyone": {
+      "type": ["null", "boolean"]
+    }
   }
 }
