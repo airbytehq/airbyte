@@ -59,9 +59,8 @@ You need to add the service account email address on the account level, not the 
 
 :::
 
-### Enable the APIs
-## Supported streams
 
+## Supported streams
 
 The Google Analytics (Universal Analytics) source connector can sync the following tables:
 
