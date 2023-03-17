@@ -21,10 +21,10 @@ def create_source(config: Mapping[str, Any]) -> ManifestDeclarativeSource:
 
 def get_config_and_catalog_from_args(args: List[str]) -> Tuple[Mapping[str, Any], ConfiguredAirbyteCatalog]:
     parsed_args = AirbyteEntrypoint.parse_args(args)
-    config_path, catalog_path = parsed_args.config, parsed_args.catalog
     if parsed_args.command != "read":
         raise ValueError("Only read commands are allowed for Connector Builder requests.")
 
+    config_path, catalog_path = parsed_args.config, parsed_args.catalog
     config = BaseConnector.read_config(config_path)
     catalog = ConfiguredAirbyteCatalog.parse_obj(BaseConnector.read_config(catalog_path))
 

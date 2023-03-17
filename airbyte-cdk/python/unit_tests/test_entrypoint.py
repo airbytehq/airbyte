@@ -5,7 +5,7 @@
 
 from argparse import Namespace
 from copy import deepcopy
-from typing import Any, List, Mapping, MutableMapping, Union
+from typing import Any, Dict, List, Mapping, MutableMapping, Union
 from unittest.mock import MagicMock
 
 import pytest
@@ -196,3 +196,22 @@ def test_run_read(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock)
 def test_invalid_command(entrypoint: AirbyteEntrypoint, mocker, config_mock):
     with pytest.raises(Exception):
         list(entrypoint.run(Namespace(command="invalid", config="conf")))
+@pytest.mark.parametrize(
+    ["args", "expected"],
+    [
+        ("spec", Namespace(command="spec", debug=False)),
+        ("check --config config_path", Namespace(command="check", debug=False, config="config_path")),
+        ("discover --config config_path", Namespace(command="discover", debug=False, config="config_path")),
+        ("read --config config_path --catalog catalog_path", Namespace(command="read", state=None, debug=False, config="config_path",
+                                                                       catalog="catalog_path")),
+        ("spec --and a bunch --of --random values", Namespace(command="spec", debug=False)),
+        ("check --config config_path --catalog catalog_path", Namespace(command="check", debug=False, config="config_path")),
+        ("discover --config config_path -vvvv", Namespace(command="discover", debug=False, config="config_path")),
+        ("read --config config_path --catalog catalog_path --read_only --log-level ERROR", Namespace(command="read", state=None,
+                                                                                                     debug=False, config="config_path",
+                                                                                                     catalog="catalog_path")),
+    ],
+)
+def test_ignore_extra_params(args: str, expected: Namespace, entrypoint: AirbyteEntrypoint):
+    actual = entrypoint.parse_args(args.split())
+    assert actual == expected

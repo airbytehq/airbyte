@@ -62,7 +62,11 @@ class AirbyteEntrypoint(object):
             "--catalog", type=str, required=True, help="path to the catalog used to determine which data to read"
         )
 
-        return main_parser.parse_args(args)
+        # This will ignore any extra parameters which are unknown
+        # The protocol may change overtime to include additional parameters
+        # so this will help future-proof the connectors to at least not fail if they are not updated
+        namespace, _ = main_parser.parse_known_args(args)
+        return namespace
 
     def run(self, parsed_args: argparse.Namespace) -> Iterable[str]:
         cmd = parsed_args.command

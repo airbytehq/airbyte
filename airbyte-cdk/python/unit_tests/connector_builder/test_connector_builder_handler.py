@@ -331,11 +331,9 @@ def test_read_returns_error_response():
 @pytest.mark.parametrize(
     "command",
     [
-        pytest.param("check", id="test_check_command_error"),
-        pytest.param("spec", id="test_spec_command_error"),
-        pytest.param("discover", id="test_discover_command_error"),
         pytest.param(None, id="test_command_is_none_error"),
         pytest.param("", id="test_command_is_empty_error"),
+        pytest.param("foo", id="test_command_is_not_real"),
     ],
 )
 def test_invalid_protocol_command(command, valid_resolve_manifest_config_file):

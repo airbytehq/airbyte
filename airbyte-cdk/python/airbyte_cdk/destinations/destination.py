@@ -28,7 +28,7 @@ class Destination(Connector, ABC):
     ) -> Iterable[AirbyteMessage]:
         """Implement to define how the connector writes data to the destination"""
 
-    def _run_check(self, config: Mapping[str, Any], configured_catalog: Optional[ConfiguredAirbyteCatalog]) -> AirbyteMessage:
+    def _run_check(self, config: Mapping[str, Any], configured_catalog: Optional[ConfiguredAirbyteCatalog] = None) -> AirbyteMessage:
         if configured_catalog:
             self.check_with_catalog(logger, config, configured_catalog)
         else:
@@ -77,7 +77,10 @@ class Destination(Connector, ABC):
         write_required.add_argument("--config", type=str, required=True, help="path to the JSON configuration file")
         write_required.add_argument("--catalog", type=str, required=True, help="path to the configured catalog JSON file")
 
-        parsed_args = main_parser.parse_args(args)
+        # This will ignore any extra parameters which are unknown
+        # The protocol may change overtime to include additional parameters
+        # so this will help future-proof the connectors to at least not fail if they are not updated
+        parsed_args, _ = main_parser.parse_known_args(args)
         cmd = parsed_args.command
         if not cmd:
             raise Exception("No command entered. ")

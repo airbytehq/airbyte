@@ -42,7 +42,7 @@ class TestArgParsing:
         ("arg_list", "expected_output"),
         [
             (["spec"], {"command": "spec"}),
-            (["check", "--config", "bogus_path/"], {"command": "check", "config": "bogus_path/"}),
+            (["check", "--config", "bogus_path/"], {"command": "check", "config": "bogus_path/", "catalog": None}),
             (
                 ["write", "--config", "config_path1", "--catalog", "catalog_path1"],
                 {"command": "write", "config": "config_path1", "catalog": "catalog_path1"},
@@ -63,10 +63,9 @@ class TestArgParsing:
             (["not-a-real-command"]),
             ([""]),
             # Incorrect parameters
-            (["spec", "--config", "path"]),
             (["check"]),
-            (["check", "--catalog", "path"]),
             (["check", "path"]),
+            (["write"])
         ],
     )
     def test_failed_parse(self, arg_list: List[str], destination: Destination):
