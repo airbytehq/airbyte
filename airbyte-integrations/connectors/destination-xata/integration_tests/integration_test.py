@@ -54,5 +54,7 @@ def test_check_valid_config(config: Mapping):
 
 
 def test_check_invalid_config():
-    outcome = DestinationXata().check(logger=Mock(), config={"api_key": "airbyte-tests-no-key-provided"})
+    f = open("integration_tests/invalid_config.json")
+    config = json.load(f)
+    outcome = DestinationXata().check(logger=Mock(), config=config)
     assert outcome.status == Status.FAILED
