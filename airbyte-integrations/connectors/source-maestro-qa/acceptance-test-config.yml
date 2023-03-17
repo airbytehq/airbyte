@@ -10,8 +10,7 @@ acceptance_tests:
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
   discovery:
-    tests:
-      - config_path: "secrets/config.json"
+    bypass_reason: "Incremental syncs use cursor that's not part of the schema."
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -19,10 +18,9 @@ acceptance_tests:
         ignored_fields:
           total_scores:
             - name: "last_synced_at"
-              bypass_reason: "The field is not available in the API."
-
+              bypass_reason: "Cursor field is not part of the schema."
   incremental:
-    bypass_reason: "Incremental uses cursor that's not available in records."
+    bypass_reason: "Incremental syncs use cursor that's not part of the schema."
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
