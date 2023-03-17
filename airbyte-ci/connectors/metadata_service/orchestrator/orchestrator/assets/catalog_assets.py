@@ -1,5 +1,6 @@
 import pandas as pd
 import json
+import requests
 
 from dagster import MetadataValue, Output, asset, OpExecutionContext
 from jinja2 import Environment, PackageLoader
@@ -20,7 +21,7 @@ def connector_catalog_location_html(context, all_destinations_dataframe, all_sou
     Generate an HTML report of the connector catalog locations.
     """
 
-    columns_to_show = ["dockerRepository", "dockerImageTag", "is_oss", "is_cloud", "is_source_controlled"]
+    columns_to_show = ["dockerRepository", "dockerImageTag", "is_oss", "is_cloud", "is_source_controlled", "is_spec_cached"]
 
     # convert true and false to checkmarks and x's
     all_sources_dataframe.replace({True: "✅", False: "❌"}, inplace=True)
@@ -48,7 +49,7 @@ def connector_catalog_location_markdown(context, all_destinations_dataframe, all
     Generate a markdown report of the connector catalog locations.
     """
 
-    columns_to_show = ["dockerRepository", "dockerImageTag", "is_oss", "is_cloud", "is_source_controlled"]
+    columns_to_show = ["dockerRepository", "dockerImageTag", "is_oss", "is_cloud", "is_source_controlled", "is_spec_cached"]
 
     # convert true and false to checkmarks and x's
     all_sources_dataframe.replace({True: "✅", False: "❌"}, inplace=True)
@@ -72,6 +73,12 @@ def connector_catalog_location_markdown(context, all_destinations_dataframe, all
 # - add  column for whether the connector is source controlled
 # - refactor so that the source and destination catalogs are merged into a single dataframe early on
 # - refactor so we are importing a common dataclass
+# - check which specs are available
+
+def is_spec_cached(dockerRepository, dockerImageTag):
+    url = f"https://storage.googleapis.com/io-airbyte-cloud-spec-cache/specs/{dockerRepository}/{dockerImageTag}/spec.json"
+    response = requests.head(url)
+    return response.status_code == 200
 
 @asset
 def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_dataframe, source_controlled_connectors) -> pd.DataFrame:
@@ -97,7 +104,7 @@ def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_da
 
     is_source_controlled = lambda x: x.lstrip("airbyte/") in source_controlled_connectors
     merged_catalog['is_source_controlled'] = merged_catalog['dockerRepository'].apply(is_source_controlled)
-
+    merged_catalog['is_spec_cached'] = merged_catalog.apply(lambda x: is_spec_cached(x['dockerRepository'], x['dockerImageTag']), axis=1)
 
     # Return the merged catalog with the desired columns
     return merged_catalog
@@ -127,7 +134,7 @@ def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe, source
 
     is_source_controlled = lambda x: x.lstrip("airbyte/") in source_controlled_connectors
     merged_catalog['is_source_controlled'] = merged_catalog['dockerRepository'].apply(is_source_controlled)
-
+    merged_catalog['is_spec_cached'] = merged_catalog.apply(lambda x: is_spec_cached(x['dockerRepository'], x['dockerImageTag']), axis=1)
 
     # Return the merged catalog with the desired columns
     return merged_catalog
