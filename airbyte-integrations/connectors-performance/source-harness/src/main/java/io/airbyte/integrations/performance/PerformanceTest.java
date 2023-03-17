@@ -96,7 +96,7 @@ public class PerformanceTest {
     */
 
     final ConcurrentHashMap<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors = new ConcurrentHashMap();
-    final Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields = new HashMap();
+//    final Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields = new HashMap();
     final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields = new HashMap();
     final Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields = new HashMap();
     populateStreamToAllFields(this.catalog, streamToAllFields);

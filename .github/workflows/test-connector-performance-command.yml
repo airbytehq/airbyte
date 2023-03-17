@@ -100,6 +100,12 @@ jobs:
         # all CI python packages have the prefix "ci_"
         run: |
           pip install --quiet -e ./tools/ci_*
+      - name: build harness
+        shell: bash
+        run: |
+          echo "Building... source-harness >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          ./gradlew :airbyte-integrations:connectors-performance:source-harness:build -x check
       - name: build connector
         shell: bash
         run: |
@@ -109,27 +115,22 @@ jobs:
           ./gradlew :airbyte-integrations:connectors:source-postgres:build -x check
       - name: KIND Kubernetes Cluster Setup
         uses: helm/kind-action@v1.4.0
-      - id: prepare-images
-        name: Prepare images
+      - name: Run harness
+        id: run-harness
         shell: bash
         run: |
           echo "Setting admin account permissions"
-           kubectl apply -f ./tools/bin/admin-service-account.yaml
+          kubectl apply -f ./tools/bin/admin-service-account.yaml
           echo "Loading connector image into kind" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY # this is a blank line
           kind load docker-image airbyte/source-postgres:dev --name chart-testing
-          echo "Loading connector image into kind" >> $GITHUB_STEP_SUMMARY
-          docker pull airbyte/source-postgres:1.0.35
-          kind load docker-image airbyte/source-postgres:1.0.35 --name chart-testing
-          echo "pulling harness image..."
-          docker pull rodireich/perftestrepo:15
           echo "Loading harness image into kind" >> $GITHUB_STEP_SUMMARY
-          kind load docker-image rodireich/perftestrepo:15 --name chart-testing
+          kind load docker-image airbyte/source-harness:dev --name chart-testing
           echo "loading pod..."
           kubectl create -f ./tools/bin/test-postgres-source-process.yaml
           echo "get pods..."
           kubectl get po
-          POD=$(kubectl get pod -l app=perfharness -o jsonpath="{.items[0].metadata.name}")
+          POD=$(kubectl get pod -l app=source-harness -o jsonpath="{.items[0].metadata.name}")
           echo "pod name is $POD"
           kubectl wait --for=condition=Ready --timeout=20s "pod/$POD"
           kubectl logs --follow $POD
@@ -148,7 +149,7 @@ jobs:
           body: |
             ## Performance test Result: 
             ```
-            ${{ steps.prepare-images.outputs.RUN_RESULT }}
+            ${{ steps.run-harness.outputs.RUN_RESULT }}
             ```
             ### This run was XX% faster:rocket: than baseline on `master`.
       # need to add credentials here
