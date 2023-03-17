@@ -20,7 +20,7 @@ SECONDS_BETWEEN_PAGE = 5
 class DiscordMessagesStream(HttpStream, ABC):
     url_base = "https://discord.com"
     cursor_field = "timestamp"
-    primary_key =[ "message_id"]
+    primary_key = "message_id"
 
     def __init__(self, config: Mapping[str, Any], **_):
         super().__init__()
@@ -121,6 +121,10 @@ class Messages(DiscordMessagesStream):
         if 'thread' in record.keys():
             thread = record['thread']
 
+        referenced_message = None
+        if 'referenced_message' in record.keys():
+            if record['referenced_message']:
+                referenced_message = record['referenced_message']
         result = {
             'message_id': record['id'],
             'message_type': record['type'],
@@ -132,8 +136,8 @@ class Messages(DiscordMessagesStream):
             'guild_id': self.guild_id,
             'author_id': record['author']['id'],
             'author_username': record['author']['username'],
-            'referenced_message_id': record['referenced_message']['id'] if 'referenced_message' in record.keys() else None,
-            'referenced_message_type': record['referenced_message']['type'] if 'referenced_message' in record.keys() else None,
+            'referenced_message_id': referenced_message['id'] if referenced_message else None,
+            'referenced_message_type': referenced_message['type'] if referenced_message else None,
             'reaction_count': reaction_count,
             'thread_id': thread['id'] if thread else None,
             'thread_parent_id': thread['parent_id'] if thread else None,
