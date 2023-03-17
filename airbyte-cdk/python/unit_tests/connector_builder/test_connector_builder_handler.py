@@ -15,6 +15,7 @@ from airbyte_cdk.sources.declarative.manifest_declarative_source import Manifest
 from connector_builder.connector_builder_handler import resolve_manifest
 from connector_builder.main import handle_connector_builder_request, handle_request, read_stream
 from connector_builder.models import StreamRead, StreamReadSlicesInner, StreamReadSlicesInnerPagesInner
+from connector_builder.utils.error_formatter import ErrorFormatter
 from unit_tests.connector_builder.utils import create_configured_catalog
 
 _stream_name = "stream_with_custom_requester"
@@ -312,27 +313,27 @@ def test_read():
                                                   "test_read_limit_reached": False,
                                                   "inferred_schema": None
                                               }, emitted_at=1))
-    with patch("connector_builder.message_grouper.MessageGrouper.get_message_groups", return_value=stream_read):
+    with mock.patch.object("connector_builder.message_grouper.MessageGrouper.get_message_groups", return_value=stream_read):
         output_record = handle_connector_builder_request(source, config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG))
         output_record.record.emitted_at = 1
         assert output_record == expected_airbyte_message
 
 
-@patch("connector_builder.utils.error_formatter.ErrorFormatter")
-def test_read_returns_error_response(error_formatter):
+@patch("connector_builder.utils.error_formatter.ErrorFormatter.get_stacktrace_as_string")
+def test_read_returns_error_response(mock_get_stacktrace_as_string):
     class MockManifestDeclarativeSource:
         def read(self, logger, config, catalog, state):
-            raise ValueError("a stack trace")
+            raise ValueError("error_message")
     stack_trace = "a stack trace"
-    error_formatter.get_stacktrace_as_string.return_value = stack_trace
+    mock_get_stacktrace_as_string.return_value = stack_trace
 
     source = MockManifestDeclarativeSource()
     response = read_stream(source, TEST_READ_CONFIG, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG))
     expected_message = AirbyteMessage(
         type=MessageType.LOG,
-        log=AirbyteLogMessage(level=Level.ERROR, message=f"error_message - {stack_trace}")
+        log=AirbyteLogMessage(level=Level.ERROR, message=f"error_message - {stack_trace}"),
     )
-    assert "Could not perform read with error" in response.trace.error.message
+    assert response == expected_message
 
 
 @pytest.mark.parametrize(
