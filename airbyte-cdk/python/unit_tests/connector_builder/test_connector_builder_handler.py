@@ -313,7 +313,7 @@ def test_read():
                                                   "test_read_limit_reached": False,
                                                   "inferred_schema": None
                                               }, emitted_at=1))
-    with mock.patch.object("connector_builder.message_grouper.MessageGrouper.get_message_groups", return_value=stream_read):
+    with mock.patch("connector_builder.message_grouper.MessageGrouper.get_message_groups", return_value=stream_read):
         output_record = handle_connector_builder_request(source, config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG))
         output_record.record.emitted_at = 1
         assert output_record == expected_airbyte_message
