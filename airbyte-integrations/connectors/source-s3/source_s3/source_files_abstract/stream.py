@@ -51,6 +51,8 @@ class FileStream(Stream, ABC):
     ab_file_name_col = "_ab_source_file_url"
     airbyte_columns = [ab_additional_col, ab_last_mod_col, ab_file_name_col]
     datetime_format_string = "%Y-%m-%dT%H:%M:%SZ"
+    # In version 2.0.1 the datetime format has been changed. Since the state may still store values in the old datetime format,
+    # we need to support both of them for a while
     deprecated_datetime_format_string = "%Y-%m-%dT%H:%M:%S%z"
 
     def __init__(self, dataset: str, provider: dict, format: dict, path_pattern: str, schema: str = None):
