@@ -139,6 +139,7 @@ jobs:
           echo "pod name is $POD"
           sleep 3
           kubectl logs $POD
+          kubectl describe $POD
           kubectl wait --for=condition=Ready --timeout=20s "pod/$POD"
           kubectl logs --follow $POD
           echo "reading end of log"
