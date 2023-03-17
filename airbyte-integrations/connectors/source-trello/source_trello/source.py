@@ -14,6 +14,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 from .auth import TrelloAuthenticator
 from .utils import TrelloRequestRateLimits as balancer
+from .utils import read_full_refresh
 
 
 class TrelloStream(HttpStream, ABC):
@@ -200,21 +201,14 @@ class SourceTrello(AbstractSource):
         """
 
         config = self._validate_and_transform(config)
-        try:
-            url = f"{TrelloStream.url_base}members/me/boards"
-
-            authenticator = self._get_authenticator(config)
-
-            response = requests.get(url, auth=authenticator)
-            response.raise_for_status()
-            available_boards = {row.get("id") for row in response.json()}
-            for board_id in config.get("board_ids", []):
-                if board_id not in available_boards:
-                    return False, f"board_id {board_id} not found"
-
-            return True, None
-        except requests.exceptions.RequestException as e:
-            return False, e
+        config["authenticator"] = self._get_authenticator(config)
+        stream = Boards(config)
+        available_boards = {board["id"] for board in read_full_refresh(stream)}
+        unknown_boards = set(config.get("board_ids", [])) - available_boards
+        if unknown_boards:
+            unknown_boards = ", ".join(unknown_boards)
+            return False, f"Board ID(s): {unknown_boards} not found"
+        return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config["authenticator"] = self._get_authenticator(config)
