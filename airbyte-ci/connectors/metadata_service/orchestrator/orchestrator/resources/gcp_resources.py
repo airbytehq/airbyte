@@ -42,7 +42,7 @@ def gcs_bucket_manager(resource_context: InitResourceContext) -> storage.Bucket:
         "gcs_prefix": StringSource,
     },
 )
-def gcs_file_manager(resource_context):
+def gcs_file_manager(resource_context) -> GCSFileManager:
     """FileManager that provides abstract access to GCS.
 
     Implements the :py:class:`~dagster._core.storage.file_manager.FileManager` API.

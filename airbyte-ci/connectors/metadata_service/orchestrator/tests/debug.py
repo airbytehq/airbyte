@@ -29,7 +29,7 @@ def debug_catalog_projection():
     resources = {
         "gcp_gcs_client": gcp_gcs_client.configured(
             {
-                "gcp_gsm_cred_string": {"env": "GCP_GSM_CREDENTIALS"},
+                "gcp_gsm_cred_string": {"env": "GCP_GCS_CREDENTIALS"},
             }
         ),
         "gcs_bucket_manager": gcs_bucket_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}}),

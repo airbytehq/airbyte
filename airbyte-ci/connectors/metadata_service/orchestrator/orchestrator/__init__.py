@@ -19,7 +19,7 @@ from .sensors.catalog_sensors import catalog_updated_sensor
 from .config import REPORT_FOLDER, CATALOG_FOLDER
 
 
-assets = [
+ASSETS = [
     oss_destinations_dataframe,
     cloud_destinations_dataframe,
     oss_sources_dataframe,
@@ -32,10 +32,10 @@ assets = [
     connector_catalog_location_html,
 ]
 
-resources = {
+RESOURCES = {
     "gcp_gcs_client": gcp_gcs_client.configured(
         {
-            "gcp_gsm_cred_string": {"env": "GCP_GSM_CREDENTIALS"},
+            "gcp_gsm_cred_string": {"env": "GCP_GCS_CREDENTIALS"},
         }
     ),
     "gcs_bucket_manager": gcs_bucket_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}}),
@@ -46,11 +46,11 @@ resources = {
     "latest_cloud_catalog_gcs_file": gcs_file_blob.configured({"gcs_prefix": CATALOG_FOLDER, "gcs_filename": "cloud_catalog.json"}),
 }
 
-sensors = [catalog_updated_sensor(job=generate_catalog_markdown, resources_def=resources)]
+SENSORS = [catalog_updated_sensor(job=generate_catalog_markdown, resources_def=RESOURCES)]
 
-schedules = []
+SCHEDULES = []
 
-jobs = [generate_catalog_markdown]
+JOBS = [generate_catalog_markdown]
 
 """
 START HERE
@@ -59,9 +59,9 @@ This is the entry point for the orchestrator.
 It is a list of all the jobs, assets, resources, schedules, and sensors that are available to the orchestrator.
 """
 defn = Definitions(
-    jobs=jobs,
-    assets=assets,
-    resources=resources,
-    schedules=schedules,
-    sensors=sensors,
+    jobs=JOBS,
+    assets=ASSETS,
+    resources=RESOURCES,
+    schedules=SCHEDULES,
+    sensors=SENSORS,
 )

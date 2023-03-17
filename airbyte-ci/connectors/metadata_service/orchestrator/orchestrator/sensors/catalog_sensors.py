@@ -8,7 +8,7 @@ def generate_composite_etag_cursor(etags: List[str]):
 
 def catalog_updated_sensor(job, resources_def) -> SensorDefinition:
     """
-    This sensor is responsible for checking if the latest catalog has been updated in GCS.
+    This sensor is responsible for polling the catalog folder in GCS for updates to our oss and cloud catalogs.
     If it has, it will trigger the given job.
     """
 
