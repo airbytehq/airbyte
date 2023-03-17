@@ -9,7 +9,6 @@ from unittest.mock import MagicMock
 import pytest
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, Level
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from connector_builder.message_grouper import MessageGrouper
 from connector_builder.models import HttpRequest, HttpResponse, LogMessage, StreamRead, StreamReadPages
 from unit_tests.connector_builder.utils import create_configured_catalog
