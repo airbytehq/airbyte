@@ -1,7 +1,7 @@
 from dagster import build_op_context
 
-from ..resources.gcp_resources import gcp_gcs_client, gcs_bucket_manager, gcs_file_manager, gcs_file_blob
-from ..assets.catalog_assets import (
+from orchestrator.resources.gcp_resources import gcp_gcs_client, gcs_bucket_manager, gcs_file_manager, gcs_file_blob
+from orchestrator.assets.catalog_assets import (
     oss_destinations_dataframe,
     cloud_destinations_dataframe,
     oss_sources_dataframe,
@@ -14,7 +14,7 @@ from ..assets.catalog_assets import (
     connector_catalog_location_html,
 )
 
-from ..config import REPORT_FOLDER, CATALOG_FOLDER
+from orchestrator.config import REPORT_FOLDER, CATALOG_FOLDER
 
 
 def debug_catalog_projection():

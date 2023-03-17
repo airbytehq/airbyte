@@ -2,7 +2,7 @@ import json
 import pytest
 import os
 
-from ..assets.catalog_assets import (
+from orchestrator.assets.catalog_assets import (
     oss_destinations_dataframe,
     cloud_destinations_dataframe,
     oss_sources_dataframe,
@@ -14,13 +14,13 @@ from ..assets.catalog_assets import (
 
 @pytest.fixture
 def oss_catalog_dict():
-    file_path = os.path.join(os.path.dirname(__file__), "files", "oss_catalog.json")
+    file_path = os.path.join(os.path.dirname(__file__), "fixtures", "oss_catalog.json")
     return json.load(open(file_path))
 
 
 @pytest.fixture
 def cloud_catalog_dict():
-    file_path = os.path.join(os.path.dirname(__file__), "files", "cloud_catalog.json")
+    file_path = os.path.join(os.path.dirname(__file__), "fixtures", "cloud_catalog.json")
     return json.load(open(file_path))
 
 
