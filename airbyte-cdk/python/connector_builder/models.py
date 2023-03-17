@@ -84,4 +84,3 @@ class StreamReadSlices:
     pages: List[StreamReadPages]
     slice_descriptor: Optional[StreamReadSliceDescriptor] = None
     state: Optional[Dict[str, Any]] = None
-

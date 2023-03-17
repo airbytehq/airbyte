@@ -7,9 +7,8 @@ import json
 from unittest import mock
 from unittest.mock import patch
 
-import pytest
-
 import connector_builder
+import pytest
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, Level
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
