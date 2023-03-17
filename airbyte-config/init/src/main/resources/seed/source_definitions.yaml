@@ -2063,11 +2063,14 @@
 - name: Trello
   sourceDefinitionId: 8da67652-004c-11ec-9a03-0242ac130003
   dockerRepository: airbyte/source-trello
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.3.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/trello
   icon: trello.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - api.trello.com
 - name: TrustPilot
   sourceDefinitionId: d7e23ea6-d741-4314-9209-a33c91a2e945
   dockerRepository: airbyte/source-trustpilot
