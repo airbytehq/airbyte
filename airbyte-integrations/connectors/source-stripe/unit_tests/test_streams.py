@@ -30,7 +30,6 @@ from source_stripe.streams import (
     Refunds,
     SubscriptionItems,
     Subscriptions,
-    SubscriptionSchedule,
     Transfers,
 )
 
@@ -169,7 +168,6 @@ def config_fixture():
         (Products, {}, "products"),
         (Subscriptions, {}, "subscriptions"),
         (SubscriptionItems, {}, "subscription_items"),
-        (SubscriptionSchedule, {}, "subscription_schedule"),
         (Transfers, {}, "transfers"),
         (Refunds, {}, "refunds"),
         (PaymentIntents, {}, "payment_intents"),
@@ -209,11 +207,6 @@ def test_path(
             {"created[gte]": 1596466368, "limit": 100, "status": "all", "created[lte]": 1596552768},
         ),
         (SubscriptionItems, {"stream_state": {}, "stream_slice": {"subscription_id": "SI"}}, {"limit": 100, "subscription": "SI"}),
-        (
-            SubscriptionSchedule,
-            {"stream_slice": {"created[gte]": 1596466368, "created[lte]": 1596552768}},
-            {"created[gte]": 1596466368, "limit": 100, "status": "all", "created[lte]": 1596552768},
-        ),
         (BankAccounts, {"stream_state": {}, "stream_slice": {"subscription_id": "SI"}}, {"limit": 100, "object": "bank_account"}),
         (CheckoutSessions, {"stream_state": None, "stream_slice": {}}, {"limit": 100}),
         (
