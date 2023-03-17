@@ -1056,6 +1056,14 @@
   icon: looker.svg
   sourceType: api
   releaseStage: alpha
+- name: Maestro QA
+  sourceDefinitionId: TODO
+  dockerRepository: airbyte/source-looker
+  dockerImageTag: 0.0.1
+  documentationUrl: https://docs.airbyte.com/integrations/sources/maestroqa
+  icon: maestroqa.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Mailchimp
   sourceDefinitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
   dockerRepository: airbyte/source-mailchimp
