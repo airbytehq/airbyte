@@ -14,8 +14,12 @@ import java.util.Optional;
 public class SshHelpers {
 
   public static ConnectorSpecification getSpecAndInjectSsh() throws IOException {
+    return getSpecAndInjectSsh(Optional.empty());
+  }
+
+  public static ConnectorSpecification getSpecAndInjectSsh(final Optional<String> group) throws IOException {
     final ConnectorSpecification originalSpec = Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
-    return injectSshIntoSpec(originalSpec);
+    return injectSshIntoSpec(originalSpec, group);
   }
 
   public static ConnectorSpecification injectSshIntoSpec(final ConnectorSpecification connectorSpecification) throws IOException {
