@@ -319,14 +319,14 @@ def test_read():
         assert output_record == expected_airbyte_message
 
 
-@patch("connector_builder.utils.error_formatter.ErrorFormatter.get_stacktrace_as_string")
-def test_read_returns_error_response(mock_get_stacktrace_as_string):
+@patch("traceback.TracebackException.from_exception")
+def test_read_returns_error_response(mock_from_exception):
     class MockManifestDeclarativeSource:
         def read(self, logger, config, catalog, state):
             raise ValueError("error_message")
 
     stack_trace = "a stack trace"
-    mock_get_stacktrace_as_string.return_value = stack_trace
+    mock_from_exception.return_value = stack_trace
 
     source = MockManifestDeclarativeSource()
     response = read_stream(source, TEST_READ_CONFIG, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG))

@@ -9,10 +9,11 @@ from json import JSONDecodeError
 from typing import Any, Iterable, Iterator, Mapping, Optional, Union
 from urllib.parse import parse_qs, urlparse
 
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteTraceMessage, Type
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
+from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
-from airbyte_protocol.models.airbyte_protocol import ConfiguredAirbyteCatalog, Level
+from airbyte_protocol.models.airbyte_protocol import ConfiguredAirbyteCatalog, Level, TraceType
 from airbyte_protocol.models.airbyte_protocol import Type as MessageType
 from connector_builder.models import HttpRequest, HttpResponse, LogMessage, StreamRead, StreamReadPages, StreamReadSlices
 from connector_builder.utils.error_formatter import ErrorFormatter
@@ -50,6 +51,11 @@ class MessageGrouper:
         ):
             if isinstance(message_group, AirbyteLogMessage):
                 log_messages.append(LogMessage(**{"message": message_group.message, "level": message_group.level.value}))
+            elif isinstance(message_group, AirbyteTraceMessage):
+                if message_group.type == TraceType.ERROR:
+                    error_message = f"{message_group.error.message} - {message_group.error.stack_trace}"
+                    log_messages.append(LogMessage(**{"message": error_message, "level": "ERROR"}))
+
             else:
                 slices.append(message_group)
 
@@ -62,7 +68,7 @@ class MessageGrouper:
 
     def _get_message_groups(
             self, messages: Iterator[AirbyteMessage], schema_inferrer: SchemaInferrer, limit: int
-    ) -> Iterable[Union[StreamReadPages, AirbyteLogMessage]]:
+    ) -> Iterable[Union[StreamReadPages, AirbyteLogMessage, AirbyteTraceMessage]]:
         """
         Message groups are partitioned according to when request log messages are received. Subsequent response log messages
         and record messages belong to the prior request log message and when we encounter another request, append the latest
@@ -106,6 +112,10 @@ class MessageGrouper:
                 if message.log.level == Level.ERROR:
                     had_error = True
                 yield message.log
+            elif message.type == Type.TRACE:
+                if message.trace.type == TraceType.ERROR:
+                    had_error = True
+                    yield message.trace
             elif message.type == Type.RECORD:
                 current_page_records.append(message.record.data)
                 records_count += 1
@@ -143,9 +153,8 @@ class MessageGrouper:
         try:
             yield from source.read(logger=self.logger, config=config, catalog=configured_catalog, state={})
         except Exception as e:
-            error_message = f"{e.args[0] if len(e.args) > 0 else str(e)} - {ErrorFormatter.get_stacktrace_as_string(e)}"
-            yield AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=error_message))
-            return
+            error_message = f"{e.args[0] if len(e.args) > 0 else str(e)}"
+            yield AirbyteTracedException.from_exception(e, message=error_message).as_airbyte_message()
 
     def _create_request_from_log_message(self, log_message: AirbyteLogMessage) -> Optional[HttpRequest]:
         # TODO: As a temporary stopgap, the CDK emits request data as a log message string. Ideally this should come in the
