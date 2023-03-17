@@ -3,15 +3,42 @@ This is the Orchestrator for Airbyte metadata built on Dagster.
 
 
 # Setup
-## Local
-All commands below assume you are in the `metadata_service/orchestrator` directory.
-### Installation
+
+## Prerequisites
+
+#### Poetry
+
+Before you can start working on this project, you will need to have Poetry installed on your system. Please follow the instructions below to install Poetry:
+
+1. Open your terminal or command prompt.
+2. Install Poetry using the recommended installation method:
+
+```bash
+curl -sSL https://install.python-poetry.org | python3 -
+```
+
+Alternatively, you can use `pip` to install Poetry:
+
+```bash
+pip install --user poetry
+```
+
+3. After the installation is complete, close and reopen your terminal to ensure the newly installed `poetry` command is available in your system's PATH.
+
+For more detailed instructions and alternative installation methods, please refer to the official Poetry documentation: https://python-poetry.org/docs/#installation
+
+### Using Poetry in the Project
+
+Once Poetry is installed, you can use it to manage the project's dependencies and virtual environment. To get started, navigate to the project's root directory in your terminal and follow these steps:
+
+
+## Installation
 ```bash
 poetry install
 cp .env.template .env
 ```
 
-### Create a GCP Service Account and Dev Bucket
+## Create a GCP Service Account and Dev Bucket
 Developing against the orchestrator requires a development bucket in GCP.
 
 The orchestrator will use this bucket to:
@@ -43,28 +70,22 @@ Here is an example of how to import the service account credentials into your en
 export GCP_GSM_CREDENTIALS=`cat /path/to/credentials.json`
 ```
 
-### Start the orchestrator
+## Start the orchestrator
 Start the orchestrator with the following command:
 ```bash
 poetry run dagster dev -m orchestrator
 ```
 
-Then you can access the dagit UI at http://localhost:3000
+Then you can access the Dagster UI at http://localhost:3000
 
 Note its important to use `dagster dev` instead of `dagit` because `dagster dev` start additional services that are required for the orchestrator to run. Namely the sensor service.
 
-### Run tests
+## Materializing Assets without the UI
+
+In some cases you may want to run the orchestrator without the UI. To learn more about Dagster's CLI commands, see the [Dagster CLI documentation](https://docs.dagster.io/_apidocs/cli).
+
+## Run tests
 ```bash
 poetry run pytest
 ```
 
-# WIP Notes
-
-### possible ways to build this
-https://github.com/slopp/dagster-dynamic-partitions/blob/cf312590bb3a2d95caee670433f00a7f20ddb50c/build/lib/dagster_project/definitions.py
-https://github.com/mitodl/ol-data-platform/blob/59b785ab6bd5d73a05d598c9b39bfc8fa4eec65c/src/ol_orchestrate/repositories/edx_gcs_courses.py
-https://github.com/dagster-io/dagster/tree/c607767076da21de66ac364f1501c4ed49c20b49/examples/project_fully_featured
-https://github.com/DataBiosphere/hca-ingest/blob/61601a7830e224ac5f30c13bf0d605768f97d418/orchestration/hca_orchestration/repositories/common.py
-
-### good way to restructure this
-https://www.youtube.com/watch?v=ZmUjf3gL1VU

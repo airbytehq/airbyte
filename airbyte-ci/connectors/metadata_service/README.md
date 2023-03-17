@@ -9,4 +9,4 @@ This system is responsible for the following:
 - Triggering actions based on changes to Connector metadata
 
 ## Subsystems
-- [Metadata Orchestrator](./orcherstrator/README.md)
+- [Metadata Orchestrator](./orchestrator/README.md)
