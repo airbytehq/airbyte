@@ -54,8 +54,3 @@ def test_check_valid_config(config: Mapping):
 def test_check_invalid_config():
     outcome = DestinationXata().check(AirbyteLogger(), {"api_key": "airbyte-tests-no-key-provided"})
     assert outcome.status == Status.FAILED
-
-
-def integration_test():
-    # TODO write integration tests 
-    pass

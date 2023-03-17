@@ -32,17 +32,20 @@ class DestinationXata(Destination):
         :param input_messages: The stream of input messages received from the source
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
-        
+
         xata = XataClient(api_key=config["api_key"], db_url=config["db_url"])
         xata.set_header("user-agent", f"airbyte/destination-xata:{__version__}")
-
+        
         bp = BulkProcessor(xata, flush_interval=1)
         for message in input_messages:
             if message.type == Type.RECORD:
+                # Put record to processing queue
                 bp.put_record(message.record.stream, message.record.data)
+            if message.type == Type.STATE:
+                yield message
         bp.flush_queue()
         print(bp.get_stats())
-
+        
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
