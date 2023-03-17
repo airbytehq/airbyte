@@ -1,16 +1,16 @@
-resource_name: revenue_db
+resource_name: qogita_db_standard_full_refresh
 definition_type: source
 definition_id: decd338e-5647-4c0b-adf4-da0e75f5a750
 definition_image: airbyte/source-postgres
 definition_version: 1.0.44
 configuration:
   ssl: false
-  host: dpg-cdoivmta499b1lliths0-a.oregon-postgres.render.com
+  host: prod-qogita-db.cluster-ro-cuepgogvu0rp.eu-central-1.rds.amazonaws.com
   port: 5432
   schemas:
   - public
-  database: revenue_db
-  password: ${REVENUE_DB_AIRBYTE}
+  database: qogitadb
+  password: ${QOGITA_DB_AIRBYTE}
   ssl_mode:
     mode: disable
   username: airbyte

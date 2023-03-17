@@ -1,7 +1,0 @@
-{
-  "client_id": "jreFpNMZ8D_Y7O0Q0f1KmlREgKNwGDnJN9jtR0Wknj0",
-  "client_secret": "t0OgRWYq_FwjUaqxSJpURUrBFz9to15baSYWyyfCvE8",
-  "refresh_token": "tgFJoqbpkvzMtu47HbSgmmwyVAYzdAqGJMpzMSdA9Wg",
-  "redirect_uri": "https://api.staging.calixa.io/integrations/oauth/outreach/callback",
-  "start_date": "2020-11-16T00:00:00Z"
-}

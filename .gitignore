@@ -86,3 +86,4 @@ dd-java-agent.jar
 
 # Octavia state files
 octavia-configs/**/state*.yaml
+octavia-configs/.env

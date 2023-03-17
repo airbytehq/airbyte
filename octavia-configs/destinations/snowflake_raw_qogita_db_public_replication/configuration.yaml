@@ -1,0 +1,17 @@
+resource_name: snowflake_raw_qogita_db_public_replication
+definition_type: destination
+definition_id: 424892c4-daac-4491-b35d-c6688ba547ba
+definition_image: airbyte/destination-snowflake
+definition_version: 0.4.47
+configuration:
+  host: il13848.eu-central-1.snowflakecomputing.com
+  role: ACCOUNTADMIN
+  schema: QOGITA_DB_PUBLIC_REPLICATION
+  database: RAW
+  username: airbyte
+  warehouse: LOADING
+  credentials:
+    password: ${SNOWFLAKE_AIRBYTE}
+    auth_type: Username and Password
+  loading_method:
+    method: Standard

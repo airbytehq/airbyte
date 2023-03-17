@@ -1,7 +1,0 @@
-*
-!Dockerfile
-!Dockerfile.test
-!main.py
-!source_google_analytics_v4
-!setup.py
-!secrets

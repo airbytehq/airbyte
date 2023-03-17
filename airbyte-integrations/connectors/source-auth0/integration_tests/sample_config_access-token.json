@@ -1,7 +1,0 @@
-{
-  "base_url": "https://dev-yourOrg.us.auth0.com",
-  "credentials": {
-    "auth_type": "oauth2_access_token",
-    "access_token": "api-key-just-for-testing"
-  }
-}

@@ -1,2 +1,0 @@
-# Transformations and Normalization
-

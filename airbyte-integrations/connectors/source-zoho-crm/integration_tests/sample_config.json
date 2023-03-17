@@ -1,9 +1,0 @@
-{
-  "refresh_token": "1000.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-  "client_id": "1000.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
-  "client_secret": "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii",
-  "environment": "Production",
-  "dc_region": "US",
-  "start_datetime": "2000-01-01T00:00:00+00:00",
-  "edition": "Free"
-}

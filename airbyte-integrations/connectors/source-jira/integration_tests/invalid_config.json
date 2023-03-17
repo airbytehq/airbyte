@@ -1,7 +1,0 @@
-{
-  "api_token": "invalid_token",
-  "domain": "invaliddomain.atlassian.net",
-  "email": "test@test.com",
-  "projects": ["invalidproject"],
-  "start_date": "2021-09-25T00:00:00Z"
-}
