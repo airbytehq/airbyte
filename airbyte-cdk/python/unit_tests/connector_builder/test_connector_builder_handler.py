@@ -7,15 +7,15 @@ import json
 from unittest import mock
 from unittest.mock import patch
 
-import connector_builder
 import pytest
+
+import connector_builder
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, Level
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from connector_builder.connector_builder_handler import resolve_manifest
 from connector_builder.main import handle_connector_builder_request, handle_request, read_stream
 from connector_builder.models import StreamRead, StreamReadSlicesInner, StreamReadSlicesInnerPagesInner
-from connector_builder.utils.error_formatter import ErrorFormatter
 from unit_tests.connector_builder.utils import create_configured_catalog
 
 _stream_name = "stream_with_custom_requester"
@@ -313,7 +313,7 @@ def test_read():
                                                   "test_read_limit_reached": False,
                                                   "inferred_schema": None
                                               }, emitted_at=1))
-    with mock.patch("connector_builder.message_grouper.MessageGrouper.get_message_groups", return_value=stream_read):
+    with patch("connector_builder.message_grouper.MessageGrouper.get_message_groups", return_value=stream_read):
         output_record = handle_connector_builder_request(source, config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG))
         output_record.record.emitted_at = 1
         assert output_record == expected_airbyte_message
