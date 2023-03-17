@@ -55,7 +55,7 @@ DEFAULT_BACKOFF_DELAYS = [5, 10, 20, 40, 80]
 @responses.activate
 @patch("time.sleep")
 def test_internal_server_error_retry(time_mock):
-    args = {"api_url": "api.github.com", "authenticator": None, "repositories": ["airbytehq/airbyte"], "start_date": "start_date", "page_size_for_large_streams": 30}
+    args = {"authenticator": None, "repositories": ["airbytehq/airbyte"], "start_date": "start_date", "page_size_for_large_streams": 30}
     stream = CommitCommentReactions(**args)
     stream_slice = {"repository": "airbytehq/airbyte", "comment_id": "id"}
 
@@ -86,7 +86,7 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
     response_mock = MagicMock()
     response_mock.status_code = http_status
     response_mock.headers = response_headers
-    args = {"api_url": "api.github.com", "authenticator": None, "repositories": ["test_repo"], "start_date": "start_date", "page_size_for_large_streams": 30}
+    args = {"authenticator": None, "repositories": ["test_repo"], "start_date": "start_date", "page_size_for_large_streams": 30}
     stream = PullRequestCommentReactions(**args)
     assert stream.backoff_time(response_mock) == expected_backoff_time
 

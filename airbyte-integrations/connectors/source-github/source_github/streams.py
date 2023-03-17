@@ -33,10 +33,10 @@ class GithubStream(HttpStream, ABC):
 
     stream_base_params = {}
 
-    def __init__(self, repositories: List[str], page_size_for_large_streams: int, **kwargs):
+    def __init__(self, repositories: List[str], page_size_for_large_streams: int, url_base: str,**kwargs):
         super().__init__(**kwargs)
         self.repositories = repositories
-
+        self.url_base = url_base
         # GitHub pagination could be from 1 to 100.
         self.page_size = page_size_for_large_streams if self.large_stream else DEFAULT_PAGE_SIZE
 

@@ -12,7 +12,7 @@ from source_github.source import SourceGithub
 
 def check_source(repo_line: str) -> AirbyteConnectionStatus:
     source = SourceGithub()
-    config = {"access_token": "test_token", "repository": repo_line, "api_url": "api.github.com"}
+    config = {"access_token": "test_token", "repository": repo_line}
     logger_mock = MagicMock()
     return source.check(logger_mock, config)
 
@@ -104,7 +104,7 @@ def test_get_org_repositories():
     source = SourceGithub()
 
     with pytest.raises(Exception):
-        config = {"repository": "", "api_url": "api.github.com",}
+        config = {"repository": ""}
         source._get_org_repositories(config, authenticator=None)
 
     responses.add(
@@ -122,7 +122,7 @@ def test_get_org_repositories():
         ],
     )
 
-    config = {"repository": "airbytehq/integration-test docker/*", "api_url": "api.github.com"}
+    config = {"repository": "airbytehq/integration-test docker/*"}
     organisations, repositories = source._get_org_repositories(config, authenticator=None)
 
     assert set(repositories) == {"airbytehq/integration-test", "docker/docker-py", "docker/compose"}
@@ -133,6 +133,6 @@ def test_organization_or_repo_available():
     SourceGithub._get_org_repositories = MagicMock(return_value=(False, False))
     source = SourceGithub()
     with pytest.raises(Exception) as exc_info:
-        config = {"access_token": "test_token", "repository": "", "api_url": "api.github.com"}
+        config = {"access_token": "test_token", "repository": ""}
         source.streams(config=config)
     assert exc_info.value.args[0] == "No streams available. Please check permissions"
