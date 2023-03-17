@@ -9,13 +9,13 @@ spec:
   - name: main
     image: airbyte/source-harness:dev
     args: ["airbyte/source-postgres:dev"]
-  resources:
-    limits:
-      cpu: "2.5"
-      memory: "2Gi"
-    requests:
-      cpu: "2.5"
-      memory: "2Gi"
+    resources:
+      limits:
+        cpu: "2.5"
+        memory: "2Gi"
+      requests:
+        cpu: "2.5"
+        memory: "2Gi"
   imagePullSecrets:
   - name: regcred
   restartPolicy: Never
