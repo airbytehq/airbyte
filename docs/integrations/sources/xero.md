@@ -59,4 +59,5 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.2.0   | 2023-03-14 | [24005](https://github.com/airbytehq/airbyte/pull/24005) | Enable in Cloud                   |
 | 0.1.0   | 2021-11-11 | [18666](https://github.com/airbytehq/airbyte/pull/18666) | 🎉 New Source - Xero [python cdk] |
