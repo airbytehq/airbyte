@@ -1,0 +1,147 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "AktiverSporsmal": {
+      "type": "boolean"
+    },
+    "ArbeidsartNavn": {
+      "type": "string"
+    },
+    "ArbeidsartNr": {
+      "type": "string"
+    },
+    "ArtTypeNr": {
+      "type": "string"
+    },
+    "ArtTypeNr2": {
+      "type": "string"
+    },
+    "ArtTypeNr3": {
+      "type": "string"
+    },
+    "AskForEndTime": {
+      "type": "boolean"
+    },
+    "Avd": {
+      "type": "string"
+    },
+    "AvrundFAntall": {
+      "type": "integer"
+    },
+    "AvrundFAntallTil": {
+      "type": "integer"
+    },
+    "BarStyle": {
+      "type": "integer"
+    },
+    "FastTekst": {
+      "type": "null"
+    },
+    "Forvalg": {
+      "type": "integer"
+    },
+    "FraKlokken": {
+      "type": "string"
+    },
+    "Fri": {
+      "type": "boolean"
+    },
+    "FromNextday": {
+      "type": "boolean"
+    },
+    "FyllTommeDager": {
+      "type": "boolean"
+    },
+    "KortNavn": {
+      "type": "string"
+    },
+    "Kostkonto": {
+      "type": "null"
+    },
+    "Notat": {
+      "type": "null"
+    },
+    "OppdaterBmTidVedEndring": {
+      "type": "boolean"
+    },
+    "OverMidnatt": {
+      "type": "integer"
+    },
+    "PrisPrEnhet": {
+      "type": "number"
+    },
+    "Produktiv": {
+      "type": "boolean"
+    },
+    "RegLor": {
+      "type": "boolean"
+    },
+    "RegSon": {
+      "type": "boolean"
+    },
+    "RestOfDayAndNext": {
+      "type": "boolean"
+    },
+    "Sats1": {
+      "type": "number"
+    },
+    "Sats2": {
+      "type": "number"
+    },
+    "SistEndretAv": {
+      "type": "integer"
+    },
+    "SistEndretDato": {
+      "type": "string"
+    },
+    "Sporsmal": {
+      "type": "null"
+    },
+    "Standard": {
+      "type": "boolean"
+    },
+    "TaMedIKalkyle": {
+      "type": "boolean"
+    },
+    "TilKlokken": {
+      "type": "string"
+    },
+    "TilbakeDato": {
+      "type": "boolean"
+    },
+    "TilbakeKl": {
+      "type": "boolean"
+    },
+    "TillattSerie": {
+      "type": "boolean"
+    },
+    "UtDagen": {
+      "type": "boolean"
+    },
+    "VisAktivitetsmeny": {
+      "type": "boolean"
+    },
+    "VisAvsnittKart": {
+      "type": "boolean"
+    },
+    "VisKundeKart": {
+      "type": "boolean"
+    },
+    "VisProduktivitet": {
+      "type": "boolean"
+    },
+    "VisProsjektKart": {
+      "type": "boolean"
+    },
+    "WebBg": {
+      "type": "integer"
+    },
+    "WebFg": {
+      "type": "integer"
+    },
+    "id": {
+      "type": "integer"
+    }
+  },
+  "type": "object"
+}
