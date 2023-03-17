@@ -20,7 +20,7 @@ SECONDS_BETWEEN_PAGE = 5
 class DiscordMessagesStream(HttpStream, ABC):
     url_base = "https://discord.com"
     cursor_field = "timestamp"
-    primary_key = "id"
+    primary_key = "message_id"
 
     def __init__(self, config: Mapping[str, Any], **_):
         super().__init__()
@@ -105,8 +105,8 @@ class Messages(DiscordMessagesStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         records = response.json()
+        time.sleep(10)
         for record in records:
-            time.sleep(10)
             yield self.transform(record=record, **kwargs)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
