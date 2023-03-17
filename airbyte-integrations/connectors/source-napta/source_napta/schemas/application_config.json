@@ -1,0 +1,667 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "attributes": {
+      "properties": {
+        "_advanced_search": {
+          "properties": {
+            "may_filter_by_skill": {
+              "type": "boolean"
+            },
+            "may_search_by_availability": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "_allowManualSeed": {
+          "type": "boolean"
+        },
+        "_automatically_create_initial_financial_situation": {
+          "type": "boolean"
+        },
+        "_canDislike": {
+          "type": "boolean"
+        },
+        "_canLikeProjects": {
+          "type": "boolean"
+        },
+        "_canSeeAllTimesheets": {
+          "type": "boolean"
+        },
+        "_canSeeWhoLikedProjects": {
+          "type": "boolean"
+        },
+        "_clientType": {
+          "type": "string"
+        },
+        "_conflictColor": {
+          "type": "string"
+        },
+        "_conflict_compute_unit": {
+          "type": "string"
+        },
+        "_createUserAuth0": {
+          "type": "boolean"
+        },
+        "_crispChatActivated": {
+          "type": "boolean"
+        },
+        "_crisp_notifications": {
+          "type": "object"
+        },
+        "_customerEffortScoreSurveyPages": {
+          "type": "array"
+        },
+        "_date_format_export": {
+          "type": "string"
+        },
+        "_date_format_front": {
+          "type": "string"
+        },
+        "_defaultExperienceEmployer": {
+          "type": "string"
+        },
+        "_default_language": {
+          "type": "string"
+        },
+        "_employeesAvailableRate": {
+          "type": "number"
+        },
+        "_external_id_updatable_for_types": {
+          "type": "null"
+        },
+        "_googleAnalyticsActivated": {
+          "type": "boolean"
+        },
+        "_grade_group_default_id": {
+          "type": "integer"
+        },
+        "_hasAvailabilityComponent": {
+          "type": "boolean"
+        },
+        "_hasAvailabilityComponentExtended": {
+          "type": "boolean"
+        },
+        "_hasCalendarOnProfile": {
+          "type": "boolean"
+        },
+        "_hasConflictsCalendar": {
+          "type": "boolean"
+        },
+        "_hasEditStaffingInline": {
+          "type": "boolean"
+        },
+        "_hasEvaluationCampaign": {
+          "type": "boolean"
+        },
+        "_hasExperiences": {
+          "type": "boolean"
+        },
+        "_hasExtendedCalendarViews": {
+          "type": "boolean"
+        },
+        "_hasFinanceComponent": {
+          "type": "boolean"
+        },
+        "_hasFinanceComponentExtended": {
+          "type": "boolean"
+        },
+        "_hasFinanceReportingBeta": {
+          "type": "boolean"
+        },
+        "_hasFinancialSituations": {
+          "type": "boolean"
+        },
+        "_hasFirstAvailabilityRate": {
+          "type": "boolean"
+        },
+        "_hasHalfDayStaffing": {
+          "type": "boolean"
+        },
+        "_hasHierarchicalStructure": {
+          "type": "boolean"
+        },
+        "_hasParentProjects": {
+          "type": "boolean"
+        },
+        "_hasProjectSnapshot": {
+          "type": "boolean"
+        },
+        "_hasResourcesByTypes": {
+          "properties": {
+            "cardlabel": {
+              "type": "boolean"
+            },
+            "career_track": {
+              "type": "boolean"
+            },
+            "location": {
+              "type": "boolean"
+            },
+            "projectcategory": {
+              "type": "boolean"
+            },
+            "projectstatus": {
+              "type": "boolean"
+            },
+            "skill": {
+              "type": "boolean"
+            },
+            "userproject_status": {
+              "type": "boolean"
+            },
+            "userprojectperiod_status": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "_hasResumeImport": {
+          "type": "boolean"
+        },
+        "_hasRoundOnExportValue": {
+          "type": "boolean"
+        },
+        "_hasSkillGraph": {
+          "type": "boolean"
+        },
+        "_hasSkillSubCategories": {
+          "type": "boolean"
+        },
+        "_hasStaffingOnWeekend": {
+          "type": "boolean"
+        },
+        "_hasTaskManagement": {
+          "type": "boolean"
+        },
+        "_hasTemplateGenerator": {
+          "type": "boolean"
+        },
+        "_hasTimesheet": {
+          "type": "boolean"
+        },
+        "_hasUserProjectEvaluation": {
+          "type": "boolean"
+        },
+        "_has_hourly_staffing": {
+          "type": "boolean"
+        },
+        "_has_staffing_tace_saturation": {
+          "type": "boolean"
+        },
+        "_hotjarActivated": {
+          "type": "boolean"
+        },
+        "_hours_per_day": {
+          "type": "number"
+        },
+        "_ignore_holidays_for_project_workload_and_business_days": {
+          "type": "boolean"
+        },
+        "_individual_reporting_colors": {
+          "properties": {
+            "0": {
+              "type": "string"
+            },
+            "101": {
+              "type": "string"
+            },
+            "50": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "_isKpmg": {
+          "type": "boolean"
+        },
+        "_is_ical_invitation_enabled": {
+          "type": "boolean"
+        },
+        "_logo_url": {
+          "type": "string"
+        },
+        "_maxUserProjectForRex": {
+          "type": "integer"
+        },
+        "_mayAccessGlobalStaffingReporting": {
+          "type": "boolean"
+        },
+        "_mayAccessIndividualStaffingReporting": {
+          "type": "boolean"
+        },
+        "_mayAccessPlanningCapacityReporting": {
+          "type": "boolean"
+        },
+        "_mayAccessSearch": {
+          "type": "boolean"
+        },
+        "_mayAccessTimesheetReporting": {
+          "type": "boolean"
+        },
+        "_mayChangeCurrentUserPassword": {
+          "type": "boolean"
+        },
+        "_mayCompareUsersCareerPath": {
+          "type": "boolean"
+        },
+        "_mayCreateBusinessUnit": {
+          "type": "boolean"
+        },
+        "_mayCreateCardLabel": {
+          "type": "boolean"
+        },
+        "_mayCreateCareerTrack": {
+          "type": "boolean"
+        },
+        "_mayCreateClient": {
+          "type": "boolean"
+        },
+        "_mayCreateEntityTag": {
+          "properties": {
+            "1": {
+              "type": "boolean"
+            },
+            "2": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "_mayCreateEvaluationCampaignEvaluation": {
+          "type": "boolean"
+        },
+        "_mayCreateGrade": {
+          "type": "boolean"
+        },
+        "_mayCreateGradeGroup": {
+          "type": "boolean"
+        },
+        "_mayCreateJobSheet": {
+          "type": "boolean"
+        },
+        "_mayCreateLocation": {
+          "type": "boolean"
+        },
+        "_mayCreateMetadata": {
+          "properties": {
+            "client_metadata": {
+              "type": "object"
+            },
+            "project_metadata": {
+              "properties": {
+                "creator_name": {
+                  "type": "boolean"
+                },
+                "unique_mission_id": {
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            },
+            "user_metadata": {
+              "properties": {
+                "role": {
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            },
+            "userinfo_metadata": {
+              "properties": {
+                "cv_link": {
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "_mayCreateMetadataField": {
+          "type": "boolean"
+        },
+        "_mayCreateMetadataFieldRight": {
+          "type": "boolean"
+        },
+        "_mayCreateParentProjects": {
+          "type": "boolean"
+        },
+        "_mayCreateProject": {
+          "type": "boolean"
+        },
+        "_mayCreateProjectCategory": {
+          "type": "boolean"
+        },
+        "_mayCreateProjectStaffingColumn": {
+          "type": "boolean"
+        },
+        "_mayCreateProjectStatus": {
+          "type": "boolean"
+        },
+        "_mayCreateSkill": {
+          "type": "boolean"
+        },
+        "_mayCreateSkillCategory": {
+          "type": "boolean"
+        },
+        "_mayCreateTagType": {
+          "properties": {
+            "Project": {
+              "type": "boolean"
+            },
+            "ProjectSnapshot": {
+              "type": "boolean"
+            },
+            "User": {
+              "type": "boolean"
+            },
+            "UserProject": {
+              "type": "boolean"
+            },
+            "UserProjectPeriod": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "_mayCreateTagTypeRight": {
+          "properties": {
+            "Experience": {
+              "type": "boolean"
+            },
+            "Project": {
+              "type": "boolean"
+            },
+            "ProjectSnapshot": {
+              "type": "boolean"
+            },
+            "User": {
+              "type": "boolean"
+            },
+            "UserProject": {
+              "type": "boolean"
+            },
+            "UserProjectPeriod": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "_mayCreateUser": {
+          "properties": {
+            "default": {
+              "type": "boolean"
+            },
+            "external_id": {
+              "type": "boolean"
+            },
+            "leaving_date": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "_mayCreateUserGroup": {
+          "type": "boolean"
+        },
+        "_mayCreateUserHoliday": {
+          "type": "boolean"
+        },
+        "_mayCreateUserHolidayCategory": {
+          "type": "boolean"
+        },
+        "_mayCreateUserPosition": {
+          "type": "boolean"
+        },
+        "_mayCreateUserProjectPeriodStatus": {
+          "type": "boolean"
+        },
+        "_mayCreateUserProjectStatus": {
+          "type": "boolean"
+        },
+        "_mayDeactivateAssessment": {
+          "type": "boolean"
+        },
+        "_mayDelete": {
+          "type": "boolean"
+        },
+        "_mayExportJobSheet": {
+          "type": "boolean"
+        },
+        "_mayExportRex": {
+          "type": "boolean"
+        },
+        "_mayGetUserManager": {
+          "type": "boolean"
+        },
+        "_mayImportFromLinkedin": {
+          "type": "boolean"
+        },
+        "_mayManageUserGroups": {
+          "type": "boolean"
+        },
+        "_mayManageUserProjectComments": {
+          "type": "boolean"
+        },
+        "_mayManageUsers": {
+          "type": "string"
+        },
+        "_mayMergeSkill": {
+          "type": "boolean"
+        },
+        "_mayRequestStaffing": {
+          "type": "boolean"
+        },
+        "_maySeeAllDailyCost": {
+          "type": "boolean"
+        },
+        "_maySeeAllSimulatedStaffing": {
+          "type": "boolean"
+        },
+        "_maySeeMarkupRate": {
+          "type": "boolean"
+        },
+        "_maySeeOtherUsersOutOfHisBU": {
+          "type": "boolean"
+        },
+        "_maySeeWorkload": {
+          "type": "boolean"
+        },
+        "_maySimulateUserProject": {
+          "type": "boolean"
+        },
+        "_mayStaffMyself": {
+          "type": "boolean"
+        },
+        "_mayStaffSimulatedOnly": {
+          "type": "boolean"
+        },
+        "_mayStaffUser": {
+          "type": "boolean"
+        },
+        "_mayUpdate": {
+          "type": "boolean"
+        },
+        "_prefill_timesheets": {
+          "type": "boolean"
+        },
+        "_projectDefault_status_id": {
+          "type": "integer"
+        },
+        "_project_category_default_id": {
+          "type": "null"
+        },
+        "_project_contributor_delegation_exclusion": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "_requiredFields": {
+          "type": "object"
+        },
+        "_sendWelcomeMail": {
+          "type": "boolean"
+        },
+        "_show_hiring_or_leaving_date_conflict_icon": {
+          "type": "boolean"
+        },
+        "_splitUppOnUserHolidayImport": {
+          "type": "string"
+        },
+        "_staffed_days_as_reference": {
+          "type": "boolean"
+        },
+        "_staffingFlowFeatureFlag": {
+          "type": "boolean"
+        },
+        "_tag_entity_type_enum": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "_tag_type_right_write_policy_enum": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "_target_margin_rate": {
+          "type": "null"
+        },
+        "_translations": {
+          "properties": {
+            "en": {
+              "properties": {
+                "Waiting List": {
+                  "type": "string"
+                },
+                "business unit": {
+                  "type": "string"
+                },
+                "business unit_plural": {
+                  "type": "string"
+                },
+                "category_project": {
+                  "type": "string"
+                },
+                "project category": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "fr": {
+              "properties": {
+                "Waiting List": {
+                  "type": "string"
+                },
+                "business unit": {
+                  "type": "string"
+                },
+                "business unit_plural": {
+                  "type": "string"
+                },
+                "category_project": {
+                  "type": "string"
+                },
+                "project category": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "_upp_split_by_default": {
+          "type": "string"
+        },
+        "_userProjectDefault_business_unit_id": {
+          "type": "integer"
+        },
+        "_userProjectDefault_location_id": {
+          "type": "null"
+        },
+        "_userProjectDefault_status_id": {
+          "type": "null"
+        },
+        "_userProjectDefault_user_position_id": {
+          "type": "integer"
+        },
+        "_userProjectEvaluationActivatedByDefault": {
+          "type": "boolean"
+        },
+        "_userProjectPeriodDefault_status_id": {
+          "type": "integer"
+        },
+        "_wootricActivated": {
+          "type": "boolean"
+        },
+        "_write_policies_per_tag_type": {
+          "properties": {
+            "Project": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ProjectSnapshot": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "User": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "UserProject": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "UserProjectPeriod": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "created_on": {
+          "type": "null"
+        },
+        "hasExtendedCalendarViews": {
+          "type": "boolean"
+        },
+        "updated_on": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": "integer"
+    },
+    "links": {
+      "properties": {
+        "self": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

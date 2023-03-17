@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "attributes": {
+      "properties": {
+        "_mayDelete": {
+          "type": "boolean"
+        },
+        "_mayUpdate": {
+          "type": "boolean"
+        },
+        "created_by_id": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "created_on": {
+          "type": "string"
+        },
+        "location_id": {
+          "type": "string"
+        },
+        "updated_on": {
+          "type": "string"
+        },
+        "user_project_id": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
+    "links": {
+      "properties": {
+        "self": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

@@ -1,0 +1,698 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "attributes": {
+      "properties": {
+        "_calendar_display_unit": {
+          "type": "string"
+        },
+        "_mayDelete": {
+          "type": "boolean"
+        },
+        "_mayUpdate": {
+          "type": "boolean"
+        },
+        "calendar_display_unit": {
+          "type": "string"
+        },
+        "created_on": {
+          "type": "string"
+        },
+        "default_resume_template_id": {
+          "type": "null"
+        },
+        "default_rex_template_id": {
+          "type": "null"
+        },
+        "display": {
+          "properties": {
+            "ISR_project": {
+              "properties": {
+                "tableColumns": {
+                  "properties": {
+                    "projectcategory": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "projectstatus": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "ISR_user": {
+              "properties": {
+                "tableColumns": {
+                  "properties": {
+                    "business_unit": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "location": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "user_position": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "user_tag/1": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "user_tag_type/1": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "REPORT_GLOBAL_FINANCIAL": {
+              "properties": {
+                "dateRange": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            },
+            "REPORT_GLOBAL_STAFFING": {
+              "properties": {
+                "dateRange": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            },
+            "REPORT_INDIVIDUAL_PROJECT_STAFFING": {
+              "properties": {
+                "dateRange": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "tableColumns": {
+                  "properties": {
+                    "project_tag/3": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "projectcategory": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "projectstatus": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "REPORT_INDIVIDUAL_SKILLS": {
+              "properties": {
+                "dateRange": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            },
+            "REPORT_INDIVIDUAL_STAFFING": {
+              "properties": {
+                "dateRange": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            },
+            "REPORT_INDIVIDUAL_TIMESHEET": {
+              "properties": {
+                "dateRange": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "periodUnit": {
+                  "type": "string"
+                },
+                "timeUnit": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "REPORT_INDIVIDUAL_USER_STAFFING": {
+              "properties": {
+                "dateRange": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "filterIdsPinned": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "tableColumns": {
+                  "properties": {
+                    "business_unit": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "location": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "total_availability": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "user_position": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "user_tag/1": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "user_tag/2": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "REPORT_PROJECT_TIMESHEET": {
+              "properties": {
+                "periodUnit": {
+                  "type": "string"
+                },
+                "timeUnit": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "REPORT_STAFFING_CAPACITY": {
+              "properties": {
+                "dateRange": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            },
+            "STAFFING_BOARD": {
+              "properties": {
+                "tableColumns": {
+                  "properties": {
+                    "date": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "interest": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "member": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "project_tag/3": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "projectstaffingcolumn": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "request": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "statusAndCategory": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "STAFFING_BOARD_TABLE": {
+              "properties": {
+                "tableColumns": {
+                  "properties": {
+                    "date": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "interest": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "member": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "projectstaffingcolumn": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "request": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "statusAndCategory": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "USER_PROJECT_REQUEST": {
+              "properties": {
+                "tableColumns": {
+                  "properties": {
+                    "business_unit_preferences": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "created_by": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "latest_comment": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "location_preferences": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "metadata_notes": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "project_likes": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "staffNeeded": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "user_position_preferences": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "user_preferences": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "user_tag/1": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "user_tag/2": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "userproject_userskills": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "USER_PROJECT_STAFFING": {
+              "properties": {
+                "tableColumns": {
+                  "properties": {
+                    "business_unit": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "created_by": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "latest_comment": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "location": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "metadata_notes": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "user_position": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "user_tag/1": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "user_tag/2": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "userproject_userskills": {
+                      "properties": {
+                        "display": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "false": {
+              "properties": {
+                "tableColumns": {
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "null": {
+              "properties": {
+                "tableColumns": {
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "global_calendar_default_sort": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "project_calendar_default_sort": {
+          "type": "string"
+        },
+        "project_financial_graph_display_unit": {
+          "type": "string"
+        },
+        "sections": {
+          "properties": {
+            "project_info": {
+              "properties": {
+                "description": {
+                  "properties": {
+                    "visible": {
+                      "type": "boolean"
+                    }
+                  },
+                  "type": "object"
+                },
+                "financial": {
+                  "type": "object"
+                },
+                "general": {
+                  "properties": {
+                    "visible": {
+                      "type": "boolean"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "updated_on": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "string"
+        },
+        "user_project_period_display_unit": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
+    "links": {
+      "properties": {
+        "self": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

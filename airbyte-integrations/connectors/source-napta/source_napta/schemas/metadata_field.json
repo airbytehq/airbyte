@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "attributes": {
+      "properties": {
+        "_mayDelete": {
+          "type": "boolean"
+        },
+        "_mayUpdate": {
+          "type": "boolean"
+        },
+        "created_by_id": {
+          "type": "null"
+        },
+        "created_on": {
+          "type": "null"
+        },
+        "displayProps": {
+          "type": "null"
+        },
+        "displayType": {
+          "type": "string"
+        },
+        "formProps": {
+          "properties": {
+            "iconPosition": {
+              "type": "string"
+            },
+            "placeholder": {
+              "type": "string"
+            },
+            "rows": {
+              "type": "integer"
+            },
+            "style": {
+              "properties": {
+                "resize": {
+                  "type": "string"
+                },
+                "textAlign": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "width": {
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "formType": {
+          "type": "string"
+        },
+        "formX": {
+          "type": "null"
+        },
+        "formY": {
+          "type": "null"
+        },
+        "icon": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "key": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "readonly": {
+          "type": "boolean"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "type": {
+          "type": "string"
+        },
+        "updated_on": {
+          "type": "null"
+        }
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
+    "links": {
+      "properties": {
+        "self": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

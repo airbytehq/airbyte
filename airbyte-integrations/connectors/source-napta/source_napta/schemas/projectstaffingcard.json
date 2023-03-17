@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "attributes": {
+      "properties": {
+        "_mayCreateProjectStaffingCardCardLabel": {
+          "type": "boolean"
+        },
+        "_mayDelete": {
+          "type": "boolean"
+        },
+        "_mayUpdate": {
+          "type": "boolean"
+        },
+        "created_on": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "pos": {
+          "type": "number"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "projectstaffingcolumn_id": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "updated_on": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
+    "links": {
+      "properties": {
+        "self": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "attributes": {
+      "properties": {
+        "_first_tags": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "_mayCreate": {
+          "type": "boolean"
+        },
+        "_mayDelete": {
+          "type": "boolean"
+        },
+        "_mayUpdate": {
+          "type": "boolean"
+        },
+        "_tag_count": {
+          "type": "integer"
+        },
+        "created_on": {
+          "type": "string"
+        },
+        "entity_type": {
+          "type": "string"
+        },
+        "is_multi_selectable": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "updated_on": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
+    "links": {
+      "properties": {
+        "self": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

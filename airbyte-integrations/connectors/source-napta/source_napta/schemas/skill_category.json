@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "attributes": {
+      "properties": {
+        "_mayDelete": {
+          "type": "boolean"
+        },
+        "_mayUpdate": {
+          "properties": {
+            "default": {
+              "type": "boolean"
+            },
+            "parent_category_id": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "created_by_id": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "created_on": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "name_translations": {
+          "properties": {
+            "en": {
+              "type": "string"
+            },
+            "fr": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "parent_category_id": {
+          "type": "null"
+        },
+        "priority": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "updated_on": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
+    "links": {
+      "properties": {
+        "self": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

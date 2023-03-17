@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "attributes": {
+      "properties": {
+        "_mayGetUser": {
+          "type": "boolean"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "business_unit_id": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "created_on": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "has_picture": {
+          "type": "boolean"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "location_id": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "picture": {
+          "type": "string"
+        },
+        "updated_on": {
+          "type": "string"
+        },
+        "user_position_id": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
+    "links": {
+      "properties": {
+        "self": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}
