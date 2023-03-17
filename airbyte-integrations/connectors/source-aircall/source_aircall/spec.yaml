@@ -1,0 +1,16 @@
+documentationUrl: https://developer.aircall.io/api-references
+connectionSpecification:
+  $schema: http://json-schema.org/schema#
+  type: object
+  required:
+    - username
+    - password
+  properties:
+    username:
+      type: string
+      title: Username
+    password:
+      type: string
+      title: Password
+      airbyte_secret: true
+  additionalProperties: true

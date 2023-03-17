@@ -1,0 +1,238 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "calls",
+        "json_schema": {
+         "$schema": "http://json-schema.org/schema#",
+         "properties": {
+           "calls": {
+             "items": {
+               "properties": {
+                 "answered_at": {
+                   "type": [
+                     "integer",
+                     "null"
+                   ]
+                 },
+                 "archived": {
+                   "type": "boolean"
+                 },
+                 "asset": {
+                   "type": "null"
+                 },
+                 "assigned_to": {
+                   "type": "null"
+                 },
+                 "comments": {
+                   "type": "array"
+                 },
+                 "contact": {
+                   "type": "null"
+                 },
+                 "cost": {
+                   "type": "string"
+                 },
+                 "country_code_a2": {
+                   "type": [
+                     "null",
+                     "string"
+                   ]
+                 },
+                 "direct_link": {
+                   "type": "string"
+                 },
+                 "direction": {
+                   "type": "string"
+                 },
+                 "duration": {
+                   "type": "integer"
+                 },
+                 "ended_at": {
+                   "type": "integer"
+                 },
+                 "id": {
+                   "type": "integer"
+                 },
+                 "missed_call_reason": {
+                   "type": "null"
+                 },
+                 "number": {
+                   "properties": {
+                     "availability_status": {
+                       "type": "string"
+                     },
+                     "country": {
+                       "type": "string"
+                     },
+                     "created_at": {
+                       "type": "string"
+                     },
+                     "digits": {
+                       "type": "string"
+                     },
+                     "direct_link": {
+                       "type": "string"
+                     },
+                     "id": {
+                       "type": "integer"
+                     },
+                     "is_ivr": {
+                       "type": "boolean"
+                     },
+                     "live_recording_activated": {
+                       "type": "boolean"
+                     },
+                     "messages": {
+                       "properties": {
+                         "after_hours": {
+                           "type": "string"
+                         },
+                         "callback_later": {
+                           "type": "string"
+                         },
+                         "closed": {
+                           "type": "string"
+                         },
+                         "ivr": {
+                           "type": "string"
+                         },
+                         "ringing_tone": {
+                           "type": "string"
+                         },
+                         "unanswered_call": {
+                           "type": "string"
+                         },
+                         "voicemail": {
+                           "type": "string"
+                         },
+                         "waiting": {
+                           "type": "string"
+                         },
+                         "welcome": {
+                           "type": "string"
+                         }
+                       },
+                       "type": "object"
+                     },
+                     "name": {
+                       "type": "string"
+                     },
+                     "open": {
+                       "type": "boolean"
+                     },
+                     "priority": {
+                       "type": "null"
+                     },
+                     "time_zone": {
+                       "type": "string"
+                     }
+                   },
+                   "type": "object"
+                 },
+                 "pricing_type": {
+                   "type": [
+                     "null",
+                     "string"
+                   ]
+                 },
+                 "raw_digits": {
+                   "type": "string"
+                 },
+                 "recording": {
+                   "type": "null"
+                 },
+                 "started_at": {
+                   "type": "integer"
+                 },
+                 "status": {
+                   "type": "string"
+                 },
+                 "tags": {
+                   "type": "array"
+                 },
+                 "teams": {
+                   "type": "array"
+                 },
+                 "transferred_by": {
+                   "type": "null"
+                 },
+                 "transferred_to": {
+                   "type": "null"
+                 },
+                 "user": {
+                   "properties": {
+                     "availability_status": {
+                       "type": "string"
+                     },
+                     "available": {
+                       "type": "boolean"
+                     },
+                     "created_at": {
+                       "type": "string"
+                     },
+                     "direct_link": {
+                       "type": "string"
+                     },
+                     "email": {
+                       "type": "string"
+                     },
+                     "id": {
+                       "type": "integer"
+                     },
+                     "language": {
+                       "type": "string"
+                     },
+                     "name": {
+                       "type": "string"
+                     },
+                     "time_zone": {
+                       "type": "string"
+                     },
+                     "wrap_up_time": {
+                       "type": "integer"
+                     }
+                   },
+                   "type": "object"
+                 },
+                 "voicemail": {
+                   "type": "null"
+                 }
+               },
+               "type": "object"
+             },
+             "type": "array"
+           },
+           "meta": {
+             "properties": {
+               "count": {
+                 "type": "integer"
+               },
+               "current_page": {
+                 "type": "integer"
+               },
+               "next_page_link": {
+                 "type": "string"
+               },
+               "per_page": {
+                 "type": "integer"
+               },
+               "previous_page_link": {
+                 "type": "null"
+               },
+               "total": {
+                 "type": "integer"
+               }
+             },
+             "type": "object"
+           }
+         },
+         "type": "object"
+       },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
