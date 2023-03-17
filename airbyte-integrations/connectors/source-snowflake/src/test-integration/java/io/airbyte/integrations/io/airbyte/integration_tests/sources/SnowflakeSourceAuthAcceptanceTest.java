@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.zaxxer.hikari.HikariDataSource;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
@@ -26,11 +27,11 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
     final StringBuilder jdbcUrl = new StringBuilder(
         String.format("jdbc:snowflake://%s/?", config.get(JdbcUtils.HOST_KEY).asText()));
     jdbcUrl.append(String.format(
-        "role=%s&warehouse=%s&database=%s&schema=%s&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s",
+        "role=%s&warehouse=%s&database=%s&schema=%s&CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX=true&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s",
         config.get("role").asText(),
         config.get("warehouse").asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText(),
-        config.get(JdbcUtils.SCHEMA_KEY).asText(),
+        config.get("schema").asText(),
         // Needed for JDK17 - see
         // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
         "JSON",
@@ -73,8 +74,10 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
   }
 
   JsonNode getStaticConfig() {
-    return Jsons
+    final JsonNode node = Jsons
         .deserialize(IOs.readFile(Path.of("secrets/config_auth.json")));
+    ((ObjectNode) node).put("schema", SCHEMA_NAME);
+    return node;
   }
 
   @Override

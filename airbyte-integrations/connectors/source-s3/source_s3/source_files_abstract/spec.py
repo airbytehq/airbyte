@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -88,6 +88,21 @@ class SourceFilesAbstractSpec(BaseModel):
         return schema
 
     @staticmethod
+    def remove_enum_allOf(schema: dict) -> dict:
+        """
+        allOfs are not supported by the UI, but pydantic is automatically writing them for enums.
+        Unpack them into the root
+        """
+        objects_to_check = schema["properties"]["format"]["oneOf"]
+        for object in objects_to_check:
+            for key in object["properties"]:
+                property = object["properties"][key]
+                if "allOf" in property and "enum" in property["allOf"][0]:
+                    property["enum"] = property["allOf"][0]["enum"]
+                    property.pop("allOf")
+        return schema
+
+    @staticmethod
     def check_provider_added(schema: dict) -> None:
         if "provider" not in schema["properties"]:
             raise RuntimeError("You must add the 'provider' property in your child spec class")
@@ -110,4 +125,5 @@ class SourceFilesAbstractSpec(BaseModel):
         cls.check_provider_added(schema)
         schema = cls.change_format_to_oneOf(schema)
         schema = cls.resolve_refs(schema)
+        schema = cls.remove_enum_allOf(schema)
         return schema

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -179,7 +179,11 @@ class IncrementalInsightlyStream(InsightlyStream, ABC):
 
         start_datetime = pendulum.parse(self.start_date)
         if stream_state.get(self.cursor_field):
-            start_datetime = pendulum.parse(stream_state[self.cursor_field])
+            start_datetime_raw = stream_state[self.cursor_field]
+            if isinstance(start_datetime_raw, datetime):
+                start_datetime = start_datetime_raw
+            else:
+                start_datetime = pendulum.parse(stream_state[self.cursor_field])
 
         # Add one second to avoid duplicate records and ensure greater than
         params.update({"updated_after_utc": (start_datetime + timedelta(seconds=1)).strftime("%Y-%m-%dT%H:%M:%SZ")})

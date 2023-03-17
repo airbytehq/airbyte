@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -144,8 +144,9 @@ class TestIncrementalStreams:
         now = pendulum.now()
         stream = stream_cls(now.isoformat(), data_region="Standard Server")
         # update expected with valid start,end dates
-        expected.update(**{"start": now.strftime(stream.date_template), "end": stream._get_end_date(now).strftime(stream.date_template)})
-        assert stream.request_params({}) == expected
+        slice = stream.stream_slices(stream_state={"date": now.to_date_string()})[0]
+        expected.update(**slice)
+        assert stream.request_params(stream_state=None, stream_slice=slice) == expected
 
     @pytest.mark.parametrize(
         "stream_cls, expected",
@@ -237,8 +238,10 @@ class TestEventsStream:
         [
             ({}, {}),
             ({"event_time": "2021-05-27 11:59:53.710000"}, {"event_time": "2021-05-27T11:59:53.710000+00:00"}),
+            ({"event_time": None}, {"event_time": None}),
+            ({"event_time": ""}, {"event_time": ""}),
         ],
-        ids=["empty_record", "transformed_record"],
+        ids=["empty_record", "transformed_record", "null_value", "empty_value"],
     )
     def test_date_time_to_rfc3339(self, record, expected):
         stream = Events(pendulum.now().isoformat(), data_region="Standard Server")

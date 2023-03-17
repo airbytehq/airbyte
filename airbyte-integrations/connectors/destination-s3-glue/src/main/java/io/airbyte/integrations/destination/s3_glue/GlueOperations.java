@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3_glue;
@@ -57,7 +57,7 @@ public class GlueOperations implements MetastoreOperations {
           .withTableInput(
               new TableInput()
                   .withName(tableName)
-                  // .withTableType("GOVERNED")
+                  .withTableType("EXTERNAL_TABLE")
                   .withStorageDescriptor(
                       new StorageDescriptor()
                           .withLocation(location)
@@ -80,7 +80,7 @@ public class GlueOperations implements MetastoreOperations {
           .withTableInput(
               new TableInput()
                   .withName(tableName)
-                  // .withTableType("GOVERNED")
+                  .withTableType("EXTERNAL_TABLE")
                   .withStorageDescriptor(
                       new StorageDescriptor()
                           .withLocation(location)

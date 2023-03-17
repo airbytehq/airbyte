@@ -29,6 +29,16 @@
       "stream_descriptor": { "name": "images" }
     }
   },
+    {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_time": "2121-07-25T13:34:26Z",
+        "include_deleted": true
+      },
+      "stream_descriptor": { "name": "videos" }
+    }
+  },
   {
     "type": "STREAM",
     "stream": {

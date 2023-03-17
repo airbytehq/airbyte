@@ -4,7 +4,7 @@ This page guides you through the process of setting up the Insightly source conn
 
 ## Set up the Insightly connector
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Insightly** from the Source type dropdown.
 4. Enter a name for your source.
@@ -69,6 +69,7 @@ The connector is restricted by Insightly [requests limitation](https://api.na1.i
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                                       |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
-| 0.1.0   | 2021-07-19 |    | Release Insightly CDK Connector                                                                |
+| Version | Date       | Pull Request                                             | Subject                                                                           |
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------- |
+| 0.1.1   | 2022-11-11 |    | Fix state date parse bug                            |
+| 0.1.0   | 2022-10-19 |    | Release Insightly CDK Connector                     |

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import abstractmethod
@@ -7,11 +7,10 @@ from dataclasses import dataclass
 from typing import Optional
 
 import requests
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class BackoffStrategy(JsonSchemaMixin):
+class BackoffStrategy:
     """
     Backoff strategy defining how long to wait before retrying a request that resulted in an error.
     """

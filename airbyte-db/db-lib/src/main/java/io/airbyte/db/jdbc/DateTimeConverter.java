@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
@@ -12,7 +12,10 @@ import static io.airbyte.db.DataTypeUtils.TIME_FORMATTER;
 import static io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations.resolveEra;
 import static java.time.ZoneOffset.UTC;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.Duration;
@@ -166,6 +169,17 @@ public class DateTimeConverter {
       }
       return LocalTime.parse(valueAsString).format(TIME_FORMATTER);
     }
+  }
+
+  public static void putJavaSQLDate(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    final Date date = resultSet.getDate(index);
+    node.put(columnName, convertToDate(date));
+  }
+
+  public static void putJavaSQLTime(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    // resultSet.getTime() will lose nanoseconds precision
+    final LocalTime localTime = resultSet.getTimestamp(index).toLocalDateTime().toLocalTime();
+    node.put(columnName, convertToTime(localTime));
   }
 
 }

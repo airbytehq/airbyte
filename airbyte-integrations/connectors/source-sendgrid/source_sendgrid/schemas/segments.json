@@ -12,16 +12,20 @@
       "type": "integer"
     },
     "sample_updated_at": {
-      "type": "string"
+      "type": ["string", "null"],
+      "format": "date-time"
     },
     "next_sample_update": {
-      "type": "string"
+      "type": ["string", "null"],
+      "format": "date-time"
     },
     "created_at": {
-      "type": "string"
+      "type": ["string", "null"],
+      "format": "date-time"
     },
     "updated_at": {
-      "type": "string"
+      "type": ["string", "null"],
+      "format": "date-time"
     },
     "parent_list_id": {
       "type": ["string", "null"]

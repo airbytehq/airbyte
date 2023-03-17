@@ -1,0 +1,14 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/AllowedHosts.yaml
+title: AllowedHosts
+description: A connector's allowed hosts.  If present, the platform will limit communication to only hosts which are listed in `AllowedHosts.hosts`.
+type: object
+required:
+additionalProperties: true
+properties:
+  hosts:
+    type: array
+    description: An array of hosts that this connector can connect to.  AllowedHosts not being present for the source or destination means that access to all hosts is allowed.  An empty list here means that no network access is granted.
+    items:
+      type: string

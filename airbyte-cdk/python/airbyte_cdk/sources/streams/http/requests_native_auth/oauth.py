@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, List, Mapping, Sequence, Tuple, Union
@@ -75,11 +75,11 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
     def get_token_expiry_date(self) -> pendulum.DateTime:
         return self._token_expiry_date
 
-    def set_token_expiry_date(self, initial_time: pendulum.DateTime, value: Union[str, int]):
+    def set_token_expiry_date(self, value: Union[str, int]):
         if self._token_expiry_date_format:
             self._token_expiry_date = pendulum.from_format(value, self._token_expiry_date_format)
         else:
-            self._token_expiry_date = initial_time.add(seconds=value)
+            self._token_expiry_date = pendulum.now().add(seconds=value)
 
     @property
     def access_token(self) -> str:
@@ -231,12 +231,9 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         return self.access_token
 
     def refresh_access_token(self) -> Tuple[str, int, str]:
-        try:
-            response_json = self._get_refresh_access_token_response()
-            return (
-                response_json[self.get_access_token_name()],
-                response_json[self.get_expires_in_name()],
-                response_json[self.get_refresh_token_name()],
-            )
-        except Exception as e:
-            raise Exception(f"Error while refreshing access token and refresh token: {e}") from e
+        response_json = self._get_refresh_access_token_response()
+        return (
+            response_json[self.get_access_token_name()],
+            int(response_json[self.get_expires_in_name()]),
+            response_json[self.get_refresh_token_name()],
+        )

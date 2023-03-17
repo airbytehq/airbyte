@@ -1,0 +1,90 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "daily_active_users"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "weekly_active_users"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "four_weekly_active_users"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "devices"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "locations"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "pages"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "traffic_sources"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "website_overview"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  }
+]

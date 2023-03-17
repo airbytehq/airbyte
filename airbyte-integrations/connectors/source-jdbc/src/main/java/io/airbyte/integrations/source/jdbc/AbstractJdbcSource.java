@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.jdbc;
@@ -19,7 +19,6 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
-import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
@@ -52,15 +51,12 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -68,7 +64,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -76,7 +71,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,42 +80,6 @@ import org.slf4j.LoggerFactory;
  * for a relational DB which has a JDBC driver, make an effort to use this class.
  */
 public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Datatype, JdbcDatabase> implements Source {
-
-  public static final String SSL_MODE = "sslMode";
-
-  public static final String TRUST_KEY_STORE_URL = "trustCertificateKeyStoreUrl";
-  public static final String TRUST_KEY_STORE_PASS = "trustCertificateKeyStorePassword";
-  public static final String CLIENT_KEY_STORE_URL = "clientCertificateKeyStoreUrl";
-  public static final String CLIENT_KEY_STORE_PASS = "clientCertificateKeyStorePassword";
-  public static final String CLIENT_KEY_STORE_TYPE = "clientCertificateKeyStoreType";
-  public static final String TRUST_KEY_STORE_TYPE = "trustCertificateKeyStoreType";
-  public static final String KEY_STORE_TYPE_PKCS12 = "PKCS12";
-  public static final String PARAM_MODE = "mode";
-  Pair<URI, String> caCertKeyStorePair;
-  Pair<URI, String> clientCertKeyStorePair;
-
-  public enum SslMode {
-
-    DISABLED("disable"),
-    ALLOWED("allow"),
-    PREFERRED("preferred", "prefer"),
-    REQUIRED("required", "require"),
-    VERIFY_CA("verify_ca", "verify-ca"),
-    VERIFY_IDENTITY("verify_identity", "verify-full");
-
-    public final List<String> spec;
-
-    SslMode(final String... spec) {
-      this.spec = Arrays.asList(spec);
-    }
-
-    public static Optional<SslMode> bySpec(final String spec) {
-      return Arrays.stream(SslMode.values())
-          .filter(sslMode -> sslMode.spec.contains(spec))
-          .findFirst();
-    }
-
-  }
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
@@ -401,11 +359,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     return "record_count";
   }
 
-  private long getActualCursorRecordCount(final Connection connection,
-                                          final String fullTableName,
-                                          final String quotedCursorField,
-                                          final Datatype cursorFieldType,
-                                          final String cursor)
+  protected long getActualCursorRecordCount(final Connection connection,
+                                            final String fullTableName,
+                                            final String quotedCursorField,
+                                            final Datatype cursorFieldType,
+                                            final String cursor)
       throws SQLException {
     final String columnName = getCountColumnName();
     final PreparedStatement cursorRecordStatement;
@@ -431,28 +389,30 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     }
   }
 
-  protected DataSource createDataSource(final JsonNode config) {
-    final JsonNode jdbcConfig = toDatabaseConfig(config);
+  protected DataSource createDataSource(final JsonNode sourceConfig) {
+    final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
     final DataSource dataSource = DataSourceFactory.create(
         jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClass,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        getConnectionProperties(config));
+        getConnectionProperties(sourceConfig));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
     return dataSource;
   }
 
   @Override
-  public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
-    final DataSource dataSource = createDataSource(config);
+  public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
+    final DataSource dataSource = createDataSource(sourceConfig);
     final JdbcDatabase database = new StreamingJdbcDatabase(
         dataSource,
         sourceOperations,
         streamingQueryConfigProvider);
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
+    database.setSourceConfig(sourceConfig);
+    database.setDatabaseConfig(toDatabaseConfig(sourceConfig));
     return database;
   }
 
@@ -512,88 +472,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
       }
     });
     dataSources.clear();
-  }
-
-  /**
-   * Parses SSL related configuration and generates keystores to be used by connector
-   *
-   * @param config configuration
-   * @return map containing relevant parsed values including location of keystore or an empty map
-   */
-  protected Map<String, String> parseSSLConfig(final JsonNode config) {
-    LOGGER.debug("source config: {}", config);
-
-    final Map<String, String> additionalParameters = new HashMap<>();
-    // assume ssl if not explicitly mentioned.
-    if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
-      if (config.has(JdbcUtils.SSL_MODE_KEY)) {
-        final String specMode = config.get(JdbcUtils.SSL_MODE_KEY).get(PARAM_MODE).asText();
-        additionalParameters.put(SSL_MODE,
-            SslMode.bySpec(specMode).orElseThrow(() -> new IllegalArgumentException("unexpected ssl mode")).name());
-        if (Objects.isNull(caCertKeyStorePair)) {
-          caCertKeyStorePair = JdbcSSLConnectionUtils.prepareCACertificateKeyStore(config);
-        }
-
-        if (Objects.nonNull(caCertKeyStorePair)) {
-          LOGGER.debug("uri for ca cert keystore: {}", caCertKeyStorePair.getLeft().toString());
-          try {
-            additionalParameters.putAll(Map.of(
-                TRUST_KEY_STORE_URL, caCertKeyStorePair.getLeft().toURL().toString(),
-                TRUST_KEY_STORE_PASS, caCertKeyStorePair.getRight(),
-                TRUST_KEY_STORE_TYPE, KEY_STORE_TYPE_PKCS12));
-          } catch (final MalformedURLException e) {
-            throw new RuntimeException("Unable to get a URL for trust key store");
-          }
-
-        }
-
-        if (Objects.isNull(clientCertKeyStorePair)) {
-          clientCertKeyStorePair = JdbcSSLConnectionUtils.prepareClientCertificateKeyStore(config);
-        }
-
-        if (Objects.nonNull(clientCertKeyStorePair)) {
-          LOGGER.debug("uri for client cert keystore: {} / {}", clientCertKeyStorePair.getLeft().toString(), clientCertKeyStorePair.getRight());
-          try {
-            additionalParameters.putAll(Map.of(
-                CLIENT_KEY_STORE_URL, clientCertKeyStorePair.getLeft().toURL().toString(),
-                CLIENT_KEY_STORE_PASS, clientCertKeyStorePair.getRight(),
-                CLIENT_KEY_STORE_TYPE, KEY_STORE_TYPE_PKCS12));
-          } catch (final MalformedURLException e) {
-            throw new RuntimeException("Unable to get a URL for client key store");
-          }
-        }
-      } else {
-        additionalParameters.put(SSL_MODE, SslMode.DISABLED.name());
-      }
-    }
-    LOGGER.debug("additional params: {}", additionalParameters);
-    return additionalParameters;
-  }
-
-  /**
-   * Generates SSL related query parameters from map of parsed values.
-   *
-   * @apiNote Different connector may need an override for specific implementation
-   * @param sslParams
-   * @return SSL portion of JDBC question params or and empty string
-   */
-  protected String toJDBCQueryParams(final Map<String, String> sslParams) {
-    return Objects.isNull(sslParams) ? ""
-        : sslParams.entrySet()
-            .stream()
-            .map((entry) -> {
-              if (entry.getKey().equals(SSL_MODE)) {
-                return entry.getKey() + EQUALS + toSslJdbcParam(SslMode.valueOf(entry.getValue()));
-              } else {
-                return entry.getKey() + EQUALS + entry.getValue();
-              }
-            })
-            .collect(Collectors.joining(JdbcUtils.AMPERSAND));
-  }
-
-  protected String toSslJdbcParam(final SslMode sslMode) {
-    // Default implementation
-    return sslMode.name();
   }
 
   protected List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog, final StateManager stateManager) {

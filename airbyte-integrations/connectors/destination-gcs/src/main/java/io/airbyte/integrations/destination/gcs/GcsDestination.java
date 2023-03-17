@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs;
@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.gcs;
 import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.internal.SkipMd5CheckStrategy;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.BaseConnector;
@@ -40,6 +41,8 @@ public class GcsDestination extends BaseConnector implements Destination {
   }
 
   public static void main(final String[] args) throws Exception {
+    System.setProperty(SkipMd5CheckStrategy.DISABLE_GET_OBJECT_MD5_VALIDATION_PROPERTY, "true");
+    System.setProperty(SkipMd5CheckStrategy.DISABLE_PUT_OBJECT_MD5_VALIDATION_PROPERTY, "true");
     new IntegrationRunner(new GcsDestination()).run(args);
   }
 

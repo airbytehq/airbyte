@@ -128,12 +128,12 @@ done
 IFS=$OLDIFS
 
 if [ -z "$slack_user_id" ]; then
-    echo "ERROR: Slack user is not found for ${GITHUB_ACTOR}"
-    slack_user_id="GitHub user do not match any user in Slack"
-    echo slack_user_ids=$(echo $slack_user_id) >> $GITHUB_OUTPUT
+        echo "WARN: Slack user is not found for ${GITHUB_ACTOR}"
+        slack_user_id="GitHub user do not match any user in Slack"
+        echo slack_user_ids=$(echo $slack_user_id) >> $GITHUB_OUTPUT
 else
-    echo "Slack User ID is found $slack_user_id" >> /dev/stderr
-    slack_user_ids=$(echo $slack_user_id | tr -s '[:blank:]' ',')
-    echo $slack_user_ids
-    echo slack_user_ids=$slack_user_ids >> $GITHUB_OUTPUT
+        echo "Slack User ID is found $slack_user_id" >> /dev/stderr
+        slack_user_ids=$(echo $slack_user_id | tr -s '[:blank:]' ',')
+        echo $slack_user_ids 
+        echo slack_user_ids=$slack_user_ids >> $GITHUB_OUTPUT
 fi

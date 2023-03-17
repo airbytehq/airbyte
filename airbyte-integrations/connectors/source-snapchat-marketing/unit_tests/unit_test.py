@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 # from unittest.mock import MagicMock, PropertyMock, patch
@@ -387,3 +387,12 @@ def test_retry_get_access_token(requests_mock):
     token = auth.get_access_token()
     assert len(requests_mock.request_history) == 3
     assert token == "token"
+
+
+def test_should_retry_403_error(requests_mock):
+    requests_mock.register_uri("GET", "https://adsapi.snapchat.com/v1/me/organizations",
+                               [{"status_code": 403, "json": {"organizations": []}}])
+    stream = Organizations(**config_mock)
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+    assert not records

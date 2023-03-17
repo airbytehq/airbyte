@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.oracle_strict_encrypt;
@@ -19,7 +19,7 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.oracle.OracleDestination;
 import io.airbyte.integrations.destination.oracle.OracleNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
@@ -36,7 +36,7 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
 
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT);
 
-  private final ExtendedNameTransformer namingResolver = new OracleNameTransformer();
+  private final StandardNameTransformer namingResolver = new OracleNameTransformer();
   private static OracleContainer db;
   private static JsonNode config;
   private final String schemaName = "TEST_ORCL";
@@ -79,11 +79,6 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
   @Override
   protected boolean implementsNamespaces() {
     return true;
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return false;
   }
 
   @Override
