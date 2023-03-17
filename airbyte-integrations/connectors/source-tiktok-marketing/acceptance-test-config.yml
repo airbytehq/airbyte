@@ -1,99 +1,100 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 
 connector_image: airbyte/source-tiktok-marketing:dev
-cache_discovered_catalog: False
-tests:
+test_strictness_level: "high"
+acceptance_tests:
   spec:
-    - spec_path: "integration_tests/spec.json"
-
+    tests:
+      - spec_path: "integration_tests/spec.json"
   connection:
-    - config_path: "secrets/prod_config.json"
-      status: "succeed"
-    - config_path: "secrets/prod_config_with_day_granularity.json"
-      status: "succeed"
-    - config_path: "secrets/prod_config_with_lifetime_granularity.json"
-      status: "succeed"
-    - config_path: "secrets/new_config_prod.json"
-      status: "succeed"
-    - config_path: "secrets/config_oauth.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
-    - config_path: "integration_tests/invalid_config_access_token.json"
-      status: "failed"
-    - config_path: "integration_tests/invalid_config_oauth.json"
-      status: "failed"
-
+    tests:
+      - config_path: "secrets/prod_config.json"
+        status: "succeed"
+      - config_path: "secrets/prod_config_with_day_granularity.json"
+        status: "succeed"
+      - config_path: "secrets/prod_config_with_lifetime_granularity.json"
+        status: "succeed"
+      - config_path: "secrets/new_config_prod.json"
+        status: "succeed"
+      - config_path: "secrets/config_oauth.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+      - config_path: "integration_tests/invalid_config_access_token.json"
+        status: "failed"
+      - config_path: "integration_tests/invalid_config_oauth.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/prod_config.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.1.17"
-    - config_path: "secrets/prod_config_with_day_granularity.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.1.17"
-    - config_path: "secrets/prod_config_with_lifetime_granularity.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.1.17"
-    - config_path: "secrets/config.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.1.17"
-    - config_path: "secrets/new_config_prod.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.1.17"
-    - config_path: "secrets/config_oauth.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.1.17"
-
+    tests:
+      - config_path: "secrets/prod_config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "1.0.1"
+      - config_path: "secrets/prod_config_with_day_granularity.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "1.0.1"
+      - config_path: "secrets/prod_config_with_lifetime_granularity.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "1.0.1"
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "1.0.1"
+      - config_path: "secrets/new_config_prod.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "1.0.1"
+      - config_path: "secrets/config_oauth.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "1.0.1"
   basic_read:
-    # New style streams (for >= 0.1.13):
-    - config_path: "secrets/prod_config.json"
-      configured_catalog_path: "integration_tests/streams_basic.json"
-      timeout_seconds: 1200
-    - config_path: "secrets/prod_config.json"
-      configured_catalog_path: "integration_tests/streams_reports_daily.json"
-      timeout_seconds: 1200
-    - config_path: "secrets/prod_config.json"
-      configured_catalog_path: "integration_tests/streams_reports_lifetime.json"
-      timeout_seconds: 1200
-    # Old style streams with granularity config (for < 0.1.13)
-    # Note: not needed to be tested separately in full and incremental tests, because code of
-    # these streams is called directly in new style streams
-    - config_path: "secrets/prod_config_with_day_granularity.json"
-      configured_catalog_path: "integration_tests/streams_with_day_granularity.json"
-      timeout_seconds: 1200
-    - config_path: "secrets/prod_config_with_lifetime_granularity.json"
-      configured_catalog_path: "integration_tests/streams_with_lifetime_granularity.json"
-      timeout_seconds: 1200
-
-  incremental:
-    - config_path: "secrets/prod_config.json"
-      configured_catalog_path: "integration_tests/streams_basic.json"
-      timeout_seconds: 7200
-      future_state_path: "integration_tests/abnormal_state.json"
-    - config_path: "secrets/prod_config.json"
-      configured_catalog_path: "integration_tests/streams_reports_daily.json"
-      timeout_seconds: 7200
-      future_state_path: "integration_tests/abnormal_state.json"
-    # LIFETIME granularity: does not support incremental sync
-
+    tests:
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
+        timeout_seconds: 1200
+        empty_streams:
+          - name: ads_reports_hourly
+            bypass_reason: "Tested with daily granularity."
+          - name: ad_groups_reports_hourly
+            bypass_reason: "Tested with daily granularity."
+          - name: advertisers_reports_hourly
+            bypass_reason: "Tested with daily granularity."
+          - name: campaigns_reports_hourly
+            bypass_reason: "Tested with daily granularity."
+      # Old style streams with granularity config (for < 0.1.13)
+      # Note: not needed to be tested separately in full and incremental tests, because code of
+      # these streams is called directly in new style streams
+      - config_path: "secrets/prod_config_with_day_granularity.json"
+        expect_records:
+          path: "integration_tests/expected_records2.jsonl"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
+        timeout_seconds: 1200
+        empty_streams:
+          - name: ad_groups
+            bypass_reason: "This stream is tested on the new style config."
+          - name: ads
+            bypass_reason: "This stream is tested on the new style config."
+          - name: advertiser_ids
+            bypass_reason: "This stream is tested on the new style config."
+          - name: advertisers
+            bypass_reason: "This stream is tested on the new style config."
+          - name: campaigns
+            bypass_reason: "This stream is tested on the new style config."
   full_refresh:
-    - config_path: "secrets/prod_config.json"
-      configured_catalog_path: "integration_tests/streams_basic.json"
-      timeout_seconds: 7200
-      ignored_fields: # Important: sometimes some streams does not return the same records in subsequent syncs
-        "ad_groups":
-          [
-            "dayparting",
-            "enable_search_result",
-            "display_mode",
-            "schedule_infos",
-            "feed_type",
-            "status",
-          ]
-    - config_path: "secrets/prod_config.json"
-      configured_catalog_path: "integration_tests/streams_reports_daily.json"
-      timeout_seconds: 7200
-    - config_path: "secrets/prod_config.json"
-      configured_catalog_path: "integration_tests/streams_reports_lifetime.json"
-      timeout_seconds: 7200
+    tests:
+      - config_path: "secrets/prod_config_with_day_granularity.json"
+        configured_catalog_path: "integration_tests/configured_catalogs/configured_catalog.json"
+        timeout_seconds: 7200
+  incremental:
+    tests:
+      - config_path: "secrets/prod_config_with_day_granularity.json"
+        configured_catalog_path: "integration_tests/configured_catalogs/configured_catalog_incremental.json"
+        timeout_seconds: 7200
+        skip_comprehensive_incremental_tests: true
+        future_state:
+           future_state_path: "integration_tests/abnormal_state.json"
+      # LIFETIME granularity: does not support incremental sync

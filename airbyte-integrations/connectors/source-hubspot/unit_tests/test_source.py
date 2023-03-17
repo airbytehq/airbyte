@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -13,7 +13,7 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from source_hubspot.errors import HubspotRateLimited
 from source_hubspot.helpers import APIv3Property
 from source_hubspot.source import SourceHubspot
-from source_hubspot.streams import API, Companies, Deals, Engagements, Products, Stream, Workflows
+from source_hubspot.streams import API, Companies, Deals, Engagements, Products, Stream
 
 from .utils import read_full_refresh, read_incremental
 
@@ -134,38 +134,30 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
     assert not error
 
 
-def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions, common_params, caplog):
-    """
-    Error with API Key Permissions to particular stream,
-    typically this issue raises along with calling `workflows` stream with API Key
-    that doesn't have required permissions to read the stream.
-    """
-
-    # Mapping tipical response for mocker
+def test_stream_forbidden(requests_mock, config, caplog):
     json = {
         "status": "error",
-        "message": f'This hapikey ({creds_with_wrong_permissions.get("api_key")}) does not have proper permissions! (requires any of [automation-access])',
-        "correlationId": "2fe0a9af-3609-45c9-a4d7-83a1774121aa",
+        "message": "This access_token does not have proper permissions!",
     }
+    requests_mock.get("https://api.hubapi.com/automation/v3/workflows", json=json, status_code=403)
 
-    # We expect something like this
-    expected_warining_message = {
-        "type": "LOG",
-        "log": {
-            "level": "WARN",
-            "message": f'Stream `workflows` cannot be procced. This hapikey ({creds_with_wrong_permissions.get("api_key")}) does not have proper permissions! (requires any of [automation-access])',
-        },
-    }
+    catalog = ConfiguredAirbyteCatalog.parse_obj({
+        "streams": [
+            {
+                "stream": {
+                    "name": "workflows",
+                    "json_schema": {},
+                    "supported_sync_modes": ["full_refresh"],
+                },
+                "sync_mode": "full_refresh",
+                "destination_sync_mode": "overwrite"
+            }
+        ]
+    })
 
-    # Create test_stream instance
-    test_stream = Workflows(**common_params)
-
-    # Mocking Request
-    requests_mock.register_uri("GET", test_stream.url, json=json, status_code=403)
-    records = list(test_stream.read_records(sync_mode=SyncMode.full_refresh))
-
-    # match logged expected logged warning message with output given from preudo-output
-    assert expected_warining_message["log"]["message"] in caplog.text
+    records = list(SourceHubspot().read(logger, config, catalog, {}))
+    assert json["message"] in caplog.text
+    records = [r for r in records if r.type == Type.RECORD]
     assert not records
 
 
@@ -326,17 +318,6 @@ def configured_catalog_fixture():
         ]
     }
     return ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
-
-
-def test_it_should_not_read_quotes_stream_if_it_does_not_exist_in_client(oauth_config, configured_catalog):
-    """
-    If 'quotes' stream is not in the client, it should skip it.
-    """
-    source = SourceHubspot()
-
-    all_records = list(source.read(logger, config=oauth_config, catalog=configured_catalog, state=None))
-    records = [record for record in all_records if record.type == Type.RECORD]
-    assert not records
 
 
 def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(requests_mock, common_params, fake_properties_list):

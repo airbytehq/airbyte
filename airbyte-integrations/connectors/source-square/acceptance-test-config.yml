@@ -1,8 +1,11 @@
 connector_image: airbyte/source-square:dev
-tests:
+test_strictness_level: high
+acceptance_tests:
   spec:
-    - spec_path: "source_square/spec.json"
+    tests:
+    - spec_path: "source_square/spec.yaml"
   connection:
+    tests:
     - config_path: "secrets/config.json"
       status: "succeed"
     - config_path: "secrets/config_oauth.json"
@@ -10,18 +13,30 @@ tests:
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
   discovery:
+    tests:
     - config_path: "secrets/config.json"
     - config_path: "secrets/config_oauth.json"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    tests:
     - config_path: "secrets/config_oauth.json"
-      configured_catalog_path: "integration_tests/configured_catalog_oauth.json"
+      empty_streams:
+        - name: shifts
+          bypass_reason: "Not able to fill stream"
+        - name: orders
+          bypass_reason: "Not able to fill stream"
+        - name: payments
+          bypass_reason: "Not able to fill stream"
+        - name: refunds
+          bypass_reason: "Not able to fill stream"
+      expect_records:
+        path: "integration_tests/expected_records_oauth.jsonl"
   incremental:
+    tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state_path: "integration_tests/abnormal_state.json"
+      future_state:
+        future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
+    tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-

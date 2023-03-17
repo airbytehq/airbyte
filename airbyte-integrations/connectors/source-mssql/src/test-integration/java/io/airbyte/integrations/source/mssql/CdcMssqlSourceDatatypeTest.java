@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -13,7 +13,6 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import java.util.Map;
-import org.jooq.DSLContext;
 import org.testcontainers.containers.MSSQLServerContainer;
 
 public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
@@ -44,17 +43,17 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("replication_method", replicationConfig)
-        .put("is_test", true)
+        .put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "unencrypted")))
         .build());
 
-    dslContext = DSLContextFactory.create(
+    dslContext = DSLContextFactory.create(DataSourceFactory.create(
         container.getUsername(),
         container.getPassword(),
         container.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%s;",
+        String.format("jdbc:sqlserver://%s:%d;",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt()),
-        null);
+        Map.of("encrypt", "false")), null);
     final Database database = new Database(dslContext);
 
     executeQuery("CREATE DATABASE " + DB_NAME + ";");
@@ -65,15 +64,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
   }
 
   private void executeQuery(final String query) {
-    try (final DSLContext dslContext = DSLContextFactory.create(
-        DataSourceFactory.create(
-            container.getUsername(),
-            container.getPassword(),
-            container.getDriverClassName(),
-            String.format("jdbc:sqlserver://%s:%d;",
-                config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get(JdbcUtils.PORT_KEY).asInt())),
-        null)) {
+    try {
       final Database database = new Database(dslContext);
       database.query(
           ctx -> ctx

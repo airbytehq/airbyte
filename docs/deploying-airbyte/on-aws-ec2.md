@@ -1,35 +1,34 @@
 # Deploy Airbyte on AWS (Amazon EC2)
 
-This page guides you through deploying Airbyte Open Source on an Amazon EC2 instance by setting up the deployment environment, installing and starting Airbyte, and connecting it to the Amazon EC2 instance.
+This page guides you through deploying Airbyte Open Source on an [Amazon EC2 instance](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html) by setting up the deployment environment, installing and starting Airbyte, and connecting it to the Amazon EC2 instance.
 
-> INFO
->
-> The instructions have been tested on Amazon Linux 2 AMI (HVM)
+:::info
+
+The instructions have been tested on Amazon Linux 2 AMI (HVM).
+
+:::
 
 ## Requirements
 
 - To test Airbyte, we recommend a `t2.medium` instance
 - To deploy Airbyte in a production environment, we recommend a `t2.large` instance
 - Make sure your Docker Desktop app is running to ensure all services run smoothly
-
-[Create and download an SSH key to connect to the instance](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/create-key-pairs.html)
+- [Create and download an SSH key to connect to the instance](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/create-key-pairs.html)
 
 ## Set up the environment
 
-1. Create an Amazon EC2 instance.
+1. To connect to your instance, run the following command on your local terminal:
 
-To connect to your instance, run the following command on your local terminal:
-
-```
+``` bash
 SSH_KEY=~/Downloads/dataline-key-airbyte.pem # the file path you downloaded the key
-INSTANCE_IP=REPLACE_WITH_YOUR_INSTANCE_IP # you can find your IP address in the EC2 console under the Instances tab
+INSTANCE_IP=REPLACE_WITH_YOUR_INSTANCE_IP # find your IP address in the EC2 console under the Instances tab
 chmod 400 $SSH_KEY # or ssh will complain that the key has the wrong permissions
 ssh -i $SSH_KEY ec2-user@$INSTANCE_IP # connect to the aws ec2 instance AMI and the your private IP address
 ```
 
 2. To install Docker, run the following command in your SSH session on the instance terminal:
 
-```
+``` bash
 sudo yum update -y
 sudo yum install -y docker
 sudo service docker start
@@ -38,15 +37,14 @@ sudo usermod -a -G docker $USER
 
 3. To install `docker-compose`, run the following command in your ssh session on the instance terminal:
 
-```
-sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-docker-compose --version
+``` bash
+sudo yum install -y docker-compose-plugin
+docker compose version
 ```
 
 4. To close the SSH connection, run the following command in your SSH session on the instance terminal:
 
-```
+``` bash
 logout
 ```
 
@@ -54,34 +52,35 @@ logout
 
 In your local terminal, run the following commands:
 
-1. Connect to your instance
+1. Connect to your instance:
 
-```
+``` bash
 ssh -i $SSH_KEY ec2-user@$INSTANCE_IP
 ```
 
-2. Install Airbyte
+2. Install Airbyte:
 
-```
+``` bash
 mkdir airbyte && cd airbyte
-wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
-docker-compose up -d # run the Docker container
+wget https://raw.githubusercontent.com/airbytehq/airbyte-platform/main/{.env,flags.yml,docker-compose.yaml}
+docker compose up -d # run the Docker container
 ```
 
 ## Connect to Airbyte
 
-> DANGER
->
-> We strongly recommend not exposing Airbyte on Internet available ports for security reasons.
+:::caution
 
-1. Create an SSH tunnel for port 8000
+For security reasons, we strongly recommend not exposing Airbyte on Internet available ports.
 
-> INFO
->
-> If you want to use different ports, modify `API_URL` in your .env file and restart Airbyte.
-> Run the following commands in your workstation terminal from the downloaded key folder:
+:::
 
-```
+1. Create an SSH tunnel for port 8000:
+
+If you want to use different ports, modify `API_URL` in your .env file and restart Airbyte.
+Run the following commands in your workstation terminal from the downloaded key folder:
+
+
+``` bash
 # In your workstation terminal
 SSH_KEY=~/Downloads/dataline-key-airbyte.pem
 ssh -i $SSH_KEY -L 8000:localhost:8000 -N -f ec2-user@$INSTANCE_IP

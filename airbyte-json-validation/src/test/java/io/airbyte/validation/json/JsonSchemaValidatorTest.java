@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.validation.json;
@@ -17,9 +17,9 @@ import io.airbyte.commons.json.Jsons;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.Set;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 
 class JsonSchemaValidatorTest {
@@ -106,9 +106,8 @@ class JsonSchemaValidatorTest {
     assertNull(JsonSchemaValidator.getSchema(schemaFile, "NonExistentObject"));
   }
 
-  @SneakyThrows
   @Test
-  void testResolveReferences() throws IOException {
+  void testResolveReferences() throws IOException, URISyntaxException {
     String referencableSchemas = """
                                  {
                                    "definitions": {
@@ -139,6 +138,30 @@ class JsonSchemaValidatorTest {
                           """));
 
     assertEquals(Set.of("$.prop2: string found, boolean expected"), validationResult);
+  }
+
+  @Test
+  void testIntializedMethodsShouldErrorIfNotInitialised() {
+    final var validator = new JsonSchemaValidator();
+
+    assertThrows(NullPointerException.class, () -> validator.testInitializedSchema("uninitialised", Jsons.deserialize("{}")));
+    assertThrows(NullPointerException.class, () -> validator.ensureInitializedSchema("uninitialised", Jsons.deserialize("{}")));
+  }
+
+  @Test
+  void testIntializedMethodsShouldValidateIfInitialised() {
+    final JsonSchemaValidator validator = new JsonSchemaValidator();
+    final var schemaName = "schema_name";
+    final JsonNode goodJson = Jsons.deserialize("{\"host\":\"abc\"}");
+
+    validator.initializeSchemaValidator(schemaName, VALID_SCHEMA);
+
+    assertTrue(validator.testInitializedSchema(schemaName, goodJson));
+    assertDoesNotThrow(() -> validator.ensureInitializedSchema(schemaName, goodJson));
+
+    final JsonNode badJson = Jsons.deserialize("{\"host\":1}");
+    assertFalse(validator.testInitializedSchema(schemaName, badJson));
+    assertThrows(JsonValidationException.class, () -> validator.ensureInitializedSchema(schemaName, badJson));
   }
 
 }

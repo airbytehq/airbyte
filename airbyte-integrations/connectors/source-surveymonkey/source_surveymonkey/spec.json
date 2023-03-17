@@ -10,11 +10,7 @@
       "origin": {
         "type": "string",
         "order": 1,
-        "enum": [
-          "USA",
-          "Europe",
-          "Canada"
-        ],
+        "enum": ["USA", "Europe", "Canada"],
         "default": "USA",
         "title": "Origin datacenter of the SurveyMonkey account",
         "description": "Depending on the originating datacenter of the SurveyMonkey account, the API access URL may be different."
@@ -60,9 +56,8 @@
         "type": "string",
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z?$",
-        "examples": [
-          "2021-01-01T00:00:00Z"
-        ]
+        "examples": ["2021-01-01T00:00:00Z"],
+        "format": "date-time"
       },
       "survey_ids": {
         "type": "array",
@@ -78,10 +73,7 @@
   },
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
-    "predicate_key": [
-      "credentials",
-      "auth_method"
-    ],
+    "predicate_key": ["credentials", "auth_method"],
     "predicate_value": "oauth2.0",
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
@@ -90,10 +82,7 @@
         "properties": {
           "access_token": {
             "type": "string",
-            "path_in_connector_config": [
-              "credentials",
-              "access_token"
-            ]
+            "path_in_connector_config": ["credentials", "access_token"]
           }
         }
       },
@@ -115,17 +104,11 @@
         "properties": {
           "client_id": {
             "type": "string",
-            "path_in_connector_config": [
-              "credentials",
-              "client_id"
-            ]
+            "path_in_connector_config": ["credentials", "client_id"]
           },
           "client_secret": {
             "type": "string",
-            "path_in_connector_config": [
-              "credentials",
-              "client_secret"
-            ]
+            "path_in_connector_config": ["credentials", "client_secret"]
           }
         }
       },
@@ -135,9 +118,7 @@
         "properties": {
           "origin": {
             "type": "string",
-            "path_in_connector_config": [
-              "origin"
-            ]
+            "path_in_connector_config": ["origin"]
           }
         }
       }

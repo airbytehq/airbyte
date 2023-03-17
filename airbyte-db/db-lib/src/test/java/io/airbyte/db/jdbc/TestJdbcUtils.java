@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
@@ -38,6 +38,8 @@ import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
@@ -152,21 +154,21 @@ class TestJdbcUtils {
 
       // insert the bit here to stay consistent even though setStatementField does not support it yet.
       ps.setString(1, "1");
-      sourceOperations.setStatementField(ps, 2, JDBCType.BOOLEAN, "true");
-      sourceOperations.setStatementField(ps, 3, JDBCType.SMALLINT, "1");
-      sourceOperations.setStatementField(ps, 4, JDBCType.INTEGER, "1");
-      sourceOperations.setStatementField(ps, 5, JDBCType.BIGINT, "1");
-      sourceOperations.setStatementField(ps, 6, JDBCType.FLOAT, "1.0");
-      sourceOperations.setStatementField(ps, 7, JDBCType.DOUBLE, "1.0");
-      sourceOperations.setStatementField(ps, 8, JDBCType.REAL, "1.0");
-      sourceOperations.setStatementField(ps, 9, JDBCType.NUMERIC, "1");
-      sourceOperations.setStatementField(ps, 10, JDBCType.DECIMAL, "1");
-      sourceOperations.setStatementField(ps, 11, JDBCType.CHAR, "a");
-      sourceOperations.setStatementField(ps, 12, JDBCType.VARCHAR, "a");
-      sourceOperations.setStatementField(ps, 13, JDBCType.DATE, "2020-11-01T00:00:00Z");
-      sourceOperations.setStatementField(ps, 14, JDBCType.TIME, "1970-01-01T05:00:00.000Z");
-      sourceOperations.setStatementField(ps, 15, JDBCType.TIMESTAMP, "2001-09-29T03:00:00.000Z");
-      sourceOperations.setStatementField(ps, 16, JDBCType.BINARY, "61616161");
+      sourceOperations.setCursorField(ps, 2, JDBCType.BOOLEAN, "true");
+      sourceOperations.setCursorField(ps, 3, JDBCType.SMALLINT, "1");
+      sourceOperations.setCursorField(ps, 4, JDBCType.INTEGER, "1");
+      sourceOperations.setCursorField(ps, 5, JDBCType.BIGINT, "1");
+      sourceOperations.setCursorField(ps, 6, JDBCType.FLOAT, "1.0");
+      sourceOperations.setCursorField(ps, 7, JDBCType.DOUBLE, "1.0");
+      sourceOperations.setCursorField(ps, 8, JDBCType.REAL, "1.0");
+      sourceOperations.setCursorField(ps, 9, JDBCType.NUMERIC, "1");
+      sourceOperations.setCursorField(ps, 10, JDBCType.DECIMAL, "1");
+      sourceOperations.setCursorField(ps, 11, JDBCType.CHAR, "a");
+      sourceOperations.setCursorField(ps, 12, JDBCType.VARCHAR, "a");
+      sourceOperations.setCursorField(ps, 13, JDBCType.DATE, "2020-11-01");
+      sourceOperations.setCursorField(ps, 14, JDBCType.TIME, "05:00:00.000");
+      sourceOperations.setCursorField(ps, 15, JDBCType.TIMESTAMP, "2001-09-29T03:00:00.000Z");
+      sourceOperations.setCursorField(ps, 16, JDBCType.BINARY, "61616161");
 
       ps.execute();
 
@@ -332,7 +334,8 @@ class TestJdbcUtils {
     final int columnCount = resultSet.getMetaData().getColumnCount();
     final Map<String, JsonSchemaType> actual = new HashMap<>(columnCount);
     for (int i = 1; i <= columnCount; i++) {
-      actual.put(resultSet.getMetaData().getColumnName(i), sourceOperations.getJsonType(JDBCType.valueOf(resultSet.getMetaData().getColumnType(i))));
+      actual.put(resultSet.getMetaData().getColumnName(i),
+          sourceOperations.getAirbyteType(JDBCType.valueOf(resultSet.getMetaData().getColumnType(i))));
     }
 
     final Map<String, JsonSchemaType> expected = ImmutableMap.<String, JsonSchemaType>builder()
@@ -390,13 +393,34 @@ class TestJdbcUtils {
     expected.put("decimal", new BigDecimal(1));
     expected.put("char", "a");
     expected.put("varchar", "a");
-    // todo (cgardens) we should parse this to a date string
-    expected.put("date", "2020-11-01T00:00:00Z");
-    // todo (cgardens) we should parse this to a time string
-    expected.put("time", "1970-01-01T05:00:00Z");
+    expected.put("date", "2020-11-01");
+    expected.put("time", "05:00:00.000000");
     expected.put("timestamp", "2001-09-29T03:00:00.000000Z");
     expected.put("binary1", "aaaa".getBytes(Charsets.UTF_8));
     return expected;
+  }
+
+  @ParameterizedTest
+  @CsvSource({"'3E+1', 30",
+    "'30', 30",
+    "'999000000000', 999000000000",
+    "'999E+9', 999000000000",
+    "'1.79E+3', 1790"})
+  void testSetStatementSpecialValues(final String colValue, final long value) throws SQLException {
+    try (final Connection connection = dataSource.getConnection()) {
+      createTableWithAllTypes(connection);
+
+      final PreparedStatement ps = connection.prepareStatement("INSERT INTO data(bigint) VALUES(?);");
+
+      // insert the bit here to stay consistent even though setStatementField does not support it yet.
+      sourceOperations.setCursorField(ps, 1, JDBCType.BIGINT, colValue);
+      ps.execute();
+
+      assertExpectedOutputValues(connection,
+          ((ObjectNode) Jsons.jsonNode(Collections.emptyMap()))
+              .put("bigint", (long) value));
+      assertExpectedOutputTypes(connection);
+    }
   }
 
 }

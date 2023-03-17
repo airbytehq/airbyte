@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -40,7 +40,10 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.format.DateTimeParseException;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.postgresql.geometric.PGbox;
 import org.postgresql.geometric.PGcircle;
 import org.postgresql.geometric.PGline;
@@ -60,6 +63,12 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   private static final String TIMESTAMPTZ = "timestamptz";
   private static final String TIMETZ = "timetz";
   private static final ObjectMapper OBJECT_MAPPER = MoreMappers.initMapper();
+  private static final Map<Integer, PostgresType> POSTGRES_TYPE_DICT = new HashMap<>();
+  private final Map<String, Map<String, ColumnInfo>> streamColumnInfo = new HashMap<>();
+
+  static {
+    Arrays.stream(PostgresType.class.getEnumConstants()).forEach(c -> POSTGRES_TYPE_DICT.put(c.type, c));
+  }
 
   @Override
   public JsonNode rowToJson(final ResultSet queryContext) throws SQLException {
@@ -69,39 +78,18 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
 
     for (int i = 1; i <= columnCount; i++) {
-      final String columnType = metadata.getColumnTypeName(i);
-      // attempt to access the column. this allows us to know if it is null before we do type-specific
-      // parsing. if it is null, we can move on. while awkward, this seems to be the agreed upon way of
-      // checking for null values with jdbc.
-
-      if (columnType.equalsIgnoreCase("money")) {
-        // when a column is of type MONEY, getObject will throw exception
-        // this is a bug that will not be fixed:
-        // https://github.com/pgjdbc/pgjdbc/issues/425
-        // https://github.com/pgjdbc/pgjdbc/issues/1835
-        queryContext.getString(i);
-      } else if (columnType.equalsIgnoreCase("bit")) {
-        // getObject will fail as it tries to parse the value as boolean
-        queryContext.getString(i);
-      } else if (columnType.equalsIgnoreCase("numeric") || columnType.equalsIgnoreCase("decimal")) {
-        // getObject will fail when the value is 'infinity'
-        queryContext.getDouble(i);
-      } else {
-        queryContext.getObject(i);
-      }
-
       // convert to java types that will convert into reasonable json.
-      setJsonField(queryContext, i, jsonNode);
+      copyToJsonField(queryContext, i, jsonNode);
     }
 
     return jsonNode;
   }
 
   @Override
-  public void setStatementField(final PreparedStatement preparedStatement,
-                                final int parameterIndex,
-                                final PostgresType cursorFieldType,
-                                final String value)
+  public void setCursorField(final PreparedStatement preparedStatement,
+                             final int parameterIndex,
+                             final PostgresType cursorFieldType,
+                             final String value)
       throws SQLException {
     switch (cursorFieldType) {
 
@@ -158,33 +146,22 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   }
 
   @Override
-  protected void setTime(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    try {
-      preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
-    } catch (final DateTimeParseException e) {
-      // attempt to parse the datetime with timezone. This can be caused by schema created with an older
-      // version of the connector
-      preparedStatement.setObject(parameterIndex, OffsetTime.parse(value));
-    }
-  }
-
-  @Override
   protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     preparedStatement.setObject(parameterIndex, LocalDate.parse(value));
   }
 
   @Override
-  public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final PgResultSetMetaData metadata = (PgResultSetMetaData) resultSet.getMetaData();
     final String columnName = metadata.getColumnName(colIndex);
-    final String columnTypeName = metadata.getColumnTypeName(colIndex).toLowerCase();
-    final PostgresType columnType = safeGetJdbcType(metadata.getColumnType(colIndex));
-    if (resultSet.getString(colIndex) == null) {
+    final ColumnInfo columnInfo = getColumnInfo(colIndex, metadata, columnName);
+    final String value = resultSet.getString(colIndex);
+    if (value == null) {
       json.putNull(columnName);
     } else {
-      switch (columnTypeName) {
+      switch (columnInfo.columnTypeName) {
         case "bool", "boolean" -> putBoolean(json, columnName, resultSet, colIndex);
-        case "bytea" -> putString(json, columnName, resultSet, colIndex);
+        case "bytea" -> json.put(columnName, value);
         case TIMETZ -> putTimeWithTimezone(json, columnName, resultSet, colIndex);
         case TIMESTAMPTZ -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
         case "hstore" -> putHstoreAsJson(json, columnName, resultSet, colIndex);
@@ -210,8 +187,8 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         case "_timetz" -> putTimeTzArray(json, columnName, resultSet, colIndex);
         case "_time" -> putTimeArray(json, columnName, resultSet, colIndex);
         default -> {
-          switch (columnType) {
-            case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
+          switch (columnInfo.columnType) {
+            case BOOLEAN -> json.put(columnName, value.equalsIgnoreCase("t"));
             case TINYINT, SMALLINT -> putShortInt(json, columnName, resultSet, colIndex);
             case INTEGER -> putInteger(json, columnName, resultSet, colIndex);
             case BIGINT -> putBigInt(json, columnName, resultSet, colIndex);
@@ -219,13 +196,13 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
             case REAL -> putFloat(json, columnName, resultSet, colIndex);
             case NUMERIC, DECIMAL -> putBigDecimal(json, columnName, resultSet, colIndex);
             // BIT is a bit string in Postgres, e.g. '0100'
-            case BIT, CHAR, VARCHAR, LONGVARCHAR -> putString(json, columnName, resultSet, colIndex);
+            case BIT, CHAR, VARCHAR, LONGVARCHAR -> json.put(columnName, value);
             case DATE -> putDate(json, columnName, resultSet, colIndex);
             case TIME -> putTime(json, columnName, resultSet, colIndex);
             case TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
             case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet, colIndex);
             case ARRAY -> putArray(json, columnName, resultSet, colIndex);
-            default -> putDefault(json, columnName, resultSet, colIndex);
+            default -> json.put(columnName, value);
           }
         }
       }
@@ -384,22 +361,12 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   }
 
   @Override
-  protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DateTimeConverter.convertToDate(getObject(resultSet, index, LocalDate.class)));
-  }
-
-  @Override
-  protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime.class)));
-  }
-
-  @Override
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     node.put(columnName, DateTimeConverter.convertToTimestamp(resultSet.getTimestamp(index)));
   }
 
   @Override
-  public PostgresType getFieldType(final JsonNode field) {
+  public PostgresType getDatabaseFieldType(final JsonNode field) {
     try {
       final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText().toLowerCase();
       // Postgres boolean is mapped to JDBCType.BIT, but should be BOOLEAN
@@ -433,7 +400,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         case "bytea" -> PostgresType.VARCHAR;
         case TIMESTAMPTZ -> PostgresType.TIMESTAMP_WITH_TIMEZONE;
         case TIMETZ -> PostgresType.TIME_WITH_TIMEZONE;
-        default -> PostgresType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
+        default -> PostgresType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt(), POSTGRES_TYPE_DICT);
       };
     } catch (final IllegalArgumentException ex) {
       LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
@@ -446,7 +413,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   }
 
   @Override
-  public JsonSchemaType getJsonType(final PostgresType jdbcType) {
+  public JsonSchemaType getAirbyteType(final PostgresType jdbcType) {
     return switch (jdbcType) {
       case BOOLEAN -> JsonSchemaType.BOOLEAN;
       case TINYINT, SMALLINT, INTEGER, BIGINT -> JsonSchemaType.INTEGER;
@@ -601,6 +568,38 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   @Override
   public boolean isCursorType(final PostgresType type) {
     return PostgresUtils.ALLOWED_CURSOR_TYPES.contains(type);
+  }
+
+  private ColumnInfo getColumnInfo(final int colIndex, final PgResultSetMetaData metadata, final String columnName) throws SQLException {
+    final String tableName = metadata.getBaseTableName(colIndex);
+    final String schemaName = metadata.getBaseSchemaName(colIndex);
+    final String key = schemaName + tableName;
+    if (!streamColumnInfo.containsKey(key)) {
+      streamColumnInfo.clear();
+      streamColumnInfo.put(key, new HashMap<>(metadata.getColumnCount()));
+    }
+
+    final Map<String, ColumnInfo> stringColumnInfoMap = streamColumnInfo.get(key);
+    if (stringColumnInfoMap.containsKey(columnName)) {
+      return stringColumnInfoMap.get(columnName);
+    } else {
+      final PostgresType columnType = safeGetJdbcType(metadata.getColumnType(colIndex), POSTGRES_TYPE_DICT);
+      final ColumnInfo columnInfo = new ColumnInfo(metadata.getColumnTypeName(colIndex).toLowerCase(), columnType);
+      stringColumnInfoMap.put(columnName, columnInfo);
+      return columnInfo;
+    }
+  }
+
+  private static class ColumnInfo {
+
+    public String columnTypeName;
+    public PostgresType columnType;
+
+    public ColumnInfo(final String columnTypeName, final PostgresType columnType) {
+      this.columnTypeName = columnTypeName;
+      this.columnType = columnType;
+    }
+
   }
 
 }

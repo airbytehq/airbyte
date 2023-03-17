@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -7,7 +7,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_retently.source import Companies
+from source_retently.source import Campaigns, Companies
 
 
 @pytest.fixture
@@ -18,10 +18,17 @@ def patch_base_class(mocker):
     mocker.patch.object(Companies, "__abstractmethods__", set())
 
 
-def test_request_params(patch_base_class):
+def test_request_params_companies(patch_base_class):
     stream = Companies()
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_params = None
+    expected_params = {'limit': 100}
+    assert stream.request_params(**inputs) == expected_params
+
+
+def test_request_params_other(patch_base_class):
+    stream = Campaigns()
+    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
+    expected_params = {'limit': 1000}
     assert stream.request_params(**inputs) == expected_params
 
 

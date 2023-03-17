@@ -1,44 +1,39 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-jira:dev
-tests:
+test_strictness_level: high
+acceptance_tests:
   spec:
-    - spec_path: "source_jira/spec.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.2.23"
+    tests:
+      - spec_path: "source_jira/spec.json"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.2.23"
+    tests:
+      - config_path: "secrets/config.json"
   basic_read:
-    # TEST for the Labels stream
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/labels_catalog.json"
-      expect_records:
-        path: "integration_tests/expected_label_records.txt"
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/issues_configured_catalog.json"
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/issue_worklogs_configured_catalog.json"
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/projects_configured_catalog.json"
-      empty_streams: ["project_permission_schemes"]
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/workflows_configured_catalog.json"
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: ["epics", "screen_tab_fields", "sprint_issues", "sprints"]
-      timeout_seconds: 1800
-#  incremental:
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/inc_configured_catalog.json"
-#      future_state_path: "integration_tests/abnormal_state.json"
-#  Jira Source has a lot streams. It takes to long to sync them, which caused timeout error
-#  full_refresh:
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/full_configured_catalog.json"
+    tests:
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+        empty_streams:
+          - name: "issue_properties"
+            bypass_reason: "unable to populate"
+          - name: "project_permission_schemes"
+            bypass_reason: "unable to populate"
+          - name: "screen_tab_fields"
+            bypass_reason: "unable to populate"
+  incremental:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

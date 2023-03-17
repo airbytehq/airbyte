@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.jdbc.test;
 
 import static io.airbyte.db.jdbc.JdbcUtils.getDefaultSourceOperations;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -28,27 +29,28 @@ import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.AirbyteStreamState;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.StreamDescriptor;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -220,12 +222,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
     streamName = TABLE_NAME;
 
-    dataSource = DataSourceFactory.create(
-        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
-        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        getDriverClass(),
-        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY, getJdbcParameterDelimiter()));
+    dataSource = getDataSource(jdbcConfig);
 
     database = new StreamingJdbcDatabase(dataSource,
         getDefaultSourceOperations(),
@@ -286,6 +283,15 @@ public abstract class JdbcSourceAcceptanceTest {
               getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)));
 
     });
+  }
+
+  protected DataSource getDataSource(final JsonNode jdbcConfig) {
+    return DataSourceFactory.create(
+        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+        getDriverClass(),
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+        JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY, getJdbcParameterDelimiter()));
   }
 
   public void tearDown() throws SQLException {
@@ -391,16 +397,16 @@ public abstract class JdbcSourceAcceptanceTest {
     database.execute(connection -> {
       connection.createStatement().execute(
           String.format("CREATE TABLE %s(id VARCHAR(200) NOT NULL, name VARCHAR(200) NOT NULL)",
-              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, name) VALUES ('1','picard')",
-              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, name) VALUES ('2', 'crusher')",
-              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, name) VALUES ('3', 'vash')",
-              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
     });
 
     final AirbyteCatalog actual = source.discover(config);
@@ -633,8 +639,8 @@ public abstract class JdbcSourceAcceptanceTest {
   protected void incrementalDateCheck() throws Exception {
     incrementalCursorCheck(
         COL_UPDATED_AT,
-        "2005-10-18T00:00:00Z",
-        "2006-10-19T00:00:00Z",
+        "2005-10-18",
+        "2006-10-19",
         List.of(getTestMessages().get(1), getTestMessages().get(2)));
   }
 
@@ -702,13 +708,13 @@ public abstract class JdbcSourceAcceptanceTest {
             .withData(Jsons.jsonNode(Map
                 .of(COL_ID, ID_VALUE_4,
                     COL_NAME, "riker",
-                    COL_UPDATED_AT, "2006-10-19T00:00:00Z")))));
+                    COL_UPDATED_AT, "2006-10-19")))));
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
             .withData(Jsons.jsonNode(Map
                 .of(COL_ID, ID_VALUE_5,
                     COL_NAME, "data",
-                    COL_UPDATED_AT, "2006-10-19T00:00:00Z")))));
+                    COL_UPDATED_AT, "2006-10-19")))));
     final DbStreamState state = new DbStreamState()
         .withStreamName(streamName)
         .withStreamNamespace(namespace)
@@ -1033,20 +1039,20 @@ public abstract class JdbcSourceAcceptanceTest {
                 .withData(Jsons.jsonNode(Map
                     .of(COL_ID, ID_VALUE_1,
                         COL_NAME, "picard",
-                        COL_UPDATED_AT, "2004-10-19T00:00:00Z")))),
+                        COL_UPDATED_AT, "2004-10-19")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(Map
                     .of(COL_ID, ID_VALUE_2,
                         COL_NAME, "crusher",
                         COL_UPDATED_AT,
-                        "2005-10-19T00:00:00Z")))),
+                        "2005-10-19")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(Map
                     .of(COL_ID, ID_VALUE_3,
                         COL_NAME, "vash",
-                        COL_UPDATED_AT, "2006-10-19T00:00:00Z")))));
+                        COL_UPDATED_AT, "2006-10-19")))));
   }
 
   protected List<AirbyteMessage> createExpectedTestMessages(final List<DbStreamState> states) {
@@ -1082,29 +1088,29 @@ public abstract class JdbcSourceAcceptanceTest {
     final String streamName2 = tableNameWithSpaces;
 
     database.execute(connection -> {
+      final String identifierQuoteString = connection.getMetaData().getIdentifierQuoteString();
       connection.createStatement()
           .execute(
               createTableQuery(getFullyQualifiedTableName(
-                  sourceOperations.enquoteIdentifier(connection, tableNameWithSpaces)),
-                  "id INTEGER, " + sourceOperations
-                      .enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)
+                  enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
+                  "id INTEGER, " + enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)
                       + " VARCHAR(200)",
                   ""));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, %s) VALUES (1,'picard')",
               getFullyQualifiedTableName(
-                  sourceOperations.enquoteIdentifier(connection, tableNameWithSpaces)),
-              sourceOperations.enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)));
+                  enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
+              enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, %s) VALUES (2, 'crusher')",
               getFullyQualifiedTableName(
-                  sourceOperations.enquoteIdentifier(connection, tableNameWithSpaces)),
-              sourceOperations.enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)));
+                  enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
+              enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, %s) VALUES (3, 'vash')",
               getFullyQualifiedTableName(
-                  sourceOperations.enquoteIdentifier(connection, tableNameWithSpaces)),
-              sourceOperations.enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)));
+                  enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
+              enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)));
     });
 
     return CatalogHelpers.createConfiguredAirbyteStream(
@@ -1115,7 +1121,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   public String getFullyQualifiedTableName(final String tableName) {
-    return sourceOperations.getFullyQualifiedTableName(getDefaultSchemaName(), tableName);
+    return RelationalDbQueryUtils.getFullyQualifiedTableName(getDefaultSchemaName(), tableName);
   }
 
   public void createSchemas() throws SQLException {
