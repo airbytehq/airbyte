@@ -1,6 +1,8 @@
 from dagster import Definitions
 
 from .resources.gcp_resources import gcp_gcs_client, gcs_bucket_manager, gcs_file_manager, gcs_file_blob
+from .resources.github_resources import github_client, github_connector_repo, github_connectors_directory
+
 from .assets.catalog_assets import (
     oss_destinations_dataframe,
     cloud_destinations_dataframe,
@@ -13,10 +15,12 @@ from .assets.catalog_assets import (
     connector_catalog_location_markdown,
     connector_catalog_location_html,
 )
+from .assets.github_assets import source_controlled_connectors
+
 from .jobs.catalog_jobs import generate_catalog_markdown
 from .sensors.catalog_sensors import catalog_updated_sensor
 
-from .config import REPORT_FOLDER, CATALOG_FOLDER
+from .config import REPORT_FOLDER, CATALOG_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME
 
 
 ASSETS = [
@@ -30,9 +34,13 @@ ASSETS = [
     all_destinations_dataframe,
     connector_catalog_location_markdown,
     connector_catalog_location_html,
+    source_controlled_connectors,
 ]
 
 RESOURCES = {
+    "github_client": github_client,
+    "github_connector_repo": github_connector_repo.configured({"connector_repo_name": CONNECTOR_REPO_NAME}),
+    "github_connectors_directory": github_connectors_directory.configured({"connectors_path": CONNECTORS_PATH}),
     "gcp_gcs_client": gcp_gcs_client.configured(
         {
             "gcp_gcs_cred_string": {"env": "GCS_CREDENTIALS"},
