@@ -9,8 +9,8 @@ from source_aircall.source import SourceAircall
 
 def test_check_connection(mocker):
     source = SourceAircall()
-    logger_mock, config_mock = MagicMock(), MagicMock()
-    assert source.check_connection(logger_mock, config_mock) == (True, None)
+    logger_mock, username_mock, password_mock = MagicMock(), MagicMock(), MagicMock()
+    assert source.check_connection(logger_mock, {"username": str(username_mock), "password": str(password_mock)}) == (True, None)
 
 
 def test_streams(mocker):
