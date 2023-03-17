@@ -103,6 +103,8 @@ jobs:
       - name: Write source-harness credentials
         run: |
           ci_credentials connectors-performance/source-harness write-to-storage
+        env:
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       - name: build harness
         shell: bash
         run: |
