@@ -187,7 +187,7 @@ class SourceTrello(AbstractSource):
     """
 
     def _validate_and_transform(self, config: Mapping[str, Any]):
-        datetime.datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%S.%fZ")
+        datetime.datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%SZ")
         return config
 
     @staticmethod
