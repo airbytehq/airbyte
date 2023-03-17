@@ -26,9 +26,6 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
-          exact_order: no
-          extra_records: yes
         empty_streams:
           - name: missed_call_tasks
             bypass_reason: "unable to populate"
@@ -55,6 +52,8 @@ acceptance_tests:
           - name: zoom_connected_accounts
             bypass_reason: "unable to test due to fast-changing data"
           - name: email_bulk_actions
+            bypass_reason: "unable to test due to fast-changing data"
+          - name: incoming_email_tasks
             bypass_reason: "unable to test due to fast-changing data"
   incremental:
     tests:

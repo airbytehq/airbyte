@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc;
@@ -9,7 +9,8 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 /**
- * Write configuration POJO (plain old java object) for all destinations extending {@link AbstractJdbcDestination}.
+ * Write configuration POJO (plain old java object) for all destinations extending
+ * {@link AbstractJdbcDestination}.
  */
 public class WriteConfig {
 

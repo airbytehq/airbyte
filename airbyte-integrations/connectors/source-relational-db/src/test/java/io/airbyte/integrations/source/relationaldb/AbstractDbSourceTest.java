@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.relationaldb;
@@ -39,7 +39,7 @@ public class AbstractDbSourceTest {
     final String legacyStateJson = MoreResources.readResource("states/legacy.json");
     final JsonNode legacyState = Jsons.deserialize(legacyStateJson);
 
-    final List<AirbyteStateMessage> result = dbSource.deserializeInitialState(legacyState, config);
+    final List<AirbyteStateMessage> result = dbSource.deserializeInitialState(legacyState, config, false);
     assertEquals(1, result.size());
     assertEquals(AirbyteStateType.LEGACY, result.get(0).getType());
   }
@@ -53,7 +53,7 @@ public class AbstractDbSourceTest {
     final String globalStateJson = MoreResources.readResource("states/global.json");
     final JsonNode globalState = Jsons.deserialize(globalStateJson);
 
-    final List<AirbyteStateMessage> result = dbSource.deserializeInitialState(globalState, config);
+    final List<AirbyteStateMessage> result = dbSource.deserializeInitialState(globalState, config, true);
     assertEquals(1, result.size());
     assertEquals(AirbyteStateType.GLOBAL, result.get(0).getType());
   }
@@ -67,7 +67,7 @@ public class AbstractDbSourceTest {
     final String streamStateJson = MoreResources.readResource("states/per_stream.json");
     final JsonNode streamState = Jsons.deserialize(streamStateJson);
 
-    final List<AirbyteStateMessage> result = dbSource.deserializeInitialState(streamState, config);
+    final List<AirbyteStateMessage> result = dbSource.deserializeInitialState(streamState, config, true);
     assertEquals(2, result.size());
     assertEquals(AirbyteStateType.STREAM, result.get(0).getType());
   }
@@ -77,7 +77,7 @@ public class AbstractDbSourceTest {
     final AbstractDbSource dbSource = spy(AbstractDbSource.class);
     final JsonNode config = mock(JsonNode.class);
 
-    final List<AirbyteStateMessage> result = dbSource.deserializeInitialState(null, config);
+    final List<AirbyteStateMessage> result = dbSource.deserializeInitialState(null, config, false);
     assertEquals(1, result.size());
     assertEquals(dbSource.getSupportedStateType(config), result.get(0).getType());
   }

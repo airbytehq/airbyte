@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -120,7 +120,7 @@ class SchemaHelpers:
                 properties.update(**{name: SchemaTypes.string})
 
         json_schema: Dict = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "type": "object",
             "additionalProperties": True,
             "properties": properties,

@@ -1,46 +1,18 @@
-{"stream": "sites", "data": {"permissionLevel": "siteOwner"}, "emitted_at": 1674600072721}
-{"stream": "sites", "data": {"permissionLevel": "siteOwner"}, "emitted_at": 1674600073155}
-{"stream": "sitemaps", "data": {"lastSubmitted": "2021-09-10T23:02:22.258Z", "isPending": false, "isSitemapsIndex": false, "type": "sitemap", "warnings": "0", "errors": "0", "contents": [{"type": "web", "submitted": "5690", "indexed": "0"}]}, "emitted_at": 1674600073428}
-{"stream": "sitemaps", "data": {"lastSubmitted": "2021-09-10T23:02:22.258Z", "isPending": false, "isSitemapsIndex": false, "type": "sitemap", "warnings": "0", "errors": "0", "contents": [{"type": "web", "submitted": "5690", "indexed": "0"}]}, "emitted_at": 1674600073798}
-{"stream": "search_analytics_by_date", "data": {"ctr": 0.07940251572327044, "position": 31.88456498951782, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600074364}
-{"stream": "search_analytics_by_date", "data": {"ctr": 0.07130707837236687, "position": 32.45505691482403, "search_type": "web", "date": "2021-09-15"}, "emitted_at": 1674600074364}
-{"stream": "search_analytics_by_date", "data": {"ctr": 0.06246691371095818, "position": 35.16079936474325, "search_type": "web", "date": "2021-09-16"}, "emitted_at": 1674600074365}
-{"stream": "search_analytics_by_date", "data": {"ctr": 0.04798676227247656, "position": 37.52137341423056, "search_type": "web", "date": "2021-09-17"}, "emitted_at": 1674600074816}
-{"stream": "search_analytics_by_date", "data": {"ctr": 0.026209048361934478, "position": 43.134477379095166, "search_type": "web", "date": "2021-09-18"}, "emitted_at": 1674600074817}
-{"stream": "search_analytics_by_date", "data": {"ctr": 0.029040774420651217, "position": 42.78952772073922, "search_type": "web", "date": "2021-09-19"}, "emitted_at": 1674600074818}
-{"stream": "search_analytics_by_country", "data": {"ctr": 0.1301955990220049, "position": 24.62530562347188, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600075212}
-{"stream": "search_analytics_by_country", "data": {"ctr": 0.10391061452513967, "position": 29.924022346368716, "search_type": "web", "date": "2021-09-15"}, "emitted_at": 1674600075213}
-{"stream": "search_analytics_by_country", "data": {"ctr": 0.09462915601023018, "position": 30.83759590792839, "search_type": "web", "date": "2021-09-16"}, "emitted_at": 1674600075213}
-{"stream": "search_analytics_by_country", "data": {"ctr": 0.0832, "position": 27.408, "search_type": "web", "date": "2021-09-15"}, "emitted_at": 1674600075213}
-{"stream": "search_analytics_by_country", "data": {"ctr": 0.08223684210526316, "position": 26.820723684210527, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600075214}
-{"stream": "search_analytics_by_country", "data": {"ctr": 0.07445008460236886, "position": 27.43993231810491, "search_type": "web", "date": "2021-09-16"}, "emitted_at": 1674600075214}
-{"stream": "search_analytics_by_device", "data": {"ctr": 0.07708300015992324, "position": 31.635375019990406, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600075873}
-{"stream": "search_analytics_by_device", "data": {"ctr": 0.07342657342657342, "position": 31.832326764144945, "search_type": "web", "date": "2021-09-15"}, "emitted_at": 1674600075873}
-{"stream": "search_analytics_by_device", "data": {"ctr": 0.06650602409638554, "position": 34.87839357429719, "search_type": "web", "date": "2021-09-16"}, "emitted_at": 1674600075874}
-{"stream": "search_analytics_by_device", "data": {"ctr": 0.09090909090909091, "position": 33.38137472283814, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600075874}
-{"stream": "search_analytics_by_device", "data": {"ctr": 0.06221889055472264, "position": 35.52473763118441, "search_type": "web", "date": "2021-09-15"}, "emitted_at": 1674600075874}
-{"stream": "search_analytics_by_device", "data": {"ctr": 0.04354469060351413, "position": 36.913674560733384, "search_type": "web", "date": "2021-09-16"}, "emitted_at": 1674600075875}
-{"stream": "search_analytics_by_page", "data": {"ctr": 0.16593362654938024, "position": 32.60535785685725, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600077103}
-{"stream": "search_analytics_by_page", "data": {"ctr": 0.14685874349739897, "position": 34.94597839135654, "search_type": "web", "date": "2021-09-15"}, "emitted_at": 1674600077104}
-{"stream": "search_analytics_by_page", "data": {"ctr": 0.14058234758871702, "position": 37.05686988171065, "search_type": "web", "date": "2021-09-16"}, "emitted_at": 1674600077105}
-{"stream": "search_analytics_by_page", "data": {"ctr": 0.09090909090909091, "position": 14.812316715542522, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600077105}
-{"stream": "search_analytics_by_page", "data": {"ctr": 0.07418397626112759, "position": 11.57566765578635, "search_type": "web", "date": "2021-09-16"}, "emitted_at": 1674600077106}
-{"stream": "search_analytics_by_page", "data": {"ctr": 0.02894736842105263, "position": 2.375, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600077107}
-{"stream": "search_analytics_by_query", "data": {"ctr": 0.6571428571428571, "position": 1, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600078165}
-{"stream": "search_analytics_by_query", "data": {"ctr": 0.6563786008230452, "position": 1.0041152263374487, "search_type": "web", "date": "2021-09-15"}, "emitted_at": 1674600078165}
-{"stream": "search_analytics_by_query", "data": {"ctr": 0.6157517899761337, "position": 1, "search_type": "web", "date": "2021-09-16"}, "emitted_at": 1674600078166}
-{"stream": "search_analytics_by_query", "data": {"ctr": 0.6666666666666666, "position": 1.3333333333333333, "search_type": "web", "date": "2021-09-16"}, "emitted_at": 1674600078166}
-{"stream": "search_analytics_by_query", "data": {"ctr": 0.6363636363636364, "position": 1, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600078166}
-{"stream": "search_analytics_by_query", "data": {"ctr": 0.5384615384615384, "position": 1, "search_type": "web", "date": "2021-09-16"}, "emitted_at": 1674600078166}
-{"stream": "search_analytics_all_fields", "data": {"ctr": 0.6490066225165563, "position": 1, "search_type": "web", "date": "2021-09-15"}, "emitted_at": 1674600079765}
-{"stream": "search_analytics_all_fields", "data": {"ctr": 0.5272727272727272, "position": 1, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600079765}
-{"stream": "search_analytics_all_fields", "data": {"ctr": 0.6229508196721312, "position": 1, "search_type": "web", "date": "2021-09-16"}, "emitted_at": 1674600079766}
-{"stream": "search_analytics_all_fields", "data": {"ctr": 0.6097560975609756, "position": 1, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600079766}
-{"stream": "search_analytics_all_fields", "data": {"ctr": 0.8, "position": 1, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600079766}
-{"stream": "search_analytics_all_fields", "data": {"ctr": 0.6666666666666666, "position": 1, "date": "2021-09-15"}, "emitted_at": 1674600079766}
-{"stream": "custom_dimensions", "data": {"ctr": 0.10220440881763528, "position": 29.36005344021376, "date": "2021-09-15"}, "emitted_at": 1674600080130}
-{"stream": "custom_dimensions", "data": {"ctr": 0.11009174311926606, "position": 25.412079510703364, "date": "2021-09-14"}, "emitted_at": 1674600080131}
-{"stream": "custom_dimensions", "data": {"ctr": 0.1004601226993865, "position": 30.555981595092025, "date": "2021-09-16"}, "emitted_at": 1674600080131}
-{"stream": "custom_dimensions", "data": {"ctr": 0.21518987341772153, "position": 22.227848101265824, "date": "2021-09-14"}, "emitted_at": 1674600080131}
-{"stream": "custom_dimensions", "data": {"ctr": 0.09109730848861283, "position": 26.467908902691512, "date": "2021-09-14"}, "emitted_at": 1674600080131}
-{"stream": "custom_dimensions", "data": {"ctr": 0.08528784648187633, "position": 27.658848614072493, "date": "2021-09-15"}, "emitted_at": 1674600080132}
+{"stream": "sites", "data": {"siteUrl": "https://airbyte.io/", "permissionLevel": "siteOwner"}, "emitted_at": 1677799184974}
+{"stream": "sites", "data": {"siteUrl": "https://airbyte.io/", "permissionLevel": "siteOwner"}, "emitted_at": 1677799185060}
+{"stream": "sitemaps", "data": {"path": "https://airbyte.io/sitemap.xml", "lastSubmitted": "2021-09-10T23:02:22.258Z", "isPending": false, "isSitemapsIndex": false, "type": "sitemap", "lastDownloaded": "2023-03-02T03:42:19.607Z", "warnings": "0", "errors": "0", "contents": [{"type": "web", "submitted": "5165", "indexed": "0"}]}, "emitted_at": 1677799185696}
+{"stream": "sitemaps", "data": {"path": "https://airbyte.io/sitemap.xml", "lastSubmitted": "2021-09-10T23:02:22.258Z", "isPending": false, "isSitemapsIndex": false, "type": "sitemap", "lastDownloaded": "2023-03-02T03:42:19.607Z", "warnings": "0", "errors": "0", "contents": [{"type": "web", "submitted": "5165", "indexed": "0"}]}, "emitted_at": 1677799186044}
+{"stream": "search_analytics_by_date", "data": {"clicks": 749, "impressions": 39606, "ctr": 0.01891127606928243, "position": 26.441978488107864, "site_url": "https://airbyte.io/", "search_type": "web", "date": "2021-10-19"}, "emitted_at": 1677799193858}
+{"stream": "search_analytics_by_date", "data": {"clicks": 888, "impressions": 38797, "ctr": 0.02288836765729309, "position": 26.447173750547723, "site_url": "https://airbyte.io/", "search_type": "web", "date": "2021-10-20"}, "emitted_at": 1677799194291}
+{"stream": "search_analytics_by_country", "data": {"clicks": 209, "impressions": 5736, "ctr": 0.03643654114365411, "position": 29.37726638772664, "site_url": "https://airbyte.io/", "search_type": "web", "date": "2021-10-19", "country": "usa"}, "emitted_at": 1677799200001}
+{"stream": "search_analytics_by_country", "data": {"clicks": 64, "impressions": 8803, "ctr": 0.007270248778825401, "position": 14.991366579575145, "site_url": "https://airbyte.io/", "search_type": "web", "date": "2021-10-19", "country": "ind"}, "emitted_at": 1677799200002}
+{"stream": "search_analytics_by_device", "data": {"clicks": 655, "impressions": 29038, "ctr": 0.02255664990701839, "position": 30.284523727529443, "site_url": "https://airbyte.io/", "search_type": "web", "date": "2021-10-19", "device": "DESKTOP"}, "emitted_at": 1677799206886}
+{"stream": "search_analytics_by_device", "data": {"clicks": 93, "impressions": 10412, "ctr": 0.008932001536688437, "position": 15.865155589704187, "site_url": "https://airbyte.io/", "search_type": "web", "date": "2021-10-19", "device": "MOBILE"}, "emitted_at": 1677799206887}
+{"stream": "search_analytics_by_page", "data": {"clicks": 349, "impressions": 3087, "ctr": 0.11305474570780694, "position": 32.505992873339814, "site_url": "https://airbyte.io/", "search_type": "web", "date": "2021-10-19", "page": "https://airbyte.io/"}, "emitted_at": 1677799212505}
+{"stream": "search_analytics_by_page", "data": {"clicks": 65, "impressions": 691, "ctr": 0.09406657018813314, "position": 18.070911722141823, "site_url": "https://airbyte.io/", "search_type": "web", "date": "2021-10-19", "page": "https://airbyte.io/recipes/migrate-from-mysql-to-postgresql"}, "emitted_at": 1677799212505}
+{"stream": "search_analytics_by_query", "data": {"clicks": 271, "impressions": 428, "ctr": 0.633177570093458, "position": 1, "site_url": "https://airbyte.io/", "search_type": "web", "date": "2021-10-19", "query": "airbyte"}, "emitted_at": 1677799217633}
+{"stream": "search_analytics_by_query", "data": {"clicks": 9, "impressions": 13, "ctr": 0.6923076923076923, "position": 1, "site_url": "https://airbyte.io/", "search_type": "web", "date": "2021-10-19", "query": "airbite"}, "emitted_at": 1677799217634}
+{"stream": "search_analytics_all_fields", "data": {"clicks": 79, "impressions": 134, "ctr": 0.5895522388059702, "position": 1, "site_url": "https://airbyte.io/", "search_type": "web", "date": "2021-10-19", "country": "usa", "device": "DESKTOP", "page": "https://airbyte.io/", "query": "airbyte"}, "emitted_at": 1677799225648}
+{"stream": "search_analytics_all_fields", "data": {"clicks": 18, "impressions": 33, "ctr": 0.5454545454545454, "position": 1, "site_url": "https://airbyte.io/", "search_type": "web", "date": "2021-10-19", "country": "fra", "device": "DESKTOP", "page": "https://airbyte.io/", "query": "airbyte"}, "emitted_at": 1677799225649}
+{"stream": "custom_dimensions", "data": {"clicks": 169, "impressions": 4869, "ctr": 0.03470938591086466, "position": 29.429657013760526, "site_url": "https://airbyte.io/", "search_type": "web", "date": "2021-10-19", "country": "usa", "device": "DESKTOP"}, "emitted_at": 1677799232181}
+{"stream": "custom_dimensions", "data": {"clicks": 56, "impressions": 2729, "ctr": 0.020520337119824112, "position": 33.29351410773177, "site_url": "https://airbyte.io/", "search_type": "web", "date": "2021-10-19", "country": "ind", "device": "DESKTOP"}, "emitted_at": 1677799232181}

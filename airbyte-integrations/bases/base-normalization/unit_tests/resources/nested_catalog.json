@@ -7,19 +7,19 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": ["null", "string"]
             },
             "body": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": ["null", "string"]
             },
             "name": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": ["null", "string"]
             },
             "title": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": ["null", "string"]
             },
             "status": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": ["null", "string"]
             },
             "adlabels": {
               "type": ["null", "array"],
@@ -27,22 +27,24 @@
                 "type": "object",
                 "properties": {
                   "id": {
-                    "$ref": "WellKnownTypes.json#/definitions/String"
+                    "type": "string"
                   },
                   "name": {
-                    "$ref": "WellKnownTypes.json#/definitions/String"
+                    "type": "string"
                   },
                   "created_time": {
-                    "$ref": "WellKnownTypes.json#/definitions/TimestampWithoutTimezone"
+                    "type": "string",
+                    "format": "date-time"
                   },
                   "updated_time": {
-                    "$ref": "WellKnownTypes.json#/definitions/TimestampWithoutTimezone"
+                    "type": "string",
+                    "format": "date-time"
                   }
                 }
               }
             },
             "link_url": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": ["null", "string"]
             },
             "image_crops": {
               "type": ["null", "object"],
@@ -52,7 +54,7 @@
                   "items": {
                     "type": ["null", "array"],
                     "items": {
-                      "$ref": "WellKnownTypes.json#/definitions/Integer"
+                      "type": ["null", "integer"]
                     }
                   }
                 },
@@ -61,7 +63,7 @@
                   "items": {
                     "type": ["null", "array"],
                     "items": {
-                      "$ref": "WellKnownTypes.json#/definitions/Integer"
+                      "type": ["null", "integer"]
                     }
                   }
                 },
@@ -70,7 +72,7 @@
                   "items": {
                     "type": ["null", "array"],
                     "items": {
-                      "$ref": "WellKnownTypes.json#/definitions/Integer"
+                      "type": ["null", "integer"]
                     }
                   }
                 },
@@ -79,7 +81,7 @@
                   "items": {
                     "type": ["null", "array"],
                     "items": {
-                      "$ref": "WellKnownTypes.json#/definitions/Integer"
+                      "type": ["null", "integer"]
                     }
                   }
                 },
@@ -88,7 +90,7 @@
                   "items": {
                     "type": ["null", "array"],
                     "items": {
-                      "$ref": "WellKnownTypes.json#/definitions/Integer"
+                      "type": ["null", "integer"]
                     }
                   }
                 },
@@ -97,7 +99,7 @@
                   "items": {
                     "type": ["null", "array"],
                     "items": {
-                      "$ref": "WellKnownTypes.json#/definitions/Integer"
+                      "type": ["null", "integer"]
                     }
                   }
                 },
@@ -106,7 +108,7 @@
                   "items": {
                     "type": ["null", "array"],
                     "items": {
-                      "$ref": "WellKnownTypes.json#/definitions/Integer"
+                      "type": ["null", "integer"]
                     }
                   }
                 }
@@ -116,22 +118,22 @@
               "type": ["null", "object"],
               "properties": {
                 "page_id": {
-                  "$ref": "WellKnownTypes.json#/definitions/String"
+                  "type": ["null", "string"]
                 },
                 "link_data": {
                   "type": ["null", "object"],
                   "properties": {
                     "link": {
-                      "$ref": "WellKnownTypes.json#/definitions/String"
+                      "type": ["null", "string"]
                     },
                     "name": {
-                      "$ref": "WellKnownTypes.json#/definitions/String"
+                      "type": ["null", "string"]
                     },
                     "caption": {
-                      "$ref": "WellKnownTypes.json#/definitions/String"
+                      "type": ["null", "string"]
                     },
                     "message": {
-                      "$ref": "WellKnownTypes.json#/definitions/String"
+                      "type": ["null", "string"]
                     },
                     "image_crops": {
                       "type": ["null", "object"],
@@ -141,7 +143,7 @@
                           "items": {
                             "type": ["null", "array"],
                             "items": {
-                              "$ref": "WellKnownTypes.json#/definitions/Integer"
+                              "type": ["null", "integer"]
                             }
                           }
                         },
@@ -150,7 +152,7 @@
                           "items": {
                             "type": ["null", "array"],
                             "items": {
-                              "$ref": "WellKnownTypes.json#/definitions/Integer"
+                              "type": ["null", "integer"]
                             }
                           }
                         },
@@ -159,7 +161,7 @@
                           "items": {
                             "type": ["null", "array"],
                             "items": {
-                              "$ref": "WellKnownTypes.json#/definitions/Integer"
+                              "type": ["null", "integer"]
                             }
                           }
                         },
@@ -168,7 +170,7 @@
                           "items": {
                             "type": ["null", "array"],
                             "items": {
-                              "$ref": "WellKnownTypes.json#/definitions/Integer"
+                              "type": ["null", "integer"]
                             }
                           }
                         },
@@ -177,7 +179,7 @@
                           "items": {
                             "type": ["null", "array"],
                             "items": {
-                              "$ref": "WellKnownTypes.json#/definitions/Integer"
+                              "type": ["null", "integer"]
                             }
                           }
                         },
@@ -186,7 +188,7 @@
                           "items": {
                             "type": ["null", "array"],
                             "items": {
-                              "$ref": "WellKnownTypes.json#/definitions/Integer"
+                              "type": ["null", "integer"]
                             }
                           }
                         },
@@ -195,7 +197,7 @@
                           "items": {
                             "type": ["null", "array"],
                             "items": {
-                              "$ref": "WellKnownTypes.json#/definitions/Integer"
+                              "type": ["null", "integer"]
                             }
                           }
                         }
@@ -210,13 +212,13 @@
                             "type": "object",
                             "properties": {
                               "url": {
-                                "$ref": "WellKnownTypes.json#/definitions/String"
+                                "type": "string"
                               },
                               "app_name": {
-                                "$ref": "WellKnownTypes.json#/definitions/String"
+                                "type": "string"
                               },
                               "app_store_id": {
-                                "$ref": "WellKnownTypes.json#/definitions/String"
+                                "type": "string"
                               }
                             }
                           }
@@ -227,13 +229,13 @@
                             "type": "object",
                             "properties": {
                               "url": {
-                                "$ref": "WellKnownTypes.json#/definitions/String"
+                                "type": "string"
                               },
                               "app_name": {
-                                "$ref": "WellKnownTypes.json#/definitions/String"
+                                "type": "string"
                               },
                               "app_store_id": {
-                                "$ref": "WellKnownTypes.json#/definitions/String"
+                                "type": "string"
                               }
                             }
                           }
@@ -244,13 +246,13 @@
                             "type": "object",
                             "properties": {
                               "url": {
-                                "$ref": "WellKnownTypes.json#/definitions/String"
+                                "type": "string"
                               },
                               "app_name": {
-                                "$ref": "WellKnownTypes.json#/definitions/String"
+                                "type": "string"
                               },
                               "app_store_id": {
-                                "$ref": "WellKnownTypes.json#/definitions/String"
+                                "type": "string"
                               }
                             }
                           }
@@ -261,16 +263,16 @@
                             "type": "object",
                             "properties": {
                               "url": {
-                                "$ref": "WellKnownTypes.json#/definitions/String"
+                                "type": "string"
                               },
                               "class": {
-                                "$ref": "WellKnownTypes.json#/definitions/String"
+                                "type": "string"
                               },
                               "package": {
-                                "$ref": "WellKnownTypes.json#/definitions/String"
+                                "type": "string"
                               },
                               "app_name": {
-                                "$ref": "WellKnownTypes.json#/definitions/String"
+                                "type": "string"
                               }
                             }
                           }
@@ -282,7 +284,7 @@
                     "type": ["null", "object"],
                     "properties": {
                       "message": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": "string"
                       }
                     }
                   },
@@ -290,27 +292,27 @@
                     "type": ["null", "object"],
                     "properties": {
                       "url": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": ["null", "string"]
                       },
                       "caption": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": "string"
                       },
                       "image_hash": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": ["null", "string"]
                       },
                       "page_welcome_message": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": ["null", "string"]
                       },
                       "branded_content_sponsor_page_id": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": ["null", "string"]
                       },
                       "branded_content_sponsor_relationship": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": ["null", "string"]
                       }
                     }
                   },
                   "instagram_actor_id": {
-                    "$ref": "WellKnownTypes.json#/definitions/String"
+                    "type": ["null", "string"]
                   }
                 }
               },
@@ -321,13 +323,13 @@
                     "type": ["null", "object"],
                     "properties": {
                       "url": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": "string"
                       },
                       "app_name": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": "string"
                       },
                       "app_store_id": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": "string"
                       }
                     }
                   },
@@ -335,10 +337,10 @@
                     "type": ["null", "object"],
                     "properties": {
                       "url": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": "string"
                       },
                       "should_fallback": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": "string"
                       }
                     }
                   },
@@ -346,13 +348,13 @@
                     "type": ["null", "object"],
                     "properties": {
                       "url": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": "string"
                       },
                       "app_name": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": "string"
                       },
                       "app_store_id": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": "string"
                       }
                     }
                   },
@@ -360,7 +362,7 @@
                     "type": ["null", "object"],
                     "properties": {
                       "app_id": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": "string"
                       }
                     }
                   },
@@ -368,13 +370,13 @@
                     "type": ["null", "object"],
                     "properties": {
                       "url": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": "string"
                       },
                       "app_name": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": "string"
                       },
                       "app_store_id": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": "string"
                       }
                     }
                   },
@@ -382,13 +384,13 @@
                     "type": ["null", "object"],
                     "properties": {
                       "url": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": "string"
                       },
                       "package": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": "string"
                       },
                       "app_name": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": "string"
                       }
                     }
                   },
@@ -396,13 +398,13 @@
                     "type": ["null", "object"],
                     "properties": {
                       "url": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": "string"
                       },
                       "app_id": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": "string"
                       },
                       "app_name": {
-                        "$ref": "WellKnownTypes.json#/definitions/String"
+                        "type": "string"
                       }
                     }
                   }

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, Callable, Dict
@@ -189,6 +189,80 @@ def parametrize_test_case(*test_cases: Dict[str, Any]) -> Callable:
             },
         },
         "should_fail": False,
+    },
+    {
+        "test_id": "all_good_nested",
+        "connector_spec": {
+            "type": "object",
+            "properties": {
+                "select_type": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "option_title": {"type": "string", "title": "Title", "const": "first option"},
+                                "something": {"type": "string"},
+                                "nest": {
+                                    "type": "object",
+                                    "oneOf": [
+                                        {"type": "object", "properties": {"t": {"type": "string", "const": "A"}}},
+                                        {"type": "object", "properties": {"t": {"type": "string", "const": "B"}}},
+                                    ],
+                                },
+                            },
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "option_title": {"type": "string", "title": "Title", "const": "second option"},
+                                "some_field": {"type": "boolean"},
+                            },
+                        },
+                    ],
+                },
+                "client_secret": {"type": "string"},
+                "access_token": {"type": "string"},
+            },
+        },
+        "should_fail": False,
+    },
+    {
+        "test_id": "fail_nested",
+        "connector_spec": {
+            "type": "object",
+            "properties": {
+                "select_type": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "option_title": {"type": "string", "title": "Title", "const": "first option"},
+                                "something": {"type": "string"},
+                                "nest": {
+                                    "type": "object",
+                                    "oneOf": [
+                                        {"type": "object", "properties": {"t": {"type": "string", "const": "A"}}},
+                                        {"type": "string"},
+                                    ],
+                                },
+                            },
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "option_title": {"type": "string", "title": "Title", "const": "second option"},
+                                "some_field": {"type": "boolean"},
+                            },
+                        },
+                    ],
+                },
+                "client_secret": {"type": "string"},
+                "access_token": {"type": "string"},
+            },
+        },
+        "should_fail": True,
     },
     {
         "test_id": "top_level_node_is_not_of_object_type",

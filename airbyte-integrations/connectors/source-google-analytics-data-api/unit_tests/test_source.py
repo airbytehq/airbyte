@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import datetime
@@ -68,6 +68,12 @@ def test_check(requests_mock, config_gen):
         "dimensions": [{"apiName": "date"}, {"apiName": "country"}],
         "metrics": [{"apiName": "totalUsers"}, {"apiName": "screenPageViews"}],
     })
+    requests_mock.register_uri("POST", "https://analyticsdata.googleapis.com/v1beta/properties/108176369:runReport",
+                               json={"dimensionHeaders": [{"name": "date"}, {"name": "country"}],
+                                     "metricHeaders": [{"name": "totalUsers", "type": "s"},
+                                                       {"name": "screenPageViews", "type": "m"}],
+                                     "rows": []
+                                     })
 
     source = SourceGoogleAnalyticsDataApi()
     logger = MagicMock()
