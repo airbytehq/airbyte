@@ -414,17 +414,20 @@ class NotaFiscal(IncrementalBlingBase):
 
     def get_nf_xml(self, item_list, nf_item_list):
         for item in nf_item_list:
-            read_xml = False 
-
+            max_tries = 5
+            try_count = 1
             if item['data']['xml'] != None:
-                while read_xml == False:
+                while try_count <= max_tries:
                     try:
                         xml = self.handle_request_error(item['data']['xml'] + f'&{self.api_key}').content
                         item['data_xml'] = xmltodict.parse(xml.strip())
-                        read_xml = True
+                        try_count = max_tries + 1
                     except:
                         logger.info('Error for xml: %s', item['data']['xml'])
+                        logger.info(f"Count: {try_count}")
                         logger.info(xml)
+                        try_count += 1
+                        item['data_xml'] = {'error_log': xml}
                         pass
             else:
                 logger.info('Missing XML for NF: %s', item['data']['numero'])
