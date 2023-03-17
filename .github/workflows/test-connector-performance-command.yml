@@ -133,21 +133,14 @@ jobs:
           kind load docker-image airbyte/source-postgres:dev --name chart-testing
           echo "Loading harness image into kind" >> $GITHUB_STEP_SUMMARY
           kind load docker-image airbyte/source-harness:dev --name chart-testing
-          echo "ls airbyte-integrations"
-          ls airbyte-integrations
-          echo "ls ./airbyte-integrations"
-          ls ./airbyte-integrations
-          echo "ls airbyte-integrations/connectors/source-harness/secrets"
-          ls airbyte-integrations/connectors/source-harness/secrets          
           echo "loading pod..."
           kubectl create -f ./tools/bin/test-postgres-source-process.yaml
           echo "get pods..."
           kubectl get po
-          pwd
           POD=$(kubectl get pod -l app=source-harness -o jsonpath="{.items[0].metadata.name}")
           echo "pod name is $POD"
-          sleep 3
-          kubectl get events --sort-by=.metadata.creationTimestamp
+          #sleep 3
+          #kubectl get events --sort-by=.metadata.creationTimestamp
           kubectl logs $POD
           kubectl describe $POD
           kubectl wait --for=condition=Ready --timeout=20s "pod/$POD"
