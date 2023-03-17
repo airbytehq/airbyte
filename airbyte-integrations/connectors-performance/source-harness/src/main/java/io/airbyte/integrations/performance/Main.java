@@ -21,7 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 public class Main {
 
-  private  static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
+  private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 
   public static void main(final String[] args) {
 
@@ -59,18 +59,15 @@ public class Main {
         }
       }, executors);
 
-      //Uncomment to add destination
-/*      final CompletableFuture<Void> readFromDstThread = CompletableFuture.runAsync(() -> {
-        try {
-          Thread.sleep(20_000);
-          test.readFromDst();
-        } catch (final InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-      }, executors);*/
+      // Uncomment to add destination
+      /*
+       * final CompletableFuture<Void> readFromDstThread = CompletableFuture.runAsync(() -> { try {
+       * Thread.sleep(20_000); test.readFromDst(); } catch (final InterruptedException e) { throw new
+       * RuntimeException(e); } }, executors);
+       */
 
       CompletableFuture.allOf(readSrcAndWriteDstThread
-          /*, readFromDstThread*/).get();
+      /* , readFromDstThread */).get();
 
     } catch (final Exception e) {
       throw new RuntimeException(e);
@@ -84,4 +81,5 @@ public class Main {
     final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(catalogFilename);
     return objectMapper.readTree(is);
   }
+
 }
