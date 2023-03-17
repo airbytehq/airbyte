@@ -25,9 +25,8 @@ class DiscordMessagesStream(HttpStream, ABC):
     def __init__(self, config: Mapping[str, Any], **_):
         super().__init__()
         self.config = config
-        self.message_limit = 2
-        self.current_page = 0
-        self.max_page_limit = 5
+        self.message_limit = 100
+        self.max_page_limit = 100
         self.channel_id_current_page_limit = {}
         self.server_token = config["server_token"]
         self.guild_id = config["guild_id"]
@@ -44,7 +43,6 @@ class DiscordMessagesStream(HttpStream, ABC):
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
 
-        print('request_params---->>>>> stream_slice', stream_slice)
         if not next_page_token:
             return {'limit': self.message_limit}
 
@@ -105,7 +103,7 @@ class Messages(DiscordMessagesStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         records = response.json()
         for record in records:
-            time.sleep(5)
+            time.sleep(10)
             yield self.transform(record=record, **kwargs)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
