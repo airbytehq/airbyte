@@ -44,7 +44,7 @@ export const PathPopout: React.FC<PathPopoutProps> = (props) => {
         : "";
 
       return (
-        <Tooltip placement="bottom-start" control={<div className={styles.text}>{text}</div>}>
+        <Tooltip placement="top-start" control={<div className={styles.text}>{text}</div>}>
           {text}
         </Tooltip>
       );
