@@ -206,7 +206,7 @@ class SourceTrello(AbstractSource):
         available_boards = {board["id"] for board in read_full_refresh(stream)}
         unknown_boards = set(config.get("board_ids", [])) - available_boards
         if unknown_boards:
-            unknown_boards = ", ".join(unknown_boards)
+            unknown_boards = ", ".join(sorted(unknown_boards))
             return False, f"Board ID(s): {unknown_boards} not found"
         return True, None
 
