@@ -8,7 +8,7 @@ To set up the Chargebee source connector, you'll need the [Chargebee API key](ht
 
 ## Set up the Chargebee connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account or navigate to the Airbyte Open Source dashboard.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Chargebee** from the Source type dropdown.
 4. Enter the name for the Chargebee connector.
@@ -22,7 +22,7 @@ To set up the Chargebee source connector, you'll need the [Chargebee API key](ht
 
 The Chargebee source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 * [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 * [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 

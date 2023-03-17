@@ -9,6 +9,11 @@ from source_instagram.api import InstagramAPI as API
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
 
+@fixture(autouse=True)
+def mock_sleep(mocker):
+    mocker.patch("time.sleep")
+
+
 @fixture(scope="session", name="account_id")
 def account_id_fixture():
     return "unknown_account"
