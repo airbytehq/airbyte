@@ -100,6 +100,9 @@ jobs:
         # all CI python packages have the prefix "ci_"
         run: |
           pip install --quiet -e ./tools/ci_*
+      - name: Write source-harness credentials
+        run: |
+          ci_credentials connectors-performance/source-harness write-to-storage
       - name: build harness
         shell: bash
         run: |
