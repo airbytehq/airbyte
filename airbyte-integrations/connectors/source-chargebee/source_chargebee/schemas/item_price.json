@@ -24,16 +24,14 @@
       "maxLength": 500
     },
     "status": {
-      "type": ["string", "null"],
-      "enum": ["active", "archived", "deleted"]
+      "type": ["string", "null"]
     },
     "external_name": {
       "type": ["string", "null"],
       "maxLength": 100
     },
     "pricing_model": {
-      "type": ["string", "null"],
-      "enum": ["flat_fee", "per_unit", "tiered", "volume", "stairstep"]
+      "type": ["string", "null"]
     },
     "price": {
       "type": ["integer", "null"],
@@ -52,28 +50,24 @@
       "maxLength": 3
     },
     "period_unit": {
-      "type": ["string", "null"],
-      "enum": ["day", "week", "month", "year"]
+      "type": ["string", "null"]
     },
     "trial_period": {
       "type": ["integer", "null"],
       "minimum": 1
     },
     "trial_period_unit": {
-      "type": ["string", "null"],
-      "enum": ["day", "month"]
+      "type": ["string", "null"]
     },
     "trial_end_action": {
-      "type": ["string", "null"],
-      "enum": ["site_default", "activate_subscription", "cancel_subscription"]
+      "type": ["string", "null"]
     },
     "shipping_period": {
       "type": ["integer", "null"],
       "minimum": 1
     },
     "shipping_period_unit": {
-      "type": ["string", "null"],
-      "enum": ["day", "week", "month", "year"]
+      "type": ["string", "null"]
     },
     "billing_cycles": {
       "type": ["integer", "null"],
@@ -111,8 +105,7 @@
       "properties": {}
     },
     "item_type": {
-      "type": ["string", "null"],
-      "enum": ["plan", "addon", "charge"]
+      "type": ["string", "null"]
     },
     "show_description_in_invoices": {
       "type": ["boolean", "null"]
@@ -147,8 +140,7 @@
           "maxLength": 50
         },
         "avalara_sale_type": {
-          "type": ["string", "null"],
-          "enum": ["wholesale", "retail", "consumed", "vendor_use"]
+          "type": ["string", "null"]
         },
         "avalara_transaction_type": {
           "type": ["integer", "null"]

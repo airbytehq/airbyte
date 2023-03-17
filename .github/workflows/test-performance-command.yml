@@ -1,6 +1,6 @@
 # runs ./tools/bin/ci_performance_test.sh
 # which is more or less ./gradlew performanceTest limited to connectors with changes
-name: Run Performance Test
+name: Run Connectors Performance Test
 on:
   workflow_dispatch:
     inputs:
@@ -42,10 +42,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -59,7 +57,6 @@ jobs:
     timeout-minutes: 240
     needs: start-test-runner
     runs-on: ${{ needs.start-test-runner.outputs.label }}
-    environment: more-secrets
     steps:
       - name: Search for valid connector name format
         id: regex
@@ -92,17 +89,15 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-      - name: Install Pyenv and Tox
+      - name: Install Pyenv
         run: |
           python3 -m pip install --quiet virtualenv==16.7.9 --user
           python3 -m virtualenv venv
           source venv/bin/activate
-          pip install --quiet tox==3.24.4
-      - name: Test and install CI scripts
+      - name: Install CI scripts
         # all CI python packages have the prefix "ci_"
         run: |
           source venv/bin/activate
-          tox -r -c ./tools/tox_ci.ini
           pip install --quiet -e ./tools/ci_*
       - name: Write Integration Test Credentials for ${{ github.event.inputs.connector }}
         run: |
@@ -204,10 +199,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Stop EC2 runner
         uses: supertopher/ec2-github-runner@base64v1.0.10
         with:

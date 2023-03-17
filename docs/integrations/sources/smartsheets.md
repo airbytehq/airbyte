@@ -33,7 +33,7 @@ You'll also need the ID of the Spreadsheet you'd like to sync. Unlike Google She
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click Sources. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Smartsheets connector and select **Smartsheets** from the Source type dropdown.
 4. Authenticate via OAuth2.0 using the API access token from Prerequisites
@@ -88,6 +88,8 @@ The remaining column datatypes supported by Smartsheets are more complex types (
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
+| 1.0.0   | 2023-02-19 | [23237](https://github.com/airbytehq/airbyte/pull/23237) | Fix OAuth2.0 token refresh                                |
+| 0.1.14  | 2023-02-07 | [22419](https://github.com/airbytehq/airbyte/pull/22419) | OAuth2.0 support - enabled; add allowed hosts             |
 | 0.1.13  | 2022-12-02 | [20017](https://github.com/airbytehq/airbyte/pull/20017) | OAuth2.0 support - disabled                               |
 | 0.1.12  | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                          |
 | 0.1.11  | 2022-04-27 | [12203](https://github.com/airbytehq/airbyte/pull/12203) | Doc improvements                                          |

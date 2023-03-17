@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
@@ -54,6 +54,13 @@ public class JdbcUtils {
   public static final String MODE_KEY = "mode";
   public static final String AMPERSAND = "&";
   public static final String EQUALS = "=";
+
+  // An estimate for how much additional data in sent over the wire due to conversion of source data
+  // into {@link AirbyteMessage}. This is due to
+  // the fact that records are in JSON format and all database fields are converted to Strings.
+  // Currently, this is used in the logic for emitting
+  // estimate trace messages.
+  public static final int PLATFORM_DATA_INCREASE_FACTOR = 2;
   public static final Set<JDBCType> ALLOWED_CURSOR_TYPES = Set.of(TIMESTAMP, TIME, DATE, TINYINT, SMALLINT, INTEGER,
       BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL, NVARCHAR, VARCHAR, LONGVARCHAR);
   private static final JdbcSourceOperations defaultSourceOperations = new JdbcSourceOperations();

@@ -37,7 +37,23 @@ Deploy Airbyte Open Source in a private network or use a firewall to filter whic
 You can secure access to Airbyte using the following methods:
 
 - Deploy Airbyte in a private network or use a firewall to filter which IP is allowed to access your host.
-- Deploy Airbyte behind a reverse proxy and handle the access control on the reverse proxy side.
+- Deploy Airbyte behind a reverse proxy and handle the access control and SSL encryption on the reverse proxy side.
+  ```
+  # Example nginx reverse proxy config
+  server {
+    listen 443 ssl;
+    server_name airbyte.<your-domain>.com;
+    client_max_body_size 200M;  # required for Airbyte API
+    ssl_certificate <path-to-your-cert>.crt.pem; 
+    ssl_certificate_key <path-to-your-key>.key.pem;
+    
+    location / {
+      proxy_pass http://127.0.0.1:8000;
+      proxy_set_header Cookie $http_cookie;  # if you use Airbytes basic auth
+      proxy_read_timeout 3600;  # set a number in seconds suitable for you
+    }
+  }
+  ```
 - Change the default username and password in your environment's `.env` file:
   ```
   	# Proxy Configuration
@@ -140,7 +156,7 @@ Airbyte Cloud allows you to log in to the platform using your email and password
 
 ### Access Control
 
-Airbyte Cloud supports [user management](https://docs.airbyte.com/cloud/managing-airbyte-cloud#add-users-to-your-workspace) but doesn’t support role-based access control (RBAC) yet.
+Airbyte Cloud supports [user management](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-airbyte-cloud-workspace#add-users-to-your-workspace) but doesn’t support role-based access control (RBAC) yet.
 
 ### Compliance
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.features;
@@ -22,6 +22,9 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
 
   public static final String FIELD_SELECTION_WORKSPACES = "FIELD_SELECTION_WORKSPACES";
 
+  public static final String STRICT_COMPARISON_NORMALIZATION_WORKSPACES = "STRICT_COMPARISON_NORMALIZATION_WORKSPACES";
+  public static final String STRICT_COMPARISON_NORMALIZATION_TAG = "STRICT_COMPARISON_NORMALIZATION_TAG";
+
   @Override
   public boolean autoDisablesFailingConnections() {
     log.info("Auto Disable Failing Connections: " + Boolean.parseBoolean(System.getenv("AUTO_DISABLE_FAILING_CONNECTIONS")));
@@ -41,7 +44,7 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
 
   @Override
   public boolean autoDetectSchema() {
-    return getEnvOrDefault(AUTO_DETECT_SCHEMA, false, Boolean::parseBoolean);
+    return getEnvOrDefault(AUTO_DETECT_SCHEMA, true, Boolean::parseBoolean);
   }
 
   @Override
@@ -64,13 +67,23 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
     return getEnvOrDefault(FIELD_SELECTION_WORKSPACES, "", (arg) -> arg);
   }
 
+  @Override
+  public String strictComparisonNormalizationWorkspaces() {
+    return getEnvOrDefault(STRICT_COMPARISON_NORMALIZATION_WORKSPACES, "", (arg) -> arg);
+  }
+
+  @Override
+  public String strictComparisonNormalizationTag() {
+    return getEnvOrDefault(STRICT_COMPARISON_NORMALIZATION_TAG, "strict_comparison", (arg) -> arg);
+  }
+
   // TODO: refactor in order to use the same method than the ones in EnvConfigs.java
   public <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser) {
     final String value = System.getenv(key);
     if (value != null && !value.isEmpty()) {
       return parser.apply(value);
     } else {
-      log.info("Using default value for environment variable {}: '{}'", key, defaultValue);
+      log.debug("Using default value for environment variable {}: '{}'", key, defaultValue);
       return defaultValue;
     }
   }

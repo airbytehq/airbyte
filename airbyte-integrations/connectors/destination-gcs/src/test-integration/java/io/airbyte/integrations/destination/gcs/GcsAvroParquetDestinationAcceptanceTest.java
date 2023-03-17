@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs;
@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.JsonSchemaType;
+import io.airbyte.integrations.standardtest.destination.ProtocolVersion;
 import io.airbyte.integrations.standardtest.destination.argproviders.NumberDataTypeTestArgumentProvider;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -37,6 +38,11 @@ public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestina
 
   public GcsAvroParquetDestinationAcceptanceTest(final S3Format s3Format) {
     super(s3Format);
+  }
+
+  @Override
+  public ProtocolVersion getProtocolVersion() {
+    return ProtocolVersion.V1;
   }
 
   @ParameterizedTest
@@ -85,7 +91,8 @@ public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestina
   }
 
   private Set<Type> getExpectedSchemaType(final JsonNode fieldDefinition) {
-    final JsonNode typeProperty = fieldDefinition.get("type");
+    // The $ref is a migration to V1 data type protocol see well_known_types.yaml
+    final JsonNode typeProperty = fieldDefinition.get("type") == null ? fieldDefinition.get("$ref") : fieldDefinition.get("type");
     final JsonNode airbyteTypeProperty = fieldDefinition.get("airbyte_type");
     final String airbyteTypePropertyText = airbyteTypeProperty == null ? null : airbyteTypeProperty.asText();
     return Arrays.stream(JsonSchemaType.values())

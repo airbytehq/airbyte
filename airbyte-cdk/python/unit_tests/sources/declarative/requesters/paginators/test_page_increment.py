@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -15,11 +15,11 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_incre
         ("test_same_page_size_start_from_0", 2, 1, 2, 2),
         ("test_larger_page_size_start_from_0", 3, 1, None, 1),
         ("test_same_page_size_start_from_1", 2, 0, 1, 1),
-        ("test_larger_page_size_start_from_0", 3, 0, None, 0)
+        ("test_larger_page_size_start_from_0", 3, 0, None, 0),
     ],
 )
 def test_page_increment_paginator_strategy(test_name, page_size, start_from, expected_next_page_token, expected_offset):
-    paginator_strategy = PageIncrement(page_size, options={}, start_from_page=start_from)
+    paginator_strategy = PageIncrement(page_size, parameters={}, start_from_page=start_from)
     assert paginator_strategy._page == start_from
 
     response = requests.Response()

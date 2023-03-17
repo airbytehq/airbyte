@@ -102,7 +102,7 @@ Here is the available compression codecs:
 
 #### Data schema
 
-Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.io/understanding-airbyte/json-avro-conversion).
+Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.com/understanding-airbyte/json-avro-conversion).
 
 ### CSV
 
@@ -202,7 +202,7 @@ These parameters are related to the `ParquetOutputFormat`. See the [Java doc](ht
 
 #### Data schema
 
-Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet format. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.io/understanding-airbyte/json-avro-conversion).
+Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet format. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.com/understanding-airbyte/json-avro-conversion).
 
 ## Getting started
 
@@ -235,31 +235,34 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 ## CHANGELOG
 
-| Version | Date | Pull Request | Subject |
-|:--------| :--- | :--- | :--- |
-| 0.2.12  | 2022-10-18 | [\#17901](https://github.com/airbytehq/airbyte/pull/17901) | Fix logging to GCS |
-| 0.2.11  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields) |
-| 0.2.10  | 2022-08-05 | [\#14801](https://github.com/airbytehq/airbyte/pull/14801) | Fix multiple log bindings |
-| 0.2.9   | 2022-06-24 | [\#14114](https://github.com/airbytehq/airbyte/pull/14114) | Remove "additionalProperties": false from specs for connectors with staging  |
-| 0.2.8   | 2022-06-17 | [\#13753](https://github.com/airbytehq/airbyte/pull/13753) | Deprecate and remove PART_SIZE_MB fields from connectors based on StreamTransferManager  |
-| 0.2.7   | 2022-06-14 | [\#13483](https://github.com/airbytehq/airbyte/pull/13483) | Added support for int, long, float data types to Avro/Parquet formats. |
-| 0.2.6   | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
-| 0.2.5   | 2022-05-04 | [\#12578](https://github.com/airbytehq/airbyte/pull/12578) | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging. |
-| 0.2.4   | 2022-04-22 | [\#12167](https://github.com/airbytehq/airbyte/pull/12167) | Add gzip compression option for CSV and JSONL formats. |
-| 0.2.3   | 2022-04-22 | [\#11795](https://github.com/airbytehq/airbyte/pull/11795) | Fix the connection check to verify the provided bucket path. |
-| 0.2.2   | 2022-04-05 | [\#11728](https://github.com/airbytehq/airbyte/pull/11728) | Properly clean-up bucket when running OVERWRITE sync mode |
-| 0.2.1   | 2022-04-05 | [\#11499](https://github.com/airbytehq/airbyte/pull/11499) | Updated spec and documentation. |
-| 0.2.0   | 2022-04-04 | [\#11686](https://github.com/airbytehq/airbyte/pull/11686) | Use serialized buffering strategy to reduce memory consumption; compress CSV and JSONL formats. |
-| 0.1.22  | 2022-02-12 | [\#10256](https://github.com/airbytehq/airbyte/pull/10256) | Add JVM flag to exist on OOME. |
-| 0.1.21  | 2022-02-12 | [\#10299](https://github.com/airbytehq/airbyte/pull/10299) | Fix connection check to require only the necessary permissions. |
-| 0.1.20  | 2022-01-11 | [\#9367](https://github.com/airbytehq/airbyte/pull/9367) | Avro & Parquet: support array field with unknown item type; default any improperly typed field to string. |
-| 0.1.19  | 2022-01-10 | [\#9121](https://github.com/airbytehq/airbyte/pull/9121) | Fixed check method for GCS mode to verify if all roles assigned to user |
-| 0.1.18  | 2021-12-30 | [\#8809](https://github.com/airbytehq/airbyte/pull/8809) | Update connector fields title/description |
-| 0.1.17  | 2021-12-21 | [\#8574](https://github.com/airbytehq/airbyte/pull/8574) | Added namespace to Avro and Parquet record types |
-| 0.1.16  | 2021-12-20 | [\#8974](https://github.com/airbytehq/airbyte/pull/8974) | Release a new version to ensure there is no excessive logging. |
-| 0.1.15  | 2021-12-03 | [\#8386](https://github.com/airbytehq/airbyte/pull/8386) | Add new GCP regions |
-| 0.1.14  | 2021-12-01 | [\#7732](https://github.com/airbytehq/airbyte/pull/7732) | Support timestamp in Avro and Parquet |
-| 0.1.13  | 2021-11-03 | [\#7288](https://github.com/airbytehq/airbyte/issues/7288) | Support Json `additionalProperties`. |
-| 0.1.2   | 2021-09-12 | [\#5720](https://github.com/airbytehq/airbyte/issues/5720) | Added configurable block size for stream. Each stream is limited to 10,000 by GCS |
-| 0.1.1   | 2021-08-26 | [\#5296](https://github.com/airbytehq/airbyte/issues/5296) | Added storing gcsCsvFileLocation property for CSV format. This is used by destination-bigquery \(GCS Staging upload type\) |
-| 0.1.0   | 2021-07-16 | [\#4329](https://github.com/airbytehq/airbyte/pull/4784) | Initial release.                                                                                                           |
+| Version | Date | Pull Request                                                | Subject |
+|:--------| :--- |:------------------------------------------------------------| :--- |
+| 0.2.15  | 2023-03-10 | [#23466](https://github.com/airbytehq/airbyte/pull/23466)   | Changed S3 Avro type from Int to Long                                                                                                                |
+| 0.2.14  | 2023-11-23 | [\#21682](https://github.com/airbytehq/airbyte/pull/21682)  | Add support for buckets with Customer-Managed Encryption Key                                                               |
+| 0.2.13  | 2023-01-18 | [#21087](https://github.com/airbytehq/airbyte/pull/21087)   | Wrap Authentication Errors as Config Exceptions                                                                          |
+| 0.2.12  | 2022-10-18 | [\#17901](https://github.com/airbytehq/airbyte/pull/17901)  | Fix logging to GCS |
+| 0.2.11  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243)  | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields) |
+| 0.2.10  | 2022-08-05 | [\#14801](https://github.com/airbytehq/airbyte/pull/14801)  | Fix multiple log bindings |
+| 0.2.9   | 2022-06-24 | [\#14114](https://github.com/airbytehq/airbyte/pull/14114)  | Remove "additionalProperties": false from specs for connectors with staging  |
+| 0.2.8   | 2022-06-17 | [\#13753](https://github.com/airbytehq/airbyte/pull/13753)  | Deprecate and remove PART_SIZE_MB fields from connectors based on StreamTransferManager  |
+| 0.2.7   | 2022-06-14 | [\#13483](https://github.com/airbytehq/airbyte/pull/13483)  | Added support for int, long, float data types to Avro/Parquet formats. |
+| 0.2.6   | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820)    | Improved 'check' operation performance |
+| 0.2.5   | 2022-05-04 | [\#12578](https://github.com/airbytehq/airbyte/pull/12578)  | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging. |
+| 0.2.4   | 2022-04-22 | [\#12167](https://github.com/airbytehq/airbyte/pull/12167)  | Add gzip compression option for CSV and JSONL formats. |
+| 0.2.3   | 2022-04-22 | [\#11795](https://github.com/airbytehq/airbyte/pull/11795)  | Fix the connection check to verify the provided bucket path. |
+| 0.2.2   | 2022-04-05 | [\#11728](https://github.com/airbytehq/airbyte/pull/11728)  | Properly clean-up bucket when running OVERWRITE sync mode |
+| 0.2.1   | 2022-04-05 | [\#11499](https://github.com/airbytehq/airbyte/pull/11499)  | Updated spec and documentation. |
+| 0.2.0   | 2022-04-04 | [\#11686](https://github.com/airbytehq/airbyte/pull/11686)  | Use serialized buffering strategy to reduce memory consumption; compress CSV and JSONL formats. |
+| 0.1.22  | 2022-02-12 | [\#10256](https://github.com/airbytehq/airbyte/pull/10256)  | Add JVM flag to exist on OOME. |
+| 0.1.21  | 2022-02-12 | [\#10299](https://github.com/airbytehq/airbyte/pull/10299)  | Fix connection check to require only the necessary permissions. |
+| 0.1.20  | 2022-01-11 | [\#9367](https://github.com/airbytehq/airbyte/pull/9367)    | Avro & Parquet: support array field with unknown item type; default any improperly typed field to string. |
+| 0.1.19  | 2022-01-10 | [\#9121](https://github.com/airbytehq/airbyte/pull/9121)    | Fixed check method for GCS mode to verify if all roles assigned to user |
+| 0.1.18  | 2021-12-30 | [\#8809](https://github.com/airbytehq/airbyte/pull/8809)    | Update connector fields title/description |
+| 0.1.17  | 2021-12-21 | [\#8574](https://github.com/airbytehq/airbyte/pull/8574)    | Added namespace to Avro and Parquet record types |
+| 0.1.16  | 2021-12-20 | [\#8974](https://github.com/airbytehq/airbyte/pull/8974)    | Release a new version to ensure there is no excessive logging. |
+| 0.1.15  | 2021-12-03 | [\#8386](https://github.com/airbytehq/airbyte/pull/8386)    | Add new GCP regions |
+| 0.1.14  | 2021-12-01 | [\#7732](https://github.com/airbytehq/airbyte/pull/7732)    | Support timestamp in Avro and Parquet |
+| 0.1.13  | 2021-11-03 | [\#7288](https://github.com/airbytehq/airbyte/issues/7288)  | Support Json `additionalProperties`. |
+| 0.1.2   | 2021-09-12 | [\#5720](https://github.com/airbytehq/airbyte/issues/5720)  | Added configurable block size for stream. Each stream is limited to 10,000 by GCS |
+| 0.1.1   | 2021-08-26 | [\#5296](https://github.com/airbytehq/airbyte/issues/5296)  | Added storing gcsCsvFileLocation property for CSV format. This is used by destination-bigquery \(GCS Staging upload type\) |
+| 0.1.0   | 2021-07-16 | [\#4329](https://github.com/airbytehq/airbyte/pull/4784)    | Initial release.                                                                                                           |

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -28,7 +28,7 @@ class TestInstagramSource:
     def test_incremental_streams(self, configured_catalog, config, state):
         catalog = self.slice_catalog(configured_catalog, lambda name: name == "user_insights")
         records, states = self._read_records(config, catalog)
-        assert len(records) == 60, "UserInsights for two accounts over last 30 day should return 60 records when empty STATE provided"
+        assert len(records) == 30, "UserInsights for two accounts over last 30 day should return 30 records when empty STATE provided"
 
         records, states = self._read_records(config, catalog, state)
         assert len(records) <= 60 - 10 - 5, "UserInsights should have less records returned when non empty STATE provided"

@@ -9,5 +9,27 @@
         "name": "projects"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "lastSeen": "2100-01-01T00:00:00.0Z"
+      },
+      "stream_descriptor": {
+        "name": "issues"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dateCreated": "2100-01-01T00:00:00.0Z"
+      },
+      "stream_descriptor": {
+        "name": "events"
+      }
+    }
   }
 ]

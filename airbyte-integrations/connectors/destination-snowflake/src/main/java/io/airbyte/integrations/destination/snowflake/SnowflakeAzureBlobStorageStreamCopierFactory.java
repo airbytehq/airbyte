@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
 
 import com.azure.storage.blob.specialized.SpecializedBlobClientBuilder;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants;
@@ -25,7 +25,7 @@ public class SnowflakeAzureBlobStorageStreamCopierFactory extends AzureBlobStora
                              final SpecializedBlobClientBuilder specializedBlobClientBuilder,
                              final JdbcDatabase db,
                              final AzureBlobStorageConfig azureBlobConfig,
-                             final ExtendedNameTransformer nameTransformer,
+                             final StandardNameTransformer nameTransformer,
                              final SqlOperations sqlOperations)
       throws Exception {
     return new SnowflakeAzureBlobStorageStreamCopier(stagingFolder,

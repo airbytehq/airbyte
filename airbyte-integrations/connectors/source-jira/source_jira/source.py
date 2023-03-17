@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, List, Mapping, Optional, Tuple
@@ -72,6 +72,8 @@ class SourceJira(AbstractSource):
         start_date = config.get("start_date")
         if start_date:
             config["start_date"] = pendulum.parse(start_date)
+
+        config["projects"] = config.get("projects", [])
         return config
 
     @staticmethod
@@ -95,7 +97,7 @@ class SourceJira(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self._validate_and_transform(config)
         authenticator = self.get_authenticator(config)
-        args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+        args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
         incremental_args = {**args, "start_date": config.get("start_date")}
         render_fields = config.get("render_fields", False)
         issues_stream = Issues(
