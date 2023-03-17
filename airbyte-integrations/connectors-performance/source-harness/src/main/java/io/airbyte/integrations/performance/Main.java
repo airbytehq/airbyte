@@ -13,8 +13,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -50,7 +48,7 @@ public class Main {
           config.toString(),
           catalog.toString());
 
-//      final ExecutorService executors = Executors.newFixedThreadPool(2);
+      // final ExecutorService executors = Executors.newFixedThreadPool(2);
       final CompletableFuture<Void> readSrcAndWriteDstThread = CompletableFuture.runAsync(() -> {
         try {
           test.runTest();
