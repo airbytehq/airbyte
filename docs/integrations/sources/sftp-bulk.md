@@ -60,4 +60,5 @@ More formats \(e.g. Apache Avro\) will be supported in the future.
 
 | Version | Date       | Pull Request | Subject         |
 |:--------|:-----------|:-------------|:----------------|
+| 0.1.1   | 2023-03-17 |              | Fix field order |
 | 0.1.0   | 2021-24-05 |              | Initial version |
