@@ -20,7 +20,7 @@ SECONDS_BETWEEN_PAGE = 5
 class DiscordMessagesStream(HttpStream, ABC):
     url_base = "https://discord.com"
     cursor_field = "timestamp"
-    primary_key = "message_id"
+    primary_key =[ "message_id"]
 
     def __init__(self, config: Mapping[str, Any], **_):
         super().__init__()
@@ -79,7 +79,7 @@ class DiscordMessagesStream(HttpStream, ABC):
 
 
 class Messages(DiscordMessagesStream):
-    cursor_field = "updated"
+    cursor_field = "message_timestamp"
 
     def read_incremental(self, stream_instance: Stream, stream_state: MutableMapping[str, Any]):
         slices = stream_instance.stream_slices(sync_mode=SyncMode.incremental, stream_state=stream_state)
