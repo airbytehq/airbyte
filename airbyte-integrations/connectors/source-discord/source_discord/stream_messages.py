@@ -8,92 +8,141 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
-
 from .stream_channels import Channels
+from requests.exceptions import HTTPError
+from airbyte_cdk.sources.streams import Stream
+from abc import ABC
 
 SECONDS_BETWEEN_PAGE = 5
 
 
-class DiscordMessagesStream(HttpStream, IncrementalMixin):
+class DiscordMessagesStream(HttpStream, ABC):
     url_base = "https://discord.com"
     cursor_field = "timestamp"
     primary_key = "id"
 
-    def __init__(self, config: Mapping[str, Any], initial_timestamp: str, **kwargs):
+    def __init__(self, config: Mapping[str, Any], **_):
         super().__init__()
         self.config = config
+        self.message_limit = 2
+        self.current_page = 0
+        self.max_page_limit = 5
+        self.channel_id_current_page_limit = {}
         self.server_token = config["server_token"]
-        self.channel_ids = config["channel_ids"]
+        self.guild_id = config["guild_id"]
+        self.job_time = config['job_time']
         self._cursor_value = datetime.utcnow()
-        self.latest_stream_timestamp = string_to_timestamp(initial_timestamp)
+        self.channels_stream = Channels(
+            config=config
+        )
 
     def request_headers(self, **_) -> Mapping[str, Any]:
         return {"Authorization": "Bot " + self.server_token}
 
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **_) -> MutableMapping[str, Any]:
-        if not next_page_token:
-            return None
-        return next_page_token
+    def request_params(
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
 
-    def parse_response(self, response: requests.Response, **_) -> Iterable[Mapping]:
-        if response.status_code != 200:
-            return []
-        yield from response.json()
+        print('request_params---->>>>> stream_slice', stream_slice)
+        if not next_page_token:
+            return {'limit': self.message_limit}
+
+        return {'before': next_page_token['last_message_id'], 'limit': self.message_limit}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        messages = response.json()
 
-        decoded_response = response.json()
-
-        # End execution in case the response is empty
-        if not decoded_response:
+        if len(messages) < self.message_limit:
             return None
 
-        # End execution in case a message is already processed
-        latest_timestamp = string_to_timestamp(decoded_response[-1]["timestamp"])
-        if latest_timestamp < self.latest_stream_timestamp:
+        channel_id = messages[0]['channel_id']
+
+        if not channel_id in self.channel_id_current_page_limit.keys():
+            self.channel_id_current_page_limit[channel_id] = 1
+        else:
+            self.channel_id_current_page_limit[channel_id] = self.channel_id_current_page_limit[channel_id] + 1
+
+        if self.channel_id_current_page_limit[channel_id] >= self.max_page_limit:
             return None
 
-        time.sleep(SECONDS_BETWEEN_PAGE)
-        most_recent_id = decoded_response[-1]["id"]
-        return {"before": most_recent_id}
+        print('channel_id_current_page_limit ---->>>>>', self.channel_id_current_page_limit[channel_id])
+        return {'last_message_id': messages[-1]['id']}
 
-    def read_records(self, stream_state: Mapping[str, Any] = None, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-
-        if stream_state:
-            self.latest_stream_timestamp = string_to_timestamp(stream_state["timestamp"])
-
-        for record in super().read_records(*args, **kwargs):
-            record_timestamp = string_to_timestamp(record["timestamp"])
-            # End execution in case a message is already processed
-            if record_timestamp <= self.latest_stream_timestamp:
-                return
-            yield record
-
-    @property
-    def state(self) -> Mapping[str, Any]:
-        return {self.cursor_field: self._cursor_value}
-
-    @state.setter
-    def state(self, value: Mapping[str, Any]):
-        self._cursor_value = datetime.utcnow()
+    def read_records(
+            self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        try:
+            yield from super().read_records(stream_slice=stream_slice, **kwargs)
+        except HTTPError as e:
+            if not (self.skip_http_status_codes and e.response.status_code in self.skip_http_status_codes):
+                raise e
 
 
 class Messages(DiscordMessagesStream):
-    def stream_slices(self, **kwargs):
-        channels_stream = Channels(self.config)
-        for channel in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
-            if channel["id"] in self.channel_ids.split(","):
-                yield {"channel_id": channel["id"]}
+    cursor_field = "updated"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        channel_id = stream_slice["channel_id"]
-        return f"api/v10/channels/{channel_id}/messages?limit=100"
+    def read_incremental(self, stream_instance: Stream, stream_state: MutableMapping[str, Any]):
+        slices = stream_instance.stream_slices(sync_mode=SyncMode.incremental, stream_state=stream_state)
+        for _slice in slices:
+            records = stream_instance.read_records(sync_mode=SyncMode.incremental, stream_slice=_slice, stream_state=stream_state)
+            for record in records:
+                yield record
 
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
+        url = f"api/v10/channels/{stream_slice['id']}/messages"
+        print('message --------------- url path', url)
+        return f"api/v10/channels/{stream_slice['id']}/messages"
 
-# Discord returns data with different time formats,
-# so there is need to "normalize" it
-def string_to_timestamp(text_timestamp: str) -> datetime:
-    clean_text_timestamp = text_timestamp[0:19]
-    return datetime.strptime(clean_text_timestamp, "%Y-%m-%dT%H:%M:%S")
+    def read_records(
+            self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        incremental_records = self.read_incremental(self.channels_stream, stream_state=stream_state)
+        for issue in incremental_records:
+            stream_slice = {"id": issue["id"]}
+            yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        records = response.json()
+        for record in records:
+            time.sleep(5)
+            yield self.transform(record=record, **kwargs)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        reaction_count = 0
+
+        if 'reactions' in record.keys():
+            reactions = record['reactions']
+            for reaction in reactions:
+                reaction_count = reaction_count + reaction['count']
+
+        thread = None
+        if 'thread' in record.keys():
+            thread = record['thread']
+
+        result = {
+            'message_id': record['id'],
+            'message_type': record['type'],
+            'content': record['content'],
+            'message_timestamp': record['timestamp'],
+            'edited_timestamp': record['edited_timestamp'],
+            'timestamp': self.job_time,
+            'channel_id': record['channel_id'],
+            'guild_id': self.guild_id,
+            'author_id': record['author']['id'],
+            'author_username': record['author']['username'],
+            'referenced_message_id': record['referenced_message']['id'] if 'referenced_message' in record.keys() else None,
+            'referenced_message_type': record['referenced_message']['type'] if 'referenced_message' in record.keys() else None,
+            'reaction_count': reaction_count,
+            'thread_id': thread['id'] if thread else None,
+            'thread_parent_id': thread['parent_id'] if thread else None,
+            'thread_owner_id': thread['owner_id'] if thread else None,
+            'thread_name': thread['name'] if thread else None,
+            'thread_message_count': thread['message_count'] if thread else None,
+            'thread_message_member_count': thread['member_count'] if thread else None,
+            'mention_count': len(record['mentions']),
+            'mention_everyone': record['mention_everyone']
+        }
+        print('message ****** transform ------->>> result', result)
+        return result
+
