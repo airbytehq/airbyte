@@ -103,7 +103,7 @@ jobs:
       - name: build harness
         shell: bash
         run: |
-          echo "Building... source-harness >> $GITHUB_STEP_SUMMARY
+          echo "Building... source-harness" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           ./gradlew :airbyte-integrations:connectors-performance:source-harness:build -x check
       - name: build connector
