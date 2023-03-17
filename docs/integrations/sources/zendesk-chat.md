@@ -79,8 +79,8 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                          |
-|:--------|:-----------| :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
-| 0.1.14  | 2023-03-17 | [19351](https://github.com/airbytehq/airbyte/pull/19351) | Add Convesions and Department Events Streams                                                                     |
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
+| 0.1.14  | 2022-03-08 | [19351](https://github.com/airbytehq/airbyte/pull/19351) | Add Conversions and Department Events Streams                                                                     |
 | 0.1.13  | 2023-02-10 | [22819](https://github.com/airbytehq/airbyte/pull/22819) | Specified date formatting in specification                                                     |
 | 0.1.12  | 2023-01-27 | [22026](https://github.com/airbytehq/airbyte/pull/22026) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
 | 0.1.11  | 2022-10-18 | [17745](https://github.com/airbytehq/airbyte/pull/17745) | Add Engagements Stream and fix infity looping                                                                            |
