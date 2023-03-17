@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -51,7 +51,7 @@ def setup_test_path(request):
 
 
 @pytest.mark.parametrize("column_count", [1000])
-@pytest.mark.parametrize("destination_type", list(DestinationType))
+@pytest.mark.parametrize("destination_type", DestinationType.testable_destinations())
 def test_destination_supported_limits(destination_type: DestinationType, column_count: int):
     if destination_type.value == DestinationType.MYSQL.value:
         # In MySQL, the max number of columns is limited by row size (8KB),
@@ -84,12 +84,12 @@ def test_destination_failure_over_limits(integration_type: str, column_count: in
     run_test(destination_type, column_count, expected_exception_message)
 
 
-@pytest.mark.parametrize("destination_type", list(DestinationType))
+@pytest.mark.parametrize("destination_type", DestinationType.testable_destinations())
 def test_empty_streams(destination_type: DestinationType, setup_test_path):
     run_test(destination_type, 0)
 
 
-@pytest.mark.parametrize("destination_type", list(DestinationType))
+@pytest.mark.parametrize("destination_type", DestinationType.testable_destinations())
 def test_stream_with_1_airbyte_column(destination_type: DestinationType, setup_test_path):
     run_test(destination_type, 1)
 

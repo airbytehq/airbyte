@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
@@ -187,7 +187,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
     }
   }
 
-  private void setDateAsTimestamp(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
+  private void setDateAsTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     try {
       final Timestamp from = Timestamp.from(DataTypeUtils.getDateFormat().parse(value).toInstant());
       preparedStatement.setDate(parameterIndex, new Date(from.getTime()));
@@ -217,7 +217,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   protected void setBigInteger(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    preparedStatement.setLong(parameterIndex, Long.parseLong(value));
+    preparedStatement.setLong(parameterIndex, new BigDecimal(value).toBigInteger().longValue());
   }
 
   protected void setDouble(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {

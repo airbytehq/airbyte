@@ -146,16 +146,20 @@ After a sync is complete, Airbyte normalizes the data. When setting up a connect
 
 * Raw data (no normalization): Airbyte places the JSON blob version of your data in a table called `_airbyte_raw_<stream name>`
 * Basic Normalization: Airbyte converts the raw JSON blob version of your data to the format of your destination. *Note: Not all destinations support normalization.*
+* [dbt Cloud integration](https://docs.airbyte.com/cloud/managing-airbyte-cloud/dbt-cloud-integration): Airbyte's dbt Cloud integration allows you to use dbt Cloud for transforming and cleaning your data during the normalization process.
 
-*Note: Custom normalization through dbt is not yet available for Airbyte Cloud.*
+:::note
+
+Normalizing data may cause an increase in your destination's compute cost. This cost will vary depending on the amount of data that is normalized and is not related to Airbyte credit usage.
+
+:::
 
 ## Workspace
 
 A workspace is a grouping of sources, destinations, connections, and other configurations. It lets you collaborate with team members and share resources across your team under a shared billing account. 
 
-When you [sign up](http://cloud.airbyte.io/signup) for Airbyte Cloud, we automatically create your first workspace where you are the only user with access. You can set up your sources and destinations to start syncing data and invite other users to join your workspace.
+When you [sign up](http://cloud.airbyte.com/signup) for Airbyte Cloud, we automatically create your first workspace where you are the only user with access. You can set up your sources and destinations to start syncing data and invite other users to join your workspace.
 
 ## Glossary of Terms
 
 You find and extended list of [Airbyte specific terms](https://glossary.airbyte.com/term/airbyte-glossary-of-terms/), [data engineering concepts](https://glossary.airbyte.com/term/data-engineering-concepts) or many [other data related terms](https://glossary.airbyte.com/).
-

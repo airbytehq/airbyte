@@ -1,18 +1,19 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import dataclass
+from dataclasses import InitVar, dataclass
 from http import HTTPStatus
-from itertools import chain
-from typing import Any, List, Mapping, Union
+from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import dpath.util
+import pendulum
 import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
-from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.types import Config, Record
+from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from requests import HTTPError
 
 
@@ -22,9 +23,9 @@ class AuthenticatorFacebookPageAccessToken(NoAuth):
     page_id: Union[InterpolatedString, str]
     access_token: Union[InterpolatedString, str]
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self._page_id = InterpolatedString.create(self.page_id, options=options).eval(self.config)
-        self._access_token = InterpolatedString.create(self.access_token, options=options).eval(self.config)
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self._page_id = InterpolatedString.create(self.page_id, parameters=parameters).eval(self.config)
+        self._access_token = InterpolatedString.create(self.access_token, parameters=parameters).eval(self.config)
 
     def __call__(self, request: requests.PreparedRequest) -> requests.PreparedRequest:
         """Attach the page access token to params to authenticate on the HTTP request"""
@@ -32,7 +33,6 @@ class AuthenticatorFacebookPageAccessToken(NoAuth):
         request.prepare_url(url=request.url, params={"access_token": page_access_token})
         return request
 
-    # @staticmethod
     def generate_page_access_token(self) -> str:
         # We are expecting to receive User access token from config. To access
         # Pages API we need to generate Page access token. Page access tokens
@@ -52,46 +52,52 @@ class AuthenticatorFacebookPageAccessToken(NoAuth):
 
 
 @dataclass
-class NestedDpathExtractor(DpathExtractor):
+class CustomFieldTransformation(RecordTransformation):
     """
-    Record extractor that searches a decoded response over a path defined as an array of fields.
-
-    Extends the DpathExtractor to allow for a list of records to be generated from a dpath that points
-    to an array object as first point and iterates over list of records by the rest of path. See the example.
-
-    Example data:
-    ```
-    {
-        "data": [
-            {'insights':
-                {'data': [
-                    {"id": "id1",
-                    "name": "name1",
-                    ...
-                    },
-                    {"id": "id1",
-                    "name": "name1",
-                    ...
-                    },
-                    ...
-            },
-            ...
-        ]
-    }
-    ```
+    Transform all 'date-time' fields from schema (nested included) to rfc3339 format
+    Issue: https://github.com/airbytehq/airbyte/issues/23407
     """
 
-    def extract_records(self, response: requests.Response) -> List[Record]:
-        response_body = self.decoder.decode(response)
-        if len(self.field_pointer) == 0:
-            extracted = response_body
-        else:
-            pointer = [pointer.eval(self.config) for pointer in self.field_pointer]
-            extracted_list = dpath.util.get(response_body, pointer[0], default=[])
-            extracted = list(chain(*[dpath.util.get(x, pointer[1:], default=[]) for x in extracted_list])) if extracted_list else []
-        if isinstance(extracted, list):
-            return extracted
-        elif extracted:
-            return [extracted]
-        else:
-            return []
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self.name = parameters.get("name")
+
+    def _get_schema_root_properties(self):
+        schema_loader = JsonFileSchemaLoader(config=self.config, parameters={"name": self.name})
+        schema = schema_loader.get_json_schema()
+        return schema["properties"]
+
+    def _get_date_time_dpath_from_schema(self):
+        """
+        Get all dpath in format 'a/b/*/c' from schema with format: 'date-time'
+        """
+        schema = self._get_schema_root_properties()
+        all_results = dpath.util.search(schema, "**", yielded=True, afilter=lambda x: True if "date-time" in str(x) else False)
+        full_dpath = [x[0] for x in all_results if isinstance(x[1], dict) and x[1].get("format") == "date-time"]
+        return [path.replace("/properties", "").replace("items", "*") for path in full_dpath]
+
+    def _date_time_to_rfc3339(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        """
+        Transform 'date-time' items to RFC3339 format
+        """
+        date_time_paths = self._get_date_time_dpath_from_schema()
+        for path in date_time_paths:
+            if "*" not in path:
+                if field_value := dpath.util.get(record, path, default=None):
+                    dpath.util.set(record, path, pendulum.parse(field_value).to_rfc3339_string())
+            else:
+                if field_values := dpath.util.values(record, path):
+                    for i, date_time_value in enumerate(field_values):
+                        dpath.util.set(record, path.replace("*", str(i)), pendulum.parse(date_time_value).to_rfc3339_string())
+        return record
+
+    def transform(
+        self,
+        record: Record,
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> Record:
+        return self._date_time_to_rfc3339(record)

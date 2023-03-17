@@ -8,6 +8,19 @@ acceptance_tests:
         extra_fields: no
         exact_order: no
         extra_records: yes
+      ignored_fields:
+        project_detail:
+        - name: features
+          bypass_reason: "Order features return randomly"
+        - name: organization/features
+          bypass_reason: "Order features return randomly"
+        - name: plugins/*/features
+          bypass_reason: "Order features return randomly"
+        projects:
+          - name: features
+            bypass_reason: "Order features return randomly"
+          - name: organization/features
+            bypass_reason: "Order features return randomly"
   connection:
     tests:
     - config_path: secrets/config.json
@@ -20,6 +33,9 @@ acceptance_tests:
   full_refresh:
     tests:
     - config_path: secrets/config.json
+      configured_catalog_path: integration_tests/configured_catalog.json
+    # test 403 exception is not breaking the sync
+    - config_path: secrets/config_limited_scopes.json
       configured_catalog_path: integration_tests/configured_catalog.json
   incremental:
     tests:

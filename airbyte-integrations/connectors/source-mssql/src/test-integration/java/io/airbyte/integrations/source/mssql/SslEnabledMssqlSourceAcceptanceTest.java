@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -14,20 +14,32 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import java.sql.SQLException;
+import java.util.Map;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
+import org.junit.jupiter.api.AfterAll;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.utility.DockerImageName;
 
 public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
 
+  @AfterAll
+  public static void closeContainer() {
+    if (db != null) {
+      db.close();
+      db.stop();
+    }
+  }
+
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
-    db = new MSSQLServerContainer<>(DockerImageName
-        .parse("airbyte/mssql_ssltest:dev")
-        .asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
-            .acceptLicense();
-    db.start();
+    if (db == null) {
+      db = new MSSQLServerContainer<>(DockerImageName
+          .parse("airbyte/mssql_ssltest:dev")
+          .asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
+              .acceptLicense();
+      db.start();
+    }
 
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, db.getHost())
@@ -54,6 +66,7 @@ public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTe
 
     config = Jsons.clone(configWithoutDbName);
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
+    ((ObjectNode) config).put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "encrypted_trust_server_certificate")));
   }
 
   private static DSLContext getDslContext(final JsonNode baseConfig) {

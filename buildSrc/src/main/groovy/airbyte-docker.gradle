@@ -56,10 +56,30 @@ abstract class AirbyteDockerTask extends DefaultTask {
         }
     }
 
+    def buildDockerfileWithLocalCdk(String scriptPath, String fileName) {
+        if (project.file(fileName).exists()) {
+            def tag = DockerHelpers.getDevTaggedImage(projectDir, dockerfileName)
+            project.exec {
+                environment "CONNECTOR_TAG", tag
+                environment "CONNECTOR_NAME", project.findProperty('connectorAcceptanceTest.connectorName')
+                commandLine scriptPath
+            }
+        }
+    }
+
     @TaskAction
     def dockerTask() {
-        def scriptPath = Paths.get(rootDir.absolutePath, 'tools/bin/build_image.sh').toString()
-        buildDockerfile(scriptPath, dockerfileName)
+        if (
+            project.hasProperty('connectorAcceptanceTest.useLocalCdk') &&
+            project.properties["connectorAcceptanceTest.useLocalCdk"]
+        ) {
+            def scriptPath = Paths.get(rootDir.absolutePath, 'airbyte-integrations/scripts/build-connector-image-with-local-cdk.sh').toString()
+            buildDockerfileWithLocalCdk(scriptPath, dockerfileName)
+        }
+        else {
+            def scriptPath = Paths.get(rootDir.absolutePath, 'tools/bin/build_image.sh').toString()
+            buildDockerfile(scriptPath, dockerfileName)
+        }
     }
 }
 
