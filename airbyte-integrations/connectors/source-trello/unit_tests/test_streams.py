@@ -9,8 +9,9 @@ from unittest.mock import MagicMock
 from airbyte_cdk.sources.streams.http.auth.core import NoAuth
 from pytest import fixture
 from source_trello.source import Boards, Cards, TrelloStream
+from source_trello.utils import read_full_refresh
 
-from .helpers import NO_SLEEP_HEADERS, read_all_records
+from .helpers import NO_SLEEP_HEADERS
 
 
 @fixture
@@ -44,15 +45,15 @@ def test_boards_stream(requests_mock):
 
     config = {"authenticator": NoAuth(), "start_date": "2021-02-11T08:35:49.540Z"}
     stream1 = Boards(config=config)
-    records = read_all_records(stream1)
+    records = list(read_full_refresh(stream1))
     assert records == [{"id": "b11111111111111111111111", "name": "board_1"}, {"id": "b22222222222222222222222", "name": "board_2"}]
 
     stream2 = Boards(config={**config, "board_ids": ["b22222222222222222222222"]})
-    records = read_all_records(stream2)
+    records = list(read_full_refresh(stream2))
     assert records == [{"id": "b22222222222222222222222", "name": "board_2"}]
 
     stream3 = Boards(config={**config, "board_ids": ["not-found"]})
-    records = read_all_records(stream3)
+    records = list(read_full_refresh(stream3))
     assert records == []
 
     assert mock_boards_request.call_count == 3
@@ -89,7 +90,7 @@ def test_cards_stream(requests_mock):
 
     config = {"authenticator": NoAuth(), "start_date": "2021-02-11T08:35:49.540Z"}
     stream1 = Cards(config=config)
-    records = read_all_records(stream1)
+    records = list(read_full_refresh(stream1))
     assert records == [
         {"id": "c11111111111111111111111", "name": "card_1"},
         {"id": "c22222222222222222222222", "name": "card_2"},
@@ -98,11 +99,11 @@ def test_cards_stream(requests_mock):
     ]
 
     stream2 = Cards(config={**config, "board_ids": ["b22222222222222222222222"]})
-    records = read_all_records(stream2)
+    records = list(read_full_refresh(stream2))
     assert records == [{"id": "c33333333333333333333333", "name": "card_3"}, {"id": "c44444444444444444444444", "name": "card_4"}]
 
     stream3 = Cards(config={**config, "board_ids": ["not-found"]})
-    records = read_all_records(stream3)
+    records = list(read_full_refresh(stream3))
     assert records == []
 
     assert mock_boards_request.call_count == 3
