@@ -4,18 +4,21 @@
 
 import csv
 import io
+import logging
 import re
+import time
+
 import pendulum
 from abc import ABC
 from datetime import datetime, timedelta
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
-
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union, Tuple
+from pendulum import DateTime
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 
-
+logger = logging.getLogger("airbyte")
 STATE_CHECKPOINT_INTERVAL = 20
 
 
@@ -27,16 +30,19 @@ class YandexMetricaStream(HttpStream, ABC):
         self.params = params
         super().__init__(**kwargs)
 
+    def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
+        # Disable check_availability due to complex request flow
+        # TODO: move evaluate_logrequest method to availability strategy
+        return True, None
+
     def get_json_schema(self, ) -> Mapping[str, any]:
         schema = super().get_json_schema()
         schema["properties"] = {re.sub(r"(ym:s:|ym:pv:)", "", key): schema["properties"].pop(key) for key in
                                 schema["properties"].copy()}
-
         return schema
 
     def get_request_fields(self) -> List[str]:
-        schema = super().get_json_schema()
-        return list(schema.get("properties"))
+        return list(super().get_json_schema().get("properties"))
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -45,6 +51,87 @@ class YandexMetricaStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
+
+    def evaluate_logrequest(self, counter_id: str):
+        """
+        Clean logs of the processed request prepared for downloading.
+
+        See: https://yandex.com/dev/metrika/doc/api2/logs/queries/clean.html
+        """
+        request_headers = self.request_headers(stream_state={})
+        request_params = {
+            "date1": self.params["start_date"],
+            "date2": self.params["end_date"],
+            "source": self.params["source"],
+            "fields": self.params["fields"],
+        }
+        request = requests.Request("GET", f"{self.url_base}{counter_id}/logrequests/evaluate",
+                                   headers=dict(request_headers, **self.authenticator.get_auth_header()),
+                                   params=request_params)
+        prepared_request = self._session.prepare_request(request)
+        response = self._send_request(prepared_request, {})
+        return response.json().get("log_request_evaluation", {}).get("possible")
+
+    def create_logrequest(self, counter_id: str):
+        """
+        Creates logs request.
+
+        See: https://yandex.com/dev/metrika/doc/api2/logs/queries/createlogrequest.html
+        """
+        request_headers = self.request_headers(stream_state={})
+        request_params = {
+            "date1": self.params["start_date"],
+            "date2": self.params["end_date"],
+            "source": self.params["source"],
+            "fields": self.params["fields"],
+        }
+        request = requests.Request("POST", f"{self.url_base}{counter_id}/logrequests",
+                                   headers=dict(request_headers, **self.authenticator.get_auth_header()),
+                                   params=request_params)
+        prepared_request = self._session.prepare_request(request)
+        response = self._send_request(prepared_request, {})
+        return response.json().get("log_request", {}).get("request_id")
+
+    def wait_for_job(self, counter_id: str, logrequest_id: str) -> Tuple[str, int]:
+        """
+        Returns information about logs request.
+
+        See: https://yandex.com/dev/metrika/doc/api2/logs/queries/getlogrequest.html
+        """
+        DEFAULT_WAIT_TIMEOUT_SECONDS = 300
+        expiration_time: DateTime = pendulum.now().add(seconds=DEFAULT_WAIT_TIMEOUT_SECONDS)
+        request_headers = self.request_headers(stream_state={})
+        request = requests.Request("GET", f"{self.url_base}{counter_id}/logrequest/{logrequest_id}",
+                                   headers=dict(request_headers, **self.authenticator.get_auth_header()))
+        prepared_request = self._session.prepare_request(request)
+        job_status = "created"
+        while pendulum.now() < expiration_time:
+            response = self._send_request(prepared_request, {}).json()
+            job_status = response["log_request"]["status"]
+            if job_status in ("processed", "processing_failed"):
+                if job_status == "processing_failed":
+                    logger.error(f"Error while processing {counter_id=} {logrequest_id=}")
+                parts_count = response["log_request"]["parts"][-1]["part_number"]
+                return job_status, parts_count
+            logger.info(f"Sleeping for 30 seconds, waiting for report creation")
+            time.sleep(30)
+        if job_status != "processed":
+            raise Exception(f"Export Job processing failed, skipping reading stream {self.name}")
+
+    def download_report_part(self, counter_id: str, logrequest_id: str, part_number: int)-> Iterable[Mapping]:
+        request_headers = self.request_headers(stream_state={})
+        request = requests.Request("GET", f"{self.url_base}{counter_id}/logrequest/{logrequest_id}/part/{part_number}/download",
+                                   headers=dict(request_headers, **self.authenticator.get_auth_header()))
+        prepared_request = self._session.prepare_request(request)
+        response = self._send_request(prepared_request, {})
+        reader = csv.DictReader(io.StringIO(response.text), delimiter="\t")
+        for row in reader:
+            # Remove 'ym:s:' or 'ym:pv:' prefix
+            row = {re.sub(r"(ym:s:|ym:pv:)", "", key): value for key, value in row.items()}
+
+            row[self.cursor_field] = pendulum.parse(row[self.cursor_field]).to_rfc3339_string()
+
+            yield row
 
     def clean_logrequest(self, counter_id: str, logrequest_id: str):
         """
@@ -58,48 +145,22 @@ class YandexMetricaStream(HttpStream, ABC):
         prepared_request = self._session.prepare_request(request)
         self._send_request(prepared_request, {})
 
-    def fetch_records(self, response: requests.Response, stream_state: Mapping[str, Any] = {}) -> Iterable[Mapping]:
-        try:
-            # Configure state
-            self.params["start_date"] = stream_state.get("start_date", self.params["start_date"])
-            self.params["end_date"] = stream_state.get("end_date", self.params["end_date"])
-            # 1. Evaluate a logrequest is valid
-            evaluate = Evaluate(
-                authenticator=self._authenticator, counter_id=self.counter_id, params=self.params,
-                source=self.params["source"]
-            )
-            evaluate_response = next(evaluate.read_records(sync_mode=SyncMode.full_refresh))
-            if not evaluate_response["log_request_evaluation"]["possible"]:
-                yield {}
-            # 2. Create logrequest
-            create = Create(authenticator=self._authenticator, counter_id=self.counter_id, params=self.params)
-            create_response = next(create.read_records(sync_mode=SyncMode.full_refresh))
-            logrequest_id = create_response["log_request"]["request_id"]
-            if not logrequest_id:
-                yield {}
-            # 3. Check logrequest status
-            check = Check(authenticator=self._authenticator, counter_id=self.counter_id, params=self.params,
-                          logrequest_id=logrequest_id)
-            check_response = next(check.read_records(sync_mode=SyncMode.full_refresh))
-            if not check_response:
-                yield {}
-            last_page = check_response["log_request"]["parts"][-1]["part_number"]
-            # 4. Download the logs
-            download = Download(
-                authenticator=self._authenticator,
-                counter_id=self.counter_id,
-                params=self.params,
-                logrequest_id=logrequest_id,
-                last_page=last_page,
-            )
-            download_response = download.read_records(sync_mode=SyncMode.full_refresh)
+    def fetch_records(self, stream_state: Mapping[str, Any] = {}) -> Iterable[Mapping]:
+        # Configure state
+        self.params["start_date"] = stream_state.get("start_date", self.params["start_date"])
+        self.params["end_date"] = stream_state.get("end_date", self.params["end_date"])
+        if not self.evaluate_logrequest(self.counter_id):
+            logger.warning(f"Log request for counter_id={self.counter_id} cannot be made with provided dates")
+            yield {}
+        logrequest_id = self.create_logrequest(self.counter_id)
+        if not logrequest_id:
+            yield {}
+        # 3. Check logrequest status
+        job_status, number_of_parts = self.wait_for_job(counter_id=self.counter_id, logrequest_id=logrequest_id)
+        for part in range(number_of_parts+1):
+            yield from self.download_report_part(counter_id=self.counter_id, logrequest_id=logrequest_id, part_number=part)
+        self.clean_logrequest(counter_id=self.counter_id, logrequest_id=logrequest_id)
 
-            yield from download_response
-
-            self.clean_logrequest(counter_id=self.counter_id, logrequest_id=logrequest_id)
-
-        except Exception as e:
-            print(f"Exception occurred while trying to fetch records: {e}")
 
 
 class IncrementalYandexMetricaStream(YandexMetricaStream, IncrementalMixin):
@@ -143,7 +204,7 @@ class IncrementalYandexMetricaStream(YandexMetricaStream, IncrementalMixin):
                 sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
             yield record
-            self._cursor_value = max(record[self.cursor_field], self._cursor_value)
+            # self._cursor_value = max(record[self.cursor_field], self._cursor_value)
 
         self._start_date = self.params["end_date"]
         self._end_date = datetime.strftime(datetime.now() - timedelta(1), "%Y-%m-%d")
@@ -178,7 +239,7 @@ class Views(IncrementalYandexMetricaStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        yield from self.fetch_records(response, stream_state)
+        yield from self.fetch_records(stream_state)
 
 
 class Sessions(IncrementalYandexMetricaStream):
@@ -210,169 +271,4 @@ class Sessions(IncrementalYandexMetricaStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        yield from self.fetch_records(response, stream_state)
-
-
-class Evaluate(YandexMetricaStream):
-    """
-    Evaluates the possibility of creating a logs request according to its approximate size.
-
-    See: https://yandex.com/dev/metrika/doc/api2/logs/queries/evaluate.html
-    """
-
-    primary_key = None
-
-    def __init__(self, counter_id: str, params: dict, source: str, **kwargs):
-        super().__init__(counter_id, params, **kwargs)
-        self.params = params
-        self.params["source"] = source
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"{self.counter_id}/logrequests/evaluate"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {
-            "date1": self.params["start_date"],
-            "date2": self.params["end_date"],
-            "source": self.params["source"],
-            "fields": self.params["fields"],
-        }
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-        data = response.json()
-        yield data
-
-
-class Create(YandexMetricaStream):
-    """
-    Creates logs request.
-
-    See: https://yandex.com/dev/metrika/doc/api2/logs/queries/createlogrequest.html
-    """
-
-    primary_key = None
-
-    def __init__(self, counter_id: str, params: dict, **kwargs):
-        super().__init__(counter_id, params, **kwargs)
-
-    @property
-    def http_method(self) -> str:
-        return "POST"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"{self.counter_id}/logrequests"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {
-            "date1": self.params["start_date"],
-            "date2": self.params["end_date"],
-            "source": self.params["source"],
-            "fields": self.params["fields"],
-        }
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-        data = response.json()
-        yield data
-
-
-class Check(YandexMetricaStream):
-    """
-    Returns information about logs request.
-
-    See: https://yandex.com/dev/metrika/doc/api2/logs/queries/getlogrequest.html
-    """
-    primary_key = None
-
-    def __init__(self, counter_id: str, params: dict, logrequest_id: int, **kwargs):
-        self.logrequest_id = logrequest_id
-        super().__init__(counter_id, params, **kwargs)
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"{self.counter_id}/logrequest/{self.logrequest_id}"
-
-    @property
-    def max_retries(self) -> Union[int, None]:
-        return 240
-
-    def should_retry(self, response: requests.Response) -> bool:
-        data = response.json()
-        return data["log_request"]["status"] != "processed"
-
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        return 30
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-        data = response.json()
-        yield data
-
-
-class Download(YandexMetricaStream):
-    """
-    Download prepared logs of the processed request.
-
-    See: https://yandex.com/dev/metrika/doc/api2/logs/queries/download.html
-    """
-    def __init__(self, counter_id: str, params: dict, logrequest_id: int, last_page: int, **kwargs):
-        self.logrequest_id = logrequest_id
-        self.last_page = last_page
-        self.first_page = True
-        super().__init__(counter_id, params, **kwargs)
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        self.first_page = False
-        current_page = int(response.url.split("/")[-2])
-        if current_page < self.last_page:
-            return {"page_number": current_page + 1}
-        return None
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        if self.first_page:
-            return f"{self.counter_id}/logrequest/{self.logrequest_id}/part/0/download"
-
-        return f"{self.counter_id}/logrequest/{self.logrequest_id}/part/{next_page_token['page_number']}/download"
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-        reader = csv.DictReader(io.StringIO(response.text), delimiter="\t")
-        for row in reader:
-            # Remove 'ym:s:' or 'ym:pv:' prefix
-            row = {re.sub(r"(ym:s:|ym:pv:)", "", key): value for key, value in row.items()}
-
-            row[self.cursor_field] = pendulum.parse(row[self.cursor_field]).to_rfc3339_string()
-
-            yield row
+        yield from self.fetch_records(stream_state)

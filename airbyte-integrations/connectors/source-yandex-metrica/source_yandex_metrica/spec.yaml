@@ -7,7 +7,6 @@ connectionSpecification:
     - auth_token
     - counter_id
     - start_date
-    - end_date
   additionalProperties: true
   properties:
     auth_token:
