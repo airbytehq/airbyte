@@ -27,3 +27,9 @@ the table must have the same columns, mapping the names and [data types](https:/
 In order to connect, you need:
 * API Key: go to your [account settings](https://app.xata.io/settings) to generate a key.
 * Database URL: navigate to the configuration tab in your workspace and copy the `Workspace API base URL`.
+
+## CHANGELOG
+
+| Version | Date       | Pull Request                                                  | Subject                 |
+|:--------|:-----------|:--------------------------------------------------------------|:------------------------|
+| 0.0.1   | 2023-03-17 | [#24192](https://github.com/airbytehq/airbyte/pull/24192)     | New Destination Connector Xata |
