@@ -17,4 +17,3 @@ data:
   catalogs:
     oss:
       enabled: true
-

@@ -27,5 +27,3 @@ data:
             resourceRequirements:
               memory_request: 1Gi
               memory_limit: 1Gi
-
-
