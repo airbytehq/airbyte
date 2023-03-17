@@ -82,6 +82,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.3   | 2023-03-17 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Get customer's attributes safely                                                                                                                     |
 | 3.0.2   | 2023-03-13 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Cache `customers` stream; Do not request transactions of customers with zero balance.                                                                |
 | 3.0.1   | 2023-02-22 | [22898](https://github.com/airbytehq/airbyte/pull/22898) | Add missing column to Subscriptions stream                                                                                                           |
 | 3.0.0   | 2023-02-21 | [23295](https://github.com/airbytehq/airbyte/pull/23295) | Fix invoice schema                                                                                                                                   |
