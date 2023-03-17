@@ -20,7 +20,7 @@ def connector_catalog_location_html(context, all_destinations_dataframe, all_sou
     Generate an HTML report of the connector catalog locations.
     """
 
-    columns_to_show = ["name_x", "dockerRepository", "dockerImageTag", "is_oss", "is_cloud"]
+    columns_to_show = ["dockerRepository", "dockerImageTag", "is_oss", "is_cloud", "is_source_controlled"]
 
     # convert true and false to checkmarks and x's
     all_sources_dataframe.replace({True: "✅", False: "❌"}, inplace=True)
@@ -48,7 +48,7 @@ def connector_catalog_location_markdown(context, all_destinations_dataframe, all
     Generate a markdown report of the connector catalog locations.
     """
 
-    columns_to_show = ["name_x", "dockerRepository", "dockerImageTag", "is_oss", "is_cloud"]
+    columns_to_show = ["dockerRepository", "dockerImageTag", "is_oss", "is_cloud", "is_source_controlled"]
 
     # convert true and false to checkmarks and x's
     all_sources_dataframe.replace({True: "✅", False: "❌"}, inplace=True)
@@ -68,9 +68,13 @@ def connector_catalog_location_markdown(context, all_destinations_dataframe, all
     }
     return Output(metadata=metadata, value=file_handle)
 
+# TODO
+# - add  column for whether the connector is source controlled
+# - refactor so that the source and destination catalogs are merged into a single dataframe early on
+# - refactor so we are importing a common dataclass
 
 @asset
-def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_dataframe) -> pd.DataFrame:
+def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_dataframe, source_controlled_connectors) -> pd.DataFrame:
     """
     Merge the cloud and oss destinations catalogs into a single dataframe.
     """
@@ -91,12 +95,16 @@ def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_da
     # Replace NaN values in the 'is_cloud' and 'is_oss' columns with False
     merged_catalog[["is_cloud", "is_oss"]] = merged_catalog[["is_cloud", "is_oss"]].fillna(False)
 
+    is_source_controlled = lambda x: x.lstrip("airbyte/") in source_controlled_connectors
+    merged_catalog['is_source_controlled'] = merged_catalog['dockerRepository'].apply(is_source_controlled)
+
+
     # Return the merged catalog with the desired columns
     return merged_catalog
 
 
 @asset
-def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe) -> pd.DataFrame:
+def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe, source_controlled_connectors) -> pd.DataFrame:
     """
     Merge the cloud and oss source catalogs into a single dataframe.
     """
@@ -116,6 +124,10 @@ def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe) -> pd.
 
     # Replace NaN values in the 'is_cloud' and 'is_oss' columns with False
     merged_catalog[["is_cloud", "is_oss"]] = merged_catalog[["is_cloud", "is_oss"]].fillna(False)
+
+    is_source_controlled = lambda x: x.lstrip("airbyte/") in source_controlled_connectors
+    merged_catalog['is_source_controlled'] = merged_catalog['dockerRepository'].apply(is_source_controlled)
+
 
     # Return the merged catalog with the desired columns
     return merged_catalog
