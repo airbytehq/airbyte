@@ -50,14 +50,14 @@ public class Main {
           config.toString(),
           catalog.toString());
 
-//      final ExecutorService executors = Executors.newFixedThreadPool(2);
+      final ExecutorService executors = Executors.newFixedThreadPool(2);
       final CompletableFuture<Void> readSrcAndWriteDstThread = CompletableFuture.runAsync(() -> {
         try {
           test.runTest();
         } catch (final Exception e) {
           throw new RuntimeException(e);
         }
-      });
+      }, executors);
 
       // Uncomment to add destination
       /*
@@ -68,10 +68,12 @@ public class Main {
 
       CompletableFuture.anyOf(readSrcAndWriteDstThread
       /* , readFromDstThread */).get();
+//      test.runTest();
     } catch (final Exception e) {
       throw new RuntimeException(e);
 
     }
+    System.exit(0);
   }
 
   static JsonNode getCatalog() throws IOException {
