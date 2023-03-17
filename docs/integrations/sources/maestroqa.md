@@ -23,4 +23,4 @@ The Maestro QS source connector supports the following [sync modes](https://docs
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------- |
-| 0.0.1   | 2023-03-17 | [24195](https://github.com/airbytehq/airbyte/pull/24195/files) | Release Maestro QA CDK Connector                     |
+| 0.0.1   | 2023-03-17 | [24195](https://github.com/airbytehq/airbyte/pull/24195) | Release Maestro QA CDK Connector                     |
