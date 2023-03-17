@@ -138,6 +138,7 @@ jobs:
           POD=$(kubectl get pod -l app=source-harness -o jsonpath="{.items[0].metadata.name}")
           echo "pod name is $POD"
           sleep 3
+          kubectl get events --sort-by=.metadata.creationTimestamp
           kubectl logs $POD
           kubectl describe $POD
           kubectl wait --for=condition=Ready --timeout=20s "pod/$POD"
