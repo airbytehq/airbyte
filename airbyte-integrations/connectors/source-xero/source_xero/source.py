@@ -37,7 +37,7 @@ from .streams import (
 
 class SourceXero(AbstractSource):
     def _validate_and_transform(self, config: Mapping[str, Any]):
-        config["start_date"] = pendulum.parse(config["start_date"])
+        pendulum.parse(config["start_date"])
         return config
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -48,12 +48,11 @@ class SourceXero(AbstractSource):
         return record["OrganisationID"] == config["tenant_id"], None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        config = self._validate_and_transform(config)
         stream_kwargs = {
             "authenticator": self.get_authenticator(config),
             "tenant_id": config["tenant_id"],
         }
-        incremental_kwargs = {**stream_kwargs, "start_date": config["start_date"]}
+        incremental_kwargs = {**stream_kwargs, "start_date": pendulum.parse(config["start_date"])}
         streams = [
             BankTransactions(**incremental_kwargs),
             Contacts(**incremental_kwargs),
