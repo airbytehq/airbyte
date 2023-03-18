@@ -19,13 +19,6 @@ on:
       uuid:
         description: "Custom UUID of workflow run. Used because GitHub dispatches endpoint does not return workflow run id."
         required: false
-      connector-acceptance-test-version:
-        description: "Set a specific connector acceptance test version to use. Enter 'dev' to test, build and use a local version of Connector Acceptance Test."
-        required: false
-        default: "latest"
-      local_cdk:
-        description: "Run Connector Acceptance Tests against the CDK version on the current branch."
-        required: false
 jobs:
   uuid:
     name: "Custom UUID of workflow run"
@@ -125,6 +118,8 @@ jobs:
       - name: Run harness
         id: run-harness
         shell: bash
+        env:
+          CONNECTOR_IMAGE_NAME: ${{ github.event.inputs.connector }}
         run: |
           echo "Setting admin account permissions"
           kubectl apply -f ./tools/bin/admin-service-account.yaml

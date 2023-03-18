@@ -8,7 +8,7 @@ spec:
   containers:
   - name: main
     image: airbyte/source-harness:dev
-    #args: ["airbyte/source-postgres:dev"]
+    args: [$CONNECTOR_IMAGE_NAME]
     volumeMounts:
       - name: secrets-volume
         mountPath: /airbyte/secrets
