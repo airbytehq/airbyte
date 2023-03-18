@@ -85,4 +85,5 @@ class IntegrationCliParserTest {
     final String[] args = new String[] {"--foo", "--config", CONFIG_FILENAME};
     assertThrows(IllegalArgumentException.class, () -> new IntegrationCliParser().parse(args));
   }
+
 }

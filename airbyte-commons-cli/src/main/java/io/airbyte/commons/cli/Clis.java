@@ -26,7 +26,7 @@ public class Clis {
     final HelpFormatter helpFormatter = new HelpFormatter();
 
     try {
-      return parser.parse(options, args, true);
+      return parser.parse(options, args);
     } catch (final ParseException e) {
       if (commandLineSyntax != null && !commandLineSyntax.isEmpty()) {
         helpFormatter.printHelp(commandLineSyntax, options);

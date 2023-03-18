@@ -107,8 +107,6 @@ public class IntegrationRunner {
     }
   }
 
-
-
   private void runInternal(final IntegrationConfig parsed) throws Exception {
     LOGGER.info("Running integration: {}", integration.getClass().getName());
     LOGGER.info("Command: {}", parsed.getCommand());
@@ -187,7 +185,8 @@ public class IntegrationRunner {
   }
 
   private void handleRunInternalException(final IntegrationConfig parsed, final Exception e) throws Exception {
-    // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An attempt is made to
+    // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An attempt is made
+    // to
     // find the root exception that corresponds to a configuration error. If that does not exist, we
     // just return the original exception.
     final Throwable rootThrowable = ConnectorExceptionUtil.getRootConfigError(e);
@@ -209,10 +208,9 @@ public class IntegrationRunner {
 
   private static AirbyteMessage failedConnectionStatusMessage(final String displayMessage) {
     return new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
-            new AirbyteConnectionStatus()
-                .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                .withMessage(displayMessage)
-    );
+        new AirbyteConnectionStatus()
+            .withStatus(AirbyteConnectionStatus.Status.FAILED)
+            .withMessage(displayMessage));
   }
 
   private void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator) throws Exception {
@@ -335,8 +333,8 @@ public class IntegrationRunner {
         Strings.join(List.of(thread.getStackTrace()), "\n        at "));
   }
 
-
-  private static void validateConfig(final JsonNode schemaJson, final JsonNode objectJson, final String operationType) throws ConfigValidationException {
+  private static void validateConfig(final JsonNode schemaJson, final JsonNode objectJson, final String operationType)
+      throws ConfigValidationException {
     final Set<String> validationResult = validator.validate(schemaJson, objectJson);
     if (!validationResult.isEmpty()) {
       throw new ConfigValidationException(String.format("Verification error(s) occurred for %s. Errors: %s ",

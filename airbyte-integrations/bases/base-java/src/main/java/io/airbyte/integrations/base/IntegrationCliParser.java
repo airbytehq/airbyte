@@ -120,7 +120,7 @@ public class IntegrationCliParser {
 
   private static Map<String, String> buildArgsMap(final String[] args, final Command command) {
     Options options = buildOptions(command);
-    final CommandLine parsed = Clis.parse(args, options, command.toString().toLowerCase());
+    final CommandLine parsed = Clis.parse(args, options, Clis.getRelaxedParser(), command.toString().toLowerCase());
     Preconditions.checkNotNull(parsed);
     final Map<String, String> argsMap = new HashMap<>();
     for (final Option option : parsed.getOptions()) {
@@ -143,8 +143,7 @@ public class IntegrationCliParser {
             .orElse(null);
         return IntegrationConfig.check(
             Path.of(argsMap.get(JavaBaseConstants.ARGS_CONFIG_KEY)),
-            catalogPath
-        );
+            catalogPath);
       }
       case DISCOVER -> {
         return IntegrationConfig.discover(Path.of(argsMap.get(JavaBaseConstants.ARGS_CONFIG_KEY)));
