@@ -28,9 +28,6 @@ acceptance_tests:
       timeout_seconds: 2400
       expect_records:
         path: integration_tests/expected_records.jsonl
-        exact_order: no
-        extra_fields: no
-        extra_records: no
   connection:
     tests:
     - config_path: secrets/config.json
@@ -46,9 +43,6 @@ acceptance_tests:
       configured_catalog_path: integration_tests/configured_catalog.json
     - config_path: secrets/config_report.json
       configured_catalog_path: integration_tests/configured_catalog_report.json
-      ignored_fields:
-        sponsored_products_report_stream:
-        - updatedAt
       timeout_seconds: 3600
   incremental:
     tests:

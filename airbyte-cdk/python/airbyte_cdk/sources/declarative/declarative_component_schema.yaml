@@ -46,7 +46,7 @@ definitions:
           type: string
       value:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   AddFields:
@@ -63,7 +63,7 @@ definitions:
         type: array
         items:
           - "$ref": "#/definitions/AddedFieldDefinition"
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   ApiKeyAuthenticator:
@@ -80,7 +80,7 @@ definitions:
         type: string
       header:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   BasicHttpAuthenticator:
@@ -100,7 +100,7 @@ definitions:
         description: The password that will be combined with the username, base64 encoded and used to make requests
         type: string
         default: ""
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   BearerAuthenticator:
@@ -115,28 +115,7 @@ definitions:
         enum: [BearerAuthenticator]
       api_token:
         type: string
-      $options:
-        type: object
-        additionalProperties: true
-  CartesianProductStreamSlicer:
-    description: Stream slicer that iterates over the cartesian product of input stream slicers
-    type: object
-    required:
-      - type
-      - stream_slicers
-    properties:
-      type:
-        enum: [CartesianProductStreamSlicer]
-      stream_slicers:
-        type: array
-        items:
-          anyOf:
-            - "$ref": "#/definitions/CustomStreamSlicer"
-            - "$ref": "#/definitions/DatetimeStreamSlicer"
-            - "$ref": "#/definitions/ListStreamSlicer"
-            - "$ref": "#/definitions/SingleSlice"
-            - "$ref": "#/definitions/SubstreamSlicer"
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   CheckStream:
@@ -169,7 +148,7 @@ definitions:
           anyOf:
             - "$ref": "#/definitions/CompositeErrorHandler"
             - "$ref": "#/definitions/DefaultErrorHandler"
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   ConstantBackoffStrategy:
@@ -186,7 +165,7 @@ definitions:
         anyOf:
           - type: number
           - type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   CursorPagination:
@@ -207,7 +186,7 @@ definitions:
         type: string
       decoder:
         "$ref": "#/definitions/JsonDecoder"
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   CustomAuthenticator:
@@ -224,7 +203,7 @@ definitions:
       class_name:
         type: string
         additionalProperties: true
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   CustomBackoffStrategy:
@@ -240,7 +219,7 @@ definitions:
         enum: [CustomBackoffStrategy]
       class_name:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   CustomErrorHandler:
@@ -256,7 +235,29 @@ definitions:
         enum: [CustomErrorHandler]
       class_name:
         type: string
-      $options:
+      $parameters:
+        type: object
+        additionalProperties: true
+  CustomIncrementalSync:
+    description: Incremental component whose behavior is derived from a custom code implementation of the connector
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+      - cursor_field
+    properties:
+      type:
+        type: string
+        enum: [CustomIncrementalSync]
+      class_name:
+        description: The class that will be implementing the custom incremental sync. The format is `source_<name>.<package>.<class_name>`
+        type: string
+        additionalProperties: true
+      cursor_field:
+        description: The location of the value on a record that will be used as a bookmark during sync
+        type: string
+      $parameters:
         type: object
         additionalProperties: true
   CustomPaginationStrategy:
@@ -272,7 +273,7 @@ definitions:
         enum: [CustomPaginationStrategy]
       class_name:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   CustomRecordExtractor:
@@ -288,7 +289,7 @@ definitions:
         enum: [CustomRecordExtractor]
       class_name:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   CustomRequester:
@@ -305,24 +306,7 @@ definitions:
       class_name:
         type: string
         additionalProperties: true
-      $options:
-        type: object
-        additionalProperties: true
-  CustomRequestOptionsProvider:
-    description: (DO NOT USE) Added for backwards compatibility but this will be deprecated in a future release
-    type: object
-    additionalProperties: true
-    required:
-      - type
-      - class_name
-    properties:
-      type:
-        type: string
-        enum: [CustomRequestOptionsProvider]
-      class_name:
-        type: string
-        additionalProperties: true
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   CustomRetriever:
@@ -339,11 +323,11 @@ definitions:
       class_name:
         type: string
         additionalProperties: true
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
-  CustomStreamSlicer:
-    description: Stream slicer component whose behavior is derived from a custom code implementation of the connector
+  CustomPartitionRouter:
+    description: Partition router component whose behavior is derived from a custom code implementation of the connector
     type: object
     additionalProperties: true
     required:
@@ -352,10 +336,10 @@ definitions:
     properties:
       type:
         type: string
-        enum: [CustomStreamSlicer]
+        enum: [CustomPartitionRouter]
       class_name:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   CustomTransformation:
@@ -371,11 +355,11 @@ definitions:
         enum: [CustomTransformation]
       class_name:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
-  DatetimeStreamSlicer:
-    description: Stream slicer that slices the stream over a datetime range
+  DatetimeBasedCursor:
+    description: Cursor to provide incremental capabilities over datetime
     type: object
     required:
       - type
@@ -388,34 +372,45 @@ definitions:
     properties:
       type:
         type: string
-        enum: [DatetimeStreamSlicer]
+        enum: [DatetimeBasedCursor]
       cursor_field:
+        description: The location of the value on a record that will be used as a bookmark during sync
         type: string
       datetime_format:
+        description: The format of the datetime
         type: string
       cursor_granularity:
+        description: Smallest increment the datetime_format has (ISO 8601 duration) that is used to ensure the start of a slice does not overlap with the end of the previous one
         type: string
       end_datetime:
+        description: The datetime that determines the last record that should be synced
         anyOf:
           - type: string
           - "$ref": "#/definitions/MinMaxDatetime"
       start_datetime:
+        description: The datetime that determines the earliest record that should be synced
         anyOf:
           - type: string
           - "$ref": "#/definitions/MinMaxDatetime"
       step:
+        description: The size of the time window (ISO8601 duration)
         type: string
       end_time_option:
+        description: Request option for end time
         "$ref": "#/definitions/RequestOption"
       lookback_window:
+        description: How many days before start_datetime to read data for (ISO8601 duration)
+        type: string
+      partition_field_end:
+        description: Partition start time field
+        type: string
+      partition_field_start:
+        description: Partition end time field
         type: string
       start_time_option:
+        description: Request option for start time
         "$ref": "#/definitions/RequestOption"
-      stream_state_field_end:
-        type: string
-      stream_state_field_start:
-        type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   OAuthAuthenticator:
@@ -460,7 +455,7 @@ definitions:
       token_expiry_date_format:
         description: The format of the datetime; provide it if expires_in is returned in datetime instead of seconds
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   DeclarativeStream:
@@ -479,38 +474,23 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/CustomRetriever"
           - "$ref": "#/definitions/SimpleRetriever"
-      checkpoint_interval:
-        definition: How often the stream will checkpoint state (i.e. emit a STATE message)
-        type: integer
+      incremental_sync:
+        anyOf:
+          - "$ref": "#/definitions/CustomIncrementalSync"
+          - "$ref": "#/definitions/DatetimeBasedCursor"
       name:
         definition: The stream name
         type: string
         default: ""
       primary_key:
         definition: The primary key of the stream
-        anyOf:
-          - type: string
-          - type: array
-            items:
-              type: string
-          - type: array
-            items:
-              type: array
-              items:
-                type: string
+        "$ref": "#/definitions/PrimaryKey"
         default: ""
       schema_loader:
         definition: The schema loader used to retrieve the schema for the current stream
         anyOf:
           - "$ref": "#/definitions/InlineSchemaLoader"
           - "$ref": "#/definitions/JsonFileSchemaLoader"
-      stream_cursor_field:
-        definition: The field of the records being read that will be used during checkpointing
-        anyOf:
-          - type: string
-          - type: array
-            items:
-              - type: string
       transformations:
         definition: A list of transformations to be applied to each output record in the
         type: array
@@ -519,7 +499,7 @@ definitions:
             - "$ref": "#/definitions/AddFields"
             - "$ref": "#/definitions/CustomTransformation"
             - "$ref": "#/definitions/RemoveFields"
-      $options:
+      $parameters:
         type: object
         additional_properties: true
   DefaultErrorHandler:
@@ -547,7 +527,7 @@ definitions:
         type: array
         items:
           "$ref": "#/definitions/HttpResponseFilter"
-      $options:
+      $parameters:
         type: object
         additional_properties: true
   DefaultPaginator:
@@ -556,7 +536,6 @@ definitions:
     required:
       - type
       - pagination_strategy
-      - url_base
     properties:
       type:
         type: string
@@ -567,15 +546,15 @@ definitions:
           - "$ref": "#/definitions/CustomPaginationStrategy"
           - "$ref": "#/definitions/OffsetIncrement"
           - "$ref": "#/definitions/PageIncrement"
-      url_base:
-        type: string
       decoder:
         "$ref": "#/definitions/JsonDecoder"
       page_size_option:
         "$ref": "#/definitions/RequestOption"
       page_token_option:
-        "$ref": "#/definitions/RequestOption"
-      $options:
+        anyOf:
+          - "$ref": "#/definitions/RequestOption"
+          - "$ref": "#/definitions/RequestPath"
+      $parameters:
         type: object
         additionalProperties: true
   DpathExtractor:
@@ -583,18 +562,18 @@ definitions:
     type: object
     required:
       - type
-      - field_pointer
+      - field_path
     properties:
       type:
         type: string
         enum: [DpathExtractor]
-      field_pointer:
+      field_path:
         type: array
         items:
           - type: string
       decoder:
         "$ref": "#/definitions/JsonDecoder"
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   ExponentialBackoffStrategy:
@@ -611,7 +590,7 @@ definitions:
           - type: number
           - type: string
         default: 5
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   HttpRequester:
@@ -619,20 +598,20 @@ definitions:
     type: object
     required:
       - type
-      - name
       - path
       - url_base
     properties:
       type:
         type: string
         enum: [HttpRequester]
-      name:
-        type: string
       path:
+        description: The specific endpoint to fetch data from for a resource.
         type: string
       url_base:
+        description: The root of the API source.
         type: string
       authenticator:
+        description: Authenticator component that defines how to authenticate to the source.
         anyOf:
           - "$ref": "#/definitions/ApiKeyAuthenticator"
           - "$ref": "#/definitions/BasicHttpAuthenticator"
@@ -642,11 +621,13 @@ definitions:
           - "$ref": "#/definitions/NoAuth"
           - "$ref": "#/definitions/SessionTokenAuthenticator"
       error_handler:
+        description: Error handler component that defines how to handle errors.
         anyOf:
           - "$ref": "#/definitions/DefaultErrorHandler"
           - "$ref": "#/definitions/CustomErrorHandler"
           - "$ref": "#/definitions/CompositeErrorHandler"
       http_method:
+        description: The HTTP method used to fetch data from the source (can be GET or POST).
         anyOf:
           - type: string
           - type: string
@@ -654,11 +635,35 @@ definitions:
               - GET
               - POST
         default: GET
-      request_options_provider:
+      request_body_data:
+        description: Specifies how to populate the body of the request with a non-JSON payload. If returns a ready text that it will be sent as is. If returns a dict that it will be converted to a urlencoded form.
         anyOf:
-          - "$ref": "#/definitions/CustomRequestOptionsProvider"
-          - "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
-      $options:
+          - type: string
+          - type: object
+            additionalProperties:
+              type: string
+      request_body_json:
+        description: Specifies how to populate the body of the request with a JSON payload.
+        anyOf:
+          - type: string
+          - type: object
+            additionalProperties:
+              type: string
+      request_headers:
+        description: Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
+        anyOf:
+          - type: string
+          - type: object
+            additionalProperties:
+              type: string
+      request_parameters:
+        description: Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
+        anyOf:
+          - type: string
+          - type: object
+            additionalProperties:
+              type: string
+      $parameters:
         type: object
         additionalProperties: true
   HttpResponseFilter:
@@ -689,7 +694,7 @@ definitions:
         uniqueItems: true
       predicate:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   InlineSchemaLoader:
@@ -703,42 +708,6 @@ definitions:
         enum: [InlineSchemaLoader]
       schema:
         type: object
-  InterpolatedRequestOptionsProvider:
-    description: Defines the request options to set on an outgoing HTTP request by evaluating `InterpolatedMapping`s
-    type: object
-    required:
-      - type
-    properties:
-      type:
-        type: string
-        enum: [InterpolatedRequestOptionsProvider]
-      request_body_data:
-        anyOf:
-          - type: string
-          - type: object
-            additionalProperties:
-              type: string
-      request_body_json:
-        anyOf:
-          - type: string
-          - type: object
-            additionalProperties:
-              type: string
-      request_headers:
-        anyOf:
-          - type: string
-          - type: object
-            additionalProperties:
-              type: string
-      request_parameters:
-        anyOf:
-          - type: string
-          - type: object
-            additionalProperties:
-              type: string
-      $options:
-        type: object
-        additionalProperties: true
   JsonFileSchemaLoader:
     description: Loads the schema from a json file
     type: object
@@ -746,10 +715,11 @@ definitions:
       - type
     properties:
       type:
-        enum: [JsonFileSchemaLoader, JsonSchema] # TODO As part of Beta, remove JsonSchema and update connectors to use JsonFileSchemaLoader
+        type: string
+        enum: [JsonFileSchemaLoader]
       file_path:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   JsonDecoder:
@@ -760,20 +730,20 @@ definitions:
       type:
         type: string
         enum: [JsonDecoder]
-  ListStreamSlicer:
-    description: Stream slicer that iterates over the values of a list
+  ListPartitionRouter:
+    description: Partition router that is used to retrieve records that have been partitioned according to a list of values
     type: object
     required:
       - type
       - cursor_field
-      - slice_values
+      - values
     properties:
       type:
         type: string
-        enum: [ListStreamSlicer]
+        enum: [ListPartitionRouter]
       cursor_field:
         type: string
-      slice_values:
+      values:
         anyOf:
           - type: string
           - type: array
@@ -781,7 +751,7 @@ definitions:
               type: string
       request_option:
         "$ref": "#/definitions/RequestOption"
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   MinMaxDatetime:
@@ -803,7 +773,7 @@ definitions:
         type: string
       min_datetime:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   NoAuth:
@@ -815,7 +785,7 @@ definitions:
       type:
         type: string
         enum: [NoAuth]
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   NoPagination:
@@ -842,7 +812,7 @@ definitions:
         anyOf:
           - type: integer
           - type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   PageIncrement:
@@ -861,7 +831,7 @@ definitions:
       start_from_page:
         type: integer
         default: 0
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   ParentStreamConfig:
@@ -870,8 +840,8 @@ definitions:
     required:
       - type
       - parent_key
+      - partition_field
       - stream
-      - stream_slice_field
     properties:
       type:
         type: string
@@ -880,11 +850,11 @@ definitions:
         type: string
       stream:
         "$ref": "#/definitions/DeclarativeStream"
-      stream_slice_field:
+      partition_field:
         type: string
       request_option:
         "$ref": "#/definitions/RequestOption"
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   PrimaryKey:
@@ -913,7 +883,7 @@ definitions:
         description: The predicate to filter a record. Records will be removed if evaluated to False
         type: string
         default: ""
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   RecordSelector:
@@ -932,7 +902,7 @@ definitions:
           - "$ref": "#/definitions/DpathExtractor"
       record_filter:
         "$ref": "#/definitions/RecordFilter"
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   RemoveFields:
@@ -950,25 +920,34 @@ definitions:
         items:
           items:
             type: string
-  RequestOption:
-    description: Describes an option to set on a request
+  RequestPath:
+    description: A component that specifies where in the request path a component's value should be inserted into.
     type: object
     required:
       - type
+    properties:
+      type:
+        type: string
+        enum: [RequestPath]
+  RequestOption:
+    description: A component that specifies the key field and where in the request a component's value should be inserted into.
+    type: object
+    required:
+      - type
+      - field_name
       - inject_into
     properties:
       type:
         type: string
         enum: [RequestOption]
+      field_name:
+        type: string
       inject_into:
         enum:
           - request_parameter
           - header
-          - path
           - body_data
           - body_json
-      field_name:
-        type: string
   Schemas:
     description: The stream schemas representing the shape of the data emitted by the stream
     type: object
@@ -1006,11 +985,11 @@ definitions:
       password:
         type: string
         default: ""
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   SimpleRetriever:
-    description: Retrieves records by synchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the stream slicer.
+    description: Retrieves records by synchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the partition router.
     type: object
     required:
       - type
@@ -1021,41 +1000,32 @@ definitions:
         type: string
         enum: [SimpleRetriever]
       record_selector:
+        description: Component that describes how to extract records from a HTTP response.
         "$ref": "#/definitions/RecordSelector"
       requester:
+        description: Requester component that describes how to prepare HTTP requests to send to the source API.
         anyOf:
           - "$ref": "#/definitions/CustomRequester"
           - "$ref": "#/definitions/HttpRequester"
-      name:
-        type: string
-        default: ""
       paginator:
+        description: Paginator component that describes how to navigate through the API's pages.
         anyOf:
           - "$ref": "#/definitions/DefaultPaginator"
           - "$ref": "#/definitions/NoPagination"
-      primary_key:
-        "$ref": "#/definitions/PrimaryKey"
-      stream_slicer:
+      partition_router:
+        default: []
+        description: StreamSlicer component that describes how to partition the stream, enabling incremental syncs and checkpointing.
         anyOf:
-          - "$ref": "#/definitions/CartesianProductStreamSlicer"
-          - "$ref": "#/definitions/CustomStreamSlicer"
-          - "$ref": "#/definitions/DatetimeStreamSlicer"
-          - "$ref": "#/definitions/ListStreamSlicer"
-          - "$ref": "#/definitions/SingleSlice"
-          - "$ref": "#/definitions/SubstreamSlicer"
-      $options:
-        type: object
-        additionalProperties: true
-  SingleSlice:
-    description: Stream slicer returning only a single stream slice
-    type: object
-    required:
-      - type
-    properties:
-      type:
-        type: string
-        enum: [SingleSlice]
-      $options:
+          - "$ref": "#/definitions/CustomPartitionRouter"
+          - "$ref": "#/definitions/ListPartitionRouter"
+          - "$ref": "#/definitions/SubstreamPartitionRouter"
+          - type: array
+            items:
+              anyOf:
+                - "$ref": "#/definitions/CustomPartitionRouter"
+                - "$ref": "#/definitions/ListPartitionRouter"
+                - "$ref": "#/definitions/SubstreamPartitionRouter"
+      $parameters:
         type: object
         additionalProperties: true
   Spec:
@@ -1073,8 +1043,8 @@ definitions:
         additionalProperties: true
       documentation_url:
         type: string
-  SubstreamSlicer:
-    description: Stream slicer that iterates over the parent's stream slices and records and emits slices by interpolating the slice_definition mapping
+  SubstreamPartitionRouter:
+    description: Partition router that is used to retrieve records that have been partitioned according to records from the specified parent streams
     type: object
     required:
       - type
@@ -1082,12 +1052,12 @@ definitions:
     properties:
       type:
         type: string
-        enum: [SubstreamSlicer]
+        enum: [SubstreamPartitionRouter]
       parent_stream_configs:
         type: array
         items:
           "$ref": "#/definitions/ParentStreamConfig"
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   WaitTimeFromHeader:
@@ -1104,7 +1074,7 @@ definitions:
         type: string
       regex:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   WaitUntilTimeFromHeader:
@@ -1125,6 +1095,6 @@ definitions:
           - type: string
       regex:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true

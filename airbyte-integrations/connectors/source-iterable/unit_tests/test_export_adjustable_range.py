@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import datetime
@@ -12,11 +12,10 @@ import freezegun
 import pendulum
 import pytest
 import responses
+from airbyte_cdk.models import Type as MessageType
 from requests.exceptions import ChunkedEncodingError
 from source_iterable.slice_generators import AdjustableSliceGenerator
 from source_iterable.source import SourceIterable
-
-from airbyte_cdk.models import Type as MessageType
 
 TEST_START_DATE = "2020"
 
@@ -115,4 +114,4 @@ def test_email_stream_chunked_encoding(mocker, mock_lists_resp, catalog, days_du
     assert sum(ranges) == days_duration
     assert len(ranges) == len(records)
     # since read is called on source instance, under the hood .streams() is called which triggers one more http call
-    assert len(responses.calls) == 3 * len(ranges) + 1
+    assert len(responses.calls) == 3 * len(ranges)

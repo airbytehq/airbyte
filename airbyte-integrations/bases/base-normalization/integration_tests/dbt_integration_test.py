@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -28,6 +28,7 @@ NORMALIZATION_TEST_MYSQL_DB_PORT = "NORMALIZATION_TEST_MYSQL_DB_PORT"
 NORMALIZATION_TEST_POSTGRES_DB_PORT = "NORMALIZATION_TEST_POSTGRES_DB_PORT"
 NORMALIZATION_TEST_CLICKHOUSE_DB_PORT = "NORMALIZATION_TEST_CLICKHOUSE_DB_PORT"
 NORMALIZATION_TEST_TIDB_DB_PORT = "NORMALIZATION_TEST_TIDB_DB_PORT"
+NORMALIZATION_TEST_DUCKDB_DESTINATION_PATH = "NORMALIZATION_TEST_DUCKDB_DESTINATION_PATH"
 
 
 class DbtIntegrationTest(object):
@@ -475,7 +476,7 @@ class DbtIntegrationTest(object):
         """
         Run dbt subprocess while checking and counting for "ERROR", "FAIL" or "WARNING" printed in its outputs
         """
-        if normalization_image.startswith("airbyte/normalization-oracle"):
+        if normalization_image.startswith("airbyte/normalization-oracle") or normalization_image.startswith("airbyte/normalization-clickhouse"):
             dbtAdditionalArgs = []
         else:
             dbtAdditionalArgs = ["--event-buffer-size=10000"]

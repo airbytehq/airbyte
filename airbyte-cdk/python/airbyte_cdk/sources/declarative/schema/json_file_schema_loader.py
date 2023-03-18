@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -12,7 +12,6 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 def _default_file_path() -> str:
@@ -23,15 +22,15 @@ def _default_file_path() -> str:
     ]  # example: ['source_exchange_rates', 'source_exchange_rates.source']
     if source_modules:
         module = source_modules[0].split(".")[0]
-        return f"./{module}/schemas/{{{{options['name']}}}}.json"
+        return f"./{module}/schemas/{{{{parameters['name']}}}}.json"
 
     # If we are not in a source_ module, the most likely scenario is we're processing a manifest from the connector builder
     # server which does not require a json schema to be defined.
-    return "./{{options['name']}}.json"
+    return "./{{parameters['name']}}.json"
 
 
 @dataclass
-class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader, JsonSchemaMixin):
+class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader):
     """
     Loads the schema from a json file
 
@@ -39,17 +38,17 @@ class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader, JsonSchemaMixin):
         file_path (Union[InterpolatedString, str]): The path to the json file describing the schema
         name (str): The stream's name
         config (Config): The user-provided configuration as specified by the source's spec
-        options (Mapping[str, Any]): Additional arguments to pass to the string interpolation if needed
+        parameters (Mapping[str, Any]): Additional arguments to pass to the string interpolation if needed
     """
 
     config: Config
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     file_path: Union[InterpolatedString, str] = field(default=None)
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         if not self.file_path:
             self.file_path = _default_file_path()
-        self.file_path = InterpolatedString.create(self.file_path, options=options)
+        self.file_path = InterpolatedString.create(self.file_path, parameters=parameters)
 
     def get_json_schema(self) -> Mapping[str, Any]:
         # todo: It is worth revisiting if we can replace file_path with just file_name if every schema is in the /schemas directory

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.relationaldb.state;
@@ -207,6 +207,10 @@ public class StateGeneratorUtils {
                 .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
                 .withStreamState(Jsons.jsonNode(s))))
         .collect(Collectors.toList());
+  }
+
+  public static AirbyteStateMessage convertStateMessage(final io.airbyte.protocol.models.AirbyteStateMessage state) {
+    return Jsons.object(Jsons.jsonNode(state), AirbyteStateMessage.class);
   }
 
 }

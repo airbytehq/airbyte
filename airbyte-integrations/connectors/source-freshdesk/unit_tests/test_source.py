@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -26,7 +26,10 @@ def test_check_connection_invalid_api_key(requests_mock, config):
     requests_mock.register_uri("GET", "/api/v2/settings/helpdesk", responses)
     ok, error_msg = SourceFreshdesk().check_connection(logger, config=config)
 
-    assert not ok and error_msg == "invalid_credentials: You have to be logged in to perform this action."
+    assert not ok and error_msg == "The endpoint to access stream \'settings\' returned 401: Unauthorized. " \
+                                   "This is most likely due to wrong credentials. " \
+                                   "Please visit https://docs.airbyte.com/integrations/sources/freshdesk to learn more. " \
+                                   "You have to be logged in to perform this action."
 
 
 def test_check_connection_empty_config(config):
@@ -45,7 +48,7 @@ def test_check_connection_invalid_config(config):
     assert not ok and error_msg
 
 
-def test_check_connection_exception(config):
+def test_check_connection_exception(requests_mock, config):
     ok, error_msg = SourceFreshdesk().check_connection(logger, config=config)
 
     assert not ok and error_msg

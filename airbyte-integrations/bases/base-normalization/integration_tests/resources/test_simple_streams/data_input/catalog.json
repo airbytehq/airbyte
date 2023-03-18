@@ -7,46 +7,53 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "$ref": "WellKnownTypes.json#/definitions/Integer"
+              "type": "integer"
             },
             "currency": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": "string"
             },
             "date": {
-              "$ref": "WellKnownTypes.json#/definitions/Date"
+              "type": "string",
+              "format": "date"
             },
             "timestamp_col": {
-              "$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"
+              "type": "string",
+              "format": "date-time"
             },
             "HKD@spéçiäl & characters": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": "number"
             },
             "HKD_special___characters": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": "string"
             },
             "NZD": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": "number"
             },
             "USD": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": "number"
             },
             "column`_'with\"_quotes": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": "string"
             },
             "datetime_tz": {
-              "$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
             },
             "datetime_no_tz": {
-              "$ref": "WellKnownTypes.json#/definitions/TimestampWithoutTimezone"
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_without_timezone"
             },
             "time_tz": {
-              "$ref": "WellKnownTypes.json#/definitions/TimeWithTimezone"
+              "type": "string",
+              "format": "time",
+              "airbyte_type": "time_with_timezone"
             },
             "time_no_tz": {
-              "$ref": "WellKnownTypes.json#/definitions/TimeWithoutTimezone"
-            },
-            "property_binary_data": {
-              "$ref": "WellKnownTypes.json#/definitions/BinaryData"
+              "type": "string",
+              "format": "time",
+              "airbyte_type": "time_without_timezone"
             }
           }
         },
@@ -65,28 +72,30 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "$ref": "WellKnownTypes.json#/definitions/Integer"
+              "type": "integer"
             },
             "currency": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": "string"
             },
             "date": {
-              "$ref": "WellKnownTypes.json#/definitions/Date"
+              "type": "string",
+              "format": "date"
             },
             "timestamp_col": {
-              "$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"
+              "type": "string",
+              "format": "date-time"
             },
             "HKD@spéçiäl & characters": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": "number"
             },
             "HKD_special___characters": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": "string"
             },
             "NZD": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": "number"
             },
             "USD": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": "number"
             }
           }
         },
@@ -106,10 +115,10 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "$ref": "WellKnownTypes.json#/definitions/Integer"
+              "type": "integer"
             },
             "_ab_cdc_updated_at": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": ["null", "number"]
             }
           }
         },
@@ -129,19 +138,19 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "$ref": "WellKnownTypes.json#/definitions/Integer"
+              "type": "integer"
             },
             "name": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": ["string", "null"]
             },
             "_ab_cdc_lsn": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": ["null", "number"]
             },
             "_ab_cdc_updated_at": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": ["null", "number"]
             },
             "_ab_cdc_deleted_at": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": ["null", "number"]
             }
           }
         },
@@ -161,22 +170,22 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "$ref": "WellKnownTypes.json#/definitions/Integer"
+              "type": "integer"
             },
             "name": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": ["string", "null"]
             },
             "_ab_cdc_lsn": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": ["null", "number"]
             },
             "_ab_cdc_updated_at": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": ["null", "number"]
             },
             "_ab_cdc_deleted_at": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": ["null", "number"]
             },
             "_ab_cdc_log_pos": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": ["null", "number"]
             }
           }
         },
@@ -196,13 +205,14 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "$ref": "WellKnownTypes.json#/definitions/Integer"
+              "type": "integer"
             },
             "date": {
-              "$ref": "WellKnownTypes.json#/definitions/Date"
+              "type": "string",
+              "format": "date"
             },
             "text": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": "string"
             }
           }
         },
@@ -222,25 +232,25 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "$ref": "WellKnownTypes.json#/definitions/Integer"
+              "type": "integer"
             },
             "User Id": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": ["string", "null"]
             },
             "user_id": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": ["null", "number"]
             },
             "User id": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": ["null", "number"]
             },
             "user id": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": ["null", "number"]
             },
             "User@Id": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": ["null", "string"]
             },
             "UserId": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": ["null", "number"]
             }
           }
         },
@@ -260,16 +270,15 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "$ref": "WellKnownTypes.json#/definitions/Integer"
+              "type": "integer"
             },
             "airbyte_integer_column": {
-              "$ref": "WellKnownTypes.json#/definitions/Integer"
+              "type": "number",
+              "airbyte_type": "integer"
             },
             "nullable_airbyte_integer_column": {
-              "$ref": "WellKnownTypes.json#/definitions/Integer"
-            },
-            "property_binary_data": {
-              "$ref": "WellKnownTypes.json#/definitions/BinaryData"
+              "type": ["null", "number"],
+              "airbyte_type": "integer"
             }
           }
         }

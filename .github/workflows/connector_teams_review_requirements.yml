@@ -5,6 +5,8 @@ on:
     paths:
       - "airbyte-integrations/connectors/source-**"
   pull_request_review:
+    paths:
+      - "airbyte-integrations/connectors/source-**"
 jobs:
   check-review-requirements:
     name: "Check if a review is required from Connector teams"
