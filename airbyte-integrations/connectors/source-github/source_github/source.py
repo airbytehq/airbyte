@@ -2,8 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, List, Mapping, Tuple
-
+from typing import Any, Dict, List, Mapping, MutableMapping, Tuple, Optional
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -57,8 +56,9 @@ DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM = 10
 
 
 class SourceGithub(AbstractSource):
+
     @staticmethod
-    def _get_org_repositories(config: Mapping[str, Any], authenticator: MultipleTokenAuthenticator) -> Tuple[List[str], List[str]]:
+    def _get_org_repositories(config: Mapping[str, Any], api_url: str, authenticator: MultipleTokenAuthenticator) -> Tuple[List[str], List[str]]:
         """
         Parse config.repository and produce two lists: organizations, repositories.
         Args:
@@ -73,7 +73,6 @@ class SourceGithub(AbstractSource):
         organizations = set()
         unchecked_repos = set()
         unchecked_orgs = set()
-
         for org_repos in config_repositories:
             org, _, repos = org_repos.partition("/")
             if repos == "*":
@@ -82,7 +81,7 @@ class SourceGithub(AbstractSource):
                 unchecked_repos.add(org_repos)
 
         if unchecked_orgs:
-            stream = Repositories(authenticator=authenticator, organizations=unchecked_orgs)
+            stream = Repositories(authenticator=authenticator, organizations=unchecked_orgs, api_url=api_url)
             for record in read_full_refresh(stream):
                 repositories.add(record["full_name"])
                 organizations.add(record["organization"])
@@ -93,6 +92,7 @@ class SourceGithub(AbstractSource):
                 authenticator=authenticator,
                 repositories=unchecked_repos,
                 page_size_for_large_streams=config.get("page_size_for_large_streams", DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM),
+                api_url=api_url
             )
             for record in read_full_refresh(stream):
                 repositories.add(record["full_name"])
@@ -167,8 +167,9 @@ class SourceGithub(AbstractSource):
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
+            api_url = config["api_url"]
             authenticator = self._get_authenticator(config)
-            _, repositories = self._get_org_repositories(config=config, authenticator=authenticator)
+            _, repositories = self._get_org_repositories(config=config, authenticator=authenticator, api_url=api_url)
             if not repositories:
                 return False, "no valid repositories found"
             return True, None
@@ -179,9 +180,10 @@ class SourceGithub(AbstractSource):
             return False, user_message or message
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        api_url = config["api_url"]
         authenticator = self._get_authenticator(config)
         try:
-            organizations, repositories = self._get_org_repositories(config=config, authenticator=authenticator)
+            organizations, repositories = self._get_org_repositories(config=config, authenticator=authenticator, api_url=api_url)
         except Exception as e:
             message = repr(e)
             user_message = self.user_friendly_error_message(message)
@@ -197,7 +199,7 @@ class SourceGithub(AbstractSource):
 
         page_size = config.get("page_size_for_large_streams", DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
 
-        organization_args = {"authenticator": authenticator, "organizations": organizations}
+        organization_args = {"authenticator": authenticator, "organizations": organizations }
         organization_args_with_start_date = {**organization_args, "start_date": config["start_date"]}
         repository_args = {"authenticator": authenticator, "repositories": repositories, "page_size_for_large_streams": page_size}
         repository_args_with_start_date = {**repository_args, "start_date": config["start_date"]}
@@ -210,10 +212,11 @@ class SourceGithub(AbstractSource):
         team_members_stream = TeamMembers(parent=teams_stream, **repository_args)
         workflow_runs_stream = WorkflowRuns(**repository_args_with_start_date)
 
+        args_with_api_url_repository = {**repository_args, "api_url": config["api_url"]}
         return [
-            Assignees(**repository_args),
-            Branches(**repository_args),
-            Collaborators(**repository_args),
+            Assignees(args_with_api_url_repository),
+            Branches(args_with_api_url_repository),
+            Collaborators(args_with_api_url_repository),
             Comments(**repository_args_with_start_date),
             CommitCommentReactions(**repository_args_with_start_date),
             CommitComments(**repository_args_with_start_date),
