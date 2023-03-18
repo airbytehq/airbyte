@@ -159,7 +159,6 @@ public class PerformanceTest {
     final var rps = counter / totalTimeSecs;
     log.info("total secs: {}. total MB read: {}, rps: {}, throughput: {}", totalTimeSecs, totalMB, rps, totalMB / totalTimeSecs);
     source.close();
-    log.info("Done");
   }
 
   private static void populateStreamToAllFields(final ConfiguredAirbyteCatalog catalog,
