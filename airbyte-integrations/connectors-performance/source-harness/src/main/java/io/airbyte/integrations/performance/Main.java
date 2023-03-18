@@ -12,9 +12,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -51,14 +48,14 @@ public class Main {
           config.toString(),
           catalog.toString());
 
-//      final ExecutorService executors = Executors.newFixedThreadPool(2);
-//      final CompletableFuture<Void> readSrcAndWriteDstThread = CompletableFuture.runAsync(() -> {
-//        try {
-//          test.runTest();
-//        } catch (final Exception e) {
-//          throw new RuntimeException(e);
-//        }
-//      }, executors);
+      // final ExecutorService executors = Executors.newFixedThreadPool(2);
+      // final CompletableFuture<Void> readSrcAndWriteDstThread = CompletableFuture.runAsync(() -> {
+      // try {
+      // test.runTest();
+      // } catch (final Exception e) {
+      // throw new RuntimeException(e);
+      // }
+      // }, executors);
 
       // Uncomment to add destination
       /*
@@ -67,7 +64,7 @@ public class Main {
        * RuntimeException(e); } }, executors);
        */
 
-//      CompletableFuture.anyOf(readSrcAndWriteDstThread/* , readFromDstThread */).get();
+      // CompletableFuture.anyOf(readSrcAndWriteDstThread/* , readFromDstThread */).get();
       test.runTest();
     } catch (final Exception e) {
       log.error("Test failed", e);
