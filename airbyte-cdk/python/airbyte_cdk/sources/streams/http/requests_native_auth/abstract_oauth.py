@@ -69,6 +69,14 @@ class AbstractOauth2Authenticator(AuthBase):
 
         return payload
 
+    def build_refresh_request_headers(self) -> Mapping[str, Any]:
+        """
+        Returns the request headers to set on the refresh request
+
+        Override to define additional parameters
+        """
+        return None
+
     @backoff.on_exception(
         backoff.expo,
         DefaultBackoffException,
@@ -79,7 +87,7 @@ class AbstractOauth2Authenticator(AuthBase):
     )
     def _get_refresh_access_token_response(self):
         try:
-            response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body())
+            response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body(), headers=self.build_refresh_request_headers())
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
