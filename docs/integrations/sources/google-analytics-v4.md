@@ -53,6 +53,13 @@ The Google Analytics source connector supports the following [sync modes](https:
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
+:::caution
+
+You need to add the service account email address on the account level, not the property level. Otherwise, an 403 error will be returned.
+
+:::
+
+
 ## Supported streams
 
 The Google Analytics (Universal Analytics) source connector can sync the following tables:
