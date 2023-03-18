@@ -392,7 +392,23 @@
         ],
         "group": "security"
       }
-    }
+    },
+    "groups": [
+      {
+        "id": "db"
+      },
+      {
+        "id": "auth"
+      },
+      {
+        "id": "security",
+        "title": "Security"
+      },
+      {
+        "id": "advanced",
+        "title": "Advanced"
+      }
+    ]
   },
   "supported_destination_sync_modes": []
 }
