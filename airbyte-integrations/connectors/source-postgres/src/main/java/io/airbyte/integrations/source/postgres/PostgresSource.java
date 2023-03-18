@@ -115,7 +115,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   private static final Set<String> INVALID_CDC_SSL_MODES = ImmutableSet.of("allow", "prefer");
 
   public static Source sshWrappedSource() {
-    return new SshWrappedSource(new PostgresSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+    return new SshWrappedSource(new PostgresSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, "security");
   }
 
   PostgresSource() {
@@ -333,22 +333,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     }
 
     return checkOperations;
-  }
-
-  @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
-                                                    final ConfiguredAirbyteCatalog catalog,
-                                                    final JsonNode state)
-      throws Exception {
-    // this check is used to ensure that have the pgoutput slot available so Debezium won't attempt to
-    // create it.
-    final AirbyteConnectionStatus check = check(config);
-
-    if (check.getStatus().equals(Status.FAILED)) {
-      throw new RuntimeException("Unable establish a connection: " + check.getMessage());
-    }
-
-    return super.read(config, catalog, state);
   }
 
   @Override

@@ -26,10 +26,10 @@ See the [catalog guide](https://docs.airbyte.com/understanding-airbyte/beginners
 
 Let's define the stream schema in `source-exchange-rates-tutorial/source_exchange_rates_tutorial/schemas/rates.json`
 
-You can download the JSON file describing the output schema with all currencies [here](https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/exchange_rates.json) for convenience and place it in `schemas/`.
+You can download the JSON file describing the output schema with all currencies [here](../../tutorials/cdk-tutorial-python-http/exchange_rates_schema.json) for convenience and place it in `schemas/`.
 
 ```bash
-curl https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/exchange_rates.json > source_exchange_rates_tutorial/schemas/rates.json
+curl https://raw.githubusercontent.com/airbytehq/airbyte/master/docs/connector-development/tutorials/cdk-tutorial-python-http/exchange_rates_schema.json > source_exchange_rates_tutorial/schemas/rates.json
 ```
 
 We can also delete the boilerplate schema files

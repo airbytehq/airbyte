@@ -5,7 +5,7 @@
     "title": "Paystack Source Spec",
     "type": "object",
     "required": ["secret_key", "start_date"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "secret_key": {
         "type": "string",
