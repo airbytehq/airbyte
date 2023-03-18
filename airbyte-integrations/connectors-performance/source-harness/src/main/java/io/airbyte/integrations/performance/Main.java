@@ -38,7 +38,8 @@ public class Main {
       throw new IllegalStateException("Failed to read catalog", ex);
     }
 
-    final String image = (args.length > 0) ? args[0] : "airbyte/source-postgres:dev";
+    final String image = (args.length > 0) ? args[0] : "";
+
     if (StringUtils.isAnyBlank(config.toString(), catalog.toString(), image)) {
       throw new IllegalStateException("Missing harness configuration");
     }
@@ -46,18 +47,18 @@ public class Main {
     log.info("Starting performance harness for {}", image);
     try {
       final PerformanceTest test = new PerformanceTest(
-          "airbyte/source-postgres:latest",
+          image,
           config.toString(),
           catalog.toString());
 
-      final ExecutorService executors = Executors.newFixedThreadPool(2);
-      final CompletableFuture<Void> readSrcAndWriteDstThread = CompletableFuture.runAsync(() -> {
-        try {
-          test.runTest();
-        } catch (final Exception e) {
-          throw new RuntimeException(e);
-        }
-      }, executors);
+//      final ExecutorService executors = Executors.newFixedThreadPool(2);
+//      final CompletableFuture<Void> readSrcAndWriteDstThread = CompletableFuture.runAsync(() -> {
+//        try {
+//          test.runTest();
+//        } catch (final Exception e) {
+//          throw new RuntimeException(e);
+//        }
+//      }, executors);
 
       // Uncomment to add destination
       /*
@@ -66,11 +67,11 @@ public class Main {
        * RuntimeException(e); } }, executors);
        */
 
-      CompletableFuture.anyOf(readSrcAndWriteDstThread
-      /* , readFromDstThread */).get();
-      // test.runTest();
+//      CompletableFuture.anyOf(readSrcAndWriteDstThread/* , readFromDstThread */).get();
+      test.runTest();
     } catch (final Exception e) {
-      throw new RuntimeException(e);
+      log.error("Test failed", e);
+      System.exit(1);
 
     }
     System.exit(0);

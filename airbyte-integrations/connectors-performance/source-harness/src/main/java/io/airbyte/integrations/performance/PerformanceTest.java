@@ -122,6 +122,7 @@ public class PerformanceTest {
             sourceConfig.getCatalog().getStreams().get(2).getStream().getJsonSchema()),
         true);
 
+    log.info("Source starting");
     source.start(sourceConfig, Path.of(jobRoot));
     var totalBytes = 0.0;
     var counter = 0L;
