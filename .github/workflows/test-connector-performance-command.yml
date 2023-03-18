@@ -131,6 +131,7 @@ jobs:
           echo "loading pod..."
           CONNECTOR_IMAGE_NAME=${CONN/connectors/airbyte}:dev
           echo $CONNECTOR_IMAGE_NAME
+          envsubst < ./tools/bin/test-postgres-source-process.yaml
           envsubst < ./tools/bin/test-postgres-source-process.yaml | kubectl create -f -
           echo "get pods..."
           kubectl get po
