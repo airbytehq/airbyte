@@ -61,11 +61,7 @@ RESOLVE_MANIFEST_CONFIG = {
 TEST_READ_CONFIG = {
     "__injected_declarative_manifest": MANIFEST,
     "__command": "test_read",
-    "__test_read_config": {
-        "max_pages_per_slice": 2,
-        "max_slices": 5,
-        "max_records": 10
-    }
+    "__test_read_config": {"max_pages_per_slice": 2, "max_slices": 5, "max_records": 10},
 }
 
 DUMMY_CATALOG = {
@@ -73,16 +69,12 @@ DUMMY_CATALOG = {
         {
             "stream": {
                 "name": "dummy_stream",
-                "json_schema": {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
-                    "type": "object",
-                    "properties": {}
-                },
+                "json_schema": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": {}},
                 "supported_sync_modes": ["full_refresh"],
-                "source_defined_cursor": False
+                "source_defined_cursor": False,
             },
             "sync_mode": "full_refresh",
-            "destination_sync_mode": "overwrite"
+            "destination_sync_mode": "overwrite",
         }
     ]
 }
@@ -92,16 +84,12 @@ CONFIGURED_CATALOG = {
         {
             "stream": {
                 "name": _stream_name,
-                "json_schema": {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
-                    "type": "object",
-                    "properties": {}
-                },
+                "json_schema": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": {}},
                 "supported_sync_modes": ["full_refresh"],
-                "source_defined_cursor": False
+                "source_defined_cursor": False,
             },
             "sync_mode": "full_refresh",
-            "destination_sync_mode": "overwrite"
+            "destination_sync_mode": "overwrite",
         }
     ]
 }
@@ -158,9 +146,10 @@ def test_handle_test_read(valid_read_config_file, configured_catalog):
 
 def test_resolve_manifest(valid_resolve_manifest_config_file):
     config = copy.deepcopy(RESOLVE_MANIFEST_CONFIG)
-    config["__command"] = "resolve_manifest"
+    command = "resolve_manifest"
+    config["__command"] = command
     source = ManifestDeclarativeSource(MANIFEST)
-    resolved_manifest = handle_connector_builder_request(source, config, create_configured_catalog("dummy_stream"))
+    resolved_manifest = handle_connector_builder_request(source, command, config, create_configured_catalog("dummy_stream"))
 
     expected_resolved_manifest = {
         "type": "DeclarativeSource",
@@ -294,26 +283,38 @@ def test_read():
     source = ManifestDeclarativeSource(MANIFEST)
 
     real_record = AirbyteRecordMessage(data={"id": "1234", "key": "value"}, emitted_at=1, stream=_stream_name)
-    stream_read = StreamRead(logs=[{"message": "here be a log message"}],
-                             slices=[StreamReadSlicesInner(pages=[
-                                 StreamReadSlicesInnerPagesInner(records=[real_record], request=None, response=None)],
-                                 slice_descriptor=None, state=None)
-                             ],
-                             test_read_limit_reached=False, inferred_schema=None)
+    stream_read = StreamRead(
+        logs=[{"message": "here be a log message"}],
+        slices=[
+            StreamReadSlicesInner(
+                pages=[StreamReadSlicesInnerPagesInner(records=[real_record], request=None, response=None)],
+                slice_descriptor=None,
+                state=None,
+            )
+        ],
+        test_read_limit_reached=False,
+        inferred_schema=None,
+    )
 
-    expected_airbyte_message = AirbyteMessage(type=MessageType.RECORD,
-                                              record=AirbyteRecordMessage(stream=_stream_name, data={
-                                                  "logs": [{"message": "here be a log message"}],
-                                                  "slices": [{
-                                                      "pages": [{"records": [real_record], "request": None, "response": None}],
-                                                      "slice_descriptor": None,
-                                                      "state": None
-                                                  }],
-                                                  "test_read_limit_reached": False,
-                                                  "inferred_schema": None
-                                              }, emitted_at=1))
+    expected_airbyte_message = AirbyteMessage(
+        type=MessageType.RECORD,
+        record=AirbyteRecordMessage(
+            stream=_stream_name,
+            data={
+                "logs": [{"message": "here be a log message"}],
+                "slices": [
+                    {"pages": [{"records": [real_record], "request": None, "response": None}], "slice_descriptor": None, "state": None}
+                ],
+                "test_read_limit_reached": False,
+                "inferred_schema": None,
+            },
+            emitted_at=1,
+        ),
+    )
     with patch("connector_builder.message_grouper.MessageGrouper.get_message_groups", return_value=stream_read):
-        output_record = handle_connector_builder_request(source, config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG))
+        output_record = handle_connector_builder_request(
+            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG)
+        )
         output_record.record.emitted_at = 1
         assert output_record == expected_airbyte_message
 

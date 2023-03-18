@@ -573,3 +573,31 @@ class TestIncrementalFileStream:
             },
             "type": "object",
         }
+
+    def test_schema_no_files(self, mocker):
+        stream_instance = IncrementalFileStreamS3(
+            dataset="dummy",
+            provider={"bucket": "empty"},
+            format={"filetype": "csv"},
+            path_pattern="**/prefix*.csv"
+        )
+        mocker.patch.object(stream_instance, "_list_bucket", MagicMock(return_value=[]))
+        assert stream_instance.get_json_schema() == {
+            "properties": {
+                "_ab_additional_properties": {"type": "object"},
+                "_ab_source_file_last_modified": {"format": "date-time", "type": "string"},
+                "_ab_source_file_url": {"type": "string"}
+            },
+            "type": "object",
+        }
+
+    def test_migrate_datetime_format(self):
+        current_state = {"_ab_source_file_last_modified": "2022-11-09T11:12:00+0000"}
+        latest_record = {"_ab_source_file_last_modified": "2020-11-09T11:12:00Z"}
+        stream_instance = IncrementalFileStreamS3(
+            dataset="dummy",
+            provider={"bucket": "empty"},
+            format={"filetype": "csv"},
+            path_pattern="**/prefix*.csv"
+        )
+        assert stream_instance.get_updated_state(current_state, latest_record)["_ab_source_file_last_modified"] == "2022-11-09T11:12:00Z"

@@ -542,7 +542,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.86
+  dockerImageTag: 0.3.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -636,7 +636,7 @@
 - name: Freshsales
   sourceDefinitionId: eca08d79-7b92-4065-b7f3-79c14836ebe7
   dockerRepository: airbyte/source-freshsales
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshsales
   icon: freshsales.svg
   sourceType: api
@@ -1730,7 +1730,7 @@
 - name: S3
   sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   dockerRepository: airbyte/source-s3
-  dockerImageTag: 2.0.1
+  dockerImageTag: 2.0.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/s3
   icon: s3.svg
   sourceType: file
@@ -1943,7 +1943,7 @@
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 3.0.2
+  dockerImageTag: 3.0.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api
@@ -2063,11 +2063,14 @@
 - name: Trello
   sourceDefinitionId: 8da67652-004c-11ec-9a03-0242ac130003
   dockerRepository: airbyte/source-trello
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.3.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/trello
   icon: trello.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - api.trello.com
 - name: TrustPilot
   sourceDefinitionId: d7e23ea6-d741-4314-9209-a33c91a2e945
   dockerRepository: airbyte/source-trustpilot
