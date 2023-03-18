@@ -1,6 +1,6 @@
 # Yandex Metrica
 
-This page guides you through the process of setting up the Yandex Metrica source connector.
+This page contains the setup guide and reference information for the Yandex Metrica source connector.
 
 ## Prerequisites
 
@@ -11,7 +11,7 @@ This page guides you through the process of setting up the Yandex Metrica source
 
 1. [Create a Yandex Metrica account](https://metrica.yandex.com/) if you don't already have one.
 2. Head to [Management page](https://metrica.yandex.com/list) and add new tag or choose an existing one.
-3. At the top of the dasboard you will see 8 digit number to the right of your website name. This is your **Counter ID**.
+3. At the top of the dashboard you will see 8 digit number to the right of your website name. This is your **Counter ID**.
 4. Create a new app or choose an existing one from [My apps page](https://oauth.yandex.com/).
    - Which platform is the app required for?: **Web services**
    - Callback URL: https://oauth.yandex.com/verification_code
@@ -25,19 +25,41 @@ This page guides you through the process of setting up the Yandex Metrica source
 
 The Yandex Metrica source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-- Full Refresh
-- Incremental
-  - After the first sync the connector will set the state for next sync. The **start date** will be set to last syncs **end date**. The **end date** will be set to 1 day before today.
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
 
-- [Views](https://yandex.com/dev/metrika/doc/api2/logs/fields/hits.html) (Incremental).
-- [Sessions](https://yandex.com/dev/metrika/doc/api2/logs/fields/visits.html) (Incremental).
+* [Views](https://yandex.com/dev/metrika/doc/api2/logs/fields/hits.html) \(Incremental\).
+* [Sessions](https://yandex.com/dev/metrika/doc/api2/logs/fields/visits.html) \(Incremental\).
 
-## Notes
+## Performance considerations
 
-- We recommend syncing data once a day. Because of the Yandex Metrica API limitation it is only possible to extract records up to yesterdays date. Todays records will only be available tomorrow.
-- Because of the way API works some syncs may take a long time to finish. Timeout period is 2 hours.
+Yandex Metrica has some [rate limits](https://yandex.ru/dev/metrika/doc/api2/intro/quotas.html)
+
+:::tip
+
+It is recommended to sync data once a day.
+
+:::
+
+:::note
+
+Because of the way API works some syncs may take a long time to finish. Timeout period is 2 hours.
+
+:::
+
+## Data type mapping
+
+| Integration Type | Airbyte Type | Notes |
+|:-----------------|:-------------|:------|
+| `string`         | `string`     |       |
+| `integer`        | `integer`    |       |
+| `number`         | `number`     |       |
+| `array`          | `array`      |       |
+| `object`         | `object`     |       |
 
 ## Changelog
 
