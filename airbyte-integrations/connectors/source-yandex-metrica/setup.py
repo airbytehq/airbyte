@@ -5,17 +5,9 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = [
-    "airbyte-cdk"
-]
+MAIN_REQUIREMENTS = ["airbyte-cdk"]
 
-TEST_REQUIREMENTS = [
-    "freezegun",
-    "pytest~=6.1",
-    "pytest-mock",
-    "requests_mock",
-    "connector-acceptance-test"
-]
+TEST_REQUIREMENTS = ["freezegun", "pytest~=6.1", "pytest-mock", "requests_mock", "connector-acceptance-test"]
 
 setup(
     name="source_yandex_metrica",

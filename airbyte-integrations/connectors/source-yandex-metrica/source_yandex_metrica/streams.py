@@ -19,7 +19,6 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from pendulum import DateTime
 
 logger = logging.getLogger("airbyte")
-STATE_CHECKPOINT_INTERVAL = 20
 
 
 class YandexMetricaStream(HttpStream, ABC):
@@ -180,23 +179,19 @@ class YandexMetricaStream(HttpStream, ABC):
         # Configure state
         self.params["start_date"] = stream_state.get("start_date", self.config["start_date"])
         self.params["end_date"] = stream_state.get("end_date", self.config["end_date"])
-        if not self.evaluate_logrequest(self.counter_id):
-            logger.warning(f"Log request for counter_id={self.counter_id} cannot be made with provided dates")
-            yield {}
-        logrequest_id = self.create_logrequest(self.counter_id)
+        logrequest_id = self.create_logrequest()
         if not logrequest_id:
             yield {}
         # 3. Check logrequest status
-        job_status, number_of_parts = self.wait_for_job(counter_id=self.counter_id, logrequest_id=logrequest_id)
+        job_status, number_of_parts = self.wait_for_job(logrequest_id=logrequest_id)
         for part in range(number_of_parts + 1):
-            yield from self.download_report_part(counter_id=self.counter_id, logrequest_id=logrequest_id, part_number=part)
-        self.clean_logrequest(counter_id=self.counter_id, logrequest_id=logrequest_id)
+            yield from self.download_report_part(logrequest_id=logrequest_id, part_number=part)
+        self.clean_logrequest(logrequest_id=logrequest_id)
 
 
 class IncrementalYandexMetricaStream(YandexMetricaStream, IncrementalMixin):
-    state_checkpoint_interval = STATE_CHECKPOINT_INTERVAL
     cursor_field = "dateTime"
-    _cursor_value = None
+    _cursor_value = ""
 
     @property
     def state(self) -> Mapping[str, Any]:
@@ -217,8 +212,9 @@ class IncrementalYandexMetricaStream(YandexMetricaStream, IncrementalMixin):
 
     def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> bool:
         record_value = record.get(self.cursor_field)
-        cursor_value = max(stream_state.get(self.cursor_field, self.config.get("start_date")), record_value)
-        self.state = {self.cursor_field: cursor_value}
+        cursor_value = max((stream_state or {}).get(self.cursor_field, self.config.get("start_date")), record_value)
+        max_state = max(self.state.get(self.cursor_field), cursor_value)
+        self.state = {self.cursor_field: max_state}
         return not stream_state or stream_state.get(self.cursor_field, 0) < record_value
 
     def read_records(
