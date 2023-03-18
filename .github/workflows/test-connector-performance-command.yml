@@ -129,7 +129,7 @@ jobs:
           echo "Loading harness image into kind" >> $GITHUB_STEP_SUMMARY
           kind load docker-image airbyte/source-harness:dev --name chart-testing
           echo "loading pod..."
-          CONNECTOR_IMAGE_NAME=${CONN/connectors/airbyte}:dev
+          export CONNECTOR_IMAGE_NAME=${CONN/connectors/airbyte}:dev
           echo $CONNECTOR_IMAGE_NAME
           envsubst < ./tools/bin/test-postgres-source-process.yaml
           envsubst < ./tools/bin/test-postgres-source-process.yaml | kubectl create -f -
