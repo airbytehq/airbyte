@@ -11,7 +11,7 @@
 <a href="https://github.com/airbytehq/airbyte/releases" target="_blank">
     <img src="https://img.shields.io/github/v/release/airbytehq/airbyte?color=white" alt="Release">
 </a>
-<a href="https://airbytehq.slack.com/" target="_blank">
+<a href="https://slack.airbyte.com/" target="_blank">
     <img src="https://img.shields.io/badge/slack-join-white.svg?logo=slack" alt="Slack">
 </a>
 <a href="https://www.youtube.com/c/AirbyteHQ/?sub_confirmation=1" target="_blank">
