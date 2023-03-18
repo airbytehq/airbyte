@@ -8,6 +8,8 @@ from time import sleep
 
 import requests
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams import Stream
 
 
 class TrelloRequestRateLimits:
@@ -75,3 +77,11 @@ class TrelloRequestRateLimits:
             return wrapper_balance_rate_limit
 
         return decorator
+
+
+def read_full_refresh(stream_instance: Stream):
+    slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh)
+    for _slice in slices:
+        records = stream_instance.read_records(stream_slice=_slice, sync_mode=SyncMode.full_refresh)
+        for record in records:
+            yield record
