@@ -727,30 +727,7 @@ streams:
                               type: string
                             usageTrending:
                               type: string
-                            page_siNpocwkDxZff1kSW6OhZLd59pY_null:
-                              type: string
-                            feature_0oE6eBQqe7sHyv6_Llk7i_UYTjo_null:
-                              type: string
-                            feature_Mh9p_zO8lJYWsonM7xyOXvpqEpE_null:
-                              type: string
-                            guide_JD317zFyWlXpl1Zvm1m4kB2xojo_guideViews:
-                              type: string
-                            page_3qt_EmeqXPi3zFwHEtFlW6qBi98_page_eventCount:
-                              type: string
-                            feature_3qYAs4rcyvdjAiINSbfrRJzkNH4_feature_eventCount:
-                              type: string
-                            feature_D67Hv6a9WGfNDDfTMok1xluo9_c_feature_eventCount:
-                              type: string
-                            poll_czx5ep1jrtu_14nCfODWTVf1OGZXupmQTzBdbHU_pollResponseAllTime:
-                              type: string
-                            poll_82cfeahyjdj_d0fWyIuRnhHZn2YFVltKospMBbU_pollResponseWithinDateRange:
-                              type: string
-                            poll_czx5ep1jrtu_14nCfODWTVf1OGZXupmQTzBdbHU_pollResponseWithinDateRange:
-                              type: string
-                            poll_jq84am6dxpm_14nCfODWTVf1OGZXupmQTzBdbHU_pollResponseWithinDateRange:
-                              type: string
-                            poll_x97q4ruspri_d0fWyIuRnhHZn2YFVltKospMBbU_pollResponseWithinDateRange:
-                              type: string
+                          additionalProperties: true
                         pipeline:
                           type: array
                           items:
@@ -787,41 +764,7 @@ streams:
                                           properties:
                                             count:
                                               type: string
-                                        page_siNpocwkDxZff1kSW6OhZLd59pY_null:
-                                          type: object
-                                          properties:
-                                            sum:
-                                              type: string
-                                        feature_0oE6eBQqe7sHyv6_Llk7i_UYTjo_null:
-                                          type: object
-                                          properties:
-                                            sum:
-                                              type: string
-                                        feature_Mh9p_zO8lJYWsonM7xyOXvpqEpE_null:
-                                          type: object
-                                          properties:
-                                            sum:
-                                              type: string
-                                        guide_JD317zFyWlXpl1Zvm1m4kB2xojo_guideViews:
-                                          type: object
-                                          properties:
-                                            count:
-                                              type: 'null'
-                                        page_3qt_EmeqXPi3zFwHEtFlW6qBi98_page_eventCount:
-                                          type: object
-                                          properties:
-                                            sum:
-                                              type: string
-                                        feature_3qYAs4rcyvdjAiINSbfrRJzkNH4_feature_eventCount:
-                                          type: object
-                                          properties:
-                                            sum:
-                                              type: string
-                                        feature_D67Hv6a9WGfNDDfTMok1xluo9_c_feature_eventCount:
-                                          type: object
-                                          properties:
-                                            sum:
-                                              type: string
+                                      additionalProperties: true
                               spawn:
                                 type: array
                                 items:
@@ -975,30 +918,7 @@ streams:
                           type: string
                         visitor_auto_firstvisit:
                           type: string
-                        page_siNpocwkDxZff1kSW6OhZLd59pY_null:
-                          type: string
-                        feature_0oE6eBQqe7sHyv6_Llk7i_UYTjo_null:
-                          type: string
-                        feature_Mh9p_zO8lJYWsonM7xyOXvpqEpE_null:
-                          type: string
-                        guide_JD317zFyWlXpl1Zvm1m4kB2xojo_guideViews:
-                          type: string
-                        page_3qt_EmeqXPi3zFwHEtFlW6qBi98_page_eventCount:
-                          type: string
-                        feature_3qYAs4rcyvdjAiINSbfrRJzkNH4_feature_eventCount:
-                          type: string
-                        feature_D67Hv6a9WGfNDDfTMok1xluo9_c_feature_eventCount:
-                          type: string
-                        poll_czx5ep1jrtu_14nCfODWTVf1OGZXupmQTzBdbHU_pollResponseAllTime:
-                          type: string
-                        poll_82cfeahyjdj_d0fWyIuRnhHZn2YFVltKospMBbU_pollResponseWithinDateRange:
-                          type: string
-                        poll_czx5ep1jrtu_14nCfODWTVf1OGZXupmQTzBdbHU_pollResponseWithinDateRange:
-                          type: string
-                        poll_jq84am6dxpm_14nCfODWTVf1OGZXupmQTzBdbHU_pollResponseWithinDateRange:
-                          type: string
-                        poll_x97q4ruspri_d0fWyIuRnhHZn2YFVltKospMBbU_pollResponseWithinDateRange:
-                          type: string
+                      additionalProperties: true
                     source:
                       type: object
                       properties:
@@ -1204,85 +1124,7 @@ streams:
                       type: string
                 idResponses:
                   type: object
-                  properties:
-                    '0':
-                      type: string
-                    '1':
-                      type: string
-                    '5':
-                      type: string
-                    '10':
-                      type: string
-                    000sb6ypen4pl:
-                      type: string
-                    000zd844aup6h:
-                      type: string
-                    0019grdcdlceq:
-                      type: string
-                    001l2rnoy1tfy:
-                      type: string
-                    001mu0kt0es3s:
-                      type: string
-                    001ucoitoqlbx:
-                      type: string
-                    002rjbvc6osjr:
-                      type: string
-                    002s9w5ylxoyj:
-                      type: string
-                    002xuuhdcdo9l:
-                      type: string
-                    003k9r8idkmqq:
-                      type: string
-                    0000ytd61a9g9s:
-                      type: string
-                    0005iugzhc4gnh:
-                      type: string
-                    00080xeltkv8dh:
-                      type: string
-                    000grflq524xa9:
-                      type: string
-                    000p0pzej7y6xp:
-                      type: string
-                    000qsqvfc9l3i8:
-                      type: string
-                    000uxd5m28avqn:
-                      type: string
-                    000w35tf8jtdjj:
-                      type: string
-                    0012uneo7okvpc:
-                      type: string
-                    001arka73p8gcm:
-                      type: string
-                    001g1lj3n2i7mn:
-                      type: string
-                    001rgmst9np0ys:
-                      type: string
-                    001t6a1io6sied:
-                      type: string
-                    001wvslni5tryq:
-                      type: string
-                    001xp039fxm4mb:
-                      type: string
-                    00275j3jzuggmw:
-                      type: string
-                    0029qz4odulklv:
-                      type: string
-                    002eifd4lfwn4c:
-                      type: string
-                    002euv4fsbg2ne:
-                      type: string
-                    002h9j8n7owi4r:
-                      type: string
-                    002hvjdcgolnwv:
-                      type: string
-                    002m8kc50fg0go:
-                      type: string
-                    002zd46hwtudks:
-                      type: string
-                    003bbh65luen4t:
-                      type: string
-                    0000t7k5j1v617h:
-                      type: string
+                  additionalProperties: true
                 numericResponses:
                   type: array
                   items:
