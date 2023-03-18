@@ -12,6 +12,7 @@
         "description": "Choose how to authenticate to GitHub",
         "type": "object",
         "order": 0,
+        "group": "auth",
         "oneOf": [
           {
             "type": "object",

@@ -636,7 +636,7 @@
 - name: Freshsales
   sourceDefinitionId: eca08d79-7b92-4065-b7f3-79c14836ebe7
   dockerRepository: airbyte/source-freshsales
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshsales
   icon: freshsales.svg
   sourceType: api
@@ -2357,6 +2357,7 @@
   allowedHosts:
     hosts:
       - "*"
+  maxSecondsBetweenMessages: 43200
 - name: Zuora
   sourceDefinitionId: 3dc3037c-5ce8-4661-adc2-f7a9e3c5ece5
   dockerRepository: airbyte/source-zuora
