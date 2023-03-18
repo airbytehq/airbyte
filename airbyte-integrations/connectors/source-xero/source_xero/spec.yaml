@@ -50,6 +50,7 @@ connectionSpecification:
       order: 1
     start_date:
       type: string
+      title: "Start Date"
       pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       description: "UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ. Any data with created_at before this data will not be synced."
       examples:
