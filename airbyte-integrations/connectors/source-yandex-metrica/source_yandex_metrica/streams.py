@@ -32,8 +32,6 @@ class YandexMetricaStream(HttpStream, ABC):
         self.config = config
 
     def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
-        # Disable check_availability due to complex request flow
-        # TODO: move evaluate_logrequest method to availability strategy
         return True, None
 
     def get_json_schema(
