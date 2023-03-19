@@ -5,6 +5,19 @@ set -x
 
 . tools/lib/lib.sh
 
+# If you are looking at this file because you find yourself needing to publish a connector image manually, you might not need to do all of this!
+# If the connector you are publishing is a python connector (e.g. not using our base images), you can do the following:
+#
+# # NAME="source-foo"; VERSION="1.2.3"
+#
+# git pull
+#
+# cd airbyte-integrations/connectors/$NAME
+#
+# docker buildx build . --platform "linux/amd64,linux/arm64" --tag airbyte/$NAME:latest  --push
+# docker buildx build . --platform "linux/amd64,linux/arm64" --tag airbyte/$NAME:$VERSION  --push
+
+
 USAGE="
 Usage: $(basename "$0") <cmd>
 For publish, if you want to push the spec to the spec cache, provide a path to a service account key file that can write to the cache.
