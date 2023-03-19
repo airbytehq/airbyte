@@ -590,3 +590,14 @@ class TestIncrementalFileStream:
             },
             "type": "object",
         }
+
+    def test_migrate_datetime_format(self):
+        current_state = {"_ab_source_file_last_modified": "2022-11-09T11:12:00+0000"}
+        latest_record = {"_ab_source_file_last_modified": "2020-11-09T11:12:00Z"}
+        stream_instance = IncrementalFileStreamS3(
+            dataset="dummy",
+            provider={"bucket": "empty"},
+            format={"filetype": "csv"},
+            path_pattern="**/prefix*.csv"
+        )
+        assert stream_instance.get_updated_state(current_state, latest_record)["_ab_source_file_last_modified"] == "2022-11-09T11:12:00Z"
