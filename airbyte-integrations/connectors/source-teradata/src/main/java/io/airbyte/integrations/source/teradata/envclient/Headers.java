@@ -1,4 +1,4 @@
-package io.airbyte.integrations.source.teradata.client;
+package io.airbyte.integrations.source.teradata.envclient;
 
 public class Headers {
 

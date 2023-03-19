@@ -5,49 +5,139 @@
 package io.airbyte.integrations.source.teradata;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.relationaldb.TableInfo;
+import io.airbyte.protocol.models.CommonField;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.JDBCType;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TeradataSource extends AbstractJdbcSource<JDBCType> implements Source {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TeradataSource.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TeradataSource.class);
 
-  // TODO insert your driver name. Ex: "com.microsoft.sqlserver.jdbc.SQLServerDriver"
-  static final String DRIVER_CLASS = "com.teradata.jdbc.TeraDriver";
+    private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
 
-  public TeradataSource() {
-    // TODO: if the JDBC driver does not support custom fetch size, use NoOpStreamingQueryConfig
-    // instead of AdaptiveStreamingQueryConfig.
-    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
-  }
+    static final String DRIVER_CLASS = "com.teradata.jdbc.TeraDriver";
 
-  // TODO The config is based on spec.json, update according to your DB
-  @Override
-  public JsonNode toDatabaseConfig(final JsonNode config) {
+    public static final String PARAM_MODE = "mode";
+    public static final String PARAM_SSL = "ssl";
+    public static final String PARAM_SSL_MODE = "ssl_mode";
+    public static final String PARAM_SSLMODE = "sslmode";
+    public static final String PARAM_SSLCA = "sslca";
+    public static final String REQUIRE = "require";
 
-    // TODO create DB config. Ex: "Jsons.jsonNode(ImmutableMap.builder().put("username",
-    // userName).put("password", pas)...build());
-    return null;
-  }
+    private static final String CA_CERTIFICATE = "ca.pem";
 
-  @Override
-  public Set<String> getExcludedInternalNameSpaces() {
-    // TODO Add tables to exclude, Ex "INFORMATION_SCHEMA", "sys", "spt_fallback_db", etc
-    return Set.of("");
-  }
+    public TeradataSource() {
+        super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new TeradataSourceOperations());
+    }
 
-  public static void main(final String[] args) throws Exception {
-    final Source source = new TeradataSource();
-    LOGGER.info("starting source: {}", TeradataSource.class);
-    new IntegrationRunner(source).run(args);
-    LOGGER.info("completed source: {}", TeradataSource.class);
-  }
+    public static void main(final String[] args) throws Exception {
+        final Source source = new TeradataSource();
+        LOGGER.info("starting source: {}", TeradataSource.class);
+        new IntegrationRunner(source).run(args);
+        LOGGER.info("completed source: {}", TeradataSource.class);
+    }
+
+    @Override
+    public JsonNode toDatabaseConfig(final JsonNode config) {
+        final String schema = config.get(JdbcUtils.DATABASE_KEY).asText();
+
+        final String host = config.has(JdbcUtils.PORT_KEY) ?
+            config.get(JdbcUtils.HOST_KEY).asText() + ":" + config.get(JdbcUtils.PORT_KEY).asInt() :
+            config.get(JdbcUtils.HOST_KEY).asText();
+
+        final String jdbcUrl = String.format("jdbc:teradata://%s/", host);
+
+        final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+            .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+            .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl)
+            .put(JdbcUtils.SCHEMA_KEY, schema);
+
+        if (config.has(JdbcUtils.PASSWORD_KEY)) {
+            configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+        }
+
+        if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
+            configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+        }
+
+        return Jsons.jsonNode(configBuilder.build());
+    }
+
+    @Override
+    public Set<String> getExcludedInternalNameSpaces() {
+        // the connector requires to have a database explicitly defined
+        return Set.of("");
+    }
+
+    @Override
+    protected int getStateEmissionFrequency() {
+        return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
+    }
+
+    @Override
+    public List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database) throws Exception {
+        return discoverInternal(database, database.getSourceConfig().has(JdbcUtils.DATABASE_KEY) ?
+            database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText() : null);
+    }
+
+    @Override
+    protected Map<String, String> getDefaultConnectionProperties(JsonNode config) {
+        final Map<String, String> additionalParameters = new HashMap<>();
+        if (config.has(PARAM_SSL) && config.get(PARAM_SSL).asBoolean()) {
+            LOGGER.debug("SSL Enabled");
+            if (config.has(PARAM_SSL_MODE)) {
+                LOGGER.debug("Selected SSL Mode : {}", config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText());
+                additionalParameters.putAll(obtainConnectionOptions(config.get(PARAM_SSL_MODE)));
+            } else {
+                additionalParameters.put(PARAM_SSLMODE, REQUIRE);
+            }
+        }
+        return additionalParameters;
+    }
+
+    private Map<String, String> obtainConnectionOptions(final JsonNode encryption) {
+        final Map<String, String> additionalParameters = new HashMap<>();
+        if (!encryption.isNull()) {
+            final var method = encryption.get(PARAM_MODE).asText();
+            switch (method) {
+                case "verify-ca", "verify-full" -> {
+                    additionalParameters.put(PARAM_SSLMODE, method);
+                    try {
+                        createCertificateFile(CA_CERTIFICATE, encryption.get("ssl_ca_certificate").asText());
+                    } catch (final IOException ioe) {
+                        throw new UncheckedIOException(ioe);
+                    }
+                    additionalParameters.put(PARAM_SSLCA, CA_CERTIFICATE);
+                }
+                default -> additionalParameters.put(PARAM_SSLMODE, method);
+            }
+        }
+        return additionalParameters;
+    }
+
+    private static void createCertificateFile(String fileName, String fileValue) throws IOException {
+        try (final PrintWriter out = new PrintWriter(fileName, StandardCharsets.UTF_8)) {
+            out.print(fileValue);
+        }
+    }
+
 
 }

@@ -5,71 +5,143 @@
 package io.airbyte.integrations.source.teradata;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import io.airbyte.integrations.source.teradata.envclient.TeradataHttpClient;
+import io.airbyte.integrations.source.teradata.envclient.dto.CreateEnvironmentRequest;
+import io.airbyte.integrations.source.teradata.envclient.dto.DeleteEnvironmentRequest;
+import io.airbyte.integrations.source.teradata.envclient.dto.Region;
+import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.JDBCType;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TeradataJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TeradataJdbcSourceAcceptanceTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TeradataJdbcSourceAcceptanceTest.class);
 
-  // TODO declare a test container for DB. EX: org.testcontainers.containers.OracleContainer
+    private JsonNode staticConfig;
 
-  @BeforeAll
-  static void init() {
-    // Oracle returns uppercase values
-    // TODO init test container. Ex: "new OracleContainer("epiclabs/docker-oracle-xe-11g")"
-    // TODO start container. Ex: "container.start();"
-  }
+    static {
+        COLUMN_CLAUSE_WITH_PK = "id INTEGER NOT NULL, name VARCHAR(200) NOT NULL, updated_at DATE NOT NULL";
 
-  @BeforeEach
-  public void setup() throws Exception {
-    // TODO init config. Ex: "config = Jsons.jsonNode(ImmutableMap.builder().put("host",
-    // host).put("port", port)....build());
-    super.setup();
-  }
+        CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s ST_Geometry) NO PRIMARY INDEX;";
+        INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('POLYGON((1 1, 1 3, 6 3, 6 0, 1 1))');";
 
-  @AfterEach
-  public void tearDown() {
-    // TODO clean used resources
-  }
+        COL_TIMESTAMP = "tmstmp";
+        INSERT_TABLE_NAME_AND_TIMESTAMP_QUERY = "INSERT INTO %s (name, tmstmp) VALUES ('%s', '%s')";
+        COL_TIMESTAMP_TYPE = "TIMESTAMP(0)";
+    }
 
-  @Override
-  public AbstractJdbcSource<JDBCType> getSource() {
-    return new TeradataSource();
-  }
 
-  @Override
-  public boolean supportsSchemas() {
-    // TODO check if your db supports it and update method accordingly
-    return false;
-  }
+    @BeforeAll
+    public void initEnvironment() throws ExecutionException, InterruptedException {
+        staticConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
+        TeradataHttpClient teradataHttpClient = new TeradataHttpClient(staticConfig.get("env_host").asText());
+        var request = new CreateEnvironmentRequest(
+            staticConfig.get("env_name").asText(),
+            staticConfig.get("env_region").asText(),
+            staticConfig.get("env_password").asText());
+        var response = teradataHttpClient.createEnvironment(request, staticConfig.get("env_token").asText()).get();
+        ((ObjectNode) staticConfig).put("host", response.ip());
+        try {
+            Class.forName("com.teradata.jdbc.TeraDriver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-  @Override
-  public JsonNode getConfig() {
-    return config;
-  }
+    @AfterAll
+    public void cleanupEnvironment() throws ExecutionException, InterruptedException {
+        TeradataHttpClient teradataHttpClient = new TeradataHttpClient(staticConfig.get("env_host").asText());
+        var request = new DeleteEnvironmentRequest(staticConfig.get("env_name").asText());
+        teradataHttpClient.deleteEnvironment(request, staticConfig.get("env_token").asText()).get();
+    }
 
-  @Override
-  public String getDriverClass() {
-    return TeradataSource.DRIVER_CLASS;
-  }
+    @BeforeEach
+    public void setup() throws Exception {
+        executeStatements(List.of(
+            statement -> statement.executeUpdate("CREATE DATABASE \"database_name\" AS PERMANENT = 120e6, SPOOL = 120e6;")
+        ), staticConfig.get("host").asText(), staticConfig.get("username").asText(), staticConfig.get("password").asText());
+        super.setup();
+    }
 
-  @Override
-  public AbstractJdbcSource<JDBCType> getJdbcSource() {
-    // TODO
-    return null;
-  }
+    @AfterEach
+    public void tearDown() {
+        executeStatements(List.of(
+            statement -> statement.executeUpdate("DELETE DATABASE \"database_name\";"),
+            statement -> statement.executeUpdate("DROP DATABASE \"database_name\";")
+        ), staticConfig.get("host").asText(), staticConfig.get("username").asText(), staticConfig.get("password").asText());
+    }
 
-  @AfterAll
-  static void cleanUp() {
-    // TODO close the container. Ex: "container.close();"
-  }
+    @Override
+    public AbstractJdbcSource<JDBCType> getSource() {
+        return new TeradataSource();
+    }
+
+    @Override
+    public boolean supportsSchemas() {
+        // TODO check if your db supports it and update method accordingly
+        return false;
+    }
+
+    @Override
+    public JsonNode getConfig() {
+        return Jsons.clone(staticConfig);
+    }
+
+    @Override
+    public String getDriverClass() {
+        return TeradataSource.DRIVER_CLASS;
+    }
+
+    @Override
+    public AbstractJdbcSource<JDBCType> getJdbcSource() {
+        return new TeradataSource();
+    }
+
+    @Override
+    public String getFullyQualifiedTableName(String tableName) {
+        return "database_name." + tableName;
+    }
+
+    private static void executeStatements(List<SqlConsumer> consumers, String host, String username, String password) {
+        try (
+            Connection con = DriverManager.getConnection("jdbc:teradata://" + host + "/", username, password);
+            Statement stmt = con.createStatement();
+        ) {
+            for (SqlConsumer consumer : consumers) {
+                consumer.accept(stmt);
+            }
+        } catch (SQLException sqle) {
+            throw new RuntimeException(sqle);
+        }
+
+    }
+
+    @FunctionalInterface
+    private interface SqlConsumer {
+
+        void accept(Statement statement) throws SQLException;
+
+    }
 
 }

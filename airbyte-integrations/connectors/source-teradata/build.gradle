@@ -16,7 +16,7 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
 
-    implementation 'com.teradata.jdbc:terajdbc:17.20.00.15'
+    implementation 'com.teradata.jdbc:terajdbc:20.00.00.06'
 
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
 

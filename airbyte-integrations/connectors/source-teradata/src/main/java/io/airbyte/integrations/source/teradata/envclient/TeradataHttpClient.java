@@ -1,22 +1,22 @@
-package io.airbyte.integrations.source.teradata.client;
+package io.airbyte.integrations.source.teradata.envclient;
 
-import static io.airbyte.integrations.source.teradata.client.Headers.APPLICATION_JSON;
-import static io.airbyte.integrations.source.teradata.client.Headers.AUTHORIZATION;
-import static io.airbyte.integrations.source.teradata.client.Headers.BEARER;
-import static io.airbyte.integrations.source.teradata.client.Headers.CONTENT_TYPE;
+import static io.airbyte.integrations.source.teradata.envclient.Headers.APPLICATION_JSON;
+import static io.airbyte.integrations.source.teradata.envclient.Headers.AUTHORIZATION;
+import static io.airbyte.integrations.source.teradata.envclient.Headers.BEARER;
+import static io.airbyte.integrations.source.teradata.envclient.Headers.CONTENT_TYPE;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
-import io.airbyte.integrations.source.teradata.client.dto.CreateEnvironmentRequest;
-import io.airbyte.integrations.source.teradata.client.dto.DeleteEnvironmentRequest;
-import io.airbyte.integrations.source.teradata.client.dto.EnvironmentResponse;
-import io.airbyte.integrations.source.teradata.client.dto.GetEnvironmentRequest;
-import io.airbyte.integrations.source.teradata.client.exception.BaseException;
-import io.airbyte.integrations.source.teradata.client.exception.Error4xxException;
-import io.airbyte.integrations.source.teradata.client.exception.Error5xxException;
+import io.airbyte.integrations.source.teradata.envclient.dto.CreateEnvironmentRequest;
+import io.airbyte.integrations.source.teradata.envclient.dto.DeleteEnvironmentRequest;
+import io.airbyte.integrations.source.teradata.envclient.dto.EnvironmentResponse;
+import io.airbyte.integrations.source.teradata.envclient.dto.GetEnvironmentRequest;
+import io.airbyte.integrations.source.teradata.envclient.exception.BaseException;
+import io.airbyte.integrations.source.teradata.envclient.exception.Error4xxException;
+import io.airbyte.integrations.source.teradata.envclient.exception.Error5xxException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;

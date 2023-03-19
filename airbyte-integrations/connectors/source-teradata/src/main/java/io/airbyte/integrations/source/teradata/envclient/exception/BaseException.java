@@ -1,4 +1,4 @@
-package io.airbyte.integrations.source.teradata.client.exception;
+package io.airbyte.integrations.source.teradata.envclient.exception;
 
 public class BaseException extends RuntimeException {
 

@@ -1,4 +1,4 @@
-package io.airbyte.integrations.source.teradata.client.dto;
+package io.airbyte.integrations.source.teradata.envclient.dto;
 
 public record DeleteEnvironmentRequest(
 
