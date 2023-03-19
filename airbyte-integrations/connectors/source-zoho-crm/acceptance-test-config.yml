@@ -27,6 +27,15 @@ acceptance_tests:
           incremental_contacts_zoho_crm_stream:
             - name: Contact_Auto_Number
               bypass_reason: "depend on changing data"
+        empty_streams:
+          - name: incremental_notes_zoho_crm_stream
+            bypass_reason: "no data"
+          - name: incremental_deals_zoho_crm_stream
+            bypass_reason: "no data"
+          - name: incremental_accounts_zoho_crm_stream
+            bypass_reason: "no data"
+          - name: incremental_calls_zoho_crm_stream
+            bypass_reason: "no data"
   incremental:
     tests:
       - config_path: "secrets/config.json"
