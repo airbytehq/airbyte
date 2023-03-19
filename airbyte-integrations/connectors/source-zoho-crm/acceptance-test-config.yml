@@ -37,3 +37,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+        ignored_fields:
+          incremental_contacts_zoho_crm_stream:
+            - name: Contact_Auto_Number
+              bypass_reason: "depend on changing data"
