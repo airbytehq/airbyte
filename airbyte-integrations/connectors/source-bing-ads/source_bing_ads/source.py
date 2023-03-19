@@ -368,6 +368,7 @@ class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
     report_columns = [
         *primary_key,
         "CampaignStatus",
+        "CampaignLabels",
         "Impressions",
         "Clicks",
         "Ctr",
