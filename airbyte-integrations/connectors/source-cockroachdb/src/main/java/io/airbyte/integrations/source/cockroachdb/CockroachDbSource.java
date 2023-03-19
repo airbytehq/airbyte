@@ -95,20 +95,6 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
-                                                    final ConfiguredAirbyteCatalog catalog,
-                                                    final JsonNode state)
-      throws Exception {
-    final AirbyteConnectionStatus check = check(config);
-
-    if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
-      throw new RuntimeException("Unable establish a connection: " + check.getMessage());
-    }
-
-    return super.read(config, catalog, state);
-  }
-
-  @Override
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
     try (final Stream<JsonNode> stream = database.unsafeQuery(getPrivileges(database), sourceOperations::rowToJson)) {
       return stream.map(this::getPrivilegeDto).collect(Collectors.toSet());
@@ -121,8 +107,8 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
   }
 
   @Override
-  protected DataSource createDataSource(final JsonNode config) {
-    final JsonNode jdbcConfig = toDatabaseConfig(config);
+  protected DataSource createDataSource(final JsonNode sourceConfig) {
+    final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
 
     final DataSource dataSource = DataSourceFactory.create(
         jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
@@ -135,11 +121,14 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
   }
 
   @Override
-  public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
-    final DataSource dataSource = createDataSource(config);
+  public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
+    final DataSource dataSource = createDataSource(sourceConfig);
     final JdbcDatabase database = new DefaultJdbcDatabase(dataSource, sourceOperations);
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
-    return new CockroachJdbcDatabase(database, sourceOperations);
+    final CockroachJdbcDatabase cockroachJdbcDatabase = new CockroachJdbcDatabase(database, sourceOperations);
+    cockroachJdbcDatabase.setSourceConfig(sourceConfig);
+    cockroachJdbcDatabase.setDatabaseConfig(toDatabaseConfig(sourceConfig));
+    return cockroachJdbcDatabase;
   }
 
   @Override

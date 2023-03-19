@@ -1,4 +1,4 @@
-version: "0.1.0"
+version: "0.29.0"
 
 definitions:
   schema_loader:
@@ -59,9 +59,7 @@ definitions:
       record_selector:
         type: RecordSelector
         extractor:
-          type: CustomRecordExtractor
-          field_path: "/data/boards/*/items/*"
-          class_name: "source_monday.DpathStringExtractor"
+          field_path: ["data", "boards", "*", "items", "*"]
       paginator:
         $ref: "#/definitions/default_paginator"
         pagination_strategy:
