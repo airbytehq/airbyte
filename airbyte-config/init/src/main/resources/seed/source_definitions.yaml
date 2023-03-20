@@ -1003,6 +1003,7 @@
   allowedHosts:
     hosts:
       - "${domain}"
+  maxSecondsBetweenMessages: 21600
 - name: K6 Cloud
   sourceDefinitionId: e300ece7-b073-43a3-852e-8aff36a57f13
   dockerRepository: airbyte/source-k6-cloud
