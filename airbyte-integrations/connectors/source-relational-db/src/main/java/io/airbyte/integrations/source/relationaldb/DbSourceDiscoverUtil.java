@@ -17,6 +17,7 @@ import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -33,15 +34,18 @@ public class DbSourceDiscoverUtil {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DbSourceDiscoverUtil.class);
 
-  // In case of user manually modified source table schema but did not refresh it and save into the
-  // catalog - it can lead to sync failure. This method compare actual schema vs catalog schema
+  /*
+  "This method logs schema drift between source table and the catalog. This can happen if
+  (i) underlying table schema changed between syncs or
+  (ii) The source connector's mapping of data types to Airbyte types changed between runs"
+  */
   public static <DataType> void logSourceSchemaChange(final Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo,
                                                       final ConfiguredAirbyteCatalog catalog,
                                                       final Function<DataType, JsonSchemaType> airbyteTypeConverter) {
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
       final String fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.getNamespace(),
-          stream.getName());
+                                                                                             stream.getName());
       if (!fullyQualifiedTableNameToInfo.containsKey(fullyQualifiedTableName)) {
         continue;
       }
@@ -52,11 +56,19 @@ public class DbSourceDiscoverUtil {
           .distinct()
           .collect(Collectors.toList());
       final JsonNode currentJsonSchema = fieldsToJsonSchema(fields);
-
+      final List<String> mismatchedFields = new ArrayList<>();
       final JsonNode catalogSchema = stream.getJsonSchema();
-      if (!catalogSchema.equals(currentJsonSchema)) {
+      catalogSchema.get("properties").fieldNames().forEachRemaining(fieldName -> {
+        if (!currentJsonSchema.get("properties").has(fieldName) ||
+            !currentJsonSchema.get("properties").get(fieldName).equals(catalogSchema.get(fieldName))) {
+          mismatchedFields.add(fieldName);
+        }
+      });
+
+      if (!mismatchedFields.isEmpty()) {
         LOGGER.warn(
-            "Source schema changed for table  {}! Actual schema: {}. Catalog schema:  {}",
+            "Source schema changed for table {}! Potential mismatches: {}. Actual schema: {}. Catalog schema: {}",
+            String.join(",", mismatchedFields),
             fullyQualifiedTableName,
             currentJsonSchema,
             catalogSchema);
@@ -79,7 +91,7 @@ public class DbSourceDiscoverUtil {
               .distinct()
               .collect(Collectors.toList());
           final String fullyQualifiedTableName = getFullyQualifiedTableName(t.getNameSpace(),
-              t.getName());
+                                                                            t.getName());
           final List<String> primaryKeys = fullyQualifiedTableNameToPrimaryKeys.getOrDefault(
               fullyQualifiedTableName, Collections
                   .emptyList());
@@ -99,7 +111,7 @@ public class DbSourceDiscoverUtil {
 
           return CatalogHelpers
               .createAirbyteStream(tableInfo.getName(), tableInfo.getNameSpace(),
-                  tableInfo.getFields())
+                                   tableInfo.getFields())
               .withSupportedSyncModes(
                   tableInfo.getCursorFields() != null && tableInfo.getCursorFields().isEmpty()
                       ? Lists.newArrayList(SyncMode.FULL_REFRESH)
