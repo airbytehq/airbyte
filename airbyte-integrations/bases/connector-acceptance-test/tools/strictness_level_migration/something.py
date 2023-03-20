@@ -29,11 +29,28 @@ async def run_tests(connector_definition):
         print(f"{connector_name} failed with exit code {return_code}.")
 
 
+async def semaphore_gather(coroutines):
+    # Limit the amount of connectors we want to test at once
+    # To <number of docker containers that can run at once>/2
+    # Since each test will spin up a CAT container and a source container
+    semaphore = asyncio.Semaphore(5)
+
+    async def _wrap_coro(coroutine):
+        async with semaphore:
+            return await coroutine
+
+    return await asyncio.gather(
+        *(_wrap_coro(coroutine) for coroutine in coroutines), return_exceptions=False
+    )
+
 async def main():
     tasks = []
+
+
+
     for definition in ALL_DEFINITIONS[:8]:
         tasks.append(run_tests(definition))
-    await asyncio.gather(*tasks)
+    await asyncio.gather(semaphore_gather(tasks))
 
 if __name__ == "__main__":
     asyncio.run(main())
