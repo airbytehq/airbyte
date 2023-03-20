@@ -10,6 +10,7 @@ import io.airbyte.commons.json.Jsons;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.StreamCorruptedException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -129,9 +130,10 @@ public class AirbyteFileOffsetBackingStore {
       }
 
       return data;
-    } catch (final NoSuchFileException | EOFException e) {
+    } catch (final NoSuchFileException | EOFException | StreamCorruptedException e) {
       // NoSuchFileException: Ignore, may be new.
       // EOFException: Ignore, this means the file was missing or corrupt
+      // StreamCorruptedException: Ignore as it's also include EOF errors (corrupted file)
       return Collections.emptyMap();
     } catch (final IOException | ClassNotFoundException e) {
       throw new ConnectException(e);
