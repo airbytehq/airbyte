@@ -1,46 +1,43 @@
 {
-  "$schema": "http://json-schema.org/schema#",
-  "properties": {
-    "attributes": {
-      "properties": {
-        "_mayCreate": {
-          "type": "boolean"
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+      "attributes": {
+        "properties": {
+          "_mayCreate": {
+            "type": "boolean"
+          },
+          "_mayDelete": {
+            "type": "boolean"
+          },
+          "_mayUpdate": {
+            "type": "boolean"
+          },
+          "created_on": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "updated_on": {
+            "type": "string"
+          }
         },
-        "_mayDelete": {
-          "type": "boolean"
-        },
-        "_mayUpdate": {
-          "type": "boolean"
-        },
-        "created_on": {
-          "type": "string"
-        },
-        "include_in_tace": {
-          "type": "boolean"
-        },
-        "name": {
-          "type": "string"
-        },
-        "updated_on": {
-          "type": "string"
-        }
+        "type": "object"
       },
-      "type": "object"
-    },
-    "id": {
-      "type": "string"
-    },
-    "links": {
-      "properties": {
-        "self": {
-          "type": "string"
-        }
+      "id": {
+        "type": "string"
       },
-      "type": "object"
+      "links": {
+        "properties": {
+          "self": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": {
+        "type": "string"
+      }
     },
-    "type": {
-      "type": "string"
-    }
-  },
-  "type": "object"
-}
+    "type": "object"
+  }

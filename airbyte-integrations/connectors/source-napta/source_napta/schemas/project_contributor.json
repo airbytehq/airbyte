@@ -1,46 +1,46 @@
 {
-  "$schema": "http://json-schema.org/schema#",
-  "properties": {
-    "attributes": {
-      "properties": {
-        "_mayDelete": {
-          "type": "boolean"
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+      "attributes": {
+        "properties": {
+          "_mayDelete": {
+            "type": "boolean"
+          },
+          "_mayUpdate": {
+            "type": "boolean"
+          },
+          "contributor_id": {
+            "type": "string"
+          },
+          "created_by_id": {
+            "type": "string"
+          },
+          "created_on": {
+            "type": "string"
+          },
+          "project_id": {
+            "type": "string"
+          },
+          "updated_on": {
+            "type": "string"
+          }
         },
-        "_mayUpdate": {
-          "type": "boolean"
-        },
-        "contributor_id": {
-          "type": "string"
-        },
-        "created_by_id": {
-          "type": "string"
-        },
-        "created_on": {
-          "type": "string"
-        },
-        "project_id": {
-          "type": "string"
-        },
-        "updated_on": {
-          "type": "string"
-        }
+        "type": "object"
       },
-      "type": "object"
-    },
-    "id": {
-      "type": "string"
-    },
-    "links": {
-      "properties": {
-        "self": {
-          "type": "string"
-        }
+      "id": {
+        "type": "string"
       },
-      "type": "object"
+      "links": {
+        "properties": {
+          "self": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": {
+        "type": "string"
+      }
     },
-    "type": {
-      "type": "string"
-    }
-  },
-  "type": "object"
-}
+    "type": "object"
+  }

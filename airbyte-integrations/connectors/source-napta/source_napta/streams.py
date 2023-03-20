@@ -37,6 +37,10 @@ class NaptaStream(HttpStream, ABC):
         yield from response.json()["data"]
 
 
+class IncrementalNaptaStream(NaptaStream):
+    pass
+
+
 class UserConfig(NaptaStream):
     def path(self, **kwargs) -> str:
         return "user_config"

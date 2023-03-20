@@ -1,46 +1,46 @@
 {
-  "$schema": "http://json-schema.org/schema#",
-  "properties": {
-    "attributes": {
-      "properties": {
-        "_mayDelete": {
-          "type": "boolean"
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+      "attributes": {
+        "properties": {
+          "_mayDelete": {
+            "type": "boolean"
+          },
+          "_mayUpdate": {
+            "type": "boolean"
+          },
+          "created_on": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "updated_on": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
         },
-        "_mayUpdate": {
-          "type": "boolean"
-        },
-        "created_on": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "name": {
-          "type": "string"
-        },
-        "updated_on": {
-          "type": [
-            "null",
-            "string"
-          ]
-        }
+        "type": "object"
       },
-      "type": "object"
-    },
-    "id": {
-      "type": "string"
-    },
-    "links": {
-      "properties": {
-        "self": {
-          "type": "string"
-        }
+      "id": {
+        "type": "string"
       },
-      "type": "object"
+      "links": {
+        "properties": {
+          "self": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": {
+        "type": "string"
+      }
     },
-    "type": {
-      "type": "string"
-    }
-  },
-  "type": "object"
-}
+    "type": "object"
+  }
