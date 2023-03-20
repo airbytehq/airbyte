@@ -43,4 +43,5 @@ The Yandex Metrica source connector supports the following [sync modes](https://
 
 | Version | Date       | Pull Request                                             | Subject                       |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------- |
+| 0.1.1   | 2023-02-10 | [22809](https://github.com/airbytehq/airbyte/pull/22809) | Mark date fields in proper format in spec |
 | 0.1.0   | 2022-09-09 | [15061](https://github.com/airbytehq/airbyte/pull/15061) | 🎉 New Source: Yandex metrica |
