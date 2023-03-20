@@ -17500,7 +17500,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-zoho-crm:0.1.1"
+- dockerImage: "airbyte/source-zoho-crm:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zoho-crm"
     connectionSpecification:
@@ -17554,7 +17554,9 @@
           - "Sandbox"
         start_datetime:
           title: "Start Date"
-          type: "string"
+          type:
+          - "string"
+          - "null"
           examples:
           - "2000-01-01"
           - "2000-01-01 13:00"
