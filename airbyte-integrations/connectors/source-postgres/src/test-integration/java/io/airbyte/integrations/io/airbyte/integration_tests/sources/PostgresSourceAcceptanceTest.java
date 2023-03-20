@@ -44,7 +44,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 @ExtendWith(SystemStubsExtension.class)
-public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
+public class PostgresSourceAcceptanceTest extends AbstractPostgresSourceAcceptanceTest {
 
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
@@ -113,16 +113,6 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
-  }
-
-  @Override
-  protected String getImageName() {
-    return "airbyte/source-postgres:dev";
-  }
-
-  @Override
-  protected ConnectorSpecification getSpec() throws Exception {
-    return SshHelpers.getSpecAndInjectSsh(Optional.of("security"));
   }
 
   @Override
