@@ -21,10 +21,10 @@ CONNECTORS_DIRECTORY = "../../../../connectors"
 REPO_ROOT = "../../../../../"
 AIRBYTE_REPO = Repo(REPO_ROOT)
 environment = Environment(loader=FileSystemLoader("./templates/"))
-PR_TEMPLATE = environment.get_template("pr.md.j2")
+PR_TEMPLATE = environment.get_template("strictness_level_migration/pr.md.j2")
 
 parser = argparse.ArgumentParser(
-    description="Create PRs for migration of GA connectors to high test strictness level in connector acceptance test"
+    description="Create PRs for a list of connectors from a template."
 )
 parser.add_argument("-d", "--dry", default=True)
 
@@ -107,7 +107,7 @@ def open_pr(definition, new_branch, dry_run):
 
 
 def add_test_comment(definition, new_branch, dry_run):
-    connector_name = definition["dockerRepository"].replace("airbyte/", "")
+    connector_name = get_airbyte_connector_name_from_definition(definition)
     comment = f"/test connector=connectors/{connector_name}"
     comment_command_arguments = ["gh", "pr", "comment", new_branch.name, "--body", comment]
     if not dry_run:
@@ -154,5 +154,8 @@ def migrate_definition_and_open_pr(definition, dry_run):
 if __name__ == "__main__":
     args = parser.parse_args()
     dry_run = False if args.dry == "False" or args.dry == "false" else True
-    for definition in GA_DEFINITIONS[:1]:
-        migrate_definition_and_open_pr(definition, dry_run=dry_run)
+    for definition in GA_DEFINITIONS[:1]: # TODO make configurable. GA_DEFINITIONS, ALL DEFINITIONS, read from a list, etc
+        if is_airbyte_connector(definition):
+            migrate_definition_and_open_pr(definition, dry_run=dry_run)
+        else:
+            logging.error(f"Couldn't create PR for non-airbyte connector: {definition.get('dockerRepository')}")

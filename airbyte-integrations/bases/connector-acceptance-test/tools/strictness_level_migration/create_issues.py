@@ -13,23 +13,30 @@ import tempfile
 from definitions import GA_DEFINITIONS
 from jinja2 import Environment, FileSystemLoader
 
+from create_prs import is_airbyte_connector
+
+# SET THESE BEFORE USING THE SCRIPT
+MODULE_NAME = "fail_on_extra_columns"
+GITHUB_PROJECT_NAME = "column-selection-sources"
+COMMON_ISSUE_LABELS = ["area/connectors", "team/connectors-python", "type/enhancement", "column-selection-sources"]
+ISSUE_TITLE = "Add undeclared columns to spec"
+
+# Don't need to set these
 TEMPLATES_FOLDER = "./templates/"
-COMMON_ISSUE_LABELS = ["area/connectors", "team/connectors-python", "type/enhancement", "test-strictness-level"]
-GITHUB_PROJECT_NAME = "SAT-high-test-strictness-level"
 
 logging.basicConfig(level=logging.DEBUG)
 environment = Environment(loader=FileSystemLoader(TEMPLATES_FOLDER))
 
 parser = argparse.ArgumentParser(
-    description="Create issues for migration of GA connectors to high test strictness level in connector acceptance test"
+    description="Create issues for a list of connectors from a template."
 )
 parser.add_argument("-d", "--dry", default=True)
 
 
 def get_issue_content(source_definition):
-    issue_title = f"Source {source_definition['name']}: enable `high` test strictness level in connector acceptance test"
+    issue_title = f"Source {source_definition['name']}: {ISSUE_TITLE}"
 
-    template = environment.get_template("issue.md.j2")
+    template = environment.get_template(f"{MODULE_NAME}/issue.md.j2")
     issue_body = template.render(connector_name=source_definition["name"], release_stage=source_definition["releaseStage"])
     file_definition, issue_body_path = tempfile.mkstemp()
 
@@ -80,5 +87,8 @@ def create_issue(source_definition, dry_run=True):
 if __name__ == "__main__":
     args = parser.parse_args()
     dry_run = False if args.dry == "False" or args.dry == "false" else True
-    for definition in GA_DEFINITIONS:
-        create_issue(definition, dry_run=dry_run)
+    for definition in GA_DEFINITIONS:  # TODO make configurable. GA_DEFINITIONS, ALL DEFINITIONS, read from a list, etc
+        if is_airbyte_connector(definition):
+            create_issue(definition, dry_run=dry_run)
+        else:
+            logging.error(f"Couldn't create PR for non-airbyte connector: {definition.get('dockerRepository')}")
