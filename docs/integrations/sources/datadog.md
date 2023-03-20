@@ -28,7 +28,6 @@ A site, API key and application key are required. See the [Datadog API and Appli
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source. 
-3. Enter your `site` - Data Dog Site
 4. Enter your `api_key` - Datadog API key.
 5. Enter your `application_key` - Datadog application key.
 6. Enter your `query` - Optional. Type your query to filter records when collecting data from Logs and AuditLogs stream.
