@@ -32,9 +32,9 @@ parser.add_argument("-d", "--dry", default=True)
 logging.basicConfig(level=logging.DEBUG)
 
 
-def migrate_acceptance_test_config(connector_name):
-    acceptance_test_config_path = Path(CONNECTORS_DIRECTORY) / connector_name / "acceptance-test-config.yml"
-    return migrate_configuration(acceptance_test_config_path)
+def acceptance_test_config_path(connector_name):
+    """Returns the path to a given connector's acceptance-test-config.yml file."""
+    return Path(CONNECTORS_DIRECTORY) / connector_name / "acceptance-test-config.yml"
 
 
 def checkout_new_branch(connector_name):
@@ -121,11 +121,16 @@ def add_test_comment(definition, new_branch, dry_run):
         logging.info(f"[DRY RUN]: {' '.join(comment_command_arguments)}")
 
 
+def get_connector_name_from_definition(connector_definition):
+    return connector_definition["dockerRepository"].replace("airbyte/", "")
+
+
 def migrate_config_on_new_branch(definition, dry_run):
     AIRBYTE_REPO.heads.master.checkout()
-    connector_name = definition["dockerRepository"].replace("airbyte/", "")
+    connector_name = get_connector_name_from_definition(definition)
     new_branch = checkout_new_branch(connector_name)
-    config_path = migrate_acceptance_test_config(connector_name)
+    config_path = acceptance_test_config_path(connector_name)
+    migrate_configuration(config_path)
     commit_push_migrated_config(config_path, connector_name, new_branch, dry_run)
     return new_branch
 
