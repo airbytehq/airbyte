@@ -18044,18 +18044,17 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-yandex-metrica:0.1.0"
+- dockerImage: "airbyte/source-yandex-metrica:1.0.0"
   spec:
-    documentationUrl: "https://docsurl.com"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/yandex-metrica"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Yandex Metrica Spec"
       type: "object"
       required:
       - "auth_token"
       - "counter_id"
       - "start_date"
-      - "end_date"
       additionalProperties: true
       properties:
         auth_token:
@@ -18073,16 +18072,20 @@
         start_date:
           title: "Start Date"
           type: "string"
-          description: "UTC date and time in the format YYYY-MM-DD."
+          description: "Starting point for your data replication, in format of \"\
+            YYYY-MM-DD\"."
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          format: "date"
           examples:
           - "2022-01-01"
           order: 2
         end_date:
           title: "End Date"
           type: "string"
-          description: "UTC date and time in the format YYYY-MM-DD."
+          description: "Starting point for your data replication, in format of \"\
+            YYYY-MM-DD\". If not provided will sync till most recent date."
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          format: "date"
           examples:
           - "2022-01-01"
           order: 3
