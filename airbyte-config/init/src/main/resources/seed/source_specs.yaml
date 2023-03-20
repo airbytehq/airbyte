@@ -178,7 +178,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-airtable:2.0.4"
+- dockerImage: "airbyte/source-airtable:3.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/airtable"
     connectionSpecification:
@@ -4591,6 +4591,41 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-firebase-realtime-database:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/firebase-realtime-database"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Firebase Realtime Database Spec"
+      type: "object"
+      required:
+      - "database_name"
+      - "google_application_credentials"
+      properties:
+        database_name:
+          title: "Database Name"
+          type: "string"
+          description: "Database name (This will be part of the url pointing to the\
+            \ database, https://<database_name>.firebaseio.com/)"
+        google_application_credentials:
+          title: "Service Account Key JSON"
+          type: "string"
+          description: "Cert credentials in JSON format of Service Account with Firebase\
+            \ Realtime Database Viewer role. (see, https://firebase.google.com/docs/projects/iam/roles-predefined-product#realtime-database)"
+          airbyte_secret: true
+        path:
+          title: "Node Path"
+          type: "string"
+          description: "Path to a node in the Firebase realtime database"
+        buffer_size:
+          title: "Buffer Size"
+          type: "number"
+          description: "Number of records to fetch at once"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+    supported_sync_modes:
+    - "full_refresh"
 - dockerImage: "airbyte/source-freshcaller:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/freshcaller"
@@ -4896,7 +4931,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.4.2"
+- dockerImage: "airbyte/source-github:0.4.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -4958,6 +4993,7 @@
           - "2021-03-01T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           order: 1
+          format: "date-time"
         repository:
           type: "string"
           examples:
@@ -5515,7 +5551,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.2.11"
+- dockerImage: "airbyte/source-google-ads:0.2.12"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -5599,6 +5635,7 @@
           examples:
           - "2017-01-25"
           order: 2
+          format: "date"
         end_date:
           type: "string"
           title: "End Date"
@@ -5608,6 +5645,7 @@
           examples:
           - "2017-01-30"
           order: 6
+          format: "date"
         custom_queries:
           type: "array"
           title: "Custom GAQL Queries"
@@ -6089,7 +6127,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-search-console:0.1.20"
+- dockerImage: "airbyte/source-google-search-console:0.1.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-search-console"
     connectionSpecification:
@@ -6122,6 +6160,7 @@
           - "2021-01-01"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           order: 1
+          format: "date"
         end_date:
           type: "string"
           title: "End Date"
@@ -6131,6 +6170,7 @@
           - "2021-12-12"
           pattern: "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           order: 2
+          format: "date"
         authorization:
           type: "object"
           title: "Authentication Type"
@@ -6954,7 +6994,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-instagram:1.0.3"
+- dockerImage: "airbyte/source-instagram:1.0.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/instagram"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/instagram"
@@ -6974,9 +7014,10 @@
           format: "date-time"
         access_token:
           title: "Access Token"
-          description: "The value of the access token generated. See the <a href=\"\
-            https://docs.airbyte.com/integrations/sources/instagram\">docs</a> for\
-            \ more information"
+          description: "The value of the access token generated with <b>instagram_basic,\
+            \ instagram_manage_insights, pages_show_list, pages_read_engagement, Instagram\
+            \ Public Content Access</b> permissions. See the <a href=\"https://docs.airbyte.com/integrations/sources/instagram/#step-1-set-up-instagram\"\
+            >docs</a> for more information"
           airbyte_secret: true
           type: "string"
       required:
@@ -9298,7 +9339,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:2.0.3"
+- dockerImage: "airbyte/source-mysql:2.0.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -16434,7 +16475,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-xero:0.2.0"
+- dockerImage: "airbyte/source-xero:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/xero"
     connectionSpecification:
@@ -16473,6 +16514,7 @@
               airbyte_secret: true
             access_token:
               type: "string"
+              title: "Access Token"
               description: "Enter your Xero application's access token"
               airbyte_secret: true
             token_expiry_date:
@@ -16487,6 +16529,7 @@
           order: 1
         start_date:
           type: "string"
+          title: "Start Date"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           description: "UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ. Any\
             \ data with created_at before this data will not be synced."
@@ -17500,7 +17543,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-zoho-crm:0.1.1"
+- dockerImage: "airbyte/source-zoho-crm:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zoho-crm"
     connectionSpecification:
@@ -17554,7 +17597,9 @@
           - "Sandbox"
         start_datetime:
           title: "Start Date"
-          type: "string"
+          type:
+          - "string"
+          - "null"
           examples:
           - "2000-01-01"
           - "2000-01-01 13:00"
@@ -17682,7 +17727,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sftp-bulk:0.1.0"
+- dockerImage: "airbyte/source-sftp-bulk:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/source/ftp"
     connectionSpecification:
@@ -17714,7 +17759,7 @@
           description: "The private key"
           type: "string"
           multiline: true
-          order: 1
+          order: 2
         host:
           title: "Host Address"
           description: "The server host address"
@@ -17722,7 +17767,7 @@
           examples:
           - "www.host.com"
           - "192.0.2.1"
-          order: 1
+          order: 3
         port:
           title: "Port"
           description: "The server port"
@@ -17730,14 +17775,14 @@
           default: 22
           examples:
           - "22"
-          order: 2
+          order: 4
         stream_name:
           title: "Stream name"
           description: "The name of the stream or table you want to create"
           type: "string"
           examples:
           - "ftp_contacts"
-          order: 1
+          order: 5
         file_type:
           title: "File type"
           description: "The file type you want to sync. Currently only 'csv' and 'json'\
@@ -17747,7 +17792,7 @@
           enum:
           - "csv"
           - "json"
-          order: 4
+          order: 6
           examples:
           - "csv"
           - "json"
@@ -17758,7 +17803,7 @@
           default: ""
           examples:
           - "/logs/2022"
-          order: 5
+          order: 7
         file_pattern:
           title: "File Pattern (Optional)"
           description: "The regular expression to specify files for sync in a chosen\
@@ -17767,14 +17812,14 @@
           default: ""
           examples:
           - "log-([0-9]{4})([0-9]{2})([0-9]{2}) - This will filter files which  `log-yearmmdd`"
-          order: 6
+          order: 8
         file_most_recent:
           title: "Most recent file (Optional)"
           description: "Sync only the most recent file for the configured folder path\
             \ and file pattern"
           type: "boolean"
           default: false
-          order: 7
+          order: 9
         start_date:
           type: "string"
           title: "Start Date"
@@ -17785,7 +17830,7 @@
           description: "The date from which you'd like to replicate data for all incremental\
             \ streams, in the format YYYY-MM-DDT00:00:00Z. All data generated after\
             \ this date will be replicated."
-          order: 8
+          order: 10
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
