@@ -630,7 +630,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-bigquery:1.2.16"
+- dockerImage: "airbyte/destination-bigquery:1.2.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/bigquery"
     connectionSpecification:
@@ -840,7 +840,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:1.2.16"
+- dockerImage: "airbyte/destination-bigquery-denormalized:1.2.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/bigquery"
     connectionSpecification:
@@ -2399,7 +2399,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-gcs:0.2.15"
+- dockerImage: "airbyte/destination-gcs:0.2.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/gcs"
     connectionSpecification:
@@ -5055,7 +5055,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-redshift:0.4.2"
+- dockerImage: "airbyte/destination-redshift:0.4.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/redshift"
     connectionSpecification:
@@ -5525,7 +5525,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-s3:0.3.21"
+- dockerImage: "airbyte/destination-s3:0.3.22"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/s3"
     connectionSpecification:
@@ -6151,7 +6151,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.53"
+- dockerImage: "airbyte/destination-snowflake:0.4.54"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/snowflake"
     connectionSpecification:
@@ -7153,7 +7153,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-yugabytedb:0.1.0"
+- dockerImage: "airbyte/destination-yugabytedb:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/yugabytedb"
     connectionSpecification:
@@ -7192,7 +7192,7 @@
           title: "Username"
           description: "The Username which is used to access the database."
           type: "string"
-          order: 3
+          order: 4
         schema:
           title: "Default Schema"
           description: "The default schema tables are written to if the source does\
@@ -7208,14 +7208,14 @@
           description: "The Password associated with the username."
           type: "string"
           airbyte_secret: true
-          order: 4
+          order: 5
         jdbc_url_params:
           description: "Additional properties to pass to the JDBC URL string when\
             \ connecting to the database formatted as 'key=value' pairs separated\
             \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
           title: "JDBC URL Params"
           type: "string"
-          order: 5
+          order: 6
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: false
