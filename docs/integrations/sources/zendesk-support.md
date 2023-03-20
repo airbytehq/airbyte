@@ -9,7 +9,7 @@ This page guides you through setting up the Zendesk Support source connector.
 
 ## Set up the Zendesk Support source connector
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**. 
 3. On the Set up the source page, select **Zendesk Support** from the Source type dropdown.
 4. Enter a name for your source.
@@ -60,6 +60,8 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `0.2.25` | 2023-02-28 | [22308](https://github.com/airbytehq/airbyte/pull/22308) | Add `AvailabilityStrategy` for all streams                                                     |
+| `0.2.24` | 2023-02-17 | [23246](https://github.com/airbytehq/airbyte/pull/23246) | Handle `StartTimeTooRecent` error for Tickets stream                                                                                                                                                                                         |
 | `0.2.23` | 2023-02-15 | [23035](https://github.com/airbytehq/airbyte/pull/23035) | Handle 403 Error                                                                                                                                                                                                                   |
 | `0.2.22` | 2023-02-14 | [22483](https://github.com/airbytehq/airbyte/pull/22483) | Fix test; handle 400 error                                                                                                                                                                                                         |
 | `0.2.21` | 2023-01-27 | [22027](https://github.com/airbytehq/airbyte/pull/22027) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                                                                                                                        |

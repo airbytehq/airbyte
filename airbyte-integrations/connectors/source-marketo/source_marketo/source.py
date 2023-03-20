@@ -486,14 +486,14 @@ class Programs(IncrementalMarketoStream):
 class Campaigns(SemiIncrementalMarketoStream):
     """
     Return list of all campaigns.
-    API Docs: http://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Campaigns/getCampaignsUsingGET
+    API Docs: https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Campaigns/getCampaignsUsingGET
     """
 
 
 class Lists(SemiIncrementalMarketoStream):
     """
     Return list of all lists.
-    API Docs: http://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListsUsingGET
+    API Docs: https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListsUsingGET
     """
 
 
