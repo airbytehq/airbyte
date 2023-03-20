@@ -25,11 +25,11 @@ class ConnectorConfig(BaseModel):
 
     access_token: str = Field(
         description=(
-            'The value of the access token generated with '
-            '<b>instagram_basic, instagram_manage_insights, pages_show_list, pages_read_engagement, Instagram Public Content Access</b> '
-            'permissions. '
+            "The value of the access token generated with "
+            "<b>instagram_basic, instagram_manage_insights, pages_show_list, pages_read_engagement, Instagram Public Content Access</b> "
+            "permissions. "
             'See the <a href="https://docs.airbyte.com/integrations/sources/instagram/#step-1-set-up-instagram">docs</a> for more '
-            'information'
+            "information"
         ),
         airbyte_secret=True,
     )
