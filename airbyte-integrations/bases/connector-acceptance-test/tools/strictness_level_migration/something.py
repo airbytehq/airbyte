@@ -1,9 +1,13 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import asyncio
 import os
 from pathlib import Path
 
+from create_prs import CONNECTORS_DIRECTORY, acceptance_test_config_path, get_airbyte_connector_name_from_definition, is_airbyte_connector
 from definitions import ALL_DEFINITIONS
-from create_prs import get_airbyte_connector_name_from_definition, is_airbyte_connector, acceptance_test_config_path, CONNECTORS_DIRECTORY
 
 
 async def run_tests(connector_name):
@@ -13,7 +17,13 @@ async def run_tests(connector_name):
     success_output_file = f"results/successes/{connector_name}.txt"
 
     print(f"Start running tests for {connector_name}.")
-    process = await asyncio.create_subprocess_exec("sh", path_to_acceptance_test_runner, env=dict(os.environ, CONFIG_PATH=path_to_acceptance_test_config), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    process = await asyncio.create_subprocess_exec(
+        "sh",
+        path_to_acceptance_test_runner,
+        env=dict(os.environ, CONFIG_PATH=path_to_acceptance_test_config),
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
     return_code = await process.wait()
     if return_code == 0:
         with open(success_output_file, "w") as f:
@@ -43,9 +53,7 @@ async def semaphore_gather(coroutines, num_semaphores):
         async with semaphore:
             return await coroutine
 
-    return await asyncio.gather(
-        *(_wrap_coro(coroutine) for coroutine in coroutines), return_exceptions=False
-    )
+    return await asyncio.gather(*(_wrap_coro(coroutine) for coroutine in coroutines), return_exceptions=False)
 
 
 async def main():
@@ -56,6 +64,7 @@ async def main():
             connector_name = get_airbyte_connector_name_from_definition(definition)
             tasks.append(run_tests(connector_name))
     await asyncio.gather(semaphore_gather(tasks, num_semaphores=15))
+
 
 if __name__ == "__main__":
     asyncio.run(main())

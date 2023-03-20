@@ -131,7 +131,9 @@ def is_airbyte_connector(connector_definition):
 
 def migrate_config_on_new_branch(definition, dry_run):
     AIRBYTE_REPO.heads.master.checkout()
-    connector_name = get_airbyte_connector_name_from_definition(definition)  # TODO make sure they're airbyte connectors before trying to migrate
+    connector_name = get_airbyte_connector_name_from_definition(
+        definition
+    )  # TODO make sure they're airbyte connectors before trying to migrate
     new_branch = checkout_new_branch(connector_name)
     config_path = acceptance_test_config_path(connector_name)
     migrate_configuration(config_path)
