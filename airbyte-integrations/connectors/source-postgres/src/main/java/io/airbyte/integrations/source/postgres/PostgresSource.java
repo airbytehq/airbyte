@@ -344,7 +344,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     final JsonNode sourceConfig = database.getSourceConfig();
     if (PostgresUtils.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final Duration firstRecordWaitTime = PostgresUtils.getFirstRecordWaitTime(sourceConfig);
-      LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
+      LOGGER.info("First record waiting time in seconds : {} seconds", firstRecordWaitTime.getSeconds());
 
       final PostgresDebeziumStateUtil postgresDebeziumStateUtil = new PostgresDebeziumStateUtil();
       final JsonNode state =
