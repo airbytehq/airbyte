@@ -8,7 +8,7 @@ This tutorial walks you through building a simple Airbyte source without using a
 
 * [The Airbyte Specification](../../understanding-airbyte/airbyte-protocol.md) and the interface implemented by a source connector
 * [The AirbyteCatalog](../../understanding-airbyte/beginners-guide-to-catalog.md)
-* [Packaging your connector](https://docs.airbyte.io/connector-development#1.-implement-and-package-the-connector)
+* [Packaging your connector](https://docs.airbyte.com/connector-development#1.-implement-and-package-the-connector)
 * [Testing your connector](../testing-connectors/connector-acceptance-tests-reference.md)
 
 At the end of this tutorial, you will have a working source that you will be able to use in the Airbyte UI.
@@ -147,7 +147,7 @@ Let's create a [JSONSchema](http://json-schema.org/) file `spec.json` encoding t
 }
 ```
 
-* `documentationUrl` is the URL that will appear in the UI for the user to gain more info about this connector. Typically this points to `docs.airbyte.io/integrations/sources/source-<connector_name>` but to keep things simple we won't show adding documentation
+* `documentationUrl` is the URL that will appear in the UI for the user to gain more info about this connector. Typically this points to `docs.airbyte.com/integrations/sources/source-<connector_name>` but to keep things simple we won't show adding documentation
 * `title` is the "human readable" title displayed in the UI. Without this field, The Stock Ticker field will have the title `stock_ticker` in the UI
 * `description` will be shown in the Airbyte UI under each field to help the user understand it
 * `airbyte_secret` used by Airbyte to determine if the field should be displayed as a password \(e.g: `********`\) in the UI and not readable from the API
@@ -986,7 +986,7 @@ The code generator should have already generated a YAML file which configures th
 
 
 ```yaml
-# See [Connector Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-stock-ticker-api:dev
 acceptance_tests:

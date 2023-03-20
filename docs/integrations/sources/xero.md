@@ -4,7 +4,7 @@ This is a setup guide for the Xero source connector which ingests data from the 
 
 ## Prerequisites
 
-First of all you should create an application in [Xero development center](https://developer.xero.com/app/manage/). The only supported integration type is to use [Xero Custom Connections](https://developer.xero.com/documentation/guides/oauth2/custom-connections/developer) so you should choose it on creating your Xero App.
+First of all you should create an application in [Xero development center](https://developer.xero.com/app/manage/). The only supported integration type is to use [Xero Custom Connections](https://developer.xero.com/documentation/guides/oauth2/custom-connections/) so you should choose it on creating your Xero App.
 After creating an application, on configuration screen, authorize user for your Xero Organisation. Also, issue new Client Secret and remember it - it will be required for setting up Xero connector in your Airbyte instance.
 
 ## Supported streams
@@ -59,4 +59,5 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.2.0   | 2023-03-14 | [24005](https://github.com/airbytehq/airbyte/pull/24005) | Enable in Cloud                   |
 | 0.1.0   | 2021-11-11 | [18666](https://github.com/airbytehq/airbyte/pull/18666) | 🎉 New Source - Xero [python cdk] |
