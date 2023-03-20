@@ -15,8 +15,8 @@ from typesense import Client
 def get_client(config: Mapping[str, Any]) -> Client:
     api_key = config.get("api_key")
     host = config.get("host")
-    port = config.get("port") or "8108"
-    protocol = config.get("protocol") or "https"
+    port = 443
+    protocol = "https"
 
     client = Client({"api_key": api_key, "nodes": [{"host": host, "port": port, "protocol": protocol}], "connection_timeout_seconds": 2})
 

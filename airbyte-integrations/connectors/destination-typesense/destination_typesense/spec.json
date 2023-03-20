@@ -21,18 +21,6 @@
         "description": "Hostname of the Typesense instance without protocol.",
         "order": 1
       },
-      "port": {
-        "title": "Port",
-        "type": "string",
-        "description": "Port of the Typesense instance. Ex: 8108, 80, 443. Default is 443",
-        "order": 2
-      },
-      "protocol": {
-        "title": "Protocol",
-        "type": "string",
-        "description": "Protocol of the Typesense instance. Ex: http or https. Default is https",
-        "order": 3
-      },
       "batch_size": {
         "title": "Batch size",
         "type": "string",
