@@ -2208,7 +2208,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/xero
   icon: xero.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: xkcd
   sourceDefinitionId: 80fddd16-17bd-4c0c-bf4a-80df7863fc9d
   dockerRepository: airbyte/source-xkcd
