@@ -33,7 +33,6 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
@@ -122,7 +121,7 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConnectorSpecification getSpec() throws Exception {
-    return SshHelpers.getSpecAndInjectSsh(Optional.of("security"));
+    return SshHelpers.getSpecAndInjectSsh();
   }
 
   @Override
