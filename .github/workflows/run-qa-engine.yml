@@ -22,7 +22,7 @@ jobs:
       - name: Preparing Runner to the Build process
         uses: ./.github/actions/runner-prepare-for-build
       - name: Install ci-connector-ops package
-        run: pip install --quiet -e ./tools/ci_connector_ops
+        run: pip install --quiet -e ./tools/ci_connector_ops\[qa_engine\]
       - name: Run QA Engine
         env:
           LOGLEVEL: INFO
