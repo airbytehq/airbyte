@@ -27,20 +27,6 @@ import { RoutePaths } from "../../../pages/routePaths";
 // import { NotificationIndicator } from "./NotificationIndicator";
 import styles from "./SideBar.module.scss";
 
-const Bar = styled.nav`
-  width: 300px;
-  min-width: 65px;
-  height: 100%;
-  background: ${({ theme }) => theme.white};
-  padding: 23px 0px 15px 0px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-  z-index: 9999;
-`;
-
 const Menu = styled.ul`
   padding: 0;
   margin: 20px 0 0 0;
@@ -176,7 +162,7 @@ const SideBar: React.FC = () => {
   const { removeUser, user } = useUser();
   const { push } = useRouter();
   return (
-    <Bar>
+    <div className={styles.sidebar}>
       <div>
         <Link to="" $clear>
           <LogoContainer>
@@ -327,7 +313,7 @@ const SideBar: React.FC = () => {
           {`(${user.account})`}
         </UserDetail>
       </Menu>
-    </Bar>
+    </div>
   );
 };
 

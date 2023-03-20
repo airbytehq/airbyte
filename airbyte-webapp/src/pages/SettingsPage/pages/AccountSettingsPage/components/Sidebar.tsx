@@ -19,7 +19,6 @@ interface IProps {
 
 const SidebarContainer = styled.div`
   min-width: 300px;
-  height: 490px;
   border-radius: 6px 0 0 6px;
   background: ${({ theme }) => theme.grey40};
   padding: 32px 0;

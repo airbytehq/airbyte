@@ -493,9 +493,12 @@
   "usageTable.cell.limit": "当使用量超过",
   "usageTable.cell.addBtn.text": "添加更多",
   "usageTable.cell.removeBtn.text": "消除",
+  "usageTable.cell.saveBtn.text": "节省",
   "syncTable.cell.status": "同步状态",
   "syncTable.cell.fail": "同步失败时",
   "syncTable.cell.success": "同步成功时",
+  "notification.status.enabled": "已开启",
+  "notification.status.disabled": "已关闭",
   "settings.accountSetting.password": "密码",
   "payment.tabTitle": "付款",
   "plan.type.heading": "方案类型",
@@ -785,5 +788,13 @@
   "tables.connection.enabled.text": "链接已启用！",
   "tables.dangerZone": "危险区域",
   "tables.allSources": "所有数据源",
-  "tables.allDestinations": "所有目的地"
+  "tables.allDestinations": "所有目的地",
+  "usage.notification.banner.usageText": "您已使用此计费周期总行数的{percentage}%。",
+  "ignore.notification.modal.heading": "关闭通知？",
+  "ignore.notification.modal.bodyText": "立即升级以继续不间断地处理您的数据。",
+  "ignore.notification.modal.ignoreBtnText": "关闭",
+  "ignore.notification.modal.upgradeBtnText": "立即升级",
+  "ignore.notification.modal.checkboxText": "在此结算周期内不再提醒",
+  "billing.warning.banner.text1": "您已达到此计费周期的数据处理限制。",
+  "billing.warning.banner.text2": "数据同步直到您升级方案或下一个计费周期开始前已暂停。"
 }

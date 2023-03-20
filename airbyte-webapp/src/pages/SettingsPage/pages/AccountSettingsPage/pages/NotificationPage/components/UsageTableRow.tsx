@@ -5,16 +5,17 @@ import styled from "styled-components";
 import { Row, DropDown, DropDownRow, Button } from "components";
 import { Tooltip } from "components/base/Tooltip";
 
-import { EditNotificationBody, NotificationItem } from "core/request/DaspireClient";
+import { NotificationItem } from "core/request/DaspireClient";
 
-import { AddIcon, RemoveIcon } from "../icons";
+import { RemoveIcon } from "../icons";
+import { CharacterInID } from "../NotificationPage";
 import { NotificationFlag } from "./NotificationFlag";
 import { FirstCellFlexValue, FirstCell, BodyCell } from "./StyledTable";
 
 interface IProps {
   usageItem: NotificationItem;
-  createNotificationSetting: () => void;
-  updateNotificationSetting: (data: EditNotificationBody) => void;
+  saveNotificationSetting: (data: NotificationItem) => void;
+  updateNotificationSetting: (data: NotificationItem) => void;
   deleteNotificationSetting: (notificationSettingId: string) => void;
 }
 
@@ -34,6 +35,10 @@ const AddRemoveBtn = styled(Button)`
   border: 1px solid transparent;
 `;
 
+const SaveButton = styled(Button)`
+  margin-left: 22px;
+`;
+
 export const UsageOptions: DropDownRow.IDataItem[] = [
   { label: "30%", value: 0.3 },
   { label: "50%", value: 0.5 },
@@ -46,7 +51,7 @@ export const UsageOptions: DropDownRow.IDataItem[] = [
 
 export const UsageTableRow: React.FC<IProps> = ({
   usageItem,
-  createNotificationSetting,
+  saveNotificationSetting,
   updateNotificationSetting,
   deleteNotificationSetting,
 }) => {
@@ -60,32 +65,36 @@ export const UsageTableRow: React.FC<IProps> = ({
             $background="#FFFFFF"
             options={UsageOptions}
             value={usageItem.value}
-            onChange={(option: DropDownRow.IDataItem) => console.log(option.value)}
+            isDisabled={usageItem.defaultFlag}
+            onChange={(option: DropDownRow.IDataItem) => {
+              updateNotificationSetting({
+                id: usageItem.id,
+                type: usageItem.type,
+                value: option.value,
+                emailFlag: usageItem.emailFlag,
+                appsFlag: usageItem.appsFlag,
+              });
+            }}
           />
         </DDContainer>
-        {usageItem?.defaultFlag && (
-          <Tooltip
-            control={
-              <AddRemoveBtn onClick={createNotificationSetting}>
-                <AddIcon />
-              </AddRemoveBtn>
-            }
-            placement="top"
-          >
-            <FormattedMessage id="usageTable.cell.addBtn.text" />
-          </Tooltip>
-        )}
         {!usageItem?.defaultFlag && (
-          <Tooltip
-            control={
-              <AddRemoveBtn onClick={() => deleteNotificationSetting(usageItem.id)}>
-                <RemoveIcon />
-              </AddRemoveBtn>
-            }
-            placement="top"
-          >
-            <FormattedMessage id="usageTable.cell.removeBtn.text" />
-          </Tooltip>
+          <>
+            <Tooltip
+              control={
+                <AddRemoveBtn onClick={() => deleteNotificationSetting(usageItem.id)}>
+                  <RemoveIcon />
+                </AddRemoveBtn>
+              }
+              placement="top"
+            >
+              <FormattedMessage id="usageTable.cell.removeBtn.text" />
+            </Tooltip>
+            {usageItem.id.includes(CharacterInID) && (
+              <SaveButton onClick={() => saveNotificationSetting(usageItem)}>
+                <FormattedMessage id="usageTable.cell.saveBtn.text" />
+              </SaveButton>
+            )}
+          </>
         )}
       </FirstCell>
       <BodyCell>
@@ -94,6 +103,8 @@ export const UsageTableRow: React.FC<IProps> = ({
           onClick={() => {
             updateNotificationSetting({
               id: usageItem.id,
+              type: usageItem.type,
+              value: usageItem.value,
               emailFlag: !usageItem.emailFlag,
               appsFlag: usageItem.appsFlag,
             });
@@ -106,6 +117,8 @@ export const UsageTableRow: React.FC<IProps> = ({
           onClick={() => {
             updateNotificationSetting({
               id: usageItem.id,
+              type: usageItem.type,
+              value: usageItem.value,
               emailFlag: usageItem.emailFlag,
               appsFlag: !usageItem.appsFlag,
             });

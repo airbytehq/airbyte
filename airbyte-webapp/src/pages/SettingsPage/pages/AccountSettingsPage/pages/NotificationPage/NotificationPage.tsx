@@ -3,7 +3,8 @@ import styled from "styled-components";
 
 import { Separator } from "components/Separator";
 
-import { EditNotificationBody, NotificationItem } from "core/request/DaspireClient";
+import { EditNotificationRead, NotificationItem } from "core/request/DaspireClient";
+import { useAppNotification } from "hooks/services/AppNotification";
 import { useNotificationSetting, useAsyncActions } from "services/notificationSetting/NotificationSettingService";
 
 import { SyncTable } from "./components/SyncTable";
@@ -16,12 +17,15 @@ const PageContainer = styled.div`
   padding: 30px 16px;
 `;
 
+export const CharacterInID = "__";
+
 const NotificationPage: React.FC = () => {
+  const { setNotification } = useAppNotification();
   const { usageList, syncFail, syncSuccess } = useNotificationSetting();
 
   const [usageNotificationList, setUsageNotificationList] = useState<NotificationItem[]>([]);
   const newUsageItem: NotificationItem = {
-    id: `${Math.random() * 1000 * Math.random()}_`,
+    id: `${Math.random() * 1000 * Math.random()}${CharacterInID}`,
     type: "USAGE",
     value: 0.3,
     emailFlag: false,
@@ -30,29 +34,61 @@ const NotificationPage: React.FC = () => {
 
   useEffect(() => setUsageNotificationList(usageList), [usageList]);
 
-  const {
-    // onCreateNotificationSetting,
-    onUpdateNotificationSetting,
-    onDeleteNotificationSetting,
-  } = useAsyncActions();
+  const { onCreateNotificationSetting, onUpdateNotificationSetting, onDeleteNotificationSetting } = useAsyncActions();
 
   const createNotificationSetting = () => setUsageNotificationList((prev) => [newUsageItem, ...prev]);
-  const updateNotificationSetting = (data: EditNotificationBody) => {
-    onUpdateNotificationSetting(data);
+
+  const saveNotificationSetting = (data: NotificationItem) => {
+    onCreateNotificationSetting(data).catch((err: any) => {
+      setNotification({ message: err.message, type: "error" });
+    });
+  };
+
+  const updateNotificationSetting = (data: NotificationItem) => {
+    if (data.id.includes(CharacterInID)) {
+      setUsageNotificationList((prev) => {
+        const usageList = [...prev];
+        const index = usageList.findIndex((item) => item.id === data.id);
+        if (index >= 0) {
+          usageList[index] = data;
+        }
+        return usageList;
+      });
+    } else {
+      onUpdateNotificationSetting(data)
+        .then((res: EditNotificationRead) => {
+          const { data } = res;
+          if (data.type === "USAGE") {
+            const myUsageNotificationList = [...usageNotificationList];
+            const index = myUsageNotificationList.findIndex((item) => item.id === data.id);
+            if (index >= 0) {
+              myUsageNotificationList[index] = data;
+            }
+            setUsageNotificationList(myUsageNotificationList);
+          }
+        })
+        .catch((err: any) => {
+          setNotification({ message: err.message, type: "error" });
+        });
+    }
   };
   const deleteNotificationSetting = (id: string) => {
-    if (id.includes("_")) {
+    if (id.includes(CharacterInID)) {
       setUsageNotificationList((prev) => prev.filter((usageItem) => usageItem.id !== id));
     } else {
-      onDeleteNotificationSetting(id);
+      onDeleteNotificationSetting(id).catch((err: any) => {
+        setNotification({ message: err.message, type: "error" });
+      });
     }
   };
 
   return (
     <PageContainer>
       <UsageTable
-        usageList={usageNotificationList}
+        usageList={usageList}
+        usageNotificationList={usageNotificationList}
         createNotificationSetting={createNotificationSetting}
+        saveNotificationSetting={saveNotificationSetting}
         updateNotificationSetting={updateNotificationSetting}
         deleteNotificationSetting={deleteNotificationSetting}
       />

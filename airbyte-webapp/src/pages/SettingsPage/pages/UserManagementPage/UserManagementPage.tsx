@@ -8,6 +8,7 @@ import { Button, DropDownRow } from "components";
 import { Separator } from "components/Separator";
 
 import { ROLES } from "core/Constants/roles";
+import { useAppNotification } from "hooks/services/AppNotification";
 import { useRoleOptions } from "services/roles/RolesService";
 import { useListUsers, useUserAsyncAction } from "services/users/UsersService";
 
@@ -15,11 +16,6 @@ import ChangeRoleModal from "./components/ChangeRoleModal";
 import DeleteUserModal from "./components/DeleteUserModal";
 import InviteUserModal from "./components/InviteUserModal";
 import UserTable from "./components/UserTable";
-
-interface IProps {
-  setMessageId: React.Dispatch<React.SetStateAction<string>>;
-  setMessageType: React.Dispatch<React.SetStateAction<"info" | "error">>;
-}
 
 const HeaderContainer = styled.div`
   width: 100%;
@@ -48,9 +44,10 @@ const BtnText = styled.div`
   color: #ffffff;
 `;
 
-const UserManagementPage: React.FC<IProps> = ({ setMessageId, setMessageType }) => {
+const UserManagementPage: React.FC = () => {
   const roleOptions = useRoleOptions().filter((role) => role.label !== ROLES.Administrator_Owner);
   const users = useListUsers();
+  const { setNotification } = useAppNotification();
   const { onDeleteUser, onResendInvite, onUpdateRole } = useUserAsyncAction();
 
   const [userId, setUserId] = useState<string>("");
@@ -84,8 +81,7 @@ const UserManagementPage: React.FC<IProps> = ({ setMessageId, setMessageType }) 
   const resendInvite = useCallback(async (userId: string) => {
     onResendInvite(userId)
       .then(() => {
-        setMessageId("user.resendInvite.message");
-        setMessageType("info");
+        setNotification({ message: "user.resendInvite.message", type: "info" });
       })
       .catch((err: any) => {
         console.log(err);
@@ -109,8 +105,7 @@ const UserManagementPage: React.FC<IProps> = ({ setMessageId, setMessageType }) 
       .then(() => {
         setChangeRoleLoading(false);
         onCancelChangeRole();
-        setMessageId("user.changeRole.message");
-        setMessageType("info");
+        setNotification({ message: "user.changeRole.message", type: "info" });
       })
       .catch(() => {
         setChangeRoleLoading(false);
@@ -146,14 +141,7 @@ const UserManagementPage: React.FC<IProps> = ({ setMessageId, setMessageType }) 
         onChangeRole={onChangeRole}
         onResendInvite={resendInvite}
       />
-      {addUserModal && (
-        <InviteUserModal
-          roles={roleOptions}
-          onClose={toggleAddUserModal}
-          setMessageId={setMessageId}
-          setMessageType={setMessageType}
-        />
-      )}
+      {addUserModal && <InviteUserModal roles={roleOptions} onClose={toggleAddUserModal} />}
       {changeRoleModal && (
         <ChangeRoleModal
           onClose={toggleChangeRoleModal}

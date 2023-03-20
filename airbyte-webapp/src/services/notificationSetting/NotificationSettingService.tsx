@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "react-query";
 
 import { useUser } from "core/AuthContext";
 import { NotificationService } from "core/domain/notificationSetting/notificationSettingService";
-import { EditNotificationBody, NotificationSetting, SaveNotificationUsageBody } from "core/request/DaspireClient";
+import { NotificationItem, NotificationSetting, SaveNotificationUsageBody } from "core/request/DaspireClient";
 import { useSuspenseQuery } from "services/connector/useSuspenseQuery";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 
@@ -46,12 +46,31 @@ export const useCreateNotificationSetting = () => {
 
 export const useUpdateNotificationSetting = () => {
   const service = useNotificationSettingApiService();
+  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (editNotificationBody: EditNotificationBody) => service.edit(editNotificationBody),
-    onSuccess(data, variables) {
-      console.log("data", data);
-      console.log("variables", variables);
+    mutationFn: (data: NotificationItem) => service.edit(data),
+    onSuccess(data) {
+      const response = data.data;
+      queryClient.setQueryData(notificationSettingKeys.get(), (setting: any) => {
+        const { usageList, syncFail, syncSuccess }: NotificationSetting = setting.data;
+        let mySyncFail = { ...syncFail };
+        let mySyncSuccess = { ...syncSuccess };
+        if (response.type === "SYNC_FAIL") {
+          mySyncFail = response;
+        } else if (response.type === "SYNC_SUCCESS") {
+          mySyncSuccess = response;
+        } else {
+          return { data: { usageList, syncFail, syncSuccess } };
+        }
+        return {
+          data: {
+            usageList,
+            syncFail: mySyncFail,
+            syncSuccess: mySyncSuccess,
+          },
+        };
+      });
     },
   });
 };
@@ -77,30 +96,43 @@ export const useDeleteNotificationSetting = () => {
   });
 };
 
+export const useIgnoreNotifications = () => {
+  const service = useNotificationSettingApiService();
+
+  return useMutation(() => service.ignore());
+};
+
 export const useAsyncActions = (): {
   onCreateNotificationSetting: (notificationUsage: SaveNotificationUsageBody) => Promise<any>;
-  onUpdateNotificationSetting: (editNotificationBody: EditNotificationBody) => Promise<any>;
+  onUpdateNotificationSetting: (data: NotificationItem) => Promise<any>;
   onDeleteNotificationSetting: (notificationSettingId: string) => Promise<any>;
+  onIgnoreNotifications: () => Promise<any>;
 } => {
   const { mutateAsync: createNotificationSetting } = useCreateNotificationSetting();
   const { mutateAsync: updateNotificationSetting } = useUpdateNotificationSetting();
   const { mutateAsync: deleteNotificationSetting } = useDeleteNotificationSetting();
+  const { mutateAsync: ignoreNotifications } = useIgnoreNotifications();
 
   const onCreateNotificationSetting = async (notificationUsage: SaveNotificationUsageBody) => {
     return await createNotificationSetting(notificationUsage);
   };
 
-  const onUpdateNotificationSetting = async (editNotificationBody: EditNotificationBody) => {
-    return await updateNotificationSetting(editNotificationBody);
+  const onUpdateNotificationSetting = async (data: NotificationItem) => {
+    return await updateNotificationSetting(data);
   };
 
   const onDeleteNotificationSetting = async (notificationSettingId: string) => {
     return await deleteNotificationSetting(notificationSettingId);
   };
 
+  const onIgnoreNotifications = async () => {
+    return await ignoreNotifications();
+  };
+
   return {
     onCreateNotificationSetting,
     onUpdateNotificationSetting,
     onDeleteNotificationSetting,
+    onIgnoreNotifications,
   };
 };

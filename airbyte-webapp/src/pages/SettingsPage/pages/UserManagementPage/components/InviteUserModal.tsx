@@ -10,6 +10,7 @@ import { Button, DropDownRow, LabeledInput, LoadingButton, Modal, ModalBody } fr
 import { DashIcon } from "components/icons/DashIcon";
 import { Separator } from "components/Separator";
 
+import { useAppNotification } from "hooks/services/AppNotification";
 import { useUserAsyncAction } from "services/users/UsersService";
 
 import UserRoleDropDown from "./UserRoleDropdown";
@@ -17,8 +18,6 @@ import UserRoleDropDown from "./UserRoleDropdown";
 interface IProps {
   roles: DropDownRow.IDataItem[];
   onClose?: () => void;
-  setMessageId: React.Dispatch<React.SetStateAction<string>>;
-  setMessageType: React.Dispatch<React.SetStateAction<"info" | "error">>;
 }
 
 const ModalBodyContainer = styled.div`
@@ -95,7 +94,8 @@ const BtnIcon = styled(FontAwesomeIcon)`
   margin-right: 10px;
 `;
 
-const AddUserModal: React.FC<IProps> = ({ onClose, roles, setMessageId, setMessageType }) => {
+const AddUserModal: React.FC<IProps> = ({ onClose, roles }) => {
+  const { setNotification } = useAppNotification();
   const [loading, setLoading] = useState(false);
 
   const inviteUsersSchema = yup.object({
@@ -130,8 +130,7 @@ const AddUserModal: React.FC<IProps> = ({ onClose, roles, setMessageId, setMessa
               })
               .catch((error: any) => {
                 setLoading(false);
-                setMessageId(error.message);
-                setMessageType("error");
+                setNotification({ message: error.message, type: "error" });
               });
           }}
         >

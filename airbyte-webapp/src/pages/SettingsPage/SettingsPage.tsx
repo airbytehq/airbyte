@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from "react";
+import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
 import { Navigate, Route, Routes } from "react-router-dom";
 import styled from "styled-components";
@@ -13,11 +13,23 @@ import { useUser } from "core/AuthContext";
 import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
 import useRouter from "hooks/useRouter";
 
-import { MessageBox } from "./components/MessageBox";
 import AccountSettingsPage from "./pages/AccountSettingsPage";
 import NotificationPage from "./pages/NotificationPage";
 import PlansBillingPage from "./pages/PlansBillingPage";
 import UserManagementPage from "./pages/UserManagementPage";
+
+export interface PageConfig {
+  menuConfig: CategoryItem[];
+}
+
+interface SettingsPageProps {
+  pageConfig?: PageConfig;
+}
+
+export interface Notification {
+  message: string;
+  type: "info" | "error";
+}
 
 const PageContainer = styled.div`
   width: 100%;
@@ -57,14 +69,6 @@ const MainView = styled.div`
   width: 100%;
 `;
 
-export interface PageConfig {
-  menuConfig: CategoryItem[];
-}
-
-interface SettingsPageProps {
-  pageConfig?: PageConfig;
-}
-
 export const SettingsRoute = {
   Account: "account",
   Destination: "destination",
@@ -77,12 +81,9 @@ export const SettingsRoute = {
   PlanAndBilling: "plan-and-billing",
 } as const;
 
-const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
+export const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   const { push } = useRouter();
   const { user } = useUser();
-
-  const [messageId, setMessageId] = useState<string>("");
-  const [messageType, setMessageType] = useState<"info" | "error">("info");
 
   const menuItems: CategoryItem[] = pageConfig?.menuConfig || [
     {
@@ -90,7 +91,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
         {
           path: `${SettingsRoute.UserManagement}`,
           name: <FormattedMessage id="settings.user.management" />,
-          component: <UserManagementPage setMessageId={setMessageId} setMessageType={setMessageType} />,
+          component: <UserManagementPage />,
           show:
             getRoleAgainstRoleNumber(user.role) === ROLES.Administrator_Owner ||
             getRoleAgainstRoleNumber(user.role) === ROLES.Administrator
@@ -106,7 +107,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
         {
           path: `${SettingsRoute.PlanAndBilling}`,
           name: <FormattedMessage id="settings.plan.billing" />,
-          component: <PlansBillingPage setMessageId={setMessageId} setMessageType={setMessageType} />,
+          component: <PlansBillingPage />,
           show:
             getRoleAgainstRoleNumber(user.role) === ROLES.Administrator_Owner ||
             getRoleAgainstRoleNumber(user.role) === ROLES.Administrator
@@ -145,7 +146,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
               <div style={{ padding: "24px 0 0 20px" }}>
                 <PageTitle title={<FormattedMessage id="sidebar.settings" />} />
               </div>
-              <MessageBox message={messageId} onClose={() => setMessageId("")} type={messageType} />
             </PageHeaderContainer>
           }
         >
@@ -172,5 +172,3 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
     </PageContainer>
   );
 };
-
-export default SettingsPage;

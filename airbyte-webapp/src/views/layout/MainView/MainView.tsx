@@ -5,11 +5,13 @@ import { theme } from "theme";
 import { LoadingPage } from "components";
 import { CreateStepTypes } from "components/ConnectionStep";
 
+import { useHealth } from "hooks/services/Health";
 import useRouter from "hooks/useRouter";
-import { UpgradePlanBar } from "pages/ConnectionPage/pages/AllConnectionsPage/components/UpgradePlanBar";
 import { RoutePaths } from "pages/routePaths";
+import { SettingsRoute } from "pages/SettingsPage/SettingsPage";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
+import { UpgradePlanBanner, SyncNotificationBanner, BillingWarningBanner } from "views/layout/Banners";
 import SideBar from "views/layout/SideBar";
 
 const MainContainer = styled.div`
@@ -37,9 +39,18 @@ const hasCurrentStep = (state: unknown): state is { currentStep: string } => {
 };
 
 const MainView: React.FC = (props) => {
-  const { pathname, location } = useRouter();
+  const { healthData } = useHealth();
+  const { usage } = healthData;
+  const { pathname, location, push } = useRouter();
+  const [usagePercentage, setUsagePercentage] = useState<number>(0);
   const [isSidebar, setIsSidebar] = useState<boolean>(true);
   const [backgroundColor, setBackgroundColor] = useState<string>(theme.backgroundColor);
+
+  useEffect(() => {
+    if (usage) {
+      setUsagePercentage(usage * 100);
+    }
+  }, [usage]);
 
   const hasSidebarRoutes: string[] = [
     RoutePaths.Source,
@@ -108,13 +119,21 @@ const MainView: React.FC = (props) => {
     setIsSidebar(isSidebarBol);
   }, [pathname, hasSidebarRoutes]);
 
+  const onBillingPage = () => {
+    push(`/${RoutePaths.Settings}/${SettingsRoute.PlanAndBilling}`);
+  };
+
   return (
     <MainContainer>
       {isSidebar && <SideBar />}
       <Content backgroundColor={backgroundColor}>
         <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
           <React.Suspense fallback={<LoadingPage />}>
-            <UpgradePlanBar />
+            <UpgradePlanBanner onBillingPage={onBillingPage} />
+            {usagePercentage > 0 && usagePercentage < 100 && (
+              <SyncNotificationBanner usage={usagePercentage} onBillingPage={onBillingPage} />
+            )}
+            {usagePercentage >= 100 && <BillingWarningBanner onBillingPage={onBillingPage} />}
             {props.children}
           </React.Suspense>
         </ResourceNotFoundErrorBoundary>

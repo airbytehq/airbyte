@@ -66,15 +66,20 @@ export interface SaveNotificationUsageRead {
 
 export interface EditNotificationBody {
   id: string;
+  value?: number;
   emailFlag: boolean;
   appsFlag: boolean;
 }
 
 export interface EditNotificationRead {
-  data: boolean;
+  data: NotificationItem;
 }
 
 export interface DeleteNotificationRead {
+  data: boolean;
+}
+
+export interface IgnoreNotificationRead {
   data: boolean;
 }
 
@@ -276,10 +281,11 @@ export const webBackendListFilteredConnectionsForWorkspace = (
 /**
  * @summary Returns all filters for connections
  */
-export interface FilterItem {
+export interface KeyValuePair {
   key: string;
   value: string;
 }
+export type FilterItem = KeyValuePair;
 export interface ReadConnectionFilters {
   status: FilterItem[];
   sources: FilterItem[];
@@ -351,6 +357,13 @@ export const deleteNotificationSetting = (
       method: "post",
       headers: { "Content-Type": "application/json" },
     },
+    options
+  );
+};
+
+export const ignoreNotification = (options?: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<IgnoreNotificationRead>(
+    { url: `/notification/ignore`, method: "post", headers: { "Content-Type": "application/json" } },
     options
   );
 };

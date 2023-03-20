@@ -4,7 +4,7 @@ import { FormattedMessage } from "react-intl";
 import { Row, Cell } from "components";
 import { Separator } from "components/Separator";
 
-import { EditNotificationBody, NotificationItem } from "core/request/DaspireClient";
+import { NotificationItem } from "core/request/DaspireClient";
 
 import { NotificationFlag } from "./NotificationFlag";
 import { FirstHeaderText, HeaderText, BodyRow, FirstCellFlexValue, BodyCell } from "./StyledTable";
@@ -12,7 +12,7 @@ import { FirstHeaderText, HeaderText, BodyRow, FirstCellFlexValue, BodyCell } fr
 interface IProps {
   syncFail: NotificationItem;
   syncSuccess: NotificationItem;
-  updateNotificationSetting: (editNotificationBody: EditNotificationBody) => void;
+  updateNotificationSetting: (editNotificationBody: NotificationItem) => void;
 }
 
 export const SyncTable: React.FC<IProps> = ({ syncFail, syncSuccess, updateNotificationSetting }) => {
@@ -40,6 +40,8 @@ export const SyncTable: React.FC<IProps> = ({ syncFail, syncSuccess, updateNotif
             onClick={() => {
               updateNotificationSetting({
                 id: syncFail.id,
+                type: syncFail.type,
+                value: syncFail.value,
                 emailFlag: !syncFail.emailFlag,
                 appsFlag: syncFail.appsFlag,
               });
@@ -52,6 +54,8 @@ export const SyncTable: React.FC<IProps> = ({ syncFail, syncSuccess, updateNotif
             onClick={() => {
               updateNotificationSetting({
                 id: syncFail.id,
+                type: syncFail.type,
+                value: syncFail.value,
                 emailFlag: syncFail.emailFlag,
                 appsFlag: !syncFail.appsFlag,
               });
@@ -71,6 +75,8 @@ export const SyncTable: React.FC<IProps> = ({ syncFail, syncSuccess, updateNotif
             onClick={() => {
               updateNotificationSetting({
                 id: syncSuccess.id,
+                type: syncSuccess.type,
+                value: syncSuccess.value,
                 emailFlag: !syncSuccess.emailFlag,
                 appsFlag: syncSuccess.appsFlag,
               });
@@ -83,6 +89,8 @@ export const SyncTable: React.FC<IProps> = ({ syncFail, syncSuccess, updateNotif
             onClick={() => {
               updateNotificationSetting({
                 id: syncSuccess.id,
+                type: syncSuccess.type,
+                value: syncSuccess.value,
                 emailFlag: syncSuccess.emailFlag,
                 appsFlag: !syncSuccess.appsFlag,
               });
