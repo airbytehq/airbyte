@@ -37,5 +37,5 @@ The setup only requires two fields. First is the `host` which is the address at 
 
 | Version | Date       | Pull Request                                             | Subject                   |
 | :-------| :--------- | :------------------------------------------------------- | :-------------------------|
-| 0.1.1   | 2023-03-20 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Set HTTPS as the only protocol |
+| 0.1.1   | 2023-03-20 | [24227](https://github.com/airbytehq/airbyte/pull/24227) | Set HTTPS as the only protocol |
 | 0.1.0   | 2022-10-28 | [18349](https://github.com/airbytehq/airbyte/pull/18349) | New Typesense destination |
