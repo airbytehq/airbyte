@@ -398,20 +398,20 @@ def test_read(schema, ignored_fields, expect_records_config, record, expected_re
         )
 
 
-@pytest.mark.parametrize("config_fail_on_extra_columns, record_has_unexpected_field, expectation_should_fail", [
+@pytest.mark.parametrize("config_fail_on_extra_columns, record_has_unexpected_column, expectation_should_fail", [
         (True, True, True),
         (True, False, False),
         (False, False, False),
         (False, True, False),
 ])
 @pytest.mark.parametrize("additional_properties", [True, False, None])
-def test_fail_on_extra_columns(config_fail_on_extra_columns, record_has_unexpected_field, expectation_should_fail, additional_properties):
+def test_fail_on_extra_columns(config_fail_on_extra_columns, record_has_unexpected_column, expectation_should_fail, additional_properties):
     schema = {"type": "object", "properties": {"field_1": {"type": ["string"]}, "field_2": {"type": ["string"]}}}
     if additional_properties:
         schema["additionalProperties"] = additional_properties
 
     record = {"field_1": "value", "field_2": "value"}
-    if record_has_unexpected_field:
+    if record_has_unexpected_column:
         record["surprise_field"] = "value"
 
     configured_catalog = ConfiguredAirbyteCatalog(
