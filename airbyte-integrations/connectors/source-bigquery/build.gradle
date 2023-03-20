@@ -11,11 +11,11 @@ application {
 }
 
 dependencies {
-    implementation 'com.google.cloud:google-cloud-bigquery:2.10.1'
+    implementation 'com.google.cloud:google-cloud-bigquery:2.23.2'
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
 
@@ -29,3 +29,4 @@ dependencies {
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }
+

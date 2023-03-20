@@ -42,7 +42,7 @@
     },
     "updated_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "wallpaper": {
       "type": ["string", "null"]

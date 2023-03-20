@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.7.1
+Discovery backward compatibility tests: handle errors on previous connectors catalog retrieval. Return None when the discovery failed. It should unblock the situation when tests fails even if you bypassed backward compatibility tests.
+
+## 0.7.0
+Basic read test: add `ignored_fields`, change configuration format by adding optional `bypass_reason` [#22996](https://github.com/airbytehq/airbyte/pull/22996)
+
+## 0.6.1
+Fix docker API - "Error" is optional. [#22987](https://github.com/airbytehq/airbyte/pull/22987)
+
+## 0.6.0
+Allow passing custom environment variables to the connector under test. [#22937](https://github.com/airbytehq/airbyte/pull/22937).
+
 ## 0.5.3
 Spec tests: Make `oneOf` checks work for nested `oneOf`s. [#22395](https://github.com/airbytehq/airbyte/pull/22395)
 
