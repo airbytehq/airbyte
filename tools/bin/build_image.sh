@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-#set -e
+set -e
 
 ROOT_DIR="$1"
 PROJECT_DIR="$2"
@@ -14,6 +14,7 @@ export DOCKER_BUILDKIT=1
 
 cd "$ROOT_DIR"
 . tools/lib/lib.sh
+# TODO: understand why assert_root does not succeed in the dagger context
 #assert_root
 
 cd "$PROJECT_DIR"

@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-"""This module groups steps made to run tests for a specific connector given a test context."""
+"""This module groups steps made to run tests for a specific Python connector given a test context."""
 
 from abc import ABC
 from typing import List, Tuple
