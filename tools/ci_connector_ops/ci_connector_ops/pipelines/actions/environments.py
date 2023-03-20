@@ -4,12 +4,16 @@
 
 """This modules groups functions made to create reusable environments packaged in dagger containers."""
 
+from __future__ import annotations
 
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
-from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.pipelines.utils import get_file_contents
 from dagger import CacheSharingMode, CacheVolume, Container, Directory, Secret
+
+if TYPE_CHECKING:
+    from ci_connector_ops.pipelines.contexts import ConnectorTestContext
+
 
 PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
 
@@ -204,26 +208,12 @@ def with_java_base(context: ConnectorTestContext, jdk_version="17.0.4") -> Conta
     return context.dagger_client.container().from_(f"amazoncorretto:{jdk_version}")
 
 
-async def with_gradle(context: ConnectorTestContext) -> Container:
+async def with_gradle(context: ConnectorTestContext, sources_to_include: List[str] = None) -> Container:
     gradle_cache: CacheVolume = context.dagger_client.cache_volume("gradle_cache")
 
     include = [
         ".env",
-        "airbyte-api",
-        "airbyte-commons-cli",
-        "airbyte-commons-protocol",
-        "airbyte-commons",
-        "airbyte-config",
-        "airbyte-connector-test-harnesses",
-        "airbyte-db",
-        "airbyte-integrations/bases",
-        "airbyte-integrations/connectors/source-jdbc",
-        "airbyte-integrations/connectors/source-relational-db",
-        "airbyte-json-validation",
-        "airbyte-protocol",
-        "airbyte-test-utils",
         "build.gradle",
-        "buildSrc",
         "deps.toml",
         "gradle.properties",
         "gradle",
@@ -231,9 +221,11 @@ async def with_gradle(context: ConnectorTestContext) -> Container:
         "LICENSE_SHORT",
         "publish-repositories.gradle",
         "settings.gradle",
-        "tools/bin/build_image.sh",
-        "tools/lib/lib.sh",
+        "build.gradle",
     ]
+
+    if sources_to_include:
+        include += sources_to_include
 
     gradle_properties_file = context.resources_dir.file("ci_gradle.properties")
 
