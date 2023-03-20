@@ -389,7 +389,7 @@ def test_read(schema, ignored_fields, expect_records_config, record, expected_re
             expect_records_config=expect_records_config,
             should_validate_schema=True,
             should_validate_data_points=False,
-            should_fail_on_extra_fields=False,
+            should_fail_on_extra_columns=False,
             empty_streams=set(),
             expected_records_by_stream=expected_records_by_stream,
             docker_runner=docker_runner_mock,
@@ -398,14 +398,14 @@ def test_read(schema, ignored_fields, expect_records_config, record, expected_re
         )
 
 
-@pytest.mark.parametrize("config_fail_on_extra_fields, record_has_unexpected_field, expectation_should_fail", [
+@pytest.mark.parametrize("config_fail_on_extra_columns, record_has_unexpected_field, expectation_should_fail", [
         (True, True, True),
         (True, False, False),
         (False, False, False),
         (False, True, False),
 ])
 @pytest.mark.parametrize("additional_properties", [True, False, None])
-def test_fail_on_extra_fields(config_fail_on_extra_fields, record_has_unexpected_field, expectation_should_fail, additional_properties):
+def test_fail_on_extra_columns(config_fail_on_extra_columns, record_has_unexpected_field, expectation_should_fail, additional_properties):
     schema = {"type": "object", "properties": {"field_1": {"type": ["string"]}, "field_2": {"type": ["string"]}}}
     if additional_properties:
         schema["additionalProperties"] = additional_properties
@@ -436,7 +436,7 @@ def test_fail_on_extra_fields(config_fail_on_extra_fields, record_has_unexpected
                 expect_records_config=ExpectedRecordsConfig(path="foobar"),
                 should_validate_schema=True,
                 should_validate_data_points=False,
-                should_fail_on_extra_fields=config_fail_on_extra_fields,
+                should_fail_on_extra_columns=config_fail_on_extra_columns,
                 empty_streams=set(),
                 expected_records_by_stream={},
                 docker_runner=docker_runner_mock,
@@ -450,7 +450,7 @@ def test_fail_on_extra_fields(config_fail_on_extra_fields, record_has_unexpected
             expect_records_config=ExpectedRecordsConfig(path="foobar"),
             should_validate_schema=True,
             should_validate_data_points=False,
-            should_fail_on_extra_fields=config_fail_on_extra_fields,
+            should_fail_on_extra_columns=config_fail_on_extra_columns,
             empty_streams=set(),
             expected_records_by_stream={},
             docker_runner=docker_runner_mock,

@@ -46,11 +46,11 @@ class CustomFormatChecker(FormatChecker):
             return super().check(instance, format)
 
 
-def _enforce_no_extra_fields(json_schema: Dict[str, Any]):
-    """Create a copy of the schema in which `additionalProperties` is set to False for the dict of fields.
+def _enforce_no_additional_top_level_properties(json_schema: Dict[str, Any]):
+    """Create a copy of the schema in which `additionalProperties` is set to False for the dict of top-level properties.
 
-    This method will override the value of `additionalProperties` on the highest level object of the json schema
-    if it is set, or will create the property and set it to False if it does not exist.
+    This method will override the value of `additionalProperties` if it is set,
+    or will create the property and set it to False if it does not exist.
     """
     enforced_schema = copy.deepcopy(json_schema)
     dpath.util.new(enforced_schema, "additionalProperties", False)
@@ -58,7 +58,7 @@ def _enforce_no_extra_fields(json_schema: Dict[str, Any]):
 
 
 def verify_records_schema(
-    records: List[AirbyteRecordMessage], catalog: ConfiguredAirbyteCatalog, fail_on_extra_fields: bool
+    records: List[AirbyteRecordMessage], catalog: ConfiguredAirbyteCatalog, fail_on_extra_columns: bool
 ) -> Mapping[str, Mapping[str, ValidationError]]:
     """Check records against their schemas from the catalog, yield error messages.
     Only first record with error will be yielded for each stream.
@@ -66,8 +66,8 @@ def verify_records_schema(
     stream_validators = {}
     for stream in catalog.streams:
         schema_to_validate_against = stream.stream.json_schema
-        if fail_on_extra_fields:
-            schema_to_validate_against = _enforce_no_extra_fields(schema_to_validate_against)
+        if fail_on_extra_columns:
+            schema_to_validate_against = _enforce_no_additional_top_level_properties(schema_to_validate_against)
         stream_validators[stream.stream.name] = Draft7ValidatorWithStrictInteger(
             schema_to_validate_against, format_checker=CustomFormatChecker()
         )
