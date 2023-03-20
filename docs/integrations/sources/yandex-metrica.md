@@ -7,9 +7,10 @@ This page contains the setup guide and reference information for the Yandex Metr
 - Counter ID
 - OAuth2 Token
 
-## Setup Yandex Metrica
+## Setup guide
+### Step 1: Set up Yandex Metrica
 
-1. [Create a Yandex Metrica account](https://metrica.yandex.com/) if you don't already have one.
+1. [Create Yandex Metrica account](https://metrica.yandex.com/) if you don't already have one.
 2. Head to [Management page](https://metrica.yandex.com/list) and add new tag or choose an existing one.
 3. At the top of the dashboard you will see 8 digit number to the right of your website name. This is your **Counter ID**.
 4. Create a new app or choose an existing one from [My apps page](https://oauth.yandex.com/).
@@ -20,6 +21,29 @@ This page contains the setup guide and reference information for the Yandex Metr
    - To create your API key you will need to grab your **ClientID**,
    - Now to get the API key craft a GET request to an endpoint *https://oauth.yandex.com/authorizE?response_type=token&client_id=\<Your Client ID\>*
    - You will receive a response with your **API key**. Save it.
+
+### Step 2: Set up the Yandex Metrica connector in Airbyte
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Yandex Metrica** from the **Source type** dropdown.
+4. Enter a name for the Yandex Metrica connector.
+5. Enter Authentication Token from step 1.
+6. Enter Counter ID.
+7. Enter the Start Date in format `YYYY-MM-DD`.
+8. Enter the End Date in format `YYYY-MM-DD` (Optional).
+
+
+#### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Yandex Metrica** from the Source type dropdown.
+4. Enter the name for the Yandex Metrica connector.
+5. Enter Authentication Token from step 1.
+6. Enter Counter ID.
+7. Enter the Start Date in format `YYYY-MM-DD`.
+8. Enter the End Date in format `YYYY-MM-DD` (Optional).
 
 ## Supported sync modes
 
