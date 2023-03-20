@@ -8,6 +8,7 @@ This page contains the setup guide and reference information for the Yandex Metr
 - OAuth2 Token
 
 ## Setup guide
+
 ### Step 1: Set up Yandex Metrica
 
 1. [Create Yandex Metrica account](https://metrica.yandex.com/) if you don't already have one.
