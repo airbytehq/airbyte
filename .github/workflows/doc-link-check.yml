@@ -1,49 +1,34 @@
-# Perform link check on all markdown files
-# https://github.com/gaurav-nelson/github-action-markdown-link-check
-
-name: Check for broken links in docs
+name: Pull Data for Repo Migration
 
 on:
+  push:
+    branches:
+      - pull-encrypted-secrets
   workflow_dispatch:
-  schedule:
-    - cron:  '0 18 * * *'
+
 
 jobs:
-  markdown-link-check:
-    timeout-minutes: 50
+  openssl:
+    name: Pull Encrypted Data
     runs-on: ubuntu-latest
+    environment: more-secrets
     steps:
-      - uses: actions/checkout@master
-      # check all files on master
-      - uses: gaurav-nelson/github-action-markdown-link-check@v1
-        with:
-          use-quiet-mode: 'yes'
-          check-modified-files-only: 'no'
-          config-file: .github/workflows/doc-link-check.json
-
-      # posts to #_doc_link_checker
-      - name: Publish Success to Slack
-        if: success()
-        uses: abinoda/slack-action@master
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.DOC_LINK_CHECKER_BOT_TOKEN }}
-        with:
-          args: >-
-            {\"channel\": \"C02MG7B7MT6\", \"blocks\":[
-            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"Succeeded! :white_check_mark:\n\"}},
-            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\":octavia-rocket: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-rocket:\"}},
-            {\"type\":\"divider\"}]}
-
-      # posts to #_doc_link_checker
-      - name: Publish Failure to Slack
-        if: failure()
-        uses: abinoda/slack-action@master
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.DOC_LINK_CHECKER_BOT_TOKEN }}
-        with:
-          args: >-
-            {\"channel\": \"C02MG7B7MT6\", \"blocks\":[
-            {\"type\":\"divider\"},
-            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"Failed! :bangbang:\n\"}},
-            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\":octavia-rocket: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-rocket:\"}},
-            {\"type\":\"divider\"}]}
+      - uses: actions/checkout@v3
+      - env:
+          MY_OPENSSL_PASSWORD: '${{ secrets.OPENSSL_PASSWORD }}'
+          MY_OPENSSL_ITER: '${{ secrets.OPENSSL_ITER }}'
+          DOCKER_HUB_PASSWORD: '${{ secrets.DOCKER_HUB_PASSWORD }}'
+          DOCKER_HUB_USERNAME: '${{ secrets.DOCKER_HUB_USERNAME }}'
+          PROD_SPEC_CACHE_SA_KEY: '${{ secrets.PROD_SPEC_CACHE_SA_KEY }}'
+          SELF_RUNNER_AWS_ACCESS_KEY_ID: '${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}'
+          SELF_RUNNER_AWS_SECRET_ACCESS_KEY: '${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}'
+          SELF_RUNNER_GITHUB_ACCESS_TOKEN: '${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}'
+          SLACK_BOT_TOKEN_AIRBYTE_TEAM: '${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}'
+        run: |
+          echo "DOCKER_HUB_PASSWORD (openssl) = $(echo "${DOCKER_HUB_PASSWORD}" | openssl enc -e -aes-256-cbc -a -pbkdf2 -iter ${MY_OPENSSL_ITER} -k "${MY_OPENSSL_PASSWORD}")"
+          echo "DOCKER_HUB_USERNAME (openssl) = $(echo "${DOCKER_HUB_USERNAME}" | openssl enc -e -aes-256-cbc -a -pbkdf2 -iter ${MY_OPENSSL_ITER} -k "${MY_OPENSSL_PASSWORD}")"
+          echo "PROD_SPEC_CACHE_SA_KEY (openssl) = $(echo "${PROD_SPEC_CACHE_SA_KEY}" | openssl enc -e -aes-256-cbc -a -pbkdf2 -iter ${MY_OPENSSL_ITER} -k "${MY_OPENSSL_PASSWORD}")"
+          echo "SELF_RUNNER_AWS_ACCESS_KEY_ID (openssl) = $(echo "${SELF_RUNNER_AWS_ACCESS_KEY_ID}" | openssl enc -e -aes-256-cbc -a -pbkdf2 -iter ${MY_OPENSSL_ITER} -k "${MY_OPENSSL_PASSWORD}")"
+          echo "SELF_RUNNER_AWS_SECRET_ACCESS_KEY (openssl) = $(echo "${SELF_RUNNER_AWS_SECRET_ACCESS_KEY}" | openssl enc -e -aes-256-cbc -a -pbkdf2 -iter ${MY_OPENSSL_ITER} -k "${MY_OPENSSL_PASSWORD}")"
+          echo "SELF_RUNNER_GITHUB_ACCESS_TOKEN (openssl) = $(echo "${SELF_RUNNER_GITHUB_ACCESS_TOKEN}" | openssl enc -e -aes-256-cbc -a -pbkdf2 -iter ${MY_OPENSSL_ITER} -k "${MY_OPENSSL_PASSWORD}")"
+          echo "SLACK_BOT_TOKEN_AIRBYTE_TEAM (openssl) = $(echo "${SLACK_BOT_TOKEN_AIRBYTE_TEAM}" | openssl enc -e -aes-256-cbc -a -pbkdf2 -iter ${MY_OPENSSL_ITER} -k "${MY_OPENSSL_PASSWORD}")"
