@@ -1,0 +1,49 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Amocrm Spec
+  type: object
+  properties:
+    credentials:
+      type: object
+      title: Authenticate via Amo (OAuth)
+      required:
+        - auth_type
+        - client_id
+        - client_secret
+        - refresh_token
+        - access_token
+        - token_expiry_date
+      properties:
+        auth_type:
+          type: string
+          title: Oauth type
+          const: "oauth2.0"
+        client_id:
+          type: string
+          title: Client ID
+          description: "Enter your Amp application's Client ID"
+          order: 0
+        client_secret:
+          type: string
+          title: Client Secret
+          description: "Enter your Amo application's Client Secret"
+          airbyte_secret: true
+          order: 1
+        refresh_token:
+          type: string
+          title: Refresh Token
+          description: "Enter your Amo application's refresh token"
+          airbyte_secret: true
+          order: 2
+        access_token:
+          type: string
+          title: Access Token
+          description: "Enter your Amo application's access token"
+          airbyte_secret: true
+          order: 3
+        token_expiry_date:
+          title: Token expire date
+          type: string
+          description: "The date-time when the access token should be refreshed"
+          order: 4
