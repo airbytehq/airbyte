@@ -106,6 +106,7 @@ class BaseConnector(ABC, Generic[TConfig]):
 
     def check_with_catalog(self, logger: logging.Logger, config: TConfig, configured_catalog: ConfiguredAirbyteCatalog):
         """Same as the check method without the catalog but includes a configured catalog for additional checks"""
+        # TODO add check with catalog implementation
         logger.info(f"Ignoring Catalog {configured_catalog}")
         return self.check(logger, config)
 
