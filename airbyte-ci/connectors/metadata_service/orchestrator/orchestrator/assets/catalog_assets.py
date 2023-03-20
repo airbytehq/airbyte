@@ -72,14 +72,10 @@ def compute_catalog_overrides(merged_df):
 
 
 
-def catalog_to_metadata_defintion(id_field, connector_type, oss_connector_df, cloud_connector_df):
+def merge_into_metadata_definitions(id_field, connector_type, oss_connector_df, cloud_connector_df):
     merged_connectors = pd.merge(oss_connector_df, cloud_connector_df, on=id_field, how='outer', suffixes=(OSS_SUFFIX, CLOUD_SUFFIX), indicator=True)
 
-
-    metadata_list = []
-
-    for _, merged_df in merged_connectors.iterrows():
-
+    def build_metadata(merged_df):
         metadata = {
             "metadataSpecVersion": "1.0",
             "data": {
@@ -100,30 +96,21 @@ def catalog_to_metadata_defintion(id_field, connector_type, oss_connector_df, cl
         catalogs = compute_catalog_overrides(merged_df)
         metadata["data"]["catalogs"] = catalogs
 
-        metadata_list.append(metadata)
+        return metadata
+
+    metadata_list = merged_connectors.apply(build_metadata, axis=1).tolist()
 
     return metadata_list
 
 
-def catalogs_to_metadata_list(oss_catalog_dict, cloud_catalog_dict):
-    cloud_sources_dataframe = pd.DataFrame(cloud_catalog_dict["sources"])
-    cloud_destinations_dataframe = pd.DataFrame(cloud_catalog_dict["destinations"])
-    oss_sources_dataframe = pd.DataFrame(oss_catalog_dict["sources"])
-    oss_destinations_dataframe = pd.DataFrame(oss_catalog_dict["destinations"])
+@asset
+def metadata_definitions(cloud_sources_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, oss_destinations_dataframe):
+    sources_metadata_list = merge_into_metadata_definitions("sourceDefinitionId", "source", oss_sources_dataframe, cloud_sources_dataframe)
+    destinations_metadata_list = merge_into_metadata_definitions("destinationDefinitionId", "destination", oss_destinations_dataframe, cloud_destinations_dataframe)
+    all_definitions = sources_metadata_list.concat(destinations_metadata_list);
 
-    sources_metadata_list = catalog_to_metadata_defintion("sourceDefinitionId", "source", oss_sources_dataframe, cloud_sources_dataframe)
-    destinations_metadata_list = catalog_to_metadata_defintion("destinationDefinitionId", "destination", oss_destinations_dataframe, cloud_destinations_dataframe)
-    return sources_metadata_list + destinations_metadata_list;
+    return Output(all_definitions, metadata={"count": len(all_definitions), "preview": MetadataValue.md(all_definitions.to_markdown())})
 
-def main():
-  oss_catalog_dict = load_json_from_file("oss_catalog.json")
-  cloud_catalog_dict = load_json_from_file("cloud_catalog.json")
-
-  catalogs_to_metadata_list(oss_catalog_dict, cloud_catalog_dict)
-
-
-
-# Old
 
 @asset(required_resource_keys={"catalog_report_directory_manager"})
 def connector_catalog_location_html(context, all_destinations_dataframe, all_sources_dataframe):
