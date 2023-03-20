@@ -820,7 +820,9 @@ class TestBasicRead(BaseTest):
         assert records, "At least one record should be read using provided catalog"
 
         if should_validate_schema:  # TODO Conditional logic
-            self._validate_schema(records=records, configured_catalog=configured_catalog, fail_on_extra_columns=should_fail_on_extra_columns)
+            self._validate_schema(
+                records=records, configured_catalog=configured_catalog, fail_on_extra_columns=should_fail_on_extra_columns
+            )
 
         self._validate_empty_streams(records=records, configured_catalog=configured_catalog, allowed_empty_streams=empty_streams)
         for pks, record in primary_keys_for_records(streams=configured_catalog.streams, records=records):
