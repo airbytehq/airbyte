@@ -6959,7 +6959,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-instagram:1.0.3"
+- dockerImage: "airbyte/source-instagram:1.0.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/instagram"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/instagram"
@@ -6979,9 +6979,10 @@
           format: "date-time"
         access_token:
           title: "Access Token"
-          description: "The value of the access token generated. See the <a href=\"\
-            https://docs.airbyte.com/integrations/sources/instagram\">docs</a> for\
-            \ more information"
+          description: "The value of the access token generated with <b>instagram_basic,\
+            \ instagram_manage_insights, pages_show_list, pages_read_engagement, Instagram\
+            \ Public Content Access</b> permissions. See the <a href=\"https://docs.airbyte.com/integrations/sources/instagram/#step-1-set-up-instagram\"\
+            >docs</a> for more information"
           airbyte_secret: true
           type: "string"
       required:
