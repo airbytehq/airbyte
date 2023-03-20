@@ -334,22 +334,30 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   @Override
   protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName)
       throws SQLException {
-    boolean nullValExist = false;
+    boolean nullValExist;
     final String resultColName = "nullValue";
     final String descQuery = schema == null || schema.isBlank()
         ? String.format(DESCRIBE_TABLE_WITHOUT_SCHEMA_QUERY, tableName)
         : String.format(DESCRIBE_TABLE_WITH_SCHEMA_QUERY, schema, tableName);
-    final Optional<JsonNode> field = database.bufferedResultSetQuery(conn -> conn.createStatement()
+    final List<JsonNode> tableRows = database.bufferedResultSetQuery(conn -> conn.createStatement()
         .executeQuery(descQuery),
-        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet))
-        .stream()
-        .peek(x -> LOGGER.info("MySQL Table Structure {}, {}, {}", x.toString(), schema, tableName))
-        .filter(x -> x.get("Field") != null)
-        .filter(x -> x.get("Field").asText().equalsIgnoreCase(columnName))
-        .findFirst();
+        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+
+    Optional<JsonNode> field = Optional.empty();
+    String nullableColumnName = "";
+    for (JsonNode tableRow : tableRows) {
+      LOGGER.info("MySQL Table Structure {}, {}, {}", tableRow.toString(), schema, tableName);
+      if (tableRow.get("Field") != null && tableRow.get("Field").asText().equalsIgnoreCase(columnName)) {
+        field = Optional.of(tableRow);
+        nullableColumnName = "Null";
+      } else if (tableRow.get("COLUMN_NAME") != null && tableRow.get("COLUMN_NAME").asText().equalsIgnoreCase(columnName)) {
+        field = Optional.of(tableRow);
+        nullableColumnName = "IS_NULLABLE";
+      }
+    }
     if (field.isPresent()) {
       final JsonNode jsonNode = field.get();
-      final JsonNode isNullable = jsonNode.get("Null");
+      final JsonNode isNullable = jsonNode.get(nullableColumnName);
       if (isNullable != null) {
         if (isNullable.asText().equalsIgnoreCase("YES")) {
           final String query = schema == null || schema.isBlank()
