@@ -121,13 +121,17 @@ def add_test_comment(definition, new_branch, dry_run):
         logging.info(f"[DRY RUN]: {' '.join(comment_command_arguments)}")
 
 
-def get_connector_name_from_definition(connector_definition):
+def get_airbyte_connector_name_from_definition(connector_definition):
     return connector_definition["dockerRepository"].replace("airbyte/", "")
+
+
+def is_airbyte_connector(connector_definition):
+    return connector_definition["dockerRepository"].startswith("airbyte/")
 
 
 def migrate_config_on_new_branch(definition, dry_run):
     AIRBYTE_REPO.heads.master.checkout()
-    connector_name = get_connector_name_from_definition(definition)
+    connector_name = get_airbyte_connector_name_from_definition(definition)  # TODO make sure they're airbyte connectors before trying to migrate
     new_branch = checkout_new_branch(connector_name)
     config_path = acceptance_test_config_path(connector_name)
     migrate_configuration(config_path)
