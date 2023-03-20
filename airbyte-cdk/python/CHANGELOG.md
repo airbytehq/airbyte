@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.30.4
+Do not swallow exceptions in `check` to make unhandled failed check emit a trace message instead of a failed connection status.
+
 ## 0.30.3
 Fix reset pagination issue on test reads
 
