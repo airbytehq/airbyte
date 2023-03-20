@@ -21,11 +21,17 @@
         "description": "Hostname of the Typesense instance without protocol.",
         "order": 1
       },
+      "port": {
+        "title": "Port",
+        "type": "string",
+        "description": "Port of the Typesense instance. Ex: 8108, 443. Default is 443",
+        "order": 2
+      },
       "batch_size": {
         "title": "Batch size",
         "type": "string",
         "description": "How many documents should be imported together. Default 1000",
-        "order": 4
+        "order": 3
       }
     }
   }
