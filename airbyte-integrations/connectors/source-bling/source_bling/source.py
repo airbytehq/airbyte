@@ -245,8 +245,6 @@ class IncrementalBlingBase(BlingBase):
         
         latest_record_date = datetime.strptime(latest_record['data'][self.record_date_field], self.record_date_field_format)
 
-        logger.info(latest_record_date)
-
         if current_stream_state.get(self.cursor_field):
             if isinstance(current_stream_state[self.cursor_field], str):
                 current_stream_state_date = datetime.strptime(current_stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S')
@@ -381,7 +379,7 @@ class NotaFiscal(IncrementalBlingBase):
 
         item_list = ThreadSafeList()
 
-        number_of_threds = 15
+        number_of_threds = 30
 
         threads = []
 
@@ -416,16 +414,20 @@ class NotaFiscal(IncrementalBlingBase):
 
     def get_nf_xml(self, item_list, nf_item_list):
         for item in nf_item_list:
-            read_xml = False 
-
+            max_tries = 5
+            try_count = 1
             if item['data']['xml'] != None:
-                while read_xml == False:
+                while try_count <= max_tries:
                     try:
                         xml = self.handle_request_error(item['data']['xml'] + f'&{self.api_key}').content
                         item['data_xml'] = xmltodict.parse(xml.strip())
-                        read_xml = True
+                        try_count = max_tries + 1
                     except:
                         logger.info('Error for xml: %s', item['data']['xml'])
+                        logger.info(f"Count: {try_count}")
+                        logger.info(xml)
+                        try_count += 1
+                        item['data_xml'] = {'error_log': xml}
                         pass
             else:
                 logger.info('Missing XML for NF: %s', item['data']['numero'])
@@ -438,29 +440,34 @@ class NotaFiscal(IncrementalBlingBase):
         return [
             {
                 'situacao_filter': None,
-                'tipo_filter': 'tipo[E]',
+                'tipo_filter': 'tipo[S]',
                 'index': 0
             },
             {
                 'situacao_filter': 'situacao[3]',
                 'tipo_filter': 'tipo[S]',
                 'index': 1
-            },
-            {
-                'situacao_filter': None,
-                'tipo_filter': 'tipo[S]',
-                'index': 2
             }
+            # {
+            #     'situacao_filter': None,
+            #     'tipo_filter': 'tipo[E]',
+            #     'index': 1
+            # },
+            # {
+            #     'situacao_filter': 'situacao[3]',
+            #     'tipo_filter': 'tipo[S]',
+            #     'index': 2
+            # }
         ]
 
 class SourceBling(AbstractSource):
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            auth = NoAuth()
-            stream = Produtos(authenticator=auth, config=config)
-            records = stream.read_records(sync_mode=SyncMode.full_refresh)
-            next(records)
+            # auth = NoAuth()
+            # stream = Produtos(authenticator=auth, config=config)
+            # records = stream.read_records(sync_mode=SyncMode.full_refresh)
+            # next(records)
             return True, None
         except requests.exceptions.RequestException as e:
             return False, e
