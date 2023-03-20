@@ -1273,6 +1273,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/open-exchange-rates
   sourceType: api
   releaseStage: alpha
+  icon: airbyte.svg
 - name: OpenWeather
   sourceDefinitionId: d8540a80-6120-485d-b7d6-272bca477d9b
   dockerRepository: airbyte/source-openweather
