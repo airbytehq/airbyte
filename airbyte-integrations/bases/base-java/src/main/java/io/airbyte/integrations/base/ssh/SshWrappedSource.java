@@ -16,7 +16,6 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.util.List;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,25 +25,16 @@ public class SshWrappedSource implements Source {
   private final Source delegate;
   private final List<String> hostKey;
   private final List<String> portKey;
-  private final Optional<String> sshGroup;
 
   public SshWrappedSource(final Source delegate, final List<String> hostKey, final List<String> portKey) {
     this.delegate = delegate;
     this.hostKey = hostKey;
     this.portKey = portKey;
-    this.sshGroup = Optional.empty();
-  }
-
-  public SshWrappedSource(final Source delegate, final List<String> hostKey, final List<String> portKey, final String sshGroup) {
-    this.delegate = delegate;
-    this.hostKey = hostKey;
-    this.portKey = portKey;
-    this.sshGroup = Optional.of(sshGroup);
   }
 
   @Override
   public ConnectorSpecification spec() throws Exception {
-    return SshHelpers.injectSshIntoSpec(delegate.spec(), sshGroup);
+    return SshHelpers.injectSshIntoSpec(delegate.spec());
   }
 
   @Override
