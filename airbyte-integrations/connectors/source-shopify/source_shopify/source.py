@@ -752,11 +752,11 @@ class SourceShopify(AbstractSource):
         """
         config["authenticator"] = ShopifyAuthenticator(config)
         try:
-            response = list(Shop(config).read_records(sync_mode=None))
-            # check for the shop_id is present in the response
-            shop_id = response[0].get("id")
-            if shop_id is not None:
+            user_scopes = self.get_user_scopes(config)
+            if user_scopes is not None:
                 return True, None
+            else:
+                return False, "Please check the credentials and try again."
         except (requests.exceptions.RequestException, IndexError) as e:
             return False, e
 
@@ -827,7 +827,10 @@ class SourceShopify(AbstractSource):
         session = requests.Session()
         headers = config["authenticator"].get_auth_header()
         response = session.get(f"https://{config['shop']}.myshopify.com/admin/oauth/access_scopes.json", headers=headers).json()
-        return response["access_scopes"]
+        if "access_scopes" in response:
+            return response["access_scopes"]
+        else:
+            return None
 
     @staticmethod
     def format_name(name):
