@@ -13,7 +13,7 @@ from pathlib import Path
 from config_migration import migrate_configuration
 from create_issues import COMMON_ISSUE_LABELS as COMMON_PR_LABELS
 from create_issues import GITHUB_PROJECT_NAME
-from definitions import GA_DEFINITIONS
+from definitions import GA_DEFINITIONS, is_airbyte_connector, get_airbyte_connector_name_from_definition
 from git import Repo
 from jinja2 import Environment, FileSystemLoader
 
@@ -119,15 +119,6 @@ def add_test_comment(definition, new_branch, dry_run):
             logging.info("Added test comment")
     else:
         logging.info(f"[DRY RUN]: {' '.join(comment_command_arguments)}")
-
-
-def get_airbyte_connector_name_from_definition(connector_definition):
-    return connector_definition["dockerRepository"].replace("airbyte/", "")
-
-
-def is_airbyte_connector(connector_definition):
-    return connector_definition["dockerRepository"].startswith("airbyte/")
-
 
 def migrate_config_on_new_branch(definition, dry_run):
     AIRBYTE_REPO.heads.master.checkout()

@@ -10,10 +10,8 @@ import os
 import subprocess
 import tempfile
 
-from definitions import GA_DEFINITIONS
+from definitions import GA_DEFINITIONS, is_airbyte_connector, find_by_name
 from jinja2 import Environment, FileSystemLoader
-
-from create_prs import is_airbyte_connector
 
 # SET THESE BEFORE USING THE SCRIPT
 MODULE_NAME = "fail_on_extra_columns"
@@ -31,6 +29,8 @@ parser = argparse.ArgumentParser(
     description="Create issues for a list of connectors from a template."
 )
 parser.add_argument("-d", "--dry", default=True)
+parser.add_argument("--connectors", nargs='*')
+parser.add_argument("--file")
 
 
 def get_issue_content(source_definition):
@@ -87,7 +87,18 @@ def create_issue(source_definition, dry_run=True):
 if __name__ == "__main__":
     args = parser.parse_args()
     dry_run = False if args.dry == "False" or args.dry == "false" else True
-    for definition in GA_DEFINITIONS:  # TODO make configurable. GA_DEFINITIONS, ALL DEFINITIONS, read from a list, etc
+
+    definitions = []
+    if args.connectors:
+        definitions = find_by_name(args.connectors)
+    elif args.file:
+        with open(f"templates/{MODULE_NAME}/{args.file}", "r") as f:
+            connector_names = [line.strip() for line in f]
+        definitions = find_by_name(connector_names)
+    else:
+        definitions = GA_DEFINITIONS
+
+    for definition in definitions:
         if is_airbyte_connector(definition):
             create_issue(definition, dry_run=dry_run)
         else:
