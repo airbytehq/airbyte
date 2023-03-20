@@ -135,7 +135,7 @@ class YandexMetricaStream(HttpStream, ABC):
                     logger.error(f"Error while processing {self.counter_id=} {logrequest_id=}")
                 parts_count = response["log_request"]["parts"][-1]["part_number"]
                 return job_status, parts_count
-            logger.info("Sleeping for 30 seconds, waiting for report getting ready")
+            logger.info("Sleeping for 60 seconds, waiting for report getting ready")
             time.sleep(60)
         if job_status != "processed":
             raise Exception(f"Export Job processing failed, skipping reading stream {self.name}")
