@@ -26,14 +26,14 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
  * Test suite for the {@link AbstractDbSource} class.
  */
 @ExtendWith(SystemStubsExtension.class)
-public class AbstractDbSourceTest {
+public class AbstractJdbcBaseSourceTest {
 
   @SystemStub
   private EnvironmentVariables environmentVariables;
 
   @Test
   void testDeserializationOfLegacyState() throws IOException {
-    final AbstractDbSource dbSource = spy(AbstractDbSource.class);
+    final AbstractJdbcBaseSource dbSource = spy(AbstractJdbcBaseSource.class);
     final JsonNode config = mock(JsonNode.class);
 
     final String legacyStateJson = MoreResources.readResource("states/legacy.json");
@@ -47,7 +47,7 @@ public class AbstractDbSourceTest {
   @Test
   void testDeserializationOfGlobalState() throws IOException {
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
-    final AbstractDbSource dbSource = spy(AbstractDbSource.class);
+    final AbstractJdbcBaseSource dbSource = spy(AbstractJdbcBaseSource.class);
     final JsonNode config = mock(JsonNode.class);
 
     final String globalStateJson = MoreResources.readResource("states/global.json");
@@ -61,7 +61,7 @@ public class AbstractDbSourceTest {
   @Test
   void testDeserializationOfStreamState() throws IOException {
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
-    final AbstractDbSource dbSource = spy(AbstractDbSource.class);
+    final AbstractJdbcBaseSource dbSource = spy(AbstractJdbcBaseSource.class);
     final JsonNode config = mock(JsonNode.class);
 
     final String streamStateJson = MoreResources.readResource("states/per_stream.json");
@@ -74,12 +74,12 @@ public class AbstractDbSourceTest {
 
   @Test
   void testDeserializationOfNullState() throws IOException {
-    final AbstractDbSource dbSource = spy(AbstractDbSource.class);
+    final AbstractJdbcBaseSource dbSource = spy(AbstractJdbcBaseSource.class);
     final JsonNode config = mock(JsonNode.class);
 
     final List<AirbyteStateMessage> result = dbSource.deserializeInitialState(null, config, false);
     assertEquals(1, result.size());
-    assertEquals(AirbyteStateType.LEGACY, result.get(0).getType());
+    assertEquals(dbSource.getSupportedStateType(config), result.get(0).getType());
   }
 
 }

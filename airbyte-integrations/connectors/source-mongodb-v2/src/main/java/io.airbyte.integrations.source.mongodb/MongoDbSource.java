@@ -29,7 +29,6 @@ import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -52,18 +51,6 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     LOGGER.info("starting source: {}", MongoDbSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MongoDbSource.class);
-  }
-
-  @Override
-  public JsonNode toDatabaseConfig(final JsonNode config) {
-    final var credentials = config.has(MongoUtils.USER) && config.has(JdbcUtils.PASSWORD_KEY)
-        ? String.format("%s:%s@", config.get(MongoUtils.USER).asText(), config.get(JdbcUtils.PASSWORD_KEY).asText())
-        : StringUtils.EMPTY;
-
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("connectionString", buildConnectionString(config, credentials))
-        .put(JdbcUtils.DATABASE_KEY, config.get(JdbcUtils.DATABASE_KEY).asText())
-        .build());
   }
 
   @Override
@@ -95,11 +82,6 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  public Set<String> getExcludedInternalNameSpaces() {
-    return Collections.emptySet();
-  }
-
-  @Override
   protected List<TableInfo<CommonField<BsonType>>> discoverInternal(final MongoDatabase database)
       throws Exception {
     final List<TableInfo<CommonField<BsonType>>> tableInfos = new ArrayList<>();
@@ -120,6 +102,45 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
       tableInfos.add(tableInfo);
     });
     return tableInfos;
+  }
+
+  @Override
+  protected Map<String, List<String>> discoverPrimaryKeys(final MongoDatabase database,
+      final List<TableInfo<CommonField<BsonType>>> tableInfos) {
+    return tableInfos.stream()
+        .collect(Collectors.toMap(
+            TableInfo::getName,
+            TableInfo::getPrimaryKeys));
+  }
+
+  @Override
+  public AutoCloseableIterator<JsonNode> queryTableFullRefresh(final MongoDatabase database,
+      final List<String> columnNames,
+      final String schemaName,
+      final String tableName) {
+    return queryTable(database, columnNames, tableName, null);
+  }
+
+  @Override
+  public AutoCloseableIterator<JsonNode> queryTableIncremental(final MongoDatabase database,
+      final List<String> columnNames,
+      final String schemaName,
+      final String tableName,
+      final CursorInfo cursorInfo,
+      final BsonType cursorFieldType) {
+    final Bson greaterComparison = gt(cursorInfo.getCursorField(), MongoUtils.getBsonValue(cursorFieldType, cursorInfo.getCursor()));
+    return queryTable(database, columnNames, tableName, greaterComparison);
+  }
+
+  private JsonNode toDatabaseConfig(final JsonNode config) {
+    final var credentials = config.has(MongoUtils.USER) && config.has(JdbcUtils.PASSWORD_KEY)
+        ? String.format("%s:%s@", config.get(MongoUtils.USER).asText(), config.get(JdbcUtils.PASSWORD_KEY).asText())
+        : StringUtils.EMPTY;
+
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put("connectionString", buildConnectionString(config, credentials))
+        .put(JdbcUtils.DATABASE_KEY, config.get(JdbcUtils.DATABASE_KEY).asText())
+        .build());
   }
 
   private Set<String> getAuthorizedCollections(final MongoDatabase database) {
@@ -148,45 +169,6 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     } catch (final MongoException e) {
       throw new ConnectionErrorException(String.valueOf(e.getCode()), e);
     }
-  }
-
-  @Override
-  protected List<TableInfo<CommonField<BsonType>>> discoverInternal(final MongoDatabase database, final String schema) throws Exception {
-    // MondoDb doesn't support schemas
-    return discoverInternal(database);
-  }
-
-  @Override
-  protected Map<String, List<String>> discoverPrimaryKeys(final MongoDatabase database,
-                                                          final List<TableInfo<CommonField<BsonType>>> tableInfos) {
-    return tableInfos.stream()
-        .collect(Collectors.toMap(
-            TableInfo::getName,
-            TableInfo::getPrimaryKeys));
-  }
-
-  @Override
-  protected String getQuoteString() {
-    return "";
-  }
-
-  @Override
-  public AutoCloseableIterator<JsonNode> queryTableFullRefresh(final MongoDatabase database,
-                                                               final List<String> columnNames,
-                                                               final String schemaName,
-                                                               final String tableName) {
-    return queryTable(database, columnNames, tableName, null);
-  }
-
-  @Override
-  public AutoCloseableIterator<JsonNode> queryTableIncremental(final MongoDatabase database,
-                                                               final List<String> columnNames,
-                                                               final String schemaName,
-                                                               final String tableName,
-                                                               final CursorInfo cursorInfo,
-                                                               final BsonType cursorFieldType) {
-    final Bson greaterComparison = gt(cursorInfo.getCursorField(), MongoUtils.getBsonValue(cursorFieldType, cursorInfo.getCursor()));
-    return queryTable(database, columnNames, tableName, greaterComparison);
   }
 
   @Override
