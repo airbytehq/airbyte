@@ -97,12 +97,6 @@ Source-defined cursors or primary keys are selected automatically and cannot be 
 
 6. Select the **Cursor** or **Primary key** if there are dropdowns in those fields.
 
-:::note
-
-If the cursor or primary key are source defined, you cannot change them in the stream details panel.
-
-:::
-
 7. Click the **X** to close the stream details panel.
 
 8. Click **Save changes**, or click **Cancel** to discard the changes.
@@ -136,6 +130,12 @@ To select or deselect all streams, click the checkbox in the table header. You c
     1. Toggle **Sync** on or off.
 
     2. Click the **Sync mode** dropdown and select the sync mode you want to apply.
+
+    :::note 
+    
+    Depending on the sync mode you select, you may need to choose a cursor or primary key.
+
+    :::
 
     3. Select the **Cursor** and **Primary key** if there are dropdowns in those fields.
 
