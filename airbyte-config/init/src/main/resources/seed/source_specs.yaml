@@ -3762,7 +3762,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.86"
+- dockerImage: "airbyte/source-facebook-marketing:0.3.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -3842,6 +3842,16 @@
               name:
                 title: "Name"
                 description: "The name value of insight"
+                type: "string"
+              level:
+                title: "Level"
+                description: "Chosen level for API"
+                default: "ad"
+                enum:
+                - "ad"
+                - "adset"
+                - "campaign"
+                - "account"
                 type: "string"
               fields:
                 title: "Fields"
@@ -4696,7 +4706,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-freshsales:0.1.2"
+- dockerImage: "airbyte/source-freshsales:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/freshsales"
     connectionSpecification:
@@ -4706,7 +4716,7 @@
       required:
       - "domain_name"
       - "api_key"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         domain_name:
           type: "string"
@@ -7894,7 +7904,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-linkedin-pages:0.1.0"
+- dockerImage: "airbyte/source-linkedin-pages:1.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/linkedin-pages/"
     connectionSpecification:
@@ -7907,7 +7917,7 @@
       properties:
         org_id:
           title: "Organization ID"
-          type: "integer"
+          type: "string"
           airbyte_secret: true
           description: "Specify the Organization ID"
           examples:
@@ -8835,7 +8845,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-microsoft-dataverse:0.1.0"
+- dockerImage: "airbyte/source-microsoft-dataverse:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/microsoft-dataverse"
     connectionSpecification:
@@ -10387,18 +10397,19 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-onesignal:0.1.2"
+- dockerImage: "airbyte/source-onesignal:1.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/onesignal"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "OneSignal Source Spec"
       type: "object"
       required:
       - "user_auth_key"
       - "start_date"
       - "outcome_names"
-      additionalProperties: false
+      - "applications"
+      additionalProperties: true
       properties:
         user_auth_key:
           type: "string"
@@ -10406,6 +10417,33 @@
           description: "OneSignal User Auth Key, see the <a href=\"https://documentation.onesignal.com/docs/accounts-and-keys#user-auth-key\"\
             >docs</a> for more information on how to obtain this key."
           airbyte_secret: true
+          order: 0
+        applications:
+          type: "array"
+          title: "Applications"
+          description: "Applications keys, see the <a href=\"https://documentation.onesignal.com/docs/accounts-and-keys\"\
+            >docs</a> for more information on how to obtain this data"
+          items:
+            type: "object"
+            properties:
+              app_name:
+                type: "string"
+                title: "OneSignal App Name"
+                order: 0
+              app_id:
+                type: "string"
+                title: "OneSignal App ID"
+                order: 1
+                airbyte_secret: true
+              app_api_key:
+                type: "string"
+                title: "REST API Key"
+                order: 2
+                airbyte_secret: true
+            required:
+            - "app_id"
+            - "app_api_key"
+          order: 1
         start_date:
           type: "string"
           title: "Start Date"
@@ -10415,6 +10453,8 @@
           examples:
           - "2020-11-16T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          format: "date-time"
+          order: 2
         outcome_names:
           type: "string"
           title: "Outcome Names"
@@ -10423,6 +10463,7 @@
             >docs</a> for more details"
           examples:
           - "os__session_duration.count,os__click.count,CustomOutcomeName.sum"
+          order: 3
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -12988,7 +13029,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:2.0.0"
+- dockerImage: "airbyte/source-s3:2.0.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -14771,7 +14812,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-stripe:3.0.2"
+- dockerImage: "airbyte/source-stripe:3.0.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
     connectionSpecification:
@@ -15687,7 +15728,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-trello:0.2.0"
+- dockerImage: "airbyte/source-trello:0.3.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/trello"
     connectionSpecification:
@@ -15695,31 +15736,35 @@
       title: "Trello Spec"
       type: "object"
       required:
-      - "token"
       - "key"
+      - "token"
       - "start_date"
       additionalProperties: true
       properties:
-        token:
-          type: "string"
-          title: "API token"
-          description: "Trello v API token. See the <a href=\"https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth\"\
-            >docs</a> for instructions on how to generate it."
-          airbyte_secret: true
         key:
           type: "string"
           title: "API key"
           description: "Trello API key. See the <a href=\"https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth\"\
             >docs</a> for instructions on how to generate it."
           airbyte_secret: true
+          order: 0
+        token:
+          type: "string"
+          title: "API token"
+          description: "Trello API token. See the <a href=\"https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth\"\
+            >docs</a> for instructions on how to generate it."
+          airbyte_secret: true
+          order: 1
         start_date:
           type: "string"
           title: "Start Date"
-          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any\
             \ data before this date will not be replicated."
           examples:
-          - "2021-03-01T00:00:00.000Z"
+          - "2021-03-01T00:00:00Z"
+          format: "date-time"
+          order: 2
         board_ids:
           type: "array"
           items:
@@ -15728,17 +15773,140 @@
           title: "Trello Board IDs"
           description: "IDs of the boards to replicate data from. If left empty, data\
             \ from all boards to which you have access will be replicated."
+          order: 3
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-    authSpecification:
-      auth_type: "oauth2.0"
-      oauth2Specification:
-        rootObject: []
-        oauthFlowInitParameters: []
-        oauthFlowOutputParameters:
-        - - "token"
-        - - "key"
+    advanced_auth:
+      auth_flow_type: "oauth2.0"
+      predicate_key: []
+      oauth_config_specification:
+        complete_oauth_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            token:
+              type: "string"
+              path_in_connector_config:
+              - "token"
+            key:
+              type: "string"
+              path_in_connector_config:
+              - "key"
+        complete_oauth_server_input_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            client_id:
+              type: "string"
+            client_secret:
+              type: "string"
+        complete_oauth_server_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            client_id:
+              type: "string"
+              path_in_connector_config:
+              - "client_id"
+            client_secret:
+              type: "string"
+              path_in_connector_config:
+              - "client_secret"
+- dockerImage: "airbyte/source-trustpilot:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Trustpilot Spec"
+      type: "object"
+      required:
+      - "credentials"
+      - "business_units"
+      - "start_date"
+      properties:
+        credentials:
+          title: "Authorization Method"
+          type: "object"
+          order: 0
+          oneOf:
+          - type: "object"
+            title: "OAuth 2.0"
+            required:
+            - "client_id"
+            - "client_secret"
+            - "refresh_token"
+            - "access_token"
+            - "token_expiry_date"
+            properties:
+              auth_type:
+                type: "string"
+                const: "oauth2.0"
+              client_id:
+                type: "string"
+                title: "API key"
+                description: "The API key of the Trustpilot API application. (represents\
+                  \ the OAuth Client ID)"
+                airbyte_secret: true
+              client_secret:
+                type: "string"
+                title: "Secret"
+                description: "The Secret of the Trustpilot API application. (represents\
+                  \ the OAuth Client Secret)"
+                airbyte_secret: true
+              access_token:
+                type: "string"
+                title: "Access Token"
+                description: "Access Token for making authenticated requests."
+                airbyte_secret: true
+              token_expiry_date:
+                type: "string"
+                title: "Token expiry date time"
+                description: "The date-time when the access token should be refreshed."
+                format: "date-time"
+              refresh_token:
+                type: "string"
+                title: "Refresh token"
+                description: "The key to refresh the expired access_token."
+                airbyte_secret: true
+          - type: "object"
+            title: "API Key"
+            description: "The API key authentication method gives you access to only\
+              \ the streams which are part of the Public API. When you want to get\
+              \ streams available via the Consumer API (e.g. the private reviews)\
+              \ you need to use authentication method OAuth 2.0."
+            required:
+            - "client_id"
+            properties:
+              auth_type:
+                type: "string"
+                const: "apikey"
+              client_id:
+                type: "string"
+                title: "API key"
+                description: "The API key of the Trustpilot API application."
+                airbyte_secret: true
+        business_units:
+          type: "array"
+          items:
+            type: "string"
+          title: "Business Unit names"
+          description: "The names of business units which shall be synchronized. Some\
+            \ streams e.g. configured_business_units or private_reviews use this configuration."
+          examples:
+          - "mydomain.com"
+          - "www.mydomain.com"
+        start_date:
+          type: "string"
+          title: "Start Date"
+          description: "For streams with sync. method incremental the start date time\
+            \ to be used"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          examples:
+          - "%Y-%m-%dT%H:%M:%S"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-tvmaze-schedule:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tvmaze-schedule"
@@ -17283,7 +17451,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-zoho-crm:0.1.1"
+- dockerImage: "airbyte/source-zoho-crm:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zoho-crm"
     connectionSpecification:
@@ -17337,7 +17505,9 @@
           - "Sandbox"
         start_datetime:
           title: "Start Date"
-          type: "string"
+          type:
+          - "string"
+          - "null"
           examples:
           - "2000-01-01"
           - "2000-01-01 13:00"
@@ -17465,7 +17635,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sftp-bulk:0.1.0"
+- dockerImage: "airbyte/source-sftp-bulk:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/source/ftp"
     connectionSpecification:
@@ -17497,7 +17667,7 @@
           description: "The private key"
           type: "string"
           multiline: true
-          order: 1
+          order: 2
         host:
           title: "Host Address"
           description: "The server host address"
@@ -17505,7 +17675,7 @@
           examples:
           - "www.host.com"
           - "192.0.2.1"
-          order: 1
+          order: 3
         port:
           title: "Port"
           description: "The server port"
@@ -17513,14 +17683,14 @@
           default: 22
           examples:
           - "22"
-          order: 2
+          order: 4
         stream_name:
           title: "Stream name"
           description: "The name of the stream or table you want to create"
           type: "string"
           examples:
           - "ftp_contacts"
-          order: 1
+          order: 5
         file_type:
           title: "File type"
           description: "The file type you want to sync. Currently only 'csv' and 'json'\
@@ -17530,7 +17700,7 @@
           enum:
           - "csv"
           - "json"
-          order: 4
+          order: 6
           examples:
           - "csv"
           - "json"
@@ -17541,7 +17711,7 @@
           default: ""
           examples:
           - "/logs/2022"
-          order: 5
+          order: 7
         file_pattern:
           title: "File Pattern (Optional)"
           description: "The regular expression to specify files for sync in a chosen\
@@ -17550,14 +17720,14 @@
           default: ""
           examples:
           - "log-([0-9]{4})([0-9]{2})([0-9]{2}) - This will filter files which  `log-yearmmdd`"
-          order: 6
+          order: 8
         file_most_recent:
           title: "Most recent file (Optional)"
           description: "Sync only the most recent file for the configured folder path\
             \ and file pattern"
           type: "boolean"
           default: false
-          order: 7
+          order: 9
         start_date:
           type: "string"
           title: "Start Date"
@@ -17568,7 +17738,7 @@
           description: "The date from which you'd like to replicate data for all incremental\
             \ streams, in the format YYYY-MM-DDT00:00:00Z. All data generated after\
             \ this date will be replicated."
-          order: 8
+          order: 10
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
