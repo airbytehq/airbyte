@@ -36,6 +36,7 @@ connectionSpecification:
           airbyte_secret: true
         access_token:
           type: string
+          title: Access Token
           description: "Enter your Xero application's access token"
           airbyte_secret: true
         token_expiry_date:
