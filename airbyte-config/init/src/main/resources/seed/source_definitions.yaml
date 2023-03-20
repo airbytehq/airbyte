@@ -606,6 +606,13 @@
   icon: file.svg
   sourceType: file
   releaseStage: generally_available
+- name: Firebase Realtime Database
+  sourceDefinitionId: acb5f973-a565-441e-992f-4946f3e65662
+  dockerRepository: airbyte/source-firebase-realtime-database
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/firebase-realtime-database
+  sourceType: database
+  releaseStage: alpha
   allowedHosts:
     hosts:
       - "*"
@@ -681,7 +688,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.4.2
+  dockerImageTag: 0.4.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -802,7 +809,7 @@
 - name: Google Search Console
   sourceDefinitionId: eb4c9e00-db83-4d63-a386-39cfa91012a8
   dockerRepository: airbyte/source-google-search-console
-  dockerImageTag: 0.1.20
+  dockerImageTag: 0.1.21
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-search-console
   icon: googlesearchconsole.svg
   sourceType: api
@@ -931,7 +938,7 @@
 - name: Instagram
   sourceDefinitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
   dockerRepository: airbyte/source-instagram
-  dockerImageTag: 1.0.3
+  dockerImageTag: 1.0.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/instagram
   icon: instagram.svg
   sourceType: api
@@ -1242,7 +1249,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 2.0.3
+  dockerImageTag: 2.0.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
