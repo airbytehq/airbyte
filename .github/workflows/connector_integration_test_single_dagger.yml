@@ -9,11 +9,6 @@ on:
   pull_request:
     paths:
       - "airbyte-integrations/connectors/**"
-  push:
-    paths:
-      - "airbyte-integrations/connectors/**"
-    branches:
-      - "master"
 jobs:
   connectors_ci:
     name: Connectors CI
@@ -57,6 +52,8 @@ jobs:
           CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
           CI_GIT_REVISION: ${{ github.sha }}
+          CI_CONTEXT: "manual"
+          CI_PIPELINE_START_TIMESTAMP: ${{ needs.start-runner.outputs.pipeline-start-timestamp }}
       - name: Run connectors-ci test-connectors [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         run: |
@@ -78,3 +75,5 @@ jobs:
           CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           CI_GIT_BRANCH: ${{ github.head_ref }}
           CI_GIT_REVISION: ${{ github.event.pull_request.head.sha }}
+          CI_CONTEXT: "pull_request"
+          CI_PIPELINE_START_TIMESTAMP: ${{ needs.start-runner.outputs.pipeline-start-timestamp }}
