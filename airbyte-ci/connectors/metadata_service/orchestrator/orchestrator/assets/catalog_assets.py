@@ -1,6 +1,7 @@
 import pandas as pd
 import json
 import requests
+import pandas as pd
 
 from dagster import MetadataValue, Output, asset, OpExecutionContext
 from jinja2 import Environment, PackageLoader
@@ -14,6 +15,115 @@ def render_connector_catalog_locations_markdown(destinations_markdown, sources_m
     env = Environment(loader=PackageLoader("orchestrator", "templates"))
     template = env.get_template("connector_catalog_locations.md")
     return template.render(destinations_markdown=destinations_markdown, sources_markdown=sources_markdown)
+
+# New
+
+import json
+import pandas as pd
+
+OSS_SUFFIX = "_oss"
+CLOUD_SUFFIX = "_cloud"
+
+def load_json_from_file(path):
+    with open(path) as f:
+        return json.load(f)
+
+def get_primary_catalog_suffix(merged_df):
+    cloud_only = merged_df["_merge"] == "right_only"
+    primary_suffix = CLOUD_SUFFIX if cloud_only else OSS_SUFFIX
+    secondary_suffix = OSS_SUFFIX if cloud_only else CLOUD_SUFFIX
+    return primary_suffix, secondary_suffix
+
+def get_field_with_fallback(merged_df, field):
+    primary_suffix, secondary_suffix = get_primary_catalog_suffix(merged_df)
+    return merged_df[field + primary_suffix].fillna(merged_df[field + secondary_suffix]);
+
+def compute_catalog_overrides(merged_df):
+    cloud_only = merged_df["_merge"] == "right_only";
+    oss_only = merged_df["_merge"] == "left_only";
+
+    catalogs = {
+        "oss": {
+            "enabled": not cloud_only,
+        },
+        "cloud": {
+            "enabled": not oss_only,
+        }
+    }
+
+    # find the difference between the two catalogs
+    if cloud_only or oss_only:
+        return catalogs
+
+    # get all columns ending with _oss
+    all_oss_columns = [col for col in merged_df.index if col.endswith(OSS_SUFFIX)]
+
+
+    # check if the columns are the same
+    # TODO refactor this to handle cloud only
+    for oss_col in all_oss_columns:
+        equivalent_cloud_col = oss_col.replace(OSS_SUFFIX, CLOUD_SUFFIX)
+        if merged_df[oss_col] != merged_df[equivalent_cloud_col]:
+            col_name = oss_col.replace(OSS_SUFFIX, "")
+            catalogs["cloud"][col_name] = merged_df[equivalent_cloud_col]
+
+    return catalogs;
+
+
+
+
+def catalog_to_metadata_defintion(id_field, connector_type, oss_connector_df, cloud_connector_df):
+    merged_connectors = pd.merge(oss_connector_df, cloud_connector_df, on=id_field, how='outer', suffixes=(OSS_SUFFIX, CLOUD_SUFFIX), indicator=True)
+
+
+    metadata_list = []
+
+    for _, merged_df in merged_connectors.iterrows():
+
+        metadata = {
+            "metadataSpecVersion": "1.0",
+            "data": {
+                "name": get_field_with_fallback(merged_df, "name"),
+                "definitionId": merged_df[id_field],
+                "connectorType": connector_type,
+                "dockerRepository": get_field_with_fallback(merged_df, "dockerRepository"),
+                "githubIssueLabel": get_field_with_fallback(merged_df, "dockerRepository").replace("airbyte/", ""),
+                "dockerImageTag": get_field_with_fallback(merged_df, "dockerImageTag"),
+                "icon": get_field_with_fallback(merged_df, "icon"),
+                "supportUrl": get_field_with_fallback(merged_df, "documentationUrl"),
+                "sourceType": get_field_with_fallback(merged_df, "sourceType"),
+                "releaseStage": get_field_with_fallback(merged_df, "releaseStage"),
+                "license": "MIT",
+            }
+        }
+
+        catalogs = compute_catalog_overrides(merged_df)
+        metadata["data"]["catalogs"] = catalogs
+
+        metadata_list.append(metadata)
+
+    return metadata_list
+
+
+def catalogs_to_metadata_list(oss_catalog_dict, cloud_catalog_dict):
+    cloud_sources_dataframe = pd.DataFrame(cloud_catalog_dict["sources"])
+    cloud_destinations_dataframe = pd.DataFrame(cloud_catalog_dict["destinations"])
+    oss_sources_dataframe = pd.DataFrame(oss_catalog_dict["sources"])
+    oss_destinations_dataframe = pd.DataFrame(oss_catalog_dict["destinations"])
+
+    sources_metadata_list = catalog_to_metadata_defintion("sourceDefinitionId", "source", oss_sources_dataframe, cloud_sources_dataframe)
+    destinations_metadata_list = catalog_to_metadata_defintion("destinationDefinitionId", "destination", oss_destinations_dataframe, cloud_destinations_dataframe)
+    return sources_metadata_list + destinations_metadata_list;
+
+def main():
+  oss_catalog_dict = load_json_from_file("oss_catalog.json")
+  cloud_catalog_dict = load_json_from_file("cloud_catalog.json")
+
+  catalogs_to_metadata_list(oss_catalog_dict, cloud_catalog_dict)
+
+
+
+# Old
 
 @asset(required_resource_keys={"catalog_report_directory_manager"})
 def connector_catalog_location_html(context, all_destinations_dataframe, all_sources_dataframe):
