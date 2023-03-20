@@ -20,10 +20,12 @@ from airbyte_cdk.sources import Source
 from .helpers import Helpers
 
 
+
 class KoboToolStream(HttpStream, IncrementalMixin):
     primary_key = "_id"
     cursor_field = "_submission_time"
     submission_date_format = "%Y-%m-%dT%H:%M:%S"
+    start_date_format = "%Y-%m-%d"
 
     def __init__(self, config: Mapping[str, Any], form_id, schema, name, api_url, pagination_limit, auth_token, **kwargs):
         super().__init__()
@@ -34,7 +36,7 @@ class KoboToolStream(HttpStream, IncrementalMixin):
         self.API_URL = api_url
         self.PAGINATION_LIMIT = pagination_limit
         self._cursor_value = None
-        self.start_time = datetime.strptime(config['start_time'], '%Y-%m-%d')
+        self.start_time = config['start_time']
 
     @property
     def url_base(self) -> str:
@@ -53,13 +55,13 @@ class KoboToolStream(HttpStream, IncrementalMixin):
     @property
     def state(self) -> Mapping[str, Any]:
         if self._cursor_value:
-            return {self.cursor_field: self._cursor_value.strftime('%Y-%m-%d')}
+            return {self.cursor_field: self._cursor_value}
         else:
-            return {self.cursor_field: self.start_time.strftime('%Y-%m-%d')}
+            return {self.cursor_field: self.start_time}
     
     @state.setter
     def state(self, value: Mapping[str, Any]):
-       self._cursor_value = datetime.strptime(value[self.cursor_field], self.submission_date_format)
+       self._cursor_value = value[self.cursor_field]
 
     def get_json_schema(self):
         return self.schema
@@ -71,8 +73,10 @@ class KoboToolStream(HttpStream, IncrementalMixin):
         params = {
             "start": 0, 
             "limit": self.PAGINATION_LIMIT, 
-            "query": json.dumps({self.cursor_field: {"$gt": self.state[self.cursor_field]}})
+            "sort": json.dumps({self.cursor_field: 1})
         }
+        submission_time = datetime.strptime(self.state[self.cursor_field], self.submission_date_format)
+        params["query"] = json.dumps({self.cursor_field: {"$gt": submission_time.strftime(self.start_date_format)}})
 
         if next_page_token:
             params.update(next_page_token)
@@ -106,8 +110,6 @@ class KoboToolStream(HttpStream, IncrementalMixin):
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
             self._cursor_value = record[self.cursor_field]
-            # if self._cursor_value:
-            #     self._cursor_value = max(self._cursor_value, latest_record_date)
             yield record
 
 class SourceKobotoolbox(AbstractSource):
