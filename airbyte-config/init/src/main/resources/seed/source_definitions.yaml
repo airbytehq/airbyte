@@ -2169,14 +2169,6 @@
   icon: youtube-analytics.svg
   sourceType: api
   releaseStage: beta
-- sourceDefinitionId: 78752073-6d96-447d-8a93-2b6953f3c787
-  name: YouTube Analytics Business
-  dockerRepository: airbyte/source-youtube-analytics-business
-  dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.com/integrations/sources/youtube-analytics-business
-  icon: youtube-analytics.svg
-  sourceType: api
-  releaseStage: alpha
 - name: Vantage
   sourceDefinitionId: 28ce1fbd-1e15-453f-aa9f-da6c4d928e92
   dockerRepository: airbyte/source-vantage
