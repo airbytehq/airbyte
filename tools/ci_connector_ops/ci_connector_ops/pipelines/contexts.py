@@ -10,8 +10,8 @@ from typing import Optional
 from anyio import Path
 from asyncer import asyncify
 from ci_connector_ops.pipelines.actions import remote_storage, secrets
+from ci_connector_ops.pipelines.bases import ConnectorTestReport
 from ci_connector_ops.pipelines.github import update_commit_status_check
-from ci_connector_ops.pipelines.models import ConnectorTestReport
 from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL
 from ci_connector_ops.utils import Connector
 from dagger import Client, Directory
@@ -39,6 +39,8 @@ class ConnectorTestContext:
         use_remote_secrets: bool = True,
         connector_acceptance_test_image: Optional[str] = DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE,
         gha_workflow_run_url: Optional[str] = None,
+        pipeline_start_timestamp: Optional[int] = None,
+        ci_context: Optional[str] = None,
     ):
         self.connector = connector
         self.is_local = is_local
@@ -47,8 +49,9 @@ class ConnectorTestContext:
         self.use_remote_secrets = use_remote_secrets
         self.connector_acceptance_test_image = connector_acceptance_test_image
         self.gha_workflow_run_url = gha_workflow_run_url
-
+        self.pipeline_start_timestamp = pipeline_start_timestamp
         self.created_at = datetime.utcnow()
+        self.ci_context = ci_context
 
         self.state = ContextState.INITIALIZED
         self.logger = logging.getLogger(self.main_pipeline_name)
@@ -57,6 +60,14 @@ class ConnectorTestContext:
         self._updated_secrets_dir = None
         self._test_report = None
         update_commit_status_check(**self.github_commit_status)
+
+    @property
+    def secrets_dir(self) -> Directory:
+        return self._secrets_dir
+
+    @secrets_dir.setter
+    def secrets_dir(self, secrets_dir: Directory):
+        self._secrets_dir = secrets_dir
 
     @property
     def updated_secrets_dir(self) -> Directory:
@@ -127,8 +138,6 @@ class ConnectorTestContext:
     async def __aenter__(self):
         if self.dagger_client is None:
             raise Exception("A ConnectorTestContext can't be entered with an undefined dagger_client")
-        self.secrets_dir = await secrets.get_connector_secret_dir(self)
-        self.updated_secrets_dir = None
         self.state = ContextState.RUNNING
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         return self
@@ -142,12 +151,9 @@ class ConnectorTestContext:
             self.state = ContextState.ERROR
             return True
         else:
-            teardown_pipeline = self.dagger_client.pipeline(f"Teardown {self.connector.technical_name}")
+            self.dagger_client = self.dagger_client.pipeline(f"Teardown {self.connector.technical_name}")
             if self.should_save_updated_secrets:
-                await secrets.upload(
-                    teardown_pipeline,
-                    self.connector,
-                )
+                await secrets.upload(self)
             self.test_report.print()
             self.logger.info(self.test_report.to_json())
             local_test_reports_path_root = "tools/ci_connector_ops/test_reports/"
@@ -162,7 +168,11 @@ class ConnectorTestContext:
             if self.test_report.should_be_saved:
                 s3_reports_path_root = "python-poc/tests/history/"
                 s3_key = s3_reports_path_root + suffix
-                await remote_storage.upload_to_s3(teardown_pipeline, str(local_report_path), s3_key, os.environ["TEST_REPORTS_BUCKET_NAME"])
+                report_upload_exit_code = await remote_storage.upload_to_s3(
+                    self.dagger_client, str(local_report_path), s3_key, os.environ["TEST_REPORTS_BUCKET_NAME"]
+                )
+                if report_upload_exit_code != 0:
+                    self.logger.error("Uploading the report to S3 failed.")
 
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         return True

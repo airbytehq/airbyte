@@ -28,6 +28,11 @@ acceptance_tests:
           - name: "events"
             bypass_reason: "Only events created within the past 90 days can be showed"
         ignored_fields:
+          workflow_jobs:
+            - name: steps/*/started_at
+              bypass_reason: "depend on changing data"
+            - name: steps/*/completed_at
+              bypass_reason: "depend on changing data"
           organizations:
             - name: followers
               bypass_reason: "fast changing data"
