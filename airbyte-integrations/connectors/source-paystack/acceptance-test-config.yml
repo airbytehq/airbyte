@@ -18,11 +18,11 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams:
           - name: disputes
-            bypass_reason: "not filled yet"
+            bypass_reason: "unable to seed, this stream requires third party system"
           - name: settlements
-            bypass_reason: "not filled yet"
-          - name: transfers
-            bypass_reason: "not filled yet"
+            bypass_reason: "unable to seed, this stream requires third party system"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
   incremental:
     tests:
       - config_path: "secrets/config.json"
