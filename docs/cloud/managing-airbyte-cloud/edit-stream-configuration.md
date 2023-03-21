@@ -47,8 +47,6 @@ To use [cron scheduling](http://www.quartz-scheduler.org/documentation/quartz-2.
 
 In the **Activate the streams you want to sync** table, you can choose which streams to sync and how they are organized in the destination.
 
-### Modify streams
-
 To modify streams:
 
 1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Connections** and then click the connection you want to change.   
