@@ -5,6 +5,7 @@
 
 from abc import ABC, abstractmethod
 from functools import cached_property
+import sys
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import parse_qsl, urlparse
 
@@ -13,6 +14,8 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.rate_limiting import TRANSIENT_EXCEPTIONS
+import backoff
 
 from .auth import ShopifyAuthenticator
 from .graphql import get_query_products
@@ -20,8 +23,6 @@ from .transform import DataTypeEnforcer
 from .utils import SCOPES_MAPPING, ApiTypeEnum
 from .utils import EagerlyCachedStreamState as stream_state_cache
 from .utils import ShopifyRateLimiter as limiter
-
-
 class ShopifyStream(HttpStream, ABC):
     # Latest Stable Release
     api_version = "2022-10"
@@ -66,6 +67,46 @@ class ShopifyStream(HttpStream, ABC):
             params["order"] = f"{self.order_field} asc"
             params[self.filter_field] = self.default_filter_field_value
         return params
+    
+    # To handle certificate error when making requests to shopify
+    def default_backoff_handler(max_tries: Optional[int], factor: float, **kwargs):
+        logger = AirbyteLogger()
+        def log_retry_attempt(details):
+            _, exc, _ = sys.exc_info()
+            if exc.response:
+                logger.info(f"Status code: {exc.response.status_code}, Response Content: {exc.response.content}")
+            logger.info(
+                f"Caught retryable error '{str(exc)}' after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+            )
+
+        def should_give_up(exc):
+            # If a non-rate-limiting related 4XX error makes it this far, it means it was unexpected and probably consistent, so we shouldn't back off
+            give_up = exc.response is not None and exc.response.status_code != requests.codes.too_many_requests and 400 <= exc.response.status_code < 500
+            if give_up:
+                logger.info(f"Giving up for returned HTTP status: {exc.response.status_code}")
+            elif "CertificateError" in str(exc):
+                logger.info(f"Giving up due to certificate error. Please check your shop name.")
+                give_up=True
+            return give_up
+
+        return backoff.on_exception(
+            backoff.expo,
+            TRANSIENT_EXCEPTIONS,
+            jitter=None,
+            on_backoff=log_retry_attempt,
+            giveup=should_give_up,
+            max_tries=max_tries,
+            factor=factor,
+            **kwargs,
+        )
+    
+    @default_backoff_handler(max_tries=5, factor=5)
+    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+        """
+        Just a wrapper to allow @backoff decorator
+        """
+        response: requests.Response = self._session.send(request)
+        return response
 
     @limiter.balance_rate_limit()
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -752,11 +793,11 @@ class SourceShopify(AbstractSource):
         """
         config["authenticator"] = ShopifyAuthenticator(config)
         try:
-            user_scopes = self.get_user_scopes(config)
-            if user_scopes is not None:
+            response = list(Shop(config).read_records(sync_mode=None))
+            # check for the shop_id is present in the response
+            shop_id = response[0].get("id")
+            if shop_id is not None:
                 return True, None
-            else:
-                return False, "Please check the credentials and try again."
         except (requests.exceptions.RequestException, IndexError) as e:
             return False, e
 
