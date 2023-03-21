@@ -2491,7 +2491,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-clickup-api:0.1.0"
+- dockerImage: "airbyte/source-clickup-api:0.1.1"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -2527,6 +2527,13 @@
           type: "string"
           description: "The ID of your list in your folder. Retrieve it from the `/folder/{folder_id}/list`\
             \ of the ClickUp API. See <a href=\"https://clickup.com/api/clickupreference/operation/GetLists/\"\
+            >here</a>."
+        include_closed_tasks:
+          title: "Include Closed Tasks"
+          type: "boolean"
+          default: false
+          description: "Include or exclude closed tasks. By default, they are excluded.\
+            \ See <a https://clickup.com/api/clickupreference/operation/GetTasks/#!in=query&path=include_closed&t=request\"\
             >here</a>."
     supportsNormalization: false
     supportsDBT: false
