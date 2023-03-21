@@ -5,14 +5,12 @@
 import copy
 import dataclasses
 import json
-import pytest
 from unittest import mock
 from unittest.mock import patch
 
+import pytest
 from airbyte_cdk import connector_builder
-from airbyte_cdk.connector_builder.connector_builder_handler import list_streams
-from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
-from airbyte_cdk.connector_builder.main import handle_connector_builder_request
+from airbyte_cdk.connector_builder.connector_builder_handler import list_streams, resolve_manifest
 from airbyte_cdk.connector_builder.main import handle_connector_builder_request, handle_request, read_stream
 from airbyte_cdk.connector_builder.models import LogMessage, StreamRead, StreamReadSlicesInner, StreamReadSlicesInnerPagesInner
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog

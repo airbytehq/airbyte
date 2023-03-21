@@ -9,14 +9,13 @@ from json import JSONDecodeError
 from typing import Any, Iterable, Iterator, Mapping, Optional, Union
 from urllib.parse import parse_qs, urlparse
 
+from airbyte_cdk.connector_builder.models import HttpRequest, HttpResponse, LogMessage, StreamRead, StreamReadPages, StreamReadSlices
+from airbyte_cdk.connector_builder.utils.error_formatter import ErrorFormatter
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
 from airbyte_protocol.models.airbyte_protocol import ConfiguredAirbyteCatalog, Level, TraceType
 from airbyte_protocol.models.airbyte_protocol import Type as MessageType
-from airbyte_cdk.connector_builder.models import HttpRequest, HttpResponse, LogMessage, StreamRead, StreamReadPages, StreamReadSlices
-from airbyte_cdk.connector_builder.utils.error_formatter import ErrorFormatter
-from airbyte_protocol.models.airbyte_protocol import ConfiguredAirbyteCatalog
 
 
 class MessageGrouper:
