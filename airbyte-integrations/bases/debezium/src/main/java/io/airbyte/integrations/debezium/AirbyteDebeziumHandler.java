@@ -74,7 +74,7 @@ public class AirbyteDebeziumHandler {
         queue,
         targetPosition,
         tableSnapshotPublisher::hasClosed,
-        tableSnapshotPublisher::close,
+        new DebeziumShutdownProcedure<>(queue, tableSnapshotPublisher::close, tableSnapshotPublisher::hasClosed),
         firstRecordWaitTime);
 
     return AutoCloseableIterators.concatWithEagerClose(AutoCloseableIterators
@@ -106,7 +106,7 @@ public class AirbyteDebeziumHandler {
         queue,
         targetPosition,
         publisher::hasClosed,
-        publisher::close,
+        new DebeziumShutdownProcedure<>(queue, publisher::close, publisher::hasClosed),
         firstRecordWaitTime);
 
     final Duration syncCheckpointSeconds =

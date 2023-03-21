@@ -22,7 +22,7 @@ public class DebeziumRecordIteratorTest {
     final DebeziumRecordIterator debeziumRecordIterator = new DebeziumRecordIterator(mock(LinkedBlockingQueue.class),
         mock(CdcTargetPosition.class),
         () -> false,
-        () -> {},
+        mock(DebeziumShutdownProcedure.class),
         Duration.ZERO);
     final Long lsn = debeziumRecordIterator.getHeartbeatPosition(new ChangeEvent<String, String>() {
 

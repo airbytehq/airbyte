@@ -11,16 +11,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class TransferDataFromQueueTest {
+public class DebeziumShutdownProcedureTest {
 
   @Test
   public void test() throws InterruptedException {
     final LinkedBlockingQueue<Integer> sourceQueue = new LinkedBlockingQueue<>(10);
-    final LinkedBlockingQueue<Integer> targetQueue = new LinkedBlockingQueue<>();
     final AtomicInteger recordsInserted = new AtomicInteger();
-    final TransferDataFromQueue<Integer> transferDataFromQueue = new TransferDataFromQueue<>(sourceQueue, targetQueue,
-        () -> recordsInserted.get() >= 99);
     final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    final DebeziumShutdownProcedure<Integer> debeziumShutdownProcedure = new DebeziumShutdownProcedure<>(sourceQueue,
+        executorService::shutdown, () -> recordsInserted.get() >= 99);
     executorService.execute(() -> {
       for (int i = 0; i < 100; i++) {
         try {
@@ -33,16 +32,14 @@ public class TransferDataFromQueueTest {
     });
 
     Thread.sleep(1000);
-    executorService.shutdown();
-    transferDataFromQueue.initiateTransfer();
-    transferDataFromQueue.shutdown();
+    debeziumShutdownProcedure.initiateShutdownProcedure();
 
     Assertions.assertEquals(99, recordsInserted.get());
     Assertions.assertEquals(0, sourceQueue.size());
-    Assertions.assertEquals(100, targetQueue.size());
+    Assertions.assertEquals(100, debeziumShutdownProcedure.getRecordsRemainingAfterShutdown().size());
 
     for (int i = 0; i < 99; i++) {
-      Assertions.assertEquals(i, targetQueue.poll());
+      Assertions.assertEquals(i, debeziumShutdownProcedure.getRecordsRemainingAfterShutdown().poll());
     }
   }
 

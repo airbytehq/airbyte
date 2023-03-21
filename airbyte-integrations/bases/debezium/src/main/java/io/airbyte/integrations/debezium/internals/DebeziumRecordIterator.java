@@ -7,7 +7,6 @@ package io.airbyte.integrations.debezium.internals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.AbstractIterator;
-import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -46,11 +45,10 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
 
   private final Map<Class<? extends ChangeEvent>, Field> heartbeatEventSourceField;
   private final LinkedBlockingQueue<ChangeEvent<String, String>> queue;
-  private final LinkedBlockingQueue<ChangeEvent<String, String>> targetQueue;
   private final CdcTargetPosition targetPosition;
   private final Supplier<Boolean> publisherStatusSupplier;
-  private final VoidCallable requestClose;
   private final Duration firstRecordWaitTime;
+  private final DebeziumShutdownProcedure<ChangeEvent<String, String>> debeziumShutdownProcedure;
 
   private boolean receivedFirstRecord;
   private boolean hasSnapshotFinished;
@@ -62,12 +60,12 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   public DebeziumRecordIterator(final LinkedBlockingQueue<ChangeEvent<String, String>> queue,
                                 final CdcTargetPosition targetPosition,
                                 final Supplier<Boolean> publisherStatusSupplier,
-                                final VoidCallable requestClose,
+                                final DebeziumShutdownProcedure<ChangeEvent<String, String>> debeziumShutdownProcedure,
                                 final Duration firstRecordWaitTime) {
     this.queue = queue;
     this.targetPosition = targetPosition;
     this.publisherStatusSupplier = publisherStatusSupplier;
-    this.requestClose = requestClose;
+    this.debeziumShutdownProcedure = debeziumShutdownProcedure;
     this.firstRecordWaitTime = firstRecordWaitTime;
     this.heartbeatEventSourceField = new HashMap<>(1);
 
@@ -76,7 +74,6 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     this.tsLastHeartbeat = null;
     this.lastHeartbeatPosition = -1;
     this.maxInstanceOfNoRecordsFound = 0;
-    this.targetQueue = new LinkedBlockingQueue<>();
     this.signalledClose = false;
   }
 
@@ -146,13 +143,19 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
       return next;
     }
 
-    while (!targetQueue.isEmpty()) {
-      final ChangeEvent<String, String> event = targetQueue.poll();
+    while (!debeziumShutdownProcedure.getRecordsRemainingAfterShutdown().isEmpty()) {
+      final ChangeEvent<String, String> event;
+      try {
+        event = debeziumShutdownProcedure.getRecordsRemainingAfterShutdown().poll(10, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
       if (event == null || isHeartbeatEvent(event)) {
         continue;
       }
       return event;
     }
+    throwExceptionIfSnapshotNotFinished();
     return endOfData();
   }
 
@@ -204,26 +207,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     }
     signalledClose = true;
     LOGGER.info(closeLogMessage);
-    final TransferDataFromQueue<ChangeEvent<String, String>> transferDataFromQueue = new TransferDataFromQueue<>(queue, targetQueue,
-        publisherStatusSupplier);
-    Exception exceptionDuringEngineClose = null;
-    try {
-      transferDataFromQueue.initiateTransfer();
-      requestClose.call();
-    } catch (final Exception e) {
-      exceptionDuringEngineClose = e;
-      throw new RuntimeException(e);
-    } finally {
-      try {
-        transferDataFromQueue.shutdown();
-      } catch (final Exception e) {
-        if (exceptionDuringEngineClose != null) {
-          e.addSuppressed(exceptionDuringEngineClose);
-          throw e;
-        }
-      }
-    }
-    throwExceptionIfSnapshotNotFinished();
+    debeziumShutdownProcedure.initiateShutdownProcedure();
   }
 
   private void throwExceptionIfSnapshotNotFinished() {
