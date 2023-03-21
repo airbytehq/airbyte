@@ -15,7 +15,7 @@ This source can sync data from the [Coinmarketcap API](https://coinmarketcap.com
 ### Features
 
 | Feature           | Supported?\(Yes/No\) | Notes |
-| :---------------- | :------------------- | :---- |
+|:------------------|:---------------------|:------|
 | Full Refresh Sync | Yes                  |       |
 | Incremental Sync  | No                   |       |
 
@@ -28,13 +28,11 @@ Coinmarketcap APIs are under rate limits for the number of API calls allowed per
 ### Requirements
 
 - [API token](https://coinmarketcap.com/api/documentation/v1/#section/Authentication)
-- Data Type:
-  - latest
-  - historical
 
 ## Changelog
 
 | Version | Date       | Pull Request                                              | Subject                                         |
-| :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------------- |
+|:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------|
+| 0.1.2   | 2023-03-21 | [#24276](https://github.com/airbytehq/airbyte/pull/24276) | Update to latest CDK                            |
 | 0.1.1   | 2022-11-01 | [#18790](https://github.com/airbytehq/airbyte/pull/18790) | Correct coinmarket spec                         |
 | 0.1.0   | 2022-10-29 | [#18565](https://github.com/airbytehq/airbyte/pull/18565) | 🎉 New Source: Coinmarketcap API [low-code CDK] |

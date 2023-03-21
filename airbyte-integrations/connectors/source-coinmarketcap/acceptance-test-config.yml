@@ -18,14 +18,6 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: []
-        timeout_seconds: 1800
-  # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
-  #        expect_records:
-  #          path: "integration_tests/expected_records.jsonl"
-  #          extra_fields: no
-  #          exact_order: no
-  #          extra_records: yes
   incremental:
     bypass_reason: "This connector does not implement incremental sync"
   # TODO uncomment this block this block if your connector implements incremental sync:
@@ -37,18 +29,28 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        timeout_seconds: 1800
         ignored_fields:
           categories:
-            - "avg_price_change"
-            - "market_cap"
-            - "market_cap_change"
-            - "volume"
-            - "volume_change"
+            - name: "avg_price_change"
+              bypass_reason: "live data"
+            - name: "market_cap"
+              bypass_reason: "live data"
+            - name: "market_cap_change"
+              bypass_reason: "live data"
+            - name: "volume"
+              bypass_reason: "live data"
+            - name: "volume_change"
+              bypass_reason: "live data"
           listing:
-            - "cmc_rank"
-            - "last_updated"
-            - "self_reported_circulating_supply"
-            - "self_reported_market_cap"
-            - "tvl_ratio"
-            - "quote"
+            - name: "cmc_rank"
+              bypass_reason: "live data"
+            - name: "last_updated"
+              bypass_reason: "live data"
+            - name: "self_reported_circulating_supply"
+              bypass_reason: "live data"
+            - name: "self_reported_market_cap"
+              bypass_reason: "live data"
+            - name: "tvl_ratio"
+              bypass_reason: "live data"
+            - name: "quote"
+              bypass_reason: "live data"
