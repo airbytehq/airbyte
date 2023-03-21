@@ -13,8 +13,11 @@ jobs:
   connectors_ci:
     name: Connectors CI
     timeout-minutes: 240 # 4 hours
-    runs-on:  medium-runner
+    runs-on: medium-runner
     steps:
+      - name: Get start timestamp
+        id: get-start-timestamp
+        run: echo "::set-output name=start-timestamp::$(date +%s)"
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
@@ -53,7 +56,7 @@ jobs:
           CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
           CI_GIT_REVISION: ${{ github.sha }}
           CI_CONTEXT: "manual"
-          CI_PIPELINE_START_TIMESTAMP: ${{ needs.start-runner.outputs.pipeline-start-timestamp }}
+          CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
       - name: Run connectors-ci test-connectors [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         run: |
@@ -76,4 +79,4 @@ jobs:
           CI_GIT_BRANCH: ${{ github.head_ref }}
           CI_GIT_REVISION: ${{ github.event.pull_request.head.sha }}
           CI_CONTEXT: "pull_request"
-          CI_PIPELINE_START_TIMESTAMP: ${{ needs.start-runner.outputs.pipeline-start-timestamp }}
+          CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
