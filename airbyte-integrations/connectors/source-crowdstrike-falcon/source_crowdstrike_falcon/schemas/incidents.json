@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "incident_id": {
+      "type": "string"
+    },
+    "host_ids": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "hosts": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "last_seen": {
+              "type": "string"
+            },
+            "os_version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "last_seen",
+            "os_version"
+          ]
+        }
+      ]
+    },
+    "created": {
+      "type": "string"
+    },
+    "start": {
+      "type": "string"
+    },
+    "end": {
+      "type": "string"
+    },
+    "status": {
+      "type": "integer"
+    },
+    "tactics": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "techniques": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "modified_timestamp": {
+      "type": "string"
+    },
+    "fine_score": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "incident_id",
+    "host_ids",
+    "hosts",
+    "created",
+    "start",
+    "end",
+    "status",
+    "tactics",
+    "techniques",
+    "modified_timestamp",
+    "fine_score"
+  ]
+}

@@ -425,6 +425,14 @@
   icon: clockify.svg
   sourceType: api
   releaseStage: alpha
+- name: Crowdstrike Falcon 
+  sourceDefinitionId: 3002a8ec-71d7-49b1-acb9-1b0fcf255331
+  dockerRepository: airbyte/source-crowdstrike-falcon
+  dockerImageTag: 0.0.2
+  documentationUrl: https://docs.airbyte.com/integrations/sources/crowdstrike-falcon
+  icon: crowdstrike-falcon.svg
+  sourceType: api
+  releaseStage: beta
 - name: Customer.io
   sourceDefinitionId: c47d6804-8b98-449f-970a-5ddb5cb5d7aa
   dockerRepository: farosai/airbyte-customer-io-source

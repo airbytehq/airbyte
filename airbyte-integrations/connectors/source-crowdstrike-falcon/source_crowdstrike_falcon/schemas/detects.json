@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "created_timestamp": {
+      "type": "string"
+    },
+    "detection_id": {
+      "type": "string"
+    },
+    "device": {
+      "type": "object",
+      "properties": {
+        "device_id": {
+          "type": "string"
+        },
+        "first_seen": {
+          "type": "string"
+        },
+        "last_seen": {
+          "type": "string"
+        },
+        "major_version": {
+          "type": "string"
+        },
+        "os_version": {
+          "type": "string"
+        },
+        "product_type_desc": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "device_id",
+        "first_seen",
+        "last_seen",
+        "major_version",
+        "os_version",
+        "product_type_desc"
+      ]
+    },
+    "behaviors": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "tactic": {
+              "type": "string"
+            },
+            "technique": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "tactic",
+            "technique"
+          ]
+        }
+      ]
+    },
+    "first_behavior": {
+      "type": "string"
+    },
+    "last_behavior": {
+      "type": "string"
+    },
+    "max_severity_displayname": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "seconds_to_triaged": {
+      "type": "integer"
+    },
+    "seconds_to_resolved": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "created_timestamp",
+    "detection_id",
+    "device",
+    "behaviors",
+    "first_behavior",
+    "last_behavior",
+    "max_severity_displayname",
+    "status",
+    "seconds_to_triaged",
+    "seconds_to_resolved"
+  ]
+}
