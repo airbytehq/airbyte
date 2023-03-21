@@ -14,12 +14,14 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import datadog.trace.api.Trace;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions.Procedure;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.base.IntegrationConfig.ConfigValidationException;
+import io.airbyte.integrations.util.ApmTraceUtils;
 import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -98,6 +100,7 @@ public class IntegrationRunner {
     validator = jsonSchemaValidator;
   }
 
+  @Trace(operationName = "RUN_OPERATION")
   public void run(final String[] args) throws Exception {
     final IntegrationConfig parsed = cliParser.parse(args);
     try {
@@ -189,6 +192,7 @@ public class IntegrationRunner {
     // to
     // find the root exception that corresponds to a configuration error. If that does not exist, we
     // just return the original exception.
+    ApmTraceUtils.addExceptionToTrace(e);
     final Throwable rootThrowable = ConnectorExceptionUtil.getRootConfigError(e);
     final String displayMessage = ConnectorExceptionUtil.getDisplayMessage(rootThrowable);
     // If the source connector throws a config error, a trace message with the relevant message should
@@ -196,11 +200,18 @@ public class IntegrationRunner {
     if (ConnectorExceptionUtil.isConfigError(rootThrowable)) {
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, displayMessage);
     }
-    if (CHECK.equals(parsed.getCommand())) {
+    if (parsed.getCommand().equals(Command.CHECK)) {
       // Currently, special handling is required for the CHECK case since the user display information in
       // the trace message is
       // not properly surfaced to the FE. In the future, we can remove this and just throw an exception.
-      outputRecordCollector.accept(failedConnectionStatusMessage(displayMessage));
+      outputRecordCollector
+          .accept(
+              new AirbyteMessage()
+                  .withType(Type.CONNECTION_STATUS)
+                  .withConnectionStatus(
+                      new AirbyteConnectionStatus()
+                          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                          .withMessage(displayMessage)));
       return;
     }
     throw e;

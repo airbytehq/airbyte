@@ -1250,7 +1250,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 2.0.5
+  dockerImageTag: 2.0.6
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -1344,6 +1344,14 @@
   icon: onesignal.svg
   sourceType: api
   releaseStage: alpha
+- name: Open Exchange Rates
+  sourceDefinitionId: 77d5ca6b-d345-4dce-ba1e-1935a75778b8
+  dockerRepository: airbyte/source-open-exchange-rates
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/open-exchange-rates
+  sourceType: api
+  releaseStage: alpha
+  icon: airbyte.svg
 - name: OpenWeather
   sourceDefinitionId: d8540a80-6120-485d-b7d6-272bca477d9b
   dockerRepository: airbyte/source-openweather
@@ -1442,7 +1450,7 @@
 - name: Paystack
   sourceDefinitionId: 193bdcb8-1dd9-48d1-aade-91cadfd74f9b
   dockerRepository: airbyte/source-paystack
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/paystack
   icon: paystack.svg
   sourceType: api
@@ -1554,7 +1562,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 2.0.4
+  dockerImageTag: 2.0.5
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
