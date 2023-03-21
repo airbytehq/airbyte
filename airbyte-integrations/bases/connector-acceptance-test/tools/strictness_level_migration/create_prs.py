@@ -13,7 +13,7 @@ from pathlib import Path
 from config_migration import migrate_configuration
 from create_issues import COMMON_ISSUE_LABELS as COMMON_PR_LABELS
 from create_issues import GITHUB_PROJECT_NAME
-from definitions import GA_DEFINITIONS, is_airbyte_connector, get_airbyte_connector_name_from_definition
+from definitions import GA_DEFINITIONS, get_airbyte_connector_name_from_definition, is_airbyte_connector
 from git import Repo
 from jinja2 import Environment, FileSystemLoader
 
@@ -23,9 +23,7 @@ AIRBYTE_REPO = Repo(REPO_ROOT)
 environment = Environment(loader=FileSystemLoader("./templates/"))
 PR_TEMPLATE = environment.get_template("strictness_level_migration/pr.md.j2")
 
-parser = argparse.ArgumentParser(
-    description="Create PRs for a list of connectors from a template."
-)
+parser = argparse.ArgumentParser(description="Create PRs for a list of connectors from a template.")
 parser.add_argument("-d", "--dry", default=True)
 
 
@@ -120,6 +118,7 @@ def add_test_comment(definition, new_branch, dry_run):
     else:
         logging.info(f"[DRY RUN]: {' '.join(comment_command_arguments)}")
 
+
 def migrate_config_on_new_branch(definition, dry_run):
     AIRBYTE_REPO.heads.master.checkout()
     connector_name = get_airbyte_connector_name_from_definition(
@@ -145,7 +144,7 @@ def migrate_definition_and_open_pr(definition, dry_run):
 if __name__ == "__main__":
     args = parser.parse_args()
     dry_run = False if args.dry == "False" or args.dry == "false" else True
-    for definition in GA_DEFINITIONS[:1]: # TODO make configurable. GA_DEFINITIONS, ALL DEFINITIONS, read from a list, etc
+    for definition in GA_DEFINITIONS[:1]:  # TODO make configurable. GA_DEFINITIONS, ALL DEFINITIONS, read from a list, etc
         if is_airbyte_connector(definition):
             migrate_definition_and_open_pr(definition, dry_run=dry_run)
         else:
