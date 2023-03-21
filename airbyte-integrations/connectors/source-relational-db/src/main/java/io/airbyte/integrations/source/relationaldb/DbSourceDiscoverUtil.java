@@ -40,9 +40,9 @@ public class DbSourceDiscoverUtil {
                                                                      "_ab_cdc_deleted_at");
 
   /*
-   * "This method logs schema drift between source table and the catalog. This can happen if (i)
-   * underlying table schema changed between syncs or (ii) The source connector's mapping of data
-   * types to Airbyte types changed between runs"
+   * This method logs schema drift between source table and the catalog. This can happen if
+   * (i) underlying table schema changed between syncs
+   * (ii) The source connector's mapping of datatypes to Airbyte types changed between runs
    */
   public static <DataType> void logSourceSchemaChange(final Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo,
                                                       final ConfiguredAirbyteCatalog catalog,
