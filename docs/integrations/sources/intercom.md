@@ -4,7 +4,7 @@ This page guides you through the process of setting up the Intercom source conne
 
 ## Set up the Intercom connector 
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**. 
 3. On the Set up the source page, select **Intercom** from the Source type dropdown.
 4. Enter a name for your source.
@@ -49,6 +49,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
 |:--------|:-----------| :------------------------------------------------------- |:----------------------------------------------------------------------------------------------|
+| 0.1.32  | 2023-02-27 | [22095](https://github.com/airbytehq/airbyte/pull/22095) | Extended `Contacts` schema adding `opted_out_subscription_types` property                     |
 | 0.1.31  | 2023-02-17 | [23152](https://github.com/airbytehq/airbyte/pull/23152) | Add `TypeTransformer` to stream `companies`                                                   |
 | 0.1.30  | 2023-01-27 | [22010](https://github.com/airbytehq/airbyte/pull/22010) | Set `AvailabilityStrategy` for streams explicitly to `None`                                   |
 | 0.1.29  | 2022-10-31 | [18681](https://github.com/airbytehq/airbyte/pull/18681) | Define correct version for airbyte-cdk~=0.2                                                   |

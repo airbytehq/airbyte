@@ -70,8 +70,25 @@ module.exports = {
           id: "cloud/getting-started-with-airbyte-cloud",
         },
         'cloud/core-concepts',
-        'cloud/managing-airbyte-cloud',
-        'cloud/dbt-cloud-integration',
+        {
+          type: 'category',
+          label: 'Managing Airbyte Cloud',
+          link: {
+            type: 'generated-index',
+          },
+          items: [
+            'cloud/managing-airbyte-cloud/edit-stream-configuration',
+            'cloud/managing-airbyte-cloud/manage-schema-changes',
+            'cloud/managing-airbyte-cloud/manage-data-residency',
+            'cloud/managing-airbyte-cloud/manage-credits',
+            'cloud/managing-airbyte-cloud/review-sync-summary',
+            'cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications',
+            'cloud/managing-airbyte-cloud/dbt-cloud-integration',
+            'cloud/managing-airbyte-cloud/manage-airbyte-cloud-workspace',
+            'cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits',
+            'cloud/managing-airbyte-cloud/review-connection-state',
+          ],        
+        },
       ],
     },
     {
@@ -205,7 +222,7 @@ module.exports = {
       items: [
         {
           type: 'doc',
-          label: 'CDK Introduction',
+          label: 'Overview',
           id: 'connector-development/README',
         },
         {
@@ -262,29 +279,10 @@ module.exports = {
             'connector-development/config-based/advanced-topics',
           ]
         },
-        'connector-development/tutorials/cdk-speedrun',
+
         {
           type: 'category',
-          label: 'Python CDK: Creating a HTTP API Source',
-          items: [
-            'connector-development/tutorials/cdk-tutorial-python-http/getting-started',
-            'connector-development/tutorials/cdk-tutorial-python-http/creating-the-source',
-            'connector-development/tutorials/cdk-tutorial-python-http/install-dependencies',
-            'connector-development/tutorials/cdk-tutorial-python-http/define-inputs',
-            'connector-development/tutorials/cdk-tutorial-python-http/connection-checking',
-            'connector-development/tutorials/cdk-tutorial-python-http/declare-schema',
-            'connector-development/tutorials/cdk-tutorial-python-http/read-data',
-            'connector-development/tutorials/cdk-tutorial-python-http/use-connector-in-airbyte',
-            'connector-development/tutorials/cdk-tutorial-python-http/test-your-connector',
-          ]
-        },
-        'connector-development/tutorials/building-a-python-source',
-        'connector-development/tutorials/building-a-python-destination',
-        'connector-development/tutorials/building-a-java-destination',
-        'connector-development/tutorials/profile-java-connector-memory',
-        {
-          type: 'category',
-          label: 'Connector Development Kit (Python)',
+          label: 'Connector Development Kit',
           link: {
             type: 'doc',
             id: 'connector-development/cdk-python/README',
@@ -299,8 +297,6 @@ module.exports = {
             'connector-development/cdk-python/stream-slices',
           ]
         },
-        'connector-development/cdk-faros-js',
-        'connector-development/airbyte101',
         {
           type: 'category',
           label: 'Testing Connectors',
@@ -314,6 +310,32 @@ module.exports = {
             'connector-development/testing-connectors/source-acceptance-tests-reference',
             'connector-development/testing-connectors/standard-source-tests',
             'connector-development/testing-connectors/testing-a-local-catalog-in-development',
+          ]
+        },
+        {
+          type: 'category',
+          label: 'Tutorials',
+          items:[
+            'connector-development/tutorials/cdk-speedrun',
+            {
+                type: 'category',
+                label: 'Python CDK: Creating a HTTP API Source',
+                items: [
+                  'connector-development/tutorials/cdk-tutorial-python-http/getting-started',
+                  'connector-development/tutorials/cdk-tutorial-python-http/creating-the-source',
+                  'connector-development/tutorials/cdk-tutorial-python-http/install-dependencies',
+                  'connector-development/tutorials/cdk-tutorial-python-http/define-inputs',
+                  'connector-development/tutorials/cdk-tutorial-python-http/connection-checking',
+                  'connector-development/tutorials/cdk-tutorial-python-http/declare-schema',
+                  'connector-development/tutorials/cdk-tutorial-python-http/read-data',
+                  'connector-development/tutorials/cdk-tutorial-python-http/use-connector-in-airbyte',
+                  'connector-development/tutorials/cdk-tutorial-python-http/test-your-connector',
+                ]
+            },
+            'connector-development/tutorials/building-a-python-source',
+            'connector-development/tutorials/building-a-python-destination',
+            'connector-development/tutorials/building-a-java-destination',
+            'connector-development/tutorials/profile-java-connector-memory'
           ]
         },
         'connector-development/connector-specification-reference',
@@ -438,6 +460,7 @@ module.exports = {
         type: 'generated-index',
       },
       items: [
+        'release_notes/february_2023',
         'release_notes/january_2023',
         'release_notes/december_2022',
         'release_notes/november_2022',

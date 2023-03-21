@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.destination.yugabytedb;
 
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 
-public class YugabytedbNamingTransformer extends ExtendedNameTransformer {
+public class YugabytedbNamingTransformer extends StandardNameTransformer {
 
   @Override
   public String applyDefaultCase(final String input) {
