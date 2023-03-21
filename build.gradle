@@ -342,6 +342,7 @@ subprojects { subproj ->
     // make tag accessible in submodules.
     ext {
         cloudStorageTestTagName = 'cloud-storage'
+        numberThreads = project.hasProperty('numberThreads') ? project.getProperty('numberThreads') as int : Runtime.runtime.availableProcessors() ?: 1
     }
 
     spotbugs {
@@ -354,8 +355,9 @@ subprojects { subproj ->
     }
 
     test {
-        maxParallelForks = Runtime.runtime.availableProcessors() ?: 1
-
+        //This allows to set up a `gradle.properties` file inside the connector folder to reduce number of threads and reduce parallelization.
+        //Specially useful for connectors that shares resources (like Redshift or Snowflake).
+        maxParallelForks = numberThreads
         jacoco {
             enabled = true
             excludes = ['**/*Test*', '**/generated*']
