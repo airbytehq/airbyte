@@ -1,10 +1,11 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import ast
 from typing import Optional
 
+from airbyte_cdk.sources.declarative.interpolation.filters import filters
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
 from airbyte_cdk.sources.declarative.interpolation.macros import macros
 from airbyte_cdk.sources.declarative.types import Config
@@ -32,10 +33,11 @@ class JinjaInterpolation(Interpolation):
 
     def __init__(self):
         self._environment = Environment()
+        self._environment.filters.update(**filters)
         self._environment.globals.update(**macros)
 
-    def eval(self, input_str: str, config: Config, default: Optional[str] = None, **additional_options):
-        context = {"config": config, **additional_options}
+    def eval(self, input_str: str, config: Config, default: Optional[str] = None, **additional_parameters):
+        context = {"config": config, **additional_parameters}
         try:
             if isinstance(input_str, str):
                 result = self._eval(input_str, context)

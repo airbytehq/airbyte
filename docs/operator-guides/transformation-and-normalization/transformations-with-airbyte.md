@@ -60,6 +60,19 @@ In Airbyte, I can use the git url as: `https://airbyteuser:ghp_***********ShLrG2
 
 ## How-to use custom dbt tips
 
+### Allows "chained" dbt transformations
+
+Since every transformation leave in his own Docker container, at this moment I can't rely on packages installed using `dbt deps` for the next transformations.
+According to the dbt documentation, I can configure the [packages folder](https://docs.getdbt.com/reference/project-configs/packages-install-path) outside of the container:
+
+```yaml
+# dbt_project.yml
+packages-install-path: '../dbt_packages'
+```
+
+> If I want to chain **dbt deps** and **dbt run**, I may use **[dbt build](https://docs.getdbt.com/reference/commands/build)** instead, which is not equivalent to the two previous commands, but will remove the need to alter the configuration of dbt.
+
+
 ### Refresh models partially
 
 Since I am using a mono-repo from my organization, other team members or departments may also contribute their dbt models to this centralized location. This will give us many dbt models and sources to build our complete data warehouse...
@@ -79,7 +92,7 @@ Now, when replications syncs are triggered by Airbyte, my custom transformations
 If you want to use a custom run and pass variables you need to use the follow syntax:
 
 ```bash
-run --vars '{table_name":"sample","schema_name":"other_value"}'
+run --vars '{"table_name":"sample","schema_name":"other_value"}'
 ```
 
 This string must have no space. There is a [Github issue](https://github.com/airbytehq/airbyte/issues/4348) to improve this. If you want to contribute to Airbyte, this is a good opportunity!

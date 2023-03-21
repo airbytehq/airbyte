@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
@@ -58,7 +58,7 @@ public class MySqlSourceOperationsTest {
   public void tearDown() {
     try {
       container.close();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -85,13 +85,13 @@ public class MySqlSourceOperationsTest {
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setStatementField(preparedStatement, 1, MysqlType.DATE, DateTimeConverter.convertToDate(LocalDate.of(2019, 1, 1)));
+      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.DATE, DateTimeConverter.convertToDate(LocalDate.of(2019, 1, 1)));
 
       try (final ResultSet resultSet = preparedStatement.executeQuery()) {
         while (resultSet.next()) {
           final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
           for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.setJsonField(resultSet, i, jsonNode);
+            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
           }
           actualRecords.add(jsonNode);
         }
@@ -105,13 +105,13 @@ public class MySqlSourceOperationsTest {
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setStatementField(preparedStatement, 1, MysqlType.DATE, "2019-01-01T00:00:00Z");
+      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.DATE, "2019-01-01T00:00:00Z");
 
       try (final ResultSet resultSet = preparedStatement.executeQuery()) {
         while (resultSet.next()) {
           final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
           for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.setJsonField(resultSet, i, jsonNode);
+            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
           }
           actualRecords.add(jsonNode);
         }
@@ -142,13 +142,13 @@ public class MySqlSourceOperationsTest {
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setStatementField(preparedStatement, 1, MysqlType.TIME, DateTimeConverter.convertToTime(LocalTime.of(20, 1, 0)));
+      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.TIME, DateTimeConverter.convertToTime(LocalTime.of(20, 1, 0)));
 
       try (final ResultSet resultSet = preparedStatement.executeQuery()) {
         while (resultSet.next()) {
           final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
           for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.setJsonField(resultSet, i, jsonNode);
+            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
           }
           actualRecords.add(jsonNode);
         }
@@ -162,13 +162,13 @@ public class MySqlSourceOperationsTest {
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setStatementField(preparedStatement, 1, MysqlType.TIME, "1970-01-01T20:01:00Z");
+      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.TIME, "1970-01-01T20:01:00Z");
 
       try (final ResultSet resultSet = preparedStatement.executeQuery()) {
         while (resultSet.next()) {
           final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
           for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.setJsonField(resultSet, i, jsonNode);
+            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
           }
           actualRecords.add(jsonNode);
         }
@@ -198,14 +198,14 @@ public class MySqlSourceOperationsTest {
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setStatementField(preparedStatement, 1, MysqlType.DATETIME,
+      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.DATETIME,
           DateTimeConverter.convertToTimestamp(LocalDateTime.of(2019, 1, 20, 3, 0, 0)));
 
       try (final ResultSet resultSet = preparedStatement.executeQuery()) {
         while (resultSet.next()) {
           final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
           for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.setJsonField(resultSet, i, jsonNode);
+            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
           }
           actualRecords.add(jsonNode);
         }
@@ -219,13 +219,13 @@ public class MySqlSourceOperationsTest {
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setStatementField(preparedStatement, 1, MysqlType.DATETIME, "2019-01-20T03:00:00.000000Z");
+      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.DATETIME, "2019-01-20T03:00:00.000000Z");
 
       try (final ResultSet resultSet = preparedStatement.executeQuery()) {
         while (resultSet.next()) {
           final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
           for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.setJsonField(resultSet, i, jsonNode);
+            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
           }
           actualRecords.add(jsonNode);
         }
@@ -256,14 +256,14 @@ public class MySqlSourceOperationsTest {
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setStatementField(preparedStatement, 1, MysqlType.TIMESTAMP,
+      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.TIMESTAMP,
           DateTimeConverter.convertToTimestampWithTimezone(Instant.ofEpochSecond(1660298508L)));
 
       try (final ResultSet resultSet = preparedStatement.executeQuery()) {
         while (resultSet.next()) {
           final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
           for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.setJsonField(resultSet, i, jsonNode);
+            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
           }
           actualRecords.add(jsonNode);
         }
@@ -278,13 +278,13 @@ public class MySqlSourceOperationsTest {
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setStatementField(preparedStatement, 1, MysqlType.TIMESTAMP, Instant.ofEpochSecond(1660298508L).toString());
+      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.TIMESTAMP, Instant.ofEpochSecond(1660298508L).toString());
 
       try (final ResultSet resultSet = preparedStatement.executeQuery()) {
         while (resultSet.next()) {
           final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
           for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.setJsonField(resultSet, i, jsonNode);
+            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
           }
           actualRecords.add(jsonNode);
         }

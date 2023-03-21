@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
@@ -45,6 +46,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
   @Override
   protected Database setupDatabase() throws Exception {
     config = Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
+    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, SCHEMA_NAME);
 
     dslContext = DSLContextFactory.create(
         config.get("credentials").get(JdbcUtils.USERNAME_KEY).asText(),
@@ -197,6 +199,14 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
             .addInsertValues("'NaN'", "'inf'", "'-inf'")
             .addExpectedValues("NaN", "Infinity", "-Infinity")
             .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("NUMBER")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .fullSourceDataType("NUMBER(38,0)")
+            .addInsertValues("9", "990", "9990", "999000", "999000000", "999000000000")
+            .addExpectedValues("9", "990", "9990", "999000", "999000000", "999000000000")
+            .build());
 
     // Data Types for Text Strings
     addDataTypeTestData(
@@ -339,6 +349,15 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
             .addExpectedValues(null,
                 "{\n  \"coordinates\": [\n    -122.35,\n    37.55\n  ],\n  \"type\": \"Point\"\n}",
                 "{\n  \"coordinates\": [\n    [\n      -124.2,\n      42\n    ],\n    [\n      -120.01,\n      41.99\n    ]\n  ],\n  \"type\": \"LineString\"\n}")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("NUMBER")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .fullSourceDataType("NUMBER(38,0)")
+            .addInsertValues("3E+1")
+            .addExpectedValues("30")
             .build());
   }
 

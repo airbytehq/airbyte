@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC
@@ -9,13 +9,13 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urljoin, urlparse
 
 import requests
-import vcr
-import vcr.cassette as Cassette
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests.auth import AuthBase
 
 from .utils import EagerlyCachedStreamState as stream_state_cache
@@ -43,6 +43,10 @@ class IntercomStream(HttpStream, ABC):
         if self._session.auth:
             return self._session.auth
         return super().authenticator
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def next_page_token(self, response: requests.Response, **kwargs) -> Optional[Mapping[str, Any]]:
         """
@@ -135,15 +139,6 @@ class IncrementalIntercomSearchStream(IncrementalIntercomStream):
     http_method = "POST"
     sort_order = "ascending"
     use_cache = True
-
-    def request_cache(self) -> Cassette:
-        """
-        Override the default `request_cache` method, due to `match_on` is different for POST requests.
-        We should check additional criteria like ['query', 'body'] instead of default ['uri', 'method']
-        """
-        match_on = ["uri", "query", "method", "body"]
-        cassette = vcr.use_cassette(self.cache_filename, record_mode="new_episodes", serializer="yaml", match_on=match_on)
-        return cassette
 
     @stream_state_cache.cache_stream_state
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
@@ -261,6 +256,7 @@ class Companies(IncrementalIntercomStream):
     """
 
     page_size = 50  # default is 15
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     class EndpointType(Enum):
         scroll = "companies/scroll"

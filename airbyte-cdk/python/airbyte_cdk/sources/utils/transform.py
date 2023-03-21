@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -10,7 +10,7 @@ from typing import Any, Callable, Dict, Mapping, Optional
 from jsonschema import Draft7Validator, ValidationError, validators
 
 json_to_python_simple = {"string": str, "number": float, "integer": int, "boolean": bool, "null": type(None)}
-json_to_python = json_to_python_simple | {"object": dict, "array": list}
+json_to_python = {**json_to_python_simple, **{"object": dict, "array": list}}
 python_to_json = {v: k for k, v in json_to_python.items()}
 
 logger = logging.getLogger("airbyte")
@@ -190,7 +190,7 @@ class TypeTransformer:
 
     def get_error_message(self, e: ValidationError) -> str:
         instance_json_type = python_to_json[type(e.instance)]
-        key_path = "." + ".".join(e.path)
+        key_path = "." + ".".join(map(str, e.path))
         return (
             f"Failed to transform value {repr(e.instance)} of type '{instance_json_type}' to '{e.validator_value}', key path: '{key_path}'"
         )

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
@@ -12,7 +12,10 @@ import static io.airbyte.db.DataTypeUtils.TIME_FORMATTER;
 import static io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations.resolveEra;
 import static java.time.ZoneOffset.UTC;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.Duration;
@@ -145,11 +148,11 @@ public class DateTimeConverter {
       return localTime.format(TIME_FORMATTER);
     } else if (time instanceof java.time.Duration) {
       long value = ((Duration) time).toNanos();
-      if (value >= 0 && value <= TimeUnit.DAYS.toNanos(1)) {
+      if (value >= 0 && value < TimeUnit.DAYS.toNanos(1)) {
         return LocalTime.ofNanoOfDay(value).format(TIME_FORMATTER);
       } else {
-        final long updatedValue = 0 > value ? Math.abs(value) : TimeUnit.DAYS.toNanos(1);
-        LOGGER.debug("Time values must use number of milliseconds greater than 0 and less than 86400000000000 but its {}, converting to {} ", value,
+        final long updatedValue = Math.min(Math.abs(value), LocalTime.MAX.toNanoOfDay());
+        LOGGER.debug("Time values must use number of nanoseconds greater than 0 and less than 86400000000000 but its {}, converting to {} ", value,
             updatedValue);
         return LocalTime.ofNanoOfDay(updatedValue).format(TIME_FORMATTER);
       }
@@ -158,8 +161,25 @@ public class DateTimeConverter {
         LOGGER.info("Unknown class for Time data type" + time.getClass());
         loggedUnknownTimeClass = true;
       }
-      return LocalTime.parse(time.toString()).format(TIME_FORMATTER);
+
+      final String valueAsString = time.toString();
+      if (valueAsString.startsWith("24")) {
+        LOGGER.debug("Time value {} is above range, converting to 23:59:59", valueAsString);
+        return LocalTime.MAX.format(TIME_FORMATTER);
+      }
+      return LocalTime.parse(valueAsString).format(TIME_FORMATTER);
     }
+  }
+
+  public static void putJavaSQLDate(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    final Date date = resultSet.getDate(index);
+    node.put(columnName, convertToDate(date));
+  }
+
+  public static void putJavaSQLTime(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    // resultSet.getTime() will lose nanoseconds precision
+    final LocalTime localTime = resultSet.getTimestamp(index).toLocalDateTime().toLocalTime();
+    node.put(columnName, convertToTime(localTime));
   }
 
 }

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import responses
@@ -68,13 +68,15 @@ def test_check(config_gen):
     assert len(responses.calls) == 8
     assert url_strip_query(responses.calls[7].request.url) == "https://advertising-api.amazon.com/v2/profiles"
 
+    assert command_check(source, config_gen(look_back_window=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
+
 
 @responses.activate
 def test_source_streams(config):
     setup_responses()
     source = SourceAmazonAds()
     streams = source.streams(config)
-    assert len(streams) == 18
+    assert len(streams) == 22
     actual_stream_names = {stream.name for stream in streams}
     expected_stream_names = set(
         [
@@ -91,6 +93,10 @@ def test_source_streams(config):
             "sponsored_brands_ad_groups",
             "sponsored_brands_keywords",
             "sponsored_brands_report_stream",
+            "attribution_report_performance_adgroup",
+            "attribution_report_performance_campaign",
+            "attribution_report_performance_creative",
+            "attribution_report_products",
         ]
     )
     assert not expected_stream_names - actual_stream_names

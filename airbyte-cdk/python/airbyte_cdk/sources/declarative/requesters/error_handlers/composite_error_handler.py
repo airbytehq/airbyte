@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import InitVar, dataclass
@@ -10,11 +10,10 @@ import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class CompositeErrorHandler(ErrorHandler, JsonSchemaMixin):
+class CompositeErrorHandler(ErrorHandler):
     """
     Error handler that sequentially iterates over a list of `ErrorHandler`s
 
@@ -26,22 +25,22 @@ class CompositeErrorHandler(ErrorHandler, JsonSchemaMixin):
                 - predicate: "{{ 'codase' in response }}"
                   action: RETRY
               backoff_strategies:
-                - type: "ConstantBackoffStrategy"
+                - type: "ConstantBackoff"
                   backoff_time_in_seconds: 5
             - response_filters:
                 - http_codes: [ 403 ]
                   action: RETRY
               backoff_strategies:
-                - type: "ConstantBackoffStrategy"
+                - type: "ConstantBackoff"
                   backoff_time_in_seconds: 10
     Attributes:
         error_handlers (List[ErrorHandler]): list of error handlers
     """
 
     error_handlers: List[ErrorHandler]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         if not self.error_handlers:
             raise ValueError("CompositeErrorHandler expects at least 1 underlying error handler")
 
@@ -49,10 +48,10 @@ class CompositeErrorHandler(ErrorHandler, JsonSchemaMixin):
     def max_retries(self) -> Union[int, None]:
         return self.error_handlers[0].max_retries
 
-    def should_retry(self, response: requests.Response) -> ResponseStatus:
+    def interpret_response(self, response: requests.Response) -> ResponseStatus:
         should_retry = None
         for retrier in self.error_handlers:
-            should_retry = retrier.should_retry(response)
+            should_retry = retrier.interpret_response(response)
             if should_retry.action == ResponseAction.SUCCESS:
                 return response_status.SUCCESS
             if should_retry == response_status.IGNORE or should_retry.action == ResponseAction.RETRY:

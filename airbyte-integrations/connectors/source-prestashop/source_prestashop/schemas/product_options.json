@@ -25,16 +25,14 @@
       "properties": {
         "product_option_values": {
           "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                }
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
               }
             }
-          ]
+          }
         }
       }
     }

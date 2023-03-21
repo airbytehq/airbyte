@@ -1,6 +1,6 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/s3",
-  "changelogUrl": "https://docs.airbyte.io/integrations/sources/s3",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/s3",
+  "changelogUrl": "https://docs.airbyte.com/integrations/sources/s3",
   "connectionSpecification": {
     "title": "S3 Source Spec",
     "type": "object",
@@ -91,7 +91,6 @@
               "additional_reader_options": {
                 "title": "Additional Reader Options",
                 "description": "Optionally add a valid JSON string here to provide additional options to the csv reader. Mappings must correspond to options <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.ConvertOptions.html#pyarrow.csv.ConvertOptions\" target=\"_blank\">detailed here</a>. 'column_types' is used internally to handle schema so overriding that would likely cause problems.",
-                "default": "{}",
                 "examples": [
                   "{\"timestamp_parsers\": [\"%m/%d/%Y %H:%M\", \"%Y/%m/%d %H:%M\"], \"strings_can_be_null\": true, \"null_values\": [\"NA\", \"NULL\"]}"
                 ],
@@ -101,7 +100,6 @@
               "advanced_options": {
                 "title": "Advanced Options",
                 "description": "Optionally add a valid JSON string here to provide additional <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html#pyarrow.csv.ReadOptions\" target=\"_blank\">Pyarrow ReadOptions</a>. Specify 'column_names' here if your CSV doesn't have header, or if you want to use custom column names. 'block_size' and 'encoding' are already used above, specify them again here will override the values above.",
-                "default": "{}",
                 "examples": ["{\"column_names\": [\"column1\", \"column2\"]}"],
                 "order": 8,
                 "type": "string"
@@ -110,6 +108,8 @@
                 "title": "Block Size",
                 "description": "The chunk size in bytes to process at a time in memory from each file. If your data is particularly wide and failing during schema detection, increasing this should solve it. Beware of raising this too high as you could hit OOM errors.",
                 "default": 10000,
+                "minimum": 1,
+                "maximum": 2147483647,
                 "order": 9,
                 "type": "integer"
               }
@@ -184,19 +184,12 @@
                 "default": "infer",
                 "examples": ["ignore", "infer", "error"],
                 "order": 1,
-                "allOf": [
-                  {
-                    "title": "UnexpectedFieldBehaviorEnum",
-                    "description": "An enumeration.",
-                    "enum": ["ignore", "infer", "error"],
-                    "type": "string"
-                  }
-                ]
+                "enum": ["ignore", "infer", "error"]
               },
               "block_size": {
                 "title": "Block Size",
                 "description": "The chunk size in bytes to process at a time in memory from each file. If your data is particularly wide and failing during schema detection, increasing this should solve it. Beware of raising this too high as you could hit OOM errors.",
-                "default": 10000,
+                "default": 0,
                 "order": 2,
                 "type": "integer"
               }
@@ -205,7 +198,7 @@
         ]
       },
       "schema": {
-        "title": "Manually enforced data schema (Optional)",
+        "title": "Manually enforced data schema",
         "description": "Optionally provide a schema to enforce, as a valid JSON string. Ensure this is a mapping of <strong>{ \"column\" : \"type\" }</strong>, where types are valid <a href=\"https://json-schema.org/understanding-json-schema/reference/type.html\" target=\"_blank\">JSON Schema datatypes</a>. Leave as {} to auto-infer the schema.",
         "default": "{}",
         "examples": [
@@ -251,18 +244,6 @@
             "default": "",
             "order": 4,
             "type": "string"
-          },
-          "use_ssl": {
-            "title": "Use TLS",
-            "description": "Whether the remote server is using a secure SSL/TLS connection. Only relevant if using an S3-compatible, non-AWS server",
-            "order": 5,
-            "type": "boolean"
-          },
-          "verify_ssl_cert": {
-            "title": "Verify TLS Certificates",
-            "description": "Set this to false to allow self signed certificates. Only relevant if using an S3-compatible, non-AWS server",
-            "order": 6,
-            "type": "boolean"
           }
         },
         "required": ["bucket"],

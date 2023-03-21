@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "transaction_id": {
+      "type": ["null", "string"]
+    },
+    "amount": {
+      "type": ["null", "number"]
+    },
+    "amount_cents": {
+      "type": ["null", "integer"]
+    },
+    "settled_balance": {
+      "type": ["null", "number"]
+    },
+    "settled_balance_cents": {
+      "type": ["null", "integer"]
+    },
+    "attachment_ids": {
+      "type": ["array"],
+      "items": {
+        "type": ["string"]
+      }
+    },
+    "local_amount": {
+      "type": ["null", "number"]
+    },
+    "local_amount_cents": {
+      "type": ["null", "integer"]
+    },
+    "side": {
+      "type": ["null", "string"]
+    },
+    "operation_type": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "local_currency": {
+      "type": ["null", "string"]
+    },
+    "label": {
+      "type": ["null", "string"]
+    },
+    "settled_at": {
+      "type": ["null", "string"]
+    },
+    "emitted_at": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "note": {
+      "type": ["null", "string"]
+    },
+    "reference": {
+      "type": ["null", "string"]
+    },
+    "vat_amount": {
+      "type": ["null", "number"]
+    },
+    "vat_amount_cents": {
+      "type": ["null", "number"]
+    },
+    "vat_rate": {
+      "type": ["null", "number"]
+    },
+    "initiator_id": {
+      "type": ["null", "string"]
+    },
+    "label_ids": {
+      "type": ["array"],
+      "items": {
+        "type": ["string"]
+      }
+    },
+    "attachment_lost": {
+      "type": ["null", "boolean"]
+    },
+    "attachment_required": {
+      "type": ["null", "boolean"]
+    },
+    "card_last_digits": {
+      "type": ["null", "string"]
+    },
+    "category": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    }
+  }
+}

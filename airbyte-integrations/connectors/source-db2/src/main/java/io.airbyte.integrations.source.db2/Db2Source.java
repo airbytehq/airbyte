@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.db2;
@@ -109,6 +109,11 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
   @Override
   protected int getStateEmissionFrequency() {
     return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
+  }
+
+  @Override
+  protected String getCountColumnName() {
+    return "RECORD_COUNT";
   }
 
   private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges() {

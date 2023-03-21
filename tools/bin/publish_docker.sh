@@ -1,19 +1,19 @@
 #!/bin/bash
 set -e
 
+# todo (cgardens) - remove this file. used in platform build script only.
 # List of directories without "airbyte-" prefix.
 projectDir=(
-  "workers"
-  "cli"
+  "bootloader"
+  "container-orchestrator"
   "cron"
-  "webapp"
+  "connector-builder-server"
+  "metrics/reporter"
+  "proxy"
   "server"
   "temporal"
-  "container-orchestrator"
-  "config/init"
-  "bootloader"
-  "metrics/reporter"
-  "db/db-lib"
+  "webapp"
+  "workers"
 )
 
 # Set default values to required vars. If set in env, values will be taken from there.

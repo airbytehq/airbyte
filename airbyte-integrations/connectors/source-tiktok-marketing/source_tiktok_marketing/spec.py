@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -45,7 +45,7 @@ class SourceTiktokMarketingSpec(BaseModel):
     )
 
     start_date: str = Field(
-        title="Replication Start Date *",
+        title="Replication Start Date",
         default=DEFAULT_START_DATE,
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         description="The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated. "

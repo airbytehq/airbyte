@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redis;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -16,8 +17,8 @@ public class RedisHCache implements RedisCache {
 
   private final Jedis jedis;
 
-  public RedisHCache(RedisConfig redisConfig) {
-    this.jedis = RedisPoolManager.initConnection(redisConfig);
+  public RedisHCache(JsonNode jsonConfig) {
+    this.jedis = RedisPoolManager.initConnection(jsonConfig);
   }
 
   @Override

@@ -1,19 +1,16 @@
 {
-  "type" : "object",
-  "properties" : {
-    "project_url" : {
-      "type" : "string"
+  "type": "object",
+  "properties": {
+    "project_url": {
+      "type": "string"
     },
-    "project_id" : {
-      "type" : "string"
+    "project_id": {
+      "type": "string"
     },
-    "rag_ratings" : {
-      "type" : "array",
-      "items" : {
-        "type" : [
-          "null",
-          "string"
-        ]
+    "rag_ratings": {
+      "type": "array",
+      "items": {
+        "type": ["null", "string"]
       }
     }
   }

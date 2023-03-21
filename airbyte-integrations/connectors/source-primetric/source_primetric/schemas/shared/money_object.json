@@ -1,26 +1,14 @@
 {
-  "type" : [
-    "null",
-    "object"
-  ],
-  "properties" : {
-    "amount" : {
-      "type" : [
-        "null",
-        "number"
-      ]
+  "type": ["null", "object"],
+  "properties": {
+    "amount": {
+      "type": ["null", "number"]
     },
-    "currency" : {
-      "type" : [
-        "null",
-        "string"
-      ]
+    "currency": {
+      "type": ["null", "string"]
     },
-    "exchange_rate" : {
-      "type" : [
-        "null",
-        "number"
-      ]
+    "exchange_rate": {
+      "type": ["null", "number"]
     }
   }
 }

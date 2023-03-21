@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
+
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static io.airbyte.db.PostgresUtils.getCertificate;
@@ -22,6 +23,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 public abstract class AbstractCdcPostgresSourceSslAcceptanceTest extends CdcPostgresSourceAcceptanceTest {
+
   protected static final String PASSWORD = "Passw0rd";
   protected static PostgresUtils.Certificate certs;
 
@@ -29,15 +31,10 @@ public abstract class AbstractCdcPostgresSourceSslAcceptanceTest extends CdcPost
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
         .asCompatibleSubstituteFor("postgres"))
-        .withCommand("postgres -c wal_level=logical");
+            .withCommand("postgres -c wal_level=logical");
     container.start();
 
     certs = getCertificate(container);
-    /**
-     * The publication is not being set as part of the config and because of it
-     * {@link io.airbyte.integrations.source.postgres.PostgresSource#isCdc(JsonNode)} returns false, as
-     * a result no test in this class runs through the cdc path.
-     */
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "CDC")
         .put("replication_slot", SLOT_NAME_BASE)
@@ -68,14 +65,10 @@ public abstract class AbstractCdcPostgresSourceSslAcceptanceTest extends CdcPost
         SQLDialect.POSTGRES)) {
       final Database database = new Database(dslContext);
 
-      /**
-       * cdc expects the INCREMENTAL tables to contain primary key checkout
-       * {@link io.airbyte.integrations.source.postgres.PostgresSource#removeIncrementalWithoutPk(AirbyteStream)}
-       */
       database.query(ctx -> {
-        ctx.execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+        ctx.execute("CREATE TABLE id_and_name(id INTEGER primary key, name VARCHAR(200));");
         ctx.execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-        ctx.execute("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
+        ctx.execute("CREATE TABLE starships(id INTEGER primary key, name VARCHAR(200));");
         ctx.execute("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
         ctx.execute("SELECT pg_create_logical_replication_slot('" + SLOT_NAME_BASE + "', 'pgoutput');");
         ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
@@ -85,4 +78,5 @@ public abstract class AbstractCdcPostgresSourceSslAcceptanceTest extends CdcPost
   }
 
   public abstract ImmutableMap getCertificateConfiguration();
+
 }

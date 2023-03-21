@@ -1,9 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.version;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import java.util.Objects;
 
@@ -11,6 +13,8 @@ import java.util.Objects;
  * A semVer Version class that allows "dev" as a version.
  */
 @SuppressWarnings({"PMD.AvoidFieldNameMatchingTypeName", "PMD.ConstructorCallsOverridableMethod"})
+@JsonDeserialize(using = VersionDeserializer.class)
+@JsonSerialize(using = VersionSerializer.class)
 public class Version {
 
   public static final String DEV_VERSION_PREFIX = "dev";

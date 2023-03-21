@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "ActivityID": {
+      "type": "integer"
+    },
+    "ActivityLevel": {
+      "type": "integer"
+    },
+    "ActivityName": {
+      "type": "string"
+    },
+    "ActivityParentID": {
+      "type": "integer"
+    }
+  }
+}

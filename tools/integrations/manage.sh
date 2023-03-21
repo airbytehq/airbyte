@@ -5,6 +5,19 @@ set -x
 
 . tools/lib/lib.sh
 
+# If you are looking at this file because you find yourself needing to publish a connector image manually, you might not need to do all of this!
+# If the connector you are publishing is a python connector (e.g. not using our base images), you can do the following:
+#
+# # NAME="source-foo"; VERSION="1.2.3"
+#
+# git pull
+#
+# cd airbyte-integrations/connectors/$NAME
+#
+# docker buildx build . --platform "linux/amd64,linux/arm64" --tag airbyte/$NAME:latest  --push
+# docker buildx build . --platform "linux/amd64,linux/arm64" --tag airbyte/$NAME:$VERSION  --push
+
+
 USAGE="
 Usage: $(basename "$0") <cmd>
 For publish, if you want to push the spec to the spec cache, provide a path to a service account key file that can write to the cache.
@@ -220,7 +233,7 @@ cmd_publish() {
 
   # Install docker emulators
   # TODO: Don't run this command on M1 macs locally (it won't work and isn't needed)
-  docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+  apt-get update && apt-get install -y qemu-user-static
 
   # log into docker
   if test -z "${DOCKER_HUB_USERNAME}"; then
@@ -300,7 +313,7 @@ cmd_publish() {
     docker manifest rm $versioned_image
 
     # delete the temporary image tags made with arch_versioned_image
-    sleep 5
+    sleep 10
     for arch in $(echo $build_arch | sed "s/,/ /g")
     do
       local arch_versioned_tag=`echo $arch | sed "s/\//-/g"`-$image_version

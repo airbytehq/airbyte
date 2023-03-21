@@ -1,24 +1,34 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from airbyte_cdk.sources.utils.schema_helpers import split_config
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import codes, exceptions  # type: ignore[import]
 
 from .api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
-from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, Describe, IncrementalSalesforceStream, SalesforceStream
+from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, Describe, IncrementalRestSalesforceStream, RestSalesforceStream
+
+
+class AirbyteStopSync(AirbyteTracedException):
+    pass
 
 
 class SourceSalesforce(AbstractSource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.catalog = None
+
     @staticmethod
     def _get_sf_object(config: Mapping[str, Any]) -> Salesforce:
         sf = Salesforce(**config)
@@ -49,17 +59,10 @@ class SourceSalesforce(AbstractSource):
         properties_not_supported_by_bulk = {
             key: value for key, value in properties.items() if value.get("format") == "base64" or "object" in value["type"]
         }
-        properties_length = len(",".join(p for p in properties))
-
         rest_required = stream_name in UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS or properties_not_supported_by_bulk
-        # If we have a lot of properties we can overcome REST API URL length and get an error: "reason: URI Too Long".
-        # For such cases connector tries to use BULK API because it uses POST request and passes properties in the request body.
-        bulk_required = properties_length + 2000 > Salesforce.REQUEST_SIZE_LIMITS
-
-        if rest_required and not bulk_required:
+        if rest_required:
             return "rest"
-        if not rest_required:
-            return "bulk"
+        return "bulk"
 
     @classmethod
     def generate_streams(
@@ -69,6 +72,7 @@ class SourceSalesforce(AbstractSource):
         sf_object: Salesforce,
     ) -> List[Stream]:
         """ "Generates a list of stream by their names. It can be used for different tests too"""
+        logger = logging.getLogger()
         authenticator = TokenAuthenticator(sf_object.access_token)
         stream_properties = sf_object.generate_schemas(stream_objects)
         streams = []
@@ -78,7 +82,7 @@ class SourceSalesforce(AbstractSource):
 
             api_type = cls._get_api_type(stream_name, selected_properties)
             if api_type == "rest":
-                full_refresh, incremental = SalesforceStream, IncrementalSalesforceStream
+                full_refresh, incremental = RestSalesforceStream, IncrementalRestSalesforceStream
             elif api_type == "bulk":
                 full_refresh, incremental = BulkSalesforceStream, BulkIncrementalSalesforceStream
             else:
@@ -88,62 +92,54 @@ class SourceSalesforce(AbstractSource):
             pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
             streams_kwargs.update(dict(sf_api=sf_object, pk=pk, stream_name=stream_name, schema=json_schema, authenticator=authenticator))
             if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:
-                streams.append(incremental(**streams_kwargs, replication_key=replication_key, start_date=config.get("start_date")))
+                stream = incremental(**streams_kwargs, replication_key=replication_key, start_date=config.get("start_date"))
             else:
-                streams.append(full_refresh(**streams_kwargs))
-
+                stream = full_refresh(**streams_kwargs)
+            if api_type == "rest" and not stream.primary_key and stream.too_many_properties:
+                logger.warning(
+                    f"Can not instantiate stream {stream_name}. "
+                    f"It is not supported by the BULK API and can not be implemented via REST because the number of its properties "
+                    f"exceeds the limit and it lacks a primary key."
+                )
+                continue
+            streams.append(stream)
         return streams
 
-    def streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         sf = self._get_sf_object(config)
-        stream_objects = sf.get_validated_streams(config=config, catalog=catalog)
+        stream_objects = sf.get_validated_streams(config=config, catalog=self.catalog)
         streams = self.generate_streams(config, stream_objects, sf)
-        streams.append(Describe(sf_api=sf, catalog=catalog))
+        streams.append(Describe(sf_api=sf, catalog=self.catalog))
         return streams
 
     def read(
         self,
-        logger: AirbyteLogger,
+        logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
         state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
     ) -> Iterator[AirbyteMessage]:
-        """
-        Overwritten to dynamically receive only those streams that are necessary for reading for significant speed gains
-        (Salesforce has a strict API limit on requests).
-        """
-        config, internal_config = split_config(config)
-        # get the streams once in case the connector needs to make any queries to generate them
-        logger.info("Starting generating streams")
-        stream_instances = {s.name: s for s in self.streams(config, catalog=catalog)}
-        state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
-        logger.info(f"Starting syncing {self.name}")
-        self._stream_to_instance_map = stream_instances
-        for configured_stream in catalog.streams:
-            stream_instance = stream_instances.get(configured_stream.stream.name)
-            if not stream_instance:
-                raise KeyError(
-                    f"The requested stream {configured_stream.stream.name} was not found in the source. Available streams: {stream_instances.keys()}"
-                )
+        # save for use inside streams method
+        self.catalog = catalog
+        try:
+            yield from super().read(logger, config, catalog, state)
+        except AirbyteStopSync:
+            logger.info(f"Finished syncing {self.name}")
 
-            try:
-                yield from self._read_stream(
-                    logger=logger,
-                    stream_instance=stream_instance,
-                    configured_stream=configured_stream,
-                    state_manager=state_manager,
-                    internal_config=internal_config,
-                )
-            except exceptions.HTTPError as error:
-                error_data = error.response.json()[0]
-                error_code = error_data.get("errorCode")
-                if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
-                    logger.warn(f"API Call limit is exceeded. Error message: '{error_data.get('message')}'")
-                    break  # if got 403 rate limit response, finish the sync with success.
-                raise error
-
-            except Exception as e:
-                logger.exception(f"Encountered an exception while reading stream {self.name}")
-                raise e
-
-        logger.info(f"Finished syncing {self.name}")
+    def _read_stream(
+        self,
+        logger: logging.Logger,
+        stream_instance: Stream,
+        configured_stream: ConfiguredAirbyteStream,
+        state_manager: ConnectorStateManager,
+        internal_config: InternalConfig,
+    ) -> Iterator[AirbyteMessage]:
+        try:
+            yield from super()._read_stream(logger, stream_instance, configured_stream, state_manager, internal_config)
+        except exceptions.HTTPError as error:
+            error_data = error.response.json()[0]
+            error_code = error_data.get("errorCode")
+            if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
+                logger.warn(f"API Call limit is exceeded. Error message: '{error_data.get('message')}'")
+                raise AirbyteStopSync()  # if got 403 rate limit response, finish the sync with success.
+            raise error

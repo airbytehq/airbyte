@@ -1,0 +1,16 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/launchdarkly
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Launchdarkly Spec
+  type: object
+  required:
+    - access_token
+  additionalProperties: true
+  properties:
+    access_token:
+      title: Access token
+      type: string
+      description: >-
+        Your Access token. See <a
+        href="https://apidocs.launchdarkly.com/#section/Overview/Authentication">here</a>.
+      airbyte_secret: true

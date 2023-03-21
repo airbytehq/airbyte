@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.util;
 
 import static io.airbyte.integrations.destination.s3.S3DestinationConstants.NAME_TRANSFORMER;
 
-import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStream;
 import java.util.LinkedList;
 import java.util.List;
 

@@ -16,7 +16,6 @@ This connector uses [firebolt-sdk](https://pypi.org/project/firebolt-sdk/), whic
 ## Notes
 
 * External tables are not available as a source for performance reasons.
-* Views are not available as a source due to possible complicated structure and non-obvious data types.
 * Only Full reads are supported for now.
 * Integration/Acceptance testing requires the user to have a running engine. Spinning up an engine can take a while so this ensures a faster iteration on the connector.
 * Pagination is not available at the moment so large enough data sets might cause out of memory errors

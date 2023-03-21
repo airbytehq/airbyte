@@ -791,23 +791,13 @@
             },
             "port": {
               "title": "Port",
-              "description": "JDBC port (not the native port) of the database.",
+              "description": "HTTP port of the database.",
               "type": "integer",
               "minimum": 0,
               "maximum": 65536,
               "default": 8123,
               "examples": ["8123"],
               "order": 1
-            },
-            "tcp-port": {
-              "title": "Native Port",
-              "description": "Native port (not the JDBC) of the database.",
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 65536,
-              "default": 9000,
-              "examples": ["9000"],
-              "order": 2
             },
             "database": {
               "title": "DB Name",
@@ -6120,7 +6110,7 @@
       "dockerRepository": "airbyte/source-clickhouse-strict-encrypt",
       "dockerImageTag": "0.1.8",
       "documentationUrl": "https://docs.airbyte.io/integrations/sources/clickhouse",
-      "icon": "cliskhouse.svg",
+      "icon": "clickhouse.svg",
       "sourceType": "database",
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/clickhouse",
@@ -11218,7 +11208,7 @@
       "name": "Prestashop",
       "dockerRepository": "airbyte/source-prestashop",
       "dockerImageTag": "0.1.0",
-      "documentationUrl": "https://docs.airbyte.io/integrations/sources/presta-shop",
+      "documentationUrl": "https://docs.airbyte.io/integrations/sources/prestashop",
       "icon": "prestashop.svg",
       "sourceType": "api",
       "spec": {
@@ -12701,7 +12691,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "title": "Snowflake Source Spec",
           "type": "object",
-          "required": ["host", "role", "warehouse", "database", "schema"],
+          "required": ["host", "role", "warehouse", "database"],
           "properties": {
             "credentials": {
               "title": "Authorization Method",
@@ -12809,7 +12799,7 @@
               "order": 4
             },
             "schema": {
-              "description": "The source Snowflake schema tables.",
+              "description": "The source Snowflake schema tables. Leave empty to access tables from multiple schemas.",
               "examples": ["AIRBYTE_SCHEMA"],
               "type": "string",
               "title": "Schema",

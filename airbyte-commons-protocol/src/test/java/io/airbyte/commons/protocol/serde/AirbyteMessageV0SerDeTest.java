@@ -1,14 +1,15 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.protocol.serde;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ class AirbyteMessageV0SerDeTest {
                 .withDocumentationUrl(new URI("file:///tmp/doc")));
 
     final String serializedMessage = ser.serialize(message);
-    final AirbyteMessage deserializedMessage = deser.deserialize(serializedMessage);
+    final AirbyteMessage deserializedMessage = deser.deserialize(Jsons.deserialize(serializedMessage));
 
     assertEquals(message, deserializedMessage);
   }

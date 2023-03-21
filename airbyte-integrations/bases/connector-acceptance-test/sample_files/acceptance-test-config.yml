@@ -1,0 +1,30 @@
+connector_image: airbyte/source-hubspot:dev
+tests:
+  spec:
+    - spec_path: "source_hubspot/spec.json"
+  connection:
+    - config_path: "secrets/config.json"
+      status: "succeed"
+    - config_path: "sample_files/invalid_config.json"
+      status: "exception"
+  discovery:
+    - config_path: "secrets/config.json"
+  basic_read:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "sample_files/configured_catalog.json"
+      empty_streams: []
+      expect_records:
+        path: "integration_tests/expected_records.jsonl"
+        extra_fields: no
+        exact_order: no
+        extra_records: yes
+  incremental:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "sample_files/configured_catalog.json"
+      future_state_path: "sample_files/abnormal_state.json"
+      cursor_paths:
+        subscription_changes: ["timestamp"]
+        email_events: ["timestamp"]
+  full_refresh:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "sample_files/configured_catalog.json"

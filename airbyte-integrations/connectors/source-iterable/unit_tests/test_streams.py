@@ -1,11 +1,12 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import pendulum
 import pytest
 import requests
 import responses
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_iterable.streams import (
     Campaigns,
@@ -19,6 +20,7 @@ from source_iterable.streams import (
     Templates,
     Users,
 )
+from source_iterable.utils import dateutil_parse
 
 
 @pytest.mark.parametrize(
@@ -79,7 +81,7 @@ def test_templates_parse_response():
         rsps.add(
             responses.GET,
             "https://api.iterable.com/api/1/foobar",
-            json={"templates": [{"createdAt": "2022", "id": 1}]},
+            json={"templates": [{"createdAt": "2022-01-01", "id": 1}]},
             status=200,
             content_type="application/json",
         )
@@ -87,7 +89,7 @@ def test_templates_parse_response():
 
         records = stream.parse_response(response=resp)
 
-        assert list(records) == [{"id": 1, "createdAt": pendulum.parse("2022", strict=False)}]
+        assert list(records) == [{"id": 1, "createdAt": dateutil_parse("2022-01-01")}]
 
 
 def test_list_users_parse_response():
@@ -150,12 +152,39 @@ def test_iterable_stream_parse_response():
 
 def test_iterable_stream_backoff_time():
     stream = Lists(authenticator=NoAuth())
-    assert stream.backoff_time(response=None) == stream.BACKOFF_TIME_CONSTANT
+    assert stream.backoff_time(response=None) is None
 
 
 def test_iterable_export_stream_backoff_time():
     stream = Users(authenticator=NoAuth(), start_date="2019-10-10T00:00:00")
     assert stream.backoff_time(response=None) is None
+
+
+@pytest.mark.parametrize(
+    "status, json, expected",
+    [
+        (429, {}, True),
+        # for 500 - Generic error we should make 2 retry attempts
+        # and give up on third one!
+        (500, {"msg": "...Please try again later...1", "code": "Generic Error"}, True),
+        (500, {"msg": "...Please try again later...2", "code": "Generic Error"}, True),
+        # This one should return False
+        (500, {"msg": "...Please try again later...3", "code": "Generic Error"}, False)
+    ],
+    ids=[
+        "Retry on 429",
+        "Retry on 500 - Generic (first)",
+        "Retry on 500 - Generic (second)",
+        "Retry on 500 - Generic (third)",
+    ]
+)
+def test_should_retry(status, json, expected, requests_mock, lists_stream):
+    stream = lists_stream
+    url = f"{stream.url_base}/{stream.path()}"
+    requests_mock.get(url, json=json, status_code=status)
+    test_response = requests.get(url)
+    result = stream.should_retry(test_response)
+    assert result is expected
 
 
 @pytest.mark.parametrize(
@@ -173,3 +202,16 @@ def test_get_updated_state(current_state, record_date, expected_state):
         latest_record={"profileUpdatedAt": pendulum.parse(record_date)},
     )
     assert state == expected_state
+
+
+@responses.activate
+def test_stream_stops_on_401(mock_lists_resp):
+    # no requests should be made after getting 401 error despite the multiple slices
+    users_stream = ListUsers(authenticator=NoAuth())
+    responses.add(responses.GET, "https://api.iterable.com/api/lists/getUsers?listId=2", json={}, status=401)
+    slices = 0
+    for slice_ in users_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+        slices += 1
+        _ = list(users_stream.read_records(stream_slice=slice_, sync_mode=SyncMode.full_refresh))
+    assert len(responses.calls) == 1
+    assert slices > 1

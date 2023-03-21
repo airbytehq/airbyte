@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.record_buffer;
@@ -25,14 +25,33 @@ public class FileBuffer implements BufferStorage {
   // "To optimize the number of parallel operations for a load,
   // we recommend aiming to produce data files roughly 100-250 MB (or larger) in size compressed."
   public static final long MAX_PER_STREAM_BUFFER_SIZE_BYTES = 200 * 1024 * 1024; // mb
-  // Other than the per-file size limit, we also limit the total size (which would limit how many
-  // concurrent streams we can buffer simultaneously too)
-  // Since this class is storing data on disk, the buffer size limits below are tied to the
-  // necessary disk storage space.
+  /*
+   * Other than the per-file size limit, we also limit the total size (which would limit how many
+   * concurrent streams we can buffer simultaneously too) Since this class is storing data on disk,
+   * the buffer size limits below are tied to the necessary disk storage space.
+   */
   public static final long MAX_TOTAL_BUFFER_SIZE_BYTES = 1024 * 1024 * 1024; // mb
-  // we limit number of stream being buffered simultaneously anyway (limit how many files are
-  // stored/open for writing)
+  /*
+   * We limit number of stream being buffered simultaneously anyway (limit how many files are
+   * stored/open for writing)
+   *
+   * Note: This value can be tuned to increase performance with the tradeoff of increased memory usage
+   * (~31 MB per buffer). See {@link StreamTransferManager}
+   *
+   * For connections with interleaved data (e.g. Change Data Capture), having less buffers than the
+   * number of streams being synced will cause buffer thrashing where buffers will need to be flushed
+   * before another stream's buffer can be created. Increasing the default max will reduce likelihood
+   * of thrashing but not entirely eliminate unless number of buffers equals streams to be synced
+   */
   public static final int DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER = 10;
+  public static final String FILE_BUFFER_COUNT_KEY = "file_buffer_count";
+  // This max is subject to change as no proper load testing has been done to verify the side effects
+  public static final int MAX_CONCURRENT_STREAM_IN_BUFFER = 50;
+  /*
+   * Use this soft cap as a guidance for customers to not exceed the recommended number of buffers
+   * which is 1 GB (total buffer size) / 31 MB (rough size of each buffer) ~= 32 buffers
+   */
+  public static final int SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER = 20;
 
   private final String fileExtension;
   private File tempFile;

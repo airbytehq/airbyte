@@ -1,0 +1,26 @@
+{
+  "title": "FBA Stranded Inventory Report",
+  "description": "",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "primary-action": { "type": ["null", "string"] },
+    "date-stranded": { "type": ["null", "string"] },
+    "Date-to-take-auto-removal": { "type": ["null", "string"] },
+    "status-primary": { "type": ["null", "string"] },
+    "status-secondary": { "type": ["null", "string"] },
+    "error-message": { "type": ["null", "string"] },
+    "stranded-reason": { "type": ["null", "string"] },
+    "asin": { "type": ["null", "string"] },
+    "sku": { "type": ["null", "string"] },
+    "fnsku": { "type": ["null", "string"] },
+    "product-name": { "type": ["null", "string"] },
+    "condition": { "type": ["null", "string"] },
+    "fulfilled-by": { "type": ["null", "string"] },
+    "fulfillable-qty": { "type": ["null", "string"] },
+    "your-price": { "type": ["null", "string"] },
+    "unfulfillable-qty": { "type": ["null", "string"] },
+    "reserved-quantity": { "type": ["null", "string"] },
+    "inbound-shipped-qty": { "type": ["null", "string"] }
+  }
+}

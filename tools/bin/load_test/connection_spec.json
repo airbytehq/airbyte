@@ -1,0 +1,47 @@
+{
+  "sourceId": "replace_source_id",
+  "destinationId": "replace_destination_id",
+  "syncCatalog": {
+    "streams": [
+      {
+        "config": {
+          "syncMode": "full_refresh",
+          "cursorField": [],
+          "destinationSyncMode": "overwrite",
+          "primaryKey": [],
+          "aliasName": "data_stream",
+          "selected": true
+        },
+        "stream": {
+          "name": "data_stream",
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "column1": {
+                "type": "string"
+              }
+            }
+          },
+          "supportedSyncModes": [
+            "full_refresh"
+          ],
+          "defaultCursorField": [],
+          "sourceDefinedPrimaryKey": []
+        }
+      }
+    ]
+  },
+  "prefix": "",
+  "namespaceDefinition": "destination",
+  "namespaceFormat": "${SOURCE_NAMESPACE}",
+  "scheduleType": "basic",
+  "scheduleData": {
+    "basicSchedule": {
+      "units": 24,
+      "timeUnit": "hours"
+    }
+  },
+  "name": "replace_connection_name",
+  "operations": [],
+  "status": "active"
+}

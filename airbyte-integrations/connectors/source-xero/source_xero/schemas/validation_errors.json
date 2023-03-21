@@ -1,0 +1,12 @@
+{
+  "type": ["null", "array"],
+  "items": {
+    "type": ["null", "object"],
+    "properties": {
+      "Message": {
+        "type": ["null", "string"]
+      }
+    },
+    "additionalProperties": true
+  }
+}

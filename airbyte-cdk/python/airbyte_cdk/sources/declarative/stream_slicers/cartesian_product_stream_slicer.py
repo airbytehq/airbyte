@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import itertools
@@ -10,11 +10,10 @@ from typing import Any, Iterable, List, Mapping, Optional
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class CartesianProductStreamSlicer(StreamSlicer, JsonSchemaMixin):
+class CartesianProductStreamSlicer(StreamSlicer):
     """
     Stream slicers that iterates over the cartesian product of input stream slicers
     Given 2 stream slicers with the following slices:
@@ -35,7 +34,7 @@ class CartesianProductStreamSlicer(StreamSlicer, JsonSchemaMixin):
     """
 
     stream_slicers: List[StreamSlicer]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
     def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]] = None):
         for slicer in self.stream_slicers:
@@ -110,4 +109,4 @@ class CartesianProductStreamSlicer(StreamSlicer, JsonSchemaMixin):
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         sub_slices = (s.stream_slices(sync_mode, stream_state) for s in self.stream_slicers)
-        return (ChainMap(*a) for a in itertools.product(*sub_slices))
+        return (dict(ChainMap(*a)) for a in itertools.product(*sub_slices))

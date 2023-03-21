@@ -1,0 +1,255 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "addresses"
+      },
+      "stream_state": {
+        "date_upd": "2121-06-16 14:13:26"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "cart_rules"
+      },
+      "stream_state": {
+        "date_upd": "2121-06-16 14:13:26"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "carts"
+      },
+      "stream_state": {
+        "date_upd": "2121-06-16 14:13:26"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "categories"
+      },
+      "stream_state": {
+        "date_upd": "2121-06-16 14:13:26"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "configurations"
+      },
+      "stream_state": {
+        "date_upd": "2121-06-16 14:13:26"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "customer_messages"
+      },
+      "stream_state": {
+        "date_upd": "2121-06-16 14:13:26"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "customers"
+      },
+      "stream_state": {
+        "date_upd": "2121-06-16 14:13:26"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "customer_threads"
+      },
+      "stream_state": {
+        "date_upd": "2121-06-16 14:13:26"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "groups"
+      },
+      "stream_state": {
+        "date_upd": "2121-06-16 14:13:26"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "manufacturers"
+      },
+      "stream_state": {
+        "date_upd": "2121-06-16 14:13:26"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "messages"
+      },
+      "stream_state": {
+        "date_add": "2121-06-16 14:13:26"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "order_carriers"
+      },
+      "stream_state": {
+        "date_add": "2121-06-16 14:13:26"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "order_histories"
+      },
+      "stream_state": {
+        "date_add": "2121-06-16 14:13:26"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "order_invoices"
+      },
+      "stream_state": {
+        "date_add": "2121-06-16 14:13:26"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "order_payments"
+      },
+      "stream_state": {
+        "date_add": "2121-06-16 14:13:26"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "orders"
+      },
+      "stream_state": {
+        "date_upd": "2121-06-16 14:13:26"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "order_slip"
+      },
+      "stream_state": {
+        "date_upd": "2121-06-16 14:13:26"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "products"
+      },
+      "stream_state": {
+        "date_upd": "2121-06-16 14:13:26"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "stock_movement_reasons"
+      },
+      "stream_state": {
+        "date_upd": "2121-06-16 14:13:26"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "stock_movements"
+      },
+      "stream_state": {
+        "date_add": "2121-06-16 14:13:26"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "stores"
+      },
+      "stream_state": {
+        "date_upd": "2121-06-16 14:13:26"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "suppliers"
+      },
+      "stream_state": {
+        "date_upd": "2121-06-16 14:13:26"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "tax_rule_groups"
+      },
+      "stream_state": {
+        "date_upd": "2121-06-16 14:13:26"
+      }
+    }
+  }
+]

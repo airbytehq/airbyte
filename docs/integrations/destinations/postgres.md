@@ -21,7 +21,7 @@ You'll need the following information to configure the Postgres destination:
 * **Database** - The database name. The default is to connect to a database with the same name as the user name.
 * **JDBC URL Params** (optional)
 
-[Refer to this guide for more details](https://jdbc.postgresql.org/documentation/head/connect.html)
+[Refer to this guide for more details](https://jdbc.postgresql.org/documentation/use/#connecting-to-the-database)
 
 #### Configure Network Access
 
@@ -40,7 +40,7 @@ You need a Postgres user with the following permissions:
 You can create such a user by running:
 
 ```
-CREATE USER airbyte_user PASSWORD <password>;
+CREATE USER airbyte_user WITH PASSWORD '<password>';
 GRANT CREATE, TEMPORARY ON DATABASE <database> TO airbyte_user;
 ```
 
@@ -84,7 +84,7 @@ characters.
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **new destination**.
 3. On the Set up the destination page, enter the name for the Postgres connector
    and select **Postgres** from the Destination type dropdown.

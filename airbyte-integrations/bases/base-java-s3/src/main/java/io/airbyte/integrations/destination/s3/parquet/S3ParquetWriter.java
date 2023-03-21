@@ -1,8 +1,10 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.parquet;
+
+import static org.apache.parquet.avro.AvroWriteSupport.WRITE_OLD_LIST_STRUCTURE;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,8 +15,8 @@ import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialCo
 import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -40,8 +42,10 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
   private final AvroRecordFactory avroRecordFactory;
   private final Schema schema;
   private final String outputFilename;
+  // object key = <path>/<output-filename>
   private final String objectKey;
-  private final String gcsFileLocation;
+  // full file path = s3://<bucket>/<path>/<output-filename>
+  private final String fullFilePath;
 
   public S3ParquetWriter(final S3DestinationConfig config,
                          final AmazonS3 s3Client,
@@ -61,17 +65,15 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
         .build());
 
     objectKey = String.join("/", outputPrefix, outputFilename);
+    fullFilePath = String.format("s3a://%s/%s", config.getBucketName(), objectKey);
+    LOGGER.info("Full S3 path for stream '{}': {}", stream.getName(), fullFilePath);
 
-    LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(), objectKey);
-    gcsFileLocation = String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename);
-
-    final URI uri = new URI(
-        String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename));
-    final Path path = new Path(uri);
-
+    final Path path = new Path(new URI(fullFilePath));
     final S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
     final Configuration hadoopConfig = getHadoopConfig(config);
+    hadoopConfig.setBoolean(WRITE_OLD_LIST_STRUCTURE, false);
     this.parquetWriter = AvroParquetWriter.<Record>builder(HadoopOutputFile.fromPath(path, hadoopConfig))
+        .withConf(hadoopConfig) // yes, this should be here despite the fact we pass this config above in path
         .withSchema(schema)
         .withCompressionCodec(formatConfig.getCompressionCodec())
         .withRowGroupSize(formatConfig.getBlockSize())
@@ -137,7 +139,7 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
 
   @Override
   public String getFileLocation() {
-    return gcsFileLocation;
+    return fullFilePath;
   }
 
   @Override

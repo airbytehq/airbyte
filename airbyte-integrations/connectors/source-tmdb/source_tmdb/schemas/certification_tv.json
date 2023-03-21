@@ -1,0 +1,398 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/object1667208548.json",
+  "title": "Root",
+  "type": "object",
+  "required": ["certifications"],
+  "properties": {
+    "certifications": {
+      "$id": "#root/certifications",
+      "title": "Certifications",
+      "type": "object",
+      "required": ["RU", "US", "CA", "AU", "FR", "DE", "TH", "KR", "GB", "BR"],
+      "properties": {
+        "RU": {
+          "$id": "#root/certifications/RU",
+          "title": "Ru",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/RU/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/RU/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["18+"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/RU/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": ["Restricted to People 18 or Older."],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/RU/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [5],
+                "default": 0
+              }
+            }
+          }
+        },
+        "US": {
+          "$id": "#root/certifications/US",
+          "title": "Us",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/US/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/US/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["NR"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/US/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": ["No rating information."],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/US/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [0],
+                "default": 0
+              }
+            }
+          }
+        },
+        "CA": {
+          "$id": "#root/certifications/CA",
+          "title": "Ca",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/CA/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/CA/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["Exempt"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/CA/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": [
+                  "Shows which are exempt from ratings (such as news and sports programming) will not display an on-screen rating at all."
+                ],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/CA/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [0],
+                "default": 0
+              }
+            }
+          }
+        },
+        "AU": {
+          "$id": "#root/certifications/AU",
+          "title": "Au",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/AU/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/AU/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["P"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/AU/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": [
+                  "Programming is intended for younger children 2–11; commercial stations must show at least 30 minutes of P-rated content each weekday and weekends at all times. No advertisements may be shown during P-rated programs."
+                ],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/AU/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [1],
+                "default": 0
+              }
+            }
+          }
+        },
+        "FR": {
+          "$id": "#root/certifications/FR",
+          "title": "Fr",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/FR/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/FR/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["NR"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/FR/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": ["No rating information."],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/FR/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [0],
+                "default": 0
+              }
+            }
+          }
+        },
+        "DE": {
+          "$id": "#root/certifications/DE",
+          "title": "De",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/DE/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/DE/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["0"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/DE/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": ["Can be aired at any time."],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/DE/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [0],
+                "default": 0
+              }
+            }
+          }
+        },
+        "TH": {
+          "$id": "#root/certifications/TH",
+          "title": "Th",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/TH/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/TH/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["ส"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/TH/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": [
+                  "Sor - Educational movies which the public should be encouraged to see."
+                ],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/TH/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [0],
+                "default": 0
+              }
+            }
+          }
+        },
+        "KR": {
+          "$id": "#root/certifications/KR",
+          "title": "Kr",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/KR/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/KR/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["Exempt"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/KR/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": [
+                  "This rating is only for knowledge based game shows; lifestyle shows; documentary shows; news; current topic discussion shows; education/culture shows; sports that excludes MMA or other violent sports; and other programs that Korea Communications Standards Commission recognizes."
+                ],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/KR/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [0],
+                "default": 0
+              }
+            }
+          }
+        },
+        "GB": {
+          "$id": "#root/certifications/GB",
+          "title": "Gb",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/GB/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/GB/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["U"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/GB/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": [
+                  "The U symbol stands for Universal. A U film should be suitable for audiences aged four years and over."
+                ],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/GB/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [0],
+                "default": 0
+              }
+            }
+          }
+        },
+        "BR": {
+          "$id": "#root/certifications/BR",
+          "title": "Br",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/BR/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/BR/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["L"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/BR/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": ["Content is suitable for all audiences."],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/BR/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [0],
+                "default": 0
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

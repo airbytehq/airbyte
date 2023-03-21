@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": ["string", "null"],
+      "examples": ["Segment of Automation 1"]
+    },
+    "logic": {
+      "type": ["string", "null"],
+      "examples": ["and"]
+    },
+    "hidden": {
+      "type": ["string", "null"],
+      "examples": ["0"]
+    },
+    "seriesid": {
+      "type": ["string", "null"],
+      "examples": ["1"]
+    },
+    "links": {
+      "type": ["array", "null"]
+    },
+    "id": {
+      "type": "string",
+      "examples": ["1"]
+    }
+  },
+  "required": ["id"]
+}

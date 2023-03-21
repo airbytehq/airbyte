@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
@@ -53,7 +53,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
   }
 
   public OracleSource() {
-    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new OracleSourceOperations());
   }
 
   public static Source sshWrappedSource() {
@@ -210,7 +210,10 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
     LOGGER.info("completed source: {}", OracleSource.class);
   }
 
-  private String buildConnectionString(final JsonNode config, final String protocol, final String connectionTypeName, final String connectionTypeValue) {
+  private String buildConnectionString(final JsonNode config,
+                                       final String protocol,
+                                       final String connectionTypeName,
+                                       final String connectionTypeValue) {
     return String.format(
         "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=%s)(HOST=%s)(PORT=%s))(CONNECT_DATA=(%s=%s)))",
         protocol,

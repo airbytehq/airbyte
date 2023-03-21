@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/pinterest",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/pinterest",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Pinterest Spec",
@@ -10,8 +10,18 @@
       "start_date": {
         "type": "string",
         "title": "Start Date",
-        "description": "A date in the format YYYY-MM-DD. If you have not set a date, it would be defaulted to 2020-07-28.",
-        "examples": ["2020-07-28"]
+        "description": "A date in the format YYYY-MM-DD. If you have not set a date, it would be defaulted to latest allowed date by api (914 days from today).",
+        "examples": ["2022-07-28"]
+      },
+      "status": {
+        "title": "Status",
+        "description": "Entity statuses based off of campaigns, ad_groups, and ads. If you do not have a status set, it will be ignored completely.",
+        "type": ["array", "null"],
+        "items": {
+          "type": "string",
+          "enum": ["ACTIVE", "PAUSED", "ARCHIVED"]
+        },
+        "uniqueItems": true
       },
       "credentials": {
         "title": "Authorization Method",

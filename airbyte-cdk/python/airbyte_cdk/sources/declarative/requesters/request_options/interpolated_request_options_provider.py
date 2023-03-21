@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import InitVar, dataclass, field
@@ -8,13 +8,12 @@ from typing import Any, Mapping, MutableMapping, Optional, Union
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_input_provider import InterpolatedRequestInputProvider
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
-from dataclasses_jsonschema import JsonSchemaMixin
 
 RequestInput = Union[str, Mapping[str, str]]
 
 
 @dataclass
-class InterpolatedRequestOptionsProvider(RequestOptionsProvider, JsonSchemaMixin):
+class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
     """
     Defines the request options to set on an outgoing HTTP request by evaluating `InterpolatedMapping`s
 
@@ -26,14 +25,14 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider, JsonSchemaMixin
         request_body_json (Union[str, Mapping[str, str]]): The json content to set on an outgoing HTTP request
     """
 
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     config: Config = field(default_factory=dict)
     request_parameters: Optional[RequestInput] = None
     request_headers: Optional[RequestInput] = None
     request_body_data: Optional[RequestInput] = None
     request_body_json: Optional[RequestInput] = None
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         if self.request_parameters is None:
             self.request_parameters = {}
         if self.request_headers is None:
@@ -46,10 +45,18 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider, JsonSchemaMixin
         if self.request_body_json and self.request_body_data:
             raise ValueError("RequestOptionsProvider should only contain either 'request_body_data' or 'request_body_json' not both")
 
-        self._parameter_interpolator = InterpolatedRequestInputProvider(config=self.config, request_inputs=self.request_parameters)
-        self._headers_interpolator = InterpolatedRequestInputProvider(config=self.config, request_inputs=self.request_headers)
-        self._body_data_interpolator = InterpolatedRequestInputProvider(config=self.config, request_inputs=self.request_body_data)
-        self._body_json_interpolator = InterpolatedRequestInputProvider(config=self.config, request_inputs=self.request_body_json)
+        self._parameter_interpolator = InterpolatedRequestInputProvider(
+            config=self.config, request_inputs=self.request_parameters, parameters=parameters
+        )
+        self._headers_interpolator = InterpolatedRequestInputProvider(
+            config=self.config, request_inputs=self.request_headers, parameters=parameters
+        )
+        self._body_data_interpolator = InterpolatedRequestInputProvider(
+            config=self.config, request_inputs=self.request_body_data, parameters=parameters
+        )
+        self._body_json_interpolator = InterpolatedRequestInputProvider(
+            config=self.config, request_inputs=self.request_body_json, parameters=parameters
+        )
 
     def get_request_params(
         self,
@@ -58,7 +65,7 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider, JsonSchemaMixin
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        interpolated_value = self._parameter_interpolator.request_inputs(stream_state, stream_slice, next_page_token)
+        interpolated_value = self._parameter_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
         if isinstance(interpolated_value, dict):
             return interpolated_value
         return {}
@@ -70,7 +77,7 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider, JsonSchemaMixin
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        return self._headers_interpolator.request_inputs(stream_state, stream_slice, next_page_token)
+        return self._headers_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
 
     def get_request_body_data(
         self,
@@ -79,7 +86,7 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider, JsonSchemaMixin
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Union[Mapping, str]]:
-        return self._body_data_interpolator.request_inputs(stream_state, stream_slice, next_page_token)
+        return self._body_data_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
 
     def get_request_body_json(
         self,
@@ -88,4 +95,4 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider, JsonSchemaMixin
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
-        return self._body_json_interpolator.request_inputs(stream_state, stream_slice, next_page_token)
+        return self._body_json_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)

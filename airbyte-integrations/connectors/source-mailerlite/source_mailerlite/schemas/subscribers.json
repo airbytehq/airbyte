@@ -1,0 +1,111 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "sent": {
+      "type": "integer"
+    },
+    "opens_count": {
+      "type": "integer"
+    },
+    "clicks_count": {
+      "type": "integer"
+    },
+    "open_rate": {
+      "type": "integer"
+    },
+    "click_rate": {
+      "type": "integer"
+    },
+    "ip_address": {
+      "type": ["string", "null"]
+    },
+    "subscribed_at": {
+      "type": "string"
+    },
+    "unsubscribed_at": {
+      "type": ["string", "null"]
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "fields": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": ["string", "null"]
+        },
+        "company": {
+          "type": ["string", "null"]
+        },
+        "country": {
+          "type": ["string", "null"]
+        },
+        "city": {
+          "type": ["string", "null"]
+        },
+        "phone": {
+          "type": ["string", "null"]
+        },
+        "state": {
+          "type": ["string", "null"]
+        },
+        "z_i_p": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": [
+        "name",
+        "last_name",
+        "company",
+        "country",
+        "city",
+        "phone",
+        "state",
+        "z_i_p"
+      ]
+    },
+    "opted_in_at": {
+      "type": ["string", "null"]
+    },
+    "optin_ip": {
+      "type": ["string", "null"]
+    }
+  },
+  "required": [
+    "id",
+    "email",
+    "status",
+    "source",
+    "sent",
+    "opens_count",
+    "clicks_count",
+    "open_rate",
+    "click_rate",
+    "ip_address",
+    "subscribed_at",
+    "unsubscribed_at",
+    "created_at",
+    "updated_at",
+    "fields",
+    "opted_in_at",
+    "optin_ip"
+  ]
+}

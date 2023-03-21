@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 # The spec and report schema are generated from this module.
@@ -175,7 +175,7 @@ class Spec(pydantic.BaseModel):
                 spec[key] = schema.pop(key)
 
             schema["connectionSpecification"] = spec
-            schema["documentationUrl"] = "https://docs.airbyte.io/integrations/sources/adjust"
+            schema["documentationUrl"] = "https://docs.airbyte.com/integrations/sources/adjust"
 
 
 class Report(pydantic.BaseModel):

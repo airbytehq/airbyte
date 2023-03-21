@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "STAGE_ID": {
+      "type": "integer"
+    },
+    "PIPELINE_ID": {
+      "type": ["integer", "null"]
+    },
+    "STAGE_NAME": {
+      "type": ["string", "null"]
+    },
+    "STAGE_ORDER": {
+      "type": ["integer", "null"]
+    },
+    "ACTIVITYSET_ID": {
+      "type": ["integer", "null"]
+    },
+    "OWNER_USER_ID": {
+      "type": ["integer", "null"]
+    }
+  }
+}

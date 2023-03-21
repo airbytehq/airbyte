@@ -1,7 +1,8 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
 from dataclasses import InitVar, dataclass
 from functools import lru_cache
 from typing import Any, Mapping, MutableMapping, Optional, Union
@@ -17,11 +18,10 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class HttpRequester(Requester, JsonSchemaMixin):
+class HttpRequester(Requester):
     """
     Default implementation of a Requester
 
@@ -40,27 +40,27 @@ class HttpRequester(Requester, JsonSchemaMixin):
     url_base: Union[InterpolatedString, str]
     path: Union[InterpolatedString, str]
     config: Config
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     http_method: Union[str, HttpMethod] = HttpMethod.GET
     request_options_provider: Optional[InterpolatedRequestOptionsProvider] = None
     authenticator: DeclarativeAuthenticator = None
     error_handler: Optional[ErrorHandler] = None
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self.url_base = InterpolatedString.create(self.url_base, options=options)
-        self.path = InterpolatedString.create(self.path, options=options)
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self.url_base = InterpolatedString.create(self.url_base, parameters=parameters)
+        self.path = InterpolatedString.create(self.path, parameters=parameters)
         if self.request_options_provider is None:
-            self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, options=options)
+            self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, parameters=parameters)
         elif isinstance(self.request_options_provider, dict):
             self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, **self.request_options_provider)
         else:
             self._request_options_provider = self.request_options_provider
-        self.authenticator = self.authenticator or NoAuth(options)
+        self.authenticator = self.authenticator or NoAuth(parameters=parameters)
         if type(self.http_method) == str:
             self.http_method = HttpMethod[self.http_method]
         self._method = self.http_method
-        self.error_handler = self.error_handler or DefaultErrorHandler(options=options)
-        self._options = options
+        self.error_handler = self.error_handler or DefaultErrorHandler(parameters=parameters, config=self.config)
+        self._parameters = parameters
 
     # We are using an LRU cache in should_retry() method which requires all incoming arguments (including self) to be hashable.
     # Dataclasses by default are not hashable, so we need to define __hash__(). Alternatively, we can set @dataclass(frozen=True),
@@ -72,14 +72,14 @@ class HttpRequester(Requester, JsonSchemaMixin):
         return self.authenticator
 
     def get_url_base(self):
-        return self.url_base.eval(self.config)
+        return os.path.join(self.url_base.eval(self.config), "")
 
     def get_path(
         self, *, stream_state: Optional[StreamState], stream_slice: Optional[StreamSlice], next_page_token: Optional[Mapping[str, Any]]
     ) -> str:
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
         path = self.path.eval(self.config, **kwargs)
-        return path
+        return path.lstrip("/")
 
     def get_method(self):
         return self._method
@@ -87,9 +87,9 @@ class HttpRequester(Requester, JsonSchemaMixin):
     # use a tiny cache to limit the memory footprint. It doesn't have to be large because we mostly
     # only care about the status of the last response received
     @lru_cache(maxsize=10)
-    def should_retry(self, response: requests.Response) -> ResponseStatus:
+    def interpret_response_status(self, response: requests.Response) -> ResponseStatus:
         # Cache the result because the HttpStream first checks if we should retry before looking at the backoff time
-        return self.error_handler.should_retry(response)
+        return self.error_handler.interpret_response(response)
 
     def get_request_params(
         self,

@@ -1,0 +1,72 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "charge_date": {
+      "type": ["null", "string"]
+    },
+    "amount": {
+      "type": ["null", "integer"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "reference": {
+      "type": ["null", "string"]
+    },
+    "metadata": {
+      "type": ["null", "object"],
+      "properties": {
+        "order_dispatch_date": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "amount_refunded": {
+      "type": ["null", "integer"]
+    },
+    "fx": {
+      "type": ["null", "object"],
+      "properties": {
+        "fx_currency": {
+          "type": ["null", "string"]
+        },
+        "fx_amount": {
+          "type": ["null", "integer"]
+        },
+        "exchange_rate": {
+          "type": ["null", "string"]
+        },
+        "estimated_exchange_rate": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "links": {
+      "type": ["null", "object"],
+      "properties": {
+        "mandate": {
+          "type": ["null", "string"]
+        },
+        "creditor": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "retry_if_possible": {
+      "type": ["null", "boolean"]
+    }
+  }
+}

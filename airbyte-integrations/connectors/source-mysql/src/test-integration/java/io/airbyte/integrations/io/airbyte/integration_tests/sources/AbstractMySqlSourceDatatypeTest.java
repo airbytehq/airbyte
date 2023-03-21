@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -98,6 +98,15 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
             .airbyteType(JsonSchemaType.BOOLEAN)
             .addInsertValues("null", "1", "0")
             .addExpectedValues(null, "true", "false")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("tinyint")
+            .fullSourceDataType("tinyint(1) unsigned")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .addInsertValues("null", "0", "1", "2", "3")
+            .addExpectedValues(null, "0", "1", "2", "3")
             .build());
 
     addDataTypeTestData(

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.init;
@@ -14,7 +14,6 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
@@ -30,7 +29,7 @@ class LocalDefinitionsProviderTest {
 
   @BeforeAll
   static void setup() throws IOException {
-    localDefinitionsProvider = new LocalDefinitionsProvider(SeedType.class);
+    localDefinitionsProvider = new LocalDefinitionsProvider();
   }
 
   @Test
@@ -41,9 +40,9 @@ class LocalDefinitionsProviderTest {
     assertEquals(stripeSourceId, stripeSource.getSourceDefinitionId());
     assertEquals("Stripe", stripeSource.getName());
     assertEquals("airbyte/source-stripe", stripeSource.getDockerRepository());
-    assertEquals("https://docs.airbyte.io/integrations/sources/stripe", stripeSource.getDocumentationUrl());
+    assertEquals("https://docs.airbyte.com/integrations/sources/stripe", stripeSource.getDocumentationUrl());
     assertEquals("stripe.svg", stripeSource.getIcon());
-    assertEquals(URI.create("https://docs.airbyte.io/integrations/sources/stripe"), stripeSource.getSpec().getDocumentationUrl());
+    assertEquals(URI.create("https://docs.airbyte.com/integrations/sources/stripe"), stripeSource.getSpec().getDocumentationUrl());
     assertEquals(false, stripeSource.getTombstone());
     assertEquals("0.2.0", stripeSource.getProtocolVersion());
   }
@@ -57,8 +56,8 @@ class LocalDefinitionsProviderTest {
     assertEquals(s3DestinationId, s3Destination.getDestinationDefinitionId());
     assertEquals("S3", s3Destination.getName());
     assertEquals("airbyte/destination-s3", s3Destination.getDockerRepository());
-    assertEquals("https://docs.airbyte.io/integrations/destinations/s3", s3Destination.getDocumentationUrl());
-    assertEquals(URI.create("https://docs.airbyte.io/integrations/destinations/s3"), s3Destination.getSpec().getDocumentationUrl());
+    assertEquals("https://docs.airbyte.com/integrations/destinations/s3", s3Destination.getDocumentationUrl());
+    assertEquals(URI.create("https://docs.airbyte.com/integrations/destinations/s3"), s3Destination.getSpec().getDocumentationUrl());
     assertEquals(false, s3Destination.getTombstone());
     assertEquals("0.2.0", s3Destination.getProtocolVersion());
   }

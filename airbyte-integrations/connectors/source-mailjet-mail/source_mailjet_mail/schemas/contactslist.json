@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "Address": {
+      "type": "string"
+    },
+    "CreatedAt": {
+      "type": "string"
+    },
+    "ID": {
+      "type": "integer"
+    },
+    "IsDeleted": {
+      "type": "boolean"
+    },
+    "Name": {
+      "type": "string"
+    },
+    "SubscriberCount": {
+      "type": "integer"
+    }
+  }
+}

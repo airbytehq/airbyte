@@ -84,4 +84,5 @@ all values in the array must be of the same data type. Hence, every field can be
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
+| `0.1.1` | 2022-12-02 | [18118](https://github.com/airbytehq/airbyte/pull/18118) | Avoid too_long_frame_exception |
 | `0.1.0` | 2022-07-12 | [14118](https://github.com/airbytehq/airbyte/pull/14118) | Initial Release |

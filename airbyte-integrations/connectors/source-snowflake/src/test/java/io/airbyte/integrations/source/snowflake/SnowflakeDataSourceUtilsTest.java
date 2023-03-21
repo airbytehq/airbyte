@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.snowflake;
@@ -30,24 +30,26 @@ class SnowflakeDataSourceUtilsTest {
                                 }
                                 """;
   private final String expectedJdbcUrl =
-      "jdbc:snowflake://host/?role=role&warehouse=WAREHOUSE&database=DATABASE&schema=SOURCE_SCHEMA&JDBC_QUERY_RESULT_FORMAT=JSON&CLIENT_SESSION_KEEP_ALIVE=true&application=Airbyte_Connector";
+      "jdbc:snowflake://host/?role=role&warehouse=WAREHOUSE&database=DATABASE"
+          + "&JDBC_QUERY_RESULT_FORMAT=JSON&CLIENT_SESSION_KEEP_ALIVE=true&application=airbyte_oss"
+          + "&schema=SOURCE_SCHEMA&CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX=true";
 
   @Test
   void testBuildJDBCUrl() {
-    JsonNode expectedConfig = Jsons.deserialize(config);
+    final JsonNode expectedConfig = Jsons.deserialize(config);
 
-    String jdbcURL = SnowflakeDataSourceUtils.buildJDBCUrl(expectedConfig);
+    final String jdbcURL = SnowflakeDataSourceUtils.buildJDBCUrl(expectedConfig, SnowflakeDataSourceUtils.AIRBYTE_OSS);
 
     assertEquals(expectedJdbcUrl, jdbcURL);
   }
 
   @Test
   void testBuildJDBCUrlWithParams() {
-    JsonNode expectedConfig = Jsons.deserialize(config);
-    String params = "someParameter1&param2=someParameter2";
+    final JsonNode expectedConfig = Jsons.deserialize(config);
+    final String params = "someParameter1&param2=someParameter2";
     ((ObjectNode) expectedConfig).put("jdbc_url_params", params);
 
-    String jdbcURL = SnowflakeDataSourceUtils.buildJDBCUrl(expectedConfig);
+    final String jdbcURL = SnowflakeDataSourceUtils.buildJDBCUrl(expectedConfig, SnowflakeDataSourceUtils.AIRBYTE_OSS);
 
     assertEquals(expectedJdbcUrl + "&" + params, jdbcURL);
   }

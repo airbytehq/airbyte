@@ -1,0 +1,106 @@
+{
+  "type": "CATALOG",
+  "catalog": {
+    "streams": [
+      {
+        "name": "auctions_data",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "dt": {
+              "type": "string"
+            },
+            "all_auctions_lots_count": {
+              "type": "integer"
+            },
+            "auction_slug": {
+              "type": "string"
+            },
+            "auction_lots_count": {
+              "type": "integer"
+            },
+            "auction_name": {
+              "type": "string"
+            },
+            "winning_bid_min": {
+              "type": "number"
+            },
+            "auction_trading_volume": {
+              "type": "number"
+            },
+            "winning_bid_max": {
+              "type": "number"
+            },
+            "winning_bid_mean": {
+              "type": "number"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      {
+        "name": "auctions_info",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "base_currency": {
+              "type": "string"
+            },
+            "buyers_fee": {
+              "type": "number"
+            },
+            "reserve_fee": {
+              "type": "number"
+            },
+            "listing_fee": {
+              "type": "number"
+            },
+            "name": {
+              "type": "string"
+            },
+            "sellers_fee": {
+              "type": "number"
+            },
+            "slug": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      {
+        "name": "distilleries_info",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "whiskybase_votes": {
+              "type": "string"
+            },
+            "country": {
+              "type": "string"
+            },
+            "whiskybase_whiskies": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "slug": {
+              "type": "string"
+            },
+            "whiskybase_rating": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      }
+    ]
+  }
+}

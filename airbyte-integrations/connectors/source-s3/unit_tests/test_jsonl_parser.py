@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import os
@@ -165,6 +165,14 @@ class TestJsonlParser(AbstractTestParser):
                 "filepath": os.path.join(SAMPLE_DIRECTORY, "jsonl/test_file_10_nested_structure.jsonl"),
                 "num_records": 2,
                 "inferred_schema": {"meta": "object", "payload": "object"},
+                "line_checks": {},
+                "fails": [],
+            },
+            "array_in_schema_test": {
+                "AbstractFileParser": JsonlParser(format={"filetype": "jsonl"}),
+                "filepath": os.path.join(SAMPLE_DIRECTORY, "jsonl/test_file_11_array_in_schema.jsonl"),
+                "num_records": 3,
+                "inferred_schema": {"id": "integer", "name": "string", "books": "array"},
                 "line_checks": {},
                 "fails": [],
             },

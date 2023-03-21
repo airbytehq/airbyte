@@ -1,0 +1,20 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Postmarkapp Spec
+  type: object
+  required:
+    - X-Postmark-Server-Token
+    - X-Postmark-Account-Token
+  additionalProperties: true
+  properties:
+    X-Postmark-Server-Token:
+      title: X-Postmark-Server-Token
+      type: string
+      description: API Key for server
+      airbyte_secret: true
+    X-Postmark-Account-Token:
+      title: X-Postmark-Account-Token
+      type: string
+      description: API Key for account
+      airbyte_secret: true

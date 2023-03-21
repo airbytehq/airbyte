@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "attributes": {
+      "type": ["object", "null"],
+      "description": "Attributes of user object returned by the API.",
+      "properties": {
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Creation time of the user."
+        },
+        "disabled": {
+          "type": ["boolean", "null"],
+          "description": "Whether the user is disabled."
+        },
+        "email": {
+          "type": ["string", "null"],
+          "description": "Email of the user."
+        },
+        "handle": {
+          "type": ["string", "null"],
+          "description": "Handle of the user."
+        },
+        "icon": {
+          "type": ["string", "null"],
+          "description": "URL of the user's icon."
+        },
+        "modified_at": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Time that the user was last modified."
+        },
+        "name": {
+          "type": ["string", "null"],
+          "description": "Name of the user."
+        },
+        "service_account": {
+          "type": ["boolean", "null"],
+          "description": "Whether the user is a service account."
+        },
+        "status": {
+          "type": ["string", "null"],
+          "description": "Status of the user."
+        },
+        "title": {
+          "type": ["string", "null"],
+          "description": "Title of the user."
+        },
+        "verified": {
+          "type": ["boolean", "null"],
+          "description": "Whether the user is verified."
+        }
+      },
+      "additionalProperties": true
+    },
+    "id": {
+      "type": ["string", "null"],
+      "description": "ID of the user.",
+      "readOnly": true
+    },
+    "relationships": {
+      "type": ["object", "null"],
+      "description": "Relationships of the user object returned by the API.",
+      "readOnly": true
+    },
+    "type": {
+      "type": ["string", "null"],
+      "enum": ["users"],
+      "description": "Users resource type. Allowed enum values: users",
+      "readOnly": true
+    }
+  },
+  "additionalProperties": true
+}

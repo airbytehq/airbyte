@@ -1,1 +1,0 @@
-export { FrequentlyUsedDestinations } from "./FrequentlyUsedDestinations";

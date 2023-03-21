@@ -1,7 +1,7 @@
 # Step 6: Testing
 
 We should make sure the connector respects the Airbyte specifications before we start using it in production.
-This can be done by executing the Source Acceptance Tests (SAT).
+This can be done by executing the Connector Acceptance Tests.
 
 These tests will assert the most basic functionalities work as expected and are configured in `acceptance-test-config.yml`.
 
@@ -25,14 +25,13 @@ and `integration_tests/abnormal_state.json` with
     "date": "2999-12-31"
   }
 }
-
 ```
 
 You can run the acceptance tests with the following commands:
 
 ```bash
-$ docker build . -t airbyte/source-exchange-rates-tutorial:dev
-$ python -m pytest integration_tests -p integration_tests.acceptance
+docker build . -t airbyte/source-exchange-rates-tutorial:dev
+python -m pytest integration_tests -p integration_tests.acceptance
 ```
 
 ## Next steps:
@@ -41,8 +40,8 @@ Next, we'll add the connector to the [Airbyte platform](https://docs.airbyte.com
 
 ## Read more:
 
-- [Error handling](../error-handling.md)
-- [Pagination](../pagination.md)
+- [Error handling](../understanding-the-yaml-file/error-handling.md)
+- [Pagination](../understanding-the-yaml-file/pagination.md)
 - [Testing connectors](../../testing-connectors/README.md)
 - [Contribution guide](../../../contributing-to-airbyte/README.md)
 - [Greenhouse source](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-greenhouse)

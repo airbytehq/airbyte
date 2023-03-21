@@ -1,13 +1,17 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
+import os
+import tracemalloc
+from functools import partial
 from unittest.mock import ANY, Mock, patch
 
+import pendulum
 import pytest
 from airbyte_cdk.models.airbyte_protocol import SyncMode
-from source_marketo.source import Activities, Campaigns, MarketoStream, Programs, SourceMarketo
+from source_marketo.source import Activities, Campaigns, Leads, MarketoStream, Programs, SourceMarketo
 
 
 def test_create_export_job(mocker, send_email_stream, caplog):
@@ -50,7 +54,7 @@ def test_create_export_job(mocker, send_email_stream, caplog):
                     "activityTypeId": {"type": ["null", "integer"]},
                     "campaignId": {"type": ["null", "integer"]},
                     "costperperson": {"type": ["number", "null"]},
-                    "date": {"format": "date-time", "type": ["string", "null"]},
+                    "date": {"format": "date", "type": ["string", "null"]},
                     "ismandatory": {"type": ["boolean", "null"]},
                     "leadId": {"type": ["null", "integer"]},
                     "marketoGUID": {"type": ["null", "string"]},
@@ -123,7 +127,47 @@ def test_activities_schema(activity, expected_schema, config):
     ),
 )
 def test_export_parse_response(send_email_stream, response_text, expected_records):
-    assert list(send_email_stream.parse_response(Mock(text=response_text))) == expected_records
+    def iter_lines(*args, **kwargs):
+        yield from response_text.splitlines()
+
+    assert list(send_email_stream.parse_response(Mock(iter_lines=iter_lines, request=Mock(url="/send_email/1")))) == expected_records
+
+
+def test_memory_usage(send_email_stream, file_generator):
+    min_file_size = 5 * (1024**2)  # 5 MB
+    big_file_path, records_generated = file_generator(min_size=min_file_size)
+    small_file_path, _ = file_generator(min_size=1)
+
+    def iter_lines(file_path="", **kwargs):
+        with open(file_path, "r") as file:
+            for line in file:
+                yield line
+
+    tracemalloc.start()
+    records = 0
+
+    for _ in send_email_stream.parse_response(
+        Mock(iter_lines=partial(iter_lines, file_path=big_file_path), request=Mock(url="/send_email/1"))
+    ):
+        records += 1
+    _, big_file_peak = tracemalloc.get_traced_memory()
+    assert records == records_generated
+
+    tracemalloc.reset_peak()
+    tracemalloc.clear_traces()
+
+    for _ in send_email_stream.parse_response(
+        Mock(iter_lines=partial(iter_lines, file_path=small_file_path), request=Mock(url="/send_email/1"))
+    ):
+        pass
+    _, small_file_peak = tracemalloc.get_traced_memory()
+
+    os.remove(big_file_path)
+    os.remove(small_file_path)
+    # First we run parse_response() on a large file and track how much memory was consumed.
+    # Then we do the same with a tiny file. The goal is not to load the whole file into memory when parsing the response,
+    # so we assert the memory consumed was almost the same for two runs. Allowed delta is 50 KB which is 1% of a big file size.
+    assert abs(big_file_peak - small_file_peak) < 50 * 1024
 
 
 @pytest.mark.parametrize(
@@ -243,3 +287,30 @@ def test_check_connection(config, requests_mock, status_code, response, is_conne
 def test_normalize_datetime(config, input, format, expected_result):
     stream = Programs(config)
     assert stream.normalize_datetime(input, format) == expected_result
+
+
+today = pendulum.now()
+yesterday = pendulum.now().subtract(days=1).strftime("%Y-%m-%dT%H:%M:%SZ")
+today = today.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+@pytest.mark.parametrize(
+    "latest_record, current_state, expected_state",
+    (
+        ({}, {}, "start_date"),
+        ({"updatedAt": None}, {"updatedAt": None}, "start_date"),
+        ({}, {"updatedAt": None}, "start_date"),
+        ({"updatedAt": None}, {}, "start_date"),
+        ({}, {"updatedAt": today}, {"updatedAt": today}),
+        ({"updatedAt": None}, {"updatedAt": today}, {"updatedAt": today}),
+        ({"updatedAt": today}, {"updatedAt": None}, {"updatedAt": today}),
+        ({"updatedAt": today}, {}, {"updatedAt": today}),
+        ({"updatedAt": yesterday}, {"updatedAt": today}, {"updatedAt": today}),
+        ({"updatedAt": today}, {"updatedAt": yesterday}, {"updatedAt": today})
+    )
+)
+def test_get_updated_state(config, latest_record, current_state, expected_state):
+    stream = Leads(config)
+    if expected_state == "start_date":
+        expected_state = {"updatedAt": config["start_date"]}
+    assert stream.get_updated_state(latest_record, current_state) == expected_state

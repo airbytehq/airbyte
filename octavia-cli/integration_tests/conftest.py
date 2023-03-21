@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import os
@@ -35,7 +35,7 @@ def octavia_test_project_directory():
 
 @pytest.fixture(scope="session")
 def api_client():
-    return get_api_client("http://localhost:8000", "octavia-cli/integration-tests", None)
+    return get_api_client("http://localhost:8000", "airbyte", "password", "octavia-cli/integration-tests", None)
 
 
 @pytest.fixture(scope="session")

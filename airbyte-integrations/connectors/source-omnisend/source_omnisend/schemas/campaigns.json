@@ -1,0 +1,71 @@
+{
+  "type": "object",
+  "properties": {
+    "campaignID": {
+      "type": "string"
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "type": {
+      "type": ["string", "null"]
+    },
+    "fromName": {
+      "type": ["string", "null"]
+    },
+    "subject": {
+      "type": ["string", "null"]
+    },
+    "url": {
+      "type": ["string", "null"]
+    },
+    "createdAt": {
+      "type": ["string", "null"]
+    },
+    "updatedAt": {
+      "type": ["string", "null"]
+    },
+    "startDate": {
+      "type": ["string", "null"]
+    },
+    "endDate": {
+      "type": ["string", "null"]
+    },
+    "sent": {
+      "type": ["integer", "null"]
+    },
+    "opened": {
+      "type": ["integer", "null"]
+    },
+    "clicked": {
+      "type": ["integer", "null"]
+    },
+    "bounced": {
+      "type": ["integer", "null"]
+    },
+    "complained": {
+      "type": ["integer", "null"]
+    },
+    "unsubscribed": {
+      "type": ["integer", "null"]
+    },
+    "allSubscribers": {
+      "type": ["boolean", "null"]
+    },
+    "segments": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "segmentID": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    }
+  },
+  "required": ["campaignID"]
+}

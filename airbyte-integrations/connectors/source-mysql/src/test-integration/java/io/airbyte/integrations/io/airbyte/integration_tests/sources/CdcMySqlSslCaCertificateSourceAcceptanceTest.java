@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-import static io.airbyte.protocol.models.SyncMode.INCREMENTAL;
+import static io.airbyte.integrations.io.airbyte.integration_tests.sources.utils.TestConstants.INITIAL_CDC_WAITING_SECONDS;
+import static io.airbyte.protocol.models.v0.SyncMode.INCREMENTAL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -19,20 +20,19 @@ import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshHelpers;
-import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -103,7 +103,7 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptan
     container.start();
     certs = MySqlUtils.getCertificate(container, true);
 
-    var sslMode = ImmutableMap.builder()
+    final var sslMode = ImmutableMap.builder()
         .put(JdbcUtils.MODE_KEY, "verify_ca")
         .put("ca_certificate", certs.getCaCertificate())
         .put("client_certificate", certs.getClientCertificate())
@@ -111,8 +111,9 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptan
         .put("client_key_password", "Passw0rd")
         .build();
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-            .put("method", "CDC")
-            .build());
+        .put("method", "CDC")
+        .put("initial_waiting_seconds", INITIAL_CDC_WAITING_SECONDS)
+        .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
@@ -123,6 +124,7 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptan
         .put(JdbcUtils.SSL_KEY, true)
         .put(JdbcUtils.SSL_MODE_KEY, sslMode)
         .put("replication_method", replicationMethod)
+        .put("is_test", true)
         .build());
 
     revokeAllPermissions();
@@ -198,6 +200,11 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptan
     executeQuery("RESET MASTER;");
 
     assertEquals(6, filterRecords(runRead(configuredCatalog, latestState)).size());
+  }
+
+  @Override
+  protected boolean supportsPerStream() {
+    return true;
   }
 
 }

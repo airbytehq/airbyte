@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -11,7 +11,7 @@ import time
 
 import pytest
 from normalization.destination_type import DestinationType
-from normalization.transform_catalog.transform import extract_schema
+from normalization.transform_catalog.transform import extract_path, extract_schema
 from normalization.transform_config.transform import TransformConfig
 
 
@@ -440,7 +440,8 @@ class TestTransformConfig:
         actual = TransformConfig().transform_clickhouse(input)
         expected = {
             "type": "clickhouse",
-            "driver": "native",
+            "driver": "http",
+            "verify": False,
             "host": "airbyte.io",
             "port": 9440,
             "schema": "default",
@@ -503,6 +504,39 @@ class TestTransformConfig:
 
         assert expected == actual
         assert extract_schema(actual) == "ti_db"
+
+    def test_transform_duckdb_schema(self):
+        input = {
+            "type": "duckdb",
+            "destination_path": "/local/testing.duckdb",
+            "schema": "quackqauck",
+        }
+
+        actual = TransformConfig().transform_duckdb(input)
+        expected = {
+            "type": "duckdb",
+            "path": "/local/testing.duckdb",
+            "schema": "quackqauck",
+        }
+
+        assert expected == actual
+        assert extract_path(actual) == "/local/testing.duckdb"
+
+    def test_transform_duckdb_no_schema(self):
+        input = {
+            "type": "duckdb",
+            "destination_path": "/local/testing.duckdb",
+        }
+
+        actual = TransformConfig().transform_duckdb(input)
+        expected = {
+            "type": "duckdb",
+            "path": "/local/testing.duckdb",
+            "schema": "main",
+        }
+
+        assert expected == actual
+        assert extract_path(actual) == "/local/testing.duckdb"
 
     def get_base_config(self):
         return {

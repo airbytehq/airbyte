@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
@@ -12,10 +12,10 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.s3.util.S3NameTransformer;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,27 +24,26 @@ public abstract class BaseS3Destination extends BaseConnector implements Destina
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseS3Destination.class);
 
-  private final S3DestinationConfigFactory configFactory;
+  protected final S3DestinationConfigFactory configFactory;
 
   private final NamingConventionTransformer nameTransformer;
 
-  public BaseS3Destination() {
+  protected BaseS3Destination() {
     this(new S3DestinationConfigFactory());
   }
 
-  public BaseS3Destination(final S3DestinationConfigFactory configFactory) {
+  protected BaseS3Destination(final S3DestinationConfigFactory configFactory) {
     this.configFactory = configFactory;
     this.nameTransformer = new S3NameTransformer();
   }
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public AirbyteConnectionStatus check(final JsonNode config) {
     try {
       final S3DestinationConfig destinationConfig = configFactory.getS3DestinationConfig(config, storageProvider());
       final AmazonS3 s3Client = destinationConfig.getS3Client();
-      final S3StorageOperations storageOperations = new S3StorageOperations(nameTransformer, s3Client, destinationConfig);
 
-      S3BaseChecks.attemptS3WriteAndDelete(storageOperations, destinationConfig, destinationConfig.getBucketName());
+      S3BaseChecks.testIAMUserHasListObjectPermission(s3Client, destinationConfig.getBucketName());
       S3BaseChecks.testSingleUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
       S3BaseChecks.testMultipartUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
 
@@ -59,9 +58,9 @@ public abstract class BaseS3Destination extends BaseConnector implements Destina
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
     final S3DestinationConfig s3Config = configFactory.getS3DestinationConfig(config, storageProvider());
     return new S3ConsumerFactory().create(
         outputRecordCollector,

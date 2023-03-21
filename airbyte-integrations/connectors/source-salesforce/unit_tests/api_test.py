@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -12,15 +12,16 @@ from unittest.mock import Mock
 import pytest
 import requests_mock
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
-from conftest import generate_stream
+from conftest import encoding_symbols_parameters, generate_stream
 from requests.exceptions import HTTPError
+from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
 from source_salesforce.streams import (
     CSV_FIELD_SIZE_LIMIT,
     BulkIncrementalSalesforceStream,
     BulkSalesforceStream,
-    IncrementalSalesforceStream,
-    SalesforceStream,
+    IncrementalRestSalesforceStream,
+    RestSalesforceStream,
 )
 
 
@@ -31,6 +32,30 @@ def test_bulk_sync_creation_failed(stream_config, stream_api):
         with pytest.raises(HTTPError) as err:
             next(stream.read_records(sync_mode=SyncMode.full_refresh))
         assert err.value.response.json()[0]["message"] == "test_error"
+
+
+def test_bulk_stream_fallback_to_rest(mocker, requests_mock, stream_config, stream_api):
+    """
+    Here we mock BULK API with response returning error, saying BULK is not supported for this kind of entity.
+    On the other hand, we mock REST API for this same entity with a successful response.
+    After having instantiated a BulkStream, sync should succeed in case it falls back to REST API. Otherwise it would throw an error.
+    """
+    stream = generate_stream("CustomEntity", stream_config, stream_api)
+    # mock a BULK API
+    requests_mock.register_uri(
+        "POST",
+        "https://fase-account.salesforce.com/services/data/v52.0/jobs/query",
+        status_code=400,
+        json=[{"errorCode": "INVALIDENTITY", "message": "CustomEntity is not supported by the Bulk API"}],
+    )
+    rest_stream_records = [
+        {"id": 1, "name": "custom entity", "created": "2010-11-11"},
+        {"id": 11, "name": "custom entity", "created": "2020-01-02"},
+    ]
+    # mock REST API
+    mocker.patch("source_salesforce.source.RestSalesforceStream.read_records", lambda *args, **kwargs: iter(rest_stream_records))
+    assert type(stream) is BulkIncrementalSalesforceStream
+    assert list(stream.read_records(sync_mode=SyncMode.full_refresh)) == rest_stream_records
 
 
 def test_stream_unsupported_by_bulk(stream_config, stream_api, caplog):
@@ -169,12 +194,12 @@ def test_stream_start_date(
 
 
 def test_stream_start_date_should_be_converted_to_datetime_format(stream_config_date_format, stream_api):
-    stream: IncrementalSalesforceStream = generate_stream("ActiveFeatureLicenseMetric", stream_config_date_format, stream_api)
+    stream: IncrementalRestSalesforceStream = generate_stream("ActiveFeatureLicenseMetric", stream_config_date_format, stream_api)
     assert stream.start_date == "2010-01-18T00:00:00Z"
 
 
 def test_stream_start_datetime_format_should_not_changed(stream_config, stream_api):
-    stream: IncrementalSalesforceStream = generate_stream("ActiveFeatureLicenseMetric", stream_config, stream_api)
+    stream: IncrementalRestSalesforceStream = generate_stream("ActiveFeatureLicenseMetric", stream_config, stream_api)
     assert stream.start_date == "2010-01-18T21:18:20Z"
 
 
@@ -184,12 +209,27 @@ def test_download_data_filter_null_bytes(stream_config, stream_api):
 
     with requests_mock.Mocker() as m:
         m.register_uri("GET", f"{job_full_url}/results", content=b"\x00")
-        res = list(stream.read_with_chunks(stream.download_data(url=job_full_url)))
+        res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url)))
         assert res == []
 
         m.register_uri("GET", f"{job_full_url}/results", content=b'"Id","IsDeleted"\n\x00"0014W000027f6UwQAI","false"\n\x00\x00')
-        res = list(stream.read_with_chunks(stream.download_data(url=job_full_url)))
+        res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url)))
         assert res == [{"Id": "0014W000027f6UwQAI", "IsDeleted": False}]
+
+
+@pytest.mark.parametrize(
+    "chunk_size, content_type, content, expected_result",
+    encoding_symbols_parameters(),
+    ids=[f"charset: {x[1]}, chunk_size: {x[0]}" for x in encoding_symbols_parameters()],
+)
+def test_encoding_symbols(stream_config, stream_api, chunk_size, content_type, content, expected_result):
+    job_full_url: str = "https://fase-account.salesforce.com/services/data/v52.0/jobs/query/7504W00000bkgnpQAA"
+    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
+
+    with requests_mock.Mocker() as m:
+        m.register_uri("GET", f"{job_full_url}/results", headers={"Content-Type": f"text/html; charset={content_type}"}, content=content)
+        res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url, chunk_size=chunk_size)))
+        assert res == expected_result
 
 
 @pytest.mark.parametrize(
@@ -293,8 +333,8 @@ def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
     Next streams should not be executed.
     """
 
-    stream_1: IncrementalSalesforceStream = generate_stream("KnowledgeArticle", stream_config, stream_api)
-    stream_2: IncrementalSalesforceStream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
+    stream_1: IncrementalRestSalesforceStream = generate_stream("KnowledgeArticle", stream_config, stream_api)
+    stream_2: IncrementalRestSalesforceStream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
 
     stream_1.state_checkpoint_interval = 3
     configure_request_params_mock(stream_1, stream_2)
@@ -355,7 +395,7 @@ def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
 
 def test_pagination_rest(stream_config, stream_api):
     stream_name = "AcceptedEventRelation"
-    stream: SalesforceStream = generate_stream(stream_name, stream_config, stream_api)
+    stream: RestSalesforceStream = generate_stream(stream_name, stream_config, stream_api)
     stream.DEFAULT_WAIT_TIMEOUT_SECONDS = 6  # maximum wait timeout will be 6 seconds
     next_page_url = "/services/data/v52.0/query/012345"
     with requests_mock.Mocker() as m:
@@ -415,7 +455,7 @@ def test_csv_reader_dialect_unix():
 
     with requests_mock.Mocker() as m:
         m.register_uri("GET", url + "/results", text=text)
-        result = [i for i in stream.read_with_chunks(stream.download_data(url))]
+        result = [i for i in stream.read_with_chunks(*stream.download_data(url))]
         assert result == data
 
 
@@ -445,7 +485,9 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 ConfiguredAirbyteStream(
-                    stream=AirbyteStream(name=catalog_stream_name, json_schema={"type": "object"}),
+                    stream=AirbyteStream(
+                        name=catalog_stream_name, supported_sync_modes=[SyncMode.full_refresh], json_schema={"type": "object"}
+                    ),
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                 )
@@ -481,7 +523,9 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
                 ],
             },
         )
-        streams = SourceSalesforce().streams(config=stream_config, catalog=catalog)
+        source = SourceSalesforce()
+        source.catalog = catalog
+        streams = source.streams(config=stream_config)
     expected_names = catalog_stream_names if catalog else stream_names
     assert not set(expected_names).symmetric_difference(set(stream.name for stream in streams)), "doesn't match excepted streams"
 
@@ -512,11 +556,128 @@ def test_csv_field_size_limit():
 def test_convert_to_standard_instance(stream_config, stream_api):
     bulk_stream = generate_stream("Account", stream_config, stream_api)
     rest_stream = bulk_stream.get_standard_instance()
-    assert isinstance(rest_stream, IncrementalSalesforceStream)
+    assert isinstance(rest_stream, IncrementalRestSalesforceStream)
 
 
-def test_decoding(stream_config, stream_api):
-    stream_name = "AcceptedEventRelation"
-    stream = generate_stream(stream_name, stream_config, stream_api)
-    assert stream.decode(b"\xe9\x97\xb4\xe5\x8d\x95\xe7\x9a\x84\xe8\xaf\xb4 \xf0\x9f\xaa\x90") == "间单的说 🪐"
-    assert stream.decode(b"0\xe5") == "0å"
+def test_bulk_stream_paging(stream_config, stream_api_pk):
+    last_modified_date1 = "2022-10-01T00:00:00Z"
+    last_modified_date2 = "2022-10-02T00:00:00Z"
+    assert last_modified_date1 < last_modified_date2
+
+    stream_config["start_date"] = last_modified_date1
+    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api_pk)
+    stream.page_size = 2
+
+    csv_header = "Field1,LastModifiedDate,Id"
+    pages = [
+        [f"test,{last_modified_date1},1", f"test,{last_modified_date1},3"],
+        [f"test,{last_modified_date1},5", f"test,{last_modified_date2},2"],
+        [f"test,{last_modified_date2},2", f"test,{last_modified_date2},4"],
+        [f"test,{last_modified_date2},6"],
+    ]
+
+    with requests_mock.Mocker() as mocked_requests:
+
+        post_responses = []
+        for job_id, page in enumerate(pages, 1):
+            post_responses.append({"json": {"id": f"{job_id}"}})
+            mocked_requests.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
+            mocked_requests.register_uri("GET", stream.path() + f"/{job_id}/results", text="\n".join([csv_header] + page))
+            mocked_requests.register_uri("DELETE", stream.path() + f"/{job_id}")
+        mocked_requests.register_uri("POST", stream.path(), post_responses)
+
+        records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+        assert records == [
+            {"Field1": "test", "Id": 1, "LastModifiedDate": last_modified_date1},
+            {"Field1": "test", "Id": 3, "LastModifiedDate": last_modified_date1},
+            {"Field1": "test", "Id": 5, "LastModifiedDate": last_modified_date1},
+            {"Field1": "test", "Id": 2, "LastModifiedDate": last_modified_date2},
+            {"Field1": "test", "Id": 2, "LastModifiedDate": last_modified_date2},  # duplicate record
+            {"Field1": "test", "Id": 4, "LastModifiedDate": last_modified_date2},
+            {"Field1": "test", "Id": 6, "LastModifiedDate": last_modified_date2},
+        ]
+
+        def get_query(request_index):
+            return mocked_requests.request_history[request_index].json()["query"]
+
+        SELECT = "SELECT LastModifiedDate,Id FROM Account"
+        ORDER_BY = "ORDER BY LastModifiedDate,Id ASC LIMIT 2"
+
+        assert get_query(0) == f"{SELECT} WHERE LastModifiedDate >= {last_modified_date1} {ORDER_BY}"
+
+        q = f"{SELECT} WHERE (LastModifiedDate = {last_modified_date1} AND Id > '3') OR (LastModifiedDate > {last_modified_date1}) {ORDER_BY}"
+        assert get_query(4) == q
+
+        assert get_query(8) == f"{SELECT} WHERE LastModifiedDate >= {last_modified_date2} {ORDER_BY}"
+
+        q = f"{SELECT} WHERE (LastModifiedDate = {last_modified_date2} AND Id > '4') OR (LastModifiedDate > {last_modified_date2}) {ORDER_BY}"
+        assert get_query(12) == q
+
+
+def test_rest_stream_init_with_too_many_properties(stream_config, stream_api_v2_too_many_properties):
+    with pytest.raises(AssertionError):
+        # v2 means the stream is going to be a REST stream.
+        # A missing primary key is not allowed
+        generate_stream("Account", stream_config, stream_api_v2_too_many_properties)
+
+
+def test_too_many_properties(stream_config, stream_api_v2_pk_too_many_properties, requests_mock):
+    stream = generate_stream("Account", stream_config, stream_api_v2_pk_too_many_properties)
+    chunks = list(stream.chunk_properties())
+    for chunk in chunks:
+        assert stream.primary_key in chunk
+    chunks_len = len(chunks)
+    assert stream.too_many_properties
+    assert stream.primary_key
+    assert type(stream) == RestSalesforceStream
+    url = next_page_url = "https://fase-account.salesforce.com/services/data/v52.0/queryAll"
+    requests_mock.get(
+        url,
+        [
+            {
+                "json": {
+                    "records": [
+                        {"Id": 1, "propertyA": "A"},
+                        {"Id": 2, "propertyA": "A"},
+                        {"Id": 3, "propertyA": "A"},
+                        {"Id": 4, "propertyA": "A"},
+                    ]
+                }
+            },
+            {"json": {"nextRecordsUrl": next_page_url, "records": [{"Id": 1, "propertyB": "B"}, {"Id": 2, "propertyB": "B"}]}},
+            # 2 for 2 chunks above
+            *[{"json": {"records": [{"Id": 1}, {"Id": 2}], "nextRecordsUrl": next_page_url}} for _ in range(chunks_len - 2)],
+            {"json": {"records": [{"Id": 3, "propertyB": "B"}, {"Id": 4, "propertyB": "B"}]}},
+            # 2 for 1 chunk above and 1 chunk had no next page
+            *[{"json": {"records": [{"Id": 3}, {"Id": 4}]}} for _ in range(chunks_len - 2)],
+        ],
+    )
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+    assert records == [
+        {"Id": 1, "propertyA": "A", "propertyB": "B"},
+        {"Id": 2, "propertyA": "A", "propertyB": "B"},
+        {"Id": 3, "propertyA": "A", "propertyB": "B"},
+        {"Id": 4, "propertyA": "A", "propertyB": "B"},
+    ]
+    for call in requests_mock.request_history:
+        assert len(call.url) < Salesforce.REQUEST_SIZE_LIMITS
+
+
+def test_stream_with_no_records_in_response(stream_config, stream_api_v2_pk_too_many_properties, requests_mock):
+    stream = generate_stream("Account", stream_config, stream_api_v2_pk_too_many_properties)
+    chunks = list(stream.chunk_properties())
+    for chunk in chunks:
+        assert stream.primary_key in chunk
+    assert stream.too_many_properties
+    assert stream.primary_key
+    assert type(stream) == RestSalesforceStream
+    url = "https://fase-account.salesforce.com/services/data/v52.0/queryAll"
+    requests_mock.get(
+        url,
+        [
+            {"json": {"records": []}},
+        ],
+    )
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+    assert records == []
