@@ -12,7 +12,6 @@ from airbyte_cdk.sources.streams.http.auth import MultipleTokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .streams import (
-    GithubStream,
     Assignees,
     Branches,
     Collaborators,
@@ -253,3 +252,4 @@ class SourceGithub(AbstractSource):
             WorkflowJobs(parent=workflow_runs_stream, **repository_args_with_start_date_and_config),
             TeamMemberships(parent=team_members_stream, **repository_args_with_config),
         ]
+    

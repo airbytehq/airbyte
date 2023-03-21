@@ -4,7 +4,7 @@
 
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Dict
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from urllib import parse
 
 import pendulum
