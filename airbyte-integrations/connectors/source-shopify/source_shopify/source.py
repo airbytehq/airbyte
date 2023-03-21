@@ -23,6 +23,8 @@ from .transform import DataTypeEnforcer
 from .utils import SCOPES_MAPPING, ApiTypeEnum
 from .utils import EagerlyCachedStreamState as stream_state_cache
 from .utils import ShopifyRateLimiter as limiter
+
+
 class ShopifyStream(HttpStream, ABC):
     # Latest Stable Release
     api_version = "2022-10"
