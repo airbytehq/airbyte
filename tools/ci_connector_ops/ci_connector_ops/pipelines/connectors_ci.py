@@ -120,7 +120,7 @@ def connectors_ci(
         ctx.obj["gha_workflow_run_url"],
         GITHUB_GLOBAL_DESCRIPTION,
         GITHUB_GLOBAL_CONTEXT,
-        should_send=not ctx.obj["is_local"],
+        should_send=ctx.obj["ci_context"] == "pull_request",
         logger=logger,
     )
 
@@ -193,7 +193,7 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
             ctx.obj["gha_workflow_run_url"],
             GITHUB_GLOBAL_DESCRIPTION,
             GITHUB_GLOBAL_CONTEXT,
-            should_send=not ctx.obj["is_local"],
+            should_send=ctx["ci_context"] == "pull_request",
             logger=logger,
         )
     except dagger.DaggerError as e:
@@ -204,7 +204,7 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
             ctx.obj["gha_workflow_run_url"],
             GITHUB_GLOBAL_DESCRIPTION,
             GITHUB_GLOBAL_CONTEXT,
-            should_send=not ctx.obj["is_local"],
+            should_send=ctx["ci_context"] == "pull_request",
             logger=logger,
         )
 
