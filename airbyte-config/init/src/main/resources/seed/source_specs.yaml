@@ -4591,6 +4591,41 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-firebase-realtime-database:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/firebase-realtime-database"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Firebase Realtime Database Spec"
+      type: "object"
+      required:
+      - "database_name"
+      - "google_application_credentials"
+      properties:
+        database_name:
+          title: "Database Name"
+          type: "string"
+          description: "Database name (This will be part of the url pointing to the\
+            \ database, https://<database_name>.firebaseio.com/)"
+        google_application_credentials:
+          title: "Service Account Key JSON"
+          type: "string"
+          description: "Cert credentials in JSON format of Service Account with Firebase\
+            \ Realtime Database Viewer role. (see, https://firebase.google.com/docs/projects/iam/roles-predefined-product#realtime-database)"
+          airbyte_secret: true
+        path:
+          title: "Node Path"
+          type: "string"
+          description: "Path to a node in the Firebase realtime database"
+        buffer_size:
+          title: "Buffer Size"
+          type: "number"
+          description: "Number of records to fetch at once"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+    supported_sync_modes:
+    - "full_refresh"
 - dockerImage: "airbyte/source-freshcaller:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/freshcaller"
@@ -4896,7 +4931,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.4.2"
+- dockerImage: "airbyte/source-github:0.4.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -4958,6 +4993,7 @@
           - "2021-03-01T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           order: 1
+          format: "date-time"
         repository:
           type: "string"
           examples:
@@ -6091,7 +6127,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-search-console:0.1.20"
+- dockerImage: "airbyte/source-google-search-console:0.1.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-search-console"
     connectionSpecification:
@@ -6124,6 +6160,7 @@
           - "2021-01-01"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           order: 1
+          format: "date"
         end_date:
           type: "string"
           title: "End Date"
@@ -6133,6 +6170,7 @@
           - "2021-12-12"
           pattern: "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           order: 2
+          format: "date"
         authorization:
           type: "object"
           title: "Authentication Type"
@@ -6956,7 +6994,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-instagram:1.0.3"
+- dockerImage: "airbyte/source-instagram:1.0.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/instagram"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/instagram"
@@ -6976,9 +7014,10 @@
           format: "date-time"
         access_token:
           title: "Access Token"
-          description: "The value of the access token generated. See the <a href=\"\
-            https://docs.airbyte.com/integrations/sources/instagram\">docs</a> for\
-            \ more information"
+          description: "The value of the access token generated with <b>instagram_basic,\
+            \ instagram_manage_insights, pages_show_list, pages_read_engagement, Instagram\
+            \ Public Content Access</b> permissions. See the <a href=\"https://docs.airbyte.com/integrations/sources/instagram/#step-1-set-up-instagram\"\
+            >docs</a> for more information"
           airbyte_secret: true
           type: "string"
       required:
@@ -9300,7 +9339,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:2.0.3"
+- dockerImage: "airbyte/source-mysql:2.0.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -13932,7 +13971,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-slack:0.1.23"
+- dockerImage: "airbyte/source-slack:0.1.24"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/slack"
     connectionSpecification:
@@ -16436,7 +16475,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-xero:0.2.0"
+- dockerImage: "airbyte/source-xero:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/xero"
     connectionSpecification:
@@ -16475,6 +16514,7 @@
               airbyte_secret: true
             access_token:
               type: "string"
+              title: "Access Token"
               description: "Enter your Xero application's access token"
               airbyte_secret: true
             token_expiry_date:
@@ -16489,6 +16529,7 @@
           order: 1
         start_date:
           type: "string"
+          title: "Start Date"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           description: "UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ. Any\
             \ data with created_at before this data will not be synced."
@@ -17054,7 +17095,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.25"
+- dockerImage: "airbyte/source-zendesk-support:0.2.26"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-support"
     connectionSpecification:
@@ -18048,18 +18089,17 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-yandex-metrica:0.1.0"
+- dockerImage: "airbyte/source-yandex-metrica:1.0.0"
   spec:
-    documentationUrl: "https://docsurl.com"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/yandex-metrica"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Yandex Metrica Spec"
       type: "object"
       required:
       - "auth_token"
       - "counter_id"
       - "start_date"
-      - "end_date"
       additionalProperties: true
       properties:
         auth_token:
@@ -18077,16 +18117,20 @@
         start_date:
           title: "Start Date"
           type: "string"
-          description: "UTC date and time in the format YYYY-MM-DD."
+          description: "Starting point for your data replication, in format of \"\
+            YYYY-MM-DD\"."
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          format: "date"
           examples:
           - "2022-01-01"
           order: 2
         end_date:
           title: "End Date"
           type: "string"
-          description: "UTC date and time in the format YYYY-MM-DD."
+          description: "Starting point for your data replication, in format of \"\
+            YYYY-MM-DD\". If not provided will sync till most recent date."
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          format: "date"
           examples:
           - "2022-01-01"
           order: 3
