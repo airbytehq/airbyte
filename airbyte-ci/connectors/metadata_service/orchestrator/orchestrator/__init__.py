@@ -14,7 +14,8 @@ from .assets.catalog_assets import (
     all_destinations_dataframe,
     connector_catalog_location_markdown,
     connector_catalog_location_html,
-    generate_metadata_files,
+    metadata_definitions,
+    valid_metadata_list,
 )
 from .assets.github_assets import source_controlled_connectors
 
@@ -36,7 +37,8 @@ ASSETS = [
     connector_catalog_location_markdown,
     connector_catalog_location_html,
     source_controlled_connectors,
-    generate_metadata_files,
+    metadata_definitions,
+    valid_metadata_list,
 ]
 
 RESOURCES = {

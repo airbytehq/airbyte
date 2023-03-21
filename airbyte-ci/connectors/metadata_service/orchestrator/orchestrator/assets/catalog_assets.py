@@ -2,6 +2,7 @@ import pandas as pd
 import json
 import requests
 import pandas as pd
+from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 
 from dagster import MetadataValue, Output, asset, OpExecutionContext
 from jinja2 import Environment, PackageLoader
@@ -16,10 +17,6 @@ def render_connector_catalog_locations_markdown(destinations_markdown, sources_m
     template = env.get_template("connector_catalog_locations.md")
     return template.render(destinations_markdown=destinations_markdown, sources_markdown=sources_markdown)
 
-# New
-
-import json
-import pandas as pd
 
 OSS_SUFFIX = "_oss"
 CLOUD_SUFFIX = "_cloud"
@@ -36,7 +33,12 @@ def get_primary_catalog_suffix(merged_df):
 
 def get_field_with_fallback(merged_df, field):
     primary_suffix, secondary_suffix = get_primary_catalog_suffix(merged_df)
-    return merged_df[field + primary_suffix].fillna(merged_df[field + secondary_suffix]);
+
+    primary_field = field + primary_suffix
+    secondary_field = field + secondary_suffix
+
+    secondary_value = merged_df.get(secondary_field)
+    return merged_df.get(primary_field, default=secondary_value)
 
 def compute_catalog_overrides(merged_df):
     cloud_only = merged_df["_merge"] == "right_only";
@@ -63,16 +65,14 @@ def compute_catalog_overrides(merged_df):
     # TODO refactor this to handle cloud only
     for oss_col in all_oss_columns:
         equivalent_cloud_col = oss_col.replace(OSS_SUFFIX, CLOUD_SUFFIX)
-        if merged_df[oss_col] != merged_df[equivalent_cloud_col]:
+        if merged_df.get(oss_col) != merged_df.get(equivalent_cloud_col):
             col_name = oss_col.replace(OSS_SUFFIX, "")
-            catalogs["cloud"][col_name] = merged_df[equivalent_cloud_col]
+            catalogs["cloud"][col_name] = merged_df.get(equivalent_cloud_col)
 
     return catalogs;
 
 
-
-
-def merge_into_metadata_definitions(id_field, connector_type, oss_connector_df, cloud_connector_df):
+def merge_into_metadata_definitions(id_field, connector_type, oss_connector_df, cloud_connector_df) -> pd.Series:
     merged_connectors = pd.merge(oss_connector_df, cloud_connector_df, on=id_field, how='outer', suffixes=(OSS_SUFFIX, CLOUD_SUFFIX), indicator=True)
 
     def build_metadata(merged_df):
@@ -96,20 +96,46 @@ def merge_into_metadata_definitions(id_field, connector_type, oss_connector_df, 
         catalogs = compute_catalog_overrides(merged_df)
         metadata["data"]["catalogs"] = catalogs
 
-        return metadata
+        return pd.DataFrame(metadata)
 
-    metadata_list = merged_connectors.apply(build_metadata, axis=1).tolist()
+    metadata_list = merged_connectors.apply(build_metadata, axis=1)
 
     return metadata_list
 
+def validate_metadata(metadata):
+    try:
+        ConnectorMetadataDefinitionV0.parse_obj(metadata)
+        return True, None
+    except Exception as e:
+        print(e)
+        return False, str(e)
 
 @asset
-def metadata_definitions(cloud_sources_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, oss_destinations_dataframe):
+def valid_metadata_list(metadata_definitions) -> pd.DataFrame:
+    result = []
+
+    for metadata in metadata_definitions:
+        valid, error_msg = validate_metadata(metadata)
+        result.append({
+            'definitionId': metadata["data"]['definitionId'],
+            'name': metadata["data"]['name'],
+            'dockerRepository': metadata["data"]['dockerRepository'],
+            'is_metadata_valid': valid,
+            'error_msg': error_msg
+        })
+
+    result_df = pd.DataFrame(result)
+
+    return result_df
+    # return Output(result_df, metadata={"count": len(result_df), "preview": MetadataValue.md(result_df.to_markdown())})
+
+@asset
+def metadata_definitions(cloud_sources_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, oss_destinations_dataframe) -> pd.Series:
     sources_metadata_list = merge_into_metadata_definitions("sourceDefinitionId", "source", oss_sources_dataframe, cloud_sources_dataframe)
     destinations_metadata_list = merge_into_metadata_definitions("destinationDefinitionId", "destination", oss_destinations_dataframe, cloud_destinations_dataframe)
-    all_definitions = sources_metadata_list.concat(destinations_metadata_list);
-
-    return Output(all_definitions, metadata={"count": len(all_definitions), "preview": MetadataValue.md(all_definitions.to_markdown())})
+    all_definitions = pd.concat([sources_metadata_list, destinations_metadata_list]);
+    return all_definitions;
+    # return Output(all_definitions, metadata={"count": len(all_definitions), "preview_of_one": MetadataValue.md(all_definitions[0]["data"].to_markdown())})
 
 
 @asset(required_resource_keys={"catalog_report_directory_manager"})
@@ -118,7 +144,7 @@ def connector_catalog_location_html(context, all_destinations_dataframe, all_sou
     Generate an HTML report of the connector catalog locations.
     """
 
-    columns_to_show = ["dockerRepository", "dockerImageTag", "is_oss", "is_cloud", "is_source_controlled", "is_spec_cached"]
+    columns_to_show = ["dockerRepository", "dockerImageTag", "is_oss", "is_cloud", "is_source_controlled", "is_spec_cached", "is_metadata_valid"]
 
     # convert true and false to checkmarks and x's
     all_sources_dataframe.replace({True: "✅", False: "❌"}, inplace=True)
@@ -146,7 +172,7 @@ def connector_catalog_location_markdown(context, all_destinations_dataframe, all
     Generate a markdown report of the connector catalog locations.
     """
 
-    columns_to_show = ["dockerRepository", "dockerImageTag", "is_oss", "is_cloud", "is_source_controlled", "is_spec_cached"]
+    columns_to_show = ["dockerRepository", "dockerImageTag", "is_oss", "is_cloud", "is_source_controlled", "is_spec_cached", "is_metadata_valid"]
 
     # convert true and false to checkmarks and x's
     all_sources_dataframe.replace({True: "✅", False: "❌"}, inplace=True)
@@ -178,7 +204,7 @@ def is_spec_cached(dockerRepository, dockerImageTag):
     return response.status_code == 200
 
 @asset
-def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_dataframe, source_controlled_connectors) -> pd.DataFrame:
+def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_dataframe, source_controlled_connectors, valid_metadata_list) -> pd.DataFrame:
     """
     Merge the cloud and oss destinations catalogs into a single dataframe.
     """
@@ -202,13 +228,14 @@ def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_da
     is_source_controlled = lambda x: x.lstrip("airbyte/") in source_controlled_connectors
     merged_catalog['is_source_controlled'] = merged_catalog['dockerRepository'].apply(is_source_controlled)
     merged_catalog['is_spec_cached'] = merged_catalog.apply(lambda x: is_spec_cached(x['dockerRepository'], x['dockerImageTag']), axis=1)
+    merged_catalog['is_metadata_valid'] = merged_catalog["destinationDefinitionId"].apply(lambda x: x in valid_metadata_list.loc[x]["is_metadata_valid"])
 
     # Return the merged catalog with the desired columns
     return merged_catalog
 
 
 @asset
-def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe, source_controlled_connectors) -> pd.DataFrame:
+def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe, source_controlled_connectors, valid_metadata_list) -> pd.DataFrame:
     """
     Merge the cloud and oss source catalogs into a single dataframe.
     """
@@ -222,17 +249,20 @@ def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe, source
     composite_key = ["sourceDefinitionId", "dockerRepository", "dockerImageTag"]
 
     # Merge the two catalogs on the 'image' and 'version' columns, keeping only the unique pairs
-    merged_catalog = pd.merge(
+    total_catalog = pd.merge(
         cloud_sources_dataframe, oss_sources_dataframe, how="outer", on=composite_key
     ).drop_duplicates(subset=composite_key)
+
+    # import pdb; pdb.set_trace()
+    merged_catalog = pd.merge(total_catalog, valid_metadata_list[["definitionId", "is_metadata_valid"]], left_on="sourceDefinitionId", right_on="definitionId", how="left")
 
     # Replace NaN values in the 'is_cloud' and 'is_oss' columns with False
     merged_catalog[["is_cloud", "is_oss"]] = merged_catalog[["is_cloud", "is_oss"]].fillna(False)
 
     is_source_controlled = lambda x: x.lstrip("airbyte/") in source_controlled_connectors
     merged_catalog['is_source_controlled'] = merged_catalog['dockerRepository'].apply(is_source_controlled)
-    merged_catalog['is_spec_cached'] = merged_catalog.apply(lambda x: is_spec_cached(x['dockerRepository'], x['dockerImageTag']), axis=1)
-
+    # merged_catalog['is_spec_cached'] = merged_catalog.apply(lambda x: is_spec_cached(x['dockerRepository'], x['dockerImageTag']), axis=1)
+    # pdb.set_trace()
     # Return the merged catalog with the desired columns
     return merged_catalog
 
