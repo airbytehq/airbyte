@@ -93,7 +93,7 @@ class SourceTwilio(AbstractSource):
             Calls(**incremental_stream_kwargs),
             ConferenceParticipants(**full_refresh_stream_kwargs),
             Conferences(**incremental_stream_kwargs),
-            Conversations(**incremental_stream_kwargs),
+            Conversations(**full_refresh_stream_kwargs),
             DependentPhoneNumbers(**full_refresh_stream_kwargs),
             IncomingPhoneNumbers(**full_refresh_stream_kwargs),
             Keys(**full_refresh_stream_kwargs),
