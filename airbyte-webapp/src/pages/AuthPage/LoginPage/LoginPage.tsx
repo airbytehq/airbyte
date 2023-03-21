@@ -67,86 +67,87 @@ const LoginPage: React.FC = () => {
         buttonText={formatMessage({ id: "login.signup" })}
         text={formatMessage({ id: "login.signupDescription" })}
       />
-      <img src="/daspireLogo.svg" alt="logo" width={50} style={{ marginTop: "40px" }} />
-      <div className={styles.formTitle}>
-        <FormattedMessage id="login.title" />
-      </div>
-      <Formik
-        initialValues={{
-          email: "",
-          password: "",
-        }}
-        validationSchema={LoginPageValidationSchema}
-        onSubmit={async (values) => {
-          Signin.post(values)
-            .then((res: any) => {
-              setUser?.(res);
-            })
-            .catch((err: any) => {
-              setErrorMessage(err.message);
-            });
-        }}
-        validateOnBlur
-        validateOnChange
-      >
-        {({ isValid, dirty, isSubmitting }) => (
-          <Form className={styles.form}>
-            <GoogleAuthBtn buttonText="signin_with" />
-            <Separator height="28px" />
-            <AuthSeperatorContainer>
-              <Line />
-              <SeperatorText>
-                <FormattedMessage id="auth.authSeparator" />
-              </SeperatorText>
-              <Line />
-            </AuthSeperatorContainer>
-            <Separator height="40px" />
-            <FieldItem bottom="24">
-              <Field name="email">
-                {({ field, meta }: FieldProps<string>) => (
-                  <LabeledInput
-                    {...field}
-                    labelAdditionLength={0}
-                    label={<FormattedMessage id="login.yourEmail" />}
-                    placeholder={formatMessage({
-                      id: "login.yourEmail.placeholder",
-                    })}
-                    type="text"
-                    error={!!meta.error && meta.touched}
-                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
-                  />
-                )}
-              </Field>
-            </FieldItem>
-            <FieldItem bottom="24">
-              <Field name="password">
-                {({ field, meta }: FieldProps<string>) => (
-                  <LabeledInput
-                    {...field}
-                    labelAdditionLength={0}
-                    label={<FormattedMessage id="login.yourPassword" />}
-                    placeholder={formatMessage({
-                      id: "login.yourPassword.placeholder",
-                    })}
-                    type="password"
-                    error={!!meta.error && meta.touched}
-                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
-                  />
-                )}
-              </Field>
-            </FieldItem>
-            <BottomBlock>
-              <LoadingButton
-                white
-                className={styles.logInBtn}
-                disabled={!(isValid && dirty)}
-                type="submit"
-                isLoading={isSubmitting}
-              >
-                <FormattedMessage id="login.button" />
-              </LoadingButton>
-            </BottomBlock>
-            {/* <div className={styles.signupLink}>
+      <div className={styles.formContainer}>
+        <img src="/daspireLogo.svg" alt="logo" width={50} style={{ marginTop: "40px" }} />
+        <div className={styles.formTitle}>
+          <FormattedMessage id="login.title" />
+        </div>
+        <Formik
+          initialValues={{
+            email: "",
+            password: "",
+          }}
+          validationSchema={LoginPageValidationSchema}
+          onSubmit={async (values) => {
+            Signin.post(values)
+              .then((res: any) => {
+                setUser?.(res);
+              })
+              .catch((err: any) => {
+                setErrorMessage(err.message);
+              });
+          }}
+          validateOnBlur
+          validateOnChange
+        >
+          {({ isValid, dirty, isSubmitting }) => (
+            <Form className={styles.form}>
+              <GoogleAuthBtn buttonText="signin_with" />
+              <Separator height="28px" />
+              <AuthSeperatorContainer>
+                <Line />
+                <SeperatorText>
+                  <FormattedMessage id="auth.authSeparator" />
+                </SeperatorText>
+                <Line />
+              </AuthSeperatorContainer>
+              <Separator height="40px" />
+              <FieldItem bottom="24">
+                <Field name="email">
+                  {({ field, meta }: FieldProps<string>) => (
+                    <LabeledInput
+                      {...field}
+                      labelAdditionLength={0}
+                      label={<FormattedMessage id="login.yourEmail" />}
+                      placeholder={formatMessage({
+                        id: "login.yourEmail.placeholder",
+                      })}
+                      type="text"
+                      error={!!meta.error && meta.touched}
+                      message={meta.touched && meta.error && formatMessage({ id: meta.error })}
+                    />
+                  )}
+                </Field>
+              </FieldItem>
+              <FieldItem bottom="24">
+                <Field name="password">
+                  {({ field, meta }: FieldProps<string>) => (
+                    <LabeledInput
+                      {...field}
+                      labelAdditionLength={0}
+                      label={<FormattedMessage id="login.yourPassword" />}
+                      placeholder={formatMessage({
+                        id: "login.yourPassword.placeholder",
+                      })}
+                      type="password"
+                      error={!!meta.error && meta.touched}
+                      message={meta.touched && meta.error && formatMessage({ id: meta.error })}
+                    />
+                  )}
+                </Field>
+              </FieldItem>
+              <BottomBlock>
+                <LoadingButton
+                  white
+                  className={styles.logInBtn}
+                  disabled={!(isValid && dirty)}
+                  type="submit"
+                  isLoading={isSubmitting}
+                >
+                  <FormattedMessage id="login.button" />
+                </LoadingButton>
+              </BottomBlock>
+              {/* <div className={styles.signupLink}>
               <FormattedMessage
                 id="login.signupDescription"
                 values={{
@@ -158,9 +159,10 @@ const LoginPage: React.FC = () => {
                 }}
               />
             </div> */}
-          </Form>
-        )}
-      </Formik>
+            </Form>
+          )}
+        </Formik>
+      </div>
     </div>
   );
 };

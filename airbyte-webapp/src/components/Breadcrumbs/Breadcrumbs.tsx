@@ -13,11 +13,22 @@ const BreadcrumbsContainer = styled.div`
   flex-shrink: 0;
 `;
 
-const BreadcrumbsItem = styled.div<{ active: boolean }>`
+const BreadcrumbsBlock = styled.div`
+  display: flex;
+  align-items: center;
+
+  &:last-child {
+    flex: 1;
+  }
+`;
+
+const BreadcrumbsItem = styled.span<{ active: boolean }>`
   display: inline-block;
   cursor: ${({ active }) => (active ? "pointer" : "default")};
   color: ${({ theme, active }) => (active ? theme.primaryColor : "")};
-  margin-left: 12px;
+  margin: 0 12px;
+  flex: 1;
+  word-break: break-all;
 
   &:hover {
     opacity: ${({ active }) => (active ? 0.8 : 1)};
@@ -40,13 +51,13 @@ const Breadcrumbs: React.FC<IProps> = ({ data, currentStep }) => {
   return (
     <BreadcrumbsContainer>
       {data.map((item, key) => (
-        <span key={`breadcrumbs-item-${key}`}>
+        <BreadcrumbsBlock key={`breadcrumbs-item-${key}`}>
           {key === 0 && <LeftArrowHeadIcon />}
           <BreadcrumbsItem active={currentStep === key} onClick={item.onClick}>
             {item.name}
           </BreadcrumbsItem>
           {lastIndex !== key && <PaddingContainer> / </PaddingContainer>}
-        </span>
+        </BreadcrumbsBlock>
       ))}
     </BreadcrumbsContainer>
   );
