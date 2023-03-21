@@ -88,6 +88,16 @@ class InstagramAPI:
                         }
                     )
         except FacebookRequestError as exc:
+            # 200 - 299, 3 and 10 are permission related error codes
+            if 200 <= exc.api_error_code() <= 299 or exc.api_error_code() in [3, 10]:
+                raise InstagramAPIException(
+                    f"Error: {exc.api_error_code()}, {exc.api_error_message()}."
+                    f"Also make sure that your Access Token has the following permissions: "
+                    f"instagram_basic, instagram_manage_insights, pages_show_list, pages_read_engagement, and Instagram Public Content Access"
+                    f"See error handling https://developers.facebook.com/docs/graph-api/guides/error-handling/ "
+                    f"and permissions https://developers.facebook.com/docs/permissions/reference for more information."
+                ) from exc
+
             raise InstagramAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
 
         if not instagram_business_accounts:
