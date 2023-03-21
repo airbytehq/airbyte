@@ -437,28 +437,25 @@ class NotaFiscal(IncrementalBlingBase):
             item_list.append(item)
     
     def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
-        return [
-            {
-                'situacao_filter': None,
-                'tipo_filter': 'tipo[S]',
-                'index': 0
-            },
+        dict_list = [
             {
                 'situacao_filter': 'situacao[3]',
-                'tipo_filter': 'tipo[S]',
-                'index': 1
+                'tipo_filter': 'tipo[S]'
+            },
+            {
+                'situacao_filter': None,
+                'tipo_filter': 'tipo[E]'
+            },
+            {
+                'situacao_filter': None,
+                'tipo_filter': 'tipo[S]'
             }
-            # {
-            #     'situacao_filter': None,
-            #     'tipo_filter': 'tipo[E]',
-            #     'index': 1
-            # },
-            # {
-            #     'situacao_filter': 'situacao[3]',
-            #     'tipo_filter': 'tipo[S]',
-            #     'index': 2
-            # }
         ]
+
+        for index, value in enumerate(dict_list):
+            value['index'] = index
+
+        return dict_list
 
 class SourceBling(AbstractSource):
 
