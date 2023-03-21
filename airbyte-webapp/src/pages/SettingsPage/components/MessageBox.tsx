@@ -11,7 +11,8 @@ interface IProps {
 }
 
 const Container = styled.div<{ type: "info" | "error" }>`
-  min-width: 600px;
+  min-width: 60%;
+  max-width: 90%;
   background: ${({ type }) => (type === "error" ? "#FEF2F2" : "#eff6ff")};
   border-radius: 6px;
   top: 22px;
@@ -21,9 +22,8 @@ const Container = styled.div<{ type: "info" | "error" }>`
   justify-content: space-between;
   position: absolute;
   z-index: 3;
-  left: 50%;
-  transform: translateX(-50%);
-  min-width: 750px;
+  top: 4%;
+  right: 5%;
   z-index: 10003;
 `;
 
@@ -47,7 +47,6 @@ const CrossButton = styled.button`
 export const MessageBox: React.FC<IProps> = ({ message, onClose, type }) => {
   useEffect(() => {
     const intervalID = setTimeout(() => onClose?.(), 3000);
-
     return () => clearInterval(intervalID);
   }, [message]);
 

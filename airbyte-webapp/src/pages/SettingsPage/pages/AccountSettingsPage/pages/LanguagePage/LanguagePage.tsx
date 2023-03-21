@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { DropDown, LoadingButton, DropDownRow } from "components";
@@ -13,6 +13,7 @@ const PageContainer = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
+  padding: 30px 70px;
 `;
 
 const DDLabel = styled.div`
@@ -32,10 +33,9 @@ const ChangeBtnContainer = styled.div`
 `;
 
 const LanguagePage: React.FC = () => {
-  const { formatMessage } = useIntl();
   const languages: DropDownRow.IDataItem[] = [
-    { label: formatMessage({ id: "English" }), value: LOCALES.ENGLISH },
-    { label: formatMessage({ id: "简体中文" }), value: LOCALES.CHINESE_SIMPLIFIED },
+    { label: "English", value: LOCALES.ENGLISH },
+    { label: "简体中文", value: LOCALES.CHINESE_SIMPLIFIED },
   ];
 
   const { user, updateUserLang } = useUser();

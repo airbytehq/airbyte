@@ -1,6 +1,20 @@
 @use "../../../scss/colors";
 @use "../../../scss/variables";
 
+.sidebar {
+  width: variables.$sidebar;
+  min-width: 65px;
+  height: 100%;
+  background: colors.$white;
+  padding: 23px 0 15px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  z-index: 9999;
+}
+
 .menuItem {
   background-color: transparent;
   appearance: none;

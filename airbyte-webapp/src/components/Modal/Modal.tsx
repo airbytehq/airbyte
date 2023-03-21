@@ -41,9 +41,6 @@ const Modal: React.FC<ModalProps> = ({ children, size, title, onClose, cardless,
               {title && <div className={styles.cardTitle}>{title}</div>}
               {children}
             </div>
-            // <Card title={title} className={classNames(styles.card, size ? cardStyleBySize[size] : undefined)}>
-            //   {children}
-            // </Card>
           )}
         </Dialog.Panel>
       </div>
