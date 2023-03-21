@@ -11,7 +11,7 @@ from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from connector_builder.connector_builder_handler import read_stream, resolve_manifest
+from connector_builder.connector_builder_handler import list_streams, read_stream, resolve_manifest
 
 
 def create_source(config: Mapping[str, Any]) -> ManifestDeclarativeSource:
@@ -54,6 +54,8 @@ def handle_connector_builder_request(
     elif command == "test_read":
         assert catalog is not None, "`test_read` requires a valid `ConfiguredAirbyteCatalog`, got None."
         return read_stream(source, config, catalog)
+    elif command == "list_streams":
+        return list_streams(source, config)
     else:
         raise ValueError(f"Unrecognized command {command}.")
 
