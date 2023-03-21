@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "account_sid": {
       "type": ["null", "string"]
@@ -15,7 +16,7 @@
       "type": ["null", "string", "integer"]
     },
     "attributes": {
-      "type": "object",
+      "type": ["null","object"],
       "properties": {
         "role": {
           "type": ["null", "string"]
@@ -23,7 +24,7 @@
       }
     },
     "messaging_binding": {
-      "type": "object",
+      "type": ["null","object"],
       "properties": {
         "type": {
           "type": ["null", "string"]
@@ -40,9 +41,11 @@
       "type": ["null", "string"]
     },
     "date_created": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "url": {
