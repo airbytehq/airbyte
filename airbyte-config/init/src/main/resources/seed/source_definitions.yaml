@@ -985,6 +985,14 @@
   icon: leverhiring.svg
   sourceType: api
   releaseStage: alpha
+- name: LexOffice
+  sourceDefinitionId: 91f013c9-eef2-4330-8343-b7a1d42e5357
+  dockerRepository: airbyte/source-lexoffice
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/lexoffice
+  icon: lexoffice.svg
+  sourceType: api
+  releaseStage: alpha
 - name: LinkedIn Ads
   sourceDefinitionId: 137ece28-5434-455c-8f34-69dc3782f451
   dockerRepository: airbyte/source-linkedin-ads
