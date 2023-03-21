@@ -868,10 +868,7 @@ class SourceShopify(AbstractSource):
         session = requests.Session()
         headers = config["authenticator"].get_auth_header()
         response = session.get(f"https://{config['shop']}.myshopify.com/admin/oauth/access_scopes.json", headers=headers).json()
-        if "access_scopes" in response:
-            return response["access_scopes"]
-        else:
-            return None
+        return response["access_scopes"]
 
     @staticmethod
     def format_name(name):
