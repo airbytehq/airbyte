@@ -1,0 +1,47 @@
+documentationUrl: https://developers.falabella.com/v200.0.0/reference/getting-started
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Coppel Specs
+  type: object
+  required:
+    - api_key
+    - merchant
+    - country
+    - start_date
+    - user_id
+  properties:
+    # "TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.":
+    api_key:
+      title: API Key
+      type: string
+      description: API key from Coppel Account
+      example: 'Example: eyJwdWJs-aWNf-a2V5-Ijog-IjEyMzQ1NiIs'
+      airbyte_secret: true
+      order: 0
+    merchant:
+      title: Merchant Code
+      type: string
+      description: "Merchant code with 5 characters length"
+      order: 1
+      examples:
+        - "BRXYZ"
+        - "MXABC"
+    country:
+      title: country identifier Code
+      type: string
+      description: "Country code with 2 characters length"
+      order: 2
+      examples:
+        - "MX"
+        - "BR"
+        - "US"
+    start_date:
+      title: Start Date (YYYY-MM-DD format)
+      type: string
+      description: "Start replication date"
+      order: 3
+    user_id:
+      title: Coppel account id
+      type: string
+      description: "id of the coppel account credentials"
+      order: 4

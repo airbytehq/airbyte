@@ -1,11 +1,11 @@
 {
     "type": "object",
     "required": [
-      "api_keys",
-      "merchant",
-      "country",
-      "CreatedAfter",
-      "user_id"
+        "api_key",
+        "merchant",
+        "country",
+        "start_date",
+        "user_id"
     ],
     "properties": {
         "data": {
