@@ -16,6 +16,7 @@ properties:
     type: object
     required:
       - name
+      - icon
       - definitionId
       - connectorType
       - dockerRepository
