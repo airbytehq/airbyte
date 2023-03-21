@@ -66,6 +66,8 @@ public class DbSourceDiscoverUtil {
       final JsonNode catalogProperties = catalogSchema.get("properties");
       final List<String> mismatchedFields = new ArrayList<>();
       catalogProperties.fieldNames().forEachRemaining(fieldName -> {
+        // Ignoring metadata fields since those are automatically added onto the catalog schema by Airbyte
+        // and don't exist in the source schema. They should not be considered a change
         if (AIRBYTE_METADATA.contains(fieldName)) {
           return;
         }
