@@ -142,7 +142,6 @@ export const Routing: React.FC = () => {
     <>
       {user.token && (
         <Routes>
-          {/* {OldRoutes} */}
           <Route path={RoutePaths.AuthFlow} element={<CompleteOauthRequest />} />
           {/* TODO: Xuan Ma told me to remove workspaceId from URLs
           <Route path={`${RoutePaths.Workspaces}/:workspaceId/*`} element={<RoutingWithWorkspace />} /> */}
