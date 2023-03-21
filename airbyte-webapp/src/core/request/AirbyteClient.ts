@@ -549,6 +549,9 @@ export interface CheckConnectionRead {
 
 export interface HealthCheckRead {
   available: boolean;
+  syncFail?: string[];
+  syncSuccess?: string[];
+  usage?: number;
 }
 
 export interface Pagination {

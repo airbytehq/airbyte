@@ -5,7 +5,7 @@ import { FormattedMessage } from "react-intl";
 import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView";
 import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView";
 import { WorkspaceSettingsView } from "packages/cloud/views/workspaces/WorkspaceSettingsView";
-import SettingsPage from "pages/SettingsPage";
+import { SettingsPage } from "pages/SettingsPage";
 import {
   DestinationsPage as SettingsDestinationPage,
   SourcesPage as SettingsSourcesPage,
