@@ -321,6 +321,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                   |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.6   | 2022-03-21 | [24271](https://github.com/airbytehq/airbyte/pull/24271)  | Fix NPE in CDC mode                                                                                                                       |
 | 2.0.3   | 2023-03-21 | [24147](https://github.com/airbytehq/airbyte/pull/24275)  | Fix error with CDC checkpointing                                                                                                          |
 | 2.0.2   | 2022-03-13 | [23112](https://github.com/airbytehq/airbyte/pull/21727)  | Add state checkpointing for CDC sync.                                                                                                     |
 | 2.0.1   | 2023-03-08 | [23596](https://github.com/airbytehq/airbyte/pull/23596)  | For network isolation, source connector accepts a list of hosts it is allowed to connect                                                  |
