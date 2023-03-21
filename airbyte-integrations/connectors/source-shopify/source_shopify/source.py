@@ -107,7 +107,7 @@ class ShopifyStream(HttpStream, ABC):
         """
         Just a wrapper to allow @backoff decorator
         """
-        response: requests.Response = self._session.send(request)
+        response: requests.Response = self._send(request, request_kwargs)
         return response
 
     @limiter.balance_rate_limit()
