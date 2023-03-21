@@ -6,7 +6,7 @@ import pick from "lodash/pick";
 import { useMemo, useState } from "react";
 
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
-import { AuthSpecification } from "core/request/AirbyteClient";
+import { AuthSpecification, AuthSpecificationAuthType } from "core/request/AirbyteClient";
 import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
 
 import { useServiceForm } from "../../../serviceFormContext";
@@ -15,6 +15,10 @@ import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "../..
 
 interface Credentials {
   credentials: AuthSpecification;
+  auth_type?: AuthSpecificationAuthType;
+  client_id?: string;
+  client_secret?: string;
+  refresh_token?: string;
 }
 
 function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
@@ -51,9 +55,20 @@ function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
 
   const { run, loading, done } = useRunOauthFlow(connector, onDone);
   const preparedValues = useMemo(() => getValues<Credentials>(values), [getValues, values]);
-  const connectionObjectEmpty = preparedValues?.connectionConfiguration?.credentials
-    ? Object.keys(preparedValues.connectionConfiguration?.credentials).length <= 1
-    : true;
+
+  // const connectionObjectEmpty = preparedValues?.connectionConfiguration?.credentials
+  //   ? Object.keys(preparedValues.connectionConfiguration?.credentials).length <= 1
+  //   : true;
+  // TODO: Compatible with objects without credentials, such as ebay/Amazon Ads
+  let connectionObjectEmpty = true;
+  if (preparedValues?.connectionConfiguration?.credentials) {
+    connectionObjectEmpty = Object.keys(preparedValues.connectionConfiguration?.credentials).length <= 1;
+  } else {
+    const { auth_type, client_id, client_secret, refresh_token } = preparedValues.connectionConfiguration;
+    if (auth_type === "oauth2.0") {
+      connectionObjectEmpty = !client_id || !client_secret || !refresh_token;
+    }
+  }
 
   return {
     loading,

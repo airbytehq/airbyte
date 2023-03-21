@@ -65,7 +65,7 @@
   line-height: 17px;
   color: colors.$blue;
   border-radius: 5px;
-  border: 1px solid #4f46e5;
+  border: 1px solid colors.$blue;
 }
 
 @media screen and (min-width: 769px) {
@@ -76,7 +76,8 @@
     align-items: flex-end;
     flex-direction: row;
     justify-content: space-between;
-    margin: 24px 0 5%;
+
+    // margin: 24px 0 5%;
   }
 
   .headRight {
