@@ -6,6 +6,9 @@ import { HealthService } from "core/health/HealthService";
 import { useGetService } from "core/servicesProvider";
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
 
+import { useAppNotification } from "../AppNotification";
+import { useHealth } from "./HealthProvider";
+
 const HEALTH_NOTIFICATION_ID = "health.error";
 const HEALTHCHECK_MAX_COUNT = 3;
 
@@ -15,6 +18,8 @@ function useApiHealthPoll(): void {
   const { healthCheckInterval } = useConfig();
   const healthService = useGetService<HealthService>("HealthService");
   const { registerNotification, unregisterNotificationById } = useNotificationService();
+  const { setHealthData } = useHealth();
+  const { setNotification } = useAppNotification();
 
   useEffect(() => {
     const errorNotification = {
@@ -25,7 +30,20 @@ function useApiHealthPoll(): void {
 
     const interval = setInterval(async () => {
       try {
-        await healthService.health();
+        const data = await healthService.health();
+        if (data) {
+          setHealthData(data);
+        }
+
+        const { syncFail, syncSuccess } = data;
+
+        if (syncFail) {
+          setNotification({ message: syncFail[0], type: "error" });
+        }
+        if (syncSuccess) {
+          setNotification({ message: syncSuccess[0], type: "info" });
+        }
+
         if (count >= HEALTHCHECK_MAX_COUNT) {
           unregisterNotificationById(HEALTH_NOTIFICATION_ID);
         }

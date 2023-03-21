@@ -6,11 +6,13 @@ import ApiErrorBoundary from "components/ApiErrorBoundary";
 
 // import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
 import { useUser } from "core/AuthContext";
+import { useAppNotification, appNotificationInitialState } from "hooks/services/AppNotification";
 import { useApiHealthPoll } from "hooks/services/Health";
 // import { useUserDetailPoll } from "hooks/services/UserDetail";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 // import { useListWorkspaces } from "services/workspaces/WorkspacesService";
+import { MessageBox } from "pages/SettingsPage/components/MessageBox";
 import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import MainView from "views/layout/MainView";
@@ -26,7 +28,7 @@ import PaymentErrorPage from "./PaymentErrorPage";
 import PaymentPage from "./PaymentPage";
 import PreferencesPage from "./PreferencesPage";
 import { RoutePaths } from "./routePaths";
-import SettingsPage from "./SettingsPage";
+import { SettingsPage } from "./SettingsPage";
 import SourcesPage from "./SourcesPage";
 
 // const useAddAnalyticsContextForWorkspace = (workspace: WorkspaceRead): void => {
@@ -102,12 +104,18 @@ export const AutoSelectFirstWorkspace: React.FC = () => {
 
 const RoutingWithWorkspace: React.FC = () => {
   const workspace = useCurrentWorkspace();
-  // useAddAnalyticsContextForWorkspace(workspace);
   useApiHealthPoll();
+  const { notification, setNotification } = useAppNotification();
+  // useAddAnalyticsContextForWorkspace(workspace);
   // useUserDetailPoll();
 
   return (
     <OnboardingServiceProvider>
+      <MessageBox
+        message={notification.message}
+        type={notification.type}
+        onClose={() => setNotification(appNotificationInitialState)}
+      />
       {workspace.initialSetupComplete ? <MainViewRoutes workspace={workspace} /> : <PreferencesRoutes />}
     </OnboardingServiceProvider>
   );
@@ -134,7 +142,6 @@ export const Routing: React.FC = () => {
     <>
       {user.token && (
         <Routes>
-          {/* {OldRoutes} */}
           <Route path={RoutePaths.AuthFlow} element={<CompleteOauthRequest />} />
           {/* TODO: Xuan Ma told me to remove workspaceId from URLs
           <Route path={`${RoutePaths.Workspaces}/:workspaceId/*`} element={<RoutingWithWorkspace />} /> */}
