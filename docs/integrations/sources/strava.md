@@ -5,7 +5,7 @@
 This page guides you through the process of setting up the Strava    source connector.
 
 ## Setup guide
-### Step 1: Set up SurveyMonkey
+### Step 1: Set up Strava
 
 <!-- env:oss -->
 **For Airbyte Open Source:**
