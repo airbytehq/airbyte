@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.31.0
+Add connector builder module for handling Connector Builder server requests
+
 ## 0.30.4
 CDK's read command handler supports Connector Builder list_streams requests
 
