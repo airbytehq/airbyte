@@ -10,12 +10,12 @@ import os
 import subprocess
 import tempfile
 
-from definitions import GA_DEFINITIONS, is_airbyte_connector, find_by_name
+from definitions import GA_DEFINITIONS, is_airbyte_connector, find_by_name, get_airbyte_connector_name_from_definition
 from jinja2 import Environment, FileSystemLoader
 
 # SET THESE BEFORE USING THE SCRIPT
 MODULE_NAME = "fail_on_extra_columns"
-GITHUB_PROJECT_NAME = "column-selection-sources"
+GITHUB_PROJECT_NAME = None
 COMMON_ISSUE_LABELS = ["area/connectors", "team/connectors-python", "type/enhancement", "column-selection-sources"]
 ISSUE_TITLE = "Add undeclared columns to spec"
 
@@ -37,7 +37,13 @@ def get_issue_content(source_definition):
     issue_title = f"Source {source_definition['name']}: {ISSUE_TITLE}"
 
     template = environment.get_template(f"{MODULE_NAME}/issue.md.j2")
-    issue_body = template.render(connector_name=source_definition["name"], release_stage=source_definition["releaseStage"])
+
+    test_failure_logs = ""
+    with open(f"templates/{MODULE_NAME}/output/{get_airbyte_connector_name_from_definition(definition)}.txt", "r") as f:
+        for line in f:
+            test_failure_logs += line
+
+    issue_body = template.render(connector_name=source_definition["name"], release_stage=source_definition["releaseStage"], test_failure_logs=test_failure_logs)
     file_definition, issue_body_path = tempfile.mkstemp()
 
     with os.fdopen(file_definition, "w") as tmp:
@@ -58,9 +64,9 @@ def create_issue(source_definition, dry_run=True):
         issue_content["title"],
         "--body-file",
         issue_content["body_file"],
-        "--project",
-        GITHUB_PROJECT_NAME,
     ]
+    if GITHUB_PROJECT_NAME:
+        create_command_arguments += ["--project", GITHUB_PROJECT_NAME]
     for label in issue_content["labels"]:
         create_command_arguments += ["--label", label]
 
