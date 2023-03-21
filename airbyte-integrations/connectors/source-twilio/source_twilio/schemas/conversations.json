@@ -40,9 +40,6 @@
     },
     "url": {
       "type": ["null", "string"]
-    },
-    "links": {
-      "type": ["null", "object"]
     }
   },
   "type": "object",
