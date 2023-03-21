@@ -4,7 +4,7 @@
 
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Dict
 from urllib import parse
 
 import pendulum
@@ -22,7 +22,6 @@ DEFAULT_PAGE_SIZE = 100
 
 
 class GithubStream(HttpStream, ABC):
-    url_base = "https://api.github.com"
     primary_key = "id"
 
     # Detect streams with high API load
@@ -30,10 +29,10 @@ class GithubStream(HttpStream, ABC):
 
     stream_base_params = {}
 
-    def __init__(self, api_url: str, repositories: List[str], page_size_for_large_streams: int, **kwargs):
+    def __init__(self, config: Mapping[str, Any], repositories: List[str], page_size_for_large_streams: int, **kwargs):
         super().__init__(**kwargs)
         self.repositories = repositories
-        self.api_url = api_url
+        self.api_url = config["api_url"]
         # GitHub pagination could be from 1 to 100.
         self.page_size = page_size_for_large_streams if self.large_stream else DEFAULT_PAGE_SIZE
 
@@ -44,7 +43,7 @@ class GithubStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return f"https://{self.api_url}/"
-    
+
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
         return None
@@ -375,7 +374,7 @@ class Organizations(GithubStream):
     # GitHub pagination could be from 1 to 100.
     page_size = 100
 
-    def __init__(self, organizations: List[str], **kwargs):
+    def __init__(self, organizations: List[str], config: Mapping[str, Any], **kwargs):
         super(GithubStream, self).__init__(**kwargs)
         self.organizations = organizations
 
@@ -897,8 +896,8 @@ class PullRequestCommits(GithubStream):
 
     primary_key = "sha"
 
-    def __init__(self, parent: HttpStream, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, parent: HttpStream, config, **kwargs):
+        super().__init__(config, **kwargs)
         self.parent = parent
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -1499,8 +1498,8 @@ class TeamMembers(GithubStream):
     use_cache = True
     primary_key = ["id", "team_slug"]
 
-    def __init__(self, parent: Teams, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, parent: Teams, config, **kwargs):
+        super().__init__(config, **kwargs)
         self.parent = parent
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
