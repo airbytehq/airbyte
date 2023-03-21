@@ -11,33 +11,7 @@
 }
 
 .selectBox {
-  position: relative;
-}
-
-.globalIcon {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 10px;
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-}
-
-.select {
-  display: block;
-  background: #fff;
-  border: 1px solid #d1d5db;
-  font-size: 14px;
-  color: #374151;
-  padding: 9px 10px 9px 25px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 5%);
-  border-radius: 6px;
-
-  &:focus-visible {
-    border-color: #4f46e5;
-    outline: none;
-  }
+  min-width: 144px;
 }
 
 .headRight {

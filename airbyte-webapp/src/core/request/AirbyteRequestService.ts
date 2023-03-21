@@ -1,5 +1,7 @@
 import merge from "lodash/merge";
 
+import { LOCALES } from "locales";
+
 import { ApiOverrideRequestOptions } from "./apiOverride";
 import { CommonRequestError } from "./CommonRequestError";
 import { RequestMiddleware } from "./RequestMiddleware";
@@ -28,7 +30,12 @@ abstract class AirbyteRequestService {
   }
 
   /** Perform network request */
-  public async fetch<T = Response>(url: string, body?: unknown, options?: Partial<RequestInit>): Promise<T> {
+  public async fetch<T = Response>(
+    url: string,
+    body?: unknown,
+    lang?: string,
+    options?: Partial<RequestInit>
+  ): Promise<T> {
     const path = `${this.rootUrl}${url.startsWith("/") ? "" : "/"}${url}`;
 
     const requestOptions: RequestInit = merge(
@@ -37,7 +44,7 @@ abstract class AirbyteRequestService {
         body: body ? JSON.stringify(body) : undefined,
         headers: {
           "Content-Type": "application/json",
-          "Accept-Language": "zh",
+          "Accept-Language": lang ? lang : LOCALES.ENGLISH,
         },
       },
       options

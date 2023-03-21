@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 
-import { Link } from "components";
-import { GlobIcon } from "components/icons/GlobIcon";
+import { DropDownRow, Link } from "components";
 
+import { useUser } from "core/AuthContext";
 import { LOCALES } from "locales";
+import { LanguageDropdown } from "pages/SettingsPage/pages/AccountSettingsPage/pages/LanguagePage/components/LanguageDropdown";
 
 import styles from "./FormHeaderSection.module.scss";
 
@@ -14,27 +15,20 @@ interface Iporps {
 }
 
 export const FormHeaderSection: React.FC<Iporps> = ({ text, link, buttonText }) => {
-  const [language] = useState<string>(LOCALES.ENGLISH); // setLanguage
+  const { user, updateUserLang } = useUser();
+  const { lang } = user;
+
+  const [language, setLanguage] = useState<string>(lang ? lang : LOCALES.ENGLISH);
+
+  const onUpdateLang = (option: DropDownRow.IDataItem) => {
+    setLanguage(option.value);
+    updateUserLang?.(option.value);
+  };
 
   return (
     <div className={styles.head}>
       <div className={styles.selectBox}>
-        <div className={styles.globalIcon}>
-          <GlobIcon color="#374151" />
-        </div>
-        <select
-          name={language}
-          className={styles.select}
-          onChange={(event) => {
-            console.log(event.target.value);
-            // setLanguage(() => {
-            //   return option.value;
-            // });
-          }}
-        >
-          <option value={LOCALES.ENGLISH}>English</option>
-          <option value={LOCALES.CHINESE_SIMPLIFIED}>简体中文</option>
-        </select>
+        <LanguageDropdown value={language} onChange={(option) => onUpdateLang(option)} />
       </div>
       <div className={styles.headRight}>
         <div className={styles.headRightText}>{text}</div>
