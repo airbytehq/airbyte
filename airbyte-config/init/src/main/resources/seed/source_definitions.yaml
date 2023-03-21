@@ -1842,7 +1842,7 @@
 - name: Slack
   sourceDefinitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
   dockerRepository: airbyte/source-slack
-  dockerImageTag: 0.1.23
+  dockerImageTag: 0.1.24
   documentationUrl: https://docs.airbyte.com/integrations/sources/slack
   icon: slack.svg
   sourceType: api
@@ -2452,11 +2452,14 @@
 - name: Yandex Metrica
   sourceDefinitionId: 7865dce4-2211-4f6a-88e5-9d0fe161afe7
   dockerRepository: airbyte/source-yandex-metrica
-  dockerImageTag: 0.1.0
+  dockerImageTag: 1.0.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/yandex-metrica
   icon: yandexmetrica.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
+  allowedHosts:
+    hosts:
+      - api-metrica.yandex.net
 - name: Younium
   sourceDefinitionId: 9c74c2d7-531a-4ebf-b6d8-6181f805ecdc
   dockerRepository: airbyte/source-younium
