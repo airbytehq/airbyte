@@ -509,7 +509,6 @@ class Conversations(TwilioStream):
     """https://www.twilio.com/docs/conversations/api/conversation-resource#read-multiple-conversation-resources"""
 
     url_base = TWILIO_CONVERSATIONS_URL_BASE
-    data_field = "conversations"
 
     def path(self, **kwargs):
         return self.name.title()
