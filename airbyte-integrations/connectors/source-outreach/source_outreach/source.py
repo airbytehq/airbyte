@@ -4,7 +4,7 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Dict
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib import parse
 
 import requests
@@ -23,16 +23,15 @@ class OutreachStream(HttpStream, ABC):
 
     url_base = _URL_BASE
     primary_key = "id"
+    page_size = 1000
 
     def __init__(
         self,
         authenticator: HttpAuthenticator,
         start_date: str = None,
-        page_size: int = 100,
         **kwargs,
     ):
         self.start_date = start_date
-        self.page_size = page_size
         super().__init__(authenticator=authenticator)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:

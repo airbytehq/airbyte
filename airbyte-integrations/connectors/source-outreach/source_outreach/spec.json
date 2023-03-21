@@ -11,7 +11,7 @@
       "redirect_uri",
       "start_date"
     ],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "client_id": {
         "type": "string",
@@ -41,15 +41,6 @@
         "description": "The date from which you'd like to replicate data for Outreach API, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
         "examples": ["2020-11-16T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
-      },
-      "page_size": {
-        "type": "integer",
-        "title": "Page Size",
-        "description": "The number of results in each API response page. Higher value goes faster but will get less stable. Lower values are more stable but less fast to pull.",
-        "default": 100,
-        "examples": [100],
-        "min": 1,
-        "max": 1000
       }
     }
   }

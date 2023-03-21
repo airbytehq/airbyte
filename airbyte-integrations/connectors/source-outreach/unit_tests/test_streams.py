@@ -20,16 +20,16 @@ def patch_base_class(mocker):
 def test_request_params(patch_base_class):
     stream = OutreachStream(authenticator=MagicMock())
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_params = {"count": "false", "page[size]": 100, "sort": "updatedAt"}
+    expected_params = {"count": "false", "page[size]": 1000, "sort": "updatedAt"}
     assert stream.request_params(**inputs) == expected_params
 
 
 def test_next_page_token(patch_base_class):
     stream = OutreachStream(authenticator=MagicMock())
     response = MagicMock()
-    response.json.return_value = {"links": {"next": "http://api.outreach.io/api/v2/prospects?page[after]=100"}}
+    response.json.return_value = {"links": {"next": "http://api.outreach.io/api/v2/prospects?page[after]=1000"}}
     inputs = {"response": response}
-    expected_token = {"after": "100"}
+    expected_token = {"after": "1000"}
     assert stream.next_page_token(**inputs) == expected_token
 
 
