@@ -90,12 +90,11 @@ class PipedriveStream(HttpStream, ABC):
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
-        updated_state = latest_record.get(self.cursor_field)
-        if updated_state:
-            stream_state_value = current_stream_state.get(self.cursor_field)
-            if stream_state_value:
-                updated_state = max(updated_state, stream_state_value)
-            current_stream_state[self.cursor_field] = updated_state
+        updated_state = latest_record.get(self.cursor_field, self._replication_start_date.strftime("%Y-%m-%d %H:%M:%S"))
+        stream_state_value = current_stream_state.get(self.cursor_field)
+        if stream_state_value:
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state[self.cursor_field] = updated_state
         return current_stream_state
 
 
