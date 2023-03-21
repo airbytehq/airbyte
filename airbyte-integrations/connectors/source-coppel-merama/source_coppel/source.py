@@ -61,7 +61,10 @@ class CoppelBase(HttpStream):
 
         if stream_state and (self.cursor_field in stream_state):
             if isinstance(stream_state[self.cursor_field], str):
-                current_stream_state_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%SZ')
+                try:
+                    current_stream_state_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%d %H:%M:%S')
+                except:
+                    current_stream_state_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S')
             else:
                 current_stream_state_date = stream_state[self.cursor_field]
             param_start_date = datetime.strftime(current_stream_state_date - timedelta(days=15), '%Y-%m-%d')
