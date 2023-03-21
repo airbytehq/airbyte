@@ -33,6 +33,10 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2023.03.21
+1. Indicate integration authentication status
+2. Center the form in the Sign in page
+3. Fix the select/breadcuumbs text is too long and not hidden
 #### 2023.03.17
 1. UI related changes - stream table
 #### 2023.03.16

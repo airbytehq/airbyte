@@ -38,7 +38,7 @@ export const CustomSelect = styled(Select)<
     }
 
     & .react-select__value-container {
-      overflow: visible;
+      // overflow: visible;
       display: flex;
       align-items: center;
       flex-wrap: nowrap;

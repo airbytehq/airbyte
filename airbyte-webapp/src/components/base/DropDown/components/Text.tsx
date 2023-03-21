@@ -28,6 +28,7 @@ const Text = styled.div<IProps>`
   font-style: normal;
   font-weight: normal;
   color: ${(props) => setColor(props)};
+  flex: 1;
 
   .rw-list-option.rw-state-selected & {
     color: ${({ theme }) => theme.primaryColor};

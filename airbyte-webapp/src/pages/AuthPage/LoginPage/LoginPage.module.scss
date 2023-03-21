@@ -15,8 +15,18 @@
   background-color: #fff;
 }
 
+.formContainer {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  justify-content: center;
+  height: calc(100% - 30px);
+}
+
 .form {
   width: 80%;
+  padding-bottom: 40px;
 }
 
 .formTitle {
@@ -47,6 +57,12 @@
 
 @media screen and (min-width: 1400px) {
   .form {
-    width: 33%;
+    width: 36%;
+  }
+}
+
+@media screen and (min-width: 769px) and (min-height: 668px) {
+  .formContainer {
+    height: calc(100% - 160px);
   }
 }
