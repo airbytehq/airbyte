@@ -1,6 +1,7 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-xero:dev
+test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
@@ -21,25 +22,25 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
         empty_streams:
-          - name: "bank_transactions"
-            bypass_reason: "Empty stream, further investigation is required"
           - name: "bank_transfers"
             bypass_reason: "Empty stream, further investigation is required"
-          - name: "credit_notes"
-            bypass_reason: "Empty stream, further investigation is required"
-          - name: "invoices"
+          - name: "employees"
             bypass_reason: "Empty stream, further investigation is required"
           - name: "manual_journals"
             bypass_reason: "Empty stream, further investigation is required"
           - name: "overpayments"
             bypass_reason: "Empty stream, further investigation is required"
-          - name: "payments"
-            bypass_reason: "Empty stream, further investigation is required"
           - name: "prepayments"
             bypass_reason: "Empty stream, further investigation is required"
-          - name: "purchase_orders"
+          - name: "repeating_invoices"
+            bypass_reason: "Empty stream, further investigation is required"
+          - name: "tracking_categories"
             bypass_reason: "Empty stream, further investigation is required"
   incremental:
     tests:
