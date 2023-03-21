@@ -6127,7 +6127,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-search-console:0.1.21"
+- dockerImage: "airbyte/source-google-search-console:0.1.22"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-search-console"
     connectionSpecification:
@@ -6149,7 +6149,7 @@
             >here</a>."
           examples:
           - "https://example1.com/"
-          - "https://example2.com/"
+          - "sc-domain:example2.com"
           order: 0
         start_date:
           type: "string"
