@@ -9346,7 +9346,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:2.0.6"
+- dockerImage: "airbyte/source-mysql:2.0.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
