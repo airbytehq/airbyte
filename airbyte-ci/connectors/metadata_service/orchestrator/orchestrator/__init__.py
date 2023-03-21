@@ -2,6 +2,7 @@ from dagster import Definitions
 
 from .resources.gcp_resources import gcp_gcs_client, gcs_bucket_manager, gcs_file_manager, gcs_file_blob
 from .resources.github_resources import github_client, github_connector_repo, github_connectors_directory
+from .resources.local_resources import simple_local_file_manager
 
 from .assets.catalog_assets import (
     oss_destinations_dataframe,
@@ -16,6 +17,7 @@ from .assets.catalog_assets import (
     connector_catalog_location_html,
     metadata_definitions,
     valid_metadata_list,
+    write_metadata_definitions_to_filesystem,
 )
 from .assets.github_assets import source_controlled_connectors
 
@@ -39,9 +41,11 @@ ASSETS = [
     source_controlled_connectors,
     metadata_definitions,
     valid_metadata_list,
+    write_metadata_definitions_to_filesystem,
 ]
 
 RESOURCES = {
+    "metadata_file_directory": simple_local_file_manager.configured({"base_dir": "/tmp/metadata"}),
     "github_client": github_client,
     "github_connector_repo": github_connector_repo.configured({"connector_repo_name": CONNECTOR_REPO_NAME}),
     "github_connectors_directory": github_connectors_directory.configured({"connectors_path": CONNECTORS_PATH}),

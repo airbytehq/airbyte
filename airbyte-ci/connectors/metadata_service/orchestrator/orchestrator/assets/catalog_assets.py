@@ -1,3 +1,4 @@
+import yaml
 import pandas as pd
 import json
 import requests
@@ -24,6 +25,9 @@ CLOUD_SUFFIX = "_cloud"
 def load_json_from_file(path):
     with open(path) as f:
         return json.load(f)
+
+def OutputDataFrame(result_df):
+    return Output(result_df, metadata={"count": len(result_df), "preview": MetadataValue.md(result_df.to_markdown())})
 
 def get_primary_catalog_suffix(merged_df):
     cloud_only = merged_df["_merge"] == "right_only"
@@ -127,12 +131,31 @@ def valid_metadata_list(metadata_definitions):
 
     return Output(result_df, metadata={"count": len(result_df), "preview": MetadataValue.md(result_df.to_markdown())})
 
+@asset(required_resource_keys={"metadata_file_directory"})
+def write_metadata_definitions_to_filesystem(context, metadata_definitions):
+    files = []
+    for metadata in metadata_definitions:
+        connector_dir_name = metadata["data"]["dockerRepository"].replace("airbyte/", "")
+        definitionId = metadata["data"]["definitionId"]
+
+        key = f"{connector_dir_name}-{definitionId}"
+
+        data_dict = metadata.to_dict(orient='records')
+        yaml_string = yaml.dump(data_dict)
+
+        file = context.resources.metadata_file_directory.write_data(yaml_string.encode(), ext="yaml", key=key)
+        files.append(file)
+
+    return Output(files, metadata={"count": len(files)})
+
 @asset
-def metadata_definitions(cloud_sources_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, oss_destinations_dataframe):
+def metadata_definitions(context, cloud_sources_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, oss_destinations_dataframe):
     sources_metadata_list = merge_into_metadata_definitions("sourceDefinitionId", "source", oss_sources_dataframe, cloud_sources_dataframe)
     destinations_metadata_list = merge_into_metadata_definitions("destinationDefinitionId", "destination", oss_destinations_dataframe, cloud_destinations_dataframe)
     all_definitions = pd.concat([sources_metadata_list, destinations_metadata_list]);
-    return Output(all_definitions, metadata={"count": len(all_definitions), "preview_of_one": MetadataValue.md(all_definitions[0]["data"].to_markdown())})
+    # return OutputDataFrame(all_definitions)
+    context.log.info(f"Found {len(all_definitions)} metadata definitions")
+    return Output(all_definitions, metadata={"count": len(all_definitions)})
 
 
 @asset(required_resource_keys={"catalog_report_directory_manager"})
@@ -197,6 +220,7 @@ def connector_catalog_location_markdown(context, all_destinations_dataframe, all
 # lets make sure markdown is still working
 # then lets get specs all at once
 # then lets hoise the merge
+# move metadata to its own file
 
 def is_spec_cached(dockerRepository, dockerImageTag):
     url = f"https://storage.googleapis.com/io-airbyte-cloud-spec-cache/specs/{dockerRepository}/{dockerImageTag}/spec.json"
@@ -263,27 +287,27 @@ def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe, source
 
 
 @asset
-def cloud_sources_dataframe(latest_cloud_catalog_dict: dict) -> pd.DataFrame:
+def cloud_sources_dataframe(latest_cloud_catalog_dict: dict):
     sources = latest_cloud_catalog_dict["sources"]
-    return pd.DataFrame(sources)
+    return OutputDataFrame(pd.DataFrame(sources))
 
 
 @asset
-def oss_sources_dataframe(latest_oss_catalog_dict: dict) -> pd.DataFrame:
+def oss_sources_dataframe(latest_oss_catalog_dict: dict):
     sources = latest_oss_catalog_dict["sources"]
-    return pd.DataFrame(sources)
+    return OutputDataFrame(pd.DataFrame(sources))
 
 
 @asset
-def cloud_destinations_dataframe(latest_cloud_catalog_dict: dict) -> pd.DataFrame:
+def cloud_destinations_dataframe(latest_cloud_catalog_dict: dict):
     destinations = latest_cloud_catalog_dict["destinations"]
-    return pd.DataFrame(destinations)
+    return OutputDataFrame(pd.DataFrame(destinations))
 
 
 @asset
-def oss_destinations_dataframe(latest_oss_catalog_dict: dict) -> pd.DataFrame:
+def oss_destinations_dataframe(latest_oss_catalog_dict: dict):
     destinations = latest_oss_catalog_dict["destinations"]
-    return pd.DataFrame(destinations)
+    return OutputDataFrame(pd.DataFrame(destinations))
 
 
 @asset(required_resource_keys={"latest_cloud_catalog_gcs_file"})
