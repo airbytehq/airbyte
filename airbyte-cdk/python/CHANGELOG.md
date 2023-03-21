@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.30.4
+CDK's read command handler supports Connector Builder list_streams requests
+
+## 0.30.3
+Fix reset pagination issue on test reads
+
 ## 0.30.2
 * Low-code CDK: Override refresh_access_token logic DeclarativeOAuthAuthenticator
 
