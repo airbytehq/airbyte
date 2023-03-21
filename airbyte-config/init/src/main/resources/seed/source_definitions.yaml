@@ -45,7 +45,7 @@
 - name: AlloyDB for PostgreSQL
   sourceDefinitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
   dockerRepository: airbyte/source-alloydb
-  dockerImageTag: 2.0.2
+  dockerImageTag: 2.0.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
   icon: alloydb.svg
   sourceType: database
@@ -809,7 +809,7 @@
 - name: Google Search Console
   sourceDefinitionId: eb4c9e00-db83-4d63-a386-39cfa91012a8
   dockerRepository: airbyte/source-google-search-console
-  dockerImageTag: 0.1.21
+  dockerImageTag: 0.1.22
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-search-console
   icon: googlesearchconsole.svg
   sourceType: api
@@ -1003,6 +1003,7 @@
   allowedHosts:
     hosts:
       - "${domain}"
+  maxSecondsBetweenMessages: 21600
 - name: K6 Cloud
   sourceDefinitionId: e300ece7-b073-43a3-852e-8aff36a57f13
   dockerRepository: airbyte/source-k6-cloud
@@ -1186,7 +1187,7 @@
 - name: Microsoft SQL Server (MSSQL)
   sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   dockerRepository: airbyte/source-mssql
-  dockerImageTag: 1.0.3
+  dockerImageTag: 1.0.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
   icon: mssql.svg
   sourceType: database
@@ -1249,7 +1250,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 2.0.4
+  dockerImageTag: 2.0.5
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -1553,7 +1554,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 2.0.3
+  dockerImageTag: 2.0.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -1841,7 +1842,7 @@
 - name: Slack
   sourceDefinitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
   dockerRepository: airbyte/source-slack
-  dockerImageTag: 0.1.23
+  dockerImageTag: 0.1.24
   documentationUrl: https://docs.airbyte.com/integrations/sources/slack
   icon: slack.svg
   sourceType: api
@@ -2070,7 +2071,7 @@
 - name: Trello
   sourceDefinitionId: 8da67652-004c-11ec-9a03-0242ac130003
   dockerRepository: airbyte/source-trello
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.3.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/trello
   icon: trello.svg
   sourceType: api
@@ -2168,14 +2169,6 @@
   icon: youtube-analytics.svg
   sourceType: api
   releaseStage: beta
-- sourceDefinitionId: 78752073-6d96-447d-8a93-2b6953f3c787
-  name: YouTube Analytics Business
-  dockerRepository: airbyte/source-youtube-analytics-business
-  dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.com/integrations/sources/youtube-analytics-business
-  icon: youtube-analytics.svg
-  sourceType: api
-  releaseStage: alpha
 - name: Vantage
   sourceDefinitionId: 28ce1fbd-1e15-453f-aa9f-da6c4d928e92
   dockerRepository: airbyte/source-vantage
@@ -2211,11 +2204,14 @@
 - name: Xero
   sourceDefinitionId: 6fd1e833-dd6e-45ec-a727-ab917c5be892
   dockerRepository: airbyte/source-xero
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/xero
   icon: xero.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - api.xero.com
 - name: xkcd
   sourceDefinitionId: 80fddd16-17bd-4c0c-bf4a-80df7863fc9d
   dockerRepository: airbyte/source-xkcd
@@ -2313,7 +2309,7 @@
 - name: Zendesk Support
   sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.2.25
+  dockerImageTag: 0.2.26
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   icon: zendesk-support.svg
   sourceType: api
@@ -2448,11 +2444,14 @@
 - name: Yandex Metrica
   sourceDefinitionId: 7865dce4-2211-4f6a-88e5-9d0fe161afe7
   dockerRepository: airbyte/source-yandex-metrica
-  dockerImageTag: 0.1.0
+  dockerImageTag: 1.0.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/yandex-metrica
   icon: yandexmetrica.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
+  allowedHosts:
+    hosts:
+      - api-metrica.yandex.net
 - name: Younium
   sourceDefinitionId: 9c74c2d7-531a-4ebf-b6d8-6181f805ecdc
   dockerRepository: airbyte/source-younium
