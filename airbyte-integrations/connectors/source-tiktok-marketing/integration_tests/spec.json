@@ -39,6 +39,11 @@
                 "description": "Long-term Authorized Access Token.",
                 "airbyte_secret": true,
                 "type": "string"
+              },
+              "advertiser_id": {
+                "title": "Advertiser ID",
+                "description": "The Advertiser ID to filter reports and streams. Let this empty to retrieve all.",
+                "type": "string"
               }
             },
             "required": ["app_id", "secret", "access_token"]

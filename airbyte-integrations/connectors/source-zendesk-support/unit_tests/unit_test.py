@@ -4,6 +4,7 @@
 
 
 import calendar
+import copy
 import re
 from datetime import datetime
 from unittest.mock import patch
@@ -117,17 +118,21 @@ def test_get_authenticator(config, expected):
 
 
 @pytest.mark.parametrize(
-    "response, check_passed",
+    "response, start_date, check_passed",
     [
-        ({"active_features": {"organization_access_enabled": True}}, (True, None)),
+        ({"active_features": {"organization_access_enabled": True}}, "2020-01-01T00:00:00Z", True),
+        ({}, "2020-01-00T00:00:00Z", False)
     ],
-    ids=["check_connection"],
+    ids=["check_successful", "invalid_start_date"],
 )
-def test_check(response, check_passed):
+def test_check(response, start_date, check_passed):
+    config = copy.deepcopy(TEST_CONFIG)
+    config["start_date"] = start_date
     with patch.object(UserSettingsStream, "get_settings", return_value=response) as mock_method:
-        result = SourceZendeskSupport().check_connection(logger=AirbyteLogger, config=TEST_CONFIG)
-        mock_method.assert_called()
-        assert check_passed == result
+        ok, _ = SourceZendeskSupport().check_connection(logger=AirbyteLogger, config=config)
+        assert check_passed == ok
+        if ok:
+            mock_method.assert_called()
 
 
 @pytest.mark.parametrize(
