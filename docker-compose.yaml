@@ -28,6 +28,7 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - DATABASE_USER=${DATABASE_USER}
       - LOG_LEVEL=${LOG_LEVEL}
+      - LOCAL_CONNECTOR_CATALOG_PATH=${LOCAL_CONNECTOR_CATALOG_PATH}
     networks:
       - airbyte_internal
     depends_on:
@@ -159,7 +160,7 @@ services:
       - MICRONAUT_ENVIRONMENTS=${WORKERS_MICRONAUT_ENVIRONMENTS}
       - AUTO_DETECT_SCHEMA=${AUTO_DETECT_SCHEMA}
       - MAX_NOTIFY_WORKERS=5
-      - SHOULD_RUN_NOTIFY_WORKFLOWS=true
+      - SHOULD_RUN_NOTIFY_WORKFLOWS=${SHOULD_RUN_NOTIFY_WORKFLOWS}
     ports:
       - "8001"
     configs:
@@ -240,7 +241,7 @@ services:
       bootloader:
         condition: service_completed_successfully
   airbyte-connector-builder-server:
-    image: airbyte/connector-builder-server:${VERSION}
+    image: airbyte/connector-builder-server:${VERSION} # Replace with airbyte/connector-atelier-server:${VERSION} to test the builder micronaut refactor
     logging: *default-logging
     container_name: airbyte-connector-builder-server
     restart: unless-stopped
