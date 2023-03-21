@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.30.4
+CDK's read command handler supports Connector Builder list_streams requests
+
 ## 0.30.3
 Fix reset pagination issue on test reads
 

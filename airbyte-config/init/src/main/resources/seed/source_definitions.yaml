@@ -17,7 +17,7 @@
 - name: Airtable
   sourceDefinitionId: 14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212
   dockerRepository: airbyte/source-airtable
-  dockerImageTag: 2.0.4
+  dockerImageTag: 3.0.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/airtable
   icon: airtable.svg
   sourceType: api
@@ -606,6 +606,13 @@
   icon: file.svg
   sourceType: file
   releaseStage: generally_available
+- name: Firebase Realtime Database
+  sourceDefinitionId: acb5f973-a565-441e-992f-4946f3e65662
+  dockerRepository: airbyte/source-firebase-realtime-database
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/firebase-realtime-database
+  sourceType: database
+  releaseStage: alpha
   allowedHosts:
     hosts:
       - "*"
@@ -681,7 +688,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.4.2
+  dockerImageTag: 0.4.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -747,7 +754,7 @@
 - name: Google Ads
   sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   dockerRepository: airbyte/source-google-ads
-  dockerImageTag: 0.2.11
+  dockerImageTag: 0.2.12
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
   icon: google-adwords.svg
   sourceType: api
@@ -802,7 +809,7 @@
 - name: Google Search Console
   sourceDefinitionId: eb4c9e00-db83-4d63-a386-39cfa91012a8
   dockerRepository: airbyte/source-google-search-console
-  dockerImageTag: 0.1.20
+  dockerImageTag: 0.1.22
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-search-console
   icon: googlesearchconsole.svg
   sourceType: api
@@ -931,7 +938,7 @@
 - name: Instagram
   sourceDefinitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
   dockerRepository: airbyte/source-instagram
-  dockerImageTag: 1.0.3
+  dockerImageTag: 1.0.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/instagram
   icon: instagram.svg
   sourceType: api
@@ -996,6 +1003,7 @@
   allowedHosts:
     hosts:
       - "${domain}"
+  maxSecondsBetweenMessages: 21600
 - name: K6 Cloud
   sourceDefinitionId: e300ece7-b073-43a3-852e-8aff36a57f13
   dockerRepository: airbyte/source-k6-cloud
@@ -1242,7 +1250,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 2.0.3
+  dockerImageTag: 2.0.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -1753,7 +1761,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesloft
   icon: salesloft.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
   allowedHosts:
     hosts:
       - "api.salesloft.com"
@@ -1842,7 +1850,7 @@
 - name: Slack
   sourceDefinitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
   dockerRepository: airbyte/source-slack
-  dockerImageTag: 0.1.23
+  dockerImageTag: 0.1.24
   documentationUrl: https://docs.airbyte.com/integrations/sources/slack
   icon: slack.svg
   sourceType: api
@@ -2169,14 +2177,6 @@
   icon: youtube-analytics.svg
   sourceType: api
   releaseStage: beta
-- sourceDefinitionId: 78752073-6d96-447d-8a93-2b6953f3c787
-  name: YouTube Analytics Business
-  dockerRepository: airbyte/source-youtube-analytics-business
-  dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.com/integrations/sources/youtube-analytics-business
-  icon: youtube-analytics.svg
-  sourceType: api
-  releaseStage: alpha
 - name: Vantage
   sourceDefinitionId: 28ce1fbd-1e15-453f-aa9f-da6c4d928e92
   dockerRepository: airbyte/source-vantage
@@ -2212,11 +2212,14 @@
 - name: Xero
   sourceDefinitionId: 6fd1e833-dd6e-45ec-a727-ab917c5be892
   dockerRepository: airbyte/source-xero
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/xero
   icon: xero.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - api.xero.com
 - name: xkcd
   sourceDefinitionId: 80fddd16-17bd-4c0c-bf4a-80df7863fc9d
   dockerRepository: airbyte/source-xkcd
@@ -2314,7 +2317,7 @@
 - name: Zendesk Support
   sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.2.25
+  dockerImageTag: 0.2.26
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   icon: zendesk-support.svg
   sourceType: api
@@ -2385,7 +2388,7 @@
 - name: ZohoCRM
   sourceDefinitionId: 4942d392-c7b5-4271-91f9-3b4f4e51eb3e
   dockerRepository: airbyte/source-zoho-crm
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/zoho-crm
   icon: zohocrm.svg
   sourceType: api
@@ -2401,7 +2404,7 @@
 - name: SFTP Bulk
   sourceDefinitionId: 31e3242f-dee7-4cdc-a4b8-8e06c5458517
   dockerRepository: airbyte/source-sftp-bulk
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/sftp-bulk
   icon: sftp.svg
   sourceType: file
@@ -2449,11 +2452,14 @@
 - name: Yandex Metrica
   sourceDefinitionId: 7865dce4-2211-4f6a-88e5-9d0fe161afe7
   dockerRepository: airbyte/source-yandex-metrica
-  dockerImageTag: 0.1.0
+  dockerImageTag: 1.0.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/yandex-metrica
   icon: yandexmetrica.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
+  allowedHosts:
+    hosts:
+      - api-metrica.yandex.net
 - name: Younium
   sourceDefinitionId: 9c74c2d7-531a-4ebf-b6d8-6181f805ecdc
   dockerRepository: airbyte/source-younium
