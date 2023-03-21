@@ -1,6 +1,6 @@
 # Manage syncs
 
-After you have created a connection, you can change how your data syncs to the destination by modifying the [configuration settings](#manage-configuration) and the [stream settings](#manage-streams-in-your-connection).
+After you have created a connection, you can change how your data syncs to the destination by modifying the [configuration settings](#configure-connection-settings) and the [stream settings](#modify-streams-in-your-connection).
 
 ## Configure connection settings
 
