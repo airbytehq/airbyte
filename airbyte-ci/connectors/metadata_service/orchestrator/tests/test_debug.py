@@ -49,18 +49,19 @@ def test_debug_catalog_projection():
 
     context = build_op_context(resources=resources)
     cloud_catalog_dict = latest_cloud_catalog_dict(context)
-    cloud_destinations_df = cloud_destinations_dataframe(cloud_catalog_dict)
-    cloud_sources_df = cloud_sources_dataframe(cloud_catalog_dict)
+    cloud_destinations_df = cloud_destinations_dataframe(cloud_catalog_dict).value
+    cloud_sources_df = cloud_sources_dataframe(cloud_catalog_dict).value
 
     oss_catalog_dict = latest_oss_catalog_dict(context)
-    oss_destinations_df = oss_destinations_dataframe(oss_catalog_dict)
-    oss_sources_df = oss_sources_dataframe(oss_catalog_dict)
-    source_controlled_connectors_df = source_controlled_connectors(context)
+    # import pdb; pdb.set_trace()
+    oss_destinations_df = oss_destinations_dataframe(oss_catalog_dict).value
+    oss_sources_df = oss_sources_dataframe(oss_catalog_dict).value
+    source_controlled_connectors_list = source_controlled_connectors(context).value
 
-    metadata_definitions_df = metadata_definitions(cloud_sources_df, cloud_destinations_df, oss_sources_df, oss_destinations_df)
-    valid_metadata_list_df = valid_metadata_list(metadata_definitions_df)
+    metadata_definitions_df = metadata_definitions(context, cloud_sources_df, cloud_destinations_df, oss_sources_df, oss_destinations_df).value
+    valid_metadata_list_df = valid_metadata_list(metadata_definitions_df).value
 
-    all_sources_df = all_sources_dataframe(cloud_sources_df, oss_sources_df, source_controlled_connectors_df, valid_metadata_list_df)
+    all_sources_df = all_sources_dataframe(cloud_sources_df, oss_sources_df, source_controlled_connectors_list, valid_metadata_list_df)
     # all_destinations_df = all_destinations_dataframe(cloud_destinations_df, oss_destinations_df)
 
     # connector_catalog_location_html(context, all_sources_df, all_destinations_df)

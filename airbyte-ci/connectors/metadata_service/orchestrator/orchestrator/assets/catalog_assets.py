@@ -100,9 +100,9 @@ def merge_into_metadata_definitions(id_field, connector_type, oss_connector_df, 
         catalogs = compute_catalog_overrides(merged_df)
         metadata["data"]["catalogs"] = catalogs
 
-        return pd.DataFrame(metadata)
+        return metadata
 
-    metadata_list = merged_connectors.apply(build_metadata, axis=1)
+    metadata_list = [build_metadata(merged_df) for _, merged_df in merged_connectors.iterrows()]
 
     return metadata_list
 
@@ -140,20 +140,21 @@ def write_metadata_definitions_to_filesystem(context, metadata_definitions):
 
         key = f"{connector_dir_name}-{definitionId}"
 
-        data_dict = metadata.to_dict(orient='records')
-        yaml_string = yaml.dump(data_dict)
+        yaml_string = yaml.dump(metadata)
 
         file = context.resources.metadata_file_directory.write_data(yaml_string.encode(), ext="yaml", key=key)
         files.append(file)
 
-    return Output(files, metadata={"count": len(files)})
+    file_paths = [file.path for file in files]
+    file_paths_str = "\n".join(file_paths)
+
+    return Output(files, metadata={"count": len(files), "file_paths": file_paths_str})
 
 @asset
 def metadata_definitions(context, cloud_sources_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, oss_destinations_dataframe):
     sources_metadata_list = merge_into_metadata_definitions("sourceDefinitionId", "source", oss_sources_dataframe, cloud_sources_dataframe)
     destinations_metadata_list = merge_into_metadata_definitions("destinationDefinitionId", "destination", oss_destinations_dataframe, cloud_destinations_dataframe)
-    all_definitions = pd.concat([sources_metadata_list, destinations_metadata_list]);
-    # return OutputDataFrame(all_definitions)
+    all_definitions = sources_metadata_list + destinations_metadata_list;
     context.log.info(f"Found {len(all_definitions)} metadata definitions")
     return Output(all_definitions, metadata={"count": len(all_definitions)})
 
