@@ -35,6 +35,12 @@ def test_check_connection(requests_mock):
         ],
     )
 
+    requests_mock.get(
+        "https://api.trello.com/1/members/me/organizations",
+        headers=NO_SLEEP_HEADERS,
+        json=[{"id": "org111111111111111111111", "idBoards": ["b11111111111111111111111", "b22222222222222222222222"]}],
+    )
+
     source = SourceTrello()
     status, error = source.check_connection(logger, config)
     assert status is True

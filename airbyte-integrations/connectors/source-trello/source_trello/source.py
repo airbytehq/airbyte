@@ -14,7 +14,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 from .auth import TrelloAuthenticator
 from .utils import TrelloRequestRateLimits as balancer
-from .utils import read_full_refresh
+from .utils import read_all_boards
 
 
 class TrelloStream(HttpStream, ABC):
@@ -54,11 +54,11 @@ class TrelloStream(HttpStream, ABC):
 
 
 class ChildStreamMixin:
-    parent_stream_class: Optional[TrelloStream] = None
-
     def stream_slices(self, sync_mode, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        for item in self.parent_stream_class(config=self.config).read_records(sync_mode=sync_mode):
-            yield {"id": item["id"]}
+        board_ids = set(self.config.get("board_ids", []))
+        for board_id in read_all_boards(Boards(self.config), Organizations(self.config)):
+            if not board_ids or board_id in board_ids:
+                yield {"id": board_id}
 
 
 class IncrementalTrelloStream(TrelloStream, ABC):
@@ -112,7 +112,6 @@ class Cards(ChildStreamMixin, TrelloStream):
     Endpoint: https://api.trello.com/1/boards/<id>/cards/all
     """
 
-    parent_stream_class = Boards
     limit = 500
     extra_params = {
         "customFieldItems": "true",
@@ -138,7 +137,6 @@ class Checklists(ChildStreamMixin, TrelloStream):
     Endpoint: https://api.trello.com/1/boards/<id>/checklists
     """
 
-    parent_stream_class = Boards
     extra_params = {"fields": "all", "checkItem_fields": "all"}
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -150,8 +148,6 @@ class Lists(ChildStreamMixin, TrelloStream):
     API Docs: https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-lists-get
     Endpoint: https://api.trello.com/1/boards/<id>/lists
     """
-
-    parent_stream_class = Boards
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"boards/{stream_slice['id']}/lists"
@@ -173,8 +169,6 @@ class Users(ChildStreamMixin, TrelloStream):
     Endpoint: https://api.trello.com/1/boards/<id>/members
     """
 
-    parent_stream_class = Boards
-
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"boards/{stream_slice['id']}/members"
 
@@ -185,7 +179,6 @@ class Actions(ChildStreamMixin, IncrementalTrelloStream):
     Endpoint: https://api.trello.com/1/boards/<id>/actions
     """
 
-    parent_stream_class = Boards
     limit = 1000
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -212,8 +205,7 @@ class SourceTrello(AbstractSource):
 
         config = self._validate_and_transform(config)
         config["authenticator"] = self._get_authenticator(config)
-        stream = Boards({**config, "board_ids": []})
-        available_boards = {board["id"] for board in read_full_refresh(stream)}
+        available_boards = set(read_all_boards(Boards({**config, "board_ids": []}), Organizations(config)))
         unknown_boards = set(config.get("board_ids", [])) - available_boards
         if unknown_boards:
             unknown_boards = ", ".join(sorted(unknown_boards))
