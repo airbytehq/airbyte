@@ -606,6 +606,9 @@
   icon: file.svg
   sourceType: file
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "*"
 - name: Firebase Realtime Database
   sourceDefinitionId: acb5f973-a565-441e-992f-4946f3e65662
   dockerRepository: airbyte/source-firebase-realtime-database
