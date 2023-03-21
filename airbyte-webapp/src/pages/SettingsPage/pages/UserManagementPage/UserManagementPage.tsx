@@ -85,7 +85,7 @@ const UserManagementPage: React.FC = () => {
         setNotification({ message: "user.resendInvite.message", type: "info" });
       })
       .catch((err: any) => {
-        console.log(err);
+        setNotification({ message: err.message, type: "error" });
       });
   }, []);
 
@@ -112,8 +112,9 @@ const UserManagementPage: React.FC = () => {
         onCancelChangeRole();
         setNotification({ message: "user.changeRole.message", type: "info" });
       })
-      .catch(() => {
+      .catch((err: any) => {
         setChangeRoleLoading(false);
+        setNotification({ message: err.message, type: "error" });
       });
   }, [userId, userRole]);
 
