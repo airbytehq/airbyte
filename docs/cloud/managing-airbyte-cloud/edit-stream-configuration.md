@@ -2,13 +2,13 @@
 
 After you have created a connection, you can change how your data syncs to the destination by modifying the [configuration settings](#manage-configuration) and the [stream settings](#manage-streams-in-your-connection).
 
-## Manage configuration
+## Configure connection settings
 
-The configuration settings allow you to manage aspects of the sync, such as how often the data syncs and where the data is written. 
+The connection configuration settings allow you to manage various aspects of the sync, such as how often data syncs and where data is written. 
 
-To reconfigure these settings for your connection:
+To configure these settings:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Connections** and then click the connection you want to change.   
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Connections** and then click the connection you want to change. 
 
 2. Click the **Replication** tab.
 
@@ -43,15 +43,13 @@ To use [cron scheduling](http://www.quartz-scheduler.org/documentation/quartz-2.
 
 :::
 
-## Manage streams in your connection
+## Modify streams in your connection
 
 In the **Activate the streams you want to sync** table, you can choose which streams to sync and how they are organized in the destination.
 
-### Configure streams
+### Modify streams
 
-You can reconfigure a single stream, or you can reconfigure multiple streams at once.
-
-To configure streams:
+To modify streams:
 
 1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Connections** and then click the connection you want to change.   
 
@@ -59,11 +57,15 @@ To configure streams:
 
 3. Scroll down to the **Activate the streams you want to sync** table.
 
-#### Configure an individual stream
+:::note
+
+You can modify a single stream, or you can modify multiple streams at once.
+
+:::
+
+To modify an individual stream:
 
 ![Single Edit Gif 7](https://user-images.githubusercontent.com/106352739/187313088-85c61a6d-1025-45fa-b14e-a7fe86defea4.gif)
-
-To configure an individual stream:
 
 1. In the the **Activate the streams you want to sync** table, toggle **Sync** on or off for your selected stream.
 
@@ -79,23 +81,23 @@ Depending on the sync mode you select, you may need to choose a cursor or primar
 
 :::note
 
-Source-defined cursors or primary keys are selected automatically and cannot be changed in the table.
+Source-defined cursors and primary keys are selected automatically and cannot be changed in the table.
 
 :::
 
 4. Click on a stream to display the stream details panel.
 
-5. Toggle on the fields you want to include in the sync, toggle off the fields you do not want to include, or toggle all fields on or off by using the toggle in the table header.
+5. Toggle individual fields to include or exclude them in the sync, or use the toggle in the table header to select all fields at once.
 
 :::note
 
 * You can only deselect top-level fields. You cannot deselect nested fields.
 * The Airbyte platform may read all data from the source (depending on the source), but it will only write data to the destination from fields you selected. Deselecting fields will not prevent the Airbyte platform from reading them.
-* When you refresh the schema, new fields will be selected by default, even if you have previously deselected fields in that stream.
+* When you refresh the schema, newly added fields will be selected by default, even if you have previously deselected fields in that stream.
 
 :::
 
-6. Select the **Cursor** or **Primary key** if there are dropdowns in those fields.
+6. Depending on the sync mode you chose for your connection, you can select the **Cursor** or **Primary key** for individual fields in this table. 
 
 7. Click the **X** to close the stream details panel.
 
@@ -111,17 +113,15 @@ Airbyte recommends that you reset streams. A reset will delete data in the desti
 
 10. Click **Save connection**.
 
-#### Configure multiple streams
+To modify multiple streams:
 
 ![Batch Edit gif 5](https://user-images.githubusercontent.com/106352739/187312110-d16b4f9a-9d43-4b23-b644-b64004f33b58.gif)
-
-To configure multiple streams:
 
 1. In the **Activate the streams you want to sync** table, select the checkboxes of streams that you want to apply changes to.
 
 :::note
 
-To select or deselect all streams, click the checkbox in the table header. You can also deselect individual streams by deselecting their checkbox in the table. 
+To select or deselect all streams, click the checkbox in the table header. To deselect an individual stream, deselect its checkbox in the table.
 
 :::
 
@@ -141,11 +141,11 @@ To select or deselect all streams, click the checkbox in the table header. You c
 
     :::note
 
-    Source-defined cursors or primary keys cannot be changed while configuring mutliple streams.
+    Source-defined cursors and primary keys cannot be changed while configuring mutliple streams.
 
     :::
 
-    4. Click Apply to apply these changes to the streams you selected, or click Cancel to discard the changes.
+    4. Click **Apply** to apply these changes to the streams you selected, or click **Cancel** to discard the changes.
 
 2. Click **Save changes**, or click **Cancel** to discard the changes.
 
