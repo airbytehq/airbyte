@@ -30,9 +30,14 @@ def test_check_connection_failed(config):
     assert source.check_connection(logger_mock, config)[0] is False
 
 
-def test_streams_count(mocker):
+@responses.activate
+def test_streams_count(config):
+    responses.add(
+        responses.GET,
+        "https://example.atlassian.net/wiki/rest/api/audit",
+        status=200,
+    )
     source = SourceConfluence()
-    config_mock = MagicMock()
-    streams = source.streams(config_mock)
+    streams = source.streams(config)
     expected_streams_number = 5
     assert len(streams) == expected_streams_number
