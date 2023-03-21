@@ -438,14 +438,14 @@ class NotaFiscal(IncrementalBlingBase):
     
     def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
         dict_list = [
-            {
-                'situacao_filter': 'situacao[3]',
-                'tipo_filter': 'tipo[S]'
-            },
-            {
-                'situacao_filter': None,
-                'tipo_filter': 'tipo[E]'
-            },
+            # {
+            #     'situacao_filter': 'situacao[3]',
+            #     'tipo_filter': 'tipo[S]'
+            # },
+            # {
+            #     'situacao_filter': None,
+            #     'tipo_filter': 'tipo[E]'
+            # },
             {
                 'situacao_filter': None,
                 'tipo_filter': 'tipo[S]'
