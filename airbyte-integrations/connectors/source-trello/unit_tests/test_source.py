@@ -13,7 +13,7 @@ def test_streams(mocker):
     source = SourceTrello()
     config_mock = MagicMock()
     streams = source.streams(config_mock)
-    expected_streams_number = 6
+    expected_streams_number = 7
     assert len(streams) == expected_streams_number
 
 

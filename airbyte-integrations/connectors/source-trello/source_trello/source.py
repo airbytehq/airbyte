@@ -157,6 +157,16 @@ class Lists(ChildStreamMixin, TrelloStream):
         return f"boards/{stream_slice['id']}/lists"
 
 
+class Organizations(TrelloStream):
+    """Return list of all member's organizations
+    API Docs: https://developer.atlassian.com/cloud/trello/rest/api-group-members/#api-members-id-organizations-get
+    Endpoint: https://api.trello.com/1/members/me/organizations
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return "members/me/organizations"
+
+
 class Users(ChildStreamMixin, TrelloStream):
     """Return list of all members of a boards.
     API Docs: https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-members-get
@@ -212,4 +222,4 @@ class SourceTrello(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config["authenticator"] = self._get_authenticator(config)
-        return [Actions(config), Boards(config), Cards(config), Checklists(config), Lists(config), Users(config)]
+        return [Actions(config), Boards(config), Cards(config), Checklists(config), Lists(config), Users(config), Organizations(config)]
