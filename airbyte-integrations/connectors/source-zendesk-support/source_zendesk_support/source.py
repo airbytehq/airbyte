@@ -11,7 +11,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from source_zendesk_support.streams import SourceZendeskException, DATETIME_FORMAT
+from source_zendesk_support.streams import DATETIME_FORMAT, SourceZendeskException
 
 from .streams import (
     Brands,
