@@ -385,7 +385,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
             PostgresUtils.getPluginValue(sourceConfig.get("replication_method")));
       }
 
-      final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
+      final AirbyteDebeziumHandler<Long> handler = new AirbyteDebeziumHandler<>(sourceConfig,
           PostgresCdcTargetPosition.targetPosition(database), false, firstRecordWaitTime);
       final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
       final List<ConfiguredAirbyteStream> streamsToSnapshot = identifyStreamsToSnapshot(catalog, stateManager);
