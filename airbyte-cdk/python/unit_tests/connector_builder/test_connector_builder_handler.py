@@ -7,17 +7,17 @@ import json
 from unittest import mock
 from unittest.mock import patch
 
-import connector_builder
 import pytest
+from airbyte_cdk import connector_builder
+from airbyte_cdk.connector_builder.connector_builder_handler import list_streams, resolve_manifest
+from airbyte_cdk.connector_builder.main import handle_connector_builder_request, handle_request, read_stream
+from airbyte_cdk.connector_builder.models import StreamRead, StreamReadSlicesInner, StreamReadSlicesInnerPagesInner
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from connector_builder.connector_builder_handler import list_streams, resolve_manifest
-from connector_builder.main import handle_connector_builder_request, handle_request, read_stream
-from connector_builder.models import StreamRead, StreamReadSlicesInner, StreamReadSlicesInnerPagesInner
 from unit_tests.connector_builder.utils import create_configured_catalog
 
 _stream_name = "stream_with_custom_requester"
@@ -215,7 +215,7 @@ def test_resolve_manifest(valid_resolve_manifest_config_file):
                             "primary_key": _stream_primary_key,
                             "url_base": _stream_url_base,
                             "$parameters": _stream_options,
-                            "page_size": 10
+                            "page_size": 10,
                         },
                         "name": _stream_name,
                         "primary_key": _stream_primary_key,
@@ -315,7 +315,7 @@ def test_read():
             emitted_at=1,
         ),
     )
-    with patch("connector_builder.message_grouper.MessageGrouper.get_message_groups", return_value=stream_read):
+    with patch("airbyte_cdk.connector_builder.message_grouper.MessageGrouper.get_message_groups", return_value=stream_read):
         output_record = handle_connector_builder_request(
             source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG)
         )
@@ -385,10 +385,12 @@ def test_list_streams(manifest_declarative_source):
 
     assert result.type == MessageType.RECORD
     assert result.record.stream == "list_streams"
-    assert result.record.data == {"streams": [
-        {"name": "a name", "url": "https://a-url-base.com/a-path"},
-        {"name": "another name", "url": "https://another-url-base.com/another-path"}
-    ]}
+    assert result.record.data == {
+        "streams": [
+            {"name": "a name", "url": "https://a-url-base.com/a-path"},
+            {"name": "another name", "url": "https://another-url-base.com/another-path"},
+        ]
+    }
 
 
 def test_given_stream_is_not_declarative_stream_when_list_streams_then_return_exception_message(manifest_declarative_source):
