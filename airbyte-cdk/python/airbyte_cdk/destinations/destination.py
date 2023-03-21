@@ -30,7 +30,7 @@ class Destination(Connector, ABC):
 
     def _run_check(self, config: Mapping[str, Any], configured_catalog: Optional[ConfiguredAirbyteCatalog] = None) -> AirbyteMessage:
         if configured_catalog:
-            self.check_with_catalog(logger, config, configured_catalog)
+            check_result = self.check_with_catalog(logger, config, configured_catalog)
         else:
             check_result = self.check(logger, config)
         return AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=check_result)
