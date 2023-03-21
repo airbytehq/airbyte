@@ -75,5 +75,16 @@
         "name": "alerts"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_updated": "2020-01-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "conversations"
+      }
+    }
   }
 ]

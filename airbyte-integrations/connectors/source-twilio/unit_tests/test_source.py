@@ -19,6 +19,7 @@ from source_twilio.streams import (
     Calls,
     ConferenceParticipants,
     Conferences,
+    Conversations,
     DependentPhoneNumbers,
     IncomingPhoneNumbers,
     Keys,
@@ -30,7 +31,6 @@ from source_twilio.streams import (
     Transcriptions,
     UsageRecords,
     UsageTriggers,
-    Conversations,
 )
 
 
