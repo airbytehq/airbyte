@@ -7,11 +7,11 @@ import sys
 from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.connector import BaseConnector
+from airbyte_cdk.connector_builder.connector_builder_handler import list_streams, read_stream, resolve_manifest
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from connector_builder.connector_builder_handler import list_streams, read_stream, resolve_manifest
 
 
 def create_source(config: Mapping[str, Any]) -> ManifestDeclarativeSource:

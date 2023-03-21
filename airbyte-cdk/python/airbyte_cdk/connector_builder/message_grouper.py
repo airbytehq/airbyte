@@ -9,11 +9,11 @@ from json import JSONDecodeError
 from typing import Any, Iterable, Iterator, Mapping, Optional, Union
 from urllib.parse import parse_qs, urlparse
 
+from airbyte_cdk.connector_builder.models import HttpRequest, HttpResponse, StreamRead, StreamReadPages, StreamReadSlices
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
 from airbyte_protocol.models.airbyte_protocol import ConfiguredAirbyteCatalog
-from connector_builder.models import HttpRequest, HttpResponse, StreamRead, StreamReadPages, StreamReadSlices
 
 
 class MessageGrouper:
@@ -24,12 +24,13 @@ class MessageGrouper:
         self._max_slices = max_slices
         self._max_record_limit = max_record_limit
 
-    def get_message_groups(self,
-                           source: DeclarativeSource,
-                           config: Mapping[str, Any],
-                           configured_catalog: ConfiguredAirbyteCatalog,
-                           record_limit: Optional[int] = None,
-                           ) -> StreamRead:
+    def get_message_groups(
+        self,
+        source: DeclarativeSource,
+        config: Mapping[str, Any],
+        configured_catalog: ConfiguredAirbyteCatalog,
+        record_limit: Optional[int] = None,
+    ) -> StreamRead:
         if record_limit is not None and not (1 <= record_limit <= 1000):
             raise ValueError(f"Record limit must be between 1 and 1000. Got {record_limit}")
         schema_inferrer = SchemaInferrer()
@@ -43,9 +44,9 @@ class MessageGrouper:
         log_messages = []
         state = {}  # No support for incremental sync
         for message_group in self._get_message_groups(
-                source.read(self.logger, config, configured_catalog, state),
-                schema_inferrer,
-                record_limit,
+            source.read(self.logger, config, configured_catalog, state),
+            schema_inferrer,
+            record_limit,
         ):
             if isinstance(message_group, AirbyteLogMessage):
                 log_messages.append({"message": message_group.message})
@@ -56,11 +57,13 @@ class MessageGrouper:
             logs=log_messages,
             slices=slices,
             test_read_limit_reached=self._has_reached_limit(slices),
-            inferred_schema=schema_inferrer.get_stream_schema(configured_catalog.streams[0].stream.name)  # The connector builder currently only supports reading from a single stream at a time
+            inferred_schema=schema_inferrer.get_stream_schema(
+                configured_catalog.streams[0].stream.name
+            ),  # The connector builder currently only supports reading from a single stream at a time
         )
 
     def _get_message_groups(
-            self, messages: Iterator[AirbyteMessage], schema_inferrer: SchemaInferrer, limit: int
+        self, messages: Iterator[AirbyteMessage], schema_inferrer: SchemaInferrer, limit: int
     ) -> Iterable[Union[StreamReadPages, AirbyteLogMessage]]:
         """
         Message groups are partitioned according to when request log messages are received. Subsequent response log messages
@@ -113,9 +116,9 @@ class MessageGrouper:
     @staticmethod
     def _need_to_close_page(at_least_one_page_in_group, message):
         return (
-                at_least_one_page_in_group
-                and message.type == Type.LOG
-                and (message.log.message.startswith("request:") or message.log.message.startswith("slice:"))
+            at_least_one_page_in_group
+            and message.type == Type.LOG
+            and (message.log.message.startswith("request:") or message.log.message.startswith("slice:"))
         )
 
     @staticmethod
