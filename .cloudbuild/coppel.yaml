@@ -2,7 +2,7 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: [ 'build', '-t', 'us-docker.pkg.dev/$PROJECT_ID/airbyte-custom-connectors/source-coppel:${_COPPEL_VERSION}', './airbyte-integrations/connectors/source-coppel-merama' ]
 substitutions:
-  _COPPEL_VERSION: 0.0.2
+  _COPPEL_VERSION: 0.0.3
 images:
 - 'us-docker.pkg.dev/$PROJECT_ID/airbyte-custom-connectors/source-coppel:${_COPPEL_VERSION}'
 
