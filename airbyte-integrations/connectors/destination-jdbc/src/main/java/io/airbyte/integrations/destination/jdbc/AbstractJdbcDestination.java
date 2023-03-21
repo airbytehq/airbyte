@@ -79,7 +79,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     }
     final String schemaDefaultConfigKey = sqlOperations.isSchemaRequired() ? JdbcUtils.SCHEMA_KEY : JdbcUtils.DATABASE_KEY;
     final String defaultSchemaName = namingResolver.getIdentifier(config.get(schemaDefaultConfigKey).asText());
-    Set<String> outputSchemas = new HashSet<>();
+    final Set<String> outputSchemas = new HashSet<>();
     outputSchemas.add(defaultSchemaName);
     if (catalog != null) {
       catalog.getStreams().stream()

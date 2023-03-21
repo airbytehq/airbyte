@@ -117,7 +117,7 @@ public class IntegrationRunner {
         // common
         case SPEC -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.SPEC).withSpec(integration.spec()));
         case CHECK -> {
-          AirbyteMessage message = isCheckWithCatalog(parsed) ? runCheckWithCatalog(parsed) : runCheck(parsed);
+          AirbyteMessage message = isCheckWithCatalog(parsed) ? runCheckWithCatalog(parsed) : runCheckWithoutCatalog(parsed);
           outputRecordCollector.accept(message);
         }
         // source only
@@ -136,7 +136,7 @@ public class IntegrationRunner {
     LOGGER.info("Completed integration: {}", integration.getClass().getName());
   }
 
-  private AirbyteMessage runCheck(final IntegrationConfig parsed) throws Exception {
+  private AirbyteMessage runCheckWithoutCatalog(final IntegrationConfig parsed) throws Exception {
     try {
       final JsonNode config = getValidatedConfig(parsed, CHECK.toString());
       return new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config));
@@ -152,18 +152,19 @@ public class IntegrationRunner {
 
   private AirbyteMessage runCheckWithCatalog(final IntegrationConfig parsed) throws Exception {
     LOGGER.info("Using Check With Catalog Method");
-    if (!(integration instanceof Check)) {
-      LOGGER.warn("Catalog Sent to check which does not implement checkWithCatalog for connector {}", integration);
-      return runCheck(parsed);
-    } else {
+    if (integration instanceof Check) {
       try {
         final JsonNode config = getValidatedConfig(parsed, CHECK.toString());
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-        return new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(((Check) integration).check(config, catalog));
+        AirbyteConnectionStatus connectionStatus = ((Check) integration).check(config, catalog);
+        return new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(connectionStatus);
       } catch (final ConfigValidationException e) {
         // if validation fails don't throw an exception, return a failed connection check message
         return failedConnectionStatusMessage(e.getMessage());
       }
+    } else {
+      LOGGER.warn("Catalog Sent to check which does not implement checkWithCatalog for connector {}", integration);
+      return runCheckWithoutCatalog(parsed);
     }
   }
 
