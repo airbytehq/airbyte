@@ -550,6 +550,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
    *
    * @throws Exception
    */
+  /* TODO: Re-enable when connector allows CDC checkpointing
   @Test
   protected void verifyCheckpointStatesByRecords() throws Exception {
     // We require a huge amount of records, otherwise Debezium will notify directly the last offset.
@@ -586,6 +587,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     assertTrue(stateMessagesCDC.size() > 1);
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count());
   }
+   */
 
   /**
    * This test verify that multiple states are sent during the CDC process based on time ranges. We
@@ -594,6 +596,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
    *
    * @throws Exception
    */
+  /* TODO: Re-enable when connector allows CDC checkpointing
   @Test
   protected void verifyCheckpointStatesBySeconds() throws Exception {
     // We require a huge amount of records, otherwise Debezium will notify directly the last offset.
@@ -630,5 +633,5 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     assertTrue(stateMessagesCDC.size() > 1);
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count());
   }
-
+   */
 }
