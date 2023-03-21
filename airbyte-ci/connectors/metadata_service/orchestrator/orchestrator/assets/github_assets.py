@@ -1,6 +1,8 @@
-from dagster import MetadataValue, Output, asset, OpExecutionContext
+from dagster import Output, asset
 
-@asset(required_resource_keys={"github_connectors_directory"})
+GROUP_NAME = "github"
+
+@asset(required_resource_keys={"github_connectors_directory"}, group_name=GROUP_NAME)
 def source_controlled_connectors(context):
     github_connectors_directory = context.resources.github_connectors_directory
 

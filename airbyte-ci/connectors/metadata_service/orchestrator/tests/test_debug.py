@@ -13,7 +13,7 @@ from orchestrator.assets.catalog_assets import (
     all_destinations_dataframe,
     connector_catalog_location_markdown,
     connector_catalog_location_html,
-    metadata_definitions,
+    catalog_derived_metadata_definitions,
     valid_metadata_list,
 )
 from orchestrator.assets.github_assets import source_controlled_connectors
@@ -58,11 +58,11 @@ def test_debug_catalog_projection():
     oss_sources_df = oss_sources_dataframe(oss_catalog_dict).value
     source_controlled_connectors_list = source_controlled_connectors(context).value
 
-    metadata_definitions_df = metadata_definitions(context, cloud_sources_df, cloud_destinations_df, oss_sources_df, oss_destinations_df).value
+    metadata_definitions_df = catalog_derived_metadata_definitions(context, cloud_sources_df, cloud_destinations_df, oss_sources_df, oss_destinations_df).value
     valid_metadata_list_df = valid_metadata_list(metadata_definitions_df).value
 
-    all_sources_df = all_sources_dataframe(cloud_sources_df, oss_sources_df, source_controlled_connectors_list, valid_metadata_list_df)
-    # all_destinations_df = all_destinations_dataframe(cloud_destinations_df, oss_destinations_df)
+    # all_sources_df = all_sources_dataframe(cloud_sources_df, oss_sources_df, source_controlled_connectors_list, valid_metadata_list_df)
+    all_destinations_df = all_destinations_dataframe(cloud_destinations_df, oss_destinations_df)
 
     # connector_catalog_location_html(context, all_sources_df, all_destinations_df)
     # connector_catalog_location_markdown(context, all_sources_df, all_destinations_df)
