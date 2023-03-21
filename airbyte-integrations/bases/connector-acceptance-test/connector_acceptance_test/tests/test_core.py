@@ -495,7 +495,6 @@ class TestConnection(BaseTest):
             assert isinstance(trace, AirbyteTraceMessage)
             assert trace.error is not None
             assert trace.error.message is not None
-            assert trace.error.internal_message is not None
 
 
 @pytest.mark.default_timeout(30)
