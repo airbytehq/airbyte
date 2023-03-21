@@ -61,7 +61,7 @@ You can modify a single stream, or you can modify multiple streams at once.
 
 :::
 
-To modify an individual stream:
+Modify an individual stream:
 
 ![Single Edit Gif 7](https://user-images.githubusercontent.com/106352739/187313088-85c61a6d-1025-45fa-b14e-a7fe86defea4.gif)
 
@@ -111,7 +111,7 @@ Airbyte recommends that you reset streams. A reset will delete data in the desti
 
 10. Click **Save connection**.
 
-To modify multiple streams:
+Modify multiple streams:
 
 ![Batch Edit gif 5](https://user-images.githubusercontent.com/106352739/187312110-d16b4f9a-9d43-4b23-b644-b64004f33b58.gif)
 
