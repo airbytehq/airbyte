@@ -6,66 +6,19 @@
     "id": {
       "type": "integer"
     },
-    "addedAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "addressCity": {
-      "type": ["null", "string"]
-    },
-    "addressCountry": {
-      "type": ["null", "string"]
-    },
-    "addressState": {
-      "type": ["null", "string"]
-    },
-    "addressStreet": {
-      "type": ["null", "string"]
-    },
-    "addressStreet2": {
-      "type": ["null", "string"]
-    },
-    "addressZip": {
-      "type": ["null", "string"]
-    },
-    "angelListUrl": {
-      "type": ["null", "string"]
-    },
-    "availableAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "callOptedOut": {
-      "type": ["null", "boolean"]
-    },
-    "callsOptStatus": {
-      "type": ["null", "string"]
-    },
-    "callsOptedAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "campaignName": {
-      "type": ["null", "string"]
-    },
-    "clickCount": {
+    "amount": {
       "type": ["null", "integer"]
     },
-    "company": {
-      "type": ["null", "string"]
-    },
-    "contactHistogram": {
-      "type": ["null", "array"],
-      "items": {
-        "type": "array",
-        "items": {
-          "type": "integer"
-        }
-      }
+    "closeDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "createdAt": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "currencyType":{
+      "type": ["null", "string"]
     },
     "custom1": {
       "type": ["null", "string"]
@@ -352,6 +305,9 @@
     "custom49": {
       "type": ["null", "string"]
     },
+    "custom5": {
+      "type": ["null", "string"]
+    },
     "custom50": {
       "type": ["null", "string"]
     },
@@ -514,166 +470,47 @@
     "custom99": {
       "type": ["null", "string"]
     },
-    "dateOfBirth": {
+    "description": {
+      "type": ["null", "string"]
+    },
+    "externalCreatedAt": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "degree": {
+    "healthCategory": {
       "type": ["null", "string"]
     },
-    "emailOptedOut": {
-      "type": ["null", "boolean"]
-    },
-    "emails": {
-      "type": ["null", "array"],
-      "items": {
-        "type": "string"
-      }
-    },
-    "emailsOptStatus": {
-      "type": ["null", "string"]
-    },
-    "emailsOptedAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "engagedAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "engagedScore": {
-      "type": ["null", "number"]
-    },
-    "eventName": {
-      "type": ["null", "string"]
-    },
-    "externalId": {
-      "type": ["null", "string"]
-    },
-    "externalOwner": {
-      "type": ["null", "string"]
-    },
-    "externalSource": {
-      "type": ["null", "string"]
-    },
-    "facebookUrl": {
-      "type": ["null", "string"]
-    },
-    "firstName": {
-      "type": ["null", "string"]
-    },
-    "gender": {
-      "type": ["null", "string"]
-    },
-    "githubUrl": {
-      "type": ["null", "string"]
-    },
-    "githubUsername": {
-      "type": ["null", "string"]
-    },
-    "googlePlusUrl": {
-      "type": ["null", "string"]
-    },
-    "graduationDate": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "homePhones": {
-      "type": ["null", "array"],
-      "items": {
-        "type": "string"
-      }
-    },
-    "jobStartDate": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "lastName": {
-      "type": ["null", "string"]
-    },
-    "linkedInConnections": {
+    "healthScore": {
       "type": ["null", "integer"]
     },
-    "linkedInId": {
+    "mapLink": {
       "type": ["null", "string"]
     },
-    "linkedInSlug": {
+    "mapNextSteps": {
       "type": ["null", "string"]
     },
-    "linkedInUrl": {
+    "mapNumberOfOverdueTasks": {
       "type": ["null", "string"]
     },
-    "middleName": {
+    "mapStatus": {
       "type": ["null", "string"]
-    },
-    "mobilePhones": {
-      "type": ["null", "array"],
-      "items": {
-        "type": "string"
-      }
     },
     "name": {
       "type": ["null", "string"]
     },
-    "nickname": {
+    "nextStep": {
       "type": ["null", "string"]
     },
-    "occupation": {
+    "opportunityType": {
       "type": ["null", "string"]
     },
-    "openCount": {
+    "probability": {
       "type": ["null", "integer"]
     },
-    "optedOut": {
-      "type": ["null", "boolean"]
-    },
-    "optedOutAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "otherPhones": {
-      "type": ["null", "array"],
-      "items": {
-        "type": "string"
-      }
-    },
-    "personalNote1": {
+    "prospectingRepId": {
       "type": ["null", "string"]
-    },
-    "personalNote2": {
-      "type": ["null", "string"]
-    },
-    "preferredContact": {
-      "type": ["null", "string"]
-    },
-    "quoraUrl": {
-      "type": ["null", "string"]
-    },
-    "region": {
-      "type": ["null", "string"]
-    },
-    "replyCount": {
-      "type": ["null", "integer"]
-    },
-    "school": {
-      "type": ["null", "string"]
-    },
-    "score": {
-      "type": ["null", "number"]
     },
     "sharingTeamId": {
-      "type": ["null", "string"]
-    },
-    "source": {
-      "type": ["null", "string"]
-    },
-    "specialties": {
-      "type": ["null", "string"]
-    },
-    "stackOverflowId": {
-      "type": ["null", "string"]
-    },
-    "stackOverflowUrl": {
       "type": ["null", "string"]
     },
     "tags": {
@@ -682,70 +519,15 @@
         "type": ["null", "string"]
       }
     },
-    "timeZone": {
-      "type": ["null", "string"]
-    },
-    "timeZoneIana": {
-      "type": ["null", "string"]
-    },
-    "timeZoneInferred": {
-      "type": ["null", "string"]
-    },
-    "title": {
-      "type": ["null", "string"]
-    },
     "touchedAt": {
       "type": ["null", "string"],
       "format": "date-time"
-    },
-    "trashedAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "twitterUrl": {
-      "type": ["null", "string"]
-    },
-    "twitterUsername": {
-      "type": ["null", "string"]
     },
     "updatedAt": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "voipPhones": {
-      "type": ["null", "array"],
-      "items": {
-        "type": "string"
-      }
-    },
-    "websiteUrl1": {
-      "type": ["null", "string"]
-    },
-    "websiteUrl2": {
-      "type": ["null", "string"]
-    },
-    "websiteUrl3": {
-      "type": ["null", "string"]
-    },
-    "workPhones": {
-      "type": ["null", "array"],
-      "items": {
-        "type": "string"
-      }
-    },
     "account": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "integer"]
-      }
-    },
-    "activeSequenceStates": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "integer"]
-      }
-    },
-    "calls": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
@@ -757,31 +539,7 @@
         "type": ["null", "integer"]
       }
     },
-    "emailAddresses": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "integer"]
-      }
-    },
-    "favorites": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "integer"]
-      }
-    },
-    "mailings": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "integer"]
-      }
-    },
-    "opportunities": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "integer"]
-      }
-    },
-    "opportunityProspectRoles": {
+    "opportunityStage": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
@@ -793,31 +551,13 @@
         "type": ["null", "integer"]
       }
     },
-    "persona": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "integer"]
-      }
-    },
-    "phoneNumbers": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "integer"]
-      }
-    },
-    "sequenceStates": {
+    "prospects": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "stage": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "integer"]
-      }
-    },
-    "tasks": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
