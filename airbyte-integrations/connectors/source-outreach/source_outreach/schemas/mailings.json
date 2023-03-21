@@ -6,60 +6,90 @@
     "id": {
       "type": "integer"
     },
-    "activeAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
+    "bodyHtml": {
+      "type": ["null", "string"]
     },
-    "bounceCount": {
-      "type": ["null", "integer"]
+    "bodyText": {
+      "type": ["null", "string"]
     },
-    "callCompletedAt": {
+    "bouncedAt": {
       "type": ["null", "string"],
       "format": "date-time"
     },
     "clickCount": {
       "type": ["null", "integer"]
     },
-    "createdAt": {
+    "clickedAt": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "deliverCount": {
-      "type": ["null", "integer"]
+    "deliveredAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "errorBacktrace": {
+      "type": ["null", "string"]
     },
     "errorReason": {
       "type": ["null", "string"]
     },
-    "failureCount": {
-      "type": ["null", "integer"]
+    "followUpTaskScheduledAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
     },
-    "negativeReplyCount": {
-      "type": ["null", "integer"]
+    "followUpTaskType": {
+      "type": ["null", "string"]
     },
-    "neutralReplyCount": {
-      "type": ["null", "integer"]
+    "mailboxAddress": {
+      "type": ["null", "string"]
+    },
+    "mailingType": {
+      "type": ["null", "string"]
+    },
+    "markedAsSpamAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "messageId": {
+      "type": ["null", "string"]
+    },
+    "notifyThreadCondition": {
+      "type": ["null", "string"]
+    },
+    "notifyThreadScheduledAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "openCount": {
       "type": ["null", "integer"]
     },
-    "optOutCount": {
-      "type": ["null", "integer"]
+    "openedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
     },
-    "pauseReason": {
+    "overrideSafetySettings": {
+      "type": ["null", "boolean"]
+    },
+    "references": {
       "type": ["null", "string"]
-    },
-    "positiveReplyCount": {
-      "type": ["null", "integer"]
     },
     "repliedAt": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "replyCount": {
+    "retryAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "retryCount": {
       "type": ["null", "integer"]
     },
-    "scheduleCount": {
+    "retryInterval": {
       "type": ["null", "integer"]
+    },
+    "scheduledAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "state": {
       "type": ["null", "string"]
@@ -68,47 +98,35 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "subject": {
+      "type": ["null", "string"]
+    },
+    "trackLinks": {
+      "type": ["null", "boolean"]
+    },
+    "trackOpens": {
+      "type": ["null", "boolean"]
+    },
+    "unsubscribedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+
+    "createdAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "updatedAt": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "account": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "integer"]
-      }
-    },
-    "activeStepMailings": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "integer"]
-      }
-    },
-    "activeStepTasks": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "integer"]
-      }
-    },
-    "calls": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "integer"]
-      }
-    },
-    "creator": {
+    "followUpSequence": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "mailbox": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "integer"]
-      }
-    },
-    "mailings": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
@@ -126,7 +144,19 @@
         "type": ["null", "integer"]
       }
     },
+    "recipients": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
     "sequence": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "sequenceState": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
@@ -138,7 +168,25 @@
         "type": ["null", "integer"]
       }
     },
+    "task": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
     "tasks": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "template": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "user": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
