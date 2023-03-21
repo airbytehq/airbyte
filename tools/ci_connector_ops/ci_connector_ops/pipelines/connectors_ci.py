@@ -47,11 +47,12 @@ async def run(context: ConnectorTestContext) -> ConnectorTestReport:
         ConnectorTestReport: The test reports holding tests results.
     """
     async with context:
+        semaphore = anyio.Semaphore(2)
         async with asyncer.create_task_group() as task_group:
             tasks = [
                 task_group.soonify(checks.QaChecks(context).run)(),
                 task_group.soonify(checks.CodeFormatChecks(context).run)(),
-                task_group.soonify(tests.run_all_tests)(context),
+                task_group.soonify(tests.run_all_tests)(context, semaphore),
             ]
         results = list(itertools.chain(*(task.value for task in tasks)))
 

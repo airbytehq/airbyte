@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  connectors_ci:
-    name: Connectors CI
-    timeout-minutes: 300 # 5 hours
+  nightly_builds_alpha:
+    name: Nightly builds GA + BETA
+    timeout-minutes: 360 # 6 hours
     runs-on: large-runner
     steps:
       - name: Get start timestamp
@@ -41,7 +41,7 @@ jobs:
               mkdir -p "$DAGGER_TMP_BINDIR"
               curl "https://dl.dagger.io/dagger/main/${DAGGER_CLI_COMMIT}/dagger_${DAGGER_CLI_COMMIT}_$(uname -s | tr A-Z a-z)_$(uname -m | sed s/x86_64/amd64/).tar.gz" | tar xvz -C "$DAGGER_TMP_BINDIR"
           fi
-          connectors-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} test-connectors --release-stage=beta --release-stage=generally_available
+          connectors-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} test-connectors --release-stage=alpha
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
           AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
