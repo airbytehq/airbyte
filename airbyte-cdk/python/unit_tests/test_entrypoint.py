@@ -5,7 +5,7 @@
 
 from argparse import Namespace
 from copy import deepcopy
-from typing import Any, Dict, List, Mapping, MutableMapping, Union
+from typing import Any, List, Mapping, MutableMapping, Union
 from unittest.mock import MagicMock
 
 import pytest
@@ -196,6 +196,7 @@ def test_run_read(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock)
 def test_invalid_command(entrypoint: AirbyteEntrypoint, mocker, config_mock):
     with pytest.raises(Exception):
         list(entrypoint.run(Namespace(command="invalid", config="conf")))
+
 
 @pytest.mark.parametrize(
     ["args", "expected"],
