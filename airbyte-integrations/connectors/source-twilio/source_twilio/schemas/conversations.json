@@ -19,7 +19,7 @@
       "type": ["null", "string"]
     },
     "attributes": {
-      "type": ["null", "object"]
+      "type": ["null", "string"]
     },
     "date_created": {
       "format": "date-time",
