@@ -377,8 +377,8 @@ def manifest_declarative_source():
 
 def test_list_streams(manifest_declarative_source):
     manifest_declarative_source.streams.return_value = [
-        a_declarative_stream(a_http_stream("a name", "https://a-url-base.com", "a-path")),
-        a_declarative_stream(a_http_stream("another name", "https://another-url-base.com", "another-path")),
+        create_mock_declarative_stream(create_mock_http_stream("a name", "https://a-url-base.com", "a-path")),
+        create_mock_declarative_stream(create_mock_http_stream("another name", "https://another-url-base.com", "another-path")),
     ]
 
     result = list_streams(manifest_declarative_source, {})
@@ -437,7 +437,7 @@ def test_list_streams_integration_test():
     }
 
 
-def a_http_stream(name, url_base, path):
+def create_mock_http_stream(name, url_base, path):
     http_stream = mock.Mock(spec=HttpStream, autospec=True)
     http_stream.name = name
     http_stream.url_base = url_base
@@ -445,7 +445,7 @@ def a_http_stream(name, url_base, path):
     return http_stream
 
 
-def a_declarative_stream(http_stream):
+def create_mock_declarative_stream(http_stream):
     declarative_stream = mock.Mock(spec=DeclarativeStream, autospec=True)
     declarative_stream.retriever = http_stream
     return declarative_stream

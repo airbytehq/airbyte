@@ -58,12 +58,10 @@ def resolve_manifest(source: ManifestDeclarativeSource) -> AirbyteMessage:
 
 def list_streams(source: ManifestDeclarativeSource, config: Dict[str, Any]) -> AirbyteMessage:
     try:
-        streams = list(
-            map(
-                lambda http_stream: {"name": http_stream.name, "url": urljoin(http_stream.url_base, http_stream.path())},
-                _get_http_streams(source, config)
-            )
-        )
+        streams = [
+            {"name": http_stream.name, "url": urljoin(http_stream.url_base, http_stream.path())}
+            for http_stream in _get_http_streams(source, config)
+        ]
         return AirbyteMessage(
             type=Type.RECORD,
             record=AirbyteRecordMessage(
