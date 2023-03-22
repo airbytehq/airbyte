@@ -1,5 +1,3 @@
-# 
-
 # Strava
 
 This page guides you through the process of setting up the Strava    source connector.
@@ -92,7 +90,16 @@ Follow these steps to get the required credentials and inputs:
 6. Click `Set up source`.
 <!-- /env:oss -->
 
-## Supported streams and sync modes
+## Supported sync modes
+
+The Strava source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+- [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+
+## Supported streams
 
 * [Athlete Stats](https://developers.strava.com/docs/reference/#api-Athletes-getStats)
 * [Activities](https://developers.strava.com/docs/reference/#api-Activities-getLoggedInAthleteActivities) \(Incremental\)
