@@ -57,7 +57,6 @@ public class GcsDestination extends BaseConnector implements Destination {
 
       // Test multipart upload with stream transfer manager
       S3BaseChecks.testMultipartUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
-
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final AmazonS3Exception e) {
       LOGGER.error("Exception attempting to access the Gcs bucket", e);
