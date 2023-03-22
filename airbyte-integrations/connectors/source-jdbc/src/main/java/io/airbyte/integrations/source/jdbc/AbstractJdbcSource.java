@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import datadog.trace.api.Trace;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
@@ -114,6 +115,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
    *
    * @return list of consumers that run queries for the check command.
    */
+  @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
   protected List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
     return ImmutableList.of(database -> {
       LOGGER.info("Attempting to get metadata from the database to see if we can connect.");
