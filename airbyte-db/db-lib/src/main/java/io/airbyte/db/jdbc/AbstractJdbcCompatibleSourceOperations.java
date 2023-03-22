@@ -126,13 +126,13 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-   try {
-     node.put(columnName, DateTimeConverter.convertToTimestamp(getObject(resultSet, index, LocalDateTime.class)));
-   } catch (Exception e) {
-     // for backward compatibility
-     final Instant instant = resultSet.getTimestamp(index).toInstant();
-     node.put(columnName, DataTypeUtils.toISO8601StringWithMicroseconds(instant));
-   }
+    try {
+      node.put(columnName, DateTimeConverter.convertToTimestamp(getObject(resultSet, index, LocalDateTime.class)));
+    } catch (Exception e) {
+      // for backward compatibility
+      final Instant instant = resultSet.getTimestamp(index).toInstant();
+      node.put(columnName, DataTypeUtils.toISO8601StringWithMicroseconds(instant));
+    }
   }
 
   protected void putBinary(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
