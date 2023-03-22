@@ -16,7 +16,7 @@ const ButtonBox = styled(Button)<{ disabled?: boolean }>`
   width: 152px;
   height: 40px;
   border-radius: 6px;
-  margin-top: 36px;
+  margin-top: 30px;
   color: ${({ theme, disabled }) => (disabled ? theme.grey300 : theme.black300)};
 `;
 
