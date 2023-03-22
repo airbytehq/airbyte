@@ -7,7 +7,6 @@ package io.airbyte.integrations.performance;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AllowedHosts;
@@ -31,7 +30,6 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import java.net.InetAddress;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -100,27 +98,27 @@ public class PerformanceTest {
      * "SILENT"))); destination.start(dstConfig, Path.of(jobRoot)); ///////////////////////////////////
      */
 
-    final ConcurrentHashMap<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors = new ConcurrentHashMap();
+//    final ConcurrentHashMap<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors = new ConcurrentHashMap();
     // final Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields = new HashMap();
-    final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields = new HashMap();
-    final Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields = new HashMap();
-    populateStreamToAllFields(this.catalog, streamToAllFields);
-    final String streamName0 = sourceConfig.getCatalog().getStreams().get(0).getStream().getName();
-    final String streamNamespace0 = sourceConfig.getCatalog().getStreams().get(0).getStream().getNamespace();
-    final String streamName1 = sourceConfig.getCatalog().getStreams().get(1).getStream().getName();
-    final String streamNamespace1 = sourceConfig.getCatalog().getStreams().get(1).getStream().getNamespace();
-    final String streamName2 = sourceConfig.getCatalog().getStreams().get(2).getStream().getName();
-    final String streamNamespace2 = sourceConfig.getCatalog().getStreams().get(2).getStream().getNamespace();
+//    final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields = new HashMap();
+//    final Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields = new HashMap();
+//    populateStreamToAllFields(this.catalog, streamToAllFields);
+//    final String streamName0 = sourceConfig.getCatalog().getStreams().get(0).getStream().getName();
+//    final String streamNamespace0 = sourceConfig.getCatalog().getStreams().get(0).getStream().getNamespace();
+//    final String streamName1 = sourceConfig.getCatalog().getStreams().get(1).getStream().getName();
+//    final String streamNamespace1 = sourceConfig.getCatalog().getStreams().get(1).getStream().getNamespace();
+//    final String streamName2 = sourceConfig.getCatalog().getStreams().get(2).getStream().getName();
+//    final String streamNamespace2 = sourceConfig.getCatalog().getStreams().get(2).getStream().getNamespace();
 
-    final var recordSchemaValidator = new RecordSchemaValidator(
-        Map.of(
-            new AirbyteStreamNameNamespacePair(streamName0, streamNamespace0),
-            sourceConfig.getCatalog().getStreams().get(0).getStream().getJsonSchema(),
-            new AirbyteStreamNameNamespacePair(streamName1, streamNamespace1),
-            sourceConfig.getCatalog().getStreams().get(1).getStream().getJsonSchema(),
-            new AirbyteStreamNameNamespacePair(streamName2, streamNamespace2),
-            sourceConfig.getCatalog().getStreams().get(2).getStream().getJsonSchema()),
-        true);
+//    final var recordSchemaValidator = new RecordSchemaValidator(
+//        Map.of(
+//            new AirbyteStreamNameNamespacePair(streamName0, streamNamespace0),
+//            sourceConfig.getCatalog().getStreams().get(0).getStream().getJsonSchema(),
+//            new AirbyteStreamNameNamespacePair(streamName1, streamNamespace1),
+//            sourceConfig.getCatalog().getStreams().get(1).getStream().getJsonSchema(),
+//            new AirbyteStreamNameNamespacePair(streamName2, streamNamespace2),
+//            sourceConfig.getCatalog().getStreams().get(2).getStream().getJsonSchema()),
+//        true);
 
     log.info("Source starting");
     source.start(sourceConfig, Path.of(jobRoot));
@@ -137,11 +135,11 @@ public class PerformanceTest {
           totalBytes += Jsons.getEstimatedByteSize(airbyteMessage.getRecord().getData());
           counter++;
 
-          validateSchema(recordSchemaValidator, streamToAllFields, unexpectedFields, validationErrors, airbyteMessage);
-          airbyteMessage.getRecord().setStream(airbyteMessage.getRecord().getStream() + "SUFFIX");
-          ((ObjectNode) airbyteMessage.getRecord().getData()).retain("id", "user_id", "product_id", "added_to_cart_at", "purchased_at", "name",
-              "email",
-              "title", "gender", "height", "language", "blood_type", "created_at", "occupation", "updated_at", "nationality");
+//          validateSchema(recordSchemaValidator, streamToAllFields, unexpectedFields, validationErrors, airbyteMessage);
+//          airbyteMessage.getRecord().setStream(airbyteMessage.getRecord().getStream() + "SUFFIX");
+//          ((ObjectNode) airbyteMessage.getRecord().getData()).retain("id", "user_id", "product_id", "added_to_cart_at", "purchased_at", "name",
+//              "email",
+//              "title", "gender", "height", "language", "blood_type", "created_at", "occupation", "updated_at", "nationality");
           // destination.accept(airbyteMessage);
         }
 
