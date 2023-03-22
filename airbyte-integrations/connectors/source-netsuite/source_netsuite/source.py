@@ -107,7 +107,9 @@ class SourceNetsuite(AbstractSource):
         base_url: str,
         start_datetime: str,
         window_in_days: int,
+        language: str,
         max_retry: int = 3,
+
     ) -> Union[NetsuiteStream, IncrementalNetsuiteStream, CustomIncrementalNetsuiteStream]:
 
         input_args = {
@@ -116,6 +118,7 @@ class SourceNetsuite(AbstractSource):
             "base_url": base_url,
             "start_datetime": start_datetime,
             "window_in_days": window_in_days,
+            "language": language
         }
 
         schema = schemas[object_name]
@@ -163,6 +166,7 @@ class SourceNetsuite(AbstractSource):
                 "start_datetime": config["start_datetime"],
                 "window_in_days": config["window_in_days"],
                 "schemas": schemas,
+                "language": config["language"]
             }
         )
         # build streams

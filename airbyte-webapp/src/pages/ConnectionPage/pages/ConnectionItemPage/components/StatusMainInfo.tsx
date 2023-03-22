@@ -12,6 +12,7 @@ import { RoutePaths } from "pages/routePaths";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 
+import ConnectionName from "./ConnectionName";
 import EnabledControl from "./EnabledControl";
 import styles from "./StatusMainInfo.module.scss";
 import SyncNowButton from "./SyncNowButton";
@@ -66,40 +67,44 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
 
   return (
     <div className={styles.container}>
-      <div className={styles.leftContainer}>
-        <div className={styles.pathContainer}>
-          <Link to={sourceConnectionPath} className={styles.connectorLink}>
-            <ConnectorCard
-              connectionName={source.sourceName}
-              icon={sourceDefinition?.icon}
-              connectorName={source.name}
-              releaseStage={sourceDefinition?.releaseStage}
-            />
-          </Link>
-          {/* <FontAwesomeIcon icon={faArrowRight} /> */}
-          <RightArrowIcon />
-          <Link to={destinationConnectionPath} className={styles.connectorLink}>
-            <ConnectorCard
-              connectionName={destination.destinationName}
-              icon={destinationDefinition?.icon}
-              connectorName={destination.name}
-              releaseStage={destinationDefinition?.releaseStage}
-            />
-          </Link>
+      <ConnectionName connection={connection} />
+      <div className={styles.mainInfoContainer}>
+        {/* <div className={styles.enabledControlContainer} /> */}
+        <div className={styles.leftContainer}>
+          <div className={styles.pathContainer}>
+            <Link to={sourceConnectionPath} className={styles.connectorLink}>
+              <ConnectorCard
+                connectionName={source.sourceName}
+                icon={sourceDefinition?.icon}
+                connectorName={source.name}
+                releaseStage={sourceDefinition?.releaseStage}
+              />
+            </Link>
+            {/* <FontAwesomeIcon icon={faArrowRight} /> */}
+            <RightArrowIcon />
+            <Link to={destinationConnectionPath} className={styles.connectorLink}>
+              <ConnectorCard
+                connectionName={destination.destinationName}
+                icon={destinationDefinition?.icon}
+                connectorName={destination.name}
+                releaseStage={destinationDefinition?.releaseStage}
+              />
+            </Link>
+          </div>
         </div>
-        <div className={styles.syncDate}>{lastSyncTimeText}</div>
+        {connection.status !== ConnectionStatus.deprecated && (
+          <div className={styles.enabledControlContainer}>
+            <EnabledControl
+              onStatusUpdating={onStatusUpdating}
+              disabled={!allowSync}
+              connection={connection}
+              frequencyType={getFrequencyType(connection.scheduleData?.basicSchedule)}
+            />
+            {connection.status === ConnectionStatus.active && <SyncNowButton onSync={onSync} disabled={disabled} />}
+          </div>
+        )}
       </div>
-      {connection.status !== ConnectionStatus.deprecated && (
-        <div className={styles.enabledControlContainer}>
-          <EnabledControl
-            onStatusUpdating={onStatusUpdating}
-            disabled={!allowSync}
-            connection={connection}
-            frequencyType={getFrequencyType(connection.scheduleData?.basicSchedule)}
-          />
-          {connection.status === ConnectionStatus.active && <SyncNowButton onSync={onSync} disabled={disabled} />}
-        </div>
-      )}
+      <div className={styles.syncDate}>{lastSyncTimeText}</div>
     </div>
   );
 };

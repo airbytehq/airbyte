@@ -13,6 +13,7 @@ Daspire implements the [SuiteTalk REST Web Services](https://docs.oracle.com/en/
 * Consumer Secret
 * Token ID
 * Token Secret
+* Language (the default language for your company)
 
 ## Setup guide
 
@@ -24,7 +25,7 @@ Daspire implements the [SuiteTalk REST Web Services](https://docs.oracle.com/en/
 
 2. Go to **Setup** » **Company** » **Company Information**
 
-3. Copy your Account ID. Your account ID is your Realm. It will looks like **1234567** if you use regular account or **1234567\_SB2** if it is a Sandbox
+3. Copy your **Account ID**. Your account ID is your Realm. It will looks like **1234567** if you use regular account or **1234567\_SB2** if it is a Sandbox
 
 #### Step 1.2: Enable features
 
@@ -90,9 +91,17 @@ Daspire implements the [SuiteTalk REST Web Services](https://docs.oracle.com/en/
 
 6. Save changes
 
-7. After that, **Token ID** and **Token Secret** will be showed once, copy them.
+7. After that, **Token ID** and **Token Secret** will be showed once, copy them
 
-#### Step 1.7: Summary
+#### Step 1.7: Obtain default language for your company
+
+1. Go to **Setup** » **Setup Manager** » **Company** » **General Preference**
+
+2. Click on **Languages** tab
+
+3. You will find the default lanaguge for your company here
+
+#### Step 1.8: Summary
 
 You have obtained the following parameters:
 
@@ -100,7 +109,9 @@ You have obtained the following parameters:
 * Consumer Key
 * Consumer Secret
 * Token ID
-* Token Secret Also you have properly **Configured Account** with **Correct Permissions** and **Access Token** for User and Role you've created early.
+* Token Secret
+* Default language for your company
+* Also you have properly **Configured Account** with **Correct Permissions** and **Access Token** for User and Role you've created early.
 
 ### Step 2: Set up the source in Daspire
 
@@ -120,7 +131,9 @@ You have obtained the following parameters:
 
 8. Add **Token Secret**
 
-9. Click Set up source
+9. Add **Language**
+
+10. Click Set up source
 
 ## Supported sync modes
 
@@ -135,4 +148,10 @@ The NetSuite source connector supports the following sync modes:
 
 ## Performance considerations
 
-The connector is restricted by Netsuite [Concurrency Limit per Integration](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/bridgehead_156224824287.html).
+1. The integration is restricted by Netsuite [Concurrency Limit per Integration](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/bridgehead_156224824287.html). Sync might stop or fail if Concurrency Limit is reached.
+
+> You can find your Concurrency Limit per Integration in **Setup** » **Integration** » **Integration Goverance**. Under **Concurrency Usage** you can view the account concurrency limit and the unallocated concurrency limit.
+
+2. If sync fails due to concurrency limit, you can try resync to see if it works.
+
+3. You can also contact NetSuite customer support to [change your Concurrency Limits](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_164095787873.html#:~:text=By%20default%2C%20NetSuite%20Connector%20limits,limit%2C%20contact%20NetSuite%20Customer%20Support).

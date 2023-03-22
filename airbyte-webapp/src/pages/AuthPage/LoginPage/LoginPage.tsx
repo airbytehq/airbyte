@@ -46,7 +46,7 @@ const LoginPageValidationSchema = yup.object().shape({
 
 const LoginPage: React.FC = () => {
   const { formatMessage } = useIntl();
-  const { setUser } = useUser();
+  const { user, setUser } = useUser();
 
   const [errorMessage, setErrorMessage] = useState<string>("");
   const Signin = useAuthenticationService();
@@ -79,7 +79,7 @@ const LoginPage: React.FC = () => {
           }}
           validationSchema={LoginPageValidationSchema}
           onSubmit={async (values) => {
-            Signin.post(values)
+            Signin.post(values, user?.lang)
               .then((res: any) => {
                 setUser?.(res);
               })

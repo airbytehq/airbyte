@@ -236,37 +236,35 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
           )}
 
           <Section title={<FormattedMessage id="connection.basicSettings" />}>
-            {/* {!isEditMode && (
-              <Section> */}
-            <Field name="name">
-              {({ field, meta }: FieldProps<string>) => (
-                <FlexRow>
-                  <LeftFieldCol>
-                    <ConnectorLabel
-                      nextLine
-                      error={!!meta.error && meta.touched}
-                      label={<FormattedMessage id="form.connectionName" />}
-                      // message={formatMessage({
-                      //   id: "form.connectionName.message",
-                      // })}
-                    />
-                  </LeftFieldCol>
-                  <RightFieldCol>
-                    <Input
-                      {...field}
-                      disabled={mode === "readonly"}
-                      error={!!meta.error}
-                      data-testid="connectionName"
-                      placeholder={formatMessage({
-                        id: "form.connectionName.placeholder",
-                      })}
-                    />
-                  </RightFieldCol>
-                </FlexRow>
-              )}
-            </Field>
-            {/* </Section>
-            )} */}
+            {!isEditMode && (
+              <Field name="name">
+                {({ field, meta }: FieldProps<string>) => (
+                  <FlexRow>
+                    <LeftFieldCol>
+                      <ConnectorLabel
+                        nextLine
+                        error={!!meta.error && meta.touched}
+                        label={<FormattedMessage id="form.connectionName" />}
+                        // message={formatMessage({
+                        //   id: "form.connectionName.message",
+                        // })}
+                      />
+                    </LeftFieldCol>
+                    <RightFieldCol>
+                      <Input
+                        {...field}
+                        disabled={mode === "readonly"}
+                        error={!!meta.error}
+                        data-testid="connectionName"
+                        placeholder={formatMessage({
+                          id: "form.connectionName.placeholder",
+                        })}
+                      />
+                    </RightFieldCol>
+                  </FlexRow>
+                )}
+              </Field>
+            )}
 
             <Field name="scheduleData.basicSchedule">
               {({ field, meta }: FieldProps<ConnectionScheduleDataBasicSchedule>) => (

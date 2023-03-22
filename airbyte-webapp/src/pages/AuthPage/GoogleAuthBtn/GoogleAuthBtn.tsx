@@ -19,14 +19,14 @@ const GoogleAuthButtonContainer = styled.div`
 
 export const GoogleAuthBtn: React.FC<IProps> = ({ buttonText }) => {
   const auth = useAuthenticationService();
-  const { setUser } = useUser();
+  const { user, setUser } = useUser();
   return (
     <GoogleAuthButtonContainer>
       <GoogleLogin
         text={buttonText}
         onSuccess={(credentialsResponse) => {
           auth
-            .googleAuth(credentialsResponse.credential as string)
+            .googleAuth(credentialsResponse.credential as string, user?.lang)
             .then((res) => {
               setUser?.(res);
             })

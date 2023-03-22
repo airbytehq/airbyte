@@ -241,7 +241,7 @@ export const SignupForm: React.FC = () => {
         validationSchema={validationSchema}
         onSubmit={async (values) => {
           signUp
-            .create(values)
+            .create(values, user?.lang)
             .then((res: any) => {
               setUser?.(res);
             })
