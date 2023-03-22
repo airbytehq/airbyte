@@ -2208,7 +2208,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-chargebee:0.2.2"
+- dockerImage: "airbyte/source-chargebee:0.2.3"
   spec:
     documentationUrl: "https://apidocs.chargebee.com/docs/api"
     connectionSpecification:
@@ -2491,7 +2491,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-clickup-api:0.1.0"
+- dockerImage: "airbyte/source-clickup-api:0.1.1"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -2527,6 +2527,13 @@
           type: "string"
           description: "The ID of your list in your folder. Retrieve it from the `/folder/{folder_id}/list`\
             \ of the ClickUp API. See <a href=\"https://clickup.com/api/clickupreference/operation/GetLists/\"\
+            >here</a>."
+        include_closed_tasks:
+          title: "Include Closed Tasks"
+          type: "boolean"
+          default: false
+          description: "Include or exclude closed tasks. By default, they are excluded.\
+            \ See <a https://clickup.com/api/clickupreference/operation/GetTasks/#!in=query&path=include_closed&t=request\"\
             >here</a>."
     supportsNormalization: false
     supportsDBT: false
@@ -2878,7 +2885,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-confluence:0.1.2"
+- dockerImage: "airbyte/source-confluence:0.1.3"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -4351,7 +4358,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.34"
+- dockerImage: "airbyte/source-file:0.2.35"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/file"
     connectionSpecification:
@@ -4931,7 +4938,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.4.3"
+- dockerImage: "airbyte/source-github:0.4.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -4948,6 +4955,7 @@
           description: "Choose how to authenticate to GitHub"
           type: "object"
           order: 0
+          group: "auth"
           oneOf:
           - type: "object"
             title: "OAuth"
@@ -7945,7 +7953,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-linkedin-pages:1.0.0"
+- dockerImage: "airbyte/source-linkedin-pages:1.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/linkedin-pages/"
     connectionSpecification:
@@ -8012,17 +8020,6 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-    authSpecification:
-      auth_type: "oauth2.0"
-      oauth2Specification:
-        rootObject:
-        - "credentials"
-        - "0"
-        oauthFlowInitParameters:
-        - - "client_id"
-        - - "client_secret"
-        oauthFlowOutputParameters:
-        - - "refresh_token"
 - dockerImage: "airbyte/source-linnworks:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/linnworks"
@@ -8464,7 +8461,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:1.0.4"
+- dockerImage: "airbyte/source-mssql:1.0.5"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
@@ -9339,7 +9336,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:2.0.6"
+- dockerImage: "airbyte/source-mysql:2.0.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -11066,7 +11063,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-outreach:0.1.2"
+- dockerImage: "airbyte/source-outreach:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/outreach"
     connectionSpecification:
@@ -11079,7 +11076,7 @@
       - "refresh_token"
       - "redirect_uri"
       - "start_date"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         client_id:
           type: "string"
@@ -11533,7 +11530,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-pipedrive:0.1.16"
+- dockerImage: "airbyte/source-pipedrive:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pipedrive"
     connectionSpecification:
@@ -11915,7 +11912,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:2.0.6"
+- dockerImage: "airbyte/source-postgres:2.0.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -11933,6 +11930,7 @@
           description: "Hostname of the database."
           type: "string"
           order: 0
+          group: "db"
         port:
           title: "Port"
           description: "Port of the database."
@@ -11943,11 +11941,13 @@
           examples:
           - "5432"
           order: 1
+          group: "db"
         database:
           title: "Database Name"
           description: "Name of the database."
           type: "string"
           order: 2
+          group: "db"
         schemas:
           title: "Schemas"
           description: "The list of schemas (case sensitive) to sync from. Defaults\
@@ -11960,17 +11960,21 @@
           default:
           - "public"
           order: 3
+          group: "db"
         username:
           title: "Username"
           description: "Username to access the database."
           type: "string"
           order: 4
+          group: "auth"
         password:
           title: "Password"
           description: "Password associated with the username."
           type: "string"
           airbyte_secret: true
           order: 5
+          group: "auth"
+          always_show: true
         jdbc_url_params:
           description: "Additional properties to pass to the JDBC URL string when\
             \ connecting to the database formatted as 'key=value' pairs separated\
@@ -11980,6 +11984,7 @@
           title: "JDBC URL Parameters (Advanced)"
           type: "string"
           order: 6
+          group: "advanced"
         ssl:
           title: "Connect using SSL"
           description: "Encrypt data using SSL. When activating SSL, please select\
@@ -11987,12 +11992,15 @@
           type: "boolean"
           default: false
           order: 7
+          group: "security"
+          always_show: true
         ssl_mode:
           title: "SSL Modes"
           description: "SSL connection modes. \n  Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"\
             > in the docs</a>."
           type: "object"
-          order: 7
+          order: 8
+          group: "security"
           oneOf:
           - title: "disable"
             additionalProperties: true
@@ -12121,7 +12129,8 @@
           type: "object"
           title: "Replication Method"
           description: "Replication method for extracting data from the database."
-          order: 8
+          order: 9
+          group: "advanced"
           oneOf:
           - title: "Standard"
             description: "Standard replication requires no setup on the DB side but\
@@ -12298,6 +12307,14 @@
                 type: "string"
                 airbyte_secret: true
                 order: 4
+          group: "security"
+      groups:
+      - id: "db"
+      - id: "auth"
+      - id: "security"
+        title: "Security"
+      - id: "advanced"
+        title: "Advanced"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -14772,7 +14789,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-strava:0.1.2"
+- dockerImage: "airbyte/source-strava:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/strava"
     connectionSpecification:
@@ -14785,7 +14802,7 @@
       - "refresh_token"
       - "athlete_id"
       - "start_date"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         auth_type:
           type: "string"
@@ -14800,6 +14817,7 @@
           pattern: "^[0-9_\\-]+$"
           examples:
           - "12345"
+          order: 0
         client_secret:
           type: "string"
           description: "The Client Secret of your Strava developer application."
@@ -14808,6 +14826,7 @@
           examples:
           - "fc6243f283e51f6ca989aab298b17da125496f50"
           airbyte_secret: true
+          order: 1
         refresh_token:
           type: "string"
           description: "The Refresh Token with the activity: read_all permissions."
@@ -14816,6 +14835,7 @@
           examples:
           - "fc6243f283e51f6ca989aab298b17da125496f50"
           airbyte_secret: true
+          order: 2
         athlete_id:
           type: "integer"
           description: "The Athlete ID of your Strava developer application."
@@ -14823,12 +14843,14 @@
           pattern: "^[0-9_\\-]+$"
           examples:
           - "17831421"
+          order: 3
         start_date:
           type: "string"
           description: "UTC date and time. Any data before this date will not be replicated."
           title: "Start Date"
           examples:
           - "2016-12-31 23:59:59"
+          order: 4
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -14840,7 +14862,7 @@
       oauth_config_specification:
         complete_oauth_output_specification:
           type: "object"
-          additionalProperties: false
+          additionalProperties: true
           properties:
             refresh_token:
               type: "string"
@@ -14848,7 +14870,7 @@
               - "refresh_token"
         complete_oauth_server_input_specification:
           type: "object"
-          additionalProperties: false
+          additionalProperties: true
           properties:
             client_id:
               type: "string"
@@ -16022,7 +16044,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-twilio:0.1.16"
+- dockerImage: "airbyte/source-twilio:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/twilio"
     connectionSpecification:

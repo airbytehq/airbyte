@@ -3,7 +3,7 @@
 ## Features
 
 | Feature                       | Supported | Notes                             |
-| :---------------------------- | :-------- | :-------------------------------- |
+|:------------------------------|:----------|:----------------------------------|
 | Full Refresh Sync             | Yes       |                                   |
 | Incremental - Append Sync     | Yes       |                                   |
 | Replicate Incremental Deletes | Yes       |                                   |
@@ -176,7 +176,7 @@ This produces the private key in pem format, and the public key remains in the s
 MySQL data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/MySqlSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
 | MySQL Type                                | Resulting Type         | Notes                                                                                                          |
-| :---------------------------------------- | :--------------------- | :------------------------------------------------------------------------------------------------------------- |
+|:------------------------------------------|:-----------------------|:---------------------------------------------------------------------------------------------------------------|
 | `bit(1)`                                  | boolean                |                                                                                                                |
 | `bit(>1)`                                 | base64 binary string   |                                                                                                                |
 | `boolean`                                 | boolean                |                                                                                                                |
@@ -245,7 +245,7 @@ update public.actor set configuration =jsonb_set(configuration, '{replication_me
 WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configuration->>'replication_method' = 'STANDARD');
 ```
 
-If you have connections with MySQL Source using _Logicai Replication (CDC)_ method, run this SQL:
+If you have connections with MySQL Source using _Logical Replication (CDC)_ method, run this SQL:
 
 ```sql
 update public.actor set configuration =jsonb_set(configuration, '{replication_method}', '{"method": "CDC"}', true)
@@ -256,7 +256,8 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.0.6   | 2023-03-21 | [23984](https://github.com/airbytehq/airbyte/pull/23984)   | Support CDC heartbeats                                                                                                                 |
+| 2.0.7   | 2022-03-21 | [24207](https://github.com/airbytehq/airbyte/pull/24207)   | Fix incorrect schema change warning in CDC mode                                                                                                  |
+| 2.0.6   | 2023-03-21 | [23984](https://github.com/airbytehq/airbyte/pull/23984)   | Support CDC heartbeats                                                                                                                           |
 | 2.0.5   | 2023-03-21 | [24147](https://github.com/airbytehq/airbyte/pull/24275)   | Fix error with CDC checkpointing                                                                                                                 |
 | 2.0.4   | 2023-03-20 | [24147](https://github.com/airbytehq/airbyte/pull/24147)   | Support different table structure during "DESCRIBE" query                                                                                        |
 | 2.0.3   | 2023-03-15 | [24082](https://github.com/airbytehq/airbyte/pull/24082)   | Fixed NPE during cursor values validation                                                                                                        |
@@ -277,7 +278,7 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 | 1.0.10  | 2022-11-02 | [18619](https://github.com/airbytehq/airbyte/pull/18619)   | Fix bug with handling Tinyint(1) Unsigned values as boolean                                                                                      |
 | 1.0.9   | 2022-10-31 | [18538](https://github.com/airbytehq/airbyte/pull/18538)   | Encode database name                                                                                                                             |
 | 1.0.8   | 2022-10-25 | [18383](https://github.com/airbytehq/airbyte/pull/18383)   | Better SSH error handling + messages                                                                                                             |
-| 1.0.7   | 2022-10-21 | [18263](https://github.com/airbytehq/airbyte/pull/18263)   | Fixes bug introduced in [15833](https://github.com/airbytehq/airbyte/pull/15833) and adds better error messaging for SSH tunnel in Desstinations |
+| 1.0.7   | 2022-10-21 | [18263](https://github.com/airbytehq/airbyte/pull/18263)   | Fixes bug introduced in [15833](https://github.com/airbytehq/airbyte/pull/15833) and adds better error messaging for SSH tunnel in Destinations  |
 | 1.0.6   | 2022-10-19 | [18087](https://github.com/airbytehq/airbyte/pull/18087)   | Better error messaging for configuration errors (SSH configs, choosing an invalid cursor)                                                        |
 | 1.0.5   | 2022-10-17 | [18041](https://github.com/airbytehq/airbyte/pull/18041)   | Fixes bug introduced 2022-09-12 with SshTunnel, handles iterator exception properly                                                              |
 |         | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238)   | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode        |
