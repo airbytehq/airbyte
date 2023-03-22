@@ -28,8 +28,10 @@ public class Main {
 
     switch (args.length) {
       case 1 -> image = args[0];
-      case 2 -> { image = args[0];
-                  dataset = args[1]; }
+      case 2 -> {
+        image = args[0];
+        dataset = args[1];
+      }
     }
 
     final Path credsPath = Path.of(CREDENTIALS_PATH.formatted(dataset));
