@@ -12,6 +12,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -22,11 +25,13 @@ public class Main {
 
   public static void main(final String[] args) {
 
-    if (!Files.exists(CREDENTIALS_PATH)) {
-      throw new IllegalStateException("{module-root}/" + CREDENTIALS_PATH + " not found. Must provide path to a source-harness credentials file.");
-    }
+//    if (!Files.exists(CREDENTIALS_PATH)) {
+//      throw new IllegalStateException("{module-root}/" + CREDENTIALS_PATH + " not found. Must provide path to a source-harness credentials file.");
+//    }
 
-    final JsonNode config = Jsons.deserialize(IOs.readFile(CREDENTIALS_PATH));
+    var raw = """   
+        """;
+    final JsonNode config = Jsons.deserialize(raw);
 
     final JsonNode catalog;
     try {
@@ -42,30 +47,35 @@ public class Main {
     }
 
     log.info("Starting performance harness for {}", image);
+    // source destination start
     try {
       final PerformanceTest test = new PerformanceTest(
           image,
           config.toString(),
           catalog.toString());
 
-      // final ExecutorService executors = Executors.newFixedThreadPool(2);
-      // final CompletableFuture<Void> readSrcAndWriteDstThread = CompletableFuture.runAsync(() -> {
-      // try {
-      // test.runTest();
-      // } catch (final Exception e) {
-      // throw new RuntimeException(e);
-      // }
-      // }, executors);
-
-      // Uncomment to add destination
-      /*
-       * final CompletableFuture<Void> readFromDstThread = CompletableFuture.runAsync(() -> { try {
-       * Thread.sleep(20_000); test.readFromDst(); } catch (final InterruptedException e) { throw new
-       * RuntimeException(e); } }, executors);
-       */
-
-      // CompletableFuture.anyOf(readSrcAndWriteDstThread/* , readFromDstThread */).get();
-      test.runTest();
+//      final ExecutorService executors = Executors.newFixedThreadPool(2);
+//      final CompletableFuture<Void> readSrcAndWriteDstThread = CompletableFuture.runAsync(() -> {
+//        try {
+//          test.runTest();
+//        } catch (final Exception e) {
+//          throw new RuntimeException(e);
+//        }
+//      }, executors);
+//
+//      // Uncomment to add destination
+//
+//      final CompletableFuture<Void> readFromDstThread = CompletableFuture.runAsync(() -> {
+//        try {
+//          Thread.sleep(20_000);
+//          test.readFromDst();
+//        } catch (final InterruptedException e) {
+//          throw new RuntimeException(e);
+//        }
+//      }, executors);
+//
+//      CompletableFuture.anyOf(readSrcAndWriteDstThread, readFromDstThread).get();
+       test.runTest();
     } catch (final Exception e) {
       log.error("Test failed", e);
       System.exit(1);
