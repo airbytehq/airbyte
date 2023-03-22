@@ -36,7 +36,7 @@ logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt=
 logger = logging.getLogger(__name__)
 
 
-async def run(context: ConnectorTestContext) -> ConnectorTestReport:
+async def run(context: ConnectorTestContext, semaphore: anyio.Semaphore) -> ConnectorTestReport:
     """Runs a CI pipeline for a single connector.
     A visual DAG can be found on the README.md file of the pipelines modules.
 
@@ -46,17 +46,17 @@ async def run(context: ConnectorTestContext) -> ConnectorTestReport:
     Returns:
         ConnectorTestReport: The test reports holding tests results.
     """
-    async with context:
-        semaphore = anyio.Semaphore(2)
-        async with asyncer.create_task_group() as task_group:
-            tasks = [
-                #task_group.soonify(checks.QaChecks(context).run)(),
-                #task_group.soonify(checks.CodeFormatChecks(context).run)(),
-                task_group.soonify(tests.run_all_tests)(context, semaphore),
-            ]
-        results = list(itertools.chain(*(task.value for task in tasks)))
+    async with semaphore:
+        async with context:
+            async with asyncer.create_task_group() as task_group:
+                tasks = [
+                    task_group.soonify(checks.QaChecks(context).run)(),
+                    task_group.soonify(checks.CodeFormatChecks(context).run)(),
+                    task_group.soonify(tests.run_all_tests)(context),
+                ]
+            results = list(itertools.chain(*(task.value for task in tasks)))
 
-        context.test_report = ConnectorTestReport(context, steps_results=results)
+            context.test_report = ConnectorTestReport(context, steps_results=results)
 
     return context.test_report
 
@@ -67,11 +67,12 @@ async def run_connectors_test_pipelines(contexts: List[ConnectorTestContext]):
     Args:
         contexts (List[ConnectorTestContext]): List of connector test contexts for which a CI pipeline needs to be run.
     """
+    semaphore = anyio.Semaphore(5)
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         async with anyio.create_task_group() as tg:
             for context in contexts:
                 context.dagger_client = dagger_client.pipeline(f"{context.connector.technical_name} - Test Pipeline")
-                tg.start_soon(run, context)
+                tg.start_soon(run, context, semaphore)
 
 
 @click.group()

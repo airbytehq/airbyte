@@ -177,6 +177,5 @@ class ConnectorTestContext:
                 )
                 if report_upload_exit_code != 0:
                     self.logger.error("Uploading the report to S3 failed.")
-
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         return True

@@ -85,7 +85,7 @@ class AcceptanceTests(PythonTests):
             StepResult: Failure or success of the acceptances tests with stdout and stdout.
         """
         if not self.context.connector.acceptance_test_config:
-            return StepResult(Step.ACCEPTANCE_TESTS, StepStatus.SKIPPED), None
+            return StepResult(self, StepStatus.SKIPPED), None
 
         dagger_client = self.get_dagger_pipeline(self.context.dagger_client)
 
@@ -185,22 +185,21 @@ class IntegrationTests(PythonTests):
         return await self._run_tests_in_directory(connector_under_test_with_secrets, "integration_tests")
 
 
-async def run_all_tests(context: ConnectorTestContext, semaphore) -> List[StepResult]:
-    async with semaphore:
-        package_install_results, connector_under_test = await ConnectorInstallTest(context).run()
-        unit_tests_results = await UnitTests(context).run(connector_under_test)
-        results = [
-            package_install_results,
-            unit_tests_results,
+async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
+    package_install_results, connector_under_test = await ConnectorInstallTest(context).run()
+    unit_tests_results = await UnitTests(context).run(connector_under_test)
+    results = [
+        package_install_results,
+        unit_tests_results,
+    ]
+    if unit_tests_results.status is not StepStatus.SUCCESS:
+        return results + [IntegrationTests(context).skip(), AcceptanceTests(context).skip()]
+
+    context.secrets_dir = await secrets.get_connector_secret_dir(context)
+    async with asyncer.create_task_group() as task_group:
+        tasks = [
+            task_group.soonify(IntegrationTests(context).run)(connector_under_test),
+            task_group.soonify(AcceptanceTests(context).run)(),
         ]
-        if unit_tests_results.status is not StepStatus.SUCCESS:
-            return results + [IntegrationTests(context).skip(), AcceptanceTests(context).skip()]
 
-        context.secrets_dir = await secrets.get_connector_secret_dir(context)
-        async with asyncer.create_task_group() as task_group:
-            tasks = [
-                task_group.soonify(IntegrationTests(context).run)(connector_under_test),
-                task_group.soonify(AcceptanceTests(context).run)(),
-            ]
-
-        return results + [task.value for task in tasks]
+    return results + [task.value for task in tasks]
