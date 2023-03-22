@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * publisher is not closed. Even after the publisher is closed, the consumer will finish processing
  * any produced records before closing.
  */
-public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String, String>>
+public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEvent<String, String>>
     implements AutoCloseableIterator<ChangeEvent<String, String>> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumRecordIterator.class);
@@ -45,7 +45,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
 
   private final Map<Class<? extends ChangeEvent>, Field> heartbeatEventSourceField;
   private final LinkedBlockingQueue<ChangeEvent<String, String>> queue;
-  private final CdcTargetPosition targetPosition;
+  private final CdcTargetPosition<T> targetPosition;
   private final Supplier<Boolean> publisherStatusSupplier;
   private final Duration firstRecordWaitTime;
   private final DebeziumShutdownProcedure<ChangeEvent<String, String>> debeziumShutdownProcedure;
@@ -53,12 +53,12 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   private boolean receivedFirstRecord;
   private boolean hasSnapshotFinished;
   private LocalDateTime tsLastHeartbeat;
-  private long lastHeartbeatPosition;
+  private T lastHeartbeatPosition;
   private int maxInstanceOfNoRecordsFound;
   private boolean signalledClose;
 
   public DebeziumRecordIterator(final LinkedBlockingQueue<ChangeEvent<String, String>> queue,
-                                final CdcTargetPosition targetPosition,
+                                final CdcTargetPosition<T> targetPosition,
                                 final Supplier<Boolean> publisherStatusSupplier,
                                 final DebeziumShutdownProcedure<ChangeEvent<String, String>> debeziumShutdownProcedure,
                                 final Duration firstRecordWaitTime) {
@@ -72,7 +72,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     this.receivedFirstRecord = false;
     this.hasSnapshotFinished = true;
     this.tsLastHeartbeat = null;
-    this.lastHeartbeatPosition = -1;
+    this.lastHeartbeatPosition = null;
     this.maxInstanceOfNoRecordsFound = 0;
     this.signalledClose = false;
   }
@@ -116,13 +116,13 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
           continue;
         }
 
-        final long heartbeatPos = getHeartbeatPosition(next);
+        final T heartbeatPos = getHeartbeatPosition(next);
         // wrap up sync if heartbeat position crossed the target OR heartbeat position hasn't changed for
         // too long
         if (hasSyncFinished(heartbeatPos)) {
           requestClose("Closing: Heartbeat indicates sync is done");
         }
-        if (heartbeatPos != this.lastHeartbeatPosition) {
+        if (!heartbeatPos.equals(lastHeartbeatPosition)) {
           this.tsLastHeartbeat = LocalDateTime.now();
           this.lastHeartbeatPosition = heartbeatPos;
         }
@@ -137,7 +137,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
         requestClose("Closing: Change event reached target position");
       }
       this.tsLastHeartbeat = null;
-      this.lastHeartbeatPosition = -1L;
+      this.lastHeartbeatPosition = null;
       this.receivedFirstRecord = true;
       this.maxInstanceOfNoRecordsFound = 0;
       return next;
@@ -159,9 +159,9 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     return endOfData();
   }
 
-  private boolean hasSyncFinished(final long heartbeatPos) {
+  private boolean hasSyncFinished(final T heartbeatPos) {
     return targetPosition.reachedTargetPosition(heartbeatPos)
-        || (heartbeatPos == this.lastHeartbeatPosition && heartbeatPosNotChanging());
+        || (heartbeatPos.equals(this.lastHeartbeatPosition) && heartbeatPosNotChanging());
   }
 
   /**
@@ -221,10 +221,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
    * reflection to setAccessible for each event
    */
   @VisibleForTesting
-  protected long getHeartbeatPosition(final ChangeEvent<String, String> heartbeatEvent) {
-    if (heartbeatEvent == null) {
-      return -1;
-    }
+  protected T getHeartbeatPosition(final ChangeEvent<String, String> heartbeatEvent) {
 
     try {
       final Class<? extends ChangeEvent> eventClass = heartbeatEvent.getClass();
@@ -242,11 +239,9 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
       }
 
       final SourceRecord sr = (SourceRecord) f.get(heartbeatEvent);
-      final long hbLsn = (long) sr.sourceOffset().get("lsn");
-      LOGGER.debug("Found heartbeat lsn: {}", hbLsn);
-      return hbLsn;
+      return targetPosition.extractPositionFromHeartbeatOffset(sr.sourceOffset());
     } catch (final NoSuchFieldException | IllegalAccessException e) {
-      LOGGER.info("failed to get heartbeat lsn");
+      LOGGER.info("failed to get heartbeat source offset");
       throw new RuntimeException(e);
     }
   }

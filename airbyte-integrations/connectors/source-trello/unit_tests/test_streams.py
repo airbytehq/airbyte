@@ -66,6 +66,12 @@ def test_cards_stream(requests_mock):
         json=[{"id": "b11111111111111111111111", "name": "board_1"}, {"id": "b22222222222222222222222", "name": "board_2"}],
     )
 
+    mock_organizations_request = requests_mock.get(
+        "https://api.trello.com/1/members/me/organizations",
+        headers=NO_SLEEP_HEADERS,
+        json=[{"id": "org111111111111111111111", "idBoards": ["b11111111111111111111111", "b22222222222222222222222"]}],
+    )
+
     json_responses1 = cycle([
         [{"id": "c11111111111111111111111", "name": "card_1"}, {"id": "c22222222222222222222222", "name": "card_2"}],
         [],
@@ -107,5 +113,6 @@ def test_cards_stream(requests_mock):
     assert records == []
 
     assert mock_boards_request.call_count == 3
+    assert mock_organizations_request.call_count == 3
     assert mock_cards_request_1.call_count == 2
     assert mock_cards_request_2.call_count == 4

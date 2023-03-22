@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * This class acts as the bridge between Airbyte DB connectors and debezium. If a DB connector wants
  * to use debezium for CDC, it should use this class
  */
-public class AirbyteDebeziumHandler {
+public class AirbyteDebeziumHandler<T> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteDebeziumHandler.class);
   /**
@@ -38,12 +38,12 @@ public class AirbyteDebeziumHandler {
   private static final int QUEUE_CAPACITY = 10000;
 
   private final JsonNode config;
-  private final CdcTargetPosition targetPosition;
+  private final CdcTargetPosition<T> targetPosition;
   private final boolean trackSchemaHistory;
   private final Duration firstRecordWaitTime;
 
   public AirbyteDebeziumHandler(final JsonNode config,
-                                final CdcTargetPosition targetPosition,
+                                final CdcTargetPosition<T> targetPosition,
                                 final boolean trackSchemaHistory,
                                 final Duration firstRecordWaitTime) {
     this.config = config;
@@ -70,7 +70,7 @@ public class AirbyteDebeziumHandler {
         schemaHistoryManager(new EmptySavedInfo()));
     tableSnapshotPublisher.start(queue);
 
-    final AutoCloseableIterator<ChangeEvent<String, String>> eventIterator = new DebeziumRecordIterator(
+    final AutoCloseableIterator<ChangeEvent<String, String>> eventIterator = new DebeziumRecordIterator<>(
         queue,
         targetPosition,
         tableSnapshotPublisher::hasClosed,
@@ -102,7 +102,7 @@ public class AirbyteDebeziumHandler {
     publisher.start(queue);
 
     // handle state machine around pub/sub logic.
-    final AutoCloseableIterator<ChangeEvent<String, String>> eventIterator = new DebeziumRecordIterator(
+    final AutoCloseableIterator<ChangeEvent<String, String>> eventIterator = new DebeziumRecordIterator<>(
         queue,
         targetPosition,
         publisher::hasClosed,
