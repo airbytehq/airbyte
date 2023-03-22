@@ -16,9 +16,9 @@ export interface Signin {
 }
 
 export class AuthService extends AirbyteRequestService {
-  public async create(signup: Signup): Promise<Signup> {
+  public async create(signup: Signup, lang?: string): Promise<Signup> {
     return new Promise((resolve, reject) => {
-      this.fetch<Signup>(`/user/register`, signup)
+      this.fetch<Signup>(`/user/register`, signup, lang)
         .then((res: any) => {
           resolve(res.data);
         })
@@ -28,9 +28,9 @@ export class AuthService extends AirbyteRequestService {
     });
   }
 
-  public async post(signin: Signin): Promise<Signin> {
+  public async post(signin: Signin, lang?: string): Promise<Signin> {
     return new Promise((resolve, reject) => {
-      this.fetch<Signin>(`/user/login`, signin)
+      this.fetch<Signin>(`/user/login`, signin, lang)
         .then((res: any) => {
           resolve(res.data);
         })
@@ -40,9 +40,9 @@ export class AuthService extends AirbyteRequestService {
     });
   }
 
-  public async googleAuth(token: string): Promise<any> {
+  public async googleAuth(token: string, lang?: string): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.fetch(`/user/third/oauth`, { accessToken: token, type: "GOOGLE" })
+      this.fetch(`/user/third/oauth`, { accessToken: token, type: "GOOGLE" }, lang)
         .then((res: any) => {
           resolve(res.data);
         })
