@@ -2,12 +2,20 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import argparse
 import asyncio
 import os
 from pathlib import Path
 
 from create_prs import CONNECTORS_DIRECTORY, acceptance_test_config_path, get_airbyte_connector_name_from_definition, is_airbyte_connector
 from definitions import ALL_DEFINITIONS
+
+parser = argparse.ArgumentParser(
+    description="Run tests for a list of connectors."
+)
+parser.add_argument("--connectors", nargs='*')
+parser.add_argument("--file")
+parser.add_argument("--max_concurrency", default=10)
 
 
 async def run_tests(connector_name):
@@ -26,7 +34,7 @@ async def run_tests(connector_name):
     )
     return_code = await process.wait()
     if return_code == 0:
-        with open(success_output_file, "w") as f:
+        with open(success_output_file, "wb") as f:
             contents = await process.stdout.read()
             f.write(contents)
         print(f"{connector_name} succeeded.")
@@ -56,15 +64,18 @@ async def semaphore_gather(coroutines, num_semaphores):
     return await asyncio.gather(*(_wrap_coro(coroutine) for coroutine in coroutines), return_exceptions=False)
 
 
-async def main():
+async def main(num_semaphores):
     tasks = []
 
     for definition in ALL_DEFINITIONS:
         if is_airbyte_connector(definition):
             connector_name = get_airbyte_connector_name_from_definition(definition)
             tasks.append(run_tests(connector_name))
-    await asyncio.gather(semaphore_gather(tasks, num_semaphores=15))
+    await asyncio.gather(semaphore_gather(tasks, num_semaphores=num_semaphores))
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    args = parser.parse_args()
+    num_semaphores = args.max_concurrency
+
+    asyncio.run(main(num_semaphores=num_semaphores))
