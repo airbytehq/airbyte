@@ -5,7 +5,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button, MainPageWithScroll } from "components";
-import { EmptyResourceListView } from "components/EmptyResourceListView";
+// import { EmptyResourceListView } from "components/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
 import PageTitle from "components/PageTitle";
 
@@ -42,7 +42,13 @@ const AllDestinationsPage: React.FC = () => {
 
   const onCreateDestination = () => push(`${RoutePaths.SelectDestination}`); // DestinationNew
 
-  return destinations.length ? (
+  if (destinations.length === 0) {
+    onCreateDestination();
+    return null;
+  }
+
+  // destinations.length ?
+  return (
     <MainPageWithScroll
       // withPadding
       headTitle={<HeadTitle titles={[{ id: "admin.destinations" }]} />}
@@ -65,9 +71,10 @@ const AllDestinationsPage: React.FC = () => {
     >
       <DestinationsTable destinations={destinations} />
     </MainPageWithScroll>
-  ) : (
-    <EmptyResourceListView resourceType="destinations" onCreateClick={onCreateDestination} />
   );
+  // : (
+  //   <EmptyResourceListView resourceType="destinations" onCreateClick={onCreateDestination} />
+  // );
 };
 
 export default AllDestinationsPage;
