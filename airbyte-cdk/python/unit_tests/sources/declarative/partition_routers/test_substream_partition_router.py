@@ -99,6 +99,22 @@ class MockStream(Stream):
             ],
         ),
         (
+            "test_skip_slices",
+            [
+                ParentStreamConfig(
+                    stream=MockStream(parent_slices, all_parent_data, "first_stream"),
+                    parent_key="id",
+                    partition_field="first_stream_id",
+                    skip_slices="{{ parent_record['id'] != 1 }}",
+                    parameters={},
+                    config={},
+                )
+            ],
+            [
+                {"parent_slice": {"slice": "first"}, "first_stream_id": 1},
+            ],
+        ),
+        (
             "test_multiple_parent_streams",
             [
                 ParentStreamConfig(

@@ -852,6 +852,8 @@ definitions:
         "$ref": "#/definitions/DeclarativeStream"
       partition_field:
         type: string
+      skip_slices:
+        type: string
       request_option:
         "$ref": "#/definitions/RequestOption"
       $parameters:

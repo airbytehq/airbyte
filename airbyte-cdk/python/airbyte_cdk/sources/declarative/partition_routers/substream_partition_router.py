@@ -31,10 +31,13 @@ class ParentStreamConfig:
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     request_option: Optional[RequestOption] = None
+    skip_slices: Optional[InterpolatedString] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self.parent_key = InterpolatedString.create(self.parent_key, parameters=parameters)
         self.partition_field = InterpolatedString.create(self.partition_field, parameters=parameters)
+        if self.skip_slices:
+            self.skip_slices = InterpolatedString.create(self.skip_slices, parameters=parameters)
 
 
 @dataclass
@@ -151,6 +154,9 @@ class SubstreamPartitionRouter(StreamSlicer):
                             if parent_record.type == Type.RECORD:
                                 parent_record = parent_record.record.data
                             else:
+                                continue
+                        if parent_stream_config.skip_slices:
+                            if bool(parent_stream_config.skip_slices.eval(self.config, parent_record=parent_record)):
                                 continue
                         try:
                             stream_state_value = dpath.util.get(parent_record, parent_field)

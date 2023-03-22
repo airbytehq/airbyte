@@ -674,6 +674,7 @@ class ModelToComponentFactory:
             request_option=request_option,
             stream=declarative_stream,
             partition_field=model.partition_field,
+            skip_slices=model.skip_slices,
             config=config,
             parameters=model.parameters,
         )
