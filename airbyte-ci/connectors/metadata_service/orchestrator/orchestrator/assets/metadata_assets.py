@@ -2,7 +2,7 @@ import pandas as pd
 
 from dagster import MetadataValue, Output, asset
 
-from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
+from metadata_service.models.generated.ConnectorMetadataDefinitionV1 import ConnectorMetadataDefinitionV1
 
 GROUP_NAME = "metadata"
 
@@ -121,7 +121,7 @@ def merge_into_metadata_definitions(id_field, connector_type, oss_connector_df, 
 
 def validate_metadata(metadata):
     try:
-        ConnectorMetadataDefinitionV0.parse_obj(metadata)
+        ConnectorMetadataDefinitionV1.parse_obj(metadata)
         return True, None
     except Exception as e:
         return False, str(e)

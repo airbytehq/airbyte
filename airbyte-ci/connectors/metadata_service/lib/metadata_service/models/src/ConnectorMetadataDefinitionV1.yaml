@@ -1,8 +1,8 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors_ci/metadata_service/lib/models/src/ConnectorMetadataDefinitionV0.yml
+"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors_ci/metadata_service/lib/models/src/ConnectorMetadataDefinitionV1.yml
 
-title: ConnectorMetadataDefinitionV0
+title: ConnectorMetadataDefinitionV1
 description: describes the metadata of a connector
 type: object
 required:

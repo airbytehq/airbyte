@@ -23,7 +23,7 @@ datamodel-code-generator = "^0.17.1"
 validate_metadata_file = "metadata_service.validators.metadata_validator:validate_metadata_file"
 
 [tool.poe.tasks]
-generate-models = "datamodel-codegen --input metadata_service/models/src/ConnectorMetadataDefinitionV0.yaml --output metadata_service/models/generated/ConnectorMetadataDefinitionV0.py --use-title-as-name --disable-timestamp"
+generate-models = "datamodel-codegen --input metadata_service/models/src/ConnectorMetadataDefinitionV1.yaml --output metadata_service/models/generated/ConnectorMetadataDefinitionV1.py --use-title-as-name --disable-timestamp"
 
 [build-system]
 requires = ["poetry-core"]
