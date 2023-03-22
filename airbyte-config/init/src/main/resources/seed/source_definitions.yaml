@@ -542,7 +542,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.86
+  dockerImageTag: 0.3.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -636,7 +636,7 @@
 - name: Freshsales
   sourceDefinitionId: eca08d79-7b92-4065-b7f3-79c14836ebe7
   dockerRepository: airbyte/source-freshsales
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshsales
   icon: freshsales.svg
   sourceType: api
@@ -760,7 +760,7 @@
   sourceDefinitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
   dockerRepository: airbyte/source-google-analytics-v4
   dockerImageTag: 0.1.34
-  documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-v4/
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-v4
   icon: google-analytics.svg
   sourceType: api
   releaseStage: generally_available
@@ -773,8 +773,8 @@
 - name: Google Analytics 4 (GA4)
   sourceDefinitionId: 3cc2eafd-84aa-4dca-93af-322d9dfeec1a
   dockerRepository: airbyte/source-google-analytics-data-api
-  dockerImageTag: 0.1.2
-  documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-data-api/
+  dockerImageTag: 0.1.3
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-data-api
   icon: google-analytics.svg
   sourceType: api
   releaseStage: beta
@@ -1085,7 +1085,7 @@
 - name: LinkedIn Pages
   sourceDefinitionId: af54297c-e8f8-4d63-a00d-a94695acc9d3
   dockerRepository: airbyte/source-linkedin-pages
-  dockerImageTag: 0.1.0
+  dockerImageTag: 1.0.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-pages
   icon: linkedin.svg
   sourceType: api
@@ -1207,7 +1207,7 @@
 - name: Microsoft Dataverse
   sourceDefinitionId: 9220e3de-3b60-4bb2-a46f-046d59ea235a
   dockerRepository: airbyte/source-microsoft-dataverse
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-dataverse
   icon: microsoftdataverse.svg
   sourceType: api
@@ -1339,7 +1339,7 @@
 - name: OneSignal
   sourceDefinitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
   dockerRepository: airbyte/source-onesignal
-  dockerImageTag: 0.1.2
+  dockerImageTag: 1.0.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/onesignal
   icon: onesignal.svg
   sourceType: api
@@ -1442,11 +1442,14 @@
 - name: Paystack
   sourceDefinitionId: 193bdcb8-1dd9-48d1-aade-91cadfd74f9b
   dockerRepository: airbyte/source-paystack
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/paystack
   icon: paystack.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "api.paystack.co"
 - name: PersistIq
   sourceDefinitionId: 3052c77e-8b91-47e2-97a0-a29a22794b4b
   dockerRepository: airbyte/source-persistiq
@@ -1735,7 +1738,7 @@
 - name: S3
   sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   dockerRepository: airbyte/source-s3
-  dockerImageTag: 2.0.0
+  dockerImageTag: 2.0.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/s3
   icon: s3.svg
   sourceType: file
@@ -1757,7 +1760,7 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 2.0.6
+  dockerImageTag: 2.0.7
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
@@ -1948,7 +1951,7 @@
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 3.0.2
+  dockerImageTag: 3.0.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api
@@ -2068,9 +2071,20 @@
 - name: Trello
   sourceDefinitionId: 8da67652-004c-11ec-9a03-0242ac130003
   dockerRepository: airbyte/source-trello
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.3.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/trello
   icon: trello.svg
+  sourceType: api
+  releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - api.trello.com
+- name: TrustPilot
+  sourceDefinitionId: d7e23ea6-d741-4314-9209-a33c91a2e945
+  dockerRepository: airbyte/source-trustpilot
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/trustpilot
+  icon: trustpilot.svg
   sourceType: api
   releaseStage: alpha
 - name: TVMaze Schedule
@@ -2198,7 +2212,7 @@
 - name: Xero
   sourceDefinitionId: 6fd1e833-dd6e-45ec-a727-ab917c5be892
   dockerRepository: airbyte/source-xero
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/xero
   icon: xero.svg
   sourceType: api
@@ -2351,6 +2365,7 @@
   allowedHosts:
     hosts:
       - "*"
+  maxSecondsBetweenMessages: 43200
 - name: Zuora
   sourceDefinitionId: 3dc3037c-5ce8-4661-adc2-f7a9e3c5ece5
   dockerRepository: airbyte/source-zuora
