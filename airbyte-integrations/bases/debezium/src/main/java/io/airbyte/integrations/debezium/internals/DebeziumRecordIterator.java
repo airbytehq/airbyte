@@ -55,7 +55,7 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEvent<Stri
   private LocalDateTime tsLastHeartbeat;
   private T lastHeartbeatPosition;
   private int maxInstanceOfNoRecordsFound;
-  private boolean signalledClose;
+  private boolean signalledDebeziumEngineShutdown;
 
   public DebeziumRecordIterator(final LinkedBlockingQueue<ChangeEvent<String, String>> queue,
                                 final CdcTargetPosition<T> targetPosition,
@@ -74,7 +74,7 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEvent<Stri
     this.tsLastHeartbeat = null;
     this.lastHeartbeatPosition = null;
     this.maxInstanceOfNoRecordsFound = 0;
-    this.signalledClose = false;
+    this.signalledDebeziumEngineShutdown = false;
   }
 
   // The following logic incorporates heartbeat (CDC postgres only for now):
@@ -143,6 +143,10 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEvent<Stri
       return next;
     }
 
+    if (!signalledDebeziumEngineShutdown) {
+      LOGGER.warn("Debezium engine has not been signalled to shutdown, this is unexpected");
+    }
+
     while (!debeziumShutdownProcedure.getRecordsRemainingAfterShutdown().isEmpty()) {
       final ChangeEvent<String, String> event;
       try {
@@ -153,6 +157,7 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEvent<Stri
       if (event == null || isHeartbeatEvent(event)) {
         continue;
       }
+      hasSnapshotFinished = hasSnapshotFinished(Jsons.deserialize(event.value()));
       return event;
     }
     throwExceptionIfSnapshotNotFinished();
@@ -202,12 +207,12 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEvent<Stri
   }
 
   private void requestClose(final String closeLogMessage) {
-    if (signalledClose) {
+    if (signalledDebeziumEngineShutdown) {
       return;
     }
-    signalledClose = true;
     LOGGER.info(closeLogMessage);
     debeziumShutdownProcedure.initiateShutdownProcedure();
+    signalledDebeziumEngineShutdown = true;
   }
 
   private void throwExceptionIfSnapshotNotFinished() {
