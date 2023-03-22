@@ -35,14 +35,16 @@ const SidebarContainer = styled.div`
 `;
 
 const SidebarItem = styled.div`
-  padding: 36px 0;
+  margin: 36px 0;
+  width: 100%;
   display: flex;
   flex-direction: row;
   align-items: center;
+  padding: 0 0 0 78px;
 `;
 
 const ItemText = styled.div<{
-  isSelected: boolean;
+  isSelected?: boolean;
 }>`
   cursor: pointer;
   font-style: normal;
@@ -50,30 +52,6 @@ const ItemText = styled.div<{
   font-size: 14px;
   color: ${({ isSelected, theme }) => (isSelected ? theme.blue400 : "#6B6B6F")};
   margin-left: 12px;
-`;
-
-const MenuItemIcon = styled(FontAwesomeIcon)`
-  margin-right: 12px;
-`;
-
-const LogOut = styled.div`
-  width: 100%;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #6b6b6f;
-  margin: 20px 0 40px 0;
-  font-size: 14px;
-  line-height: 16px;
-  font-weight: 500;
-
-  position: absolute;
-  bottom: 0px;
-  &:hover {
-    cursor: pointer;
-    color: ${({ theme }) => theme.blue400};
-  }
 `;
 
 const SidebarItemIcon = (path: string, color: string) => {
@@ -121,10 +99,13 @@ export const Sidebar: React.FC<IProps> = ({ menuItems, onSelectItem }) => {
           <ItemText isSelected={pathname.split("/").at(-1) === path}>{name}</ItemText>
         </SidebarItem>
       ))}
-      <LogOut onClick={toggleSignOutConfirmModal}>
-        <MenuItemIcon icon={faSignOut} />
-        <FormattedMessage id="sidebar.DaspireSignOut" />
-      </LogOut>
+      <div style={{ marginTop: "auto" }} />
+      <SidebarItem onClick={toggleSignOutConfirmModal}>
+        <FontAwesomeIcon icon={faSignOut} />
+        <ItemText>
+          <FormattedMessage id="sidebar.DaspireSignOut" />
+        </ItemText>
+      </SidebarItem>
     </SidebarContainer>
   );
 };

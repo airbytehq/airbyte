@@ -8,6 +8,7 @@ import { TickIcon } from "components/icons/TickIcon";
 interface IProps {
   isActive: boolean;
   onClick?: () => void;
+  isLoading?: boolean;
 }
 
 const IconContainer = styled.div`
@@ -21,11 +22,17 @@ const IconContainer = styled.div`
   justify-content: center;
 `;
 
-export const NotificationFlag: React.FC<IProps> = ({ isActive, onClick }) => {
+export const NotificationFlag: React.FC<IProps> = ({ isActive, onClick, isLoading }) => {
   return (
     <Tooltip
       control={
-        <IconContainer onClick={onClick}>
+        <IconContainer
+          onClick={() => {
+            if (!isLoading) {
+              onClick?.();
+            }
+          }}
+        >
           <TickIcon color={isActive ? "#4F46E5" : "#D1D5DB"} width={20} height={20} />
         </IconContainer>
       }

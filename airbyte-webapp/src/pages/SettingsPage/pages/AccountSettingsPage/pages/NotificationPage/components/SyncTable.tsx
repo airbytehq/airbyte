@@ -12,10 +12,11 @@ import { FirstHeaderText, HeaderText, BodyRow, FirstCellFlexValue, BodyCell } fr
 interface IProps {
   syncFail: NotificationItem;
   syncSuccess: NotificationItem;
+  updateLoading: boolean;
   updateNotificationSetting: (editNotificationBody: NotificationItem) => void;
 }
 
-export const SyncTable: React.FC<IProps> = ({ syncFail, syncSuccess, updateNotificationSetting }) => {
+export const SyncTable: React.FC<IProps> = ({ syncFail, syncSuccess, updateNotificationSetting, updateLoading }) => {
   return (
     <>
       {/* Table Header Row */}
@@ -36,6 +37,7 @@ export const SyncTable: React.FC<IProps> = ({ syncFail, syncSuccess, updateNotif
         </Cell>
         <BodyCell>
           <NotificationFlag
+            isLoading={updateLoading}
             isActive={syncFail.emailFlag}
             onClick={() => {
               updateNotificationSetting({
@@ -50,6 +52,7 @@ export const SyncTable: React.FC<IProps> = ({ syncFail, syncSuccess, updateNotif
         </BodyCell>
         <BodyCell>
           <NotificationFlag
+            isLoading={updateLoading}
             isActive={syncFail.appsFlag}
             onClick={() => {
               updateNotificationSetting({
@@ -71,6 +74,7 @@ export const SyncTable: React.FC<IProps> = ({ syncFail, syncSuccess, updateNotif
         </Cell>
         <BodyCell>
           <NotificationFlag
+            isLoading={updateLoading}
             isActive={syncSuccess.emailFlag}
             onClick={() => {
               updateNotificationSetting({
@@ -85,6 +89,7 @@ export const SyncTable: React.FC<IProps> = ({ syncFail, syncSuccess, updateNotif
         </BodyCell>
         <BodyCell>
           <NotificationFlag
+            isLoading={updateLoading}
             isActive={syncSuccess.appsFlag}
             onClick={() => {
               updateNotificationSetting({
