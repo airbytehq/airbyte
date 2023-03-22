@@ -42,7 +42,7 @@
       "type": ["null", "string"]
     },
     "referenced_message_type": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "reaction_count": {
       "type": ["null", "integer"]
