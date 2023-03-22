@@ -1154,6 +1154,14 @@
   icon: metabase.svg
   sourceType: api
   releaseStage: beta
+- name: Microsoft Sentinel
+  sourceDefinitionId: TO UPDATE
+  dockerRepository: airbyte/source-ms-sentinel
+  dockerImageTag: 0.0.1
+  documentationUrl: https://docs.airbyte.com/integrations/sources/ms-sentinel
+  icon: ms-sentinel.svg
+  sourceType: api
+  releaseStage: beta
 - name: Microsoft SQL Server (MSSQL)
   sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   dockerRepository: airbyte/source-mssql
