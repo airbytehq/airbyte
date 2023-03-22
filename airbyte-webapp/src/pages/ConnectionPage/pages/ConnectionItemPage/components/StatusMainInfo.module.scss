@@ -12,7 +12,24 @@
   }
 }
 
-.container,
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  // width: 650px;
+  width: 100%;
+  flex-flow: column wrap;
+  background-color: white;
+  border-radius: 10px;
+  padding: 24px 60px;
+}
+
+.mainInfoContainer {
+  width: 100%;
+}
+
+.mainInfoContainer,
 .pathContainer {
   display: flex;
   flex-wrap: wrap;
@@ -21,30 +38,14 @@
 }
 
 .leftContainer {
-  flex: 3;
-  padding: 0 30px;
-  display: flex;
-  flex-direction: column;
-}
-
-.container {
-  // width: 650px;
-  width: 100%;
-  flex-wrap: wrap;
-
-  // padding: variables.$spacing-md variables.$spacing-xl;
-  background-color: white;
-  border-radius: 10px;
-  padding: 20px 60px 30px;
+  flex: 1;
 }
 
 .enabledControlContainer {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  flex: 1;
-
-  // justify-content: space-around;
+  min-width: 152px;
   padding: variables.$spacing-md;
 }
 

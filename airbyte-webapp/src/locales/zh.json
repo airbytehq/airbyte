@@ -214,7 +214,7 @@
   "onboarding.or": "或者",
   "onboarding.watchVideo": "观看2分钟的演示视频",
   "onboarding.exploreDemo": "使用测试数据探索我们的演示环境",
-  "onboarding.firstConnection": "建立您的第一个数据接口",
+  "onboarding.firstConnection": "创建您的第一个数据接口",
   "onboarding.createFirstSource": "创建您的<name>第一个数据源</name>",
   "onboarding.createFirstSource.text": "数据源是您可以从中复制数据的数据库、API或文件。",
   "onboarding.createFirstDestination": "创建您的<name>第一个目的地</name>",

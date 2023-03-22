@@ -31,8 +31,8 @@ const Details = styled.div`
 `;
 
 const EntityIcon = styled.div`
-  width: 86px;
-  height: 86px;
+  width: 96px;
+  height: 96px;
   box-shadow: 0px 10px 12px rgba(74, 74, 87, 0.1);
   border-radius: 18px;
   padding: 6px;
@@ -46,7 +46,7 @@ const ConnectionName = styled.div`
   font-weight: 500;
   line-height: 30px;
   color: #27272a;
-  flex: 1;
+  // flex: 1;
 `;
 
 const ConnectorDetails = styled.div`
@@ -55,16 +55,21 @@ const ConnectorDetails = styled.div`
   align-items: center;
 `;
 
-// const ConnectorName = styled.div`
-//   font-size: 11px;
-//   margin-top: 1px;
-//   color: #afafc1;
-//   text-align: left;
-//   word-wrap: break-word;
-// `;
+const ConnectorName = styled.div`
+  font-size: 14px;
+  margin-top: 10px;
+  color: #999999;
+  text-align: left;
+  word-wrap: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+`;
 
 const ConnectorCard = (props: Props) => {
-  const { connectionName, icon, releaseStage } = props; // connectorName
+  const { connectionName, icon, releaseStage, connectorName } = props;
 
   return (
     <MainComponent>
@@ -74,7 +79,7 @@ const ConnectorCard = (props: Props) => {
           <ConnectionName>{connectionName}</ConnectionName>
           {releaseStage && <ReleaseStageBadge stage={releaseStage} />}
         </ConnectorDetails>
-        {/* <ConnectorName>{connectorName} </ConnectorName> */}
+        <ConnectorName>{connectorName}</ConnectorName>
       </Details>
     </MainComponent>
   );

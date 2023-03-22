@@ -1,8 +1,10 @@
-import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
+import { faEdit } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { ChangeEvent, useState } from "react";
 
 import { Input } from "components";
+import { CrossIcon } from "components/icons/CrossIcon";
+import { TickIcon } from "components/icons/TickIcon";
 
 import { buildConnectionUpdate } from "core/domain/connection";
 import { WebBackendConnectionRead } from "core/request/AirbyteClient";
@@ -38,9 +40,12 @@ const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
     await updateConnectionAsync();
   };
 
-  const onBlur = async () => {
-    await updateConnectionAsync();
-  };
+  // const onBlur: React.FocusEventHandler<HTMLInputElement> = (event) => {
+  //   event.stopPropagation();
+  //   setEditingState(false);
+  //   setConnectionName(name);
+  //    await updateConnectionAsync();
+  // };
 
   const updateConnectionAsync = async () => {
     const connectionNameTrimmed = connectionName?.trim();
@@ -67,11 +72,23 @@ const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
     setEditingState(false);
   };
 
+  const onClose = () => {
+    setEditingState(false);
+    setConnectionName(name);
+  };
+
+  const onUpdate = async () => {
+    await updateConnectionAsync();
+  };
+
   return (
     <div className={styles.container}>
       {editingState ? (
         <div className={styles.editingContainer}>
-          <div className={styles.inputContainer} onBlur={onBlur}>
+          <div className={styles.crossIcon} onClick={onClose} role="presentation">
+            <CrossIcon color="#999999" width={16} height={16} />
+          </div>
+          <div className={styles.inputContainer}>
             <InputWithKeystroke
               className={styles.input}
               value={connectionName}
@@ -81,13 +98,18 @@ const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
               disabled={loading}
             />
           </div>
+          {connectionName && connectionName !== name && (
+            <div className={styles.tickIcon} onClick={onUpdate} role="presentation">
+              <TickIcon color="#27272A" width={26} height={26} />
+            </div>
+          )}
         </div>
       ) : (
         <button className={styles.nameContainer} onClick={() => setEditingState(true)}>
           <div>
             <h2>{name}</h2>
           </div>
-          <FontAwesomeIcon className={styles.icon} icon={faPenToSquare} />
+          <FontAwesomeIcon className={styles.icon} icon={faEdit} />
         </button>
       )}
     </div>
