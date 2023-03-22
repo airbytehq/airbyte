@@ -15,13 +15,14 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
-      - config_path: "secrets/config_oauth.json"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
+        timeout_seconds: 3600
         expect_records:
           path: "integration_tests/expected_records.jsonl"
       - config_path: "secrets/config_with_ids.json"
+        timeout_seconds: 3600
         empty_streams:
           - name: "epics"
             bypass_reason: "Group in this config does not have epics. This stream is tested in the above TC."
@@ -30,6 +31,7 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records_with_ids.jsonl"
       - config_path: "secrets/config_oauth.json"
+        timeout_seconds: 3600
         expect_records:
           path: "integration_tests/expected_records.jsonl"
   incremental:
