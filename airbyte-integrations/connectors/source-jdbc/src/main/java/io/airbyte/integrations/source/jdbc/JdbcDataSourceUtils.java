@@ -6,7 +6,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import java.util.Map;
 import java.util.Objects;
 
-public class JdbcSourceDataSourceUtils {
+public class JdbcDataSourceUtils {
 
   public static String DEFAULT_JDBC_PARAMETERS_DELIMITER = "&";
   /**
@@ -34,7 +34,7 @@ public class JdbcSourceDataSourceUtils {
    */
   public static Map<String, String> getConnectionProperties(final JsonNode config) {
     final Map<String, String> customProperties = JdbcUtils.parseJdbcParameters(config, JdbcUtils.JDBC_URL_PARAMS_KEY);
-    final Map<String, String> defaultProperties = JdbcSourceDataSourceUtils.getDefaultConnectionProperties(config);
+    final Map<String, String> defaultProperties = JdbcDataSourceUtils.getDefaultConnectionProperties(config);
     assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties);
     return MoreMaps.merge(customProperties, defaultProperties);
   }
@@ -47,7 +47,7 @@ public class JdbcSourceDataSourceUtils {
    * @param config A configuration used to check Jdbc connection
    * @return A mapping of the default connection properties
    */
-  public static Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+  private static Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
     // NOTE that Postgres returns an empty map for some reason?
     return JdbcUtils.parseJdbcParameters(config, "connection_properties", DEFAULT_JDBC_PARAMETERS_DELIMITER);
   };

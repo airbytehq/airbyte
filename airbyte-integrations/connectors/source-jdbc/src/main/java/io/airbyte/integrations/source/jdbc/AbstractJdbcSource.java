@@ -398,7 +398,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClass,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        JdbcSourceDataSourceUtils.getConnectionProperties(sourceConfig));
+        JdbcDataSourceUtils.getConnectionProperties(sourceConfig));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
 
