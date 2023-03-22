@@ -85,3 +85,18 @@ def read_full_refresh(stream_instance: Stream):
         records = stream_instance.read_records(stream_slice=_slice, sync_mode=SyncMode.full_refresh)
         for record in records:
             yield record
+
+
+def read_all_boards(stream_boards: Stream, stream_organizations: Stream):
+    board_ids = set()
+
+    for record in read_full_refresh(stream_boards):
+        if record["id"] not in board_ids:
+            board_ids.add(record["id"])
+            yield record["id"]
+
+    for record in read_full_refresh(stream_organizations):
+        for board_id in record["idBoards"]:
+            if board_id not in board_ids:
+                board_ids.add(board_id)
+                yield board_id
