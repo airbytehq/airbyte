@@ -13,7 +13,7 @@ def test_streams(mocker):
     source = SourceTrello()
     config_mock = MagicMock()
     streams = source.streams(config_mock)
-    expected_streams_number = 6
+    expected_streams_number = 7
     assert len(streams) == expected_streams_number
 
 
@@ -33,6 +33,12 @@ def test_check_connection(requests_mock):
             {"id": "b11111111111111111111111", "name": "board_1"},
             {"id": "b22222222222222222222222", "name": "board_2"}
         ],
+    )
+
+    requests_mock.get(
+        "https://api.trello.com/1/members/me/organizations",
+        headers=NO_SLEEP_HEADERS,
+        json=[{"id": "org111111111111111111111", "idBoards": ["b11111111111111111111111", "b22222222222222222222222"]}],
     )
 
     source = SourceTrello()
