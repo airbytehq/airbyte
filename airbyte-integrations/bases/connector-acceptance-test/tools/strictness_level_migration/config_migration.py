@@ -19,8 +19,8 @@ except ImportError:
     from yaml import Loader
 
 parser = argparse.ArgumentParser(description="Migrate legacy acceptance-test-config.yml to the latest configuration format.")
-parser.add_argument("config_path", type=str, help="Path to the acceptance-test-config.yml to migrate.")
-
+parser.add_argument("--connectors", nargs='*')
+parser.add_argument("--file")
 
 def get_new_config_format(config_path: Path):
 
@@ -65,6 +65,6 @@ if __name__ == "__main__":
     else:
         connector_names = []
 
-    for connector in connector_names:
+    for connector in ["source-bing-ads"]:
         config_path = utils.acceptance_test_config_path(connector)
         migrate_configuration(config_path)
