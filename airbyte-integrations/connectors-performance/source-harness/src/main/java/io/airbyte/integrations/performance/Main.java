@@ -18,27 +18,36 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 public class Main {
 
-  private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
+  private static final String CREDENTIALS_PATH = "secrets/%s_credentials.json";
 
   public static void main(final String[] args) {
 
-    if (!Files.exists(CREDENTIALS_PATH)) {
-      throw new IllegalStateException("{module-root}/" + CREDENTIALS_PATH + " not found. Must provide path to a source-harness credentials file.");
+    String image = null;
+    String dataset = "10m";
+
+    switch (args.length) {
+      case 1 -> image = args[0];
+      case 2 -> { image = args[0];
+                  dataset = args[1]; }
     }
 
-    final JsonNode config = Jsons.deserialize(IOs.readFile(CREDENTIALS_PATH));
+    final Path credsPath = Path.of(CREDENTIALS_PATH.formatted(dataset));
+
+    if (!Files.exists(credsPath)) {
+      throw new IllegalStateException("{module-root}/" + credsPath + " not found. Must provide path to a source-harness credentials file.");
+    }
+
+    final JsonNode config = Jsons.deserialize(IOs.readFile(credsPath));
 
     final JsonNode catalog;
     try {
-      catalog = getCatalog();
+      catalog = getCatalog(dataset);
     } catch (final IOException ex) {
       throw new IllegalStateException("Failed to read catalog", ex);
     }
 
-    final String image = (args.length > 0) ? args[0] : "";
-
     if (StringUtils.isAnyBlank(config.toString(), catalog.toString(), image)) {
-      throw new IllegalStateException("Missing harness configuration");
+      throw new IllegalStateException("Missing harness configuration: config [%s] catalog [%s] image [%s]".formatted(config, catalog, image));
     }
 
     log.info("Starting performance harness for {}", image);
@@ -74,9 +83,9 @@ public class Main {
     System.exit(0);
   }
 
-  static JsonNode getCatalog() throws IOException {
+  static JsonNode getCatalog(final String dataset) throws IOException {
     final ObjectMapper objectMapper = new ObjectMapper();
-    final String catalogFilename = "catalogs/catalog.json";
+    final String catalogFilename = "catalogs/%s_catalog.json".formatted(dataset);
     final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(catalogFilename);
     return objectMapper.readTree(is);
   }
