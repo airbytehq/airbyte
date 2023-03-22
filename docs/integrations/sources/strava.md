@@ -19,9 +19,9 @@ Follow these steps to get the required credentials and inputs:
     * Continue to follow the instructions from the doc above to obtain `client_id` and `client_secret`
 * `refresh_token`
     * Enter this URL into your browser (make sure to add your `client_id` from previous step:
-        * `http://www.strava.com/oauth/authorize?client_id=[REPLACE_WITH_YOUR_CLIENT_ID]&response_type=code&redirect_uri=http://localhost/exchange_token&approval_prompt=force&scope=activity:read_all`
+        * `https://www.strava.com/oauth/authorize?client_id=[REPLACE_WITH_YOUR_CLIENT_ID]&response_type=code&redirect_uri=https://localhost/exchange_token&approval_prompt=force&scope=activity:read_all`
     * Authorize through the UI
-    * Browser will redirect you to an empty page with a URL similar to `http://localhost/exchange_token?state=&code=b55003496d87a9f0b694ca1680cd5690d27d9d28&scope=activity:read_all`
+    * Browser will redirect you to an empty page with a URL similar to `https://localhost/exchange_token?state=&code=b55003496d87a9f0b694ca1680cd5690d27d9d28&scope=activity:read_all`
     * Copy the authorization code above (in this example it would be `b55003496d87a9f0b694ca1680cd5690d27d9d28`)
     * Make a cURL request to exchange the authorization code and scope for a refresh token:
     * ```
