@@ -143,6 +143,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
 
   @Override
   protected List<TableInfo<CommonField<Datatype>>> discoverInternal(final JdbcDatabase database, final String schema) throws Exception {
+    // Is this needed, we already exclude it in AbstractDbSource.discover()
     final Set<String> internalSchemas = new HashSet<>(getExcludedInternalNameSpaces());
     LOGGER.info("Internal schemas to exclude: {}", internalSchemas);
     final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege = getPrivilegesTableForCurrentUser(database, schema);
