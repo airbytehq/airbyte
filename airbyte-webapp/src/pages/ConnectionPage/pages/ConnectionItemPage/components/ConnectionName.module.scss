@@ -2,7 +2,7 @@
 @use "../../../../../scss/variables";
 
 .container {
-  margin-top: variables.$spacing-md;
+  margin-bottom: variables.$spacing-xl;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -26,18 +26,18 @@
 
 .nameContainer {
   composes: textContainer;
-  background-color: colors.$beige-100;
-  border: variables.$border-thin solid colors.$beige-100;
-  border-radius: variables.$border-radius-sm;
+  background-color: colors.$white;
+  border: variables.$border-thin solid colors.$backgroundColor;
+  border-radius: 6px;
   padding: 0 variables.$spacing-xl;
 
   div {
     width: 100%;
 
     h2 {
-      font-weight: 700;
-      font-size: 24px;
-      line-height: 29px;
+      font-weight: 500;
+      font-size: 22px;
+      line-height: 30px;
       text-align: center;
       color: colors.$dark-blue-900;
       margin: variables.$spacing-md;
@@ -47,38 +47,58 @@
 
   &:hover {
     cursor: pointer;
-    border: variables.$border-thin solid colors.$blue;
-    background-color: colors.$blue-50;
+
+    // border: variables.$border-thin solid colors.$backgroundColor;
+    background-color: colors.$backgroundColor;
 
     & > .icon {
       display: block;
+      color: #27272a;
     }
   }
 }
 
 .editingContainer {
   composes: textContainer;
-  background-color: colors.$white;
-  border: variables.$border-thin solid colors.$blue;
-  border-radius: variables.$border-radius-sm;
+  background-color: colors.$backgroundColor;
+  border: variables.$border-thin solid colors.$backgroundColor;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.crossIcon,
+.tickIcon {
+  display: flex;
+
+  &:hover {
+    cursor: pointer;
+  }
 }
 
 .inputContainer {
   height: 50px;
-  width: 100%;
+
+  // width: 100%;
+  flex: 1;
 
   div {
-    border-radius: variables.$border-radius-sm;
+    border-radius: 6px;
     border: none;
     box-shadow: none;
-    background-color: colors.$white !important; // fix style import order issue
+    background-color: colors.$backgroundColor !important; // fix style import order issue
   }
 }
 
 .input {
-  border-radius: variables.$border-radius-sm;
-  background-color: colors.$white;
-  font-size: 24px !important; // fix style import order issue
+  border-radius: 6px;
+  background-color: colors.$backgroundColor;
+  font-size: 22px !important; // fix style import order issue
   height: 50px;
   text-align: center;
+  padding: 0 20px;
+  font-weight: 500;
+  caret-color: colors.$blue;
 }
