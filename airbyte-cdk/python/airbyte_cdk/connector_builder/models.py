@@ -51,8 +51,14 @@ class StreamReadSlicesInner:
 
 
 @dataclass
+class LogMessage:
+    message: str
+    level: str
+
+
+@dataclass
 class StreamRead(object):
-    logs: List[object]
+    logs: List[LogMessage]
     slices: List[StreamReadSlicesInner]
     test_read_limit_reached: bool
     inferred_schema: Optional[Dict[str, Any]]
