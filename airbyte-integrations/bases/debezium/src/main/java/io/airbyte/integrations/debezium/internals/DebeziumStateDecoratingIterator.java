@@ -16,6 +16,7 @@ import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import org.apache.kafka.connect.errors.ConnectException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +27,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
 
-  public static final Duration SYNC_CHECKPOINT_SECONDS = Duration.ofMinutes(15);
+  public static final Duration SYNC_CHECKPOINT_DURATION = Duration.ofMinutes(15);
   public static final Integer SYNC_CHECKPOINT_RECORDS = 10_000;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumStateDecoratingIterator.class);
@@ -144,9 +145,13 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
                 Duration.between(dateTimeLastSync, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)) {
           // Using temporal variable to avoid reading teh offset twice, one in the condition and another in
           // the assignation
-          final HashMap<String, String> temporalOffset = (HashMap<String, String>) offsetManager.read();
-          if (!cdcStateHandler.isSameOffset(previousCheckpointOffset, temporalOffset)) {
-            checkpointOffsetToSend.putAll(temporalOffset);
+          try {
+            final HashMap<String, String> temporalOffset = (HashMap<String, String>) offsetManager.read();
+            if (!cdcStateHandler.isSameOffset(previousCheckpointOffset, temporalOffset)) {
+              checkpointOffsetToSend.putAll(temporalOffset);
+            }
+          } catch (ConnectException e) {
+            LOGGER.warn("Offset file is being written by Debezium. Skipping CDC checkpoint in this loop.");
           }
         }
 
@@ -157,6 +162,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
           sendCheckpointMessage = true;
         }
       }
+      recordsLastSync++;
       return DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, emittedAt);
     }
 
