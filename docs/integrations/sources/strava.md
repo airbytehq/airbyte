@@ -1,6 +1,11 @@
 # Strava
 
-This page guides you through the process of setting up the Strava    source connector.
+This page guides you through the process of setting up the Strava source connector.
+
+## Prerequisites
+
+Scopes:
+* `activity:read_all`
 
 ## Setup guide
 ### Step 1: Set up Strava
