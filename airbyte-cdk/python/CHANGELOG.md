@@ -1,7 +1,16 @@
 # Changelog
 
-## 0.30.4
+## 0.31.2
 Do not swallow exceptions in `check` to make unhandled failed check emit a trace message instead of a failed connection status.
+
+## 0.31.1
+connector builder: send stacktrace when error on read
+
+## 0.31.0
+Add connector builder module for handling Connector Builder server requests
+
+## 0.30.4
+CDK's read command handler supports Connector Builder list_streams requests
 
 ## 0.30.3
 Fix reset pagination issue on test reads
