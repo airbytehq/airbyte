@@ -1950,7 +1950,10 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/strava
   icon: strava.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
+  allowedHosts:
+    hosts:
+      - strava.com
 - name: Statuspage
   sourceDefinitionId: 74cbd708-46c3-4512-9c93-abd5c3e9a94d
   dockerRepository: airbyte/source-statuspage
