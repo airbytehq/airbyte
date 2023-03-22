@@ -7952,7 +7952,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-linkedin-pages:1.0.0"
+- dockerImage: "airbyte/source-linkedin-pages:1.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/linkedin-pages/"
     connectionSpecification:
@@ -8019,17 +8019,6 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-    authSpecification:
-      auth_type: "oauth2.0"
-      oauth2Specification:
-        rootObject:
-        - "credentials"
-        - "0"
-        oauthFlowInitParameters:
-        - - "client_id"
-        - - "client_secret"
-        oauthFlowOutputParameters:
-        - - "refresh_token"
 - dockerImage: "airbyte/source-linnworks:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/linnworks"

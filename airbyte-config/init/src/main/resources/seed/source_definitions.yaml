@@ -1088,7 +1088,7 @@
 - name: LinkedIn Pages
   sourceDefinitionId: af54297c-e8f8-4d63-a00d-a94695acc9d3
   dockerRepository: airbyte/source-linkedin-pages
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-pages
   icon: linkedin.svg
   sourceType: api
@@ -1495,7 +1495,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
   icon: pipedrive.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
   allowedHosts:
     hosts:
       - api.pipedrive.com
@@ -2086,7 +2086,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/trello
   icon: trello.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
   allowedHosts:
     hosts:
       - api.trello.com
@@ -2219,7 +2219,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/xero
   icon: xero.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
   allowedHosts:
     hosts:
       - api.xero.com
