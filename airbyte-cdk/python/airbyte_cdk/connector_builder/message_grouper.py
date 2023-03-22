@@ -6,10 +6,18 @@ import json
 import logging
 from copy import deepcopy
 from json import JSONDecodeError
-from typing import Any, Iterable, Iterator, Mapping, Optional, Union
+from typing import Any, Iterable, Iterator, List, Mapping, Optional, Union
 from urllib.parse import parse_qs, urlparse
 
-from airbyte_cdk.connector_builder.models import HttpRequest, HttpResponse, LogMessage, StreamRead, StreamReadPages, StreamReadSlices
+from airbyte_cdk.connector_builder.models import (
+    HttpRequest,
+    HttpResponse,
+    LogMessage,
+    StreamRead,
+    StreamReadPages,
+    StreamReadSlices,
+    StreamReadSlicesInner,
+)
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
@@ -133,7 +141,7 @@ class MessageGrouper:
             yield StreamReadSlices(pages=current_slice_pages)
 
     @staticmethod
-    def _need_to_close_page(at_least_one_page_in_group, message) -> bool:
+    def _need_to_close_page(at_least_one_page_in_group: bool, message: AirbyteMessage) -> bool:
         return (
             at_least_one_page_in_group
             and message.type == MessageType.LOG
@@ -155,7 +163,7 @@ class MessageGrouper:
         )
         current_page_records.clear()
 
-    def _read_stream(self, source, config, configured_catalog) -> Iterator[AirbyteMessage]:
+    def _read_stream(self, source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog) -> Iterator[AirbyteMessage]:
         # the generator can raise an exception
         # iterate over the generated messages. if next raise an exception, catch it and yield it as an AirbyteLogMessage
         try:
@@ -198,7 +206,7 @@ class MessageGrouper:
             self.logger.warning(f"Failed to parse log message into response object with error: {error}")
             return None
 
-    def _has_reached_limit(self, slices):
+    def _has_reached_limit(self, slices: List[StreamReadSlicesInner]):
         if len(slices) >= self._max_slices:
             return True
 
