@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.gcs;
 
+import static io.airbyte.integrations.destination.gcs.GcsDestination.MISMATCH_LOCATIONS_EXCEPTION_MESSAGE;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -13,10 +15,12 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.s3.S3Format;
@@ -202,6 +206,31 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
       }
       LOGGER.info("Deleted {} file(s).", keysToDelete.size());
     }
+  }
+
+  /**
+   * Verify that the Check method can handle the case when provided location doesn't correspond to
+   * actual bucket's location (if it already exists).
+   */
+  @Test
+  public void testCheckConnectionMismatchLocations() throws Exception {
+    final JsonNode baseConfigJson = getBaseConfigJson();
+    // Set a random GCS bucket path for each integration test
+    final JsonNode configJson = Jsons.clone(baseConfigJson);
+    final String testBucketPath = String.format(
+        "%s_test_%s",
+        outputFormat.name().toLowerCase(Locale.ROOT),
+        RandomStringUtils.randomAlphanumeric(5));
+    ((ObjectNode) configJson)
+        .put("gcs_bucket_path", testBucketPath)
+        .set("format", getFormatConfig());
+
+    // set the region that doesn't match to actual bucket's region
+    ((ObjectNode) configJson).set("gcs_bucket_region", TextNode.valueOf("europe-central2"));
+
+    final StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(configJson);
+    assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
+    assertThat(standardCheckConnectionOutput.getMessage()).contains(MISMATCH_LOCATIONS_EXCEPTION_MESSAGE);
   }
 
   /**

@@ -10,6 +10,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.internal.SkipMd5CheckStrategy;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
@@ -34,6 +35,9 @@ public class GcsDestination extends BaseConnector implements Destination {
   public static final String EXPECTED_ROLES = "storage.multipartUploads.abort, storage.multipartUploads.create, "
       + "storage.objects.create, storage.objects.delete, storage.objects.get, storage.objects.list";
 
+  protected static final String MISMATCH_LOCATIONS_EXCEPTION_MESSAGE =
+      "Provided location in config doesn't match to actual bucket's location";
+
   private final NamingConventionTransformer nameTransformer;
 
   public GcsDestination() {
@@ -57,6 +61,10 @@ public class GcsDestination extends BaseConnector implements Destination {
 
       // Test multipart upload with stream transfer manager
       S3BaseChecks.testMultipartUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
+
+      // Make sure that region provided in config is the same as actual bucket's region
+      assertRegion(destinationConfig.getBucketRegion().toLowerCase(),
+          s3Client.getBucketLocation(destinationConfig.getBucketName()).toLowerCase());
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final AmazonS3Exception e) {
@@ -88,6 +96,18 @@ public class GcsDestination extends BaseConnector implements Destination {
         SerializedBufferFactory.getCreateFunction(gcsConfig, FileBuffer::new),
         gcsConfig,
         configuredCatalog);
+  }
+
+  /**
+   * The method is used to verify that user set location that match to actual bucket's location if it
+   * already exists
+   */
+  private void assertRegion(final String regionFromConfig, final String actualBucketRegion) {
+    if (!regionFromConfig.equals(actualBucketRegion)
+        && !regionFromConfig.contains(actualBucketRegion) // this check is needed to pass the case like "US" vs "US-WEST-1"
+        && !actualBucketRegion.contains(regionFromConfig)) {
+      throw new ConfigErrorException(MISMATCH_LOCATIONS_EXCEPTION_MESSAGE);
+    }
   }
 
 }
