@@ -11,6 +11,7 @@ from ruamel.yaml import YAML
 
 import utils
 from create_issues import MODULE_NAME
+from definitions import get_airbyte_connector_name_from_definition, GA_DEFINITIONS, BETA_DEFINITIONS
 
 yaml = YAML()
 
@@ -32,16 +33,25 @@ def migrate_to_new_config_format(config: Config):
         logging.warning("The configuration is not in a legacy format.")
         return config
 
+
 def set_high_test_strictness_level(config):
+    if Config.is_legacy(config):
+        raise Exception("You can't set a strictness level on a legacy config.")
     config["test_strictness_level"] = "high"
     for basic_read_test in config["acceptance_tests"].get("basic_read", {"tests": []})["tests"]:
         basic_read_test.pop("configured_catalog_path", None)
     return config
 
+
 def set_ignore_extra_columns(config):
-    for basic_read_test in config["acceptance_tests"].get("basic_read", {"tests": []})["tests"]:
-        basic_read_test["fail_on_extra_columns"] = False
+    if Config.is_legacy(config):
+        for basic_read_test in config["tests"].get("basic_read"):
+            basic_read_test["fail_on_extra_columns"] = False
+    else:
+        for basic_read_test in config["acceptance_tests"].get("basic_read", {"tests": []})["tests"]:
+            basic_read_test["fail_on_extra_columns"] = False
     return config
+
 
 def write_new_config(new_config, output_path):
     with open(output_path, "w") as output_file:
@@ -68,6 +78,11 @@ if __name__ == "__main__":
     else:
         connector_names = []
 
-    for connector in ["source-klarna"]:
-        config_path = utils.acceptance_test_config_path(connector)
-        update_configuration(config_path)
+    ga_beta_connector_names = [get_airbyte_connector_name_from_definition(definition) for definition in (BETA_DEFINITIONS + GA_DEFINITIONS)]
+
+    for connector in connector_names:
+        if connector in ga_beta_connector_names:
+            config_path = utils.acceptance_test_config_path(connector)
+            update_configuration(config_path)
+        else:
+            logging.info(f"Not updating {connector} because it's not GA or Beta.")
