@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -21,7 +22,7 @@ public class Main {
   private static final String CREDENTIALS_PATH = "secrets/%s_credentials.json";
 
   public static void main(final String[] args) {
-
+    log.info("args: {}", Arrays.toString(args));
     String image = null;
     String dataset = "1m";
 
