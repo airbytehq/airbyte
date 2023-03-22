@@ -145,15 +145,23 @@ class SourceConfluence(AbstractSource):
         except requests.exceptions.RequestException as e:
             return False, e
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = HttpBasicAuthenticator(config["email"], config["api_token"], auth_method="Basic")
-        config["authenticator"] = auth
+    def account_plan_validation(self, config, auth):
         # stream Audit requires Premium or Standard Plan
         url = f"https://{config['domain_name']}/wiki/rest/api/audit?limit=1"
+        is_premium_or_standard_plan = False
         try:
             response = requests.get(url, headers=auth.get_auth_header())
             response.raise_for_status()
-            return [Pages(config), BlogPosts(config), Space(config), Group(config), Audit(config)]
+            is_premium_or_standard_plan = True
         except requests.exceptions.RequestException as e:
             logger.warning(f"An exception occurred while trying to access Audit stream: {str(e)}. Skipping this stream.")
-            return [Pages(config), BlogPosts(config), Space(config), Group(config)]
+        finally:
+            return is_premium_or_standard_plan
+
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        auth = HttpBasicAuthenticator(config["email"], config["api_token"], auth_method="Basic")
+        config["authenticator"] = auth
+        streams = [Pages(config), BlogPosts(config), Space(config), Group(config)]
+        if self.account_plan_validation(config, auth):
+            streams.append(Audit(config))
+        return streams
