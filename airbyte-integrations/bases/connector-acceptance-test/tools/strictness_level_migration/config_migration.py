@@ -16,7 +16,7 @@ yaml = YAML()
 
 parser = argparse.ArgumentParser(description="Migrate legacy acceptance-test-config.yml to the latest configuration format.")
 parser.add_argument("--connectors", nargs='*')
-parser.add_argument("--file")\
+parser.add_argument("--file")
 
 
 def load_config(config_path: Path) -> Config:
