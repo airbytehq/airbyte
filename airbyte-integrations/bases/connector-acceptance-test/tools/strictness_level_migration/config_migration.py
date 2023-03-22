@@ -6,26 +6,21 @@ import argparse
 import logging
 from pathlib import Path
 
-import yaml
 from connector_acceptance_test.config import Config
-from yaml import load
+from ruamel.yaml import YAML
 
 import utils
 from create_issues import MODULE_NAME
 
-try:
-    from yaml import CLoader as Loader
-except ImportError:
-    from yaml import Loader
+yaml = YAML()
 
 parser = argparse.ArgumentParser(description="Migrate legacy acceptance-test-config.yml to the latest configuration format.")
 parser.add_argument("--connectors", nargs='*')
 parser.add_argument("--file")
 
 def get_new_config_format(config_path: Path):
-
     with open(config_path, "r") as file:
-        to_migrate = load(file, Loader=Loader)
+        to_migrate = yaml.load(file)
 
     if Config.is_legacy(to_migrate):
         return Config.migrate_legacy_to_current_config(to_migrate)

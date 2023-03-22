@@ -49,6 +49,7 @@ PyYAML==5.4.1
 requests==2.28.1
 requests-cache==0.9.7
 requests-mock==1.9.3
+ruamel.yaml=0.17.21
 six==1.16.0
 smmap==5.0.0
 sortedcontainers==2.4.0
