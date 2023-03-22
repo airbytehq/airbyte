@@ -2,8 +2,6 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-// import { Card } from "components";
-
 import { ProductItem } from "core/domain/product";
 import { NumberNaming } from "core/functions/numberFormatter";
 
@@ -47,7 +45,6 @@ const NoteContainer = styled.div`
 
 const RangeCard: React.FC<IProps> = ({ products, product, setProduct }) => {
   return (
-    // <Card withPadding roundedBottom>
     <CardContainer>
       <Title>
         <FormattedMessage id="plan.rows.card.title" />
@@ -59,7 +56,6 @@ const RangeCard: React.FC<IProps> = ({ products, product, setProduct }) => {
         <FormattedMessage id="plan.rows.card.note" />
       </NoteContainer>
     </CardContainer>
-    // </Card>
   );
 };
 
