@@ -4,7 +4,7 @@ After you have created a connection, you can change how your data syncs to the d
 
 ## Configure connection settings
 
-The connection configuration settings allow you to manage various aspects of the sync, such as how often data syncs and where data is written. 
+Configuring the connection settings allows you to manage various aspects of the sync, such as how often data syncs and where data is written. 
 
 To configure these settings:
 
@@ -49,7 +49,7 @@ In the **Activate the streams you want to sync** table, you can choose which str
 
 To modify streams:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Connections** and then click the connection you want to change.   
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Connections** and then click the connection you want to change. 
 
 2. Click the **Replication** tab.
 
@@ -65,7 +65,7 @@ Modify an individual stream:
 
 ![gif-single-edit-march-2023](https://user-images.githubusercontent.com/106352739/226917693-068256da-c948-4f22-bdce-49f5bad95bf6.gif)
 
-1. In the the **Activate the streams you want to sync** table, toggle **Sync** on or off for your selected stream.
+1. In the **Activate the streams you want to sync** table, toggle **Sync** on or off for your selected stream.
 
 2. Click the **Sync mode** dropdown and select the sync mode you want to apply.
 
@@ -139,7 +139,7 @@ To select or deselect all streams, click the checkbox in the table header. To de
 
     :::note
 
-    Source-defined cursors and primary keys cannot be changed while configuring mutliple streams.
+    Source-defined cursors and primary keys cannot be changed while configuring multiple streams.
 
     :::
 
