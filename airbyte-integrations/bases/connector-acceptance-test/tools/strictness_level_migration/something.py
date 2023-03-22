@@ -37,18 +37,14 @@ async def run_tests(connector_name):
     dir_path = Path(f"results/{return_code}")
     dir_path.mkdir(parents=True, exist_ok=True)
 
-    if return_code in [0, 1]:
-        with open(f"{dir_path}/{connector_name}.txt", "wb") as f:
-            contents = await process.stdout.read()
-            f.write(contents)
-        if return_code == 0:
-            print(f"{connector_name} succeeded.")
-        else:
-            print(f"{connector_name} tests failed.")
+    contents = await process.stdout.read()
+    with open(f"{dir_path}/{connector_name}.txt", "wb") as f:
+        f.write(contents)
+
+    if return_code == 0:
+        print(f"{connector_name} succeeded.")
     else:
-        with open(f"{dir_path}/{connector_name}.txt", "w") as f:
-            f.write(f"{connector_name} failed with exit code {return_code}.")
-        print(f"{connector_name} failed with exit code {return_code}.")
+        print(f"{connector_name} tests failed with exit code {return_code}.")
 
 
 async def semaphore_gather(coroutines, num_semaphores):
