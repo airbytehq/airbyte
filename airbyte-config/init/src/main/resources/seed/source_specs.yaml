@@ -11199,6 +11199,8 @@
         - "consumer_secret"
         - "token_key"
         - "token_secret"
+        - "language"
+        - "object_types"
         - "start_datetime"
       additionalProperties: true
       properties:
