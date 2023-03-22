@@ -10,6 +10,9 @@ import yaml
 from connector_acceptance_test.config import Config
 from yaml import load
 
+import utils
+from create_issues import MODULE_NAME
+
 try:
     from yaml import CLoader as Loader
 except ImportError:
@@ -54,5 +57,14 @@ def migrate_configuration(config_path):
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    config_path = Path(args.config_path)
-    migrate_configuration(config_path)
+    if args.connectors:
+        connector_names = args.connectors
+    elif args.file:
+        with open(f"templates/{MODULE_NAME}/{args.file}", "r") as f:
+            connector_names = [line.strip() for line in f]
+    else:
+        connector_names = []
+
+    for connector in connector_names:
+        config_path = utils.acceptance_test_config_path(connector)
+        migrate_configuration(config_path)

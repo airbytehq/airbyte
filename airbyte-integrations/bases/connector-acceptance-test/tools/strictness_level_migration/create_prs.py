@@ -8,8 +8,8 @@ import logging
 import os
 import subprocess
 import tempfile
-from pathlib import Path
 
+import utils
 from config_migration import migrate_configuration
 from create_issues import COMMON_ISSUE_LABELS as COMMON_PR_LABELS
 from create_issues import GITHUB_PROJECT_NAME
@@ -17,7 +17,6 @@ from definitions import GA_DEFINITIONS, is_airbyte_connector, get_airbyte_connec
 from git import Repo
 from jinja2 import Environment, FileSystemLoader
 
-CONNECTORS_DIRECTORY = "../../../../connectors"
 REPO_ROOT = "../../../../../"
 AIRBYTE_REPO = Repo(REPO_ROOT)
 environment = Environment(loader=FileSystemLoader("./templates/"))
@@ -32,9 +31,6 @@ parser.add_argument("-d", "--dry", default=True)
 logging.basicConfig(level=logging.DEBUG)
 
 
-def acceptance_test_config_path(connector_name):
-    """Returns the path to a given connector's acceptance-test-config.yml file."""
-    return Path(CONNECTORS_DIRECTORY) / connector_name / "acceptance-test-config.yml"
 
 
 def checkout_new_branch(connector_name):
@@ -120,13 +116,14 @@ def add_test_comment(definition, new_branch, dry_run):
     else:
         logging.info(f"[DRY RUN]: {' '.join(comment_command_arguments)}")
 
+
 def migrate_config_on_new_branch(definition, dry_run):
     AIRBYTE_REPO.heads.master.checkout()
     connector_name = get_airbyte_connector_name_from_definition(
         definition
     )  # TODO make sure they're airbyte connectors before trying to migrate
     new_branch = checkout_new_branch(connector_name)
-    config_path = acceptance_test_config_path(connector_name)
+    config_path = utils.acceptance_test_config_path(connector_name)
     migrate_configuration(config_path)
     commit_push_migrated_config(config_path, connector_name, new_branch, dry_run)
     return new_branch
