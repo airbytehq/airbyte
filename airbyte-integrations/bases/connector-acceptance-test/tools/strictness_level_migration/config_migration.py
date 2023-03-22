@@ -14,6 +14,8 @@ from create_issues import MODULE_NAME
 from definitions import get_airbyte_connector_name_from_definition, GA_DEFINITIONS, BETA_DEFINITIONS
 
 yaml = YAML()
+yaml.preserve_quotes = True
+yaml.width = 150
 
 parser = argparse.ArgumentParser(description="Migrate legacy acceptance-test-config.yml to the latest configuration format.")
 parser.add_argument("--connectors", nargs='*')
@@ -61,8 +63,8 @@ def write_new_config(new_config, output_path):
 
 def update_configuration(config_path):
     old_config = load_config(config_path)
-    migrated_config = migrate_to_new_config_format(old_config)
-    new_config = set_ignore_extra_columns(migrated_config)
+    # migrated_config = migrate_to_new_config_format(old_config)
+    new_config = set_ignore_extra_columns(old_config)
     write_new_config(new_config, config_path)
     logging.info(f"The configuration was successfully updated: {config_path}")
     return config_path
