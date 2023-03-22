@@ -17,8 +17,27 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources import Source
-from .helpers import Helpers
 
+
+stream_json_schema = {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": True,
+    "properties": {
+        "_id": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "_submission_time": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+    }
+}
 
 
 class KoboToolStream(HttpStream, IncrementalMixin):
@@ -156,9 +175,6 @@ class SourceKobotoolbox(AbstractSource):
 
         return True, None
 
-    def base_schema(self):
-        return Helpers.get_json_schema()
-
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
         # Fetch all assets(forms)
@@ -179,7 +195,7 @@ class SourceKobotoolbox(AbstractSource):
             stream = KoboToolStream(
                 config=config, 
                 form_id=form_dict['uid'], 
-                schema=self.base_schema(), 
+                schema=stream_json_schema, 
                 name=form_dict['name'],
                 api_url=self.API_URL,
                 pagination_limit=self.PAGINATION_LIMIT,
