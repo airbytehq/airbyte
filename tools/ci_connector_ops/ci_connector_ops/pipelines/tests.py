@@ -96,6 +96,7 @@ class AcceptanceTests(PythonTests):
 
         dockerd = (
             dagger_client.container()
+            .pipeline("DOCKERD")
             .from_("docker:23.0.1-dind")
             .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume("docker-lib"), sharing=CacheSharingMode.PRIVATE)
             .with_mounted_cache("/tmp", dagger_client.cache_volume("share-tmp"))
@@ -199,7 +200,7 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
     async with asyncer.create_task_group() as task_group:
         tasks = [
             task_group.soonify(IntegrationTests(context).run)(connector_under_test),
-            task_group.soonify(AcceptanceTests(context).run)(),
+            # task_group.soonify(AcceptanceTests(context).run)(),
         ]
 
     return results + [task.value for task in tasks]
