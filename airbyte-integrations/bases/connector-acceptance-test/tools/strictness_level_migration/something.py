@@ -7,20 +7,23 @@ import asyncio
 import os
 from pathlib import Path
 
-from create_prs import CONNECTORS_DIRECTORY, acceptance_test_config_path, get_airbyte_connector_name_from_definition, is_airbyte_connector
+import utils
+from definitions import GA_DEFINITIONS, is_airbyte_connector, find_by_name, get_airbyte_connector_name_from_definition
 from definitions import ALL_DEFINITIONS
+
+MODULE_NAME = "fail_on_extra_columns"
 
 parser = argparse.ArgumentParser(
     description="Run tests for a list of connectors."
 )
 parser.add_argument("--connectors", nargs='*')
 parser.add_argument("--file")
-parser.add_argument("--max_concurrency", default=10)
+parser.add_argument("--max_concurrency", type=int, default=10)
 
 
 async def run_tests(connector_name):
-    path_to_acceptance_test_runner = Path(CONNECTORS_DIRECTORY) / connector_name / "acceptance-test-docker.sh"
-    path_to_acceptance_test_config = acceptance_test_config_path(connector_name)
+    path_to_acceptance_test_runner = Path(utils.CONNECTORS_DIRECTORY) / connector_name / "acceptance-test-docker.sh"
+    path_to_acceptance_test_config = utils.acceptance_test_config_path(connector_name)
     failure_output_file = f"results/failures/{connector_name}.txt"
     success_output_file = f"results/successes/{connector_name}.txt"
 
@@ -33,19 +36,20 @@ async def run_tests(connector_name):
         stderr=asyncio.subprocess.PIPE,
     )
     return_code = await process.wait()
-    if return_code == 0:
-        with open(success_output_file, "wb") as f:
+
+    dir_path = Path(f"results/{return_code}")
+    dir_path.mkdir(parents=True, exist_ok=True)
+
+    if return_code in [0, 1]:
+        with open(f"{dir_path}/{connector_name}.txt", "wb") as f:
             contents = await process.stdout.read()
             f.write(contents)
-        print(f"{connector_name} succeeded.")
-    elif return_code == 1:
-        with open(failure_output_file, "wb") as f:
-            if return_code == 1:
-                contents = await process.stdout.read()
-                f.write(contents)
-        print(f"{connector_name} failed with exit code {return_code}.")
+        if return_code == 0:
+            print(f"{connector_name} succeeded.")
+        else:
+            print(f"{connector_name} tests failed.")
     else:
-        with open(failure_output_file, "w") as f:
+        with open(f"{dir_path}/{connector_name}.txt", "w") as f:
             f.write(f"{connector_name} failed with exit code {return_code}.")
         print(f"{connector_name} failed with exit code {return_code}.")
 
@@ -64,10 +68,10 @@ async def semaphore_gather(coroutines, num_semaphores):
     return await asyncio.gather(*(_wrap_coro(coroutine) for coroutine in coroutines), return_exceptions=False)
 
 
-async def main(num_semaphores):
+async def main(definitions, num_semaphores):
     tasks = []
 
-    for definition in ALL_DEFINITIONS:
+    for definition in definitions:
         if is_airbyte_connector(definition):
             connector_name = get_airbyte_connector_name_from_definition(definition)
             tasks.append(run_tests(connector_name))
@@ -76,6 +80,17 @@ async def main(num_semaphores):
 
 if __name__ == "__main__":
     args = parser.parse_args()
+
+    definitions = []
+    if args.connectors:
+        definitions = find_by_name(args.connectors)
+    elif args.file:
+        with open(f"templates/{MODULE_NAME}/{args.file}", "r") as f:
+            connector_names = [line.strip() for line in f]
+        definitions = find_by_name(connector_names)
+    else:
+        definitions = ALL_DEFINITIONS
+
     num_semaphores = args.max_concurrency
 
-    asyncio.run(main(num_semaphores=num_semaphores))
+    asyncio.run(main(definitions=definitions, num_semaphores=num_semaphores))
