@@ -28,17 +28,19 @@ from source_netsuite.errors import NETSUITE_ERRORS_MAPPING, DateFormatExeption
 
 class NetsuiteStream(HttpStream, ABC):
     def __init__(
-        self,
-        auth: OAuth1,
-        object_name: str,
-        base_url: str,
-        start_datetime: str,
-        window_in_days: int,
+            self,
+            auth: OAuth1,
+            object_name: str,
+            base_url: str,
+            start_datetime: str,
+            window_in_days: int,
+            language: str
     ):
         self.object_name = object_name
         self.base_url = base_url
         self.start_datetime = start_datetime
         self.window_in_days = window_in_days
+        self.language = language
         self.schemas = {}  # store subschemas to reduce API calls
         super().__init__(authenticator=auth)
 
@@ -140,10 +142,12 @@ class NetsuiteStream(HttpStream, ABC):
             params.update(**next_page_token)
         return params
 
-    def fetch_record(self, record: Mapping[str, Any], request_kwargs: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+
+    def fetch_record(self, record: Mapping[str, Any], request_kwargs: Mapping[str, Any], language: str) -> Iterable[Mapping[str, Any]]:
         url = record["links"][0]["href"]
-        args = {"method": "GET", "url": url, "params": {"expandSubResources": True}}
+        args = {"method": "GET", "url": url, "params": {"expandSubResources": True}, "headers": {"Accept-Language": language}}
         prep_req = self._session.prepare_request(requests.Request(**args))
+
         response = self._send_request(prep_req, request_kwargs)
         # sometimes response.status_code == 400,
         # but contains json elements with error description,
@@ -152,12 +156,12 @@ class NetsuiteStream(HttpStream, ABC):
             yield response.json()
 
     def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-        **kwargs,
+            self,
+            response: requests.Response,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+            **kwargs,
     ) -> Iterable[Mapping]:
 
         records = response.json().get("items")
@@ -165,7 +169,7 @@ class NetsuiteStream(HttpStream, ABC):
         if records:
             for record in records:
                 # make sub-requests for each record fetched
-                yield from self.fetch_record(record, request_kwargs)
+                yield from self.fetch_record(record, request_kwargs, self.language)
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code in NETSUITE_ERRORS_MAPPING.keys():
@@ -196,7 +200,7 @@ class NetsuiteStream(HttpStream, ABC):
         return super().should_retry(response)
 
     def read_records(
-        self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, **kwargs
+            self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
         try:
             yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
@@ -210,9 +214,9 @@ class IncrementalNetsuiteStream(NetsuiteStream):
         return INCREMENTAL_CURSOR
 
     def filter_records_newer_than_state(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        records: Mapping[str, Any] = None,
+            self,
+            stream_state: Mapping[str, Any] = None,
+            records: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Parse the records with respect to `stream_state` for `incremental` sync."""
         if stream_state:
@@ -235,27 +239,27 @@ class IncrementalNetsuiteStream(NetsuiteStream):
         return state
 
     def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-        **kwargs,
+            self,
+            response: requests.Response,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+            **kwargs,
     ) -> Iterable[Mapping]:
         records = super().parse_response(response, stream_state, stream_slice, next_page_token)
         yield from self.filter_records_newer_than_state(stream_state, records)
 
     def get_updated_state(
-        self,
-        current_stream_state: MutableMapping[str, Any],
-        latest_record: Mapping[str, Any],
+            self,
+            current_stream_state: MutableMapping[str, Any],
+            latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
         latest_cursor = latest_record.get(self.cursor_field, self.start_datetime)
         current_cursor = current_stream_state.get(self.cursor_field, self.start_datetime)
         return {self.cursor_field: max(latest_cursor, current_cursor)}
 
     def request_params(
-        self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+            self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = {**(next_page_token or {})}
         if stream_slice:

@@ -11199,6 +11199,8 @@
         - "consumer_secret"
         - "token_key"
         - "token_secret"
+        - "language"
+        - "object_types"
         - "start_datetime"
       additionalProperties: true
       properties:
@@ -11233,6 +11235,13 @@
           description: "Access token secret"
           order: 4
           airbyte_secret: true
+        language:
+          type: string
+          title: language
+          description: The default company language, and do not support the language specified in your user preferences.
+          order: 5
+          examples: [ "zh","en" ]
+          default: zh
         object_types:
           type: "array"
           title: "Object Types"
@@ -11241,18 +11250,17 @@
           description: "The API names of the Netsuite objects you want to sync. Setting\
             \ this speeds up the connection setup process by limiting the number of\
             \ schemas that need to be retrieved from Netsuite."
-          order: 5
+          order: 6
           examples:
             - "customer"
             - "salesorder"
-            - "etc"
           default: []
         start_datetime:
           type: "string"
           title: "Start Date"
           description: "Starting point for your data replication, in format of \"\
             YYYY-MM-DDTHH:mm:ssZ\""
-          order: 6
+          order: 7
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           examples:
             - "2017-01-25T00:00:00Z"
@@ -11261,7 +11269,7 @@
           title: "Window in Days"
           description: "The amount of days used to query the data with date chunks.\
             \ Set smaller value, if you have lots of data."
-          order: 7
+          order: 8
           default: 30
     supportsNormalization: false
     supportsDBT: false
