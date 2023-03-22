@@ -8,8 +8,7 @@ import os
 from pathlib import Path
 
 import utils
-from definitions import GA_DEFINITIONS, is_airbyte_connector, find_by_name, get_airbyte_connector_name_from_definition
-from definitions import ALL_DEFINITIONS
+from definitions import GA_DEFINITIONS, BETA_DEFINITIONS, is_airbyte_connector, find_by_name, get_airbyte_connector_name_from_definition
 
 MODULE_NAME = "fail_on_extra_columns"
 
@@ -24,8 +23,6 @@ parser.add_argument("--max_concurrency", type=int, default=10)
 async def run_tests(connector_name):
     path_to_acceptance_test_runner = Path(utils.CONNECTORS_DIRECTORY) / connector_name / "acceptance-test-docker.sh"
     path_to_acceptance_test_config = utils.acceptance_test_config_path(connector_name)
-    failure_output_file = f"results/failures/{connector_name}.txt"
-    success_output_file = f"results/successes/{connector_name}.txt"
 
     print(f"Start running tests for {connector_name}.")
     process = await asyncio.create_subprocess_exec(
@@ -89,7 +86,7 @@ if __name__ == "__main__":
             connector_names = [line.strip() for line in f]
         definitions = find_by_name(connector_names)
     else:
-        definitions = ALL_DEFINITIONS
+        definitions = GA_DEFINITIONS + BETA_DEFINITIONS
 
     num_semaphores = args.max_concurrency
 
