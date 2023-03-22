@@ -449,9 +449,13 @@ class NotaFiscal(IncrementalBlingBase):
             #     'tipo_filter': 'tipo[E]'
             # },
             {
-                'situacao_filter': None,
-                'tipo_filter': 'tipo[S]'
+                'situacao_filter': 'situacao[3]',
+                'tipo_filter': 'tipo[E]'
             }
+            # {
+            #     'situacao_filter': None,
+            #     'tipo_filter': 'tipo[S]'
+            # }
         ]
 
         for index, value in enumerate(dict_list):
