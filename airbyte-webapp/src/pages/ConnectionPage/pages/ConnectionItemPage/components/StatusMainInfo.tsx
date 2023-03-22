@@ -71,7 +71,7 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
     <div className={styles.container}>
       <ConnectionName connection={connection} />
       <div className={styles.mainInfoContainer}>
-        <div className={styles.enabledControlContainer} />
+        {/* <div className={styles.enabledControlContainer} /> */}
         <div className={styles.leftContainer}>
           <div className={styles.pathContainer}>
             <Link to={sourceConnectionPath} className={styles.connectorLink}>
@@ -93,7 +93,6 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
               />
             </Link>
           </div>
-          <div className={styles.syncDate}>{lastSyncTimeText}</div>
         </div>
         {connection.status !== ConnectionStatus.deprecated && (
           <div className={styles.enabledControlContainer}>
@@ -107,6 +106,7 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
           </div>
         )}
       </div>
+      <div className={styles.syncDate}>{lastSyncTimeText}</div>
     </div>
   );
 };

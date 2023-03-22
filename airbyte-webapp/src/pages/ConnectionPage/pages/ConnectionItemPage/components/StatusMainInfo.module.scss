@@ -22,7 +22,7 @@
   flex-flow: column wrap;
   background-color: white;
   border-radius: 10px;
-  padding: 36px 60px;
+  padding: 24px 60px;
 }
 
 .mainInfoContainer {
@@ -33,7 +33,7 @@
 .pathContainer {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: center;
 }
 

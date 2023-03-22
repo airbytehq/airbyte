@@ -31,8 +31,8 @@ const Details = styled.div`
 `;
 
 const EntityIcon = styled.div`
-  width: 86px;
-  height: 86px;
+  width: 96px;
+  height: 96px;
   box-shadow: 0px 10px 12px rgba(74, 74, 87, 0.1);
   border-radius: 18px;
   padding: 6px;
