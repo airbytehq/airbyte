@@ -33,6 +33,8 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2023.03.22
+1. Connection config update
 #### 2023.03.21
 1. Indicate integration authentication status
 2. Center the form in the Sign in page
