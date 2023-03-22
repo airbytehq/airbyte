@@ -1,5 +1,6 @@
 {
     "type": "object",
+    "additionalProperties": true,
     "properties": {
         "object": {
             "type": "string"
@@ -8,19 +9,19 @@
             "type": "string"
         },
         "name": {
-            "type": "string"
+            "type": ["null", "string"]
         },
         "html": {
-            "type": "string"
+            "type": ["null", "string"]
         },
         "is_writeable": {
-            "type": "string"
+            "type": ["null", "string"]
         },
         "created": {
-            "type": "string"
+            { "type": "string", "format": "date-time" }
         },
         "updated": {
-            "type": "string"
+            { "type": "string", "format": "date-time" }
         }
     }
 }
