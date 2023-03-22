@@ -351,7 +351,7 @@ class NotaFiscal(IncrementalBlingBase):
         end_ingestion_date = self.start_ingestion_date + timedelta(days = 14)
             
 
-        api_filters = f"{self.api_date_filter_field}[{datetime.strftime(self.start_ingestion_date, '%d/%m/%Y %H')}:00:00 TO {datetime.strftime(end_ingestion_date, '%d/%m/%Y 23:59:59')}];{stream_slice['tipo_filter']}"
+        api_filters = f"{self.api_date_filter_field}[{datetime.strftime(self.start_ingestion_date, '%d/%m/%Y %H')}:00:00 TO {datetime.strftime(datetime.now(), '%d/%m/%Y 23:59:59')}];{stream_slice['tipo_filter']}"
 
         if stream_slice['situacao_filter'] != None: api_filters = f"{api_filters};{stream_slice['situacao_filter']}"
 
