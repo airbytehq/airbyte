@@ -13,10 +13,16 @@ connectionSpecification:
         title: Username
         description: Username to authenticate into the KoboToolBox server
         order: 1
-        password:
+      password:
+        type: string
+        title: Password
+        description: Password to authenticate into the KoboToolBox server
+        airbyte_secret: true
+        order: 2
+      start_time:
           type: string
-          title: Password
-          description: Password to authenticate into the KoboToolBox server
-          airbyte_secret: true
-          order: 2
-          
+          title: Start Time
+          description: Any data before this date will not be replicated.
+          default: "2023-03-15T00:00:00"
+          order: 3
+          pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
