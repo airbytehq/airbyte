@@ -56,8 +56,6 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
   const { formatMessage } = useIntl();
 
-  console.log(source);
-
   const allowSync = useFeature(FeatureItem.AllowSync);
 
   const sourceConnectionPath = `../../${RoutePaths.Source}/${source.sourceId}`;
