@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.31.1
+connector builder: send stacktrace when error on read
+
 ## 0.31.0
 Add connector builder module for handling Connector Builder server requests
 
