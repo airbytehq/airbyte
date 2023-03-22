@@ -3,6 +3,8 @@
 #
 
 import logging
+import random
+import string
 from typing import Any, Dict, Iterable, Mapping
 
 import pandas as pd
@@ -25,6 +27,10 @@ class DestinationAwsDatalake(Destination):
     def _flush_streams(self, streams: Dict[str, StreamWriter]) -> None:
         for stream in streams:
             streams[stream].flush()
+
+    @staticmethod
+    def _get_random_string(length):
+        return "".join(random.choice(string.ascii_letters) for i in range(length))
 
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
@@ -134,13 +140,14 @@ class DestinationAwsDatalake(Destination):
             message = f"""Could not find bucket {connector_config.bucket_name} in aws://{connector_config.aws_account_id}:{connector_config.region} Exception: {repr(e)}"""
             return AirbyteConnectionStatus(status=Status.FAILED, message=message)
 
-        tbl = "airbyte_test"
+        tbl = f"airbyte_test_{self._get_random_string(5)}"
         db = connector_config.lakeformation_database_name
         try:
             df = pd.DataFrame({"id": [1, 2], "value": ["foo", "bar"]})
 
             aws_handler.reset_table(db, tbl)
             aws_handler.write(df, db, tbl, None, None)
+            aws_handler.reset_table(db, tbl)
 
         except Exception as e:
             message = f"Could not create table {tbl} in database {db}: {repr(e)}"

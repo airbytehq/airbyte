@@ -27,10 +27,8 @@ class OutputFormat(enum.Enum):
     def from_string(s: str):
         if s == "Parquet":
             return OutputFormat.PARQUET
-        elif s == "JSONL":
-            return OutputFormat.JSONL
-        else:
-            raise ValueError(f"Unknown output format: {s}")
+
+        return OutputFormat.JSONL
 
 
 class CompressionCodec(enum.Enum):
@@ -47,10 +45,8 @@ class CompressionCodec(enum.Enum):
             return CompressionCodec.GZIP
         elif str == "ZSTD":
             return CompressionCodec.ZSTD
-        elif str == "UNCOMPRESSED":
-            return CompressionCodec.UNCOMPRESSED
-        else:
-            raise ValueError(f"Unknown compression codec: {str}")
+
+        return CompressionCodec.UNCOMPRESSED
 
 
 class PartitionOptions(enum.Enum):
@@ -64,9 +60,7 @@ class PartitionOptions(enum.Enum):
 
     @staticmethod
     def from_string(s: str):
-        if s == "NO PARTITIONING":
-            return PartitionOptions.NONE
-        elif s == "DATE":
+        if s == "DATE":
             return PartitionOptions.DATE
         elif s == "YEAR":
             return PartitionOptions.YEAR
@@ -78,8 +72,8 @@ class PartitionOptions(enum.Enum):
             return PartitionOptions.YEAR_MONTH
         elif s == "YEAR/MONTH/DAY":
             return PartitionOptions.YEAR_MONTH_DAY
-        else:
-            raise ValueError(f"Unknown partition option: {s}")
+
+        return PartitionOptions.NONE
 
 
 class ConnectorConfig:
