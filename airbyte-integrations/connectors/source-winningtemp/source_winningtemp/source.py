@@ -12,6 +12,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 import base64
+import pendulum
 
 
 # Basic full refresh stream
@@ -22,6 +23,7 @@ class WinningtempStream(HttpStream, ABC):
         super().__init__()
         self.client_id = config.get('client_id')
         self.client_secret = config.get('client_secret')
+        self.start_date = pendulum.parse(config.get('start_date'))
         self.dict_unnest = dict_unnest
 
         self.access_token = None
@@ -51,23 +53,74 @@ class WinningtempStream(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
         return {}
 
-    def request_body_data(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return '{}'
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def unify_response(self, response: requests.Response, **kwargs) -> List[Mapping]:
         data = response.json()
         if isinstance(data, list):
-            yield from data
+            return data
         elif isinstance(data, dict):
             if self.dict_unnest:
                 unnested_data = [{**{"identifier": k}, **v} for k, v in data.items()]
-                yield from unnested_data
+                return unnested_data
             else:
                 return [data]
         else:
             raise "Invalid data type of in the response"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        records = self.unify_response(response)
+        yield from records
+
+
+class WinningtempIncrementalStream(WinningtempStream, ABC):
+    state_checkpoint_interval = 1
+
+    def __init__(self, config: Mapping[str, Any], dict_unnest=False):
+        super().__init__(config, dict_unnest)
+        self.date_from = None
+        self.date_to = None
+        self.initialize_date_ragne()
+
+    @property
+    def cursor_field(self) -> str:
+        return "date"
+
+    def get_closest_prev_monday(self, date):
+        return date.add(days=-((date.day_of_week - 1) % 7))
+
+    def initialize_date_ragne(self):
+        self.date_from = self.get_closest_prev_monday(self.start_date).add(days=-7)
+        self.date_to = self.date_from.add(days=7)
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if self.date_from > pendulum.today():
+            return None
+        return {"next_date": str(self.date_from.date())}
+
+    def request_body_data(
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        cursor_date = stream_state.get(self.cursor_field, self.date_from).add(days=-7)
+
+        self.date_from = max(cursor_date, self.date_from)
+        self.date_from = self.date_from.add(days=7)
+        self.date_to = self.date_to.add(days=7)
+
+        date_from_str = str(self.date_from.date())
+        date_to_str = str(self.date_to.date())
+        return "{" + f'"start":"{date_from_str}","end":"{date_to_str}","showIndexByGrade":true,"indexDecimals":2' + "}"
+
+    @property
+    def http_method(self) -> str:
+        return "POST"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        records = self.unify_response(response)
+        meta_data = {"date_from": self.date_from, "date_to": self.date_to}
+        data = [{**d, **meta_data} for d in records]
+        yield from data
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {self.cursor_field: self.date_from}
 
 
 class SegmentationGroups(WinningtempStream):
@@ -97,12 +150,8 @@ class SurveyQuestions(WinningtempStream):
         return "survey/v1/Questions"
 
 
-class QueryCategory(WinningtempStream):
+class QueryCategory(WinningtempIncrementalStream):
     primary_key = "id"
-
-    @property
-    def http_method(self) -> str:
-        return "POST"
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -110,12 +159,8 @@ class QueryCategory(WinningtempStream):
         return "temperature/v2/query/category"
 
 
-class QueryAge(WinningtempStream):
+class QueryAge(WinningtempIncrementalStream):
     primary_key = "id"
-
-    @property
-    def http_method(self) -> str:
-        return "POST"
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -123,12 +168,8 @@ class QueryAge(WinningtempStream):
         return "temperature/v2/query/age"
 
 
-class QueryEnpsAge(WinningtempStream):
+class QueryEnpsAge(WinningtempIncrementalStream):
     primary_key = "id"
-
-    @property
-    def http_method(self) -> str:
-        return "POST"
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -136,12 +177,8 @@ class QueryEnpsAge(WinningtempStream):
         return "temperature/v2/query/enps/age"
 
 
-class QueryEnpsGender(WinningtempStream):
+class QueryEnpsGender(WinningtempIncrementalStream):
     primary_key = "id"
-
-    @property
-    def http_method(self) -> str:
-        return "POST"
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -149,12 +186,8 @@ class QueryEnpsGender(WinningtempStream):
         return "temperature/v2/query/enps/gender"
 
 
-class QueryGender(WinningtempStream):
+class QueryGender(WinningtempIncrementalStream):
     primary_key = "id"
-
-    @property
-    def http_method(self) -> str:
-        return "POST"
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -162,12 +195,8 @@ class QueryGender(WinningtempStream):
         return "temperature/v2/query/gender"
 
 
-class QueryGroup(WinningtempStream):
+class QueryGroup(WinningtempIncrementalStream):
     primary_key = "id"
-
-    @property
-    def http_method(self) -> str:
-        return "POST"
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -175,12 +204,8 @@ class QueryGroup(WinningtempStream):
         return "temperature/v2/query/group"
 
 
-class Query(WinningtempStream):
+class Query(WinningtempIncrementalStream):
     primary_key = "id"
-
-    @property
-    def http_method(self) -> str:
-        return "POST"
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -188,12 +213,8 @@ class Query(WinningtempStream):
         return "temperature/v2/query"
 
 
-class QueryEnps(WinningtempStream):
+class QueryEnps(WinningtempIncrementalStream):
     primary_key = "id"
-
-    @property
-    def http_method(self) -> str:
-        return "POST"
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -201,12 +222,8 @@ class QueryEnps(WinningtempStream):
         return "temperature/v2/query/enps"
 
 
-class QuerySegment(WinningtempStream):
+class QuerySegment(WinningtempIncrementalStream):
     primary_key = "id"
-
-    @property
-    def http_method(self) -> str:
-        return "POST"
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -214,12 +231,8 @@ class QuerySegment(WinningtempStream):
         return "temperature/v2/query/segment"
 
 
-class QueryEnpsSegment(WinningtempStream):
+class QueryEnpsSegment(WinningtempIncrementalStream):
     primary_key = "id"
-
-    @property
-    def http_method(self) -> str:
-        return "POST"
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -242,7 +255,7 @@ class SourceWinningtemp(AbstractSource):
             QueryEnpsAge(config=config, dict_unnest=True),
             QueryEnpsGender(config=config, dict_unnest=True),
             QueryGender(config=config, dict_unnest=True),
-            QueryGroup(config=config, dict_unnest=False),
+            QueryGroup(config=config, dict_unnest=True),
             Query(config=config, dict_unnest=False),
             QueryEnps(config=config, dict_unnest=False),
             QuerySegment(config=config, dict_unnest=True),

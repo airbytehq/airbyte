@@ -12,9 +12,13 @@ connectionSpecification:
       type: string
       description: "Winningtemp client ID"
       airbyte_secret: true
-
     client_secret:
       title: Client secret
       type: string
       description: "Winningtemp client secret"
       airbyte_secret: true
+    start_date:
+      title: Start date
+      type: string
+      description: "Start date"
+      default: "2023-01-01"
