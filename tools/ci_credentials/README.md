@@ -29,7 +29,7 @@ Download a Service account json key that has access to Google Secrets Manager.
 * Click on "ADD KEY -> Create new key" and select JSON. This will download a file on your computer
 
 ### Setup ci_credentials
-* In your .zshrc, add: export GCP_GSM_CREDENTIALS=`$(cat <path to JSON file>)`
+* In your .zshrc, add: `export GCP_GSM_CREDENTIALS=cat $(<path to JSON file>)`
 * Follow README.md under `tools/ci_credentials`
 
 After making a change, you have to reinstall it to run the bash command: `pip install --quiet -e ./tools/ci_*`
@@ -55,6 +55,7 @@ To download GSM secrets to for all available connectors into their respective `s
 ```bash
 ci_credentials all write-to-storage
 ```
+
 
 ### Update secrets
 To upload to GSM newly updated configurations from `airbyte-integrations/connectors/source-bings-ads/secrets/updated_configurations`:
