@@ -123,7 +123,7 @@ jobs:
         shell: bash
         env:
           CONN: ${{ github.event.inputs.connector }}
-          DATASET: ${{ github.event.inputs.dataset }}
+          DS: ${{ github.event.inputs.dataset }}
         run: |
           echo "Setting admin account permissions"
           kubectl apply -f ./tools/bin/admin-service-account.yaml
@@ -134,6 +134,7 @@ jobs:
           kind load docker-image airbyte/source-harness:dev --name chart-testing
           echo "loading pod..." 
           export CONNECTOR_IMAGE_NAME=${CONN/connectors/airbyte}:dev
+          export DATASET=$DS
           envsubst < ./tools/bin/test-postgres-source-process.yaml | kubectl create -f -
           echo "get pods..."
           kubectl get po
