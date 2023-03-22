@@ -35,10 +35,16 @@ The Kobotoolbox source connector supports the following[ sync modes](https://doc
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+- (Recommended)[ Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
 
 The Kobotoolbox connector supports **forms** as the streams.
+
+## Note
+
+Normalization mode of data is not supported.
 
 ## Connector-specific features
 
@@ -48,4 +54,4 @@ The Kobotoolbox connector supports **forms** as the streams.
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
-| 0.1.0   | 2023-03-16 | [24138](https://github.com/airbytehq/airbyte/pull/22024) | Initial Release |
+| 0.1.0   | 2023-03-16 | [24138](https://github.com/airbytehq/airbyte/pull/24138) | Initial Release |
