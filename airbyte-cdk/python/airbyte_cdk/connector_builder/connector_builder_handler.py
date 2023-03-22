@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Mapping
 from urllib.parse import urljoin
 
+from airbyte_cdk.connector_builder.message_grouper import MessageGrouper
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.models import Type
 from airbyte_cdk.models import Type as MessageType
@@ -15,7 +16,6 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from connector_builder.message_grouper import MessageGrouper
 
 DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE = 5
 DEFAULT_MAXIMUM_NUMBER_OF_SLICES = 5
@@ -31,13 +31,14 @@ def read_stream(source: DeclarativeSource, config: Mapping[str, Any], configured
         handler = MessageGrouper(max_pages_per_slice, max_slices)
         stream_name = configured_catalog.streams[0].stream.name  # The connector builder only supports a single stream
         stream_read = handler.get_message_groups(source, config, configured_catalog, max_records)
-        return AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(
-            data=dataclasses.asdict(stream_read),
-            stream=stream_name,
-            emitted_at=_emitted_at()
-        ))
+        return AirbyteMessage(
+            type=MessageType.RECORD,
+            record=AirbyteRecordMessage(data=dataclasses.asdict(stream_read), stream=stream_name, emitted_at=_emitted_at()),
+        )
     except Exception as exc:
-        error = AirbyteTracedException.from_exception(exc, message=f"Error reading stream with config={config} and catalog={configured_catalog}")
+        error = AirbyteTracedException.from_exception(
+            exc, message=f"Error reading stream with config={config} and catalog={configured_catalog}"
+        )
         return error.as_airbyte_message()
 
 
@@ -85,9 +86,7 @@ def _get_http_streams(source: ManifestDeclarativeSource, config: Dict[str, Any])
                     f"A declarative stream should only have a retriever of type HttpStream, but received: {stream.retriever.__class__}"
                 )
         else:
-            raise TypeError(
-                f"A declarative source should only contain streams of type DeclarativeStream, but received: {stream.__class__}"
-            )
+            raise TypeError(f"A declarative source should only contain streams of type DeclarativeStream, but received: {stream.__class__}")
     return http_streams
 
 

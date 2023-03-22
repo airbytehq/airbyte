@@ -127,7 +127,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
       return endOfData();
     }
 
-    if (sendCheckpointMessage) {
+    if (cdcStateHandler.isCdcCheckpointEnabled() && sendCheckpointMessage) {
       final AirbyteMessage stateMessage = createStateMessage(checkpointOffsetToSend);
       previousCheckpointOffset.clear();
       previousCheckpointOffset.putAll(checkpointOffsetToSend);
@@ -136,10 +136,9 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
     }
 
     if (changeEventIterator.hasNext()) {
-      try {
-        final ChangeEvent<String, String> event = changeEventIterator.next();
-        recordsLastSync++;
+      final ChangeEvent<String, String> event = changeEventIterator.next();
 
+      if (cdcStateHandler.isCdcCheckpointEnabled()) {
         if (checkpointOffsetToSend.size() == 0 &&
             (recordsLastSync >= syncCheckpointRecords ||
                 Duration.between(dateTimeLastSync, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)) {
@@ -157,11 +156,8 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
             && cdcStateHandler.isRecordBehindOffset(checkpointOffsetToSend, event)) {
           sendCheckpointMessage = true;
         }
-
-        return DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, emittedAt);
-      } catch (final Exception e) {
-        throw new RuntimeException(e);
       }
+      return DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, emittedAt);
     }
 
     isSyncFinished = true;
