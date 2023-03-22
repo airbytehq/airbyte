@@ -760,7 +760,7 @@ class TestBasicRead(BaseTest):
 
     @pytest.fixture(name="should_fail_on_extra_columns")
     def should_fail_on_extra_columns_fixture(self, inputs: BasicReadTestConfig):
-        # TODO: enforce this param once all connectors are passing, sunset additionalProperties on high-level object
+        # TODO (Ella): enforce this param once all connectors are passing, sunset additionalProperties on high-level object
         return inputs.fail_on_extra_columns
 
     @pytest.fixture(name="should_validate_data_points")
@@ -819,7 +819,7 @@ class TestBasicRead(BaseTest):
 
         assert records, "At least one record should be read using provided catalog"
 
-        if should_validate_schema:  # TODO Conditional logic
+        if should_validate_schema:
             self._validate_schema(
                 records=records, configured_catalog=configured_catalog, fail_on_extra_columns=should_fail_on_extra_columns
             )
