@@ -63,7 +63,7 @@ You can modify a single stream, or you can modify multiple streams at once.
 
 Modify an individual stream:
 
-![Single Edit Gif 7](https://user-images.githubusercontent.com/106352739/187313088-85c61a6d-1025-45fa-b14e-a7fe86defea4.gif)
+![gif-single-edit-march-2023](https://user-images.githubusercontent.com/106352739/226917693-068256da-c948-4f22-bdce-49f5bad95bf6.gif)
 
 1. In the the **Activate the streams you want to sync** table, toggle **Sync** on or off for your selected stream.
 
@@ -113,7 +113,7 @@ Airbyte recommends that you reset streams. A reset will delete data in the desti
 
 Modify multiple streams:
 
-![Batch Edit gif 5](https://user-images.githubusercontent.com/106352739/187312110-d16b4f9a-9d43-4b23-b644-b64004f33b58.gif)
+![gif-batch-edit-march-2023](https://user-images.githubusercontent.com/106352739/226917994-c43941db-bb54-4a12-8270-f24fc4e2e6a7.gif)
 
 1. In the **Activate the streams you want to sync** table, select the checkboxes of streams that you want to apply changes to.
 
