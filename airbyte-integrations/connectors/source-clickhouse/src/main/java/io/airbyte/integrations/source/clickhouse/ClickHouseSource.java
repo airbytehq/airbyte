@@ -8,23 +8,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.NoOpStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.relationaldb.TableInfo;
-import io.airbyte.protocol.models.CommonField;
 import java.sql.JDBCType;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,27 +36,6 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
   public static final String HTTP_PROTOCOL = "http";
 
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
-
-  @Override
-  protected Map<String, List<String>> discoverPrimaryKeys(final JdbcDatabase database,
-                                                          final List<TableInfo<CommonField<JDBCType>>> tableInfos) {
-    return tableInfos.stream()
-        .collect(Collectors.toMap(
-            tableInfo -> JdbcUtils.getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
-            tableInfo -> {
-              try {
-                return database.queryStrings(connection -> {
-                  final String sql = "SELECT name FROM system.columns WHERE database = ? AND table = ? AND is_in_primary_key = 1";
-                  final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-                  preparedStatement.setString(1, tableInfo.getNameSpace());
-                  preparedStatement.setString(2, tableInfo.getName());
-                  return preparedStatement.executeQuery();
-                }, resultSet -> resultSet.getString("name"));
-              } catch (final SQLException e) {
-                throw new RuntimeException(e);
-              }
-            }));
-  }
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ClickHouseSource.class);
   public static final String DRIVER_CLASS = DatabaseDriver.CLICKHOUSE.getDriverClassName();
