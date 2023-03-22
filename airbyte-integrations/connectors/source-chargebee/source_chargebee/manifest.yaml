@@ -131,8 +131,6 @@ definitions:
                 - http_codes: [404]
                   action: IGNORE
                   error_message: "Entity unavailable. Customer must have been deleted."
-            - type: DefaultErrorHandler
-              response_filters:
                 - error_message_contains: "This API operation is not enabled for this site"
                   action: IGNORE
                   error_message: "Stream is available only for Product Catalog 1.0"
