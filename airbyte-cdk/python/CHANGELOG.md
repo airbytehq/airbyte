@@ -1,8 +1,5 @@
 # Changelog
 
-## 0.31.2
-Do not swallow exceptions in `check` to make unhandled failed check emit a trace message instead of a failed connection status.
-
 ## 0.31.1
 connector builder: send stacktrace when error on read
 
