@@ -501,8 +501,8 @@ class ParentStreamConfig(BaseModel):
     parent_key: str
     stream: DeclarativeStream
     partition_field: str
-    request_option: Optional[RequestOption] = None
     skip_slices: Optional[str] = None
+    request_option: Optional[RequestOption] = None
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
