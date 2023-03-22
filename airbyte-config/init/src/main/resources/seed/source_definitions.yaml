@@ -292,7 +292,7 @@
 - name: ClickUp
   sourceDefinitionId: 311a7a27-3fb5-4f7e-8265-5e4afe258b66
   dockerRepository: airbyte/source-clickup-api
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/click-up
   icon: clickup.svg
   sourceType: api
@@ -601,11 +601,14 @@
 - name: File (CSV, JSON, Excel, Feather, Parquet)
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   dockerRepository: airbyte/source-file
-  dockerImageTag: 0.2.34
+  dockerImageTag: 0.2.35
   documentationUrl: https://docs.airbyte.com/integrations/sources/file
   icon: file.svg
   sourceType: file
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "*"
 - name: Firebase Realtime Database
   sourceDefinitionId: acb5f973-a565-441e-992f-4946f3e65662
   dockerRepository: airbyte/source-firebase-realtime-database
@@ -1406,7 +1409,7 @@
 - name: Outreach
   sourceDefinitionId: 3490c201-5d95-4783-b600-eaf07a4c7787
   dockerRepository: airbyte/source-outreach
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/outreach
   icon: outreach.svg
   sourceType: api
@@ -1488,7 +1491,7 @@
 - name: Pipedrive
   sourceDefinitionId: d8286229-c680-4063-8c59-23b9b391c700
   dockerRepository: airbyte/source-pipedrive
-  dockerImageTag: 0.1.16
+  dockerImageTag: 0.1.17
   documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
   icon: pipedrive.svg
   sourceType: api
@@ -2106,7 +2109,7 @@
 - name: Twilio
   sourceDefinitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
   dockerRepository: airbyte/source-twilio
-  dockerImageTag: 0.1.16
+  dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/twilio
   icon: twilio.svg
   sourceType: api

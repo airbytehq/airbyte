@@ -2491,7 +2491,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-clickup-api:0.1.0"
+- dockerImage: "airbyte/source-clickup-api:0.1.1"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -2527,6 +2527,13 @@
           type: "string"
           description: "The ID of your list in your folder. Retrieve it from the `/folder/{folder_id}/list`\
             \ of the ClickUp API. See <a href=\"https://clickup.com/api/clickupreference/operation/GetLists/\"\
+            >here</a>."
+        include_closed_tasks:
+          title: "Include Closed Tasks"
+          type: "boolean"
+          default: false
+          description: "Include or exclude closed tasks. By default, they are excluded.\
+            \ See <a https://clickup.com/api/clickupreference/operation/GetTasks/#!in=query&path=include_closed&t=request\"\
             >here</a>."
     supportsNormalization: false
     supportsDBT: false
@@ -4351,7 +4358,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.34"
+- dockerImage: "airbyte/source-file:0.2.35"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/file"
     connectionSpecification:
@@ -11066,7 +11073,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-outreach:0.1.2"
+- dockerImage: "airbyte/source-outreach:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/outreach"
     connectionSpecification:
@@ -11079,7 +11086,7 @@
       - "refresh_token"
       - "redirect_uri"
       - "start_date"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         client_id:
           type: "string"
@@ -11533,7 +11540,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-pipedrive:0.1.16"
+- dockerImage: "airbyte/source-pipedrive:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pipedrive"
     connectionSpecification:
@@ -16022,7 +16029,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-twilio:0.1.16"
+- dockerImage: "airbyte/source-twilio:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/twilio"
     connectionSpecification:
