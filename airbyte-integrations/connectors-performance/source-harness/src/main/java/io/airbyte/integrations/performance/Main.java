@@ -23,7 +23,7 @@ public class Main {
   public static void main(final String[] args) {
 
     String image = null;
-    String dataset = "10m";
+    String dataset = "1m";
 
     switch (args.length) {
       case 1 -> image = args[0];

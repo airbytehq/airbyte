@@ -19,6 +19,9 @@ on:
       uuid:
         description: "Custom UUID of workflow run. Used because GitHub dispatches endpoint does not return workflow run id."
         required: false
+      dataset:
+        description: "Name of dataset to use for performance measurement. Currently supports 1m, 10m, 20m."
+        required: false
 jobs:
   uuid:
     name: "Custom UUID of workflow run"
@@ -120,6 +123,7 @@ jobs:
         shell: bash
         env:
           CONN: ${{ github.event.inputs.connector }}
+          DATASET: ${{ github.event.inputs.dataset }}
         run: |
           echo "Setting admin account permissions"
           kubectl apply -f ./tools/bin/admin-service-account.yaml
