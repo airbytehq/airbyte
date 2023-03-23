@@ -2056,6 +2056,14 @@
   icon: tmdb.svg
   sourceType: api
   releaseStage: alpha
+- name: Todoist
+  sourceDefinitionId: 7d272065-c316-4c04-a433-cd4ee143f83e
+  dockerRepository: airbyte/source-todoist
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/todoist
+  sourceType: api
+  icon: todoist.svg
+  releaseStage: alpha
 - name: Toggl
   sourceDefinitionId: 7e7c844f-2300-4342-b7d3-6dd7992593cd
   dockerRepository: airbyte/source-toggl
