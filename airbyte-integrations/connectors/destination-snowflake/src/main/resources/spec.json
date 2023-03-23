@@ -19,6 +19,8 @@
         ],
         "type": "string",
         "title": "Host",
+        "pattern": "^([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.snowflakecomputing\\.com)$",
+        "pattern_descriptor": "{account_name}.snowflakecomputing.com or {accountname}.{aws_location}.aws.snowflakecomputing.com",
         "order": 0
       },
       "role": {
