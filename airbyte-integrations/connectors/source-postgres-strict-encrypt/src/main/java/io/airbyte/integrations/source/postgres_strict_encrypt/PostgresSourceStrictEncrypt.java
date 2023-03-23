@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.postgres;
+package io.airbyte.integrations.source.postgres_strict_encrypt;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -11,6 +11,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.spec_modification.SpecModifyingSource;
+import io.airbyte.integrations.source.postgres.PostgresSource;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
