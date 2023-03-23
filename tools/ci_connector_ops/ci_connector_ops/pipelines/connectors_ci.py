@@ -61,13 +61,14 @@ async def run(context: ConnectorTestContext, semaphore: anyio.Semaphore) -> Conn
         return context.test_report
 
 
-async def run_connectors_test_pipelines(contexts: List[ConnectorTestContext]):
+async def run_connectors_test_pipelines(contexts: List[ConnectorTestContext], concurrency: int = 5):
     """Runs a CI pipeline for all the connectors passed.
 
     Args:
         contexts (List[ConnectorTestContext]): List of connector test contexts for which a CI pipeline needs to be run.
+        concurrency (int): Number of test pipeline that can run in parallel. Defaults to 5
     """
-    semaphore = anyio.Semaphore(5)
+    semaphore = anyio.Semaphore(concurrency)
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         async with anyio.create_task_group() as tg:
             for context in contexts:
@@ -142,8 +143,11 @@ def connectors_ci(
     type=click.Choice(["alpha", "beta", "generally_available"]),
 )
 @click.option("--modified/--not-modified", help="Only test modified connectors in the current branch.", default=False, type=bool)
+@click.option("--concurrency", help="Number of connector tests pipeline to run in parallel.", default=5, type=int)
 @click.pass_context
-def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[ConnectorLanguage], release_stages: Tuple[str], modified: bool):
+def test_connectors(
+    ctx: click.Context, names: Tuple[str], languages: Tuple[ConnectorLanguage], release_stages: Tuple[str], modified: bool, concurrency: int
+):
     """Runs a CI pipeline the connector passed as CLI argument.
 
     Args:
@@ -188,7 +192,7 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
         in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]  # TODO: remove this once we implement pipelines for Java connector
     ]
     try:
-        anyio.run(run_connectors_test_pipelines, connectors_tests_contexts)
+        anyio.run(run_connectors_test_pipelines, connectors_tests_contexts, concurrency)
         update_commit_status_check(
             ctx.obj["git_revision"],
             "success",
