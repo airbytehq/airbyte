@@ -96,7 +96,6 @@ class AcceptanceTests(PythonTests):
 
         dockerd = (
             dagger_client.container()
-            .pipeline("DOCKERD")
             .from_("docker:23.0.1-dind")
             .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume("docker-lib"), sharing=CacheSharingMode.PRIVATE)
             .with_mounted_cache("/tmp", dagger_client.cache_volume("share-tmp"))
