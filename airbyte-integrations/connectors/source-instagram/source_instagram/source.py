@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from datetime import datetime
@@ -24,7 +24,13 @@ class ConnectorConfig(BaseModel):
     )
 
     access_token: str = Field(
-        description='The value of the access token generated. See the <a href="https://docs.airbyte.com/integrations/sources/instagram">docs</a> for more information',
+        description=(
+            "The value of the access token generated with "
+            "<b>instagram_basic, instagram_manage_insights, pages_show_list, pages_read_engagement, Instagram Public Content Access</b> "
+            "permissions. "
+            'See the <a href="https://docs.airbyte.com/integrations/sources/instagram/#step-1-set-up-instagram">docs</a> for more '
+            "information"
+        ),
         airbyte_secret=True,
     )
 

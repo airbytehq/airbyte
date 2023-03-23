@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -90,7 +90,14 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
     final String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID());
     final String stageName = sqlOperations.getStageName(outputSchema, outputTableName);
     sqlOperations.createStageIfNotExists(database, stageName);
-    sqlOperations.dropStageIfExists(database, stageName);
+
+    // try to make test write to make sure we have required role
+    try {
+      sqlOperations.attemptWriteToStage(outputSchema, stageName, database);
+    } finally {
+      // drop created tmp stage
+      sqlOperations.dropStageIfExists(database, stageName);
+    }
   }
 
   @Override

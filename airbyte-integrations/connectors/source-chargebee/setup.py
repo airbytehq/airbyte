@@ -1,24 +1,18 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
-    # Install chargebee according to API doc.
-    # https://apidocs.chargebee.com/docs/api?lang=python&prod_cat_ver=2#client_library
-    "chargebee>=2,<3",
-    "backoff==1.10.0",
-    "pendulum==1.2.0",
+    "airbyte-cdk~=0.29",
 ]
 
 TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "source-acceptance-test",
-    "jsonschema~=3.2.0",
-    "responses~=0.13.3",
+    "pytest~=6.2",
+    "pytest-mock~=3.6.1",
+    "connector-acceptance-test",
 ]
 
 setup(
@@ -28,7 +22,7 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    package_data={"": ["*.json", "*.yaml", "schemas/*.json", "schemas/shared/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },

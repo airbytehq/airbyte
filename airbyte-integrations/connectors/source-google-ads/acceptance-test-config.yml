@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-google-ads:dev
 test_strictness_level: high
@@ -19,27 +19,41 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         expect_records:
-          bypass_reason: "Bypassed because SAT run on active account. Dedicated Sandbox is needed."
+          path: "integration_tests/expected_records.jsonl"
+        timeout_seconds: 600
         empty_streams:
-          - name: "geographic_report"
-            bypass_reason: "The stream could not be fullfield with data manually."
-          - name: "keyword_report"
-            bypass_reason: "The stream could not be fullfield with data manually."
-          - name: "display_keyword_performance_report"
-            bypass_reason: "The stream could not be fullfield with data manually."
+          - name: "accounts"
+            bypass_reason: "Floating data"
           - name: "display_topics_performance_report"
-            bypass_reason: "The stream could not be fullfield with data manually."
-          - name: "shopping_performance_report"
-            bypass_reason: "The stream could not be fullfield with data manually."
-          - name: "unhappytable"
-            bypass_reason: "The stream could not be fullfield with data manually."
+            bypass_reason: "Stream not filled yet."
           - name: "click_view"
-            bypass_reason: "The stream could not be fullfield with data manually."
-        timeout_seconds: 1200
+            bypass_reason: "Stream not filled yet."
+          - name: "unhappytable"
+            bypass_reason: "Stream not filled yet."
+          - name: "shopping_performance_report"
+            bypass_reason: "Stream not filled yet."
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        timeout_seconds: 1200
   incremental:
-    bypass_reason: "Incremental tests are implemented using custom test, available by integration_tests/test_incremental.py"
+    tests:
+      - config_path: "secrets/incremental_config.json"
+        configured_catalog_path: "integration_tests/incremental_catalog.json"
+        threshold_days: 14
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+        cursor_paths:
+          account_performance_report: ["4651612872", "segments.date"]
+          click_view: ["4651612872", "segments.date"]
+          geographic_report: ["4651612872", "segments.date"]
+          keyword_report: ["4651612872", "segments.date"]
+          display_topics_performance_report: ["4651612872", "segments.date"]
+          shopping_performance_report: ["4651612872", "segments.date"]
+          ad_group_ads: ["4651612872", "segments.date"]
+          ad_groups: ["4651612872", "segments.date"]
+          accounts: ["4651612872", "segments.date"]
+          campaigns: ["4651612872", "segments.date"]
+          user_location_report: ["4651612872", "segments.date"]
+          ad_group_ad_report: ["4651612872", "segments.date"]
+          display_keyword_performance_report: ["4651612872", "segments.date"]

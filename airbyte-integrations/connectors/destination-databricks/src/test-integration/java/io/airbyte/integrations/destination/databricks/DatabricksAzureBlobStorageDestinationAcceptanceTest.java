@@ -1,8 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.databricks;
+
+import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_DATA_SOURCE_KEY;
+import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_SCHEMA_KEY;
 
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
@@ -36,7 +39,7 @@ public class DatabricksAzureBlobStorageDestinationAcceptanceTest extends Databri
   @Override
   protected JsonNode getFailCheckConfig() {
     final JsonNode configJson = Jsons.clone(this.configJson);
-    final JsonNode dataSource = configJson.get("data_source");
+    final JsonNode dataSource = configJson.get(DATABRICKS_DATA_SOURCE_KEY);
     ((ObjectNode) dataSource).put("azure_blob_storage_account_name", "someInvalidName");
     return configJson;
   }
@@ -48,13 +51,13 @@ public class DatabricksAzureBlobStorageDestinationAcceptanceTest extends Databri
     // Set a random Azure path and database schema for each integration test
     final String randomString = RandomStringUtils.randomAlphanumeric(5);
     final JsonNode configJson = Jsons.clone(baseConfigJson);
-    ((ObjectNode) configJson).put("database_schema", "integration_test_" + randomString);
-    final JsonNode dataSource = configJson.get("data_source");
+    ((ObjectNode) configJson).put(DATABRICKS_SCHEMA_KEY, "integration_test_" + randomString);
+    final JsonNode dataSource = configJson.get(DATABRICKS_DATA_SOURCE_KEY);
     ((ObjectNode) dataSource).put("azure_blob_storage_container_name", "test-" + randomString.toLowerCase());
 
     this.configJson = configJson;
     this.databricksConfig = DatabricksDestinationConfig.get(configJson);
-    this.azureBlobStorageConfig = databricksConfig.getStorageConfig().getAzureBlobStorageConfigOrThrow();
+    this.azureBlobStorageConfig = databricksConfig.storageConfig().getAzureBlobStorageConfigOrThrow();
     LOGGER.info("Test full path: {}/{}", azureBlobStorageConfig.getEndpointUrl(), azureBlobStorageConfig.getContainerName(),
         azureBlobStorageConfig);
 

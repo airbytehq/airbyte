@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import MagicMock, patch
@@ -11,7 +11,7 @@ from source_iterable.streams import Lists
 
 
 @responses.activate
-@pytest.mark.parametrize("body, status, expected_streams", ((b"", 401, 7), (b"", 200, 44), (b"alpha@gmail.com\nbeta@gmail.com", 200, 44)))
+@pytest.mark.parametrize("body, status, expected_streams", ((b"", 401, 44), (b"", 200, 44), (b"alpha@gmail.com\nbeta@gmail.com", 200, 44)))
 def test_source_streams(mock_lists_resp, config, body, status, expected_streams):
     responses.add(responses.GET, "https://api.iterable.com/api/lists/getUsers?listId=1", body=body, status=status)
     streams = SourceIterable().streams(config=config)

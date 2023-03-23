@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.base;
@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 // todo (cgardens) - use argparse4j.github.io instead of org.apache.commons.cli to leverage better
 // sub-parser support.
+
 /**
  * Parses command line args to a type safe config object for each command type.
  */
@@ -25,28 +26,35 @@ public class IntegrationCliParser {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IntegrationCliParser.class);
 
-  private static final OptionGroup COMMAND_GROUP = Clis.createOptionGroup(
-      true,
-      Option.builder()
-          .longOpt(Command.SPEC.toString().toLowerCase())
-          .desc("outputs the json configuration specification")
-          .build(),
-      Option.builder()
-          .longOpt(Command.CHECK.toString().toLowerCase())
-          .desc("checks the config can be used to connect")
-          .build(),
-      Option.builder()
-          .longOpt(Command.DISCOVER.toString().toLowerCase())
-          .desc("outputs a catalog describing the source's catalog")
-          .build(),
-      Option.builder()
-          .longOpt(Command.READ.toString().toLowerCase())
-          .desc("reads the source and outputs messages to STDOUT")
-          .build(),
-      Option.builder()
-          .longOpt(Command.WRITE.toString().toLowerCase())
-          .desc("writes messages from STDIN to the integration")
-          .build());
+  private static final OptionGroup COMMAND_GROUP;
+
+  static {
+    final var optionGroup = new OptionGroup();
+    optionGroup.setRequired(true);
+
+    optionGroup.addOption(Option.builder()
+        .longOpt(Command.SPEC.toString().toLowerCase())
+        .desc("outputs the json configuration specification")
+        .build());
+    optionGroup.addOption(Option.builder()
+        .longOpt(Command.CHECK.toString().toLowerCase())
+        .desc("checks the config can be used to connect")
+        .build());
+    optionGroup.addOption(Option.builder()
+        .longOpt(Command.DISCOVER.toString().toLowerCase())
+        .desc("outputs a catalog describing the source's catalog")
+        .build());
+    optionGroup.addOption(Option.builder()
+        .longOpt(Command.READ.toString().toLowerCase())
+        .desc("reads the source and outputs messages to STDOUT")
+        .build());
+    optionGroup.addOption(Option.builder()
+        .longOpt(Command.WRITE.toString().toLowerCase())
+        .desc("writes messages from STDIN to the integration")
+        .build());
+
+    COMMAND_GROUP = optionGroup;
+  }
 
   public IntegrationConfig parse(final String[] args) {
     final Command command = parseCommand(args);

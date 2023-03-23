@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import datetime
@@ -18,14 +18,14 @@ def patch_base_class(mocker):
 
 
 def test_request_params(patch_base_class):
-    stream = XeroStream()
+    stream = XeroStream(tenant_id="tenant_id")
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
     expected_params = {}
     assert stream.request_params(**inputs) == expected_params
 
 
 def test_next_page_token(patch_base_class):
-    stream = XeroStream()
+    stream = XeroStream(tenant_id="tenant_id")
     inputs = {"response": MagicMock()}
     expected_token = None
     assert stream.next_page_token(**inputs) == expected_token
@@ -40,7 +40,7 @@ def test_next_page_token(patch_base_class):
 
 
 def test_parse_response(patch_base_class):
-    stream = XeroStream()
+    stream = XeroStream(tenant_id="tenant_id")
     response = MagicMock()
     response.json.return_value = {"XeroStream": [{"key": "value"}]}
     inputs = {"response": response}
@@ -49,14 +49,14 @@ def test_parse_response(patch_base_class):
 
 
 def test_request_headers(patch_base_class):
-    stream = XeroStream()
+    stream = XeroStream(tenant_id="tenant_id")
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_headers = {"Accept": "application/json"}
+    expected_headers = {"Accept": "application/json", "Xero-Tenant-Id": "tenant_id"}
     assert stream.request_headers(**inputs) == expected_headers
 
 
 def test_http_method(patch_base_class):
-    stream = XeroStream()
+    stream = XeroStream(tenant_id="tenant_id")
     expected_method = "GET"
     assert stream.http_method == expected_method
 
@@ -73,13 +73,13 @@ def test_http_method(patch_base_class):
 def test_should_retry(patch_base_class, http_status, should_retry):
     response_mock = MagicMock()
     response_mock.status_code = http_status
-    stream = XeroStream()
+    stream = XeroStream(tenant_id="tenant_id")
     assert stream.should_retry(response_mock) == should_retry
 
 
 def test_backoff_time(patch_base_class):
     response_mock = MagicMock()
-    stream = XeroStream()
+    stream = XeroStream(tenant_id="tenant_id")
     expected_backoff_time = None
     assert stream.backoff_time(response_mock) == expected_backoff_time
 

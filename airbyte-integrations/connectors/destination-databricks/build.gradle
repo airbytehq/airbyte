@@ -27,7 +27,7 @@ application {
 dependencies {
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-config:config-models')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:bases:base-java-s3')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
@@ -53,4 +53,5 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-databricks')
+
 }

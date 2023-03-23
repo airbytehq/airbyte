@@ -9,7 +9,7 @@ const config = {
     title: 'Airbyte Documentation',
     tagline:
         'Airbyte is an open-source data integration platform to build ELT pipelines. Consolidate your data in your data warehouses, lakes and databases.',
-    url: 'https://docs.airbyte.com',
+    url: 'https://docs.airbyte.com/',
     // Assumed relative path.  If you are using airbytehq.github.io use /
     // anything else should match the repo name
     baseUrl: '/',
@@ -20,9 +20,6 @@ const config = {
     projectName: 'airbyte', // Usually your repo name.
 
     plugins:    [
-                  [
-                    require.resolve('@cmfcmf/docusaurus-search-local'), {indexBlog: false},
-                  ],
                   [
                     '@docusaurus/plugin-client-redirects',
                     {
@@ -42,6 +39,10 @@ const config = {
                             to: '/integrations/sources/google-analytics-v4',
                         },
                         {
+                            from: '/integrations/sources/appstore',
+                            to: '/integrations/sources/appstore-singer',
+                        },
+                        {
                             from: '/project-overview/security',
                             to: '/operator-guides/security',
                         },
@@ -52,6 +53,22 @@ const config = {
                         {
                             from: '/connector-development/config-based/',
                             to: '/connector-development/config-based/low-code-cdk-overview',
+                        },
+                        {
+                            from: '/project-overview/changelog',
+                            to: '/category/release-notes',
+                        },
+                        {
+                            from: '/connector-development/config-based/understanding-the-yaml-file/stream-slicers/',
+                            to: '/connector-development/config-based/understanding-the-yaml-file/partition-router',
+                        },
+                        {
+                            from: '/cloud/managing-airbyte-cloud',
+                            to: '/category/managing-airbyte-cloud',
+                        },
+                        {
+                            from: '/cloud/dbt-cloud-integration',
+                            to: '/cloud/managing-airbyte-cloud/dbt-cloud-integration',
                         },
 //                        {
 //                         from: '/some-lame-path',
@@ -73,6 +90,7 @@ const config = {
                     sidebarPath: require.resolve('./sidebars.js'),
                     editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
                     path: '../docs',
+                    exclude: ['**/*.inapp.md'],
                 },
                 blog: false,
                 theme: {
@@ -84,6 +102,14 @@ const config = {
                 },
             }),
         ],
+    ],
+
+    scripts: [
+        {
+            src: 'https://cdn.jsdelivr.net/gh/RelevanceAI/ask-relevance-widget@latest/dist/bundle.min.js',
+            defer: true,
+            config: 'eyJ1cmwiOiJodHRwczovL2FwaS1iY2JlNWEuc3RhY2sudHJ5cmVsZXZhbmNlLmNvbS9sYXRlc3QvZGF0YXNldHMvYWlyYnl0ZS1naXRodWIvc2ltcGxlX3NlYXJjaCIsImZpZWxkIjoiZmlsZV9jb250ZW50X3BsYWluIiwidmVjdG9yX2ZpZWxkIjoiZmlsZV9jb250ZW50X3BsYWluX29wZW5haV90ZXh0LWVtYmVkZGluZy1hZGEtMDAyX3ZlY3Rvcl8iLCJtb2RlbCI6InRleHQtZW1iZWRkaW5nLWFkYS0wMDIiLCJhdXRoX2hlYWRlciI6ImUyZmE5NjE4M2M5Mi00N2Y2LTk1YjMtZjRiOWUwZmFjMTMyOk5HVTFORGRtTkRBdE1HSTVPQzAwTmpFNUxXRXhZVGN0T0dNMFpUZGlOekE1TXpoaSIsInJlZmVyZW5jZV90aXRsZV9maWVsZCI6InRpdGxlIiwicmVmZXJlbmNlX3VybF9maWVsZCI6InVybCIsInNob3dEb2N1bWVudHMiOnRydWUsImhlYWRsZXNzIjp0cnVlfQ'
+        }
     ],
 
     themeConfig:

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -16,7 +16,6 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +24,6 @@ class SnowflakeSqlOperationsTest {
   SnowflakeSqlOperations snowflakeSqlOperations = new SnowflakeSqlOperations();
   public static String SCHEMA_NAME = "schemaName";
   public static final String TABLE_NAME = "tableName";
-  List<AirbyteRecordMessage> records = new ArrayList<>();
   JdbcDatabase db = mock(JdbcDatabase.class);
 
   @Test
