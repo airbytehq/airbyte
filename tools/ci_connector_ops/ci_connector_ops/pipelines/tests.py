@@ -200,7 +200,7 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
     async with asyncer.create_task_group() as task_group:
         tasks = [
             task_group.soonify(IntegrationTests(context).run)(connector_under_test),
-            # task_group.soonify(AcceptanceTests(context).run)(),
+            task_group.soonify(AcceptanceTests(context).run)(),
         ]
 
     return results + [task.value for task in tasks]

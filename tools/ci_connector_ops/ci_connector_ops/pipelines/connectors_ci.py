@@ -67,7 +67,7 @@ async def run_connectors_test_pipelines(contexts: List[ConnectorTestContext]):
     Args:
         contexts (List[ConnectorTestContext]): List of connector test contexts for which a CI pipeline needs to be run.
     """
-    semaphore = anyio.Semaphore(3)
+    semaphore = anyio.Semaphore(5)
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         async with anyio.create_task_group() as tg:
             for context in contexts:
