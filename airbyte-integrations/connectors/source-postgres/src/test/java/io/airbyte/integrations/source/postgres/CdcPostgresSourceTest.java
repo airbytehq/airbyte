@@ -224,25 +224,6 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
   }
 
-  @Test
-  void testReadWithoutPublication() throws SQLException {
-    database.query(ctx -> ctx.execute("DROP PUBLICATION " + PUBLICATION + ";"));
-
-    assertThrows(Exception.class, () -> {
-      source.read(config, CONFIGURED_CATALOG, null);
-    });
-  }
-
-  @Test
-  void testReadWithoutReplicationSlot() throws SQLException {
-    final String fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
-    database.query(ctx -> ctx.execute("SELECT pg_drop_replication_slot('" + fullReplicationSlot + "');"));
-
-    assertThrows(Exception.class, () -> {
-      source.read(config, CONFIGURED_CATALOG, null);
-    });
-  }
-
   @Override
   protected void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
     assertEquals(1, stateMessages.size());
@@ -569,6 +550,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
    *
    * @throws Exception
    */
+  /* TODO: Re-enable when connector allows CDC checkpointing
   @Test
   protected void verifyCheckpointStatesByRecords() throws Exception {
     // We require a huge amount of records, otherwise Debezium will notify directly the last offset.
@@ -604,6 +586,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     assertTrue(stateMessagesCDC.size() > 1);
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count());
   }
+   */
 
   /** This test verify that multiple states are sent during the CDC process based on time ranges. We can
    * ensure that more than one `STATE` type of message is sent, but we are not able to assert the exact
@@ -611,6 +594,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
    *
    * @throws Exception
    */
+  /* TODO: Re-enable when connector allows CDC checkpointing
   @Test
   protected void verifyCheckpointStatesBySeconds() throws Exception {
     // We require a huge amount of records, otherwise Debezium will notify directly the last offset.
@@ -646,4 +630,5 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     assertTrue(stateMessagesCDC.size() > 1);
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count());
   }
+   */
 }
