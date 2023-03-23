@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.8.0
+Spec tests: Make sure grouping and ordering properties are used in a consistent way.
+
 ## 0.7.2
 TestConnection: assert that a check with `exception` status emits a trace message.
 
