@@ -147,6 +147,7 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEvent<Stri
       LOGGER.warn("Debezium engine has not been signalled to shutdown, this is unexpected");
     }
 
+    // Read the records that Debezium might have fetched right at the time we called shutdown
     while (!debeziumShutdownProcedure.getRecordsRemainingAfterShutdown().isEmpty()) {
       final ChangeEvent<String, String> event;
       try {

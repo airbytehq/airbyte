@@ -14,6 +14,10 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class has the logic for shutting down Debezium Engine in graceful manner. We made it Generic
+ * to allow us to write tests easily.
+ */
 public class DebeziumShutdownProcedure<T> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumShutdownProcedure.class);
@@ -69,6 +73,15 @@ public class DebeziumShutdownProcedure<T> {
     return targetQueue;
   }
 
+  /**
+   * This method triggers the shutdown of Debezium Engine. When we trigger Debezium shutdown, the main
+   * thread pauses, as a result we stop reading data from the {@link sourceQueue} and since the queue
+   * is of fixed size, if it's already at capacity, Debezium won't be able to put remaining records in
+   * the queue. So before we trigger Debezium shutdown, we initiate a transfer of the records from the
+   * {@link sourceQueue} to a new queue i.e. {@link targetQueue}. This allows Debezium to continue to
+   * put records in the {@link sourceQueue} and once done, gracefully shutdown. After the shutdown is
+   * complete we just have to read the remaining records from the {@link targetQueue}
+   */
   public void initiateShutdownProcedure() {
     Exception exceptionDuringEngineClose = null;
     try {
