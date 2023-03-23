@@ -101,6 +101,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/destinations/r2
   icon: cloudflare-r2.svg
   releaseStage: alpha
+- name: Convex
+  destinationDefinitionId: 3eb4d99c-11fa-4561-a259-fc88e0c2f8f4
+  dockerRepository: airbyte/destination-convex
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/convex
+  icon: convex.svg
+  releaseStage: alpha
 - name: Databricks Lakehouse
   destinationDefinitionId: 072d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-databricks
@@ -348,7 +355,7 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.4.56
+  dockerImageTag: 0.4.57
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   icon: snowflake.svg
   normalizationConfig:
