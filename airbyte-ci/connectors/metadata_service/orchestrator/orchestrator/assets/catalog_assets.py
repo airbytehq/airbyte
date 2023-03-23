@@ -11,16 +11,6 @@ from ..templates.render import render_connector_catalog_locations_html, render_c
 GROUP_NAME = "catalog"
 
 
-# TODO
-# - add  column for whether the connector is source controlled
-# - refactor so that the source and destination catalogs are merged into a single dataframe early on
-# - refactor so we are importing a common dataclass
-# - check which specs are available
-# lets make sure markdown is still working
-# then lets get specs all at once
-# then lets hoise the merge
-# move metadata to its own file
-
 # todo move to lib
 def is_spec_cached(dockerRepository, dockerImageTag):
     url = f"https://storage.googleapis.com/io-airbyte-cloud-spec-cache/specs/{dockerRepository}/{dockerImageTag}/spec.json"

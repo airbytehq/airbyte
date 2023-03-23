@@ -21,7 +21,6 @@ from .assets.catalog_assets import (
 from .assets.metadata_assets import (
     catalog_derived_metadata_definitions,
     valid_metadata_list,
-    unique_source_types,
 )
 
 from .assets.dev_assets import persist_metadata_definitions, overrode_metadata_definitions
@@ -48,7 +47,6 @@ ASSETS = [
     valid_metadata_list,
     persist_metadata_definitions,
     overrode_metadata_definitions,
-    unique_source_types, # TODO remove
 ]
 RESOURCES = {
     "metadata_file_directory": simple_local_file_manager.configured({"base_dir": "/tmp/metadata"}),

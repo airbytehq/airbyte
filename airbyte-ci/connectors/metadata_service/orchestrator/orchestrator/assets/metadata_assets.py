@@ -129,14 +129,6 @@ def validate_metadata(metadata):
 
 # ASSETS
 
-# TODO remove this asset
-@asset(group_name=GROUP_NAME)
-def unique_source_types(catalog_derived_metadata_definitions):
-    # filter none values
-    all_values = [metadata["data"].get("sourceType") for metadata in catalog_derived_metadata_definitions if metadata["data"].get("sourceType") is not None]
-    unique_values = list(set(all_values))
-    return Output(unique_values, metadata={"count": len(unique_values), "preview": "\n".join(unique_values)})
-
 @asset(group_name=GROUP_NAME)
 def valid_metadata_list(overrode_metadata_definitions):
     result = []
