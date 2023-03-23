@@ -173,6 +173,12 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     return true;
   }
 
+  @Override
+  public void testIncrementalSyncWithNormalizationDropOneColumn() {
+    // dbt does not support schema changes for MS SQL in incremental mode. See `run_schema_change_normalization` in test_normalization.py for more info
+    return;
+  }
+
   @AfterAll
   static void cleanUp() {
     db.stop();
