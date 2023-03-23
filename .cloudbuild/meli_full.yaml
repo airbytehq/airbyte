@@ -1,0 +1,7 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'us-docker.pkg.dev/$PROJECT_ID/airbyte-custom-connectors/source-meli-full:${_MELI_FULL_VERSION}', './airbyte-integrations/connectors/source-meli-full' ]
+substitutions:
+  _MELI_FULL_VERSION: 0.0.1
+images:
+- 'us-docker.pkg.dev/$PROJECT_ID/airbyte-custom-connectors/source-meli-full:${_MELI_FULL_VERSION}'
