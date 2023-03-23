@@ -7547,7 +7547,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-convex:0.0.1"
+- dockerImage: "airbyte/destination-convex:0.1.0"
   spec:
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"

@@ -104,7 +104,7 @@
 - name: Convex
   destinationDefinitionId: 3eb4d99c-11fa-4561-a259-fc88e0c2f8f4
   dockerRepository: airbyte/destination-convex
-  dockerImageTag: dev
+  dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/convex
   icon: convex.svg
   releaseStage: alpha
