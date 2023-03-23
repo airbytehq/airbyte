@@ -396,6 +396,8 @@ The root causes is that the WALs needed for the incremental sync has been remove
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.9   | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760)  | Removed redundant date-time datatypes formatting   |
+| 2.0.8   | 2023-03-22 | [24255](https://github.com/airbytehq/airbyte/pull/24255) | Add field groups and titles to improve display of connector setup form                                                                                                     |
 | 2.0.7   | 2022-03-21 | [24207](https://github.com/airbytehq/airbyte/pull/24207) | Fix incorrect schema change warning in CDC mode                                                                                                                            |
 | 2.0.6   | 2022-03-21 | [24271](https://github.com/airbytehq/airbyte/pull/24271) | Fix NPE in CDC mode                                                                                                                                                        |
 | 2.0.5   | 2022-03-21 | [21533](https://github.com/airbytehq/airbyte/pull/21533) | Add integration with datadog                                                                                                                                               |

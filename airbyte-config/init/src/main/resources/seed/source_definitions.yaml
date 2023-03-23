@@ -45,7 +45,7 @@
 - name: AlloyDB for PostgreSQL
   sourceDefinitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
   dockerRepository: airbyte/source-alloydb
-  dockerImageTag: 2.0.6
+  dockerImageTag: 2.0.9
   documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
   icon: alloydb.svg
   sourceType: database
@@ -250,7 +250,7 @@
 - name: Chargebee
   sourceDefinitionId: 686473f1-76d9-4994-9cc7-9b13da46147c
   dockerRepository: airbyte/source-chargebee
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/chargebee
   icon: chargebee.svg
   sourceType: api
@@ -280,7 +280,7 @@
 - name: ClickHouse
   sourceDefinitionId: bad83517-5e54-4a3d-9b53-63e85fbd4d7c
   dockerRepository: airbyte/source-clickhouse
-  dockerImageTag: 0.1.16
+  dockerImageTag: 0.1.17
   documentationUrl: https://docs.airbyte.com/integrations/sources/clickhouse
   icon: clickhouse.svg
   sourceType: database
@@ -319,7 +319,7 @@
 - name: Cockroachdb
   sourceDefinitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
   dockerRepository: airbyte/source-cockroachdb
-  dockerImageTag: 0.1.21
+  dockerImageTag: 0.1.22
   documentationUrl: https://docs.airbyte.com/integrations/sources/cockroachdb
   icon: cockroachdb.svg
   sourceType: database
@@ -691,7 +691,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.4.3
+  dockerImageTag: 0.4.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -922,7 +922,7 @@
 - name: IBM Db2
   sourceDefinitionId: 447e0381-3780-4b46-bb62-00a4e3c8b8e2
   dockerRepository: airbyte/source-db2
-  dockerImageTag: 0.1.18
+  dockerImageTag: 0.1.19
   documentationUrl: https://docs.airbyte.com/integrations/sources/db2
   icon: db2.svg
   sourceType: database
@@ -1190,7 +1190,7 @@
 - name: Microsoft SQL Server (MSSQL)
   sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   dockerRepository: airbyte/source-mssql
-  dockerImageTag: 1.0.5
+  dockerImageTag: 1.0.6
   documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
   icon: mssql.svg
   sourceType: database
@@ -1253,7 +1253,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 2.0.7
+  dockerImageTag: 2.0.8
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -1373,7 +1373,7 @@
 - name: Oracle DB
   sourceDefinitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
   dockerRepository: airbyte/source-oracle
-  dockerImageTag: 0.3.23
+  dockerImageTag: 0.3.24
   documentationUrl: https://docs.airbyte.com/integrations/sources/oracle
   icon: oracle.svg
   sourceType: database
@@ -1457,7 +1457,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/paystack
   icon: paystack.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
   allowedHosts:
     hosts:
       - "api.paystack.co"
@@ -1565,7 +1565,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 2.0.7
+  dockerImageTag: 2.0.9
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -1904,7 +1904,7 @@
 - name: Snowflake
   sourceDefinitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
   dockerRepository: airbyte/source-snowflake
-  dockerImageTag: 0.1.31
+  dockerImageTag: 0.1.32
   documentationUrl: https://docs.airbyte.com/integrations/sources/snowflake
   icon: snowflake.svg
   sourceType: database
@@ -2022,7 +2022,7 @@
 - name: TiDB
   sourceDefinitionId: 0dad1a35-ccf8-4d03-b73e-6788c00b13ae
   dockerRepository: airbyte/source-tidb
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/tidb
   icon: tidb.svg
   sourceType: database
@@ -2058,6 +2058,14 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/tmdb
   icon: tmdb.svg
   sourceType: api
+  releaseStage: alpha
+- name: Todoist
+  sourceDefinitionId: 7d272065-c316-4c04-a433-cd4ee143f83e
+  dockerRepository: airbyte/source-todoist
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/todoist
+  sourceType: api
+  icon: todoist.svg
   releaseStage: alpha
 - name: Toggl
   sourceDefinitionId: 7e7c844f-2300-4342-b7d3-6dd7992593cd
