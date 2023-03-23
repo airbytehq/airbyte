@@ -38,7 +38,6 @@ def test_parse_response(patch_base_class):
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
-
 def test_request_headers(patch_base_class):
     stream = TodoistStream()
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}

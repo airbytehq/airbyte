@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
 from source_todoist.source import SourceTodoist
