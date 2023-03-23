@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 """
@@ -124,7 +124,7 @@ FB_TYPES = {
     "float": {"type": ["number", "null"]},
     "string": {"type": ["string", "null"]},
     "numeric string": {"type": ["string", "null"]},
-    "datetime": {"type": ["string", "null"], "format": "datetime"},
+    "datetime": {"type": ["string", "null"], "format": "date-time"},
     "id": {"type": ["string", "null"]},
     "enum": {"type": ["string", "null"]},
     "bool": {"type": ["boolean", "null"]},

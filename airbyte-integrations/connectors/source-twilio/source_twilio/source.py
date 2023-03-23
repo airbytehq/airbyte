@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import datetime
@@ -23,6 +23,7 @@ from source_twilio.streams import (
     Calls,
     ConferenceParticipants,
     Conferences,
+    Conversations,
     DependentPhoneNumbers,
     IncomingPhoneNumbers,
     Keys,
@@ -92,6 +93,7 @@ class SourceTwilio(AbstractSource):
             Calls(**incremental_stream_kwargs),
             ConferenceParticipants(**full_refresh_stream_kwargs),
             Conferences(**incremental_stream_kwargs),
+            Conversations(**full_refresh_stream_kwargs),
             DependentPhoneNumbers(**full_refresh_stream_kwargs),
             IncomingPhoneNumbers(**full_refresh_stream_kwargs),
             Keys(**full_refresh_stream_kwargs),

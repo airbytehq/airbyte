@@ -1,0 +1,5 @@
+*
+!Dockerfile
+!main.py
+!destination_duckdb
+!setup.py

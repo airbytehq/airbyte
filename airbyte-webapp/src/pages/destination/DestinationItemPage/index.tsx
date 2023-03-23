@@ -1,1 +1,0 @@
-export { DestinationItemPage } from "./DestinationItemPage";

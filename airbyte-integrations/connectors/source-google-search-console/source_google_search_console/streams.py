@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC
@@ -239,13 +239,13 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
 
         {
           "stream": {
-            "http://domain1.com": {
+            "https://domain1.com": {
               "web": {"date": "2022-01-03"},
               "news": {"date": "2022-01-03"},
               "image": {"date": "2022-01-03"},
               "video": {"date": "2022-01-03"}
             },
-            "http://domain2.com": {
+            "https://domain2.com": {
               "web": {"date": "2022-01-03"},
               "news": {"date": "2022-01-03"},
               "image": {"date": "2022-01-03"},

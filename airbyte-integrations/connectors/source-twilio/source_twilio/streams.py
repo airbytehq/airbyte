@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import copy
@@ -12,6 +12,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -21,6 +22,7 @@ from requests.auth import AuthBase
 TWILIO_API_URL_BASE = "https://api.twilio.com"
 TWILIO_API_URL_BASE_VERSIONED = f"{TWILIO_API_URL_BASE}/2010-04-01/"
 TWILIO_MONITOR_URL_BASE = "https://monitor.twilio.com/v1/"
+TWILIO_CONVERSATIONS_URL_BASE = "https://conversations.twilio.com/v1/"
 
 
 class TwilioStream(HttpStream, ABC):
@@ -39,6 +41,10 @@ class TwilioStream(HttpStream, ABC):
         :return list of changeable fields that should be removed from the records
         """
         return []
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def path(self, **kwargs):
         return f"{self.name.title()}.json"
@@ -494,6 +500,15 @@ class Alerts(IncrementalTwilioStream):
     lower_boundary_filter_field = "StartDate="
     upper_boundary_filter_field = "EndDate="
     cursor_field = "date_generated"
+
+    def path(self, **kwargs):
+        return self.name.title()
+
+
+class Conversations(TwilioStream):
+    """https://www.twilio.com/docs/conversations/api/conversation-resource#read-multiple-conversation-resources"""
+
+    url_base = TWILIO_CONVERSATIONS_URL_BASE
 
     def path(self, **kwargs):
         return self.name.title()

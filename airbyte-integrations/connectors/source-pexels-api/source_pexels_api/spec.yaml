@@ -18,7 +18,7 @@ connectionSpecification:
       type: string
       description: Optional, the search query, Example Ocean, Tigers, Pears, etc.
       examples:
-        - people 
+        - people
         - oceans
     orientation:
       title: Specific orientation for the search
@@ -32,7 +32,7 @@ connectionSpecification:
       type: string
       description: Optional, Minimum photo size. The current supported sizes are large(24MP), medium(12MP) or small(4MP).
       examples:
-        - large 
+        - large
         - small
     color:
       title: Specific color for the search

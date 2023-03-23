@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.iceberg;
@@ -29,8 +29,8 @@ import io.airbyte.integrations.destination.iceberg.config.catalog.IcebergCatalog
 import io.airbyte.integrations.destination.iceberg.config.format.FormatConfig;
 import io.airbyte.integrations.destination.iceberg.config.storage.S3Config;
 import io.airbyte.integrations.destination.iceberg.config.storage.credential.S3AccessKeyCredentialConfig;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import java.io.IOException;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;

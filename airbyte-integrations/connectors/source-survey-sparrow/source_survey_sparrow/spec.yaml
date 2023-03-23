@@ -15,6 +15,33 @@ connectionSpecification:
         href="https://developers.surveysparrow.com/rest-apis#authentication">here</a>. The key is
         case sensitive.
       airbyte_secret: true
+      order: 0
     survey_id:
       type: array
       description: A List of your survey ids for survey-specific stream
+      order: 2
+    region:
+      title: Base URL
+      type: object
+      description: Is your account location is EU based? If yes, the base url to retrieve data will be different.
+      oneOf:
+        - title: EU-based account
+          type: object
+          properties:
+            url_base:
+              type: string
+              const: "https://eu-api.surveysparrow.com/v3"
+        - title: Global account
+          type: object
+          properties:
+            url_base:
+              type: string
+              const: "https://api.surveysparrow.com/v3"
+      default:
+        title: Global account
+        type: object
+        properties:
+          url_base:
+            type: string
+            const: "https://api.surveysparrow.com/v3"
+      order: 1

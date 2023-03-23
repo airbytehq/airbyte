@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.tidb;
@@ -33,7 +33,7 @@ public class TiDBSourceOperations extends AbstractJdbcCompatibleSourceOperations
       YEAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT);
 
   @Override
-  public void setJsonField(ResultSet resultSet, int colIndex, ObjectNode json) throws SQLException {
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final ResultSetMetaData metaData = (ResultSetMetaData) resultSet.getMetaData();
     final Field field = metaData.getFields()[colIndex - 1];
     final String columnName = field.getName();
@@ -92,7 +92,7 @@ public class TiDBSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public void setStatementField(PreparedStatement preparedStatement, int parameterIndex, MysqlType cursorFieldType, String value)
+  public void setCursorField(final PreparedStatement preparedStatement, final int parameterIndex, final MysqlType cursorFieldType, final String value)
       throws SQLException {
     switch (cursorFieldType) {
       case BIT -> setBit(preparedStatement, parameterIndex, value);
@@ -114,7 +114,7 @@ public class TiDBSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public MysqlType getFieldType(JsonNode field) {
+  public MysqlType getDatabaseFieldType(final JsonNode field) {
     try {
       final MysqlType literalType = MysqlType.getByName(field.get(INTERNAL_COLUMN_TYPE_NAME).asText());
       final int columnSize = field.get(INTERNAL_COLUMN_SIZE).asInt();
@@ -144,12 +144,12 @@ public class TiDBSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public boolean isCursorType(MysqlType type) {
+  public boolean isCursorType(final MysqlType type) {
     return ALLOWED_CURSOR_TYPES.contains(type);
   }
 
   @Override
-  public JsonSchemaType getJsonType(MysqlType mysqlType) {
+  public JsonSchemaType getAirbyteType(final MysqlType mysqlType) {
     return switch (mysqlType) {
       case
       // TINYINT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link

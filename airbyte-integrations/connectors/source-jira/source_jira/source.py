@@ -1,16 +1,14 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from base64 import b64encode
-from json.decoder import JSONDecodeError
 from typing import Any, List, Mapping, Optional, Tuple
 
+import pendulum
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
 
 from .streams import (
     ApplicationRoles,
@@ -18,7 +16,6 @@ from .streams import (
     BoardIssues,
     Boards,
     Dashboards,
-    Epics,
     Filters,
     FilterSharing,
     Groups,
@@ -67,46 +64,44 @@ from .streams import (
     WorkflowStatusCategories,
     WorkflowStatuses,
 )
+from .utils import read_full_refresh
 
 
 class SourceJira(AbstractSource):
+    def _validate_and_transform(self, config: Mapping[str, Any]):
+        start_date = config.get("start_date")
+        if start_date:
+            config["start_date"] = pendulum.parse(start_date)
+
+        config["projects"] = config.get("projects", [])
+        return config
+
     @staticmethod
     def get_authenticator(config: Mapping[str, Any]):
-        token = b64encode(bytes(config["email"] + ":" + config["api_token"], "utf-8")).decode("ascii")
-        authenticator = TokenAuthenticator(token, auth_method="Basic")
-        return authenticator
+        return BasicHttpAuthenticator(config["email"], config["api_token"])
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        alive = True
-        error_msg = None
-
-        try:
-            authenticator = self.get_authenticator(config)
-            args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
-            issue_resolutions = IssueResolutions(**args)
-            for item in issue_resolutions.read_records(sync_mode=SyncMode.full_refresh):
-                continue
-        except ConnectionError as error:
-            alive, error_msg = False, repr(error)
-        # If the input domain is incorrect or doesn't exist, then the response would be empty, resulting in a
-        # JSONDecodeError
-        except JSONDecodeError:
-            alive, error_msg = (
-                False,
-                "Unable to connect to the Jira API with the provided credentials. Please make sure the input "
-                "credentials and environment are correct.",
-            )
-
-        return alive, error_msg
+        config = self._validate_and_transform(config)
+        authenticator = self.get_authenticator(config)
+        kwargs = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
+        labels_stream = Labels(**kwargs)
+        next(read_full_refresh(labels_stream), None)
+        # check projects
+        projects_stream = Projects(**kwargs)
+        projects = {project["key"] for project in read_full_refresh(projects_stream)}
+        unknown_projects = set(config["projects"]) - projects
+        if unknown_projects:
+            return False, "unknown project(s): " + ", ".join(unknown_projects)
+        return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        config = self._validate_and_transform(config)
         authenticator = self.get_authenticator(config)
-        args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
-        incremental_args = {**args, "start_date": config.get("start_date", "")}
+        args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
+        incremental_args = {**args, "start_date": config.get("start_date")}
         render_fields = config.get("render_fields", False)
         issues_stream = Issues(
             **incremental_args,
-            additional_fields=config.get("additional_fields", []),
             expand_changelog=config.get("expand_issue_changelog", False),
             render_fields=render_fields,
         )
@@ -122,7 +117,6 @@ class SourceJira(AbstractSource):
             Boards(**args),
             BoardIssues(**incremental_args),
             Dashboards(**args),
-            Epics(render_fields=render_fields, **incremental_args),
             Filters(**args),
             FilterSharing(**args),
             Groups(**args),

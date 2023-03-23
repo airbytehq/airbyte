@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.protocol;
@@ -22,7 +22,7 @@ class AirbyteMessageSerDeProviderMicronautTest {
   @Test
   void testSerDeInjection() {
     // This should contain the list of all the supported majors of the airbyte protocol
-    final Set<String> expectedVersions = new HashSet<>(List.of("0"));
+    final Set<String> expectedVersions = new HashSet<>(List.of("0", "1"));
 
     assertEquals(expectedVersions, serDeProvider.getDeserializerKeys());
     assertEquals(expectedVersions, serDeProvider.getSerializerKeys());

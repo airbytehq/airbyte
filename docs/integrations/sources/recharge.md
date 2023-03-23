@@ -20,7 +20,7 @@ Please read [How to generate your API token](https://support.rechargepayments.co
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Recharge** from the Source type dropdown and enter a name for this connector.
 4. Choose required `Start date`
@@ -75,7 +75,10 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------- |
+|:--------| :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------- |
+| 0.2.7   | 2023-02-13 | [22901](https://github.com/airbytehq/airbyte/pull/22901) | Specified date formatting in specification
+| 0.2.6   | 2023-02-21 | [22473](https://github.com/airbytehq/airbyte/pull/22473) | Use default availability strategy
+| 0.2.5   | 2023-01-27 | [22021](https://github.com/airbytehq/airbyte/pull/22021) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
 | 0.2.4   | 2022-10-11 | [17822](https://github.com/airbytehq/airbyte/pull/17822) | Do not parse JSON in `should_retry`                                                       |
 | 0.2.3   | 2022-10-11 | [17822](https://github.com/airbytehq/airbyte/pull/17822) | Do not parse JSON in `should_retry`                                                       |
 | 0.2.2   | 2022-10-05 | [17608](https://github.com/airbytehq/airbyte/pull/17608) | Skip stream if we receive 403 error                                                       |

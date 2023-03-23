@@ -19,6 +19,8 @@
         ],
         "type": "string",
         "title": "Host",
+        "pattern": "^([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.snowflakecomputing\\.com)$",
+        "pattern_descriptor": "{account_name}.snowflakecomputing.com or {accountname}.{aws_location}.aws.snowflakecomputing.com",
         "order": 0
       },
       "role": {
@@ -134,6 +136,13 @@
             "required": ["password"],
             "order": 2,
             "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Username and Password",
+                "enum": ["Username and Password"],
+                "default": "Username and Password",
+                "order": 0
+              },
               "password": {
                 "description": "Enter the password associated with the username.",
                 "type": "string",

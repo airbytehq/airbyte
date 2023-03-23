@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.dynamodb;
@@ -9,10 +9,10 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.config.helpers.StateMessageHelper;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -26,8 +26,8 @@ public class DynamodbUtils {
 
   }
 
-  public static DynamoDbClient createDynamoDbClient(DynamodbConfig dynamodbConfig) {
-    var dynamoDbClientBuilder = DynamoDbClient.builder();
+  public static DynamoDbClient createDynamoDbClient(final DynamodbConfig dynamodbConfig) {
+    final var dynamoDbClientBuilder = DynamoDbClient.builder();
 
     // configure access credentials
     dynamoDbClientBuilder.credentialsProvider(StaticCredentialsProvider.create(
@@ -44,7 +44,7 @@ public class DynamodbUtils {
     return dynamoDbClientBuilder.build();
   }
 
-  public static AirbyteMessage mapAirbyteMessage(String stream, JsonNode data) {
+  public static AirbyteMessage mapAirbyteMessage(final String stream, final JsonNode data) {
     return new AirbyteMessage()
         .withType(AirbyteMessage.Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
@@ -53,12 +53,13 @@ public class DynamodbUtils {
             .withData(data));
   }
 
-  public static StreamState deserializeStreamState(JsonNode state, boolean useStreamCapableState) {
-    Optional<StateWrapper> typedState =
+  public static StreamState deserializeStreamState(final JsonNode state, final boolean useStreamCapableState) {
+    final Optional<StateWrapper> typedState =
         StateMessageHelper.getTypedState(state, useStreamCapableState);
     return typedState.map(stateWrapper -> switch (stateWrapper.getStateType()) {
       case STREAM:
-        yield new StreamState(AirbyteStateMessage.AirbyteStateType.STREAM, stateWrapper.getStateMessages());
+        yield new StreamState(AirbyteStateMessage.AirbyteStateType.STREAM,
+            stateWrapper.getStateMessages().stream().map(DynamodbUtils::convertStateMessage).toList());
       case LEGACY:
         yield new StreamState(AirbyteStateMessage.AirbyteStateType.LEGACY, List.of(
             new AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.LEGACY)
@@ -77,6 +78,10 @@ public class DynamodbUtils {
                 .withData(Jsons.jsonNode(new DbState()))));
       }
     });
+  }
+
+  private static AirbyteStateMessage convertStateMessage(final io.airbyte.protocol.models.AirbyteStateMessage state) {
+    return Jsons.object(Jsons.jsonNode(state), AirbyteStateMessage.class);
   }
 
   record StreamState(

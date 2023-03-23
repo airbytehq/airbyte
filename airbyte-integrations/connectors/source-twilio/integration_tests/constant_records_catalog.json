@@ -2,15 +2,6 @@
   "streams": [
     {
       "stream": {
-        "name": "accounts",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
         "name": "addresses",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
@@ -164,6 +155,15 @@
       "cursor_field": ["date_created"],
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "conversations",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

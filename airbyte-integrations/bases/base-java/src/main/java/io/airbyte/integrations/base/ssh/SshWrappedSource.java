@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.base.ssh;
@@ -9,13 +9,14 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.util.List;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,16 +26,25 @@ public class SshWrappedSource implements Source {
   private final Source delegate;
   private final List<String> hostKey;
   private final List<String> portKey;
+  private final Optional<String> sshGroup;
 
   public SshWrappedSource(final Source delegate, final List<String> hostKey, final List<String> portKey) {
     this.delegate = delegate;
     this.hostKey = hostKey;
     this.portKey = portKey;
+    this.sshGroup = Optional.empty();
+  }
+
+  public SshWrappedSource(final Source delegate, final List<String> hostKey, final List<String> portKey, final String sshGroup) {
+    this.delegate = delegate;
+    this.hostKey = hostKey;
+    this.portKey = portKey;
+    this.sshGroup = Optional.of(sshGroup);
   }
 
   @Override
   public ConnectorSpecification spec() throws Exception {
-    return SshHelpers.injectSshIntoSpec(delegate.spec());
+    return SshHelpers.injectSshIntoSpec(delegate.spec(), sshGroup);
   }
 
   @Override

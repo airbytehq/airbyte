@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -13,8 +13,10 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from .utils import analytics_columns, to_datetime_str
 
@@ -29,6 +31,7 @@ class PinterestStream(HttpStream, ABC):
     data_fields = ["items"]
     raise_on_http_errors = True
     max_rate_limit_exceeded = False
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(authenticator=config["authenticator"])
@@ -41,6 +44,10 @@ class PinterestStream(HttpStream, ABC):
     @property
     def window_in_days(self):
         return 30  # Set window_in_days to 30 days date range
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.json().get("bookmark", {}) if self.data_fields else {}
@@ -128,10 +135,12 @@ class BoardSectionPins(PinterestSubStream, PinterestStream):
 
 class IncrementalPinterestStream(PinterestStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_state = latest_record.get(self.cursor_field, self.start_date.format("YYYY-MM-DD"))
-        current_state = current_stream_state.get(self.cursor_field, self.start_date.format("YYYY-MM-DD"))
+        default_value = self.start_date.format("YYYY-MM-DD")
+        latest_state = latest_record.get(self.cursor_field, default_value)
+        current_state = current_stream_state.get(self.cursor_field, default_value)
+        latest_state_is_numeric = isinstance(latest_state, int) or isinstance(latest_state, float)
 
-        if isinstance(latest_state, int) and isinstance(current_state, str):
+        if latest_state_is_numeric and isinstance(current_state, str):
             current_state = datetime.strptime(current_state, "%Y-%m-%d").timestamp()
 
         return {self.cursor_field: max(latest_state, current_state)}
@@ -207,6 +216,26 @@ class PinterestAnalyticsStream(IncrementalPinterestSubStream):
     data_fields = []
     granularity = "DAY"
     analytics_target_ids = None
+
+    def lookback_date_limt_reached(self, response: requests.Response) -> bool:
+        """
+        After few consecutive requests analytics API return bad request error
+        with 'You can only get data from the last 90 days' error message.
+        But with next request all working good. So, we wait 1 sec and
+        request again if we get this issue.
+        """
+
+        if isinstance(response.json(), dict):
+            return response.json().get("code", 0) and response.status_code == 400
+        return False
+
+    def should_retry(self, response: requests.Response) -> bool:
+        return super().should_retry(response) or self.lookback_date_limt_reached(response)
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        if self.lookback_date_limt_reached(response):
+            return 1
+        return super().backoff_time(response)
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None

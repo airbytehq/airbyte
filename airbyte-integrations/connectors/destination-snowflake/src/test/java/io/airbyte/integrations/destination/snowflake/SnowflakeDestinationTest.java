@@ -1,49 +1,23 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.destination.record_buffer.FileBuffer;
-import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDestination.DestinationType;
-import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.DestinationSyncMode;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaType;
-import java.sql.SQLException;
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,6 +28,33 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class SnowflakeDestinationTest {
 
   private static final ObjectMapper mapper = MoreMappers.initMapper();
+
+  private static Stream<Arguments> urlsDataProvider() {
+    return Stream.of(
+        arguments("ab12345.us-east-2.aws.snowflakecomputing.com", true),
+
+        arguments("example.snowflakecomputing.com/path/to/resource", false),
+        arguments("example.snowflakecomputing.com:8080", false),
+        arguments("example.snowflakecomputing.com:12345", false),
+        arguments("example.snowflakecomputing.com//path/to/resource", false),
+        arguments("example.snowflakecomputing.com/path?query=string", false),
+        arguments("example.snowflakecomputing.com/#fragment", false),
+        arguments("ab12345.us-east-2.aws.snowflakecomputing. com", false),
+        arguments("ab12345.us-east-2.aws.snowflakecomputing..com", false),
+        arguments("www.ab12345.us-east-2.aws.snowflakecomputing.com", false),
+        arguments("http://ab12345.us-east-2.aws.snowflakecomputing.com", false),
+        arguments("https://ab12345.us-east-2.aws.snowflakecomputing.com", false));
+  }
+
+  @ParameterizedTest
+  @MethodSource({"urlsDataProvider"})
+  void testUrlPattern(final String url, final boolean isMatch) throws Exception {
+    final ConnectorSpecification spec = new SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS).spec();
+    final Pattern pattern = Pattern.compile(spec.getConnectionSpecification().get("properties").get("host").get("pattern").asText());
+
+    Matcher matcher = pattern.matcher(url);
+    assertEquals(isMatch, matcher.find());
+  }
 
   @Test
   @DisplayName("When given S3 credentials should use COPY")
@@ -92,35 +93,6 @@ public class SnowflakeDestinationTest {
     assertFalse(SnowflakeDestinationResolver.isS3Copy(stubConfig));
   }
 
-  @Test
-  public void testCleanupStageOnFailure() throws Exception {
-
-    final JdbcDatabase mockDb = mock(JdbcDatabase.class);
-    final SnowflakeInternalStagingSqlOperations sqlOperations = mock(SnowflakeInternalStagingSqlOperations.class);
-    when(sqlOperations.getStageName(anyString(), anyString())).thenReturn("stage_name");
-    when(sqlOperations.getStagingPath(any(UUID.class), anyString(), anyString(), any())).thenReturn("staging_path");
-    final var testMessages = generateTestMessages();
-    final JsonNode config = Jsons.deserialize(MoreResources.readResource("insert_config.json"), JsonNode.class);
-    final AirbyteMessageConsumer airbyteMessageConsumer = new StagingConsumerFactory().create(
-        Destination::defaultOutputRecordCollector,
-        mockDb,
-        sqlOperations,
-        new SnowflakeSQLNameTransformer(),
-        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(".csv")),
-        config,
-        getCatalog(),
-        true);
-    doThrow(SQLException.class).when(sqlOperations).copyIntoTmpTableFromStage(any(), anyString(), anyString(), anyList(), anyString(), anyString());
-
-    airbyteMessageConsumer.start();
-    for (final AirbyteMessage m : testMessages) {
-      airbyteMessageConsumer.accept(m);
-    }
-    assertThrows(RuntimeException.class, airbyteMessageConsumer::close);
-
-    verify(sqlOperations, times(1)).cleanUpStage(any(), anyString(), anyList());
-  }
-
   @ParameterizedTest
   @MethodSource("destinationTypeToConfig")
   public void testS3ConfigType(final String configFileName, final DestinationType expectedDestinationType) throws Exception {
@@ -134,29 +106,6 @@ public class SnowflakeDestinationTest {
         arguments("copy_gcs_config.json", DestinationType.COPY_GCS),
         arguments("copy_s3_config.json", DestinationType.COPY_S3),
         arguments("insert_config.json", DestinationType.INTERNAL_STAGING));
-  }
-
-  private List<AirbyteMessage> generateTestMessages() {
-    return IntStream.range(0, 3)
-        .boxed()
-        .map(i -> new AirbyteMessage()
-            .withType(AirbyteMessage.Type.RECORD)
-            .withRecord(new AirbyteRecordMessage()
-                .withStream("test")
-                .withNamespace("test_staging")
-                .withEmittedAt(Instant.now().toEpochMilli())
-                .withData(Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
-        .collect(Collectors.toList());
-  }
-
-  ConfiguredAirbyteCatalog getCatalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(List.of(
-        CatalogHelpers.createConfiguredAirbyteStream(
-            "test",
-            "test_staging",
-            Field.of("id", JsonSchemaType.NUMBER),
-            Field.of("name", JsonSchemaType.STRING))
-            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
   }
 
 }

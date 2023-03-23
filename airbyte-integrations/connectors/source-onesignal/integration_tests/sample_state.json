@@ -1,8 +1,16 @@
-{
-  "devices": {
-    "created_at": 1580510247
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "fake_app_id": { "last_active": 1598826147 }},
+      "stream_descriptor": { "name": "devices" }
+    }
   },
-  "notifications": {
-    "queued_at": 1580510247
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "fake_app_id": { "last_active": 1598826147 }},
+      "stream_descriptor": { "name": "notifications" }
+    }
   }
-}
+]

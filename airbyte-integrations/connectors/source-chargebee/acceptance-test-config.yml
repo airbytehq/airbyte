@@ -1,31 +1,68 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-chargebee:dev
-tests:
+test_strictness_level: high
+acceptance_tests:
   spec:
-    - spec_path: "source_chargebee/spec.json"
+    tests:
+      - spec_path: "source_chargebee/spec.yaml"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.1.12"
+    tests:
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.2.1" # New streams were added; fixed fields type
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/product_catalog_v2_configured_catalog.json"
-      # I was unable to create orders using API and I didn’t find a way to create orders
-      # through UI, so that’s why `order` stream is empty.
-      empty_streams:
-        - order
+    tests:
+      - config_path: "secrets/config.json"
+        timeout_seconds: 1200
+        empty_streams:
+          - name: "addon"
+            bypass_reason: "Not permitted for this site"
+          - name: "plan"
+            bypass_reason: "Not permitted for this site"
+          - name: "virtual_bank_account"
+            bypass_reason: "Cannot populate with test data"
+          - name: "subscription"
+            bypass_reason: "Unstable data. Field current_term_start updated daily"
+          - name: "customer"
+            bypass_reason: "Unstable data. Depends on subscription"
+          - name: "invoice"
+            bypass_reason: "Unstable data. Depends on subscription"
+          - name: "credit_note"
+            bypass_reason: "Unstable data. Depends on subscription"
+          - name: "event"
+            bypass_reason: "Unstable data. Depends on subscription"
+          - name: "unbilled_charge"
+            bypass_reason: "Empty stream. Unstable data"
+          - name: "hosted_page"
+            bypass_reason: "Empty stream. Unstable data"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
   incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/product_catalog_v2_configured_catalog.json"
-      future_state_path: "integration_tests/future_state.json"
-      cursor_paths:
-        attached_item: [ "cbdemo_standard", "updated_at" ]
+    tests:
+      - config_path: "secrets/config.json"
+        timeout_seconds: 2400
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/future_state.json"
+          missing_streams:
+            - name: attached_item
+              bypass_reason: "This stream is Full-Refresh only"
+            - name: contact
+              bypass_reason: "This stream is Full-Refresh only"
+            - name: quote_line_group
+              bypass_reason: "This stream is Full-Refresh only"
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/product_catalog_v2_configured_catalog.json"
+    tests:
+      - config_path: "secrets/config.json"
+        timeout_seconds: 2400
+        configured_catalog_path: "integration_tests/configured_catalog.json"

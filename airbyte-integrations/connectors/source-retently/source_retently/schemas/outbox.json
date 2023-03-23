@@ -1,0 +1,77 @@
+{
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string"
+    },
+    "customerId": {
+      "type": "string"
+    },
+    "firstName": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "companyName": {
+      "type": "string"
+    },
+    "companyId": {
+      "type": "string"
+    },
+    "sentDate": {
+      "type": "string"
+    },
+    "channel": {
+      "type": "string"
+    },
+    "campaign": {
+      "type": "string"
+    },
+    "campaignId": {
+      "type": "string"
+    },
+    "surveyTemplateId": {
+      "type": "string"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "sentBy": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "detailedStatus": {
+      "type": "object",
+      "properties": {
+        "isOpened": {
+          "type": "boolean"
+        },
+        "openedDate": {
+          "type": "string"
+        },
+        "isResponded": {
+          "type": "boolean"
+        },
+        "respondedDate": {
+          "type": "string"
+        },
+        "hasFeedback": {
+          "type": "boolean"
+        },
+        "isOptedOut": {
+          "type": "boolean"
+        },
+        "isBounced": {
+          "type": "boolean"
+        }
+      }
+    },
+    "additionalRecipients": {
+      "type": "array",
+      "items": { "type": "object"}
+    }
+  }
+}

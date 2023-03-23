@@ -66,27 +66,7 @@ connectionSpecification:
                 - refresh_token
               airbyte_secret: true
         - type: object
-          title: API key
-          required:
-            - api_key
-            - credentials_title
-          properties:
-            credentials_title:
-              type: string
-              title: Credentials
-              description: Name of the credentials set
-              const: API Key Credentials
-              order: 0
-            api_key:
-              title: API key
-              description: >-
-                HubSpot API Key. See the <a
-                href="https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key">Hubspot docs</a>
-                if you need help finding this key.
-              type: string
-              airbyte_secret: true
-        - type: object
-          title: Private APP
+          title: Private App
           required:
             - access_token
             - credentials_title

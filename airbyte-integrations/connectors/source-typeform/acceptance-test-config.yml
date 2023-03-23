@@ -1,26 +1,35 @@
 connector_image: airbyte/source-typeform:dev
-tests:
+acceptance_tests:
   spec:
-    - spec_path: "source_typeform/spec.json"
+    tests:
+      - spec_path: "source_typeform/spec.json"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
+    tests:
+      - config_path: "secrets/config.json"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: ["webhooks"]
-      expect_records:
-        path: "integration_tests/expected_records.txt"
-  # Although incremental tests pass, they don't actually test anything because SATs currently
-  # do not support nested dynamic state. That's why incremental read is tested with a dedicated integration test.
-  #incremental:
-  #  - config_path: "secrets/config.json"
-  #    configured_catalog_path: "integration_tests/configured_catalog.json"
-  #    future_state_path: "integration_tests/abnormal_state.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: webhooks
+            bypass_reason: "no data"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+  incremental:
+    tests:
+      - config_path: "secrets/incremental_config.json"
+        configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+        cursor_paths:
+          "responses": ["SdMKQYkv", "submitted_at"]
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import re
@@ -36,31 +36,62 @@ METRIC_RESPONSE is gzip compressed binary representing this string:
 [
   {
     "campaignId": 214078428,
-    "campaignName": "sample-campaign-name-214078428"
+    "campaignName": "sample-campaign-name-214078428",
+    "adGroupId": "6490134",
+    "adId": "665320125",
+    "targetId": "791320341",
+    "asin": "G000PSH142",
+    "keywordBid": "511234974",
+    "keywordId": "965783021"
   },
   {
     "campaignId": 44504582,
-    "campaignName": "sample-campaign-name-44504582"
+    "campaignName": "sample-campaign-name-44504582",
+    "adGroupId": "6490134",
+    "adId": "665320125",
+    "targetId": "791320341",
+    "asin": "G000PSH142",
+    "keywordBid": "511234974",
+    "keywordId": "965783021"
   },
   {
     "campaignId": 509144838,
-    "campaignName": "sample-campaign-name-509144838"
+    "campaignName": "sample-campaign-name-509144838",
+    "adGroupId": "6490134",
+    "adId": "665320125",
+    "targetId": "791320341",
+    "asin": "G000PSH142",
+    "keywordBid": "511234974",
+    "keywordId": "965783021"
   },
   {
     "campaignId": 231712082,
-    "campaignName": "sample-campaign-name-231712082"
+    "campaignName": "sample-campaign-name-231712082",
+    "adGroupId": "6490134",
+    "adId": "665320125",
+    "targetId": "791320341",
+    "asin": "G000PSH142",
+    "keywordBid": "511234974",
+    "keywordId": "965783021"
   },
   {
     "campaignId": 895306040,
-    "campaignName": "sample-campaign-name-895306040"
+    "campaignName": "sample-campaign-name-895306040",
+    "adGroupId": "6490134",
+    "adId": "665320125",
+    "targetId": "791320341",
+    "asin": "G000PSH142",
+    "keywordBid": "511234974",
+    "keywordId": "965783021"
   }
 ]
 """
 METRIC_RESPONSE = b64decode(
     """
-H4sIAAAAAAAAAIvmUlCoBmIFBaXkxNyCxMz0PM8UJSsFI0MTA3MLEyMLHVRJv8TcVKC0UjGQn5Oq
-CxPWzQOK68I1KQE11ergMNrExNTAxNTCiBSTYXrwGmxqYGloYmJhTJKb4ZrwGm1kbGhuaGRAmqPh
-mvAabWFpamxgZmBiQIrRcE1go7liAYX9dsTHAQAA
+H4sIANnqymMC/92SsYrCQBBA+3zFsrWBmdnZ7K6lTbSRgyvFYjFBwl2iJIqI+O+3p2aPEyxSmmKLnceb4jHJKhHiEp
+4QcuPrva+2zaKQU0HIYCyTnfyHS1+XAcsu/L/LtB+nTZinUZIPyxd5uzvubxtlxg5Q8R97jDOtCJB0Dw6+3ZaHOzQO
+A1SM0eqq5hfkAPDxOUemnnyV59OuLWbVTdSIpNgZfsL3tS7TxioglAFeJy8aMGtgbWlIgt4ZRwENDpmtGnQFURpHA1
+JokGDYGURpHA2s0woyYBjSIErv1SBZJz+HyV3zFgUAAA==
 """
 )
 METRICS_COUNT = 5
@@ -455,7 +486,6 @@ def test_read_incremental_with_records(config):
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
 
     with freeze_time("2021-01-02 12:00:00") as frozen_datetime:
-
         state = {}
         records = list(read_incremental(stream, state))
         assert state == {"1": {"reportDate": "20210102"}}
@@ -500,7 +530,6 @@ def test_read_incremental_without_records_start_date(config):
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
 
     with freeze_time("2021-01-02 12:00:00") as frozen_datetime:
-
         state = {}
         reportDates = ["20201231", "20210101", "20210102", "20210103", "20210104"]
         for reportDate in reportDates:
@@ -523,7 +552,6 @@ def test_read_incremental_with_records_start_date(config):
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
 
     with freeze_time("2021-01-02 12:00:00") as frozen_datetime:
-
         state = {}
         records = list(read_incremental(stream, state))
 
@@ -612,3 +640,148 @@ def test_streams_state_filter(mocker, config, state_filter, stream_class):
         assert params["stateFilter"] == ",".join(state_filter)
     else:
         assert state_filter is None
+
+
+@responses.activate
+@pytest.mark.parametrize(
+    "custom_record_types, flag_match_error",
+    [
+        (
+                ["campaigns"],
+                True
+        ),
+        (
+                ["campaigns", "adGroups"],
+                True
+        ),
+        (
+                [],
+                False
+        ),
+        (
+                ["invalid_record_type"],
+                True
+        )
+    ]
+)
+def test_display_report_stream_with_custom_record_types(config_gen, custom_record_types, flag_match_error):
+    setup_responses(
+        init_response=REPORT_INIT_RESPONSE,
+        status_response=REPORT_STATUS_RESPONSE,
+        metric_response=METRIC_RESPONSE,
+    )
+
+    profiles = make_profiles()
+
+    stream = SponsoredDisplayReportStream(config_gen(report_record_types=custom_record_types), profiles, authenticator=mock.MagicMock())
+    stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
+    records = list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
+    for record in records:
+        if record['recordType'] not in custom_record_types:
+            if flag_match_error:
+                assert False
+
+
+@responses.activate
+@pytest.mark.parametrize(
+    "custom_record_types, expected_record_types, flag_match_error",
+    [
+        (
+                ["campaigns"],
+                ["campaigns"],
+                True
+        ),
+        (
+                ["asins_keywords"],
+                ["asins_keywords"],
+                True
+        ),
+        (
+                ["asins_targets"],
+                ["asins_targets"],
+                True
+        ),
+        (
+                ["campaigns", "adGroups"],
+                ["campaigns", "adGroups"],
+                True
+        ),
+        (
+                [],
+                [],
+                False
+        ),
+        (
+                ["invalid_record_type"],
+                [],
+                True
+        )
+    ]
+)
+def test_products_report_stream_with_custom_record_types(config_gen, custom_record_types, expected_record_types, flag_match_error):
+    setup_responses(
+        init_response_products=REPORT_INIT_RESPONSE,
+        status_response=REPORT_STATUS_RESPONSE,
+        metric_response=METRIC_RESPONSE,
+    )
+
+    profiles = make_profiles(profile_type="vendor")
+
+    stream = SponsoredProductsReportStream(config_gen(report_record_types=custom_record_types), profiles, authenticator=mock.MagicMock())
+    stream_slice = {"profile": profiles[0], "reportDate": "20210725", "retry_count": 3}
+    records = list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
+    for record in records:
+        print(record)
+        if record['recordType'] not in expected_record_types:
+            if flag_match_error:
+                assert False
+
+
+@responses.activate
+@pytest.mark.parametrize(
+    "custom_record_types, expected_record_types, flag_match_error",
+    [
+        (
+                ["campaigns"],
+                ["campaigns"],
+                True
+        ),
+        (
+                ["asins"],
+                ["asins"],
+                True
+        ),
+        (
+                ["campaigns", "adGroups"],
+                ["campaigns", "adGroups"],
+                True
+        ),
+        (
+                [],
+                [],
+                False
+        ),
+        (
+                ["invalid_record_type"],
+                [],
+                True
+        )
+    ]
+)
+def test_brands_video_report_with_custom_record_types(config_gen, custom_record_types, expected_record_types, flag_match_error):
+    setup_responses(
+        init_response_brands=REPORT_INIT_RESPONSE,
+        status_response=REPORT_STATUS_RESPONSE,
+        metric_response=METRIC_RESPONSE,
+    )
+
+    profiles = make_profiles()
+
+    stream = SponsoredBrandsVideoReportStream(config_gen(report_record_types=custom_record_types), profiles, authenticator=mock.MagicMock())
+    stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
+    records = list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
+    for record in records:
+        print(record)
+        if record['recordType'] not in expected_record_types:
+            if flag_match_error:
+                assert False
