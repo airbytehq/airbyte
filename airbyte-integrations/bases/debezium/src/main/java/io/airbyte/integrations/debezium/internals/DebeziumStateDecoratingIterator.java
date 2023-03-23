@@ -150,7 +150,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
             if (!cdcStateHandler.isSameOffset(previousCheckpointOffset, temporalOffset)) {
               checkpointOffsetToSend.putAll(temporalOffset);
             }
-          } catch (ConnectException e) {
+          } catch (final ConnectException e) {
             LOGGER.warn("Offset file is being written by Debezium. Skipping CDC checkpoint in this loop.");
           }
         }
