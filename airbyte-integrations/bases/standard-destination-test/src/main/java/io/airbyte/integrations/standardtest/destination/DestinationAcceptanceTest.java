@@ -630,7 +630,7 @@ public abstract class DestinationAcceptanceTest {
   @Test
   public void testIncrementalSyncWithNormalizationDropOneColumn()
       throws Exception {
-    if (!normalizationFromDefinition()) {
+    if (!normalizationFromDefinition() || !supportIncrementalSchemaChanges()) {
       return;
     }
 
@@ -1631,6 +1631,10 @@ public abstract class DestinationAcceptanceTest {
   }
 
   protected boolean supportObjectDataTypeTest() {
+    return false;
+  }
+
+  protected boolean supportIncrementalSchemaChanges() {
     return false;
   }
 
