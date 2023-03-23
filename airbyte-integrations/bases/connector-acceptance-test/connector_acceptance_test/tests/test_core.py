@@ -18,6 +18,7 @@ import pytest
 from airbyte_cdk.models import (
     AirbyteRecordMessage,
     AirbyteStream,
+    AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     ConnectorSpecification,
@@ -46,7 +47,6 @@ from connector_acceptance_test.utils.common import (
     find_keyword_schema,
 )
 from connector_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
-from docker.errors import ContainerError
 from jsonschema._utils import flatten
 
 
@@ -412,6 +412,73 @@ class TestSpec(BaseTest):
                         f"{pattern_path} is defining a pattern that looks like a date-time without setting the format to `date-time`. Consider specifying the format to make it easier for users to edit this field in the UI."
                     )
 
+    def test_duplicate_order(self, connector_spec: ConnectorSpecification):
+        """
+        Custom ordering of field (via the "order" property defined in the field) is not allowed to have duplicates within the same group.
+        `{ "a": { "order": 1 }, "b": { "order": 1 } }` is invalid because there are two fields with order 1
+        `{ "a": { "order": 1 }, "b": { "order": 1, "group": "x" } }` is valid because the fields with the same order are in different groups
+        """
+        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        errors = []
+        for properties_path, properties in dpath.util.search(connector_spec.connectionSpecification, "**/properties", yielded=True):
+            definition = schema_helper.get_parent(properties_path)
+            if definition.get("type") != "object":
+                # unrelated "properties", not an actual object definition
+                continue
+            used_orders: Dict[str, Set[int]] = {}
+            for property in properties.values():
+                if "order" not in property:
+                    continue
+                order = property.get("order")
+                group = property.get("group", "")
+                if group not in used_orders:
+                    used_orders[group] = set()
+                orders_for_group = used_orders[group]
+                if order in orders_for_group:
+                    errors.append(f"{properties_path} has duplicate order: {order}")
+                orders_for_group.add(order)
+        self._fail_on_errors(errors)
+
+    def test_nested_group(self, connector_spec: ConnectorSpecification):
+        """
+        Groups can only be defined on the top level properties
+        `{ "a": { "group": "x" }}` is valid because field "a" is a top level field
+        `{ "a": { "oneOf": [{ "type": "object", "properties": { "b": { "group": "x" } } }] }}` is invalid because field "b" is nested in a oneOf
+        """
+        errors = []
+        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        for result in dpath.util.search(connector_spec.connectionSpecification, "/properties/**/group", yielded=True):
+            group_path = result[0]
+            parent_path = schema_helper.get_parent_path(group_path)
+            is_property_named_group = parent_path.endswith("properties")
+            grandparent_path = schema_helper.get_parent_path(parent_path)
+            if grandparent_path != "/properties" and not is_property_named_group:
+                errors.append(f"Groups can only be defined on top level, is defined at {group_path}")
+        self._fail_on_errors(errors)
+
+    def test_required_always_show(self, connector_spec: ConnectorSpecification):
+        """
+        Fields with always_show are not allowed to be required fields because only optional fields can be hidden in the form in the first place.
+        """
+        errors = []
+        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        for result in dpath.util.search(connector_spec.connectionSpecification, "/properties/**/always_show", yielded=True):
+            always_show_path = result[0]
+            parent_path = schema_helper.get_parent_path(always_show_path)
+            is_property_named_always_show = parent_path.endswith("properties")
+            if is_property_named_always_show:
+                continue
+            property_name = parent_path.rsplit(sep="/", maxsplit=1)[1]
+            properties_path = schema_helper.get_parent_path(parent_path)
+            parent_object = schema_helper.get_parent(properties_path)
+            if (
+                "required" in parent_object
+                and isinstance(parent_object.get("required"), List)
+                and property_name in parent_object.get("required")
+            ):
+                errors.append(f"always_show is only allowed on optional properties, but is set on {always_show_path}")
+        self._fail_on_errors(errors)
+
     def test_defined_refs_exist_in_json_spec_file(self, connector_spec_dict: dict):
         """Checking for the presence of unresolved `$ref`s values within each json spec file"""
         check_result = list(find_all_values_for_key_in_schema(connector_spec_dict, "$ref"))
@@ -488,11 +555,13 @@ class TestConnection(BaseTest):
             assert len(con_messages) == 1, "Connection status message should be emitted exactly once"
             assert con_messages[0].connectionStatus.status == Status.FAILED
         elif inputs.status == ConnectionTestConfig.Status.Exception:
-            with pytest.raises(ContainerError) as err:
-                docker_runner.call_check(config=connector_config)
-
-            assert err.value.exit_status != 0, "Connector should exit with error code"
-            assert "Traceback" in err.value.stderr, "Connector should print exception"
+            output = docker_runner.call_check(config=connector_config, raise_container_error=False)
+            trace_messages = filter_output(output, Type.TRACE)
+            assert len(trace_messages) == 1, "A trace message should be emitted in case of unexpected errors"
+            trace = trace_messages[0].trace
+            assert isinstance(trace, AirbyteTraceMessage)
+            assert trace.error is not None
+            assert trace.error.message is not None
 
 
 @pytest.mark.default_timeout(30)
