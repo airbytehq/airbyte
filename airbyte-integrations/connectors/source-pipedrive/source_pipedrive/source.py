@@ -24,15 +24,12 @@ from source_pipedrive.streams import (
     Filters,
     LeadLabels,
     Leads,
-    Notes,
     OrganizationFields,
     Organizations,
     PermissionSets,
     PersonFields,
     Persons,
     Pipelines,
-    ProductFields,
-    Products,
     Roles,
     Stages,
     Users,
@@ -50,16 +47,9 @@ class SourcePipedrive(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         config = self._validate_and_transform(config)
         try:
-<<<<<<< HEAD
-            stream_kwargs = self.get_stream_kwargs(config)
-            deals = Deals(**stream_kwargs)
-            deals_gen = deals.read_records(sync_mode=SyncMode.full_refresh)
-            next(deals_gen, None)
-=======
             stream = Deals(authenticator=self.get_authenticator(config), replication_start_date=config["replication_start_date"])
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records, None)
->>>>>>> upstream/master
             return True, None
         except Exception as error:
             return False, f"Unable to connect to Pipedrive API with the provided credentials - {repr(error)}"
@@ -84,15 +74,12 @@ class SourcePipedrive(AbstractSource):
             Filters(**incremental_kwargs),
             LeadLabels(**stream_kwargs),
             Leads(**stream_kwargs),
-            Notes(**incremental_kwargs),
             Organizations(**incremental_kwargs),
             OrganizationFields(**stream_kwargs),
             PermissionSets(**stream_kwargs),
             Persons(**incremental_kwargs),
             PersonFields(**stream_kwargs),
             Pipelines(**incremental_kwargs),
-            ProductFields(**stream_kwargs),
-            Products(**incremental_kwargs),
             Roles(**stream_kwargs),
             Stages(**incremental_kwargs),
             Users(**incremental_kwargs),
