@@ -20,13 +20,6 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-        empty_streams:
-          - name: lost_deals
-            bypass_reason: Stream is empty
-          - name: won_deals
-            bypass_reason: Stream is empty
-          - name: open_deals
-            bypass_reason: Stream is empty
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

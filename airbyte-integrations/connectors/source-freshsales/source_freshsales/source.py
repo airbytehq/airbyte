@@ -19,6 +19,7 @@ class FreshsalesStream(HttpStream, ABC):
 
     primary_key: str = "id"
     order_field: str = "updated_at"
+    object_name: str = None
     require_view_id: bool = False
     filter_value: str = None
 
@@ -56,7 +57,7 @@ class FreshsalesStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json() or {}
-        records = json_response.get(self.object_name, []) if self.object_name is not None else json_response
+        records = json_response.get(self.object_name, []) if self.object_name else json_response
         yield from records
 
     def _get_filters(self) -> List:
@@ -109,13 +110,12 @@ class Accounts(FreshsalesStream):
 class Deals(FreshsalesStream):
     object_name = "deals"
     require_view_id = True
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        records = super().parse_response(response)
         # This is to remove data form widget development. Keeping this in failed integration tests.
-        for record in records:
+        for record in super().parse_response(response):
             record.pop("fc_widget_collaboration", None)
-        yield from records
+            yield record
 
 
 class OpenDeals(Deals):
@@ -180,7 +180,8 @@ class UpcomingAppointments(FreshsalesStream):
 
 # Source
 class SourceFreshsales(AbstractSource):
-    def get_input_stream_args(self, api_key: str, domain_name: str) -> Mapping[str, Any]:
+    @staticmethod
+    def get_input_stream_args(api_key: str, domain_name: str) -> Mapping[str, Any]:
         return {
             "authenticator": TokenAuthenticator(token=api_key, auth_method="Token"),
             "domain_name": domain_name,
