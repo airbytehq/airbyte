@@ -205,6 +205,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private void markStatesAsFlushedToDestination() {
     stateManager.markPendingAsCommitted();
     stateManager.listCommitted().forEach(outputRecordCollector);
+    LOGGER.info("Destination connector checkpoint (if state message exists)");
     stateManager.clearCommitted();
     nextFlushDeadline = Instant.now().plus(bufferFlushFrequency);
   }
