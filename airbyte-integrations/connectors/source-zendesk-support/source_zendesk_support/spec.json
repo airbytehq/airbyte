@@ -17,7 +17,8 @@
       "subdomain": {
         "type": "string",
         "title": "Subdomain",
-        "description": "This is your Zendesk subdomain that can be found in your account URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN is the value of your subdomain."
+        "description": "This is your Zendesk subdomain that can be found in your account URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN is the value of your subdomain.",
+        "pattern": "/^(?!.*\\.zendesk\\.com$)[a-zA-Z0-9\\.\\-]+$/"
       },
       "credentials": {
         "title": "Authentication",

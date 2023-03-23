@@ -11,6 +11,7 @@
         "type": "string",
         "title": "Shopify Store",
         "description": "If your URL is https://NAME.myshopify.com, then the name would be 'NAME'.",
+        "pattern": "/^(?!.*\\.myshopify\\.com$)[a-zA-Z0-9\\.\\-]+$/",
         "order": 1
       },
       "credentials": {
