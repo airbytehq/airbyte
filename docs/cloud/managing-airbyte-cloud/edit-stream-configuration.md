@@ -39,7 +39,7 @@ To use [cron scheduling](http://www.quartz-scheduler.org/documentation/quartz-2.
 
 * Only one sync per connection can run at a time. 
 * If a sync is scheduled to run before the previous sync finishes, the scheduled sync will start after the completion of the previous sync.
-* Airbyte Cloud does not support schedules that sync more than once per hour. 
+* Airbyte Cloud does not support schedules that sync more frequently than once per hour. 
 
 :::
 
