@@ -1,9 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": ["null", "object"],
-    "properties": {
-        "subscriptionDefinitions": {
-            "type": ["null", "object"],
+        "type": ["null", "object"],
             "properties": {
                 "active": {
                     "type": ["null", "boolean"]
@@ -20,7 +17,5 @@
                 "name": {
                     "type": ["null", "string" ]
                 }
-            }
-        }
     }
 }
