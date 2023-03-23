@@ -50,7 +50,7 @@ export const UpgradePlanBanner: React.FC<IProps> = ({ onBillingPage }) => {
     if (status && user.status !== status) {
       updateUserStatus?.(status);
     }
-  }, [status]);
+  }, [status, updateUserStatus, user.status]);
 
   const remainingDaysForFreeTrial = (): number => {
     const currentDate: any = new Date();
