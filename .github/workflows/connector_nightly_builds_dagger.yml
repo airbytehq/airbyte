@@ -10,7 +10,7 @@ jobs:
   connectors_ci:
     name: Connectors CI
     timeout-minutes: 240 # 4 hours
-    runs-on: large-runner
+    runs-on: xlarge-runner
     steps:
       - name: Get start timestamp
         id: get-start-timestamp
