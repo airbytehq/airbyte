@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.gcs;
 
-import static io.airbyte.integrations.destination.gcs.GcsDestination.MISMATCH_LOCATIONS_EXCEPTION_MESSAGE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -59,6 +58,8 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(GcsDestinationAcceptanceTest.class);
   protected static final ObjectMapper MAPPER = MoreMappers.initMapper();
+  protected static final String MISMATCH_LOCATIONS_EXCEPTION_MESSAGE =
+      "config doesn't match to actual bucket's location";
 
   protected static final String SECRET_FILE_PATH = "secrets/config.json";
   protected static final String SECRET_FILE_PATH_INSUFFICIENT_ROLES = "secrets/insufficient_roles_config.json";
