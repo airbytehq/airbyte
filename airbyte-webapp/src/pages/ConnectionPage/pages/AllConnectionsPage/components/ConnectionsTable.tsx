@@ -10,6 +10,7 @@ import { getConnectionTableData } from "components/EntityTable/utils";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { invalidateConnectionsList } from "hooks/services/useConnectionHook";
 import useRouter from "hooks/useRouter";
+import { RoutePaths } from "pages/routePaths";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 
@@ -38,35 +39,26 @@ const ConnectionsTable: React.FC<IProps> = ({ connections, onSetMessageId }) => 
 
   const data = getConnectionTableData(connections, sourceDefinitions, destinationDefinitions, "connection");
 
-  // const onChangeStatus = useCallback(
-  //   async (connectionId: string) => {
-  //     const connection = connections.find((item) => item.connectionId === connectionId);
-
-  //     if (connection) {
-  //       setRowID(connectionId);
-  //       setStatusLoading(true);
-  //       await changeStatus(connection);
-  //       await invalidateConnectionsList(queryClient);
-  //       setRowID("");
-  //       setStatusLoading(false);
-  //     }
-  //   },
-  //   [changeStatus, connections, queryClient]
-  // );
-
   const updateStatus = useCallback(
     async (connectionId: string) => {
       const connection = connections.find((item) => item.connectionId === connectionId);
       if (connection) {
         setRowID(connectionId);
         setStatusLoading(true);
-        await changeStatus(connection);
-        await invalidateConnectionsList(queryClient);
-        setRowID("");
-        setStatusLoading(false);
-        onSetMessageId(
-          connection.status === "active" ? "tables.connection.disabled.text" : "tables.connection.enabled.text"
-        );
+        try {
+          await changeStatus(connection);
+          await invalidateConnectionsList(queryClient);
+          setRowID("");
+          setStatusLoading(false);
+          onSetMessageId(
+            connection.status === "active" ? "tables.connection.disabled.text" : "tables.connection.enabled.text"
+          );
+        } catch (err) {
+          setRowID("");
+          setStatusLoading(false);
+          const responseStatus = err.response.status;
+          onChangeStatusError(responseStatus);
+        }
       }
     },
     [changeStatus, connections, queryClient]
@@ -97,6 +89,28 @@ const ConnectionsTable: React.FC<IProps> = ({ connections, onSetMessageId }) => 
     },
     [connections, syncManualConnection]
   );
+
+  const onChangeStatusError = (code: number): void => {
+    if (code === 705 || code === 707 || code === 708) {
+      let modalText = "connection.unable.freeTrial.modal.text";
+      if (code === 707) {
+        modalText = "connection.unable.limit.modal.text";
+      } else if (code === 708) {
+        modalText = "connection.unable.expired.modal.text";
+      }
+      openConfirmationModal({
+        title: "connection.unable.modal.title",
+        text: modalText,
+        submitButtonText: "connection.unable.modal.confirm",
+        cancelButtonText: "connection.unable.modal.cancel",
+        buttonReverse: true,
+        onSubmit: () => {
+          closeConfirmationModal();
+          push(`/${RoutePaths.Settings}/${RoutePaths.PlanAndBilling}`);
+        },
+      });
+    }
+  };
 
   const clickRow = (source: ITableDataItem) => push(`${source.connectionId}`);
 
