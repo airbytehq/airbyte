@@ -88,6 +88,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
   protected final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider;
   protected final JdbcCompatibleSourceOperations<Datatype> sourceOperations;
 
+  protected List<String> schemas;
+
   protected String quoteString;
   protected Collection<DataSource> dataSources = new ArrayList<>();
 
@@ -232,7 +234,15 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
   @Override
   public List<TableInfo<CommonField<Datatype>>> discoverInternal(final JdbcDatabase database)
       throws Exception {
-    return discoverInternal(database, null);
+    if (schemas == null || schemas.isEmpty()) {
+      return discoverInternal(database, null);
+    } else {
+      final List<TableInfo<CommonField<Datatype>>> results = new ArrayList<>();
+      for (final String schema : schemas) {
+        results.addAll(discoverInternal(database, schema));
+      }
+      return results;
+    }
   }
 
   @Override

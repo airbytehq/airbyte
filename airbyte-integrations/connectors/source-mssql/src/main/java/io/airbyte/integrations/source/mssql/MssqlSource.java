@@ -80,7 +80,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final String CDC_EVENT_SERIAL_NO = "_ab_cdc_event_serial_no";
   private static final String HIERARCHYID = "hierarchyid";
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
-  private List<String> schemas;
 
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new MssqlSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
@@ -190,7 +189,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
     final Map<String, String> additionalParams = new HashMap<>();
     additionalParameters.forEach(param -> {
-      int i = param.indexOf('=');
+      final int i = param.indexOf('=');
       additionalParams.put(param.substring(0, i), param.substring(i + 1));
     });
 

@@ -15,8 +15,6 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
-import io.airbyte.integrations.source.relationaldb.TableInfo;
-import io.airbyte.protocol.models.CommonField;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -33,7 +31,6 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
 
   public static final String DRIVER_CLASS = DatabaseDriver.REDSHIFT.getDriverClassName();
-  private List<String> schemas;
 
   // todo (cgardens) - clean up passing the dialect as null versus explicitly adding the case to the
   // constructor.
@@ -78,25 +75,6 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
   private void addSsl(final List<String> additionalProperties) {
     additionalProperties.add("ssl=true");
     additionalProperties.add("sslfactory=com.amazon.redshift.ssl.NonValidatingFactory");
-  }
-
-  @Override
-  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
-    if (schemas != null && !schemas.isEmpty()) {
-      // process explicitly selected (from UI) schemas
-      final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
-      for (final String schema : schemas) {
-        LOGGER.debug("Discovering schema: {}", schema);
-        internals.addAll(super.discoverInternal(database, schema));
-      }
-      for (final TableInfo<CommonField<JDBCType>> info : internals) {
-        LOGGER.debug("Found table (schema: {}): {}", info.getNameSpace(), info.getName());
-      }
-      return internals;
-    } else {
-      LOGGER.info("No schemas explicitly set on UI to process, so will process all of existing schemas in DB");
-      return super.discoverInternal(database);
-    }
   }
 
   @Override

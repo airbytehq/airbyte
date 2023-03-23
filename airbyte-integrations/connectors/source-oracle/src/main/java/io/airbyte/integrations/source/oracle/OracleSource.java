@@ -8,15 +8,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.relationaldb.TableInfo;
-import io.airbyte.protocol.models.CommonField;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -36,8 +33,6 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
 
   public static final String DRIVER_CLASS = DatabaseDriver.ORACLE.getDriverClassName();
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
-
-  private List<String> schemas;
 
   private static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
   private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
@@ -167,21 +162,6 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);
     } ;
-  }
-
-  @Override
-  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
-    final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
-    for (final String schema : schemas) {
-      LOGGER.debug("Discovering schema: {}", schema);
-      internals.addAll(super.discoverInternal(database, schema));
-    }
-
-    for (final TableInfo<CommonField<JDBCType>> info : internals) {
-      LOGGER.debug("Found table: {}", info.getName());
-    }
-
-    return internals;
   }
 
   /**
