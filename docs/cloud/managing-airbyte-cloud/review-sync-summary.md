@@ -2,7 +2,7 @@
 The sync summary displays information about synced data, such as the amount of data moved, the number of records read and committed, and the total sync time. Reviewing this summary can help you monitor the sync performance and identify any potential issues.  
  
 To review the sync summary:
-1. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections**.   
+1. On the [Airbyte Cloud](http://cloud.airbyte.com/) dashboard, click **Connections**.   
 
 2. Click a connection in the list to view its sync history.
 
