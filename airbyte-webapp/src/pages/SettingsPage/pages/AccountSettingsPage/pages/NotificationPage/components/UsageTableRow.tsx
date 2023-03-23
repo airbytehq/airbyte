@@ -15,6 +15,7 @@ import { FirstCellFlexValue, FirstCell, BodyCell } from "./StyledTable";
 interface IProps {
   usageItem: NotificationItem;
   saveNotificationSetting: (data: NotificationItem) => void;
+  updateLoading: boolean;
   updateNotificationSetting: (data: NotificationItem) => void;
   deleteNotificationSetting: (notificationSettingId: string) => void;
 }
@@ -52,6 +53,7 @@ export const UsageOptions: DropDownRow.IDataItem[] = [
 export const UsageTableRow: React.FC<IProps> = ({
   usageItem,
   saveNotificationSetting,
+  updateLoading,
   updateNotificationSetting,
   deleteNotificationSetting,
 }) => {
@@ -99,6 +101,7 @@ export const UsageTableRow: React.FC<IProps> = ({
       </FirstCell>
       <BodyCell>
         <NotificationFlag
+          isLoading={updateLoading}
           isActive={usageItem.emailFlag}
           onClick={() => {
             updateNotificationSetting({
@@ -113,6 +116,7 @@ export const UsageTableRow: React.FC<IProps> = ({
       </BodyCell>
       <BodyCell>
         <NotificationFlag
+          isLoading={updateLoading}
           isActive={usageItem.appsFlag}
           onClick={() => {
             updateNotificationSetting({

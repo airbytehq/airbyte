@@ -16,6 +16,7 @@ interface IProps {
   usageNotificationList: NotificationItem[];
   createNotificationSetting: () => void;
   saveNotificationSetting: (data: NotificationItem) => void;
+  updateLoading: boolean;
   updateNotificationSetting: (data: NotificationItem) => void;
   deleteNotificationSetting: (notificationSettingId: string) => void;
 }
@@ -48,6 +49,7 @@ export const UsageTable: React.FC<IProps> = ({
   usageNotificationList,
   createNotificationSetting,
   saveNotificationSetting,
+  updateLoading,
   updateNotificationSetting,
   deleteNotificationSetting,
 }) => {
@@ -82,6 +84,7 @@ export const UsageTable: React.FC<IProps> = ({
             <UsageTableRow
               usageItem={usageItem}
               saveNotificationSetting={saveNotificationSetting}
+              updateLoading={updateLoading}
               updateNotificationSetting={updateNotificationSetting}
               deleteNotificationSetting={deleteNotificationSetting}
             />
