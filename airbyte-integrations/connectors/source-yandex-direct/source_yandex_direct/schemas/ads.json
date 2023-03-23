@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "Id": {
+      "type": "integer"
+    },
+    "CampaignId": {
+      "type": "integer"
+    },
+    "AdGroupId": {
+      "type": "integer"
+    },
+    "Status": {
+      "type": "string"
+    },
+    "Type": {
+      "type": "string"
+    },
+    "Subtype": {
+      "type": "string"
+    },
+    "TextAd": {
+      "type": "object",
+      "properties": {
+        "Text": {
+          "type": "string"
+        },
+        "Href": {
+          "type": "string"
+        }
+      }
+    },
+    "CpcVideoAdBuilderAd": {
+      "type": "object",
+      "properties": {
+        "Href": {
+          "type": "string"
+        }
+      }
+    },
+    "TextImageAd": {
+      "type": "object",
+      "properties": {
+        "Href": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

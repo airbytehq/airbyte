@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "AdId": {
+      "type": "string"
+    },
+    "AdGroupId": {
+      "type": "string"
+    },
+    "AdGroupName": {
+      "type": "string"
+    },
+    "AdNetworkType": {
+      "type": "string"
+    },
+    "Date": {
+      "type": "string"
+    },
+    "CampaignId": {
+      "type": "integer"
+    },
+    "CampaignName": {
+      "type": "string"
+    },
+    "CampaignUrlPath": {
+      "type": "string"
+    },
+    "CampaignType": {
+      "type": "string"
+    },
+    "Clicks": {
+      "type": "string"
+    },
+    "Cost": {
+      "type": "integer"
+    },
+    "Impressions": {
+      "type": "integer"
+    }
+  }
+}
