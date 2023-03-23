@@ -1,8 +1,11 @@
-# 
-
 # Strava
 
-This page guides you through the process of setting up the Strava    source connector.
+This page guides you through the process of setting up the Strava source connector.
+
+## Prerequisites
+
+Scopes:
+* `activity:read_all`
 
 ## Setup guide
 ### Step 1: Set up Strava
@@ -16,9 +19,9 @@ Follow these steps to get the required credentials and inputs:
     * Continue to follow the instructions from the doc above to obtain `client_id` and `client_secret`
 * `refresh_token`
     * Enter this URL into your browser (make sure to add your `client_id` from previous step:
-        * `http://www.strava.com/oauth/authorize?client_id=[REPLACE_WITH_YOUR_CLIENT_ID]&response_type=code&redirect_uri=http://localhost/exchange_token&approval_prompt=force&scope=activity:read_all`
+        * `https://www.strava.com/oauth/authorize?client_id=[REPLACE_WITH_YOUR_CLIENT_ID]&response_type=code&redirect_uri=https://localhost/exchange_token&approval_prompt=force&scope=activity:read_all`
     * Authorize through the UI
-    * Browser will redirect you to an empty page with a URL similar to `http://localhost/exchange_token?state=&code=b55003496d87a9f0b694ca1680cd5690d27d9d28&scope=activity:read_all`
+    * Browser will redirect you to an empty page with a URL similar to `https://localhost/exchange_token?state=&code=b55003496d87a9f0b694ca1680cd5690d27d9d28&scope=activity:read_all`
     * Copy the authorization code above (in this example it would be `b55003496d87a9f0b694ca1680cd5690d27d9d28`)
     * Make a cURL request to exchange the authorization code and scope for a refresh token:
     * ```
@@ -92,7 +95,16 @@ Follow these steps to get the required credentials and inputs:
 6. Click `Set up source`.
 <!-- /env:oss -->
 
-## Supported streams and sync modes
+## Supported sync modes
+
+The Strava source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+- [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+
+## Supported streams
 
 * [Athlete Stats](https://developers.strava.com/docs/reference/#api-Athletes-getStats)
 * [Activities](https://developers.strava.com/docs/reference/#api-Activities-getLoggedInAthleteActivities) \(Incremental\)
@@ -106,6 +118,7 @@ More information about Strava rate limits and adjustments to those limits can be
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------|
+| 0.1.4   | 2023-03-23 | [24368](https://github.com/airbytehq/airbyte/pull/24368) | Add date-time format for input                             |
 | 0.1.3   | 2023-03-15 | [24101](https://github.com/airbytehq/airbyte/pull/24101) | certified to beta, fixed spec, fixed SAT, added unit tests |
 | 0.1.2   | 2021-12-15 | [8799](https://github.com/airbytehq/airbyte/pull/8799)   | Implement OAuth 2.0 support                                |
 | 0.1.1   | 2021-12-06 | [8425](https://github.com/airbytehq/airbyte/pull/8425)   | Update title, description fields in spec                   |
