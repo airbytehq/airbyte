@@ -4958,7 +4958,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.4.4"
+- dockerImage: "airbyte/source-github:0.4.5"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -5034,6 +5034,7 @@
             \ all repositories from organization and `airbytehq/airbyte airbytehq/another-repo`\
             \ for multiple repositories."
           order: 2
+          pattern_descriptor: "org/repo1 org/repo2"
         branch:
           type: "string"
           title: "Branch"
@@ -5043,6 +5044,7 @@
             \ commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified\
             \ for a repository, the default branch will be pulled."
           order: 3
+          pattern_descriptor: "org/repo/branch1 org/repo/branch2"
         page_size_for_large_streams:
           type: "integer"
           title: "Page size for large streams"
@@ -11932,7 +11934,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:2.0.9"
+- dockerImage: "airbyte/source-postgres:2.0.10"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -12005,6 +12007,7 @@
           type: "string"
           order: 6
           group: "advanced"
+          pattern_descriptor: "key1=value1&key2=value2"
         ssl:
           title: "Connect using SSL"
           description: "Encrypt data using SSL. When activating SSL, please select\
