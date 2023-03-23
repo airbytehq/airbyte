@@ -54,7 +54,7 @@ def compute_catalog_overrides(merged_df):
         "supportsNormalization",
         "license",
         "supportUrl",
-        "sourceType",
+        "connectionType",
         "allowedHosts",
         "normalizationConfig",
         "suggestedStreams",
@@ -91,7 +91,7 @@ def merge_into_metadata_definitions(id_field, connector_type, oss_connector_df, 
             "icon": get_field_with_fallback(merged_df, "icon"),
             "supportUrl": get_field_with_fallback(merged_df, "documentationUrl"),
             # TODO rename integration type
-            "sourceType": get_field_with_fallback(merged_df, "sourceType"),
+            "connectionType": get_field_with_fallback(merged_df, "sourceType"),
             "releaseStage": get_field_with_fallback(merged_df, "releaseStage"),
             "license": "MIT",
 

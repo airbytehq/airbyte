@@ -24,7 +24,7 @@ properties:
       - license
       - supportUrl
       - githubIssueLabel
-      - sourceType
+      - connectionType
       - releaseStage
     properties:
       name:
@@ -52,8 +52,14 @@ properties:
         format: uri
       githubIssueLabel:
         type: string
-      sourceType:
+      connectionType:
         type: string
+        enum:
+          - api
+          - database
+          - file
+          - custom
+          - unknown
       releaseStage:
         type: string
         enum:
