@@ -360,7 +360,7 @@ def test_stream_pull_requests_incremental_read():
     assert stream_state == {"organization/repository": {"updated_at": "2022-02-02T10:10:08Z"}}
 
     records = read_incremental(stream, stream_state)
-    assert [r["id"] for r in records] == [6, 5]
+    assert [r["id"] for r in records] == [6, 5, 4]
     assert stream_state == {"organization/repository": {"updated_at": "2022-02-02T10:10:12Z"}}
 
 
@@ -398,7 +398,7 @@ def test_stream_commits_incremental_read():
     responses.add(
         "GET",
         api_url,
-        json=data[3:5],
+        json=data[2:5],
         match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:06Z", "sha": "branch"}, strict_match=False)],
     )
 
@@ -407,7 +407,7 @@ def test_stream_commits_incremental_read():
     assert [r["sha"] for r in records] == [2, 3]
     assert stream_state == {"organization/repository": {"branch": {"created_at": "2022-02-02T10:10:06Z"}}}
     records = read_incremental(stream, stream_state)
-    assert [r["sha"] for r in records] == [4, 5]
+    assert [r["sha"] for r in records] == [3, 4, 5]
     assert stream_state == {"organization/repository": {"branch": {"created_at": "2022-02-02T10:10:10Z"}}}
 
 
@@ -437,7 +437,7 @@ def test_stream_commits_state_upgrade():
 
     stream_state = {"organization/repository": {"created_at": "2022-02-02T10:10:02Z"}}
     records = read_incremental(stream, stream_state)
-    assert [r["sha"] for r in records] == [2]
+    assert [r["sha"] for r in records] == [1, 2]
     assert stream_state == {"organization/repository": {"master": {"created_at": "2022-02-02T10:10:04Z"}}}
 
 
@@ -448,7 +448,7 @@ def test_stream_pull_request_commits():
         "repositories": ["organization/repository"],
         "page_size_for_large_streams": 100,
     }
-    repository_args_with_start_date = {**repository_args, "start_date": "2022-02-02T10:10:02Z"}
+    repository_args_with_start_date = {**repository_args, "start_date": "2022-02-02T10:10:03Z"}
 
     stream = PullRequestCommits(PullRequests(**repository_args_with_start_date), **repository_args)
 

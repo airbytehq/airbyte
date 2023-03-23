@@ -297,7 +297,7 @@ class SemiIncrementalMixin:
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
             cursor_value = self.convert_cursor_value(record[self.cursor_field])
-            if cursor_value > start_point:
+            if cursor_value >= start_point:
                 yield record
             elif self.is_sorted == "desc" and cursor_value < start_point:
                 break
