@@ -1,0 +1,32 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Mercado Libre Spec",
+    "type": "object",
+    "required": ["refresh_token","client_id","client_secret","year_month"],
+    "additionalProperties": false,
+    "properties": {
+      "refresh_token": {
+        "title": "refresh_token",
+        "type": "string",
+        "description": "refresh_token"
+      },
+      "client_id": {
+        "title": "client_id",
+        "type": "string",
+        "description": "client_id"
+      },
+      "client_secret": {
+        "title": "client_secret",
+        "type": "string",
+        "description": "client_secret"
+      },
+      "year_month": {
+        "title": "year_month",
+        "type": "string",
+        "description": "year_month date in format YYYYMM"
+      }
+    }
+  }
+}
