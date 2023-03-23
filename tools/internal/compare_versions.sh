@@ -15,7 +15,6 @@ printf "\nStarting comparing connector %s version %s with version %s:\n" "$conne
 
 run_docker_image()
 {
-
   echo docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/"$connector":"$version" read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 }
 
