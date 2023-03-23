@@ -12,7 +12,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
-        status: "failed"
+        status: "exception"
       - config_path: "secrets/config_old.json"
         status: "succeed"
   discovery:
@@ -30,17 +30,17 @@ acceptance_tests:
           path: "integration_tests/expected_records.jsonl"
         ignored_fields:
           greetings:
-          - name: audio_url
-            bypass_reason: In url present auto generated hash
+            - name: audio_url
+              bypass_reason: In url present auto generated hash
           account_overview:
-          - name: current_timestamp
-            bypass_reason: Depend on current time
+            - name: current_timestamp
+              bypass_reason: Depend on current time
           agents_overview:
-          - name: current_timestamp
-            bypass_reason: Depend on current time
+            - name: current_timestamp
+              bypass_reason: Depend on current time
           current_queue_activity:
-          - name: current_timestamp
-            bypass_reason: Depend on current time
+            - name: current_timestamp
+              bypass_reason: Depend on current time
   incremental:
     tests:
       - config_path: "secrets/config.json"
@@ -52,11 +52,11 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         ignored_fields:
           account_overview:
-          - name: current_timestamp
-            bypass_reason: Depend on current time
+            - name: current_timestamp
+              bypass_reason: Depend on current time
           agents_overview:
-          - name: current_timestamp
-            bypass_reason: Depend on current time
+            - name: current_timestamp
+              bypass_reason: Depend on current time
           current_queue_activity:
-          - name: current_timestamp
-            bypass_reason: Depend on current time
+            - name: current_timestamp
+              bypass_reason: Depend on current time
