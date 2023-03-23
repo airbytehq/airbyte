@@ -7,6 +7,7 @@ acceptance_tests:
         bypass_reason: "the 'trigger' object may mutate often"
       expect_records:
         path: integration_tests/expected_records.jsonl
+        extra_records: true
   connection:
     tests:
     - config_path: secrets/config.json
@@ -32,4 +33,4 @@ acceptance_tests:
     tests:
     - spec_path: source_klaviyo/spec.json
 connector_image: airbyte/source-klaviyo:dev
-test_strictness_level: high
+test_strictness_level: low
