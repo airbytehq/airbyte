@@ -14,6 +14,7 @@
         "first_name": { "type": ["null", "string"] },
         "last_name": { "type": ["null", "string"] },
         "properties": { "type": ["null", "object"] },
+        "subscriptions": { "type": ["null", "object"] },
         "organization": { "type": ["null", "string"] },
         "title": { "type": ["null", "string"] },
         "created": { "type": ["null", "string"], "format": "date-time" },
@@ -21,7 +22,6 @@
         "last_event_date": { "type": ["null", "string"], "format": "date-time" }
       }
     },
-    "subscriptions": { "type": ["null", "object"] },
     "links": { "type": ["null", "object"] },
     "relationships":  { "type": ["null", "object"] },
     "segments":  { "type": ["null", "object"] }
