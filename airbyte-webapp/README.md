@@ -33,6 +33,8 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2023.03.23
+1. UI Too many paginations(connection page)
 #### 2023.03.22
 1. Connection config update
 2. UI when there is no source/destination
