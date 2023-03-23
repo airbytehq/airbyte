@@ -54,3 +54,36 @@ connectionSpecification:
       type: boolean
       description: "Determines whether to use the sandbox or production environment."
       default: false
+auth_flow:
+  auth_flow_type: "oauth2.0"
+  oauth_config_specification:
+    complete_oauth_output_specification:
+      type: object
+      additionalProperties: true
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+    complete_oauth_server_input_specification:
+      type: object
+      additionalProperties: true
+      properties:
+        client_id:
+          type: string
+        client_secret:
+          type: string
+    complete_oauth_server_output_specification:
+      type: object
+      additionalProperties: true
+      properties:
+        client_id:
+          type: string
+        client_secret:
+          type: string
+    oauth_user_input_from_connector_config_specification:
+      type: object
+      additionalProperties: true
+      properties:
+        realm_id:
+          type: string
