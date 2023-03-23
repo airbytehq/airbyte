@@ -6,15 +6,18 @@ GROUP_NAME = "dev"
 OVERRIDES = {
   # airbyte/source-freshcaller
   "8a5d48f6-03bb-4038-a942-a8d3f175cca3": {
-    "sourceType": "api"
+    "sourceType": "api",
+    "releaseStage": "alpha"
   },
   # airbyte/source-genesys
   "5ea4459a-8f1a-452a-830f-a65c38cc438d": {
-    "sourceType": "api"
+    "sourceType": "api",
+    "releaseStage": "alpha"
   },
   # airbyte/source-rss
   "0efee448-6948-49e2-b786-17db50647908": {
-    "sourceType": "api"
+    "sourceType": "api",
+    "releaseStage": "alpha"
   },
   # airbyte/destination-azure-blob-storage
   "b4c5d105-31fd-4817-96b6-cb923bfc04cb": {
@@ -70,7 +73,8 @@ OVERRIDES = {
   },
   # airbyte/destination-e2e-test
   "2eb65e87-983a-4fd7-b3e3-9d9dc6eb8537": {
-    "sourceType": "unknown"
+    "sourceType": "unknown",
+    "releaseStage": "alpha"
   },
   # airbyte/destination-elasticsearch
   "68f351a7-2745-4bef-ad7f-996b8e51bb8c": {
