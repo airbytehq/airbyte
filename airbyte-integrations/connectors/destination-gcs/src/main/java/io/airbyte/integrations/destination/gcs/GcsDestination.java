@@ -36,7 +36,7 @@ public class GcsDestination extends BaseConnector implements Destination {
       + "storage.objects.create, storage.objects.delete, storage.objects.get, storage.objects.list";
 
   protected static final String MISMATCH_LOCATIONS_EXCEPTION_MESSAGE =
-      "Provided location \"%s\" in config doesn't match to actual bucket's location \"%s\"";
+      "Provided region \"%s\" in config doesn't match to actual bucket's region \"%s\"";
 
   private final NamingConventionTransformer nameTransformer;
 

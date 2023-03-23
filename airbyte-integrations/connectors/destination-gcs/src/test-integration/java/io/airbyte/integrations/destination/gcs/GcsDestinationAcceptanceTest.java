@@ -59,7 +59,7 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
   protected static final Logger LOGGER = LoggerFactory.getLogger(GcsDestinationAcceptanceTest.class);
   protected static final ObjectMapper MAPPER = MoreMappers.initMapper();
   protected static final String MISMATCH_LOCATIONS_EXCEPTION_MESSAGE =
-      "config doesn't match to actual bucket's location";
+      "config doesn't match to actual bucket's region";
 
   protected static final String SECRET_FILE_PATH = "secrets/config.json";
   protected static final String SECRET_FILE_PATH_INSUFFICIENT_ROLES = "secrets/insufficient_roles_config.json";
@@ -210,11 +210,11 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
   }
 
   /**
-   * Verify that the Check method can handle the case when provided location doesn't correspond to
+   * Verify that the Check method can handle the case when provided region doesn't correspond to
    * actual bucket's location (if it already exists).
    */
   @Test
-  public void testCheckConnectionMismatchLocations() throws Exception {
+  public void testCheckConnectionMismatchRegion() throws Exception {
     final JsonNode baseConfigJson = getBaseConfigJson();
     // Set a random GCS bucket path for each integration test
     final JsonNode configJson = Jsons.clone(baseConfigJson);
