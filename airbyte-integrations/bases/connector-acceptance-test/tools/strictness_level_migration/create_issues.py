@@ -10,7 +10,7 @@ import os
 import subprocess
 import tempfile
 
-from definitions import GA_DEFINITIONS, is_airbyte_connector, find_by_name, get_airbyte_connector_name_from_definition
+from definitions import GA_DEFINITIONS, find_by_name, get_airbyte_connector_name_from_definition, is_airbyte_connector
 from jinja2 import Environment, FileSystemLoader
 
 # SET THESE BEFORE USING THE SCRIPT
@@ -25,11 +25,9 @@ TEMPLATES_FOLDER = "./templates/"
 logging.basicConfig(level=logging.DEBUG)
 environment = Environment(loader=FileSystemLoader(TEMPLATES_FOLDER))
 
-parser = argparse.ArgumentParser(
-    description="Create issues for a list of connectors from a template."
-)
+parser = argparse.ArgumentParser(description="Create issues for a list of connectors from a template.")
 parser.add_argument("-d", "--dry", default=True)
-parser.add_argument("--connectors", nargs='*')
+parser.add_argument("--connectors", nargs="*")
 parser.add_argument("--file")
 
 
@@ -43,7 +41,9 @@ def get_issue_content(source_definition):
         for line in f:
             test_failure_logs += line
 
-    issue_body = template.render(connector_name=source_definition["name"], release_stage=source_definition["releaseStage"], test_failure_logs=test_failure_logs)
+    issue_body = template.render(
+        connector_name=source_definition["name"], release_stage=source_definition["releaseStage"], test_failure_logs=test_failure_logs
+    )
     file_definition, issue_body_path = tempfile.mkstemp()
 
     with os.fdopen(file_definition, "w") as tmp:

@@ -12,6 +12,7 @@ SOURCE_DEFINITIONS_FILE_PATH = "../../../../../airbyte-config/init/src/main/reso
 
 logging.basicConfig(level=logging.DEBUG)
 
+
 def read_source_definitions():
     with open(SOURCE_DEFINITIONS_FILE_PATH, "r") as source_definitions_file:
         return yaml.safe_load(source_definitions_file)
@@ -22,10 +23,13 @@ def find_by_release_stage(source_definitions, release_stage):
 
 
 def find_by_name(connector_names: List[str]):
-    definitions = [definition for definition in ALL_DEFINITIONS if get_airbyte_connector_name_from_definition(definition) in connector_names]
+    definitions = [
+        definition for definition in ALL_DEFINITIONS if get_airbyte_connector_name_from_definition(definition) in connector_names
+    ]
     if len(definitions) != len(connector_names):
         logging.warning(f"Looked for {len(connector_names)} items, got {len(definitions)} items.")
     return definitions
+
 
 def get_airbyte_connector_name_from_definition(connector_definition):
     return connector_definition["dockerRepository"].replace("airbyte/", "")

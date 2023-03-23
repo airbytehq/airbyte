@@ -6,19 +6,18 @@ import argparse
 import logging
 from pathlib import Path
 
-from connector_acceptance_test.config import Config
-from ruamel.yaml import YAML
-
 import utils
+from connector_acceptance_test.config import Config
 from create_issues import MODULE_NAME
-from definitions import get_airbyte_connector_name_from_definition, GA_DEFINITIONS, BETA_DEFINITIONS
+from definitions import BETA_DEFINITIONS, GA_DEFINITIONS, get_airbyte_connector_name_from_definition
+from ruamel.yaml import YAML
 
 yaml = YAML()
 yaml.preserve_quotes = True
 yaml.width = 150
 
 parser = argparse.ArgumentParser(description="Migrate legacy acceptance-test-config.yml to the latest configuration format.")
-parser.add_argument("--connectors", nargs='*')
+parser.add_argument("--connectors", nargs="*")
 parser.add_argument("--file")
 
 

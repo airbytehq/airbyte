@@ -8,14 +8,12 @@ import os
 from pathlib import Path
 
 import utils
-from definitions import GA_DEFINITIONS, BETA_DEFINITIONS, is_airbyte_connector, find_by_name, get_airbyte_connector_name_from_definition
+from definitions import BETA_DEFINITIONS, GA_DEFINITIONS, find_by_name, get_airbyte_connector_name_from_definition, is_airbyte_connector
 
 MODULE_NAME = "fail_on_extra_columns"
 
-parser = argparse.ArgumentParser(
-    description="Run tests for a list of connectors."
-)
-parser.add_argument("--connectors", nargs='*')
+parser = argparse.ArgumentParser(description="Run tests for a list of connectors.")
+parser.add_argument("--connectors", nargs="*")
 parser.add_argument("--file")
 parser.add_argument("--max_concurrency", type=int, default=10)
 
