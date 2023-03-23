@@ -44,7 +44,7 @@ To use [cron scheduling](http://www.quartz-scheduler.org/documentation/quartz-2.
 :::
 
 ## Modify streams in your connection
-
+A connection's schema consists of one or many streams. Each stream is most commonly associated with a database table or an API endpoint. Within a stream can have one or many fields or columns.
 In the **Activate the streams you want to sync** table, you can choose which streams to sync and how they are organized in the destination.
 
 To modify streams:
