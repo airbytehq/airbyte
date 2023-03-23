@@ -109,7 +109,7 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
   @Override
   protected ConnectorSpecification getSpec() throws Exception {
     return SshHelpers.injectSshIntoSpec(
-        Jsons.deserialize(MoreResources.readResource("expected_strict_encrypt_spec.json"), ConnectorSpecification.class),
+        Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class),
         Optional.of("security"));
   }
 

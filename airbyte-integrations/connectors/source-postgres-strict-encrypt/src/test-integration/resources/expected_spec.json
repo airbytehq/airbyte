@@ -65,16 +65,8 @@
         "title": "JDBC URL Parameters (Advanced)",
         "type": "string",
         "order": 6,
-        "group": "advanced"
-      },
-      "ssl": {
-        "title": "Connect using SSL",
-        "description": "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
-        "type": "boolean",
-        "default": false,
-        "order": 7,
-        "group": "security",
-        "always_show": true
+        "group": "advanced",
+        "pattern_descriptor": "key1=value1&key2=value2"
       },
       "ssl_mode": {
         "title": "SSL Modes",
@@ -83,19 +75,6 @@
         "order": 8,
         "group": "security",
         "oneOf": [
-          {
-            "title": "disable",
-            "additionalProperties": true,
-            "description": "Disables encryption of communication between Airbyte and source database.",
-            "required": ["mode"],
-            "properties": {
-              "mode": {
-                "type": "string",
-                "const": "disable",
-                "order": 0
-              }
-            }
-          },
           {
             "title": "allow",
             "additionalProperties": true,
@@ -303,7 +282,6 @@
         "type": "object",
         "title": "SSH Tunnel Method",
         "description": "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
-        "group": "security",
         "oneOf": [
           {
             "title": "No Tunnel",
