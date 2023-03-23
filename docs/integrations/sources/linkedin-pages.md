@@ -4,7 +4,7 @@
 
 The LinkedIn Pages source only supports Full Refresh for now. Incremental Sync will be coming soon.
 
-This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python). Airbyte uses [LinkedIn Marketing Developer Platform - API](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/marketing-integrations-overview) to fetch data from LinkedIn Pages.
+Airbyte uses [LinkedIn Marketing Developer Platform - API](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/marketing-integrations-overview) to fetch data from LinkedIn Pages.
 
 ### Output schema
 
@@ -84,7 +84,7 @@ The source LinkedIn Pages can use either the `client_id`, `client_secret` and `r
    * Review/agree to legal terms and create app
    * Review the **Auth** tab:
      * **Save your `client_id` and `client_secret`** \(for later steps\)
-     * Oauth 2.0 settings: Provide a `redirect_uri` \(for later steps\): `https://airbyte.io`
+     * Oauth 2.0 settings: Provide a `redirect_uri` \(for later steps\): `https://airbyte.com`
 
 3. **Verify App**:
    * In the **Settings** tab of your app dashboard, you'll see a **Verify** button. Click that button!
@@ -108,6 +108,8 @@ The source LinkedIn Pages can use either the `client_id`, `client_secret` and `r
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                    |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
-| 0.1.0   | 2022-08-11 | [13098](https://github.com/airbytehq/airbyte/pull/13098) | Initial Release |
+| Version | Date       | Pull Request                                             | Subject                                              |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------|
+| 1.0.1   | 2023-03-22 | [24352](https://github.com/airbytehq/airbyte/pull/24352) | Remove `authSpecification` as it's not yet supported |
+| 1.0.0   | 2023-03-16 | [18967](https://github.com/airbytehq/airbyte/pull/18967) | Fixed failing connection checks                      |
+| 0.1.0   | 2022-08-11 | [13098](https://github.com/airbytehq/airbyte/pull/13098) | Initial Release                                      |

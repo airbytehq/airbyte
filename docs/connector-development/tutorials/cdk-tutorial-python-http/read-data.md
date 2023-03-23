@@ -105,7 +105,7 @@ Let's also pass the config specified by the user to the stream class:
 
 We're now ready to query the API!
 
-To do this, we'll need a [ConfiguredCatalog](../../../understanding-airbyte/beginners-guide-to-catalog.md). We've prepared one [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/configured_catalog.json) -- download this and place it in `sample_files/configured_catalog.json`. Then run:
+To do this, we'll need a [ConfiguredCatalog](../../../understanding-airbyte/beginners-guide-to-catalog.md). We've prepared one [here](https://github.com/airbytehq/airbyte/blob/master/docs/connector-development/tutorials/cdk-tutorial-python-http/configured_catalog.json) -- download this and place it in `sample_files/configured_catalog.json`. Then run:
 
 ```text
  python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json

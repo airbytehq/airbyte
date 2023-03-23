@@ -116,8 +116,8 @@ class PostgresSourceTest {
       createRecord(STREAM_NAME, SCHEMA_NAME, ImmutableMap.of("id", 2, "name", "\u2215")));
 
   private static final Set<AirbyteMessage> DOUBLE_QUOTED_MESSAGES = Sets.newHashSet(
-          createRecord(STREAM_NAME_WITH_QUOTES, SCHEMA_NAME, ImmutableMap.of("id", 1, "\"test_column\"", "test1")),
-          createRecord(STREAM_NAME_WITH_QUOTES, SCHEMA_NAME, ImmutableMap.of("id", 2, "\"test_column\"", "test2")));
+      createRecord(STREAM_NAME_WITH_QUOTES, SCHEMA_NAME, ImmutableMap.of("id", 1, "\"test_column\"", "test1")),
+      createRecord(STREAM_NAME_WITH_QUOTES, SCHEMA_NAME, ImmutableMap.of("id", 2, "\"test_column\"", "test2")));
 
   private static final Set<AirbyteMessage> PRIVILEGE_TEST_CASE_EXPECTED_MESSAGES = Sets.newHashSet(
       createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE, SCHEMA_NAME, ImmutableMap.of("id", 1, "name", "Zed")),
@@ -240,13 +240,13 @@ class PostgresSourceTest {
       db.start();
 
       final AirbyteCatalog airbyteCatalog = new AirbyteCatalog().withStreams(List.of(
-              CatalogHelpers.createAirbyteStream(
-                              STREAM_NAME_WITH_QUOTES,
-                              SCHEMA_NAME,
-                              Field.of("id", JsonSchemaType.NUMBER),
-                              Field.of("\"test_column\"", JsonSchemaType.STRING))
-                      .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-                      .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
+          CatalogHelpers.createAirbyteStream(
+              STREAM_NAME_WITH_QUOTES,
+              SCHEMA_NAME,
+              Field.of("id", JsonSchemaType.NUMBER),
+              Field.of("\"test_column\"", JsonSchemaType.STRING))
+              .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+              .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
 
       final JsonNode config = getConfig(db);
       try (final DSLContext dslContext = getDslContext(config)) {
@@ -259,7 +259,7 @@ class PostgresSourceTest {
         });
       }
       final Set<AirbyteMessage> actualMessages =
-              MoreIterators.toSet(new PostgresSource().read(config, CatalogHelpers.toDefaultConfiguredCatalog(airbyteCatalog), null));
+          MoreIterators.toSet(new PostgresSource().read(config, CatalogHelpers.toDefaultConfiguredCatalog(airbyteCatalog), null));
       setEmittedAtToNull(actualMessages);
 
       assertEquals(DOUBLE_QUOTED_MESSAGES, actualMessages);

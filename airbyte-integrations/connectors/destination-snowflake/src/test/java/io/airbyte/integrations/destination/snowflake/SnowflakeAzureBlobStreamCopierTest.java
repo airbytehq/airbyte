@@ -12,7 +12,7 @@ import static org.mockito.Mockito.verify;
 import com.azure.storage.blob.specialized.SpecializedBlobClientBuilder;
 import com.google.common.collect.Lists;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
@@ -48,7 +48,7 @@ public class SnowflakeAzureBlobStreamCopierTest {
         specializedBlobClientBuilder,
         db,
         mockedAzureBlobConfig,
-        new ExtendedNameTransformer(),
+        new StandardNameTransformer(),
         sqlOperations,
         new StagingFilenameGenerator("fake-stream", 256L));
   }
