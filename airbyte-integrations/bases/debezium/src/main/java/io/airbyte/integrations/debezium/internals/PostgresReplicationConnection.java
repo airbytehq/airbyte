@@ -28,10 +28,14 @@ public class PostgresReplicationConnection {
   public static Connection createConnection(final JsonNode jdbcConfig) throws SQLException, IllegalStateException {
     try {
       Properties properties = new Properties();
-      properties.setProperty("user", jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText()
-          : null);
-      properties.setProperty("password", jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText()
-          : null);
+      if (jdbcConfig.has(JdbcUtils.USERNAME_KEY)) {
+        properties.setProperty("user", jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText());
+      }
+
+      if (jdbcConfig.has(JdbcUtils.PASSWORD_KEY)) {
+        properties.setProperty("password", jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText());
+      }
+
       properties.setProperty("assumeMinServerVersion", "9.4");
       properties.setProperty("ApplicationName", "Airbyte Debezium Streaming");
       properties.setProperty("replication", "database");
