@@ -38,7 +38,7 @@ public class DebeziumShutdownProcedureTest {
     Assertions.assertEquals(0, sourceQueue.size());
     Assertions.assertEquals(100, debeziumShutdownProcedure.getRecordsRemainingAfterShutdown().size());
 
-    for (int i = 0; i < 99; i++) {
+    for (int i = 0; i < 100; i++) {
       Assertions.assertEquals(i, debeziumShutdownProcedure.getRecordsRemainingAfterShutdown().poll());
     }
   }
