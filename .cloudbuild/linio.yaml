@@ -1,0 +1,7 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'us-docker.pkg.dev/$PROJECT_ID/airbyte-custom-connectors/source-linio:${_LINIO_VERSION}', './airbyte-integrations/connectors/source-linio-merama' ]
+substitutions:
+  _LINIO_VERSION: 0.0.8
+images:
+- 'us-docker.pkg.dev/$PROJECT_ID/airbyte-custom-connectors/source-linio:${_LINIO_VERSION}'
