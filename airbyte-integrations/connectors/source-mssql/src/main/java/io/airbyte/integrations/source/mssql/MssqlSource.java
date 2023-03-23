@@ -231,25 +231,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   @Override
-  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
-    final List<TableInfo<CommonField<JDBCType>>> internals = super.discoverInternal(database);
-    if (schemas != null && !schemas.isEmpty()) {
-      // process explicitly filtered (from UI) schemas
-      final List<TableInfo<CommonField<JDBCType>>> resultInternals = internals
-          .stream()
-          .filter(this::isTableInRequestedSchema)
-          .toList();
-      for (final TableInfo<CommonField<JDBCType>> info : resultInternals) {
-        LOGGER.debug("Found table (schema: {}): {}", info.getNameSpace(), info.getName());
-      }
-      return resultInternals;
-    } else {
-      LOGGER.info("No schemas explicitly set on UI to process, so will process all of existing schemas in DB");
-      return internals;
-    }
-  }
-
-  @Override
   protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName)
       throws SQLException {
 
