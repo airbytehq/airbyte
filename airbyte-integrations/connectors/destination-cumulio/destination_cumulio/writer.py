@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -7,9 +7,7 @@ import json
 from logging import Logger
 from typing import Any, Mapping
 
-from airbyte_cdk.models import (ConfiguredAirbyteCatalog,
-                                ConfiguredAirbyteStream, DestinationSyncMode)
-
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
 from destination_cumulio.client import CumulioClient
 
 
@@ -21,21 +19,12 @@ def _convert_airbyte_configured_stream_into_headers_dict(
     """
     column_headers = {}
     for column_header in configured_stream.stream.json_schema["properties"]:
-        if (
-            "airbyte-type"
-            in configured_stream.stream.json_schema["properties"][column_header]
-        ):
+        if "airbyte-type" in configured_stream.stream.json_schema["properties"][column_header]:
             column_headers[column_header] = {
-                "airbyte-type": configured_stream.stream.json_schema["properties"][
-                    column_header
-                ]["airbyte-type"]
+                "airbyte-type": configured_stream.stream.json_schema["properties"][column_header]["airbyte-type"]
             }
         else:
-            column_headers[column_header] = {
-                "airbyte-type": configured_stream.stream.json_schema["properties"][
-                    column_header
-                ]["type"]
-            }
+            column_headers[column_header] = {"airbyte-type": configured_stream.stream.json_schema["properties"][column_header]["type"]}
     return column_headers
 
 
@@ -78,10 +67,7 @@ class CumulioWriter:
         self.client.batch_write(
             stream_name,
             self.writers[stream_name]["write_buffer"],
-            [
-                column_header["name"]
-                for column_header in self.writers[stream_name]["column_headers"]
-            ],
+            [column_header["name"] for column_header in self.writers[stream_name]["column_headers"]],
             self.writers[stream_name]["is_in_overwrite_sync_mode"],
             self.writers[stream_name]["is_first_batch"],
             self.writers[stream_name]["update_metadata"],
@@ -99,13 +85,9 @@ class CumulioWriter:
         try:
             self.writers[stream_name]
         except KeyError:
-            raise Exception(
-                f"The stream {stream_name} is not defined in the configured_catalog and won't thus be streamed."
-            )
+            raise Exception(f"The stream {stream_name} is not defined in the configured_catalog and won't thus be streamed.")
 
-        data: list[Any] = [
-            None for i in range(len(self.writers[stream_name]["column_headers"]))
-        ]
+        data: list[Any] = [None for i in range(len(self.writers[stream_name]["column_headers"]))]
         for column in airbyte_data:
             unknown_data = True
             index: int = 0
@@ -143,16 +125,13 @@ class CumulioWriter:
             writers[configured_stream.stream.name] = {
                 "write_buffer": [],
                 "column_headers": result["sorted_column_headers"],
-                "is_in_overwrite_sync_mode": configured_stream.destination_sync_mode
-                == DestinationSyncMode.overwrite,
+                "is_in_overwrite_sync_mode": configured_stream.destination_sync_mode == DestinationSyncMode.overwrite,
                 "is_first_batch": True,
                 "update_metadata": result["update_metadata"],
             }
         return writers
 
-    def _merge_cumulio_and_airbyte_column_headers(
-        self, configured_stream: ConfiguredAirbyteStream
-    ):
+    def _merge_cumulio_and_airbyte_column_headers(self, configured_stream: ConfiguredAirbyteStream):
         """Merge columns known by Airbyte and Cumul.io.
         - If the dataset does not yet exist in Cumul.io (i.e. the first sync), the columns order will be based on "for el in dict" order.
         - Upon next synchronizations, the dataset exists in Cumul.io. Its column order will be used to send data in the corresponding order.
@@ -166,12 +145,8 @@ class CumulioWriter:
           Note that Airbyte recommends a reset upon changes to source schema(s). In that case, the first batch will be synced
           using the "overwrite" mode (due to setting a reset tag on the dataset, see delete_stream_entries implementation).
         """
-        cumulio_column_headers = self.client.get_ordered_columns(
-            configured_stream.stream.name
-        )
-        airbyte_column_headers = _convert_airbyte_configured_stream_into_headers_dict(
-            configured_stream
-        )
+        cumulio_column_headers = self.client.get_ordered_columns(configured_stream.stream.name)
+        airbyte_column_headers = _convert_airbyte_configured_stream_into_headers_dict(configured_stream)
 
         update_metadata = False
 
@@ -180,22 +155,16 @@ class CumulioWriter:
         for airbyte_column_header in airbyte_column_headers:
             merged_column_header = {
                 "name": airbyte_column_header,
-                "airbyte-type": airbyte_column_headers[airbyte_column_header][
-                    "airbyte-type"
-                ],
+                "airbyte-type": airbyte_column_headers[airbyte_column_header]["airbyte-type"],
             }
 
             try:
                 # Add an order based on the order of the column in the Cumul.io dataset
-                merged_column_header["order"] = cumulio_column_headers.index(
-                    airbyte_column_header
-                )
+                merged_column_header["order"] = cumulio_column_headers.index(airbyte_column_header)
             except ValueError:
                 # Add an appropriate order to ensure the column appears at the end of the data
                 new_column_count += 1
-                merged_column_header["order"] = (
-                    len(cumulio_column_headers) + new_column_count
-                )
+                merged_column_header["order"] = len(cumulio_column_headers) + new_column_count
 
             merged_column_headers.append(merged_column_header)
 
@@ -221,10 +190,7 @@ class CumulioWriter:
                     airbyte_column_headers[cumulio_column_header]
                 except KeyError:
                     # Cumul.io's column hasn't been found, so we'll need to update the dataset's metadata upon next sync.
-                    if (
-                        configured_stream.destination_sync_mode
-                        == DestinationSyncMode.overwrite
-                    ):
+                    if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                         self.logger.info(
                             f"The source column {cumulio_column_header} in Cumul.io is no longer present in the configured "
                             f"stream {configured_stream.stream.name} (i.e. in the source). As the stream synchronization is "

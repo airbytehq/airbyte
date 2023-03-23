@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -7,7 +7,6 @@ from typing import Any, Mapping
 from unittest.mock import ANY, MagicMock, patch
 
 import pytest
-
 from destination_cumulio.client import CumulioClient
 
 # "# type: ignore" was added in several places to avoid mypy complaining about patching functions with MagicMock

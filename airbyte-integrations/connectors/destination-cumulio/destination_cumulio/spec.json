@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://developer.cumul.io/?python#data",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/cumulio",
   "supported_destination_sync_modes": [
     "overwrite",
     "append"
@@ -12,7 +12,7 @@
     "title": "Destination Cumulio",
     "type": "object",
     "required": ["api_host", "api_key", "api_token"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "api_host": {
         "title": "Cumul.io API Host URL",
@@ -25,6 +25,7 @@
         "title": "Cumul.io API Key",
         "description": "An API key generated in Cumul.io's platform (can be generated here: https://app.cumul.io/start/profile/integration).",
         "type": "string",
+        "airbyte_secret": true,
         "order": 1
       },
       "api_token": {

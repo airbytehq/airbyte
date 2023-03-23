@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -33,9 +33,7 @@ class CumulioClient:
 
     def __init__(self, config: Mapping[str, Any], logger: Logger):
         self.logger = logger
-        self.client = Cumulio(
-            config["api_key"], config["api_token"], config["api_host"]
-        )
+        self.client = Cumulio(config["api_key"], config["api_token"], config["api_host"])
 
     def batch_write(
         self,
@@ -47,21 +45,15 @@ class CumulioClient:
         update_metadata: bool,
     ):
         """Write a list of data (array of arrays) in a specific sync mode to Cumul.io."""
-        if len(write_buffer) == 0 or (
-            len(write_buffer) == 1 and len(write_buffer[0]) == 0
-        ):
+        if len(write_buffer) == 0 or (len(write_buffer) == 1 and len(write_buffer[0]) == 0):
             return
 
         dataset_id = self._get_dataset_id_from_stream_name(stream_name)
         if dataset_id is None:
-            dataset_id = self._push_batch_to_new_dataset(
-                stream_name, write_buffer, column_headers
-            )
+            dataset_id = self._push_batch_to_new_dataset(stream_name, write_buffer, column_headers)
         else:
             is_in_replace_mode = self._dataset_contains_replace_tag(dataset_id)
-            first_batch_replace = is_first_batch and (
-                is_in_overwrite_sync_mode or is_in_replace_mode
-            )
+            first_batch_replace = is_first_batch and (is_in_overwrite_sync_mode or is_in_replace_mode)
             self._push_batch_to_existing_dataset(
                 dataset_id,
                 write_buffer,
@@ -70,9 +62,7 @@ class CumulioClient:
                 update_metadata,
             )
 
-        self.logger.info(
-            f"Successfully pushed {len(write_buffer)} rows to Cumul.io's data warehouse in a dataset with id {dataset_id}."
-        )
+        self.logger.info(f"Successfully pushed {len(write_buffer)} rows to Cumul.io's data warehouse in a dataset with id {dataset_id}.")
 
     def test_api_token(self):
         """Test an API key and token by retrieving it."""
@@ -86,9 +76,7 @@ class CumulioClient:
             )
         self.logger.info("API host, key and token combination is valid.")
 
-    def test_data_push(
-        self, stream_name: str, data: list[list[Any]], columns: list[str]
-    ):
+    def test_data_push(self, stream_name: str, data: list[list[Any]], columns: list[str]):
         """[DEPRECATED] This method is no longer in use as it results in a lot of overhead.
         Test pushing dummy data into a dataset, and delete the dataset afterwards."""
 
@@ -120,9 +108,7 @@ class CumulioClient:
             # Dataset hasn't been created yet on Cumul.io's side.
             return []
         # Sort columns based on the order property.
-        order_sorted_columns = sorted(
-            dataset_and_columns["columns"], key=lambda x: x["order"]
-        )
+        order_sorted_columns = sorted(dataset_and_columns["columns"], key=lambda x: x["order"])
         # Return a list of column source names.
         return [column["source_name"] for column in order_sorted_columns]
 
@@ -177,9 +163,7 @@ class CumulioClient:
             f"this might be due to the dataset not existing yet on Cumul.io's side."
         )
 
-    def _push_batch_to_new_dataset(
-        self, stream_name: str, write_buffer: list[list[Any]], column_headers: list[str]
-    ):
+    def _push_batch_to_new_dataset(self, stream_name: str, write_buffer: list[list[Any]], column_headers: list[str]):
         properties = {
             "type": "create",
             "data": write_buffer,
@@ -210,9 +194,7 @@ class CumulioClient:
                         f"Error: {e}"
                     )
                 elif try_count + 1 >= len(self.BACKOFF_TIMES_IN_SECONDS):
-                    raise Exception(
-                        f"Exception while creating new dataset after {len(self.BACKOFF_TIMES_IN_SECONDS)} retries: {e}"
-                    )
+                    raise Exception(f"Exception while creating new dataset after {len(self.BACKOFF_TIMES_IN_SECONDS)} retries: {e}")
 
                 seconds_to_backoff = self.BACKOFF_TIMES_IN_SECONDS[try_count]
                 try_count += 1
@@ -362,9 +344,7 @@ class CumulioClient:
         tag_id = self._get_tag_id(tag_name)
         if tag_id is not None:
             return self._associate_tag_with_dataset_id(tag_id, dataset_id)
-        return self._create_and_associate_stream_name_tag_with_dataset_id(
-            tag_name, dataset_id
-        )
+        return self._create_and_associate_stream_name_tag_with_dataset_id(tag_name, dataset_id)
 
     def _get_tag_id(self, tag_name: str):
         """Return a Tag ID using the stream name."""
@@ -379,9 +359,7 @@ class CumulioClient:
     def _dissociate_tag_with_dataset_id(self, tag_id: str, dataset_id: str):
         return self.client.dissociate("tag", tag_id, "Securables", dataset_id)
 
-    def _create_and_associate_stream_name_tag_with_dataset_id(
-        self, tag_name: str, dataset_id: str
-    ):
+    def _create_and_associate_stream_name_tag_with_dataset_id(self, tag_name: str, dataset_id: str):
         return self.client.create(
             "tag",
             {"tag": self.TAG_PREFIX + tag_name},

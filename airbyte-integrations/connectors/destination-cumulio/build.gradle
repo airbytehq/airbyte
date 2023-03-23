@@ -4,5 +4,5 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'destiation_cumulio'
+    moduleDirectory 'destination_cumulio'
 }

@@ -1,19 +1,25 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
+import time
 from logging import Logger, getLogger
 from typing import Any, Dict, Mapping
-import time
 
 import pytest
-from airbyte_cdk.models import (AirbyteMessage, AirbyteRecordMessage,
-                                AirbyteStateMessage, AirbyteStream,
-                                ConfiguredAirbyteCatalog,
-                                ConfiguredAirbyteStream, DestinationSyncMode,
-                                Status, SyncMode, Type)
-
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStateMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    Status,
+    SyncMode,
+    Type,
+)
 from destination_cumulio import DestinationCumulio
 from destination_cumulio.client import CumulioClient
 

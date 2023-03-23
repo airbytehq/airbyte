@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -9,12 +9,17 @@ from typing import Any, Mapping
 from unittest.mock import MagicMock, call, patch
 
 import pytest
-from airbyte_cdk.models import (AirbyteMessage, AirbyteRecordMessage,
-                                AirbyteStateMessage, AirbyteStream,
-                                ConfiguredAirbyteCatalog,
-                                ConfiguredAirbyteStream, DestinationSyncMode,
-                                SyncMode, Type)
-
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStateMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    SyncMode,
+    Type,
+)
 from destination_cumulio.destination import DestinationCumulio
 
 

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -7,10 +7,7 @@ from logging import Logger, getLogger
 from typing import Any, Iterable, Mapping
 
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import (AirbyteConnectionStatus, AirbyteMessage,
-                                ConfiguredAirbyteCatalog, DestinationSyncMode,
-                                Status, Type)
-
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from destination_cumulio.client import CumulioClient
 from destination_cumulio.writer import CumulioWriter
 
@@ -84,9 +81,7 @@ class DestinationCumulio(Destination):
         # Make sure to flush any records still in the queue
         writer.flush_all()
 
-    def check(
-        self, logger: Logger, config: Mapping[str, Any]
-    ) -> AirbyteConnectionStatus:
+    def check(self, logger: Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """Tests if the input configuration can be used to successfully connect to the destination with the needed permissions.
 
         This will test whether the combination of the Cumul.io API host, API key and API token is valid.
@@ -116,9 +111,7 @@ class DestinationCumulio(Destination):
             # or when the request return e.g. a 401 Unauthorized HTTP response code.
             # We'll assume that either the API host is incorrect, or the API key and token are no longer valid.
             if not e == "Something went wrong":
-                return AirbyteConnectionStatus(
-                    status=Status.FAILED, message=f"An exception occurred: {repr(e)}"
-                )
+                return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
             return AirbyteConnectionStatus(
                 status=Status.FAILED,
                 message="An exception occurred: could it be that the API host is incorrect, or the API key and token are no longer valid?",
