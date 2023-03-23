@@ -10,7 +10,7 @@ jobs:
   nightly_builds_alpha:
     name: Nightly builds GA + BETA
     timeout-minutes: 360 # 6 hours
-    runs-on: large-runner
+    runs-on: xlarge-runner
     steps:
       - name: Get start timestamp
         id: get-start-timestamp
