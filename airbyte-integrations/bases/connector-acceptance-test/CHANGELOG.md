@@ -3,6 +3,9 @@
 ## 0.8.0
 Spec tests: Make sure grouping and ordering properties are used in a consistent way.
 
+## 0.7.2
+TestConnection: assert that a check with `exception` status emits a trace message.
+
 ## 0.7.1
 Discovery backward compatibility tests: handle errors on previous connectors catalog retrieval. Return None when the discovery failed. It should unblock the situation when tests fails even if you bypassed backward compatibility tests.
 

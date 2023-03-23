@@ -18,6 +18,7 @@ import pytest
 from airbyte_cdk.models import (
     AirbyteRecordMessage,
     AirbyteStream,
+    AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     ConnectorSpecification,
@@ -46,7 +47,6 @@ from connector_acceptance_test.utils.common import (
     find_keyword_schema,
 )
 from connector_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
-from docker.errors import ContainerError
 from jsonschema._utils import flatten
 
 
@@ -555,11 +555,13 @@ class TestConnection(BaseTest):
             assert len(con_messages) == 1, "Connection status message should be emitted exactly once"
             assert con_messages[0].connectionStatus.status == Status.FAILED
         elif inputs.status == ConnectionTestConfig.Status.Exception:
-            with pytest.raises(ContainerError) as err:
-                docker_runner.call_check(config=connector_config)
-
-            assert err.value.exit_status != 0, "Connector should exit with error code"
-            assert "Traceback" in err.value.stderr, "Connector should print exception"
+            output = docker_runner.call_check(config=connector_config, raise_container_error=False)
+            trace_messages = filter_output(output, Type.TRACE)
+            assert len(trace_messages) == 1, "A trace message should be emitted in case of unexpected errors"
+            trace = trace_messages[0].trace
+            assert isinstance(trace, AirbyteTraceMessage)
+            assert trace.error is not None
+            assert trace.error.message is not None
 
 
 @pytest.mark.default_timeout(30)
