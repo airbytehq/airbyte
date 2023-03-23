@@ -16,7 +16,7 @@ on:
 
 jobs:
   test_connectors:
-    name: Test connectors ${{ test-connectors-options }}
+    name: Test connectors ${{ inputs.test-connectors-options }}
     timeout-minutes: 360 # 6 hours
     runs-on: ${{ inputs.runs-on || 'large-runner' }}
     steps:
