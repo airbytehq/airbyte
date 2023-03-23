@@ -4,7 +4,6 @@
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from urllib.parse import urljoin
 
 import requests
 from airbyte_cdk.sources import AbstractSource
@@ -14,13 +13,14 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 
 
 # Basic full refresh stream
-class TodoistStream(HttpStream, ABC):
+class TodoistStream(HttpStream):
     """
     Stream for Todoist REST API : https://developer.todoist.com/rest/v2/#overview
     """
 
-    REST_VERSION = "v2"
-    url_base = urljoin("https://api.todoist.com", f"/rest/{REST_VERSION}/")
+    @property
+    def url_base(self) -> str:
+        return "https://api.todoist.com/rest/v2/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -31,39 +31,22 @@ class TodoistStream(HttpStream, ABC):
         return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield {}
+        yield response.json()
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return self.name.title().lower()
 
 
 class Tasks(TodoistStream):
 
     primary_key = "id"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        """
-        https://api.todoist.com/rest/v2/tasks
-        """
-        return "tasks"
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json()
-
 
 class Projects(TodoistStream):
 
     primary_key = "id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        """
-        https://api.todoist.com/rest/v2/projects
-        """
-        return "projects"
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json()
 
 
 # Source
@@ -74,12 +57,10 @@ class SourceTodoist(AbstractSource):
             authenticator = TokenAuthenticator(token=token)
             task_stream = Tasks(authenticator)
             task_records = task_stream.read_records(sync_mode="full_refresh")
-            record = next(task_records)
+            next(task_records)
+            return True, None
         except Exception as e:
             return False, e
-        else:
-            logger.info(f"Successfully connected to Tasks stream. Pulled one record: {record}")
-            return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         token = config["token"]

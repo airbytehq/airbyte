@@ -31,9 +31,12 @@ def test_next_page_token(patch_base_class):
 
 def test_parse_response(patch_base_class):
     stream = TodoistStream()
-    inputs = {"response": MagicMock()}
-    expected_parsed_object = {}
+    response = MagicMock()
+    response.json.return_value = {"id": "123"}
+    inputs = {"response": response}
+    expected_parsed_object = {"id": "123"}
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
+
 
 
 def test_request_headers(patch_base_class):

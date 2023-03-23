@@ -1,5 +1,7 @@
 {
     "$schema": "http://json-schema.org/schema#",
+    "additionalProperties": true,
+    "type": "object",
     "properties": {
         "assignee_id": {
             "type": [
@@ -14,55 +16,58 @@
             ]
         },
         "comment_count": {
-            "type": "integer"
+            "type": ["null", "integer"]
         },
         "content": {
-            "type": "string"
+            "type": ["null", "string"]
         },
         "created_at": {
-            "type": "string"
+            "type": ["null", "string"]
         },
         "creator_id": {
-            "type": "string"
+            "type": ["null", "string"]
         },
         "description": {
-            "type": "string"
+            "type": ["null", "string"]
         },
         "due": {
             "anyOf": [
                 {
-                    "type": "null"
+                    "type": ["null", "object"]
                 },
                 {
                     "properties": {
                         "date": {
-                            "type": "string"
+                            "type": ["null", "string"]
                         },
                         "is_recurring": {
-                            "type": "boolean"
+                            "type": ["null", "boolean"]
                         },
                         "lang": {
-                            "type": "string"
+                            "type": ["null", "string"]
                         },
                         "string": {
-                            "type": "string"
+                            "type": ["null", "string"]
                         }
                     },
-                    "type": "object"
+                    "type": ["null", "object"]
                 }
             ]
         },
         "id": {
-            "type": "string"
+            "type": ["null", "string"]
         },
         "is_completed": {
-            "type": "boolean"
+            "type": ["null", "boolean"]
         },
         "labels": {
-            "type": "array"
+            "type": ["null", "array"],
+            "items": {
+                "type": ["null", "string"]
+            }
         },
         "order": {
-            "type": "integer"
+            "type": ["null", "integer"]
         },
         "parent_id": {
             "type": [
@@ -71,10 +76,10 @@
             ]
         },
         "priority": {
-            "type": "integer"
+            "type": ["null", "integer"]
         },
         "project_id": {
-            "type": "string"
+            "type": ["null", "string"]
         },
         "section_id": {
             "type": [
@@ -83,8 +88,7 @@
             ]
         },
         "url": {
-            "type": "string"
+            "type": ["null", "string"]
         }
-    },
-    "type": "object"
+    }
 }
