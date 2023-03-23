@@ -24,11 +24,13 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.streams.http.rate_limiting import TRANSIENT_EXCEPTIONS
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests.auth import AuthBase
 from requests_futures.sessions import PICKLE_ERROR, FuturesSession
+from source_zendesk_support.ZendeskSupportAvailabilityStrategy import ZendeskSupportAvailabilityStrategy
 
 DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY: str = "_last_end_time"
@@ -120,8 +122,8 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
         self._ignore_pagination = ignore_pagination
 
     @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return HttpAvailabilityStrategy()
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
         """
@@ -219,6 +221,10 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
     @property
     def url_base(self) -> str:
         return f"https://{self._subdomain}.zendesk.com/api/v2/"
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return ZendeskSupportAvailabilityStrategy()
 
     def path(self, **kwargs):
         return self.name
@@ -543,6 +549,14 @@ class Tickets(SourceZendeskIncrementalExportStream):
 
     response_list_name: str = "tickets"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+
+    @staticmethod
+    def check_start_time_param(requested_start_time: int, value: int = 1):
+        """
+        The stream returns 400 Bad Request StartTimeTooRecent when requesting tasks 1 second before now.
+        Figured out during experiments that the most recent time needed for request to be successful is 3 seconds before now.
+        """
+        return SourceZendeskIncrementalExportStream.check_start_time_param(requested_start_time, value=3)
 
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):

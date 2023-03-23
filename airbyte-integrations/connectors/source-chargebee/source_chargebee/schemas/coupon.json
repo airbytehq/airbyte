@@ -31,6 +31,9 @@
     "duration_type": {
       "type": ["string", "null"]
     },
+    "duration_month": {
+      "type": ["integer", "null"]
+    },
     "valid_till": {
       "type": ["integer", "null"]
     },
@@ -38,6 +41,9 @@
       "type": ["integer", "null"]
     },
     "status": {
+      "type": ["string", "null"]
+    },
+    "apply_discount_on": {
       "type": ["string", "null"]
     },
     "apply_on": {

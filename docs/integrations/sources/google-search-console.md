@@ -5,6 +5,8 @@ This page contains the setup guide and reference information for the google sear
 
 ## Prerequisites
 
+* A verified property in Google Search Console
+* Enable Google Search Console API for GCP project at [GCP console](https://console.cloud.google.com/apis/library/searchconsole.googleapis.com)
 * Credentials to a Google Service Account \(or Google Service Account with delegated Domain Wide Authority\) or Google User Account
 
 :::note
@@ -67,14 +69,14 @@ At the end of this process, you should have JSON credentials to this Google Serv
 <!-- env:cloud -->
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the google search console connector and select **google search console** from the Source type dropdown.
 4. Click Authenticate your account to sign in with Google and authorize your account.
 5. Fill in the `site_urls` field.
-5. Fill in the `start date` field.
-6. Fill in the `custom reports` (optionally) in format `{"name": "<report-name>", "dimensions": ["<dimension-name>", ...]}`
-7. You should be ready to sync data.
+6. Fill in the `start date` field.
+7. Fill in the `custom reports` (optionally) in format `{"name": "<report-name>", "dimensions": ["<dimension-name>", ...]}`
+8. You should be ready to sync data.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -90,15 +92,16 @@ At the end of this process, you should have JSON credentials to this Google Serv
 
 ## Supported sync modes
 
-The google search console source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Google Search Console Source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature           | Supported?\(Yes/No\) | Notes                     |
-| :---------------- | :------------------- | :------------------------ |
-| Full Refresh Sync | Yes                  |                           |
-| Incremental Sync  | Yes                  | except Sites and Sitemaps |
-| SSL connection    | Yes                  |                           |
-| Namespaces        | No                   |                           |
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
+:::note
+   The granularity for the cursor is 1 day, so Incremental Sync in Append mode may result in duplicating the data.
+:::
 
 ## Supported Streams
 
@@ -115,13 +118,13 @@ The google search console source connector supports the following [sync modes](h
 
 ## Performance considerations
 
-This connector attempts to back off gracefully when it hits Reports API's rate limits. To find more information about limits, see [Usage Limits](https://developers.google.com/webmaster-tools/search-console-api-original/v3/limits) documentation.
+This connector attempts to back off gracefully when it hits Reports API's rate limits. To find more information about limits, see [Usage Limits](https://developers.google.com/webmaster-tools/limits) documentation.
 
 
 ## Data type map
 
 | Integration Type | Airbyte Type | Notes |
-| :--------------- | :----------- | :---- |
+|:-----------------|:-------------|:------|
 | `string`         | `string`     |       |
 | `number`         | `number`     |       |
 | `array`          | `array`      |       |
@@ -132,6 +135,8 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 
 | Version  | Date       | Pull Request                                                                                                  | Subject                                                     |
 |:---------| :--------- |:--------------------------------------------------------------------------------------------------------------| :---------------------------------------------------------- |
+| `0.1.22` | 2023-03-20 | [22295](https://github.com/airbytehq/airbyte/pull/22295)                                                      | Update specification examples |
+| `0.1.21` | 2023-02-14 | [22984](https://github.com/airbytehq/airbyte/pull/22984)                                                      | Specified date formatting in specification                    |
 | `0.1.20` | 2023-02-02 | [22334](https://github.com/airbytehq/airbyte/pull/22334)                                                      | Turn on default HttpAvailabilityStrategy                    |
 | `0.1.19` | 2023-01-27 | [22007](https://github.com/airbytehq/airbyte/pull/22007)                                                      | Set `AvailabilityStrategy` for streams explicitly to `None` |
 | `0.1.18` | 2022-10-27 | [18568](https://github.com/airbytehq/airbyte/pull/18568)                                                      | Improved config validation: custom_reports.dimension        |
