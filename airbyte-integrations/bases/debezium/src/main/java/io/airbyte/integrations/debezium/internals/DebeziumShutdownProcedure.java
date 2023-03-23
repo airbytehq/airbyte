@@ -83,6 +83,10 @@ public class DebeziumShutdownProcedure<T> {
    * complete we just have to read the remaining records from the {@link targetQueue}
    */
   public void initiateShutdownProcedure() {
+    if (publisherStatusSupplier.get()) {
+      LOGGER.info("Engine has already shutdown");
+      return;
+    }
     Exception exceptionDuringEngineClose = null;
     try {
       initiateTransfer();
