@@ -1,13 +1,14 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "canSyncTasks": {
       "type": ["null", "boolean"]
     },
     "users": {
       "type": ["null", "array"],
-      "items": { "type": "string" }
+      "items": { "type": "integer" }
     },
     "id": {
       "type": ["null", "string"]

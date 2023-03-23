@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "isEmailVerified": {
       "type": ["null", "boolean"]
@@ -81,7 +82,7 @@
     },
     "costHistory": {
       "type": ["null", "array"],
-      "items": { "type": "string" }
+      "items": { "type": "object" }
     },
     "rate": {
       "type": ["null", "integer"]

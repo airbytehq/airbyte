@@ -1,6 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
+    "additionalProperties": true,
     "properties": {
       "id": {
         "type": "string"
@@ -41,8 +42,7 @@
             "type": "integer"
           },
           "users": {
-            "type": "array",
-            "items": {"type": "string"}
+            "type": ["null", "object"]
           },
           "timerTime": {
             "type": "integer"

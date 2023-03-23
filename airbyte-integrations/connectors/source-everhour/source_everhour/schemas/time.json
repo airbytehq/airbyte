@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": ["null", "integer"]
@@ -79,7 +80,10 @@
     },
     "history": {
       "type": ["null", "array"],
-      "items": { "type": "string" }
+      "items": { 
+        "type": ["null", "object"],
+        "additionalProperties": true
+      }
     },
     "lockReasons": {
       "type": ["null", "array"],
