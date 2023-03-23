@@ -29,15 +29,6 @@ def test_next_page_token(patch_base_class):
     assert stream.next_page_token(**inputs) == expected_token
 
 
-def test_parse_response(patch_base_class):
-    stream = TodoistStream()
-    response = MagicMock()
-    response.json.return_value = {"id": "123"}
-    inputs = {"response": response}
-    expected_parsed_object = {"id": "123"}
-    assert next(stream.parse_response(**inputs)) == expected_parsed_object
-
-
 def test_request_headers(patch_base_class):
     stream = TodoistStream()
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}

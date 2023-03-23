@@ -30,7 +30,7 @@ class TodoistStream(HttpStream):
         return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield response.json()
+        yield from response.json()
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
