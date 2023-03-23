@@ -90,6 +90,7 @@ def merge_into_metadata_definitions(id_field, connector_type, oss_connector_df, 
             "dockerImageTag": get_field_with_fallback(merged_df, "dockerImageTag"),
             "icon": get_field_with_fallback(merged_df, "icon"),
             "supportUrl": get_field_with_fallback(merged_df, "documentationUrl"),
+            # TODO rename integration type
             "sourceType": get_field_with_fallback(merged_df, "sourceType"),
             "releaseStage": get_field_with_fallback(merged_df, "releaseStage"),
             "license": "MIT",
@@ -128,12 +129,19 @@ def validate_metadata(metadata):
 
 # ASSETS
 
+# TODO remove this asset
+@asset(group_name=GROUP_NAME)
+def unique_source_types(catalog_derived_metadata_definitions):
+    # filter none values
+    all_values = [metadata["data"].get("sourceType") for metadata in catalog_derived_metadata_definitions if metadata["data"].get("sourceType") is not None]
+    unique_values = list(set(all_values))
+    return Output(unique_values, metadata={"count": len(unique_values), "preview": "\n".join(unique_values)})
 
 @asset(group_name=GROUP_NAME)
-def valid_metadata_list(catalog_derived_metadata_definitions):
+def valid_metadata_list(overrode_metadata_definitions):
     result = []
 
-    for metadata in catalog_derived_metadata_definitions:
+    for metadata in overrode_metadata_definitions:
         valid, error_msg = validate_metadata(metadata)
         result.append({
             'definitionId': metadata["data"]['definitionId'],
@@ -145,7 +153,10 @@ def valid_metadata_list(catalog_derived_metadata_definitions):
 
     result_df = pd.DataFrame(result)
 
-    return Output(result_df, metadata={"count": len(result_df), "preview": MetadataValue.md(result_df.to_markdown())})
+    invalid_df = result_df[result_df["is_metadata_valid"] == False]
+    invalid_csv = invalid_df[['definitionId', 'dockerRepository']].to_csv(index=False)
+
+    return Output(result_df, metadata={"count": len(result_df), "preview": MetadataValue.md(result_df.to_markdown()), "invalid_csv": invalid_csv})
 
 
 @asset(group_name=GROUP_NAME)

@@ -21,9 +21,10 @@ from .assets.catalog_assets import (
 from .assets.metadata_assets import (
     catalog_derived_metadata_definitions,
     valid_metadata_list,
+    unique_source_types,
 )
 
-from .assets.dev_assets import persist_metadata_definitions
+from .assets.dev_assets import persist_metadata_definitions, overrode_metadata_definitions
 
 from .jobs.catalog_jobs import generate_catalog_markdown, generate_local_metadata_files
 from .sensors.catalog_sensors import catalog_updated_sensor
@@ -46,8 +47,9 @@ ASSETS = [
     catalog_derived_metadata_definitions,
     valid_metadata_list,
     persist_metadata_definitions,
+    overrode_metadata_definitions,
+    unique_source_types, # TODO remove
 ]
-
 RESOURCES = {
     "metadata_file_directory": simple_local_file_manager.configured({"base_dir": "/tmp/metadata"}),
     "github_client": github_client,

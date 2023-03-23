@@ -1394,7 +1394,7 @@ category = "main"
 optional = false
 python-versions = "^3.9"
 files = []
-develop = false
+develop = true
 
 [package.dependencies]
 click = "^8.1.3"
@@ -2905,4 +2905,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "0d3b6f7d02a1505c819cead3d4ed738f76216360df02f34e4f54d99136a4602c"
+content-hash = "469d355d21fe035bbe7e57c337afced8298282f6fd41fb58ceed52213af88cc0"
