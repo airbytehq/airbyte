@@ -36,7 +36,7 @@ public class GcsDestination extends BaseConnector implements Destination {
       + "storage.objects.create, storage.objects.delete, storage.objects.get, storage.objects.list";
 
   protected static final String MISMATCH_LOCATIONS_EXCEPTION_MESSAGE =
-      "Provided location in config doesn't match to actual bucket's location";
+      "Provided location \"%s\" in config doesn't match to actual bucket's location \"%s\"";
 
   private final NamingConventionTransformer nameTransformer;
 
@@ -104,9 +104,10 @@ public class GcsDestination extends BaseConnector implements Destination {
    */
   private void assertRegion(final String regionFromConfig, final String actualBucketRegion) {
     if (!regionFromConfig.equals(actualBucketRegion)
-        && !regionFromConfig.contains(actualBucketRegion) // this check is needed to pass the case like "US" vs "US-WEST-1"
-        && !actualBucketRegion.contains(regionFromConfig)) {
-      throw new ConfigErrorException(MISMATCH_LOCATIONS_EXCEPTION_MESSAGE);
+        && !regionFromConfig.startsWith(actualBucketRegion) // this check is needed to pass the case like "US" vs "US-WEST-1"
+        && !actualBucketRegion.startsWith(regionFromConfig)) {
+      throw new ConfigErrorException(String.format(MISMATCH_LOCATIONS_EXCEPTION_MESSAGE,
+          regionFromConfig, actualBucketRegion));
     }
   }
 
