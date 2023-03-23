@@ -760,7 +760,7 @@ class TestBasicRead(BaseTest):
 
     @pytest.fixture(name="should_fail_on_extra_columns")
     def should_fail_on_extra_columns_fixture(self, inputs: BasicReadTestConfig):
-        # TODO (Ella): enforce this param once all connectors are passing, sunset additionalProperties on high-level object
+        # TODO (Ella): enforce this param once all connectors are passing
         return inputs.fail_on_extra_columns
 
     @pytest.fixture(name="should_validate_data_points")
