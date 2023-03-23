@@ -57,7 +57,8 @@
         "type": "string",
         "description": "UTC date and time. Any data before this date will not be replicated.",
         "title": "Start Date",
-        "examples": ["2016-12-31 23:59:59"],
+        "examples": ["2021-03-01T00:00:00Z"],
+        "format": "date-time",
         "order": 4
       }
     }
