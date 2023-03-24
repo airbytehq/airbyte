@@ -668,24 +668,13 @@ class Commits(IncrementalMixin, GithubStream):
         return record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        state_value = latest_cursor_value = latest_record.get(self.cursor_field)
-        current_repository = latest_record["repository"]
-        current_branch = latest_record["branch"]
-
-        if current_stream_state.get(current_repository):
-            repository_commits_state = current_stream_state[current_repository]
-            if repository_commits_state.get(self.cursor_field):
-                # transfer state from old source version to per-branch version
-                if current_branch == self.default_branches[current_repository]:
-                    state_value = max(latest_cursor_value, repository_commits_state[self.cursor_field])
-                    del repository_commits_state[self.cursor_field]
-            elif repository_commits_state.get(current_branch, {}).get(self.cursor_field):
-                state_value = max(latest_cursor_value, repository_commits_state[current_branch][self.cursor_field])
-
-        if current_repository not in current_stream_state:
-            current_stream_state[current_repository] = {}
-
-        current_stream_state[current_repository][current_branch] = {self.cursor_field: state_value}
+        repository = latest_record["repository"]
+        branch = latest_record["branch"]
+        updated_state = latest_record[self.cursor_field]
+        stream_state_value = current_stream_state.get(repository, {}).get(branch, {}).get(self.cursor_field)
+        if stream_state_value:
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state.setdefault(repository, {}).setdefault(branch, {})[self.cursor_field] = updated_state
         return current_stream_state
 
 
