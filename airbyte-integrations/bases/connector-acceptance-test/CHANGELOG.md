@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.0
+Basic read test: add validation that fails if undeclared columns are present in records. Add `fail_on_extra_fields` input parameter to ignore this failure if desired.
+
 ## 0.8.0
 Spec tests: Make sure grouping and ordering properties are used in a consistent way.
 

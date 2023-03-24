@@ -20,16 +20,17 @@ acceptance_tests:
     tests:
     - config_path: "secrets/config_oauth.json"
       empty_streams:
-        - name: shifts
-          bypass_reason: "Not able to fill stream"
-        - name: orders
-          bypass_reason: "Not able to fill stream"
-        - name: payments
-          bypass_reason: "Not able to fill stream"
-        - name: refunds
-          bypass_reason: "Not able to fill stream"
+      - name: shifts
+        bypass_reason: "Not able to fill stream"
+      - name: orders
+        bypass_reason: "Not able to fill stream"
+      - name: payments
+        bypass_reason: "Not able to fill stream"
+      - name: refunds
+        bypass_reason: "Not able to fill stream"
       expect_records:
         path: "integration_tests/expected_records_oauth.jsonl"
+      fail_on_extra_columns: false
   incremental:
     tests:
     - config_path: "secrets/config.json"
