@@ -13,7 +13,10 @@
         "phone_number": { "type": ["null", "string"] },
         "first_name": { "type": ["null", "string"] },
         "last_name": { "type": ["null", "string"] },
-        "properties": { "type": ["null", "object"] },
+        "properties": {
+          "type": ["null", "object"],
+          "additionalProperties": true
+        },
         "subscriptions": { "type": ["null", "object"] },
         "organization": { "type": ["null", "string"] },
         "title": { "type": ["null", "string"] },
