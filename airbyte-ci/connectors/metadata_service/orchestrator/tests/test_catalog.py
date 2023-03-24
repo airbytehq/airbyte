@@ -1,6 +1,3 @@
-import json
-import pytest
-import os
 import pandas as pd
 from metadata_service.spec_cache import CachedSpec
 
@@ -15,18 +12,6 @@ from orchestrator.assets.catalog_assets import (
     oss_sources_dataframe,
     cloud_sources_dataframe,
 )
-
-
-@pytest.fixture
-def oss_catalog_dict():
-    file_path = os.path.join(os.path.dirname(__file__), "fixtures", "oss_catalog.json")
-    return json.load(open(file_path))
-
-
-@pytest.fixture
-def cloud_catalog_dict():
-    file_path = os.path.join(os.path.dirname(__file__), "fixtures", "cloud_catalog.json")
-    return json.load(open(file_path))
 
 
 def test_merged_catalog_dataframes(oss_catalog_dict, cloud_catalog_dict):

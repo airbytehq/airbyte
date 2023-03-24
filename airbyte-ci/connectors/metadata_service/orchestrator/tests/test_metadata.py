@@ -1,6 +1,3 @@
-import json
-import pytest
-import os
 from pydash.collections import find
 
 from orchestrator.assets.catalog_assets import (
@@ -11,19 +8,6 @@ from orchestrator.assets.catalog_assets import (
 )
 
 from orchestrator.assets.metadata_assets import catalog_derived_metadata_definitions
-
-
-# HOIST
-@pytest.fixture
-def oss_catalog_dict():
-    file_path = os.path.join(os.path.dirname(__file__), "fixtures", "oss_catalog.json")
-    return json.load(open(file_path))
-
-
-@pytest.fixture
-def cloud_catalog_dict():
-    file_path = os.path.join(os.path.dirname(__file__), "fixtures", "cloud_catalog.json")
-    return json.load(open(file_path))
 
 
 def test_no_missing_ids(oss_catalog_dict, cloud_catalog_dict):
