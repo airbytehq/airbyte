@@ -1,0 +1,39 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Twitter Wallet Mapping Spec
+  type: object
+  required:
+    - api_key
+    - twitter_uri
+    - fp_api
+    - x_token
+    - submit_id
+    - created_time
+  properties:
+    api_key:
+      title: API Key Token
+      description: API Key
+      type: string
+      airbyte_secret: true
+    twitter_uri:
+      title: Twitter Uri
+      description: Twitter Uri
+      type: string
+    fp_api:
+      title: Footprint API
+      description: Footprint API
+      type: string
+    x_token:
+      title: X-Token
+      description: x-token
+      type: string
+      airbyte_secret: true
+    submit_id:
+      title: Submit ID
+      description: Footprint User ID
+      type: string
+    created_time:
+      title: Created Time
+      description: Airbyte Connector Created Time
+      type: string

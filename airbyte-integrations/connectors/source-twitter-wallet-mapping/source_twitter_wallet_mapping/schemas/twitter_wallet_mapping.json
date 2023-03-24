@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "submit_id": {
+      "type": ["null", "string"]
+    },
+    "tweet_uri": {
+      "type": ["null", "string"]
+    },
+    "tweet_id": {
+      "type": ["null", "string"]
+    },
+    "tweet_author_name": {
+      "type": ["null", "string"]
+    },
+    "reply_id": {
+      "type": ["null", "string"]
+    },
+    "reply_author_id": {
+      "type": ["null", "string"]
+    },
+    "reply_text": {
+      "type": ["null", "string"]
+    },
+    "reply_name": {
+      "type": ["null", "string"]
+    },
+    "reply_username": {
+      "type": ["null", "string"]
+    },
+    "reply_created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "job_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

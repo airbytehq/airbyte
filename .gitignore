@@ -83,3 +83,4 @@ charts/**/charts
 
 # Datadog
 dd-java-agent.jar
+/airbyte-integrations/connectors/source-twitter-wallet-mapping/unit_tests/
