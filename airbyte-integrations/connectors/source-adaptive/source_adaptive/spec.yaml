@@ -1,0 +1,91 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Adaptive Spec
+  type: object
+  required:
+    - username
+    - password
+  properties:
+    username:
+      type: string
+      title: Username
+      description: >-
+        Your Adaptive Insights username
+      order: 0
+    password:
+      type: string
+      title: Password
+      description: >-
+        Your Adaptive Insights password
+      airbyte_secret: true
+      order: 1
+    method_obj:
+      type: object
+      title: Method
+      oneOf:
+      - required:
+        - method
+        title: export Versions
+        properties:
+          method:
+            type: string
+            const: exportVersions
+            order: 0
+      - required:
+        - method
+        - version
+        - date_start
+        - date_end
+        - accounts
+        - dimensions
+        title: export Data
+        properties:
+          method:
+            type: string
+            const: exportData
+            order: 0
+          version:
+            type: string
+            title: Adaptive Data Version
+            description: >-
+              latest-actuals: Get the latest version that matches the pattern LBEMMYY
+              previous-actuals: Get the second to last version that matches the pattern LBEMMYY
+              prediction: Get the prediction version that matches the pattern AOPYYYY
+            order: 1
+          date_start:
+            type: string
+            title: Start date
+            description: >-
+              From which date to retrieve data
+            pattern: ^[0-9]{2}/[0-9]{4}$
+            examples:
+              - "%m/%Y"
+            default: "01/2019"
+            order: 2
+          date_end:
+            type: string
+            title: End date
+            description: >-
+              From which date to retrieve data
+            pattern: ^[0-9]{2}/[0-9]{4}$
+            examples:
+              - "%m/%Y"
+            default: "01/2019"
+            order: 3
+          accounts:
+            type: array
+            title: Accounts
+            items:
+              type: string
+            description: >-
+              Add the account codes 
+            order: 4
+          dimensions:
+            type: array
+            title: Dimensions
+            items:
+              type: string
+            description: >-
+              The dimensions to retrieve
+            order: 5
