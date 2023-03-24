@@ -1,15 +1,13 @@
 import pandas as pd
 from dagster import MetadataValue, Output, asset
 
-from metadata_service.spec_cache import is_spec_cached
-
 from ..templates.render import render_connector_catalog_locations_html, render_connector_catalog_locations_markdown
 
 GROUP_NAME = "catalog_reports"
 
 # HELPERS
 
-def augment_and_normalize_connector_dataframes(cloud_df, oss_df, primaryKey, connector_type, valid_metadata_list, github_connector_folders):
+def augment_and_normalize_connector_dataframes(cloud_df, oss_df, primaryKey, connector_type, valid_metadata_list, github_connector_folders, cached_specs):
     """
     Normalize the cloud and oss connector dataframes and merge them into a single dataframe.
     Augment the dataframe with additional columns that indicate if the connector is in the cloud catalog, oss catalog, and if the metadata is valid.
@@ -28,17 +26,20 @@ def augment_and_normalize_connector_dataframes(cloud_df, oss_df, primaryKey, con
         cloud_df, oss_df, how="outer", on=composite_key
     ).drop_duplicates(subset=composite_key)
 
-    merged_catalog = pd.merge(total_catalog, valid_metadata_list[["definitionId", "is_metadata_valid"]], left_on=primaryKey, right_on="definitionId", how="left")
-
     # Replace NaN values in the 'is_cloud' and 'is_oss' columns with False
-    merged_catalog[["is_cloud", "is_oss"]] = merged_catalog[["is_cloud", "is_oss"]].fillna(False)
+    total_catalog[["is_cloud", "is_oss"]] = total_catalog[["is_cloud", "is_oss"]].fillna(False)
+
+    catalog_with_metadata = pd.merge(total_catalog, valid_metadata_list[["definitionId", "is_metadata_valid"]], left_on=primaryKey, right_on="definitionId", how="left")
+
+    # merge with cached_specs on dockerRepository and dockerImageTag
+    cached_specs["is_spec_cached"] = True
+    merged_catalog = pd.merge(catalog_with_metadata, cached_specs, left_on=["dockerRepository", "dockerImageTag"], right_on=["docker_repository", "docker_image_tag"], how="left")
 
     # Set connectorType to 'source' or 'destination'
     merged_catalog["connector_type"] = connector_type
 
     is_source_controlled = lambda x: x.lstrip("airbyte/") in github_connector_folders
     merged_catalog['is_source_controlled'] = merged_catalog['dockerRepository'].apply(is_source_controlled)
-    merged_catalog['is_spec_cached'] = merged_catalog.apply(lambda x: is_spec_cached(x['dockerRepository'], x['dockerImageTag']), axis=1)
 
     return merged_catalog
 
@@ -99,7 +100,7 @@ def connector_catalog_location_markdown(context, all_destinations_dataframe, all
     return Output(metadata=metadata, value=file_handle)
 
 @asset(group_name=GROUP_NAME)
-def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_dataframe, github_connector_folders, valid_metadata_list) -> pd.DataFrame:
+def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_dataframe, github_connector_folders, valid_metadata_list, cached_specs) -> pd.DataFrame:
     """
     Merge the cloud and oss destinations catalogs into a single dataframe.
     """
@@ -110,12 +111,13 @@ def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_da
         primaryKey="destinationDefinitionId",
         connector_type="destination",
         valid_metadata_list=valid_metadata_list,
-        github_connector_folders=github_connector_folders
+        github_connector_folders=github_connector_folders,
+        cached_specs=cached_specs,
     )
 
 
 @asset(group_name=GROUP_NAME)
-def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe, github_connector_folders, valid_metadata_list) -> pd.DataFrame:
+def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe, github_connector_folders, valid_metadata_list, cached_specs) -> pd.DataFrame:
     """
     Merge the cloud and oss source catalogs into a single dataframe.
     """
@@ -125,5 +127,6 @@ def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe, github
         primaryKey="sourceDefinitionId",
         connector_type="source",
         valid_metadata_list=valid_metadata_list,
-        github_connector_folders=github_connector_folders
+        github_connector_folders=github_connector_folders,
+        cached_specs=cached_specs,
     )

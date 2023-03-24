@@ -5,6 +5,7 @@ from .resources.github_resources import github_client, github_connector_repo, gi
 from .resources.local_resources import simple_local_file_manager
 
 from .assets.github_assets import github_connector_folders
+from .assets.spec_cache_assets import cached_specs
 from .assets.catalog_report_assets import (
     all_sources_dataframe,
     all_destinations_dataframe,
@@ -47,6 +48,7 @@ ASSETS = [
     valid_metadata_list,
     persist_metadata_definitions,
     overrode_metadata_definitions,
+    cached_specs,
 ]
 
 RESOURCES = {
