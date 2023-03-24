@@ -192,7 +192,7 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
         package_install_results,
         unit_tests_results,
     ]
-    if unit_tests_results.status is not StepStatus.SUCCESS:
+    if unit_tests_results.status is StepStatus.FAILURE:
         return results + [IntegrationTests(context).skip(), AcceptanceTests(context).skip()]
 
     context.secrets_dir = await secrets.get_connector_secret_dir(context)
