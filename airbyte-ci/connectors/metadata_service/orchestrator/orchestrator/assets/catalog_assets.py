@@ -1,21 +1,16 @@
 import pandas as pd
 import json
-import requests
-from ..utils.dagster_helpers import OutputDataFrame
 from dagster import MetadataValue, Output, asset, OpExecutionContext
 
+from metadata_service.spec_cache import is_spec_cached
+
+from ..utils.dagster_helpers import OutputDataFrame
 from ..templates.render import render_connector_catalog_locations_html, render_connector_catalog_locations_markdown
 
 # HELPERS
 
 GROUP_NAME = "catalog"
 
-
-# todo move to lib
-def is_spec_cached(dockerRepository, dockerImageTag):
-    url = f"https://storage.googleapis.com/io-airbyte-cloud-spec-cache/specs/{dockerRepository}/{dockerImageTag}/spec.json"
-    response = requests.head(url)
-    return response.status_code == 200
 
 def augment_and_normalize_connector_dataframes(cloud_df, oss_df, primaryKey, connector_type, valid_metadata_list, source_controlled_connectors):
         # Add a column 'is_cloud' to indicate if an image/version pair is in the cloud catalog
