@@ -347,6 +347,8 @@ class NotaFiscal(IncrementalBlingBase):
 
         if stream_slice['index'] == 0: 
             self.start_ingestion_date = self.set_start_ingestion_date(stream_state)
+
+        end_ingestion_date = self.start_ingestion_date + timedelta(days = 14)
             
 
         api_filters = f"{self.api_date_filter_field}[{datetime.strftime(self.start_ingestion_date, '%d/%m/%Y %H')}:00:00 TO {datetime.strftime(datetime.now(), '%d/%m/%Y 23:59:59')}];{stream_slice['tipo_filter']}"
@@ -441,6 +443,10 @@ class NotaFiscal(IncrementalBlingBase):
             {
                 'situacao_filter': 'situacao[3]',
                 'tipo_filter': 'tipo[S]'
+            },
+            {
+                'situacao_filter': 'situacao[3]',
+                'tipo_filter': 'tipo[E]'
             },
             {
                 'situacao_filter': None,
