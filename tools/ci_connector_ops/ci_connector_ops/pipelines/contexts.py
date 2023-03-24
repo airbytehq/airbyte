@@ -28,7 +28,7 @@ class ContextState(Enum):
 class ConnectorTestContext:
     """The connector test context is used to store configuration for a specific connector pipeline run."""
 
-    DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE = "airbyte/connector-acceptance-test:latest"
+    DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE = "airbyte/connector-acceptance-test:0.8.0"
 
     def __init__(
         self,
@@ -150,32 +150,32 @@ class ConnectorTestContext:
         if exception_value:
             self.logger.error("An error got handled by the ConnectorTestContext", exc_info=True)
             self.state = ContextState.ERROR
-        elif self.test_report is None:
+        if self.test_report is None:
             self.logger.error("No test report was provided. This is probably due to an upstream error")
             self.state = ContextState.ERROR
-            return True
-        else:
-            self.dagger_client = self.dagger_client.pipeline(f"Teardown {self.connector.technical_name}")
-            if self.should_save_updated_secrets:
-                await secrets.upload(self)
-            self.test_report.print()
-            self.logger.info(self.test_report.to_json())
-            local_test_reports_path_root = "tools/ci_connector_ops/test_reports/"
-            connector_name = self.test_report.connector_test_context.connector.technical_name
-            connector_version = self.test_report.connector_test_context.connector.version
-            git_revision = self.test_report.connector_test_context.git_revision
-            git_branch = self.test_report.connector_test_context.git_branch.replace("/", "_")
-            suffix = f"{connector_name}/{git_branch}/{connector_version}/{git_revision}.json"
-            local_report_path = Path(local_test_reports_path_root + suffix)
-            await local_report_path.parents[0].mkdir(parents=True, exist_ok=True)
-            await local_report_path.write_text(self.test_report.to_json())
-            if self.test_report.should_be_saved:
-                s3_reports_path_root = "python-poc/tests/history/"
-                s3_key = s3_reports_path_root + suffix
-                report_upload_exit_code = await remote_storage.upload_to_s3(
-                    self.dagger_client, str(local_report_path), s3_key, os.environ["TEST_REPORTS_BUCKET_NAME"]
-                )
-                if report_upload_exit_code != 0:
-                    self.logger.error("Uploading the report to S3 failed.")
+            self.test_report = ConnectorTestReport(self, [])
+
+        self.dagger_client = self.dagger_client.pipeline(f"Teardown {self.connector.technical_name}")
+        if self.should_save_updated_secrets:
+            await secrets.upload(self)
+        self.test_report.print()
+        self.logger.info(self.test_report.to_json())
+        local_test_reports_path_root = "tools/ci_connector_ops/test_reports/"
+        connector_name = self.test_report.connector_test_context.connector.technical_name
+        connector_version = self.test_report.connector_test_context.connector.version
+        git_revision = self.test_report.connector_test_context.git_revision
+        git_branch = self.test_report.connector_test_context.git_branch.replace("/", "_")
+        suffix = f"{connector_name}/{git_branch}/{connector_version}/{git_revision}.json"
+        local_report_path = Path(local_test_reports_path_root + suffix)
+        await local_report_path.parents[0].mkdir(parents=True, exist_ok=True)
+        await local_report_path.write_text(self.test_report.to_json())
+        if self.test_report.should_be_saved:
+            s3_reports_path_root = "python-poc/tests/history/"
+            s3_key = s3_reports_path_root + suffix
+            report_upload_exit_code = await remote_storage.upload_to_s3(
+                self.dagger_client, str(local_report_path), s3_key, os.environ["TEST_REPORTS_BUCKET_NAME"]
+            )
+            if report_upload_exit_code != 0:
+                self.logger.error("Uploading the report to S3 failed.")
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         return True

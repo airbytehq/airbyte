@@ -20,7 +20,7 @@ from dagger import CacheSharingMode, Container
 class ConnectorInstallTest(Step):
     title = "Connector package install"
 
-    async def run(self) -> Tuple[StepResult, Container]:
+    async def _run(self) -> Tuple[StepResult, Container]:
         """Install the connector under test package in a Python container.
 
         Returns:
@@ -76,7 +76,7 @@ class PythonTests(Step, ABC):
 class AcceptanceTests(PythonTests):
     title = "Acceptance tests"
 
-    async def run(self) -> StepResult:
+    async def _run(self) -> StepResult:
         """Runs the acceptance test suite on a connector dev image.
         It's rebuilding the connector acceptance test image if the tag is :dev.
         It's building the connector under test dev image if the connector image is :dev in the acceptance test config.
@@ -152,7 +152,7 @@ class AcceptanceTests(PythonTests):
 class UnitTests(PythonTests):
     title = "Unit tests"
 
-    async def run(self, connector_under_test: Container) -> StepResult:
+    async def _run(self, connector_under_test: Container) -> StepResult:
         """Run all pytest tests declared in the unit_tests directory of the connector code.
 
         Args:
@@ -168,7 +168,7 @@ class UnitTests(PythonTests):
 class IntegrationTests(PythonTests):
     title = "Integration tests"
 
-    async def run(self, connector_under_test: Container) -> StepResult:
+    async def _run(self, connector_under_test: Container) -> StepResult:
         """Run all pytest tests declared in the integration_tests directory of the connector code.
 
         Args:
