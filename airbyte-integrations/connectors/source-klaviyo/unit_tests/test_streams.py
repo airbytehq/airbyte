@@ -295,7 +295,7 @@ class TestEventsStream:
 
 class TestEmailTemplatesStream:
     def test_parse_response(self, mocker):
-        stream = EmailTemplates(api_key="some_key", start_date=START_DATE.isoformat())
+        stream = EmailTemplates(api_key="some_key")
         json = {
             "data": [
                {"object": "email-template", "id": "id", "name": "Newsletter #1", "html": "<!DOCTYPE html></html>", "is_writeable": "true", "created": "2023-02-18T11:18:22+00:00", "updated": "2023-02-18T12:01:12+00:00"},

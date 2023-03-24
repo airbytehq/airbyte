@@ -69,7 +69,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "created": "2120-10-10 00:00:00+23"
+        "created": "2120-10-10 00:00:00"
       },
       "stream_descriptor": {
         "name": "email_templates"

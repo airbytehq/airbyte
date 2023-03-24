@@ -15,13 +15,13 @@
             "type": ["null", "string"]
         },
         "is_writeable": {
-            "type": ["null", "string"]
+            "type": ["null", "boolean"]
         },
         "created": {
-            { "type": "string", "format": "date-time" }
+             "type": "string", "format": "date-time" 
         },
         "updated": {
-            { "type": "string", "format": "date-time" }
+            "type": "string", "format": "date-time" 
         }
     }
 }
