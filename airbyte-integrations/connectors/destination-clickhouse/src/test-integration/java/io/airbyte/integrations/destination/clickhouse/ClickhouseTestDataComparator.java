@@ -50,10 +50,10 @@ public class ClickhouseTestDataComparator extends AdvancedTestDataComparator {
                                          final String secondNumericValue) {
     // clickhouse stores double 1.14 as 1.1400000000000001
     // https://clickhouse.com/docs/en/sql-reference/data-types/float/
-    double epsilon = 0.000000000000001d;
+    final double epsilon = 0.000000000000001d;
 
-    double firstValue = Double.parseDouble(firstNumericValue);
-    double secondValue = Double.parseDouble(secondNumericValue);
+    final double firstValue = Double.parseDouble(firstNumericValue);
+    final double secondValue = Double.parseDouble(secondNumericValue);
 
     return Math.abs(firstValue - secondValue) < epsilon;
   }
@@ -85,9 +85,9 @@ public class ClickhouseTestDataComparator extends AdvancedTestDataComparator {
   protected boolean compareDateTimeWithTzValues(final String airbyteMessageValue,
                                                 final String destinationValue) {
     try {
-      ZonedDateTime airbyteDate = ZonedDateTime.parse(airbyteMessageValue,
+      final ZonedDateTime airbyteDate = ZonedDateTime.parse(airbyteMessageValue,
           getAirbyteDateTimeWithTzFormatter()).withZoneSameInstant(ZoneOffset.UTC);
-      ZonedDateTime destinationDate = parseDestinationDateWithTz(destinationValue);
+      final ZonedDateTime destinationDate = parseDestinationDateWithTz(destinationValue);
 
       if (airbyteDate.isBefore(minSupportedDateTime) || airbyteDate.isAfter(maxSupportedDateTime)) {
         // inserting any dates that are out of supported range causes registers overflow in clickhouseDB,
@@ -98,11 +98,11 @@ public class ClickhouseTestDataComparator extends AdvancedTestDataComparator {
         return true;
       }
       return airbyteDate.equals(destinationDate);
-    } catch (DateTimeParseException e) {
+    } catch (final DateTimeParseException e) {
       LOGGER.warn(
           "Fail to convert values to ZonedDateTime. Try to compare as text. Airbyte value({}), Destination value ({}). Exception: {}",
           airbyteMessageValue, destinationValue, e);
-      return compareTextValues(airbyteMessageValue, destinationValue);
+      return airbyteMessageValue.equals(destinationValue);
     }
   }
 
@@ -133,7 +133,7 @@ public class ClickhouseTestDataComparator extends AdvancedTestDataComparator {
     return expectedDateTime.equals(actualDateTime);
   }
 
-  private boolean parseBool(final String valueAsString) {
+  private static boolean parseBool(final String valueAsString) {
     // boolen as a String may be returned as true\false and as 0\1
     // https://clickhouse.com/docs/en/sql-reference/data-types/boolean
     try {

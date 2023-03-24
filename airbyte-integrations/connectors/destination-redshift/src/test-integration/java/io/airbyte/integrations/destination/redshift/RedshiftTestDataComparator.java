@@ -47,23 +47,23 @@ public class RedshiftTestDataComparator extends AdvancedTestDataComparator {
       final ZonedDateTime destinationDate = ZonedDateTime.parse(destinationValue,
           DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssX"));
       return airbyteDate.equals(destinationDate);
-    } catch (DateTimeParseException e) {
+    } catch (final DateTimeParseException e) {
       LOGGER.warn(
           "Fail to convert values to ZonedDateTime. Try to compare as text. Airbyte value({}), Destination value ({}). Exception: {}",
           airbyteMessageValue, destinationValue, e);
-      return compareTextValues(airbyteMessageValue, destinationValue);
+      return airbyteMessageValue.equals(destinationValue);
     }
   }
 
   @Override
-  protected boolean compareDateTimeValues(String expectedValue, String actualValue) {
-    var destinationDate = parseLocalDateTime(actualValue);
-    var expectedDate = LocalDate.parse(expectedValue,
+  protected boolean compareDateTimeValues(final String expectedValue, final String actualValue) {
+    final var destinationDate = parseLocalDateTime(actualValue);
+    final var expectedDate = LocalDate.parse(expectedValue,
         DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT));
     return expectedDate.equals(destinationDate);
   }
 
-  private LocalDate parseLocalDateTime(String dateTimeValue) {
+  private LocalDate parseLocalDateTime(final String dateTimeValue) {
     if (dateTimeValue != null) {
       return LocalDate.parse(dateTimeValue,
           DateTimeFormatter.ofPattern(getFormat(dateTimeValue)));
@@ -72,7 +72,7 @@ public class RedshiftTestDataComparator extends AdvancedTestDataComparator {
     }
   }
 
-  private String getFormat(String dateTimeValue) {
+  private String getFormat(final String dateTimeValue) {
     if (dateTimeValue.contains("T")) {
       // MySql stores array of objects as a jsonb type, i.e. array of string for all cases
       return AIRBYTE_DATETIME_FORMAT;

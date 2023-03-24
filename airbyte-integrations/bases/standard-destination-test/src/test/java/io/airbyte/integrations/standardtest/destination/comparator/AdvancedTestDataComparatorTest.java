@@ -36,8 +36,12 @@ public class AdvancedTestDataComparatorTest {
   @ParameterizedTest
   @ArgumentsSource(EmptyNodeTestArgumentProvider.class)
   public void testIsJsonNodeEmpty(final JsonNode value, final boolean expected) {
-    final var actual = this.comparator.isJsonNodeEmpty(value);
+    final var actual = AdvancedTestDataComparator.isJsonNodeEmpty(value);
     Assertions.assertEquals(actual, expected);
   }
+
+  @ParameterizedTest
+  @ArgumentsSource()
+  public void test
 
 }
