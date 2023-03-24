@@ -1,5 +1,5 @@
 ## What
-The `BasicReadTest.test_read` test in the Connector Acceptance Tests was updated to fail if the connector produces
+In this [PR](https://github.com/airbytehq/airbyte/pull/23985), `BasicReadTest.test_read` test in the Connector Acceptance Tests was updated to fail if the connector produces
 stream records which contain columns that haven't been declared in the spec.
 
 {{ connector_name }} currently fails the updated test. Its `acceptance-test-config.yml` was edited with the
@@ -14,7 +14,7 @@ We want to add the undeclared columns to the spec.
 - Users will better understand the shape of the data they'll receive, since the columns will match the spec.
 
 ## How
-The following come from results of the failed connector acceptance test:
+The following descriptions of streams that pass undeclared columns come from results of the failed connector acceptance test:
 
 ```
 {{ test_failure_logs }}

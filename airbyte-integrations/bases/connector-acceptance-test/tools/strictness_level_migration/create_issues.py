@@ -10,7 +10,7 @@ import os
 import subprocess
 import tempfile
 
-from definitions import GA_DEFINITIONS, find_by_name, get_airbyte_connector_name_from_definition, is_airbyte_connector
+from definitions import GA_DEFINITIONS, BETA_DEFINITIONS, find_by_name, get_airbyte_connector_name_from_definition, is_airbyte_connector
 from jinja2 import Environment, FileSystemLoader
 
 # SET THESE BEFORE USING THE SCRIPT
@@ -105,7 +105,9 @@ if __name__ == "__main__":
         definitions = GA_DEFINITIONS
 
     for definition in definitions:
-        if is_airbyte_connector(definition):
-            create_issue(definition, dry_run=dry_run)
-        else:
+        if not is_airbyte_connector(definition):
             logging.error(f"Couldn't create PR for non-airbyte connector: {definition.get('dockerRepository')}")
+        elif definition not in BETA_DEFINITIONS + GA_DEFINITIONS:
+            logging.info(f"Won't create an issue for non beta/GA conenctor {get_airbyte_connector_name_from_definition(definition)}")
+        else:
+            create_issue(definition, dry_run=dry_run)
