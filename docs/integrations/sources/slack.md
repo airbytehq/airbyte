@@ -136,7 +136,7 @@ It is recommended to sync required channels only, this can be done by specifying
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
-| 0.1.25  | 2023-03-24 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Revert version 0.1.24 because it causes heavy rate limiting |
+| 0.1.25  | 2023-03-24 | [24454](https://github.com/airbytehq/airbyte/pull/24454) | Revert version 0.1.24 because it causes heavy rate limiting |
 | 0.1.24  | 2023-03-20 | [24126](https://github.com/airbytehq/airbyte/pull/24126) | Increase page size to 1000                                  |
 | 0.1.23  | 2023-02-21 | [21907](https://github.com/airbytehq/airbyte/pull/21907) | Do not join channels that not gonna be synced               |
 | 0.1.22  | 2023-01-27 | [22022](https://github.com/airbytehq/airbyte/pull/22022) | Set `AvailabilityStrategy` for streams explicitly to `None` |
