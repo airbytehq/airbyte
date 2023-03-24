@@ -21,7 +21,6 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.workers.exception.WorkerException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -154,7 +153,7 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   }
 
   @Test
-  void testStrictSSLUnsecuredNoTunnel() throws WorkerException {
+  void testStrictSSLUnsecuredNoTunnel() throws Exception {
     final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, db.getHost())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
@@ -176,7 +175,7 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   }
 
   @Test
-  void testStrictSSLSecuredNoTunnel() throws WorkerException {
+  void testStrictSSLSecuredNoTunnel() throws Exception {
     final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, db.getHost())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
@@ -197,7 +196,7 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   }
 
   @Test
-  void testStrictSSLUnsecuredWithTunnel() throws WorkerException {
+  void testStrictSSLUnsecuredWithTunnel() throws Exception {
     final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, db.getHost())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
