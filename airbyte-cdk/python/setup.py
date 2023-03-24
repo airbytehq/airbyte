@@ -54,7 +54,7 @@ setup(
         "jsonref~=0.2",
         "pendulum",
         "genson==1.2.2",
-        "pydantic~=1.9.2",
+        "pydantic~=1.10",
         "python-dateutil",
         "PyYAML~=5.4",
         "requests",
