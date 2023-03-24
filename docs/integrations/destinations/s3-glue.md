@@ -21,7 +21,7 @@ List of required fields:
 
 ## Step 1: Set up S3
 
-[Sign in](https://signin.aws.amazon.com/signin) to your AWS account.
+[Sign in](https://console.aws.amazon.com/iam/) to your AWS account.
 Use an existing or create new [Access Key ID and Secret Access Key](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#:~:text=IAM%20User%20Guide.-,Programmatic%20access,-You%20must%20provide).
 
 Prepare S3 bucket that will be used as destination, see [this](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) to create an S3 bucket.
@@ -30,7 +30,7 @@ NOTE: If the S3 cluster is not configured to use TLS, the connection to Amazon S
 
 ## Step 2: Set up Glue
 
-[Sign in](https://signin.aws.amazon.com/signin) to your AWS account.
+[Sign in](https://console.aws.amazon.com/iam/) to your AWS account.
 Use an existing or create new [Access Key ID and Secret Access Key](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#:~:text=IAM%20User%20Guide.-,Programmatic%20access,-You%20must%20provide).
 
 Prepare the Glue database that will be used as destination, see [this](https://docs.aws.amazon.com/glue/latest/dg/console-databases.html) to create a Glue database
@@ -245,6 +245,7 @@ Output files can be compressed. The default option is GZIP compression. If compr
 
 | Version | Date       | Pull Request                                             | Subject                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 0.1.3   | 2023-02-10 | [22822](https://github.com/airbytehq/airbyte/pull/22822) | Fix data type for _ab_emitted_at column in table definition                             |
 | 0.1.2   | 2023-02-01 | [22220](https://github.com/airbytehq/airbyte/pull/22220) | Fix race condition in test, table metadata, add Airbyte sync fields to table definition |
 | 0.1.1   | 2022-12-13 | [19907](https://github.com/airbytehq/airbyte/pull/19907) | Fix parsing empty object in schema                                                      |
 | 0.1.0   | 2022-11-17 | [18695](https://github.com/airbytehq/airbyte/pull/18695) | Initial Commit                                                                          |
