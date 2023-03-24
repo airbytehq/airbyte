@@ -172,7 +172,7 @@ class ZuoraObjectsBase(ZuoraBase):
         Custom method.
         Right now (2023-03-24) the Zuora Data Query API has a bug if there are 6 instead of 3 decimals for fractions
         of a second, when casting to a TIMESTAMP. If you filter on 'updateddate' with a TIMESTAMP that's cast from a
-        string with 6 second decimals, the updateddate filter is ignored, at least for input rows.
+        string with 6 decimals for fractions of a second, the updateddate filter is ignored, at least for input rows.
         So if the table has > 10m rows, you hit the 10m row limit.
         Returns the formatted datetime string in a way the Zuora Data Query API endpoint recognises it as timestamp.
         :: Output example: '2021-07-15 07:45:55.000-07:00'
