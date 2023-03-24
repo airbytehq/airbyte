@@ -130,7 +130,8 @@ public abstract class DestinationAcceptanceTest {
     return getImageName().contains(":") ? getImageName().split(":")[0] : getImageName();
   }
 
-  private Optional<StandardDestinationDefinition> getOptionalDestinationDefinitionFromProvider(final String imageNameWithoutTag) {
+  protected Optional<StandardDestinationDefinition> getOptionalDestinationDefinitionFromProvider(
+      final String imageNameWithoutTag) {
     final LocalDefinitionsProvider provider = new LocalDefinitionsProvider();
     return provider.getDestinationDefinitions().stream()
         .filter(definition -> imageNameWithoutTag.equalsIgnoreCase(definition.getDockerRepository()))

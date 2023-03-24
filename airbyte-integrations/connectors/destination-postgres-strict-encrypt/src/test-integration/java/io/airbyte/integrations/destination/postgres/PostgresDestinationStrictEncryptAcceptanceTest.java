@@ -24,6 +24,7 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -216,4 +217,21 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
     assertNull(actual);
   }
 
+  @Override
+  protected boolean normalizationFromDefinition() {
+    return true;
+  }
+
+  @Override
+  protected boolean dbtFromDefinition() {
+    return true;
+  }
+
+  @Override
+  protected String getNormalizationIntegrationType() {
+    return getOptionalDestinationDefinitionFromProvider("airbyte/destination-postgres")
+        .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
+        .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationConfig().getNormalizationIntegrationType())
+        .orElse(null);
+  }
 }
