@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -14,6 +15,7 @@ import io.airbyte.integrations.base.spec_modification.SpecModifyingSource;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import java.lang.reflect.Array;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +28,7 @@ public class PostgresSourceStrictEncrypt extends SpecModifyingSource implements 
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSourceStrictEncrypt.class);
   public static final String TUNNEL_METHOD = "tunnel_method";
+  public static final String TUNNEL_HOST = "tunnel_host";
   public static final String NO_TUNNEL = "NO_TUNNEL";
   public static final String SSL_MODE = "ssl_mode";
   public static final String MODE = "mode";
@@ -44,6 +47,15 @@ public class PostgresSourceStrictEncrypt extends SpecModifyingSource implements 
     final ObjectNode properties = (ObjectNode) spec.getConnectionSpecification().get("properties");
     properties.remove(JdbcUtils.SSL_KEY);
     ((ObjectNode) properties.get(SSL_MODE)).put("default", SSL_MODE_REQUIRE);
+    final ArrayNode oneOf = (ArrayNode) properties.get(TUNNEL_METHOD).get("oneOf");
+    for (JsonNode oneOfElement : oneOf) {
+      final ObjectNode objectOneOfElement = (ObjectNode) oneOfElement;
+      final ObjectNode tunnelHost = (ObjectNode) objectOneOfElement.get("properties").get(TUNNEL_HOST);
+      if (tunnelHost != null) {
+        tunnelHost.put("pattern", "^(?!localhost$).*$");
+        tunnelHost.put("pattern_descriptor", "no localhost");
+      }
+    }
 
     return spec;
   }
