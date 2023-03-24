@@ -1,6 +1,12 @@
 import yaml
 from dagster import Output, asset
 
+"""
+NOTE: This file is temporary and will be removed once we have metadata files checked into source control.
+
+TODO (ben): Remove this file once we have metadata files checked into source control.
+"""
+
 GROUP_NAME = "dev"
 
 OVERRIDES = {
@@ -241,6 +247,10 @@ OVERRIDES = {
 
 @asset(group_name=GROUP_NAME)
 def overrode_metadata_definitions(catalog_derived_metadata_definitions):
+    """
+    Overrides the metadata definitions with the values in the OVERRIDES dictionary.
+    This is useful for ensuring all connectors are passing validation when we go live.
+    """
     overrode_definition = []
     for metadata_definition in catalog_derived_metadata_definitions:
         definition_id = metadata_definition["data"]["definitionId"]
@@ -252,6 +262,9 @@ def overrode_metadata_definitions(catalog_derived_metadata_definitions):
 
 @asset(required_resource_keys={"metadata_file_directory"}, group_name=GROUP_NAME)
 def persist_metadata_definitions(context, overrode_metadata_definitions):
+    """
+    Persist the metadata definitions to the local metadata file directory.
+    """
     files = []
     for metadata in overrode_metadata_definitions:
         connector_dir_name = metadata["data"]["dockerRepository"].replace("airbyte/", "")

@@ -16,7 +16,7 @@ from orchestrator.assets.catalog_assets import (
     catalog_derived_metadata_definitions,
     valid_metadata_list,
 )
-from orchestrator.assets.github_assets import source_controlled_connectors
+from orchestrator.assets.github_assets import github_connector_folders
 
 from orchestrator.config import REPORT_FOLDER, CATALOG_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME
 
@@ -56,12 +56,12 @@ def test_debug_catalog_projection():
     # import pdb; pdb.set_trace()
     oss_destinations_df = oss_destinations_dataframe(oss_catalog_dict).value
     oss_sources_df = oss_sources_dataframe(oss_catalog_dict).value
-    source_controlled_connectors_list = source_controlled_connectors(context).value
+    github_connector_folders_list = github_connector_folders(context).value
 
     metadata_definitions_df = catalog_derived_metadata_definitions(context, cloud_sources_df, cloud_destinations_df, oss_sources_df, oss_destinations_df).value
     valid_metadata_list_df = valid_metadata_list(metadata_definitions_df).value
 
-    # all_sources_df = all_sources_dataframe(cloud_sources_df, oss_sources_df, source_controlled_connectors_list, valid_metadata_list_df)
+    # all_sources_df = all_sources_dataframe(cloud_sources_df, oss_sources_df, github_connector_folders_list, valid_metadata_list_df)
     all_destinations_df = all_destinations_dataframe(cloud_destinations_df, oss_destinations_df)
 
     # connector_catalog_location_html(context, all_sources_df, all_destinations_df)

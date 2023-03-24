@@ -1,8 +1,9 @@
 import pandas as pd
-from dagster import MetadataValue, Output, asset
+from dagster import Output, asset
 
 from metadata_service.models.generated.ConnectorMetadataDefinitionV1 import ConnectorMetadataDefinitionV1
-from orchestrator.utils.object_helpers import are_values_equal, merge_values
+from ..utils.object_helpers import are_values_equal, merge_values
+from ..utils.dagster_helpers import OutputDataFrame
 
 GROUP_NAME = "metadata"
 
@@ -14,12 +15,24 @@ CLOUD_SUFFIX = "_cloud"
 
 
 def get_primary_catalog_suffix(merged_df):
+    """
+    Returns the suffix for the primary catalog and the secondary catalog.
+    The primary catalog is the one that is used for the final metadata.
+    The secondary catalog is the one that is used for overrides.
+
+    This is nessesary because we have connectors that are only in the cloud catalog and vice versa.
+    """
     cloud_only = merged_df["_merge"] == "right_only"
     primary_suffix = CLOUD_SUFFIX if cloud_only else OSS_SUFFIX
     secondary_suffix = OSS_SUFFIX if cloud_only else CLOUD_SUFFIX
     return primary_suffix, secondary_suffix
 
 def get_field_with_fallback(merged_df, field):
+    """
+    Returns the value of the field from the primary catalog.
+    If the field is not present in the primary catalog, the value from the secondary catalog is returned.
+    """
+
     primary_suffix, secondary_suffix = get_primary_catalog_suffix(merged_df)
 
     primary_field = field + primary_suffix
@@ -30,6 +43,9 @@ def get_field_with_fallback(merged_df, field):
 
 
 def compute_catalog_overrides(merged_df):
+    """
+    Returns the catalog overrides section for the metadata file.
+    """
     cloud_only = merged_df["_merge"] == "right_only";
     oss_only = merged_df["_merge"] == "left_only";
 
@@ -90,7 +106,6 @@ def merge_into_metadata_definitions(id_field, connector_type, oss_connector_df, 
             "connectionType": get_field_with_fallback(merged_df, "sourceType"),
             "releaseStage": get_field_with_fallback(merged_df, "releaseStage"),
             "license": "MIT",
-
             "supportsDbt": get_field_with_fallback(merged_df, "supportsDbt"),
             "supportsNormalization": get_field_with_fallback(merged_df, "supportsNormalization"),
             "allowedHosts": get_field_with_fallback(merged_df, "allowedHosts"),
@@ -116,7 +131,7 @@ def merge_into_metadata_definitions(id_field, connector_type, oss_connector_df, 
 
     return metadata_list
 
-def validate_metadata(metadata):
+def validate_metadata(metadata: object) -> tuple[bool, str]:
     try:
         ConnectorMetadataDefinitionV1.parse_obj(metadata)
         return True, None
@@ -127,6 +142,10 @@ def validate_metadata(metadata):
 
 @asset(group_name=GROUP_NAME)
 def valid_metadata_list(overrode_metadata_definitions):
+    """
+    Validates the metadata definitions and returns a dataframe with the results
+    """
+
     result = []
 
     for metadata in overrode_metadata_definitions:
@@ -141,16 +160,12 @@ def valid_metadata_list(overrode_metadata_definitions):
 
     result_df = pd.DataFrame(result)
 
-    invalid_df = result_df[result_df["is_metadata_valid"] == False]
-    invalid_csv = invalid_df[['definitionId', 'dockerRepository']].to_csv(index=False)
-
-    return Output(result_df, metadata={"count": len(result_df), "preview": MetadataValue.md(result_df.to_markdown()), "invalid_csv": invalid_csv})
+    return OutputDataFrame(result_df)
 
 
 @asset(group_name=GROUP_NAME)
-def catalog_derived_metadata_definitions(context, cloud_sources_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, oss_destinations_dataframe):
+def catalog_derived_metadata_definitions(cloud_sources_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, oss_destinations_dataframe):
     sources_metadata_list = merge_into_metadata_definitions("sourceDefinitionId", "source", oss_sources_dataframe, cloud_sources_dataframe)
     destinations_metadata_list = merge_into_metadata_definitions("destinationDefinitionId", "destination", oss_destinations_dataframe, cloud_destinations_dataframe)
     all_definitions = sources_metadata_list + destinations_metadata_list;
-    context.log.info(f"Found {len(all_definitions)} metadata definitions")
     return Output(all_definitions, metadata={"count": len(all_definitions)})

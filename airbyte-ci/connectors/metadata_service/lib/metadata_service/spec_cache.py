@@ -1,6 +1,5 @@
 from google.cloud import storage
 
-
 SPEC_CACHE_BUCKET_NAME = "io-airbyte-cloud-spec-cache"
 CACHE_FOLDER = "specs"
 
@@ -15,4 +14,3 @@ def is_spec_cached(docker_repository: str, docker_image_tag: str) -> bool:
     blob = bucket.blob(spec_path)
 
     return blob.exists()
-

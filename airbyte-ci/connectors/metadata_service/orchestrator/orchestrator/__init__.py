@@ -4,7 +4,13 @@ from .resources.gcp_resources import gcp_gcs_client, gcs_bucket_manager, gcs_fil
 from .resources.github_resources import github_client, github_connector_repo, github_connectors_directory
 from .resources.local_resources import simple_local_file_manager
 
-from .assets.github_assets import source_controlled_connectors
+from .assets.github_assets import github_connector_folders
+from .assets.catalog_report_assets import (
+    all_sources_dataframe,
+    all_destinations_dataframe,
+    connector_catalog_location_markdown,
+    connector_catalog_location_html,
+)
 from .assets.catalog_assets import (
     oss_destinations_dataframe,
     cloud_destinations_dataframe,
@@ -12,11 +18,6 @@ from .assets.catalog_assets import (
     cloud_sources_dataframe,
     latest_oss_catalog_dict,
     latest_cloud_catalog_dict,
-    all_sources_dataframe,
-    all_destinations_dataframe,
-    connector_catalog_location_markdown,
-    connector_catalog_location_html,
-
 )
 from .assets.metadata_assets import (
     catalog_derived_metadata_definitions,
@@ -30,7 +31,6 @@ from .sensors.catalog_sensors import catalog_updated_sensor
 
 from .config import REPORT_FOLDER, CATALOG_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME
 
-
 ASSETS = [
     oss_destinations_dataframe,
     cloud_destinations_dataframe,
@@ -42,12 +42,13 @@ ASSETS = [
     all_destinations_dataframe,
     connector_catalog_location_markdown,
     connector_catalog_location_html,
-    source_controlled_connectors,
+    github_connector_folders,
     catalog_derived_metadata_definitions,
     valid_metadata_list,
     persist_metadata_definitions,
     overrode_metadata_definitions,
 ]
+
 RESOURCES = {
     "metadata_file_directory": simple_local_file_manager.configured({"base_dir": "/tmp/metadata"}),
     "github_client": github_client,
