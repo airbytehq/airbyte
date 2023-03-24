@@ -12,6 +12,3 @@ class TestZuoraObjectsBase(unittest.TestCase):
         date = datetime.fromisoformat(original_str)
         generated_str = ZuoraObjectsBase.to_datetime_str(date)
         self.assertEqual(original_str, generated_str)
-
-if __name__ == '__main__':
-    unittest.main()
