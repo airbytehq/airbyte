@@ -315,8 +315,8 @@ class Items(WalmartMarketplaceBase):
         logger.info(self.count_n)
         headers = {
             "Authorization": self.Authorization,
-            "Accept": 'application/json',
-            "Content-type": 'application/x-www-form-urlencoded',
+            "Accept": 'application/xml',
+            "Content-type": 'application/json',
             "WM_SVC_VERSION": '1.0.0',
             "WM_SVC.NAME": 'Merama Walmart Service',
             "WM_QOS.CORRELATION_ID": uuid.uuid4().hex,
@@ -335,8 +335,8 @@ class Items(WalmartMarketplaceBase):
         else:
             headers.update({"WM_SEC.ACCESS_TOKEN": self.access_token})
 
-        headers["Accept"] = 'application/xml'
-        headers["Content-type"] = 'application/json'
+        # headers["Accept"] = 'application/xml'
+        # headers["Content-type"] = 'application/json'
 
         return headers
 
