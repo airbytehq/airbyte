@@ -136,3 +136,32 @@ def test_organization_or_repo_available():
         config = {"access_token": "test_token", "repository": ""}
         source.streams(config=config)
     assert exc_info.value.args[0] == "No streams available. Please check permissions"
+
+
+@pytest.mark.parametrize(
+    ("repos_config", "expected"),
+    [
+        (("airbytehq/airbyte", "airbytehq/another-repo", "airbytehq/*", "airbytehq/airbyte"), True),
+        (("airbytehq/airbyte/", "airbytehq/", "airbytehq/airbyte"), False),
+        (("", "airbytehq/", "airbytehq/airbyte"), False),
+        (("airbytehq/airbyte", ), True),
+        (("airbytehq/airbyte-test", "airbytehq/airbyte_test", "airbytehq/airbyte-test/another-repo"), True),
+    ],
+)
+def test_config_validation(repos_config, expected):
+    actual = SourceGithub._is_repositories_config_valid(repos_config)
+    assert actual == expected
+
+
+@pytest.mark.parametrize(
+    ("config", "expected"),
+    [
+        ({"access_token": "test_token", "repository": "airbytehq/airbyte-test"}, {"airbytehq/airbyte-test", }),
+        ({"access_token": "test_token", "repository": "airbytehq/airbyte-test "}, {"airbytehq/airbyte-test", }),
+        ({"access_token": "test_token", "repository": "airbytehq/airbyte-test/"}, {"airbytehq/airbyte-test", }),
+        ({"access_token": "test_token", "repository": "airbytehq/airbyte-test/  airbytehq/airbyte"}, {"airbytehq/airbyte", "airbytehq/airbyte-test"}),
+    ],
+)
+def tests_get_and_prepare_repositories_config(config, expected):
+    actual = SourceGithub._get_and_prepare_repositories_config(config)
+    assert actual == expected
