@@ -11200,15 +11200,13 @@
         - "token_key"
         - "token_secret"
         - "language"
-        - "object_types"
         - "start_datetime"
       additionalProperties: true
       properties:
         realm:
           type: "string"
           title: "Realm (Account Id)"
-          description: "Netsuite realm e.g. 2344535, as for `production` or 2344535_SB1,\
-            \ as for the `sandbox`"
+          description: "Netsuite realm e.g. 2344535, as for `production` or 2344535_SB1, as for the `sandbox`"
           order: 0
           airbyte_secret: true
         consumer_key:
@@ -11237,8 +11235,8 @@
           airbyte_secret: true
         language:
           type: string
-          title: language
-          description: The default company language, and do not support the language specified in your user preferences.
+          title: Language
+          description: The default company language. Note this is not the language specified in your user preferences.
           order: 5
           examples: [ "zh","en" ]
           default: zh
@@ -11247,9 +11245,7 @@
           title: "Object Types"
           items:
             type: "string"
-          description: "The API names of the Netsuite objects you want to sync. Setting\
-            \ this speeds up the connection setup process by limiting the number of\
-            \ schemas that need to be retrieved from Netsuite."
+          description: "The API names of the Netsuite objects you want to sync. Setting this speeds up the connection setup process by limiting the number of schemas that need to be retrieved from Netsuite."
           order: 6
           examples:
             - "customer"
@@ -11258,17 +11254,15 @@
         start_datetime:
           type: "string"
           title: "Start Date"
-          description: "Starting point for your data replication, in format of \"\
-            YYYY-MM-DDTHH:mm:ssZ\""
+          description: Starting point for your data replication, in format of "YYYY-MM-DDTHH:mm:ssZ"
           order: 7
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           examples:
             - "2017-01-25T00:00:00Z"
         window_in_days:
-          type: "integer"
-          title: "Window in Days"
-          description: "The amount of days used to query the data with date chunks.\
-            \ Set smaller value, if you have lots of data."
+          type: integer
+          title: Window in Days
+          description: The amount of days used to query the data with date chunks. Set smaller value, if you have lots of data.
           order: 8
           default: 30
     supportsNormalization: false
