@@ -176,6 +176,8 @@ Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-re
   - Set frequent syncs for CDC to ensure that the data doesn't fill up your disk space.
   - If you stop syncing a CDC-configured Postgres instance with Airbyte, delete the replication slot. Otherwise, it may fill up your disk space.
 
+:::note Connector configuration are supported only on primary/master db host/servers. Do not point connector configuration to replica db hosts, it will not work.. :::
+
 ### Setting up CDC for Postgres​
 
 Airbyte requires a replication slot configured only for its use. Only one source should be configured that uses this replication slot. See Setting up CDC for Postgres for instructions.
