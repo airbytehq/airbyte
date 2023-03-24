@@ -29,27 +29,20 @@ if [ "$?" -eq 1 ]; then
     state="/config_files/state.json"
 else
     state_status="without"
-    state='" "'
+    state=""
 fi
-
-
-printf "\nPulling connectors images:\n"
-
-docker pull airbyte/"$connector":"$version_1"
-docker pull airbyte/"$connector":"$version_2"
-
 
 printf "\nStarting comparing connector %s version %s with version %s %s state:\n" "$connector" "$version_1" "$version_2" "$state_status"
 
 run_docker_image()
 {
-  docker run --rm -v $(pwd)/config_files:/config_files airbyte/"$connector":"$1" read --config /config_files/secrets/config.json --catalog /config_files/configured_catalog.json --state "$state"
+  docker run --pull=missing --rm -v $(pwd)/config_files:/config_files airbyte/"$connector":"$1" read --config /config_files/secrets/config.json --catalog /config_files/configured_catalog.json --state "$state"
 }
 
-result=$( diff <(run_docker_image "$version_1") <(run_docker_image "$version_2") | grep 'RECORD' | sed '/\"emitted_at\"/,/}/ d')
+result=$( diff <(run_docker_image "$version_1") <(run_docker_image "$version_2") | grep -E 'RECORD|STATE' | sed '/\"emitted_at\"/,/}/ d')
 
 if [ -n "$result" ]; then
-    printf "%s" "$result"
+    printf "%s\n" "$result"
     printf "Records output not equal."
 else
     printf "Records output equal."
