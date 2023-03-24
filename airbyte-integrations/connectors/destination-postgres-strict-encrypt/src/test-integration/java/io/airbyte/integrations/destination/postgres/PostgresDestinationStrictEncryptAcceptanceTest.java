@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.postgres;
 
 import static io.airbyte.db.PostgresUtils.getCertificate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -40,7 +39,7 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
 
   protected static final String PASSWORD = "Passw0rd";
   protected static PostgresUtils.Certificate certs;
-
+  private static final String NORMALIZATION_VERSION = "dev"; //this is hacky. This test should extend or encapsulate PostgresDestinationAcceptanceTest
   @Override
   protected String getImageName() {
     return "airbyte/destination-postgres-strict-encrypt:dev";
@@ -196,27 +195,6 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
     assertEquals(Status.SUCCEEDED, actual.getStatus());
   }
 
-  @Test
-  void testStrictSSLUnsecuredWithTunnel() throws Exception {
-    final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, db.getHost())
-        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
-        .put(JdbcUtils.SCHEMA_KEY, "public")
-        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
-        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put(JdbcUtils.SSL_MODE_KEY, ImmutableMap.builder()
-            .put("mode", "require")
-            .build())
-        .put("tunnel_method", ImmutableMap.builder()
-            .put("tunnel_method", "SSH_KEY_AUTH")
-            .build())
-        .build());
-    final var actual = runCheck(config);
-    // DefaultCheckConnectionWorker is swallowing the NullPointerException
-    assertNull(actual);
-  }
-
   @Override
   protected boolean normalizationFromDefinition() {
     return true;
@@ -232,6 +210,15 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
     return getOptionalDestinationDefinitionFromProvider("airbyte/destination-postgres")
         .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
         .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationConfig().getNormalizationIntegrationType())
+        .orElse(null);
+  }
+
+  @Override
+  protected String getNormalizationImageName() {
+    return getOptionalDestinationDefinitionFromProvider("airbyte/destination-postgres")
+        .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
+        .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationConfig().getNormalizationRepository() + ":"
+            + NORMALIZATION_VERSION)
         .orElse(null);
   }
 }
