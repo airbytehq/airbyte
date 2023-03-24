@@ -21,16 +21,6 @@ task generateSeedConnectorSpecs(type: JavaExec, dependsOn: compileJava) {
     args new File(project(":airbyte-config:init").projectDir, '/src/main/resources/seed')
 }
 
-task downloadCombinedConnectorCatalog(type: JavaExec, dependsOn: compileJava) {
-    classpath = sourceSets.main.runtimeClasspath
-    mainClass = 'io.airbyte.config.specs.CombinedConnectorCatalogDownloader'
-    args project(":airbyte-config:init").projectDir
-}
-
-project(":airbyte-config:init").tasks.processResources.dependsOn(downloadCombinedConnectorCatalog)
-project(":airbyte-config:init").tasks.processTestResources.dependsOn(downloadCombinedConnectorCatalog)
-project(":airbyte-config:init").tasks.test.dependsOn(downloadCombinedConnectorCatalog)
-
 
 task generateConnectorSpecsMask(type: JavaExec, dependsOn: generateSeedConnectorSpecs) {
     classpath = sourceSets.main.runtimeClasspath
@@ -55,4 +45,24 @@ task generateOssConnectorCatalog(type: JavaExec, dependsOn: generateSeedConnecto
     args 'oss_catalog.json'
 }
 
+project(":airbyte-config:init").tasks.processResources.dependsOn(generateOssConnectorCatalog)
+
+task generateConnectorMarkdown(type: JavaExec, dependsOn: generateSeedConnectorSpecs) {
+    classpath = sourceSets.main.runtimeClasspath
+
+    mainClass = 'io.airbyte.config.specs.ConnectorMarkdownGenerator'
+
+    args '--project-root'
+    args new File(project(":").projectDir, "")
+
+    args '--seed-root'
+    args new File(project(":airbyte-config:init").projectDir, '/src/main/resources/seed')
+
+    args '--output-filename'
+    args 'connectors.md'
+}
+
+project(":airbyte-config:init").tasks.processResources.dependsOn(generateConnectorMarkdown)
+
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
+
