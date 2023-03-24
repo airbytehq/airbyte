@@ -2,6 +2,14 @@ from dagster import build_op_context
 
 from orchestrator.resources.gcp_resources import gcp_gcs_client, gcs_bucket_manager, gcs_file_manager, gcs_file_blob
 from orchestrator.resources.github_resources import github_client, github_connector_repo, github_connectors_directory
+
+from orchestrator.assets.github_assets import github_connector_folders
+from orchestrator.assets.catalog_report_assets import (
+    all_sources_dataframe,
+    all_destinations_dataframe,
+    connector_catalog_location_markdown,
+    connector_catalog_location_html,
+)
 from orchestrator.assets.catalog_assets import (
     oss_destinations_dataframe,
     cloud_destinations_dataframe,
@@ -9,19 +17,18 @@ from orchestrator.assets.catalog_assets import (
     cloud_sources_dataframe,
     latest_oss_catalog_dict,
     latest_cloud_catalog_dict,
-    all_sources_dataframe,
-    all_destinations_dataframe,
-    connector_catalog_location_markdown,
-    connector_catalog_location_html,
+)
+from orchestrator.assets.metadata_assets import (
     catalog_derived_metadata_definitions,
     valid_metadata_list,
 )
-from orchestrator.assets.github_assets import github_connector_folders
+
+from orchestrator.assets.dev_assets import persist_metadata_definitions, overrode_metadata_definitions
 
 from orchestrator.config import REPORT_FOLDER, CATALOG_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME
 
 
-def test_debug_catalog_projection():
+def debug_catalog_projection():
     """
     This is a debug function that is used to test the catalog projection end to end.
 
