@@ -142,7 +142,7 @@ class IncrementalOrbStream(OrbStream, ABC):
         if state_based_start_timestamp:
             # This may (reasonably) override the existing `created_at[gte]` set based on the start_date
             # of the stream, as configured.
-            params["created_at[gte]"] = state_based_start_timestamp
+            params[f"{self.cursor_field}[gte]"] = state_based_start_timestamp
         return params
 
 
@@ -447,6 +447,29 @@ class Plans(IncrementalOrbStream):
     def path(self, **kwargs) -> str:
         return "plans"
 
+class Invoices(IncrementalOrbStream):
+    """
+    Fetches issued invoices.
+    API Docs: https://docs.withorb.com/docs/orb-docs/api-reference/operations/list-invoices
+    """
+
+    @property
+    def cursor_field(self) -> str:
+        """
+        Invoices created in the past may be newly issued, so we store state on 
+        `invoice_date` instead.
+        """
+        return "invoice_date"
+
+    def path(self, **kwargs) -> str:
+        return "invoices"
+
+    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        request_params = super().request_params(stream_state, **kwargs)
+        # This doesn't make sense for invoices, since the cursor field is `invoice_date`, and the
+        # created_at for an invoice isn't meaningful, so any attempt to use it should be prevented.
+        del request_params["created_at[gte]"]
+        return request_params
 
 class CreditsLedgerEntries(IncrementalOrbStream):
     page_size = 500
@@ -705,6 +728,7 @@ class SourceOrb(AbstractSource):
             Customers(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
             Subscriptions(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
             Plans(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
+            Invoices(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
             CreditsLedgerEntries(
                 authenticator=authenticator,
                 lookback_window_days=lookback_window,

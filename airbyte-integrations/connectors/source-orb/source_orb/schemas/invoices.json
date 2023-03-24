@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": ["null", "object"],
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "created_at": {
+        "type": ["null", "string"],
+        "format": "date-time"
+      },
+      "invoice_date": {
+        "type": ["string"],
+        "format": "date-time"
+      },
+      "due_date": {
+        "type": ["string"],
+        "format": "date-time"
+      },
+      "invoice_pdf": {
+        "type": ["null", "string"]
+      },
+      "subtotal": {
+        "type": ["string"]
+      },
+      "total": {
+        "type": ["string"]
+      },
+      "amount_due": {
+        "type": ["string"]
+      },
+      "status": {
+        "type": ["string"]
+      }
+    },
+    "required": ["id", "created_at", "invoice_date", "due_date", "subtotal", "total", "amount_due", "status"]
+  }
+  
