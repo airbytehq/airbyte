@@ -22,4 +22,5 @@ dependencies {
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     implementation 'io.airbyte:airbyte-commons-worker:0.42.0'
     implementation 'io.airbyte.airbyte-config:config-models:0.42.0'
+    implementation 'io.airbyte:airbyte-commons:0.42.0'
 }
