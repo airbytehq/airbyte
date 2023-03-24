@@ -1,7 +1,7 @@
 import json
 import pytest
 import os
-from metadata_service.spec_cache import CachedSpec
+from pydash.collections import find
 
 from orchestrator.assets.catalog_assets import (
     oss_destinations_dataframe,
@@ -90,12 +90,13 @@ def has_correct_cloud_docker_image(metadata_def, cloud_catalog_dict):
 
     if connectorType == "source":
         # find the source in the cloud catalog
+        catalog_representation = find(cloud_catalog_dict["sources"], {"sourceDefinitionId": connectorId})
         catalog_representation = [source for source in cloud_catalog_dict["sources"] if source["sourceDefinitionId"] == connectorId][0]
         cloud_docker_image = catalog_representation["dockerRepository"]
         return cloud_docker_image == expected_cloud_docker_repo
     elif connectorType == "destination":
         # find the destination in the cloud catalog
-        catalog_representation = [destination for destination in cloud_catalog_dict["destinations"] if destination["destinationDefinitionId"] == connectorId][0]
+        catalog_representation = find(cloud_catalog_dict["destinations"], {"destinationDefinitionId": connectorId})
         cloud_docker_image = catalog_representation["dockerRepository"]
         return cloud_docker_image == expected_cloud_docker_repo
     else:
