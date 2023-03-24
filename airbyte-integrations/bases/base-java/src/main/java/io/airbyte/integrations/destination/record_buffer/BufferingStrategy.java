@@ -48,4 +48,5 @@ public interface BufferingStrategy extends AutoCloseable {
   void clear() throws Exception;
 
   void awaitCompletion();
+
 }

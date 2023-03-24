@@ -131,7 +131,8 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   public void flushWriter(final AirbyteStreamNameNamespacePair stream, final SerializableBuffer writer) throws Exception {
     LOGGER.info("Flushing buffer of stream {} ({})", stream.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
 
-    // important to flush the writer BEFORE calling onStreamFlush.accept() in order to capture the byte count correctly
+    // important to flush the writer BEFORE calling onStreamFlush.accept() in order to capture the byte
+    // count correctly
     writer.flush();
     Future<Void> future = asyncStagingExecutor.submit((VoidCallable) () -> onStreamFlush.accept(stream, writer));
     futures.add(future);
@@ -149,7 +150,8 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
       final SerializableBuffer writer = entry.getValue();
       LOGGER.info("Flushing buffer of stream {} ({})", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
 
-      // important to flush the writer BEFORE calling onStreamFlush.accept() in order to capture the byte count correctly
+      // important to flush the writer BEFORE calling onStreamFlush.accept() in order to capture the byte
+      // count correctly
       writer.flush();
       Future<Void> future = asyncStagingExecutor.submit((VoidCallable) () -> onStreamFlush.accept(pair, writer));
       futures.add(future);
@@ -167,8 +169,8 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   }
 
   /**
-   * Await completion of all async operations. This is important at the end of a sync because the main thread is
-   * ready to shut down and clean up but the async op may still be running.
+   * Await completion of all async operations. This is important at the end of a sync because the main
+   * thread is ready to shut down and clean up but the async op may still be running.
    */
   @Override
   public void awaitCompletion() {

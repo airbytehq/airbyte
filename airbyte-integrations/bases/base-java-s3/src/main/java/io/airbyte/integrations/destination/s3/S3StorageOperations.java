@@ -118,7 +118,8 @@ public class S3StorageOperations extends BlobStorageOperations {
                                       final String namespace,
                                       final String streamName,
                                       final String objectPath) {
-    LOGGER.info("Beginning to upload records to stage {}, namespace: {}, stream: {}, size: {}", objectPath, namespace, streamName, recordsData.getByteCount());
+    LOGGER.info("Beginning to upload records to stage {}, namespace: {}, stream: {}, size: {}", objectPath, namespace, streamName,
+        recordsData.getByteCount());
     final List<Exception> exceptionsThrown = new ArrayList<>();
     while (exceptionsThrown.size() < UPLOAD_RETRY_LIMIT) {
       if (!exceptionsThrown.isEmpty()) {

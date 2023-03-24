@@ -1,14 +1,18 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.util;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
- * Now that certain parts of the Destination process are async, we need a way to pass
- * Exceptions as a signal back to the main thread. This will typically be used to detect
- * the presence of fatal errors and shut down processing.
+ * Now that certain parts of the Destination process are async, we need a way to pass Exceptions as
+ * a signal back to the main thread. This will typically be used to detect the presence of fatal
+ * errors and shut down processing.
  *
- * This is a singleton to make it easy to access from within any part of the Destination
- * code base. Could be used in other "applications", however.
+ * This is a singleton to make it easy to access from within any part of the Destination code base.
+ * Could be used in other "applications", however.
  */
 public class ErrorChannel {
 
@@ -33,4 +37,5 @@ public class ErrorChannel {
   public Exception getNextError() {
     return queue.poll();
   }
+
 }
