@@ -507,7 +507,7 @@ class Spec(BaseModel):
     type: Literal["Spec"]
     connection_specification: Dict[str, Any]
     documentation_url: Optional[str] = None
-    auth_flow: Optional[AuthFlow] = None
+    advanced_auth: Optional[AuthFlow] = None
 
 
 class DeclarativeSource(BaseModel):

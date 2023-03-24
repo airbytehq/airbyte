@@ -1043,7 +1043,7 @@ definitions:
         additionalProperties: true
       documentation_url:
         type: string
-      auth_flow:
+      advanced_auth:
         "$ref": "#/definitions/AuthFlow"
   AuthFlow:
     type: object
