@@ -278,6 +278,6 @@ class EmailTemplates(KlaviyoStream):
     """
     Docs: https://developers.klaviyo.com/en/v1-2/reference/get-templates
     """
-    
+
     def path(self, **kwargs) -> str:
         return "email-templates"
