@@ -65,7 +65,8 @@
         "title": "JDBC URL Parameters (Advanced)",
         "type": "string",
         "order": 6,
-        "group": "advanced"
+        "group": "advanced",
+        "pattern_descriptor": "key1=value1&key2=value2"
       },
       "ssl_mode": {
         "title": "SSL Modes",
