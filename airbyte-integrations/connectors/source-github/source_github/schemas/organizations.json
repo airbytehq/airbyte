@@ -118,8 +118,26 @@
     "two_factor_requirement_enabled": {
       "type": ["null", "boolean"]
     },
+    "members_allowed_repository_creation_type": {
+      "type": ["null", "string"]
+    },
+    "members_can_create_public_repositories": {
+      "type": ["null", "integer"]
+    },
+    "members_can_create_private_repositories": {
+      "type": ["null", "integer"]
+    },
+    "members_can_create_internal_repositories": {
+      "type": ["null", "integer"]
+    },
     "members_can_create_pages": {
       "type": ["null", "boolean"]
+    },
+    "members_can_fork_private_repositories": {
+      "type": ["null", "integer"]
+    },
+    "web_commit_signoff_required": {
+      "type": ["null", "integer"]
     },
     "members_can_create_public_pages": {
       "type": ["null", "boolean"]
