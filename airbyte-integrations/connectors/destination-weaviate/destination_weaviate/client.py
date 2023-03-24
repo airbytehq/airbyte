@@ -7,7 +7,9 @@ import logging
 import time
 import uuid
 from dataclasses import dataclass
-from typing import Any, List, Mapping, MutableMapping
+from typing import Any, List, Mapping, MutableMapping, Iterable
+
+from airbyte_cdk.models import AirbyteMessage, AirbyteStream
 
 import weaviate
 
@@ -28,16 +30,46 @@ class WeaviatePartialBatchError(Exception):
 
 class Client:
     def __init__(self, config: Mapping[str, Any], schema: Mapping[str, str]):
+        self.batch_size = int(config.get("batch_size", 100))
         self.client = self.get_weaviate_client(config)
         self.config = config
-        self.batch_size = int(config.get("batch_size", 100))
         self.schema = schema
         self.vectors = parse_vectors(config.get("vectors"))
         self.id_schema = parse_id_schema(config.get("id_schema"))
         self.buffered_objects: MutableMapping[str, BufferedObject] = {}
         self.objects_with_error: MutableMapping[str, BufferedObject] = {}
 
+    def batch_buffered_write(self, input_messages:Iterable[AirbyteMessage]):
+
+        with self.client.batch() as batch:
+
+            for message in input_messages:
+                if message.type == Type.STATE:
+                    # Emitting a state message indicates that all records which came before it have been written to the destination. So we flush
+                    # the queue to ensure writes happen, then output the state message to indicate it's safe to checkpoint state
+                    self.flush()
+                    yield message
+                elif message.type == Type.RECORD:
+                    record = message.record
+
+                    record, class_name, record_id, vector = self.process_message(record.stream, record.data)
+
+                    batch.add_data_object(record, class_name, record_id, vector=vector)
+                else:
+                    # ignore other message types for now
+                    continue
+
     def buffered_write_operation(self, stream_name: str, record: MutableMapping):
+        
+        record, class_name, record_id, vector = self.process_message(stream_name, record)
+
+        self.client.batch.add_data_object(record, class_name, record_id, vector=vector)
+        self.buffered_objects[record_id] = BufferedObject(record_id, record, vector, class_name)
+        if self.client.batch.num_objects() >= self.batch_size:
+            self.flush()
+
+    # generic ETL massaging for a record to a Weaviate data types for client insertion
+    def process_message(self, stream_name: str, record: MutableMapping):
         if self.id_schema.get(stream_name, "") in record:
             id_field_name = self.id_schema.get(stream_name, "")
             record_id = generate_id(record.get(id_field_name))
@@ -81,10 +113,11 @@ class Client:
             vector = record.get(vector_column_name)
             del record[vector_column_name]
         class_name = stream_to_class_name(stream_name)
-        self.client.batch.add_data_object(record, class_name, record_id, vector=vector)
-        self.buffered_objects[record_id] = BufferedObject(record_id, record, vector, class_name)
-        if self.client.batch.num_objects() >= self.batch_size:
-            self.flush()
+
+        print(record_id, record)
+        
+        return (record, class_name, record_id, vector)
+
 
     def flush(self, retries: int = 3):
         if len(self.objects_with_error) > 0 and retries == 0:
@@ -101,6 +134,7 @@ class Client:
                 logging.info(f"Object {obj_id} had errors: {errors}. Going to retry.")
 
         for buffered_object in self.objects_with_error.values():
+            print("Retrying buffered object", buffered_object.id, buffered_object.properties)
             self.client.batch.add_data_object(
                 buffered_object.properties, buffered_object.class_name, buffered_object.id, buffered_object.vector
             )
@@ -112,13 +146,14 @@ class Client:
 
         self.buffered_objects.clear()
 
-    def delete_stream_entries(self, stream_name: str):
-        class_name = stream_to_class_name(stream_name)
+    def delete_stream_entries(self, stream:AirbyteStream):
+
+        class_name = stream_to_class_name(stream.name)
         try:
-            original_schema = self.client.schema.get(class_name=class_name)
             self.client.schema.delete_class(class_name=class_name)
             logging.info(f"Deleted class {class_name}")
-            self.client.schema.create_class(original_schema)
+
+            self.client.schema.create_class( self.map_airbyte_stream_to_weaviate_class(stream) )
             logging.info(f"Recreated class {class_name}")
         except weaviate.exceptions.UnexpectedStatusCodeException as e:
             if e.message.startswith("Get schema! Unexpected status code: 404"):
@@ -126,9 +161,57 @@ class Client:
             else:
                 raise e
 
+
+
+    def get_current_weaviate_schema(self, class_name:str) -> dict:
+        schema = None
+        try:
+            schema = self.client.schema.get(class_name=class_name)
+        except weaviate.exceptions.UnexpectedStatusCodeException as e:
+            if e.message.startswith("Get schema! Unexpected status code: 404"):
+                logging.info(f"Class {class_name} did not exist.")
+            else:
+                raise e
+        return schema
+
+    def map_airbyte_stream_to_weaviate_class(self, stream:AirbyteStream) -> dict:
+        weaviate_class = {}
+        weaviate_class['class'] = stream_to_class_name(stream.name)
+        weaviate_class['description'] = "This class was autogenerated by Airbyte"
+        weaviate_class['properties'] = []
+
+        for k, v in stream.json_schema.get("properties").items():
+
+            data_type = v.get("type")
+            if not isinstance(data_type, (list, tuple)):
+                data_type = [data_type]
+            else:
+                data_type.remove('null')
+
+            new_property = {}
+            new_property['name'] = k
+            new_property['dataType'] = data_type
+            new_property['description'] = "This property was autogenerated by Airbyte"
+            weaviate_class['properties'].append(new_property)
+
+        # add class specific config options 
+        weaviate_class["invertedIndexConfig"] = { "indexNullState": True }
+
+        print("Generated class from stream:", weaviate_class)
+        return weaviate_class
+
+    def create_class_from_stream(self, stream:AirbyteStream):
+        try:
+            self.client.schema.create_class( self.map_airbyte_stream_to_weaviate_class(stream) )
+        except weaviate.exceptions.UnexpectedStatusCodeException as e:
+            if e.message.startswith("Create schema! Unexpected status code: 404"):
+                logging.info(f"Class {class_name} was not created.")
+            else:
+                raise e
+
     @staticmethod
     def get_weaviate_client(config: Mapping[str, Any]) -> weaviate.Client:
-        url, username, password = config.get("url"), config.get("username"), config.get("password")
+        url, username, password, batch_size = config.get("url"), config.get("username"), config.get("password"), int(config.get("batch_size", 100))
 
         if username and not password:
             raise Exception("Password is required when username is set")
@@ -137,5 +220,9 @@ class Client:
 
         if username and password:
             credentials = weaviate.auth.AuthClientPassword(username, password)
-            return weaviate.Client(url=url, auth_client_secret=credentials)
-        return weaviate.Client(url=url, timeout_config=(2, 2))
+            client = weaviate.Client(url=url, auth_client_secret=credentials)
+        else: 
+            client = weaviate.Client(url=url, timeout_config=(2, 2))
+
+        client.batch.configure(batch_size=batch_size, dynamic=True)
+        return client

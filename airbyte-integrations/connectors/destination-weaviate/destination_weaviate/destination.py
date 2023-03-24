@@ -33,9 +33,21 @@ class DestinationWeaviate(Destination):
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
         client = Client(config, get_schema_from_catalog(configured_catalog))
+
         for configured_stream in configured_catalog.streams:
+
+            # we delete first, and no longer re-create our deleted stream
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                client.delete_stream_entries(configured_stream.stream.name)
+                client.delete_stream_entries(configured_stream.stream)
+
+            # check to see if our stream exists in our weaviate schema instance
+            # if not, we do not rely on auto schema to create it if we happen to have null / none entries
+            # see issue #24378
+            existing_weaviate_schema = client.get_current_weaviate_schema(configured_stream.stream.name)
+            if not existing_weaviate_schema:
+                print("Creating new class from stream")
+                client.create_class_from_stream(configured_stream.stream)
+
 
         for message in input_messages:
             if message.type == Type.STATE:
