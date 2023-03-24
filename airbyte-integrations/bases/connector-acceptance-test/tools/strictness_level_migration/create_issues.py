@@ -10,7 +10,7 @@ import os
 import subprocess
 import tempfile
 
-from definitions import GA_DEFINITIONS, BETA_DEFINITIONS, find_by_name, get_airbyte_connector_name_from_definition, is_airbyte_connector
+from definitions import BETA_DEFINITIONS, GA_DEFINITIONS, find_by_name, get_airbyte_connector_name_from_definition, is_airbyte_connector
 from jinja2 import Environment, FileSystemLoader
 
 # SET THESE BEFORE USING THE SCRIPT
