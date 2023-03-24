@@ -56,7 +56,14 @@
           "my_table.my_id_column, another_table.id",
           "users.user_id"
         ]
+      },
+
+      "indexNull" : {
+        "type" : "string",
+        "description" : "Should Weaviate index null values for all streams?",
+        "enum" : ["true", "false"]
       }
+
     }
   }
 }

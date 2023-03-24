@@ -5,6 +5,7 @@
 import random
 import string
 from typing import Any, Iterable, Mapping
+import logging
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
@@ -45,25 +46,30 @@ class DestinationWeaviate(Destination):
             # see issue #24378
             existing_weaviate_schema = client.get_current_weaviate_schema(configured_stream.stream.name)
             if not existing_weaviate_schema:
-                print("Creating new class from stream")
+                logging.info(f"Generating new weaviate class schema from configured catalogue stream {configured_stream.stream.name}")
                 client.create_class_from_stream(configured_stream.stream)
 
 
-        for message in input_messages:
-            if message.type == Type.STATE:
-                # Emitting a state message indicates that all records which came before it have been written to the destination. So we flush
-                # the queue to ensure writes happen, then output the state message to indicate it's safe to checkpoint state
-                client.flush()
-                yield message
-            elif message.type == Type.RECORD:
-                record = message.record
-                client.buffered_write_operation(record.stream, record.data)
-            else:
-                # ignore other message types for now
-                continue
+        return client.batch_buffered_write(input_messages)
 
-        # Make sure to flush any records still in the queue
-        client.flush()
+        # Note: the code below bufferds writes serially
+        # You can enable this if you do not want the new multirheaded buffered writes in the method above
+
+        # for message in input_messages:
+        #     if message.type == Type.STATE:
+        #         # Emitting a state message indicates that all records which came before it have been written to the destination. So we flush
+        #         # the queue to ensure writes happen, then output the state message to indicate it's safe to checkpoint state
+        #         client.flush()
+        #         yield message
+        #     elif message.type == Type.RECORD:
+        #         record = message.record
+        #         client.buffered_write_operation(record.stream, record.data)
+        #     else:
+        #         # ignore other message types for now
+        #         continue
+
+        # # Make sure to flush any records still in the queue
+        # client.flush()
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
