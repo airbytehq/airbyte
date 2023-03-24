@@ -1,9 +1,11 @@
-from unittest.mock import MagicMock
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
 import pytest
 import requests
-import responses
-from  source_freshservice.streams import FreshserviceStream, IncrementalFreshserviceStream, SatisfactionSurveyResponses, Tickets
+from source_freshservice.streams import FreshserviceStream, Tickets
+
 
 @pytest.fixture
 def patch_base_class(mocker):
@@ -21,6 +23,7 @@ def test_request_params(patch_base_class):
 class Fake(object):
     pass
 
+
 def test_next_page_token(patch_base_class):
     stream = FreshserviceStream()
     response = Fake()
@@ -29,12 +32,14 @@ def test_next_page_token(patch_base_class):
     expected_token = {'page': '3'}
     assert stream.next_page_token(**inputs) == expected_token
 
+
 def test_next_page_token_when_no_next_page(patch_base_class):
     stream = FreshserviceStream()
     response = Fake()
     response.links = {}
     inputs = {'response': response}
-    assert stream.next_page_token(**inputs) == None
+    assert stream.next_page_token(**inputs) is None
+
 
 def test_parse_response(patch_base_class, requests_mock):
     stream = Tickets()

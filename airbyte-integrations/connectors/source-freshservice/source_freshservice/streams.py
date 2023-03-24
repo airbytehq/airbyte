@@ -83,23 +83,24 @@ class Tickets(IncrementalFreshserviceStream):
 
 
 class SatisfactionSurveyResponses(IncrementalFreshserviceStream, HttpSubStream):
-    object_name="csat_response"
+    object_name = "csat_response"
     """
     API docs: https://api.freshservice.com/#ticket_csat_attributes
-           
+
     self.authenticator (which should be used as the
     authenticator for Users) is object of NoAuth()
-    so self._session.auth is used instead    
+    so self._session.auth is used instead
     """
+
     def __init__(self, **kwargs):
         super().__init__(parent=Tickets(**kwargs), **kwargs)
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        ticket_id = stream_slice['parent']['id']
+        ticket_id = stream_slice["parent"]["id"]
         return f"tickets/{ticket_id}/csat_response"
-        
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if response.status_code == HTTPStatus.NO_CONTENT:
             return
