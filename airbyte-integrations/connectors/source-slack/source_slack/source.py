@@ -21,7 +21,7 @@ from pendulum import DateTime, Period
 class SlackStream(HttpStream, ABC):
     url_base = "https://slack.com/api/"
     primary_key = "id"
-    page_size = 1000
+    page_size = 100
 
     @property
     def max_retries(self) -> int:
