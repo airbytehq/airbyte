@@ -141,11 +141,10 @@ def test_organization_or_repo_available():
 @pytest.mark.parametrize(
     ("repos_config", "expected"),
     [
-        (("airbytehq/airbyte", "airbytehq/another-repo", "airbytehq/*", "airbytehq/airbyte"), True),
-        (("airbytehq/airbyte/", "airbytehq/", "airbytehq/airbyte"), False),
-        (("", "airbytehq/", "airbytehq/airbyte"), False),
+        (("airbytehq/airbyte/", "airbytehq/", "airbytehq", "airbyte hq", "airbytehq/*/"), False),
         (("airbytehq/airbyte", ), True),
         (("airbytehq/airbyte-test", "airbytehq/airbyte_test", "airbytehq/airbyte-test/another-repo"), True),
+        (("air232bytehq/air32byte", "airbyte_hq/another-repo", "airbytehq/*", "airbytehq/airbyte"), True),
     ],
 )
 def test_config_validation(repos_config, expected):

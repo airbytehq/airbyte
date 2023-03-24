@@ -68,7 +68,7 @@ class SourceGithub(AbstractSource):
         Returns:
             True if config valid, False if it's not
         """
-        pattern = re.compile(r"(?:[\/\w\-]{3,})\/*?[^\/]$")
+        pattern = re.compile(r"([\w\-]+\/)+[\w\-]*\*?[^\/]$")
 
         for repo in config_repositories:
             if not pattern.match(repo):
@@ -211,7 +211,7 @@ class SourceGithub(AbstractSource):
             authenticator = self._get_authenticator(config)
             _, repositories = self._get_org_repositories(config=config, authenticator=authenticator)
             if not repositories:
-                return False, "no valid repositories found"
+                return False, "Invalid repositories. Valid examples: airbytehq/airbyte airbytehq/another-repo airbytehq/* airbytehq/airbyte"
             return True, None
 
         except Exception as e:
