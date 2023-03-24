@@ -52,20 +52,18 @@ This page guides you through the process of setting up the Facebook Marketing so
 
     To configure Custom Insights:
 
-    1. For **Name**, enter a name for the insight. This will be used as the Airbyte stream name
-    2. For **Fields**, enter a list of the fields you want to pull from the Facebook Marketing API.
-    3. For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
-    4. For **Breakdowns**, enter a list of the breakdowns you want to configure.
-    5. For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-    6. For **Time Increment**, enter the number of days over which you want to aggregate statistics.
-
-            For example, if you set this value to 7, Airbyte will report statistics as 7-day aggregates starting from the Start Date. Suppose the start and end dates are October 1st and October 30th, then the connector will output 5 records: 01 - 06, 07 - 13, 14 - 20, 21 - 27, and 28 - 30 (3 days only).  
+    1. For **Name**, enter a name for the insight. This will be used as the Airbyte stream name 
+    2. For **Level**, enter the level of the fields you want to pull from the Facebook Marketing API. By default, 'ad'. You can specify also account, campaign or adset. 
+    3. For **Fields**, enter a list of the fields you want to pull from the Facebook Marketing API.
+    4. For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
+    5. For **Breakdowns**, enter a list of the breakdowns you want to configure.
+    6. For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
     7. For **Action Breakdown**, enter a list of the action breakdowns you want to configure.
     8. For **Custom Insights Lookback Window**, fill in the appropriate value. See [more](#facebook-marketing-attribution-reporting) on this parameter.
     9. Click **Done**.
-10. For **Page Size of Requests**, fill in the page size in case pagination kicks in. Feel free to ignore it, the default value should work in most cases. 
-11. For **Insights Lookback Window**, fill in the appropriate value. Facebook freezes insight data 28 days after it was generated, which means that all data from the past 28 days may have changed since we last emitted it, so you can retrieve refreshed insights from the past by setting this parameter. If you set a custom lookback window value in Facebook account, please provide the same value here. See [more](#facebook-marketing-attribution-reporting) on this parameter. 
-12. Click **Set up source**.
+   10. For **Page Size of Requests**, fill in the page size in case pagination kicks in. Feel free to ignore it, the default value should work in most cases. 
+   11. For **Insights Lookback Window**, fill in the appropriate value. Facebook freezes insight data 28 days after it was generated, which means that all data from the past 28 days may have changed since we last emitted it, so you can retrieve refreshed insights from the past by setting this parameter. If you set a custom lookback window value in Facebook account, please provide the same value here. See [more](#facebook-marketing-attribution-reporting) on this parameter. 
+   12. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -90,7 +88,7 @@ To set up Facebook Marketing as a source in Airbyte Open Source:
 
 The Facebook Marketing source connector supports the following sync modes:
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 * [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 * [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (except for the AdCreatives and AdAccount tables)
 * [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history) (except for the AdCreatives and AdAccount tables)
@@ -100,7 +98,7 @@ The Facebook Marketing source connector supports the following sync modes:
 You can replicate the following tables using the Facebook Marketing connector:
 
 * [Activities](https://developers.facebook.com/docs/marketing-api/reference/ad-activity)
-* [AdAccount](https://developers.facebook.com/docs/marketing-api/reference/ad-account)
+* [AdAccount](https://developers.facebook.com/docs/marketing-api/business-asset-management/guides/ad-accounts)
 * [AdCreatives](https://developers.facebook.com/docs/marketing-api/reference/ad-creative#fields)
 * [AdSets](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign#fields)
 * [Ads](https://developers.facebook.com/docs/marketing-api/reference/adgroup#fields)
@@ -138,6 +136,7 @@ Please be informed that the connector uses the `lookback_window` parameter to pe
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.0  | 2023-03-16 | [19141](https://github.com/airbytehq/airbyte/pull/19141) | Added Level parameter to custom Ads Insights                                                                                                                                                                                                                                                      |
 | 0.2.86  | 2023-03-01 | [23625](https://github.com/airbytehq/airbyte/pull/23625) | Add user friendly fields description in spec and docs. Extend error message for invalid Account ID case.                                                                                                                                                                                          ||         |            |                                                          |                                                                                                                                                                                                                                                                                                   |
 | 0.2.85  | 2023-02-14 | [23003](https://github.com/airbytehq/airbyte/pull/23003) | Bump facebook_business to 16.0.0                                                                                                                                                                                                                                                                  ||         |            |                                                          |                                                                                                                                                                                                                                                                                                   |
 | 0.2.84  | 2023-01-27 | [22003](https://github.com/airbytehq/airbyte/pull/22003) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                                                                                                                                                                                       ||         |            |                                                          |                                                                                                                                                                                                                                                                                                   |
