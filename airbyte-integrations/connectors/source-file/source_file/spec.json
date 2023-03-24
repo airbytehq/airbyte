@@ -33,7 +33,7 @@
         "type": "string",
         "title": "Reader Options",
         "description": "This should be a string in JSON format. It depends on the chosen file format to provide additional options and tune its behavior.",
-        "examples": ["{}", "{\"sep\": \" \"}", { "sep" : "\t", "header" : 0, "names": "column1, column2"}]
+        "examples": ["{}", "{\"sep\": \" \"}", { "sep" : "\t", "header" : 0, "names": ["column1", "column2"]}]
       },
       "url": {
         "type": "string",
