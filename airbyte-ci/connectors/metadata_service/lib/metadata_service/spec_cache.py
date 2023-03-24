@@ -12,10 +12,13 @@ class CachedSpec:
     docker_image_tag: str
     spec_cache_path: str
 
-def get_spec_cache_path(docker_repository, docker_image_tag):
+def get_spec_cache_path(docker_repository: str, docker_image_tag: str) -> str:
+    """Returns the path to the spec.json file in the spec cache bucket."""
     return f"{CACHE_FOLDER}/{docker_repository}/{docker_image_tag}/{SPEC_FILE_NAME}"
 
 def get_docker_info_from_spec_cache_path(spec_cache_path: str) -> CachedSpec:
+    """Returns the docker repository and tag from the spec cache path."""
+
     # remove the leading "specs/" from the path using CACHE_FOLDER
     without_folder = spec_cache_path.replace(f"{CACHE_FOLDER}/", "")
     without_file = without_folder.replace(f"/{SPEC_FILE_NAME}", "")
@@ -32,6 +35,7 @@ def get_docker_info_from_spec_cache_path(spec_cache_path: str) -> CachedSpec:
     )
 
 def is_spec_cached(docker_repository: str, docker_image_tag: str) -> bool:
+    """Returns True if the spec.json file exists in the spec cache bucket."""
     spec_path = get_spec_cache_path(docker_repository, docker_image_tag)
 
     client = storage.Client.create_anonymous_client()
@@ -41,6 +45,7 @@ def is_spec_cached(docker_repository: str, docker_image_tag: str) -> bool:
     return blob.exists()
 
 def list_cached_specs() -> List[CachedSpec]:
+    """Returns a list of all the specs in the spec cache bucket."""
     client = storage.Client.create_anonymous_client()
     bucket = client.bucket(SPEC_CACHE_BUCKET_NAME)
     blobs = bucket.list_blobs(prefix=CACHE_FOLDER)
