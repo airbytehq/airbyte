@@ -12,6 +12,7 @@ from orchestrator.assets.catalog_assets import (
 
 from orchestrator.assets.metadata_assets import catalog_derived_metadata_definitions
 
+
 # HOIST
 @pytest.fixture
 def oss_catalog_dict():
@@ -26,7 +27,6 @@ def cloud_catalog_dict():
 
 
 def test_no_missing_ids(oss_catalog_dict, cloud_catalog_dict):
-
     cloud_destinations_df = cloud_destinations_dataframe(cloud_catalog_dict).value
     cloud_sources_df = cloud_sources_dataframe(cloud_catalog_dict).value
     oss_destinations_df = oss_destinations_dataframe(oss_catalog_dict).value
@@ -43,10 +43,13 @@ def test_no_missing_ids(oss_catalog_dict, cloud_catalog_dict):
     cloud_destination_definition_ids = [destination["destinationDefinitionId"] for destination in cloud_catalog_dict["destinations"]]
 
     # get all unique ids from the above sets
-    all_definition_ids = set(oss_source_definition_ids + cloud_source_definition_ids + oss_destination_definition_ids + cloud_destination_definition_ids)
+    all_definition_ids = set(
+        oss_source_definition_ids + cloud_source_definition_ids + oss_destination_definition_ids + cloud_destination_definition_ids
+    )
 
     assert unique_metadata_definition_ids == all_definition_ids
     assert len(metadata_definition_ids) == len(unique_metadata_definition_ids)
+
 
 def assert_in_expected_catalog(metadata_def, oss_catalog_dict, cloud_catalog_dict):
     connectorId = metadata_def["data"]["definitionId"]
@@ -76,6 +79,7 @@ def test_in_correct_catalog(oss_catalog_dict, cloud_catalog_dict):
     metadata_def = catalog_derived_metadata_definitions(cloud_sources_df, cloud_destinations_df, oss_sources_df, oss_destinations_df).value
     for definition in metadata_def:
         assert_in_expected_catalog(definition, oss_catalog_dict, cloud_catalog_dict)
+
 
 def has_correct_cloud_docker_image(metadata_def, cloud_catalog_dict):
     connectorId = metadata_def["data"]["definitionId"]
@@ -112,5 +116,3 @@ def test_catalog_override(oss_catalog_dict, cloud_catalog_dict):
     metadata_def = catalog_derived_metadata_definitions(cloud_sources_df, cloud_destinations_df, oss_sources_df, oss_destinations_df).value
     for definition in metadata_def:
         assert has_correct_cloud_docker_image(definition, cloud_catalog_dict)
-
-

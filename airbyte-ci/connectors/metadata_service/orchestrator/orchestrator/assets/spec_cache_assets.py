@@ -1,4 +1,3 @@
-
 from dagster import asset
 import pandas as pd
 from metadata_service.spec_cache import list_cached_specs

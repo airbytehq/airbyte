@@ -6,15 +6,18 @@ SPEC_CACHE_BUCKET_NAME = "io-airbyte-cloud-spec-cache"
 CACHE_FOLDER = "specs"
 SPEC_FILE_NAME = "spec.json"
 
+
 @dataclass
 class CachedSpec:
     docker_repository: str
     docker_image_tag: str
     spec_cache_path: str
 
+
 def get_spec_cache_path(docker_repository: str, docker_image_tag: str) -> str:
     """Returns the path to the spec.json file in the spec cache bucket."""
     return f"{CACHE_FOLDER}/{docker_repository}/{docker_image_tag}/{SPEC_FILE_NAME}"
+
 
 def get_docker_info_from_spec_cache_path(spec_cache_path: str) -> CachedSpec:
     """Returns the docker repository and tag from the spec cache path."""
@@ -34,6 +37,7 @@ def get_docker_info_from_spec_cache_path(spec_cache_path: str) -> CachedSpec:
         spec_cache_path=spec_cache_path,
     )
 
+
 def is_spec_cached(docker_repository: str, docker_image_tag: str) -> bool:
     """Returns True if the spec.json file exists in the spec cache bucket."""
     spec_path = get_spec_cache_path(docker_repository, docker_image_tag)
@@ -43,6 +47,7 @@ def is_spec_cached(docker_repository: str, docker_image_tag: str) -> bool:
     blob = bucket.blob(spec_path)
 
     return blob.exists()
+
 
 def list_cached_specs() -> List[CachedSpec]:
     """Returns a list of all the specs in the spec cache bucket."""

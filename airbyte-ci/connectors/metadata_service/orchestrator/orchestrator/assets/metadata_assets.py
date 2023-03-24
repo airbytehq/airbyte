@@ -27,6 +27,7 @@ def get_primary_catalog_suffix(merged_df):
     secondary_suffix = OSS_SUFFIX if cloud_only else CLOUD_SUFFIX
     return primary_suffix, secondary_suffix
 
+
 def get_field_with_fallback(merged_df, field):
     """
     Returns the value of the field from the primary catalog.
@@ -46,8 +47,8 @@ def compute_catalog_overrides(merged_df):
     """
     Returns the catalog overrides section for the metadata file.
     """
-    cloud_only = merged_df["_merge"] == "right_only";
-    oss_only = merged_df["_merge"] == "left_only";
+    cloud_only = merged_df["_merge"] == "right_only"
+    oss_only = merged_df["_merge"] == "left_only"
 
     catalogs = {
         "oss": {
@@ -55,7 +56,7 @@ def compute_catalog_overrides(merged_df):
         },
         "cloud": {
             "enabled": not oss_only,
-        }
+        },
     }
 
     if cloud_only or oss_only:
@@ -88,11 +89,15 @@ def compute_catalog_overrides(merged_df):
         if cloud_value and not are_values_equal(oss_value, cloud_value):
             catalogs["cloud"][override_col] = merge_values(oss_value, cloud_value)
 
-    return catalogs;
+    return catalogs
+
 
 def merge_into_metadata_definitions(id_field, connector_type, oss_connector_df, cloud_connector_df) -> pd.Series:
-    merged_connectors = pd.merge(oss_connector_df, cloud_connector_df, on=id_field, how='outer', suffixes=(OSS_SUFFIX, CLOUD_SUFFIX), indicator=True)
+    merged_connectors = pd.merge(
+        oss_connector_df, cloud_connector_df, on=id_field, how="outer", suffixes=(OSS_SUFFIX, CLOUD_SUFFIX), indicator=True
+    )
     sanitized_connectors = merged_connectors.where(pd.notnull(merged_connectors), None)
+
     def build_metadata(merged_df):
         raw_data = {
             "name": get_field_with_fallback(merged_df, "name"),
@@ -117,10 +122,7 @@ def merge_into_metadata_definitions(id_field, connector_type, oss_connector_df, 
         # remove none values
         data = {k: v for k, v in raw_data.items() if v is not None}
 
-        metadata = {
-            "metadataSpecVersion": "1.0",
-            "data": data
-        }
+        metadata = {"metadataSpecVersion": "1.0", "data": data}
 
         catalogs = compute_catalog_overrides(merged_df)
         metadata["data"]["catalogs"] = catalogs
@@ -131,6 +133,7 @@ def merge_into_metadata_definitions(id_field, connector_type, oss_connector_df, 
 
     return metadata_list
 
+
 def validate_metadata(metadata: object) -> tuple[bool, str]:
     try:
         ConnectorMetadataDefinitionV1.parse_obj(metadata)
@@ -138,7 +141,9 @@ def validate_metadata(metadata: object) -> tuple[bool, str]:
     except Exception as e:
         return False, str(e)
 
+
 # ASSETS
+
 
 @asset(group_name=GROUP_NAME)
 def valid_metadata_list(overrode_metadata_definitions):
@@ -150,13 +155,15 @@ def valid_metadata_list(overrode_metadata_definitions):
 
     for metadata in overrode_metadata_definitions:
         valid, error_msg = validate_metadata(metadata)
-        result.append({
-            'definitionId': metadata["data"]['definitionId'],
-            'name': metadata["data"]['name'],
-            'dockerRepository': metadata["data"]['dockerRepository'],
-            'is_metadata_valid': valid,
-            'error_msg': error_msg
-        })
+        result.append(
+            {
+                "definitionId": metadata["data"]["definitionId"],
+                "name": metadata["data"]["name"],
+                "dockerRepository": metadata["data"]["dockerRepository"],
+                "is_metadata_valid": valid,
+                "error_msg": error_msg,
+            }
+        )
 
     result_df = pd.DataFrame(result)
 
@@ -164,8 +171,12 @@ def valid_metadata_list(overrode_metadata_definitions):
 
 
 @asset(group_name=GROUP_NAME)
-def catalog_derived_metadata_definitions(cloud_sources_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, oss_destinations_dataframe):
+def catalog_derived_metadata_definitions(
+    cloud_sources_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, oss_destinations_dataframe
+):
     sources_metadata_list = merge_into_metadata_definitions("sourceDefinitionId", "source", oss_sources_dataframe, cloud_sources_dataframe)
-    destinations_metadata_list = merge_into_metadata_definitions("destinationDefinitionId", "destination", oss_destinations_dataframe, cloud_destinations_dataframe)
-    all_definitions = sources_metadata_list + destinations_metadata_list;
+    destinations_metadata_list = merge_into_metadata_definitions(
+        "destinationDefinitionId", "destination", oss_destinations_dataframe, cloud_destinations_dataframe
+    )
+    all_definitions = sources_metadata_list + destinations_metadata_list
     return Output(all_definitions, metadata={"count": len(all_definitions)})

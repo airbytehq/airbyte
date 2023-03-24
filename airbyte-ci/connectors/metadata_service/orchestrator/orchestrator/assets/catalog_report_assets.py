@@ -7,7 +7,10 @@ GROUP_NAME = "catalog_reports"
 
 # HELPERS
 
-def augment_and_normalize_connector_dataframes(cloud_df, oss_df, primaryKey, connector_type, valid_metadata_list, github_connector_folders, cached_specs):
+
+def augment_and_normalize_connector_dataframes(
+    cloud_df, oss_df, primaryKey, connector_type, valid_metadata_list, github_connector_folders, cached_specs
+):
     """
     Normalize the cloud and oss connector dataframes and merge them into a single dataframe.
     Augment the dataframe with additional columns that indicate if the connector is in the cloud catalog, oss catalog, and if the metadata is valid.
@@ -22,28 +25,36 @@ def augment_and_normalize_connector_dataframes(cloud_df, oss_df, primaryKey, con
     composite_key = [primaryKey, "dockerRepository", "dockerImageTag"]
 
     # Merge the two catalogs on the 'image' and 'version' columns, keeping only the unique pairs
-    total_catalog = pd.merge(
-        cloud_df, oss_df, how="outer", on=composite_key
-    ).drop_duplicates(subset=composite_key)
+    total_catalog = pd.merge(cloud_df, oss_df, how="outer", on=composite_key).drop_duplicates(subset=composite_key)
 
     # Replace NaN values in the 'is_cloud' and 'is_oss' columns with False
     total_catalog[["is_cloud", "is_oss"]] = total_catalog[["is_cloud", "is_oss"]].fillna(False)
 
-    catalog_with_metadata = pd.merge(total_catalog, valid_metadata_list[["definitionId", "is_metadata_valid"]], left_on=primaryKey, right_on="definitionId", how="left")
+    catalog_with_metadata = pd.merge(
+        total_catalog, valid_metadata_list[["definitionId", "is_metadata_valid"]], left_on=primaryKey, right_on="definitionId", how="left"
+    )
 
     # merge with cached_specs on dockerRepository and dockerImageTag
     cached_specs["is_spec_cached"] = True
-    merged_catalog = pd.merge(catalog_with_metadata, cached_specs, left_on=["dockerRepository", "dockerImageTag"], right_on=["docker_repository", "docker_image_tag"], how="left")
+    merged_catalog = pd.merge(
+        catalog_with_metadata,
+        cached_specs,
+        left_on=["dockerRepository", "dockerImageTag"],
+        right_on=["docker_repository", "docker_image_tag"],
+        how="left",
+    )
 
     # Set connectorType to 'source' or 'destination'
     merged_catalog["connector_type"] = connector_type
-
-    is_source_controlled = lambda x: x.lstrip("airbyte/") in github_connector_folders
-    merged_catalog['is_source_controlled'] = merged_catalog['dockerRepository'].apply(is_source_controlled)
+    merged_catalog["is_source_controlled"] = merged_catalog["dockerRepository"].apply(
+        lambda x: x.lstrip("airbyte/") in github_connector_folders
+    )
 
     return merged_catalog
 
+
 # ASSETS
+
 
 @asset(required_resource_keys={"catalog_report_directory_manager"}, group_name=GROUP_NAME)
 def connector_catalog_location_html(context, all_destinations_dataframe, all_sources_dataframe):
@@ -51,7 +62,15 @@ def connector_catalog_location_html(context, all_destinations_dataframe, all_sou
     Generate an HTML report of the connector catalog locations.
     """
 
-    columns_to_show = ["dockerRepository", "dockerImageTag", "is_oss", "is_cloud", "is_source_controlled", "is_spec_cached", "is_metadata_valid"]
+    columns_to_show = [
+        "dockerRepository",
+        "dockerImageTag",
+        "is_oss",
+        "is_cloud",
+        "is_source_controlled",
+        "is_spec_cached",
+        "is_metadata_valid",
+    ]
 
     # convert true and false to checkmarks and x's
     all_sources_dataframe.replace({True: "✅", False: "❌"}, inplace=True)
@@ -79,7 +98,15 @@ def connector_catalog_location_markdown(context, all_destinations_dataframe, all
     Generate a markdown report of the connector catalog locations.
     """
 
-    columns_to_show = ["dockerRepository", "dockerImageTag", "is_oss", "is_cloud", "is_source_controlled", "is_spec_cached", "is_metadata_valid"]
+    columns_to_show = [
+        "dockerRepository",
+        "dockerImageTag",
+        "is_oss",
+        "is_cloud",
+        "is_source_controlled",
+        "is_spec_cached",
+        "is_metadata_valid",
+    ]
 
     # convert true and false to checkmarks and x's
     all_sources_dataframe.replace({True: "✅", False: "❌"}, inplace=True)
@@ -99,8 +126,11 @@ def connector_catalog_location_markdown(context, all_destinations_dataframe, all
     }
     return Output(metadata=metadata, value=file_handle)
 
+
 @asset(group_name=GROUP_NAME)
-def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_dataframe, github_connector_folders, valid_metadata_list, cached_specs) -> pd.DataFrame:
+def all_destinations_dataframe(
+    cloud_destinations_dataframe, oss_destinations_dataframe, github_connector_folders, valid_metadata_list, cached_specs
+) -> pd.DataFrame:
     """
     Merge the cloud and oss destinations catalogs into a single dataframe.
     """
@@ -117,7 +147,9 @@ def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_da
 
 
 @asset(group_name=GROUP_NAME)
-def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe, github_connector_folders, valid_metadata_list, cached_specs) -> pd.DataFrame:
+def all_sources_dataframe(
+    cloud_sources_dataframe, oss_sources_dataframe, github_connector_folders, valid_metadata_list, cached_specs
+) -> pd.DataFrame:
     """
     Merge the cloud and oss source catalogs into a single dataframe.
     """

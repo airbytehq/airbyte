@@ -2,9 +2,11 @@ from typing import List
 from dagster import StringSource, InitResourceContext, resource
 from github import Github, Repository, ContentFile
 
+
 @resource
 def github_client() -> Github:
     return Github()
+
 
 @resource(
     required_resource_keys={"github_client"},
@@ -17,6 +19,7 @@ def github_connector_repo(resource_context: InitResourceContext) -> Repository:
     github_client = resource_context.resources.github_client
     return github_client.get_repo(connector_repo_name)
 
+
 @resource(
     required_resource_keys={"github_connector_repo"},
     config_schema={"connectors_path": StringSource},
@@ -27,4 +30,3 @@ def github_connectors_directory(resource_context: InitResourceContext) -> List[C
 
     github_connector_repo = resource_context.resources.github_connector_repo
     return github_connector_repo.get_contents(connectors_path)
-

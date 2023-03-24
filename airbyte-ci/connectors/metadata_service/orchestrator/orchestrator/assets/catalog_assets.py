@@ -9,6 +9,7 @@ GROUP_NAME = "catalog"
 
 # ASSETS
 
+
 @asset(group_name=GROUP_NAME)
 def cloud_sources_dataframe(latest_cloud_catalog_dict: dict):
     sources = latest_cloud_catalog_dict["sources"]

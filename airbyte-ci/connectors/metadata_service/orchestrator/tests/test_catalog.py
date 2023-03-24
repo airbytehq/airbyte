@@ -32,13 +32,15 @@ def cloud_catalog_dict():
 def test_merged_catalog_dataframes(oss_catalog_dict, cloud_catalog_dict):
     github_connector_folders = []
     valid_metadata_list = pd.DataFrame([{"definitionId": "test", "is_metadata_valid": True}])
-    cached_specs = pd.DataFrame([
-        CachedSpec(
-            docker_repository="",
-            docker_image_tag="",
-            spec_cache_path="",
-        )
-    ])
+    cached_specs = pd.DataFrame(
+        [
+            CachedSpec(
+                docker_repository="",
+                docker_image_tag="",
+                spec_cache_path="",
+            )
+        ]
+    )
     num_oss_destinations = len(oss_catalog_dict["destinations"])
     num_cloud_destinations = len(cloud_catalog_dict["destinations"])
 
@@ -58,7 +60,9 @@ def test_merged_catalog_dataframes(oss_catalog_dict, cloud_catalog_dict):
     assert len(oss_sources_df) == num_oss_sources
 
     all_sources_df = all_sources_dataframe(cloud_sources_df, oss_sources_df, github_connector_folders, valid_metadata_list, cached_specs)
-    all_destinations_df = all_destinations_dataframe(cloud_destinations_df, oss_destinations_df, github_connector_folders, valid_metadata_list, cached_specs)
+    all_destinations_df = all_destinations_dataframe(
+        cloud_destinations_df, oss_destinations_df, github_connector_folders, valid_metadata_list, cached_specs
+    )
 
     # assert that all_sources_df has a entry for each sourceDefinitionId in the cloud catalog and oss catalog
     oss_source_definition_ids = set([source["sourceDefinitionId"] for source in oss_catalog_dict["sources"]])
