@@ -19,6 +19,8 @@ from .assets.catalog_assets import (
     cloud_sources_dataframe,
     latest_oss_catalog_dict,
     latest_cloud_catalog_dict,
+    oss_catalog_dif,
+    oss_catalog_from_metadata
 )
 from .assets.metadata_assets import (
     catalog_derived_metadata_definitions,
@@ -49,6 +51,8 @@ ASSETS = [
     persist_metadata_definitions,
     overrode_metadata_definitions,
     cached_specs,
+    oss_catalog_dif,
+    oss_catalog_from_metadata,
 ]
 
 RESOURCES = {
