@@ -1,0 +1,22 @@
+{
+  "foo" : "bar",
+  "fizz" : [
+    "buzz",
+    "fizzbuzz",
+    "zip",
+    "zap"
+  ],
+  "answer" : 42,
+  "shouldTest" : true,
+  "sports" : {
+    "football" : "fall",
+    "soccer" : [
+      "spring",
+      "summer",
+      "fall",
+      "winter"
+    ],
+    "baseball" : 9,
+    "basketball" : false
+  }
+}

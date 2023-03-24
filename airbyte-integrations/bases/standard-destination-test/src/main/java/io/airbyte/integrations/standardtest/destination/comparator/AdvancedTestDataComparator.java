@@ -44,7 +44,7 @@ public class AdvancedTestDataComparator implements TestDataComparator {
           "2020-03-31T00:00:00Z");
 
   @Override
-  public void assertSameData(List<JsonNode> expected, List<JsonNode> actual) {
+  public void assertSameData(final List<JsonNode> expected, final List<JsonNode> actual) {
     LOGGER.info("Expected data {}", expected);
     LOGGER.info("Actual data   {}", actual);
     assertEquals(expected.size(), actual.size());
@@ -60,25 +60,26 @@ public class AdvancedTestDataComparator implements TestDataComparator {
   }
 
   protected void compareObjects(final JsonNode expectedObject, final JsonNode actualObject) {
-    if (!areBothEmpty(expectedObject, actualObject)) {
+    if (areBothEmpty(expectedObject, actualObject)) {
+      LOGGER.info("Both rows are empty.");
+    } else {
+//      assertEquals(expectedObject.size(), actualObject.size());
       LOGGER.info("Expected Object : {}", expectedObject);
       LOGGER.info("Actual Object   : {}", actualObject);
       final Iterator<Map.Entry<String, JsonNode>> expectedDataIterator = expectedObject.fields();
       while (expectedDataIterator.hasNext()) {
         final Map.Entry<String, JsonNode> expectedEntry = expectedDataIterator.next();
         final JsonNode expectedValue = expectedEntry.getValue();
-        String key = expectedEntry.getKey();
-        JsonNode actualValue = ComparatorUtils.getActualValueByExpectedKey(key, actualObject, this::resolveIdentifier);
+        final String key = expectedEntry.getKey();
+        final JsonNode actualValue = ComparatorUtils.getActualValueByExpectedKey(key, actualObject, this::resolveIdentifier);
         LOGGER.info("For {} Expected {} vs Actual {}", key, expectedValue, actualValue);
         assertSameValue(expectedValue, actualValue);
       }
-    } else {
-      LOGGER.info("Both rows are empty.");
     }
   }
 
-  private boolean isJsonNodeEmpty(final JsonNode jsonNode) {
-    return jsonNode.isEmpty() || (jsonNode.size() == 1 && jsonNode.iterator().next().asText().isEmpty());
+  protected boolean isJsonNodeEmpty(final JsonNode jsonNode) {
+    return jsonNode == null || jsonNode.isEmpty() || (jsonNode.size() == 1 && jsonNode.iterator().next().asText().isEmpty());
   }
 
   private boolean areBothEmpty(final JsonNode expectedData, final JsonNode actualData) {
@@ -124,25 +125,25 @@ public class AdvancedTestDataComparator implements TestDataComparator {
     return expectedValue.asText().equals(actualValue.asText());
   }
 
-  private boolean isNumeric(final String value) {
+  private static boolean isNumeric(final String value) {
     return value.matches("-?\\d+(\\.\\d+)?");
   }
 
-  private List<JsonNode> getArrayList(final JsonNode jsonArray) {
-    List<JsonNode> result = new ArrayList<>();
+  private static List<JsonNode> getArrayList(final JsonNode jsonArray) {
+    final List<JsonNode> result = new ArrayList<>();
     jsonArray.elements().forEachRemaining(result::add);
     return result;
   }
 
   protected boolean compareArrays(final JsonNode expectedArray, final JsonNode actualArray) {
-    var expectedList = getArrayList(expectedArray);
-    var actualList = getArrayList(actualArray);
+    final var expectedList = getArrayList(expectedArray);
+    final var actualList = getArrayList(actualArray);
 
     if (expectedList.size() != actualList.size()) {
       return false;
     } else {
-      for (JsonNode expectedNode : expectedList) {
-        var sameActualNode = actualList.stream().filter(actualNode -> compareJsonNodes(expectedNode, actualNode)).findFirst();
+      for (final JsonNode expectedNode : expectedList) {
+        final var sameActualNode = actualList.stream().filter(actualNode -> compareJsonNodes(expectedNode, actualNode)).findFirst();
         if (sameActualNode.isPresent()) {
           actualList.remove(sameActualNode.get());
         } else {
@@ -158,21 +159,21 @@ public class AdvancedTestDataComparator implements TestDataComparator {
   }
 
   protected boolean compareNumericValues(final String firstNumericValue, final String secondNumericValue) {
-    double firstValue = Double.parseDouble(firstNumericValue);
-    double secondValue = Double.parseDouble(secondNumericValue);
+    final double firstValue = Double.parseDouble(firstNumericValue);
+    final double secondValue = Double.parseDouble(secondNumericValue);
 
     return firstValue == secondValue;
   }
 
-  protected DateTimeFormatter getAirbyteDateTimeWithTzFormatter() {
+  protected static DateTimeFormatter getAirbyteDateTimeWithTzFormatter() {
     return DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_WITH_TZ_FORMAT);
   }
 
-  protected DateTimeFormatter getAirbyteDateTimeParsedWithTzFormatter() {
+  protected static DateTimeFormatter getAirbyteDateTimeParsedWithTzFormatter() {
     return DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_PARSED_FORMAT_TZ);
   }
 
-  protected boolean isDateTimeWithTzValue(final String value) {
+  protected static boolean isDateTimeWithTzValue(final String value) {
     return !TEST_DATASET_IGNORE_LIST.contains(value) &&
         value.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+\\-]\\d{1,2}:\\d{2})( BC)?$");
   }
@@ -183,25 +184,26 @@ public class AdvancedTestDataComparator implements TestDataComparator {
 
   protected boolean compareDateTimeWithTzValues(final String airbyteMessageValue, final String destinationValue) {
     try {
-      ZonedDateTime airbyteDate = ZonedDateTime.parse(airbyteMessageValue, getAirbyteDateTimeWithTzFormatter()).withZoneSameInstant(ZoneOffset.UTC);
-      ZonedDateTime destinationDate = parseDestinationDateWithTz(destinationValue);
+      final ZonedDateTime airbyteDate = ZonedDateTime.parse(airbyteMessageValue, getAirbyteDateTimeWithTzFormatter())
+          .withZoneSameInstant(ZoneOffset.UTC);
+      final ZonedDateTime destinationDate = parseDestinationDateWithTz(destinationValue);
       return airbyteDate.equals(destinationDate);
-    } catch (DateTimeParseException e) {
+    } catch (final DateTimeParseException e) {
       LOGGER.warn("Fail to convert values to ZonedDateTime. Try to compare as text. Airbyte value({}), Destination value ({}). Exception: {}",
           airbyteMessageValue, destinationValue, e);
       return compareTextValues(airbyteMessageValue, destinationValue);
     }
   }
 
-  protected boolean isDateTimeValue(final String value) {
+  protected static boolean isDateTimeValue(final String value) {
     return value.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?( BC)?$");
   }
 
-  protected boolean isTimeWithTimezone(final String value) {
+  protected static boolean isTimeWithTimezone(final String value) {
     return value.matches("^\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+\\-]\\d{1,2}:\\d{2})$");
   }
 
-  protected boolean isTimeWithoutTimezone(final String value) {
+  protected static boolean isTimeWithoutTimezone(final String value) {
     return value.matches("^\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?$");
   }
 
@@ -209,7 +211,7 @@ public class AdvancedTestDataComparator implements TestDataComparator {
     return compareTextValues(airbyteMessageValue, destinationValue);
   }
 
-  protected boolean isDateValue(final String value) {
+  protected static boolean isDateValue(final String value) {
     return value.matches("^\\d{4}-\\d{2}-\\d{2}( BC)?$");
   }
 
