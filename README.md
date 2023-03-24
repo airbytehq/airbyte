@@ -30,7 +30,7 @@
 
 We believe that only an **open-source** solution to data movement can cover the **long tail of data sources** while empowering data engineers to **customize existing connectors**. Our ultimate vision is to help you move data from any source to any destination. Airbyte already provides [300+ connectors](https://docs.airbyte.com/integrations/) for popular APIs, databases, data warehouses and data lakes.
 
-Airbyte connectors can be implemented in any language and take the form of a Docker image that follows the [Airbyte specification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/). You can create new connectors very fast with:
+You can implement Airbyte connectors in any language and take the form of a Docker image that follows the [Airbyte specification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/). You can create new connectors very fast with:
  - The [low-code Connector Development Kit](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview) (CDK) for API connectors ([demo](https://www.youtube.com/watch?v=i7VSL2bDvmw))
  - The [Python CDK](https://docs.airbyte.com/connector-development/cdk-python/) ([tutorial](https://docs.airbyte.com/connector-development/tutorials/cdk-speedrun))
 
@@ -44,12 +44,12 @@ Explore our [demo app](https://demo.airbyte.io/).
 
 ### Run Airbyte locally
 
-You can run Airbyte locally with Docker.
+You can run Airbyte locally with Docker. The shell script below will retrieve the requisite docker files from the [platform repository](https://github.com/airbytehq/airbyte-platform) and run docker compose for you.
 
 ```bash
 git clone --depth 1 https://github.com/airbytehq/airbyte.git
 cd airbyte
-docker compose up
+./run-ab-platform.sh
 ```
 
 Login to the web app at [http://localhost:8000](http://localhost:8000) by entering the default credentials found in your .env file.
@@ -59,7 +59,7 @@ BASIC_AUTH_USERNAME=airbyte
 BASIC_AUTH_PASSWORD=password
 ```
 
-Follow web app UI instructions to set up a source, destination and connection to replicate data. Connections support the most popular sync modes: full refresh, incremental and change data capture for databases.
+Follow web app UI instructions to set up a source, destination, and connection to replicate data. Connections support the most popular sync modes: full refresh, incremental and change data capture for databases.
 
 Read the [Airbyte docs](https://docs.airbyte.com).
 
@@ -73,13 +73,19 @@ Deployment options: [Docker](https://docs.airbyte.com/deploying-airbyte/local-de
 
 ### Use Airbyte Cloud
 
-Airbyte Cloud is the fastest and most reliable way to run Airbyte. You can get started with free credits in minutes.
+Airbyte Cloud is the fastest and most reliable way to run Airbyte. It is a cloud-based data integration platform that allows you to collect and consolidate data from various sources into a single, unified system. It provides a user-friendly interface for data integration, transformation, and migration.
 
-Sign up for [Airbyte Cloud](https://cloud.airbyte.io/signup).
+With Airbyte Cloud, you can easily connect to various data sources such as databases, APIs, and SaaS applications. It also supports a wide range of popular data sources like Salesforce, Stripe, Hubspot, PostgreSQL, and MySQL, among others.
+
+Airbyte Cloud provides a scalable and secure platform for data integration, making it easier for users to move, transform, and replicate data across different applications and systems. It also offers features like monitoring, alerting, and scheduling to ensure data quality and reliability.
+
+Sign up for [Airbyte Cloud](https://cloud.airbyte.io/signup) and get free credits in minutes.
 
 ## Contributing
 
 Get started by checking Github issues and creating a Pull Request. An easy way to start contributing is to update an existing connector or create a new connector using the low-code and Python CDKs. You can find the code for existing connectors in the [connectors](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors) directory. The Airbyte platform is written in Java, and the frontend in React. You can also contribute to our docs and tutorials. Advanced Airbyte users can apply to the [Maintainer program](https://airbyte.com/maintainer-program) and [Writer Program](https://airbyte.com/write-for-the-community).
+
+If you would like to make a contribution to the platform itself, please refer to guides in [the platform repository](https://github.com/airbytehq/airbyte-platform)
 
 Read the [Contributing guide](https://docs.airbyte.com/contributing-to-airbyte/).
 
@@ -103,6 +109,6 @@ See the [LICENSE](docs/project-overview/licenses/) file for licensing informatio
 - [GitHub](https://github.com/airbytehq/airbyte) for code, issues and pull requests
 - [Youtube](https://www.youtube.com/c/AirbyteHQ) for videos on data engineering
 - [Newsletter](https://airbyte.com/newsletter) for product updates and data news
-- [Blog](https://airbyte.com/blog) for data insigts articles, tutorials and updates
+- [Blog](https://airbyte.com/blog) for data insights articles, tutorials and updates
 - [Docs](https://docs.airbyte.com/) for Airbyte features
 - [Roadmap](https://app.harvestr.io/roadmap/view/pQU6gdCyc/launch-week-roadmap) for planned features

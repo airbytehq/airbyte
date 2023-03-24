@@ -1,12 +1,11 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-jira:dev
+test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
       - spec_path: "source_jira/spec.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "0.2.23"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -16,23 +15,18 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "0.2.23"
-        backward_compatibility_tests_config:
-          disable_for_version: "0.3.0"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
-          exact_order: no
-          extra_records: yes
         empty_streams:
           - name: "issue_properties"
+            bypass_reason: "unable to populate"
           - name: "project_permission_schemes"
+            bypass_reason: "unable to populate"
           - name: "screen_tab_fields"
+            bypass_reason: "unable to populate"
   incremental:
     tests:
       - config_path: "secrets/config.json"

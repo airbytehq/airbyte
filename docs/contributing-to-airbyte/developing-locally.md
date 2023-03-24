@@ -16,19 +16,27 @@ Manually switching between different language versions can get hairy. We recomme
 
 To start contributing:
 
-1. Start by [forking](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the repository
+1. [Fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the [`airbyte`](https://github.com/airbytehq/airbyte) repository to develop connectors or the [ `airbyte-platform`](https://github.com/airbytehq/airbyte-platform) repository to develop the Airbyte platform. 
 2. Clone the fork on your workstation:
+
+If developing connectors, you can work on connectors locally but additionally start the platform independently locally using :
 
    ```bash
    git clone git@github.com:{YOUR_USERNAME}/airbyte.git
    cd airbyte
+   ./run-ab-platform.sh
    ```
+If developing platform:
 
-3. You're ready to start!
+   ```bash
+   git clone git@github.com:{YOUR_USERNAME}/airbyte-platform.git
+   cd airbyte-platform
+   docker compose up
+   ```
 
 ## Build with `gradle`
 
-To compile and build just the platform \(not all the connectors\):
+To compile and build the platform, run the following command in your local `airbyte-platform` repository:
 
 ```bash
 SUB_BUILD=PLATFORM ./gradlew build
@@ -69,7 +77,9 @@ export CPPFLAGS="-I/usr/local/opt/openssl/include"
 
 ## Run in `dev` mode with `docker-compose`
 
-These instructions explain how to run a version of Airbyte that you are developing on (e.g. has not been released yet).
+These instructions explain how to run a version of Airbyte Platform that you are developing on (e.g. has not been released yet).
+
+In your local `airbyte-platform` repository, run the following commands:
 
 ```bash
 SUB_BUILD=PLATFORM ./gradlew build
@@ -78,17 +88,22 @@ VERSION=dev docker compose up
 
 The build will take a few minutes. Once it completes, Airbyte compiled at current git revision will be running in `dev` mode in your environment.
 
+If you are running just connectors, you don't need the first step:
+
+```bash
+VERSION=dev docker compose up
+```
+
 In `dev` mode, all data will be persisted in `/tmp/dev_root`.
 
 ## Add a connector under development to Airbyte
 
 These instructions explain how to run a version of an Airbyte connector that you are developing on (e.g. has not been released yet).
 
-- First, build the platform images and run Airbyte:
+In your local `airbyte` repository, run the following command:
 
 ```bash
-SUB_BUILD=PLATFORM ./gradlew build
-VERSION=dev docker compose up
+./run-ab-platform
 ```
 
 - Then, build the connector image:
@@ -111,11 +126,12 @@ The above connector image is tagged with `dev`. You can change this to use anoth
 
 Now when you run a sync with that connector, it will use your local docker image
 
-## Run acceptance tests
+## Run platform acceptance tests
 
-To run acceptance \(end-to-end\) tests:
+In your local `airbyte-platform` repository, run the following commands to run acceptance \(end-to-end\) tests for the platform:
 
-```bash
+
+
 SUB_BUILD=PLATFORM ./gradlew clean build
 SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests
 ```
@@ -134,11 +150,11 @@ The command to run formatting varies slightly depending on which part of the cod
 
 ### Platform
 
-If you are working in the platform run `SUB_BUILD=PLATFORM ./gradlew format` from the root of the repo.
+If you are working in the platform run `SUB_BUILD=PLATFORM ./gradlew format` from the root of the `airbyte-platform` repository.
 
 ### Connector
 
-To format an individual connector in python, run:
+To format an individual connector in python, run the following command in your local `airbyte` repository:
 
 ```
  ./gradlew :airbyte-integrations:connectors:<connector_name>:airbytePythonFormat
@@ -154,7 +170,11 @@ To format connectors in java, run `./gradlew format`
 
 ### Connector Infrastructure
 
-Finally, if you are working in any module in `:airbyte-integrations:bases` or `:airbyte-cdk:python`, run `SUB_BUILD=CONNECTORS_BASE ./gradlew format`.
+Finally, if you are working in any module in `:airbyte-integrations:bases` or `:airbyte-cdk:python`, run the following command in your local `airbyte` repository:
+
+```bash
+SUB_BUILD=CONNECTORS_BASE ./gradlew format
+```
 
 Note: If you are contributing a Python file without imports or function definitions, place the following comment at the top of your file:
 
@@ -166,7 +186,7 @@ Note: If you are contributing a Python file without imports or function definiti
 
 ### Develop on `airbyte-webapp`
 
-- Spin up Airbyte locally so the UI can make requests against the local API.
+- Spin up Airbyte locally in your local `airbyte-platform` repository so the UI can make requests against the local API.
 
 ```bash
 BASIC_AUTH_USERNAME="" BASIC_AUTH_PASSWORD="" docker compose up
@@ -212,7 +232,7 @@ CDK_MANIFEST_PATH=../../airbyte/airbyte-cdk/python/airbyte_cdk/sources/declarati
 The Configuration API caches connector specifications. This is done to avoid needing to run Docker everytime one is needed in the UI. Without this caching, the UI crawls. If you update the specification of a connector and need to clear this cache so the API / UI picks up the change, you have two options:
 
 1. Go to the Admin page in the UI and update the version of the connector. Updating to any version, including the one you're already on, will trigger clearing the cache.
-2. Restart the server by running the following commands:
+2. From your local `airbyte-platform` repository, restart the server by running the following commands:
 
 ```bash
 VERSION=dev docker compose down -v
@@ -222,6 +242,8 @@ VERSION=dev docker compose up
 ### Resetting the Airbyte developer environment
 
 Sometimes you'll want to reset the data in your local environment. One common case for this is if you are updating an connector's entry in the database \(`airbyte-config/init/src/main/resources/config`\), often the easiest thing to do, is wipe the local database and start it from scratch. To reset your data back to a clean install of Airbyte, follow these steps:
+
+- Make sure you are in your local `airbyte-platform` repository
 
 - Delete the datastore volumes in docker
 
@@ -280,4 +302,4 @@ env JAVA_HOME=/usr/lib/jvm/java-14-openjdk ./gradlew  :airbyte-integrations:conn
 
 ### Inspecting the messages passed between connectors
 
-You can enable `LOG_CONNECTOR_MESSAGES=true` to log the messages the Airbyte platform receives from the source and destination when debugging locally. e.g. `LOG_CONNECTOR_MESSAGES=true VERSION=dev docker compose up`
+From your local `airbyte-platform` repository, you can enable `LOG_CONNECTOR_MESSAGES=true` to log the messages the Airbyte platform receives from the source and destination when debugging locally. e.g. `LOG_CONNECTOR_MESSAGES=true VERSION=dev docker compose up`
