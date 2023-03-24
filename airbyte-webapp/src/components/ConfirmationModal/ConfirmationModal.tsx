@@ -15,22 +15,25 @@ const Content = styled.div`
   //padding: 30px;
 `;
 
-const ButtonContent = styled.div`
+const ButtonContent = styled.div<{
+  reverse?: boolean;
+}>`
   width: 85%;
   margin: 50px auto 36px auto;
   display: flex;
   justify-content: space-around;
-  flex-direction: row-reverse;
+  flex-direction: ${({ reverse }) => (reverse ? "row" : "row-reverse")};
 `;
 
-const ButtonWithMargin = styled(Button)`
+const ButtonWithMargin = styled(Button)<{
+  secondary?: boolean;
+}>`
   min-width: 140px;
   height: 44px;
   border-radius: 6px;
   font-size: 16px;
-  color: #27272a;
   font-weight: 500;
-  color: #fff;
+  color: ${({ secondary }) => (secondary ? "#27272a" : "#fff")};
 `;
 
 const ButtonLoadingContainer = styled(LoadingButton)`
@@ -64,6 +67,7 @@ export interface ConfirmationModalProps {
   center?: boolean;
   contentValues?: any;
   loading?: boolean;
+  buttonReverse?: boolean;
 }
 
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -77,6 +81,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   submitButtonDataId,
   cancelButtonText,
   loading,
+  buttonReverse,
 }) => {
   const { isLoading, startAction } = useLoadingState();
   const onSubmitBtnClick = () => startAction({ action: () => onSubmit() });
@@ -86,13 +91,13 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         <Text center={center}>
           <FormattedMessage id={text} values={contentValues ?? {}} />
         </Text>
-        <ButtonContent>
-          <ButtonWithMargin onClick={onClose} type="button" disabled={loading || isLoading}>
+        <ButtonContent reverse={buttonReverse}>
+          <ButtonWithMargin onClick={onClose} type="button" disabled={loading || isLoading} secondary={buttonReverse}>
             <FormattedMessage id={cancelButtonText ?? "form.cancel"} />
           </ButtonWithMargin>
           <ButtonLoadingContainer
             onClick={onSubmitBtnClick}
-            secondary
+            secondary={!buttonReverse}
             data-id={submitButtonDataId}
             isLoading={loading || isLoading}
           >

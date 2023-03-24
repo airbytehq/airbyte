@@ -53,9 +53,9 @@ export const UpgradePlanBanner: React.FC<IProps> = ({ onBillingPage }) => {
   }, [status, updateUserStatus, user.status]);
 
   const remainingDaysForFreeTrial = (): number => {
-    const currentDate: any = new Date();
-    const expiryDate: any = new Date(expiresTime * 1000);
-    const diff = expiryDate - currentDate;
+    const currentDate: Date = new Date();
+    const expiryDate: Date = new Date(expiresTime * 1000);
+    const diff = expiryDate.getTime() - currentDate.getTime();
     const diffDays = Math.ceil(diff / (1000 * 60 * 60 * 24));
     return diffDays;
   };
