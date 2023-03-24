@@ -16,6 +16,8 @@ google = "^3.0.0"
 jinja2 = "^3.1.2"
 pygithub = "^1.58.0"
 metadata-service = {path = "../lib", develop = true}
+deepdiff = "^6.3.0"
+mergedeep = "^1.3.4"
 
 
 [tool.poetry.group.dev.dependencies]

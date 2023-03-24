@@ -1,6 +1,7 @@
 import pandas as pd
-
 from dagster import MetadataValue, Output, asset
+from deepdiff import DeepDiff
+import mergedeep
 
 from metadata_service.models.generated.ConnectorMetadataDefinitionV1 import ConnectorMetadataDefinitionV1
 
@@ -11,6 +12,21 @@ GROUP_NAME = "metadata"
 
 OSS_SUFFIX = "_oss"
 CLOUD_SUFFIX = "_cloud"
+
+def are_values_equal(value_1, value_2):
+    if isinstance(value_1, dict) and isinstance(value_2, dict):
+        diff = DeepDiff(value_1, value_2, ignore_order=True)
+        return len(diff) == 0
+    else:
+        return value_1 == value_2
+
+def merge_values(old_value, new_value):
+    if isinstance(old_value, dict) and isinstance(new_value, dict):
+        merged = old_value.copy()
+        mergedeep.merge(merged, new_value)
+        return merged
+    else:
+        return new_value
 
 
 def get_primary_catalog_suffix(merged_df):
@@ -42,7 +58,6 @@ def compute_catalog_overrides(merged_df):
         }
     }
 
-    # find the difference between the two catalogs
     if cloud_only or oss_only:
         return catalogs
 
@@ -61,8 +76,7 @@ def compute_catalog_overrides(merged_df):
         "resourceRequirements",
     ]
 
-    # check if the columns are the same
-    # TODO refactor this to handle cloud only
+    # find the difference between the two catalogs
     for override_col in allowed_overrides:
         oss_col = override_col + OSS_SUFFIX
         cloud_col = override_col + CLOUD_SUFFIX
@@ -71,9 +85,8 @@ def compute_catalog_overrides(merged_df):
         oss_value = merged_df.get(oss_col)
 
         # if the columns are different, add the cloud value to the overrides
-        # TODO do a deep comparison
-        if cloud_value and oss_value != cloud_value:
-            catalogs["cloud"][override_col] = merged_df.get(cloud_col)
+        if cloud_value and not are_values_equal(oss_value, cloud_value):
+            catalogs["cloud"][override_col] = merge_values(oss_value, cloud_value)
 
     return catalogs;
 
@@ -90,7 +103,6 @@ def merge_into_metadata_definitions(id_field, connector_type, oss_connector_df, 
             "dockerImageTag": get_field_with_fallback(merged_df, "dockerImageTag"),
             "icon": get_field_with_fallback(merged_df, "icon"),
             "supportUrl": get_field_with_fallback(merged_df, "documentationUrl"),
-            # TODO rename integration type
             "connectionType": get_field_with_fallback(merged_df, "sourceType"),
             "releaseStage": get_field_with_fallback(merged_df, "releaseStage"),
             "license": "MIT",
