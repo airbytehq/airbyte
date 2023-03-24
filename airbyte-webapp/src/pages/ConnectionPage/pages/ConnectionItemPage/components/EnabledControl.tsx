@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useUpdateEffect } from "react-use";
 import styled from "styled-components";
@@ -9,6 +9,7 @@ import { Action, Namespace } from "core/analytics";
 import { buildConnectionUpdate } from "core/domain/connection";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
+import { UpdateStatusError } from "pages/ConnectionPage/pages/AllConnectionsPage/components/UpdateStatusError";
 
 import { ConnectionStatus, WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 
@@ -47,25 +48,35 @@ interface EnabledControlProps {
 
 const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, frequencyType, onStatusUpdating }) => {
   const { mutateAsync: updateConnection, isLoading } = useUpdateConnection();
+  const [statusCode, setStatusCode] = useState<number | undefined>(200);
+  const [enabledStatus, setEnabledStatus] = useState<string>(connection.status);
   const analyticsService = useAnalyticsService();
 
   const onChangeStatus = async () => {
-    await updateConnection(
-      buildConnectionUpdate(connection, {
-        status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
-      })
-    );
+    setStatusCode(undefined);
+    const _status = connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active;
+    try {
+      await updateConnection(
+        buildConnectionUpdate(connection, {
+          status: _status,
+        })
+      );
+      setEnabledStatus(_status);
+      const trackableAction = connection.status === ConnectionStatus.active ? Action.DISABLE : Action.REENABLE;
 
-    const trackableAction = connection.status === ConnectionStatus.active ? Action.DISABLE : Action.REENABLE;
+      analyticsService.track(Namespace.CONNECTION, trackableAction, {
+        actionDescription: `${trackableAction} connection`,
+        connector_source: connection.source?.sourceName,
+        connector_source_definition_id: connection.source?.sourceDefinitionId,
+        connector_destination: connection.destination?.destinationName,
+        connector_destination_definition_id: connection.destination?.destinationDefinitionId,
+        frequency: frequencyType,
+      });
+    } catch (err) {
+      setEnabledStatus(connection.status);
 
-    analyticsService.track(Namespace.CONNECTION, trackableAction, {
-      actionDescription: `${trackableAction} connection`,
-      connector_source: connection.source?.sourceName,
-      connector_source_definition_id: connection.source?.sourceDefinitionId,
-      connector_destination: connection.destination?.destinationName,
-      connector_destination_definition_id: connection.destination?.destinationDefinitionId,
-      frequency: frequencyType,
-    });
+      setStatusCode(708); // err.response.status
+    }
   };
 
   useUpdateEffect(() => {
@@ -73,19 +84,28 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, f
   }, [isLoading]);
 
   return (
-    <Content>
-      <Switch
-        swithSize="medium"
-        disabled={disabled}
-        onChange={onChangeStatus}
-        checked={connection.status === ConnectionStatus.active}
-        loading={isLoading}
-        id="toggle-enabled-source"
-      />
-      <ToggleLabel htmlFor="toggle-enabled-source">
-        <FormattedMessage id={connection.status === ConnectionStatus.active ? "tables.enabled" : "tables.disabled"} />
-      </ToggleLabel>
-    </Content>
+    <>
+      <UpdateStatusError statusCode={statusCode} />
+      <Content
+        onClick={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+          onChangeStatus();
+          e.preventDefault();
+        }}
+      >
+        <Switch
+          swithSize="medium"
+          disabled={disabled}
+          // onChange={onChangeStatus}
+          checked={enabledStatus === ConnectionStatus.active}
+          loading={isLoading}
+          key={`enabled-${enabledStatus}`}
+          id="toggle-enabled-source"
+        />
+        <ToggleLabel htmlFor="toggle-enabled-source">
+          <FormattedMessage id={enabledStatus === ConnectionStatus.active ? "tables.enabled" : "tables.disabled"} />
+        </ToggleLabel>
+      </Content>
+    </>
   );
 };
 

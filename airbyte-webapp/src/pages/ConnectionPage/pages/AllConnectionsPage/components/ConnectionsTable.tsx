@@ -10,7 +10,7 @@ import { getConnectionTableData } from "components/EntityTable/utils";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { invalidateConnectionsList } from "hooks/services/useConnectionHook";
 import useRouter from "hooks/useRouter";
-import { RoutePaths } from "pages/routePaths";
+import { UpdateStatusError } from "pages/ConnectionPage/pages/AllConnectionsPage/components/UpdateStatusError";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 
@@ -28,6 +28,7 @@ interface IProps {
 const ConnectionsTable: React.FC<IProps> = ({ connections, onSetMessageId }) => {
   const [rowId, setRowID] = useState<string>("");
   const [statusLoading, setStatusLoading] = useState<boolean>(false);
+  const [statusCode, setStatusCode] = useState<number | undefined>(200);
   const { push } = useRouter();
   const { changeStatus, syncManualConnection } = useSyncActions();
   const queryClient = useQueryClient();
@@ -45,9 +46,11 @@ const ConnectionsTable: React.FC<IProps> = ({ connections, onSetMessageId }) => 
       if (connection) {
         setRowID(connectionId);
         setStatusLoading(true);
+        setStatusCode(undefined);
         try {
           await changeStatus(connection);
           await invalidateConnectionsList(queryClient);
+          setStatusCode(200);
           setRowID("");
           setStatusLoading(false);
           onSetMessageId(
@@ -57,7 +60,7 @@ const ConnectionsTable: React.FC<IProps> = ({ connections, onSetMessageId }) => 
           setRowID("");
           setStatusLoading(false);
           const responseStatus = err.response.status;
-          onChangeStatusError(responseStatus);
+          setStatusCode(responseStatus);
         }
       }
     },
@@ -90,32 +93,11 @@ const ConnectionsTable: React.FC<IProps> = ({ connections, onSetMessageId }) => 
     [connections, syncManualConnection]
   );
 
-  const onChangeStatusError = (code: number): void => {
-    if (code === 705 || code === 707 || code === 708) {
-      let modalText = "connection.unable.freeTrial.modal.text";
-      if (code === 707) {
-        modalText = "connection.unable.limit.modal.text";
-      } else if (code === 708) {
-        modalText = "connection.unable.expired.modal.text";
-      }
-      openConfirmationModal({
-        title: "connection.unable.modal.title",
-        text: modalText,
-        submitButtonText: "connection.unable.modal.confirm",
-        cancelButtonText: "connection.unable.modal.cancel",
-        buttonReverse: true,
-        onSubmit: () => {
-          closeConfirmationModal();
-          push(`/${RoutePaths.Settings}/${RoutePaths.PlanAndBilling}`);
-        },
-      });
-    }
-  };
-
   const clickRow = (source: ITableDataItem) => push(`${source.connectionId}`);
 
   return (
     <Content>
+      <UpdateStatusError statusCode={statusCode} />
       <ConnectionTable
         data={data}
         onClickRow={clickRow}

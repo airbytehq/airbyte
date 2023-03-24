@@ -11,7 +11,6 @@ import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useAnalyticsService, useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useGetConnection } from "hooks/services/useConnectionHook";
 // import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/components/TransformationView";
-
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 
@@ -93,32 +92,6 @@ const ConnectionItemPage: React.FC = () => {
           },
         ]}
       />
-      {/* <MainPageWithScroll
-        withPadding
-        headTitle={
-          <HeadTitle
-            titles={[
-              { id: "connection.pageTitle" },
-              {
-                id: "connection.fromTo",
-                values: {
-                  source: source.name,
-                  destination: destination.name,
-                },
-              },
-            ]}
-          />
-        }
-        // pageTitle={
-        //   //   <ConnectionPageTitle
-        //   //     source={source}
-        //   //     destination={destination}
-        //   //     connection={connection}
-        //   //     currentStep={currentStep}
-        //   //     onStatusUpdating={setStatusUpdating}
-        //   //   />
-        // }
-      > */}
       <ConnectionPageTitle
         source={source}
         destination={destination}
@@ -159,7 +132,6 @@ const ConnectionItemPage: React.FC = () => {
           <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace />} />
         </Routes>
       </Suspense>
-      {/* </MainPageWithScroll> */}
     </>
   );
 };
