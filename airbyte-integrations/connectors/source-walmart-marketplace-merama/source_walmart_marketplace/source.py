@@ -12,7 +12,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from datetime import datetime, timedelta, timezone
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.models import SyncMode
-# import xmltodict
+import xmltodict
 # from time import sleep
 
 
@@ -194,7 +194,7 @@ class Orders(WalmartMarketplaceBase):
         if self.totalCount == 0:
             self.offset = 0
             return None
-        elif self.totalCount - self.offset  <= self.limit:
+        elif self.totalCount - self.offset <= self.limit:
             self.offset = 0
             return None
         else:
@@ -315,8 +315,8 @@ class Items(WalmartMarketplaceBase):
         logger.info(self.count_n)
         headers = {
             "Authorization": self.Authorization,
-            "Accept": 'application/xml',
-            "Content-type": 'application/json',
+            "Accept": 'application/json',
+            "Content-type": 'application/x-www-form-urlencoded',
             "WM_SVC_VERSION": '1.0.0',
             "WM_SVC.NAME": 'Merama Walmart Service',
             "WM_QOS.CORRELATION_ID": uuid.uuid4().hex,
@@ -335,9 +335,10 @@ class Items(WalmartMarketplaceBase):
         else:
             headers.update({"WM_SEC.ACCESS_TOKEN": self.access_token})
 
-        # headers["Accept"] = 'application/xml'
-        # headers["Content-type"] = 'application/json'
+        headers["Accept"] = 'application/xml'
+        headers["Content-type"] = 'application/json'
 
+        # logger.info(headers)
         return headers
 
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
@@ -346,12 +347,15 @@ class Items(WalmartMarketplaceBase):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
 
-        logger.info(response.json().keys())
-        if self.next_page_token_key in response.json().keys():
-            self.next_page_token_value = response.json()[self.next_page_token_key]
+        try:
+            response_dict = response.json()
+        except:
+            response_dict = xmltodict.parse(response.text.replace('ns2:', ''))['ItemResponses']
+        logger.info(response_dict.keys())
+        if self.next_page_token_key in response_dict.keys():
+            self.next_page_token_value = response_dict[self.next_page_token_key]
         else:
             return None
-
         return self.next_page_token_value
 
     def path(
@@ -364,14 +368,18 @@ class Items(WalmartMarketplaceBase):
         param_nextCursor = self.next_page_token_value
         param_limit = self.limit
 
+        logger.info(f"{self.endpoint_name}?limit={param_limit}&nextCursor={param_nextCursor}")
         return f"{self.endpoint_name}?limit={param_limit}&nextCursor={param_nextCursor}"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
 
         logger.info(response.text)
         # response_dict = xmltodict.parse(response.text)['ns2:ItemResponses']
-        response_dict = response.json()
-        # logger.info(response_json)
+        try:
+            response_dict = response.json()
+        except:
+            response_dict = xmltodict.parse(response.text.replace('ns2:', ''))['ItemResponses']
+            # logger.info(response_json)
 
         item_list = []
         self.new_initial_date = self.createdStartDate
@@ -422,8 +430,8 @@ class SourceWalmartMarketplace(AbstractSource):
         createdStartDate = datetime.strptime(config['createdStartDate'], '%Y-%m-%d')
 
         return [
-            Orders(authenticator=auth, config=config, createdStartDate=createdStartDate)
-            ,Items(authenticator=auth, config=config)
+            Orders(authenticator=auth, config=config, createdStartDate=createdStartDate),
+            Items(authenticator=auth, config=config)
         ]
 
 # Durante a emissão da Credencial Plena, o titular poderá incluir dependentes, contudo, a Credencial Plena de dependentes maiores de 18 anos só estará disponível para uso
