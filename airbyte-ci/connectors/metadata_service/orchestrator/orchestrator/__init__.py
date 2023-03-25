@@ -19,9 +19,7 @@ from .assets.catalog_assets import (
     cloud_sources_dataframe,
     latest_oss_catalog_dict,
     latest_cloud_catalog_dict,
-    oss_catalog_dif,
     oss_catalog_from_metadata,
-    cloud_catalog_dif,
     cloud_catalog_from_metadata,
 )
 from .assets.metadata_assets import (
@@ -29,7 +27,12 @@ from .assets.metadata_assets import (
     valid_metadata_list,
 )
 
-from .assets.dev_assets import persist_metadata_definitions, overrode_metadata_definitions
+from .assets.dev_assets import (
+    persist_metadata_definitions,
+    overrode_metadata_definitions,
+    oss_catalog_diff,
+    cloud_catalog_diff,
+)
 
 from .jobs.catalog_jobs import generate_catalog_markdown, generate_local_metadata_files
 from .sensors.catalog_sensors import catalog_updated_sensor
@@ -53,9 +56,9 @@ ASSETS = [
     persist_metadata_definitions,
     overrode_metadata_definitions,
     cached_specs,
-    oss_catalog_dif,
+    oss_catalog_diff,
     oss_catalog_from_metadata,
-    cloud_catalog_dif,
+    cloud_catalog_diff,
     cloud_catalog_from_metadata,
 ]
 

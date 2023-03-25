@@ -1,5 +1,10 @@
+import pandas as pd
 import yaml
+from pydash.collections import key_by
+from deepdiff import DeepDiff
 from dagster import Output, asset
+from ..utils.dagster_helpers import OutputDataFrame
+
 
 """
 NOTE: This file is temporary and will be removed once we have metadata files checked into source control.
@@ -129,6 +134,39 @@ OVERRIDES = {
     "a7bcc9d8-13b3-4e49-b80d-d020b90045e3": {"connectorSubtype": "file"},
 }
 
+# HELPERS
+
+def key_catalog_entries(catalog_dict):
+    catalog_dict_keyed = catalog_dict.copy()
+    for connector_type, id_field in [["sources", "sourceDefinitionId"], ["destinations", "destinationDefinitionId"]]:
+        catalog_dict_keyed[connector_type] = key_by(catalog_dict_keyed[connector_type], id_field)
+    return catalog_dict_keyed
+
+def diff_catalogs(catalog_dict_1, catalog_dict_2):
+    new_metadata_fields = [
+        r"githubIssueLabel",
+        r"license",
+    ]
+
+    removed_metadata_fields = [
+        r"protocolVersion",
+    ]
+
+     # TODO (ben) remove this when checking the final catalog from GCS metadata
+    temporarily_ignored_fields = [
+        r"spec",
+    ]
+
+
+    excludedRegex = new_metadata_fields + removed_metadata_fields + temporarily_ignored_fields
+    keyed_catalog_dict_1 = key_catalog_entries(catalog_dict_1)
+    keyed_catalog_dict_2 = key_catalog_entries(catalog_dict_2)
+
+    diff = DeepDiff(keyed_catalog_dict_1, keyed_catalog_dict_2, ignore_order=True, exclude_regex_paths=excludedRegex, verbose_level=2)
+
+    return diff
+
+# ASSETS
 
 @asset(group_name=GROUP_NAME)
 def overrode_metadata_definitions(catalog_derived_metadata_definitions):
@@ -167,3 +205,23 @@ def persist_metadata_definitions(context, overrode_metadata_definitions):
     file_paths_str = "\n".join(file_paths)
 
     return Output(files, metadata={"count": len(files), "file_paths": file_paths_str})
+
+@asset(group_name=GROUP_NAME)
+def cloud_catalog_diff(cloud_catalog_from_metadata: dict, latest_cloud_catalog_dict: dict):
+    """
+    Compares the cloud catalog from the metadata with the latest OSS catalog.
+    """
+    diff = diff_catalogs(latest_cloud_catalog_dict, cloud_catalog_from_metadata)
+    diff_df = pd.DataFrame.from_dict(diff.to_dict())
+
+    return OutputDataFrame(diff_df)
+
+@asset(group_name=GROUP_NAME)
+def oss_catalog_diff(oss_catalog_from_metadata: dict, latest_oss_catalog_dict: dict):
+    """
+    Compares the OSS catalog from the metadata with the latest OSS catalog.
+    """
+    diff = diff_catalogs(latest_oss_catalog_dict, oss_catalog_from_metadata)
+    diff_df = pd.DataFrame.from_dict(diff)
+
+    return OutputDataFrame(diff_df)

@@ -1,11 +1,9 @@
 import pandas as pd
 import json
-from dagster import asset, Output, OpExecutionContext
+from dagster import asset, OpExecutionContext
 from typing import List
-from pydash.collections import key_by
 
-from ..utils.dagster_helpers import OutputDataFrame, MetadataValue
-from deepdiff import DeepDiff
+from ..utils.dagster_helpers import OutputDataFrame
 
 
 GROUP_NAME = "catalog"
@@ -59,36 +57,6 @@ def metadata_to_catalog_entry(metadata_definition, connector_type, override_cata
 
     return overrode_metadata_data
 
-def key_catalog_entries(catalog_dict):
-    catalog_dict_keyed = catalog_dict.copy()
-    for connector_type, id_field in [["sources", "sourceDefinitionId"], ["destinations", "destinationDefinitionId"]]:
-        catalog_dict_keyed[connector_type] = key_by(catalog_dict_keyed[connector_type], id_field)
-    return catalog_dict_keyed
-
-def diff_catalogs(catalog_dict_1, catalog_dict_2):
-    new_metadata_fields = [
-        r"githubIssueLabel",
-        r"license",
-    ]
-
-    removed_metadata_fields = [
-        r"protocolVersion",
-    ]
-
-     # TODO (ben) remove this when checking the final catalog from GCS metadata
-    temporarily_ignored_fields = [
-        r"spec",
-    ]
-
-
-    excludedRegex = new_metadata_fields + removed_metadata_fields + temporarily_ignored_fields
-    keyed_catalog_dict_1 = key_catalog_entries(catalog_dict_1)
-    keyed_catalog_dict_2 = key_catalog_entries(catalog_dict_2)
-
-    diff = DeepDiff(keyed_catalog_dict_1, keyed_catalog_dict_2, ignore_order=True, exclude_regex_paths=excludedRegex, verbose_level=2)
-
-    return diff
-
 def construct_catalog_from_metadata(catalog_derived_metadata_definitions: List[dict], catalog_name: str) -> dict:
     # get only definitions with data.catalogs.cloud.enabled = true
     metadata_definitions = [metadata for metadata in catalog_derived_metadata_definitions if metadata["data"]["catalogs"][catalog_name]["enabled"]]
@@ -108,13 +76,6 @@ def construct_catalog_from_metadata(catalog_derived_metadata_definitions: List[d
 
 # ASSETS
 
-@asset(group_name=GROUP_NAME)
-def cloud_catalog_dif(cloud_catalog_from_metadata: dict, latest_cloud_catalog_dict: dict):
-    diff = diff_catalogs(latest_cloud_catalog_dict, cloud_catalog_from_metadata)
-    diff_df = pd.DataFrame.from_dict(diff.to_dict())
-
-    # return OutputDataFrame(diff_df)
-    return Output(diff_df, metadata={"count": len(diff_df), "preview": MetadataValue.md(diff_df.to_markdown()), "json": diff.to_json()})
 
 @asset(group_name=GROUP_NAME)
 def cloud_catalog_from_metadata(catalog_derived_metadata_definitions: List[dict]) -> dict:
@@ -126,13 +87,6 @@ def cloud_catalog_from_metadata(catalog_derived_metadata_definitions: List[dict]
     return construct_catalog_from_metadata(catalog_derived_metadata_definitions, "cloud")
 
 @asset(group_name=GROUP_NAME)
-def oss_catalog_dif(oss_catalog_from_metadata: dict, latest_oss_catalog_dict: dict):
-    diff = diff_catalogs(latest_oss_catalog_dict, oss_catalog_from_metadata)
-    diff_df = pd.DataFrame.from_dict(diff)
-
-    return OutputDataFrame(diff_df)
-
-@asset(group_name=GROUP_NAME)
 def oss_catalog_from_metadata(catalog_derived_metadata_definitions: List[dict]) -> dict:
     """
     This asset is used to generate the oss catalog from the metadata definitions.
@@ -140,8 +94,6 @@ def oss_catalog_from_metadata(catalog_derived_metadata_definitions: List[dict]) 
     TODO (ben): This asset should be updated to use the GCS metadata definitions once available.
     """
     return construct_catalog_from_metadata(catalog_derived_metadata_definitions, "oss")
-
-
 
 @asset(group_name=GROUP_NAME)
 def cloud_sources_dataframe(latest_cloud_catalog_dict: dict):
