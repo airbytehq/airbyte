@@ -10,12 +10,14 @@ GROUP_NAME = "catalog"
 
 # HELPERS
 
+
 def apply_overrides_from_catalog(metadata_data, override_catalog):
     catalog_fields = metadata_data["catalogs"][override_catalog]
     del catalog_fields["enabled"]
     for field, value in catalog_fields.items():
         metadata_data[field] = value
     return metadata_data
+
 
 def metadata_to_catalog_entry(metadata_definition, connector_type, override_catalog):
     metadata_data = metadata_definition["data"]
@@ -57,22 +59,30 @@ def metadata_to_catalog_entry(metadata_definition, connector_type, override_cata
 
     return overrode_metadata_data
 
+
 def construct_catalog_from_metadata(catalog_derived_metadata_definitions: List[dict], catalog_name: str) -> dict:
     # get only definitions with data.catalogs.cloud.enabled = true
-    metadata_definitions = [metadata for metadata in catalog_derived_metadata_definitions if metadata["data"]["catalogs"][catalog_name]["enabled"]]
+    metadata_definitions = [
+        metadata for metadata in catalog_derived_metadata_definitions if metadata["data"]["catalogs"][catalog_name]["enabled"]
+    ]
 
     metadata_sources = [metadata for metadata in metadata_definitions if metadata["data"]["connectorType"] == "source"]
     metadata_destinations = [metadata for metadata in metadata_definitions if metadata["data"]["connectorType"] == "destination"]
 
-    catalog_sources = [metadata_to_catalog_entry(metadata, "source", catalog_name,) for metadata in metadata_sources]
+    catalog_sources = [
+        metadata_to_catalog_entry(
+            metadata,
+            "source",
+            catalog_name,
+        )
+        for metadata in metadata_sources
+    ]
     catalog_destinations = [metadata_to_catalog_entry(metadata, "destination", catalog_name) for metadata in metadata_destinations]
 
-    catalog = {
-        "sources": catalog_sources,
-        "destinations": catalog_destinations
-    }
+    catalog = {"sources": catalog_sources, "destinations": catalog_destinations}
 
     return catalog
+
 
 # ASSETS
 
@@ -86,6 +96,7 @@ def cloud_catalog_from_metadata(catalog_derived_metadata_definitions: List[dict]
     """
     return construct_catalog_from_metadata(catalog_derived_metadata_definitions, "cloud")
 
+
 @asset(group_name=GROUP_NAME)
 def oss_catalog_from_metadata(catalog_derived_metadata_definitions: List[dict]) -> dict:
     """
@@ -94,6 +105,7 @@ def oss_catalog_from_metadata(catalog_derived_metadata_definitions: List[dict]) 
     TODO (ben): This asset should be updated to use the GCS metadata definitions once available.
     """
     return construct_catalog_from_metadata(catalog_derived_metadata_definitions, "oss")
+
 
 @asset(group_name=GROUP_NAME)
 def cloud_sources_dataframe(latest_cloud_catalog_dict: dict):

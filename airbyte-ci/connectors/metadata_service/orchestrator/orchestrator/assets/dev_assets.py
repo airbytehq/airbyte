@@ -136,11 +136,13 @@ OVERRIDES = {
 
 # HELPERS
 
+
 def key_catalog_entries(catalog_dict):
     catalog_dict_keyed = catalog_dict.copy()
     for connector_type, id_field in [["sources", "sourceDefinitionId"], ["destinations", "destinationDefinitionId"]]:
         catalog_dict_keyed[connector_type] = key_by(catalog_dict_keyed[connector_type], id_field)
     return catalog_dict_keyed
+
 
 def diff_catalogs(catalog_dict_1, catalog_dict_2):
     new_metadata_fields = [
@@ -152,11 +154,10 @@ def diff_catalogs(catalog_dict_1, catalog_dict_2):
         r"protocolVersion",
     ]
 
-     # TODO (ben) remove this when checking the final catalog from GCS metadata
+    # TODO (ben) remove this when checking the final catalog from GCS metadata
     temporarily_ignored_fields = [
         r"spec",
     ]
-
 
     excludedRegex = new_metadata_fields + removed_metadata_fields + temporarily_ignored_fields
     keyed_catalog_dict_1 = key_catalog_entries(catalog_dict_1)
@@ -166,7 +167,9 @@ def diff_catalogs(catalog_dict_1, catalog_dict_2):
 
     return diff
 
+
 # ASSETS
+
 
 @asset(group_name=GROUP_NAME)
 def overrode_metadata_definitions(catalog_derived_metadata_definitions):
@@ -206,6 +209,7 @@ def persist_metadata_definitions(context, overrode_metadata_definitions):
 
     return Output(files, metadata={"count": len(files), "file_paths": file_paths_str})
 
+
 @asset(group_name=GROUP_NAME)
 def cloud_catalog_diff(cloud_catalog_from_metadata: dict, latest_cloud_catalog_dict: dict):
     """
@@ -215,6 +219,7 @@ def cloud_catalog_diff(cloud_catalog_from_metadata: dict, latest_cloud_catalog_d
     diff_df = pd.DataFrame.from_dict(diff.to_dict())
 
     return OutputDataFrame(diff_df)
+
 
 @asset(group_name=GROUP_NAME)
 def oss_catalog_diff(oss_catalog_from_metadata: dict, latest_oss_catalog_dict: dict):
