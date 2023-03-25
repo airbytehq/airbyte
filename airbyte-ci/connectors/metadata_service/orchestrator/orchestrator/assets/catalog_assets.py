@@ -11,7 +11,7 @@ GROUP_NAME = "catalog"
 # HELPERS
 
 
-def apply_overrides_from_catalog(metadata_data, override_catalog):
+def apply_overrides_from_catalog(metadata_data: dict, override_catalog: str) -> dict:
     catalog_fields = metadata_data["catalogs"][override_catalog]
     del catalog_fields["enabled"]
     for field, value in catalog_fields.items():
@@ -19,7 +19,7 @@ def apply_overrides_from_catalog(metadata_data, override_catalog):
     return metadata_data
 
 
-def metadata_to_catalog_entry(metadata_definition, connector_type, override_catalog):
+def metadata_to_catalog_entry(metadata_definition: dict, connector_type: str, override_catalog: str) -> dict:
     metadata_data = metadata_definition["data"]
 
     # remove the metadata fields that were added
