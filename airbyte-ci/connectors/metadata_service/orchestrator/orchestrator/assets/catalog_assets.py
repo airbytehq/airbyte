@@ -4,7 +4,7 @@ from dagster import asset, Output, OpExecutionContext
 from typing import List
 from pydash.collections import key_by
 
-from ..utils.dagster_helpers import OutputDataFrame
+from ..utils.dagster_helpers import OutputDataFrame, MetadataValue
 from deepdiff import DeepDiff
 
 
@@ -12,38 +12,52 @@ GROUP_NAME = "catalog"
 
 # HELPERS
 
-def metadata_to_catalog_entry(metadata_definition, connector_type):
+def apply_overrides_from_catalog(metadata_data, override_catalog):
+    catalog_fields = metadata_data["catalogs"][override_catalog]
+    del catalog_fields["enabled"]
+    for field, value in catalog_fields.items():
+        metadata_data[field] = value
+    return metadata_data
+
+def metadata_to_catalog_entry(metadata_definition, connector_type, override_catalog):
     metadata_data = metadata_definition["data"]
 
     # remove the metadata fields that were added
-    del metadata_data["catalogs"]
+    overrode_metadata_data = apply_overrides_from_catalog(metadata_data, override_catalog)
+    del overrode_metadata_data["catalogs"]
 
     # remove connectorType field
-    del metadata_data["connectorType"]
+    del overrode_metadata_data["connectorType"]
 
     # rename field connectionType to sourceType
-    connection_type = metadata_data.get("connectionType")
+    connection_type = overrode_metadata_data.get("connectionType")
     if connection_type:
-        metadata_data["sourceType"] = metadata_data["connectionType"]
-        del metadata_data["connectionType"]
+        overrode_metadata_data["sourceType"] = overrode_metadata_data["connectionType"]
+        del overrode_metadata_data["connectionType"]
 
     # rename supportUrl to documentationUrl
-    support_url = metadata_data.get("supportUrl")
+    support_url = overrode_metadata_data.get("supportUrl")
     if support_url:
-        metadata_data["documentationUrl"] = metadata_data["supportUrl"]
-        del metadata_data["supportUrl"]
+        overrode_metadata_data["documentationUrl"] = overrode_metadata_data["supportUrl"]
+        del overrode_metadata_data["supportUrl"]
 
     # rename definitionId field to sourceDefinitionId or destinationDefinitionId
     id_field = "sourceDefinitionId" if connector_type == "source" else "destinationDefinitionId"
-    metadata_data[id_field] = metadata_data["definitionId"]
-    del metadata_data["definitionId"]
+    overrode_metadata_data[id_field] = overrode_metadata_data["definitionId"]
+    del overrode_metadata_data["definitionId"]
 
     # add in useless fields that are currently required for porting to the actor definition spec
-    metadata_data["tombstone"] = False
-    metadata_data["custom"] = False
-    metadata_data["public"] = True
+    overrode_metadata_data["tombstone"] = False
+    overrode_metadata_data["custom"] = False
+    overrode_metadata_data["public"] = True
 
-    return metadata_data
+    # if there is no releaseStage, set it to "alpha"
+    # Note: this is something our current cloud catalog generator does
+    # Note: We will not once this is live
+    if not overrode_metadata_data.get("releaseStage"):
+        overrode_metadata_data["releaseStage"] = "alpha"
+
+    return overrode_metadata_data
 
 def key_catalog_entries(catalog_dict):
     catalog_dict_keyed = catalog_dict.copy()
@@ -52,19 +66,64 @@ def key_catalog_entries(catalog_dict):
     return catalog_dict_keyed
 
 def diff_catalogs(catalog_dict_1, catalog_dict_2):
-    excludedRegex = [
+    new_metadata_fields = [
         r"githubIssueLabel",
         r"license",
-        r"spec", # TODO (ben) remove this when checking the final catalog from GCS metadata
     ]
+
+    removed_metadata_fields = [
+        r"protocolVersion",
+    ]
+
+     # TODO (ben) remove this when checking the final catalog from GCS metadata
+    temporarily_ignored_fields = [
+        r"spec",
+    ]
+
+
+    excludedRegex = new_metadata_fields + removed_metadata_fields + temporarily_ignored_fields
     keyed_catalog_dict_1 = key_catalog_entries(catalog_dict_1)
     keyed_catalog_dict_2 = key_catalog_entries(catalog_dict_2)
 
-    diff = DeepDiff(keyed_catalog_dict_1, keyed_catalog_dict_2, ignore_order=True, exclude_regex_paths=excludedRegex)
+    diff = DeepDiff(keyed_catalog_dict_1, keyed_catalog_dict_2, ignore_order=True, exclude_regex_paths=excludedRegex, verbose_level=2)
 
     return diff
 
+def construct_catalog_from_metadata(catalog_derived_metadata_definitions: List[dict], catalog_name: str) -> dict:
+    # get only definitions with data.catalogs.cloud.enabled = true
+    metadata_definitions = [metadata for metadata in catalog_derived_metadata_definitions if metadata["data"]["catalogs"][catalog_name]["enabled"]]
+
+    metadata_sources = [metadata for metadata in metadata_definitions if metadata["data"]["connectorType"] == "source"]
+    metadata_destinations = [metadata for metadata in metadata_definitions if metadata["data"]["connectorType"] == "destination"]
+
+    catalog_sources = [metadata_to_catalog_entry(metadata, "source", catalog_name,) for metadata in metadata_sources]
+    catalog_destinations = [metadata_to_catalog_entry(metadata, "destination", catalog_name) for metadata in metadata_destinations]
+
+    catalog = {
+        "sources": catalog_sources,
+        "destinations": catalog_destinations
+    }
+
+    return catalog
+
 # ASSETS
+
+@asset(group_name=GROUP_NAME)
+def cloud_catalog_dif(cloud_catalog_from_metadata: dict, latest_cloud_catalog_dict: dict):
+    diff = diff_catalogs(latest_cloud_catalog_dict, cloud_catalog_from_metadata)
+    diff_df = pd.DataFrame.from_dict(diff.to_dict())
+
+    # return OutputDataFrame(diff_df)
+    return Output(diff_df, metadata={"count": len(diff_df), "preview": MetadataValue.md(diff_df.to_markdown()), "json": diff.to_json()})
+
+@asset(group_name=GROUP_NAME)
+def cloud_catalog_from_metadata(catalog_derived_metadata_definitions: List[dict]) -> dict:
+    """
+    This asset is used to generate the cloud catalog from the metadata definitions.
+
+    TODO (ben): This asset should be updated to use the GCS metadata definitions once available.
+    """
+    return construct_catalog_from_metadata(catalog_derived_metadata_definitions, "cloud")
 
 @asset(group_name=GROUP_NAME)
 def oss_catalog_dif(oss_catalog_from_metadata: dict, latest_oss_catalog_dict: dict):
@@ -74,22 +133,14 @@ def oss_catalog_dif(oss_catalog_from_metadata: dict, latest_oss_catalog_dict: di
     return OutputDataFrame(diff_df)
 
 @asset(group_name=GROUP_NAME)
-def oss_catalog_from_metadata(catalog_derived_metadata_definitions):
-    # get only definitions with data.catalogs.oss.enabled = true
-    oss_definitions = [metadata for metadata in catalog_derived_metadata_definitions if metadata["data"]["catalogs"]["oss"]["enabled"]]
+def oss_catalog_from_metadata(catalog_derived_metadata_definitions: List[dict]) -> dict:
+    """
+    This asset is used to generate the oss catalog from the metadata definitions.
 
-    oss_metadata_sources = [metadata for metadata in oss_definitions if metadata["data"]["connectorType"] == "source"]
-    oss_metadata_destinations = [metadata for metadata in oss_definitions if metadata["data"]["connectorType"] == "destination"]
+    TODO (ben): This asset should be updated to use the GCS metadata definitions once available.
+    """
+    return construct_catalog_from_metadata(catalog_derived_metadata_definitions, "oss")
 
-    oss_catalog_sources = [metadata_to_catalog_entry(metadata, "source") for metadata in oss_metadata_sources]
-    oss_catalog_destinations = [metadata_to_catalog_entry(metadata, "destination") for metadata in oss_metadata_destinations]
-
-    oss_catalog = {
-        "sources": oss_catalog_sources,
-        "destinations": oss_catalog_destinations
-    }
-
-    return oss_catalog
 
 
 @asset(group_name=GROUP_NAME)
