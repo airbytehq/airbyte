@@ -370,7 +370,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:2.0.9"
+- dockerImage: "airbyte/source-alloydb:2.0.10"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -443,6 +443,7 @@
           type: "string"
           order: 6
           group: "advanced"
+          pattern_descriptor: "key1=value1&key2=value2"
         ssl:
           title: "Connect using SSL"
           description: "Encrypt data using SSL. When activating SSL, please select\
@@ -9377,7 +9378,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:2.0.8"
+- dockerImage: "airbyte/source-mysql:2.0.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
