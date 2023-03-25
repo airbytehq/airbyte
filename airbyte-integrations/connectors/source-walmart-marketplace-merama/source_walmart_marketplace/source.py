@@ -385,22 +385,23 @@ class Items(WalmartMarketplaceBase):
         self.new_initial_date = self.createdStartDate
         timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
 
-        for item in response_dict[self.record_list_name]:
-            item_json = {
-                "data": item,
-                "merchant": self.merchant.upper(),
-                "source": self.WM_MARKET + "_WALMART",
-                "type": f"{self.merchant.lower()}_{self.record_key_name}",
-                "id": item[self.record_primary_key],
-                "user_id": self.user_id,
-                "timeline": "historic",
-                "created_at": timestamp,
-                "updated_at": timestamp,
-                "timestamp": timestamp,
-                "sensible": False
-            }
+        if self.record_list_name in response_dict.keys():
+            for item in response_dict[self.record_list_name]:
+                item_json = {
+                    "data": item,
+                    "merchant": self.merchant.upper(),
+                    "source": self.WM_MARKET + "_WALMART",
+                    "type": f"{self.merchant.lower()}_{self.record_key_name}",
+                    "id": item[self.record_primary_key],
+                    "user_id": self.user_id,
+                    "timeline": "historic",
+                    "created_at": timestamp,
+                    "updated_at": timestamp,
+                    "timestamp": timestamp,
+                    "sensible": False
+                }
 
-            item_list.append(item_json)
+                item_list.append(item_json)
 
         return item_list
 
