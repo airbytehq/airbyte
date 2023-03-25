@@ -3,7 +3,10 @@
   "type": "object",
   "properties": {
     "repository": {
-      "type": ["string"]
+      "type": "string"
+    },
+    "branch": {
+      "type": ["null", "string"]
     },
     "created_at": {
       "type": ["null", "string"],
