@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.32.0
+Remove unexpected error swallowing on abstract source's check method
+
 ## 0.31.1
 connector builder: send stacktrace when error on read
 
