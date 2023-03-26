@@ -31,4 +31,4 @@ Vonage APIs are under rate limits for the number of API calls allowed per API ke
 
 | Version | Date       | Pull Request                                              | Subject                                    |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
-| 0.1.0   | 2023-03-28 | [#18345](https://github.com/airbytehq/airbyte/pull/18345) | 🎉 New Source: Mailjet SMS API [low-code CDK] |
+| 0.1.0   | 2023-03-28 | [#24551](https://github.com/airbytehq/airbyte/pull/24551) | 🎉 New Source: Vonage API [low-code CDK] |
