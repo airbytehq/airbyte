@@ -93,7 +93,7 @@
     normalizationRepository: airbyte/normalization-clickhouse
     normalizationTag: 0.4.0
     normalizationIntegrationType: clickhouse
-  supportsDbt: true
+  supportsDbt: false
 - name: Cloudflare R2
   destinationDefinitionId: 0fb07be9-7c3b-4336-850d-5efc006152ee
   dockerRepository: airbyte/destination-r2
