@@ -207,7 +207,8 @@ class CustomerBalanceTransactions(StripeStream):
         slices = parent_stream.stream_slices(sync_mode=SyncMode.full_refresh)
         for _slice in slices:
             for customer in parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice):
-                if customer["next_invoice_sequence"] == 1 and customer["balance"] == 0:
+                # we use `get` here because some attributes may not be returned by some API versions
+                if customer.get("next_invoice_sequence") == 1 and customer.get("balance") == 0:
                     # We're making this check in order to speed up a sync. if a customer's balance is 0 and there are no
                     # associated invoices, he shouldn't have any balance transactions. So we're saving time of one API call per customer.
                     continue
@@ -545,7 +546,7 @@ class CheckoutSessions(IncrementalStripeStream):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        yield from [None]
+        yield from [{}]
 
     def path(self, **kwargs):
         return "checkout/sessions"
@@ -645,7 +646,7 @@ class ExternalAccount(StripeStream, ABC):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        yield from [None]
+        yield from [{}]
 
     def request_params(self, **kwargs):
         params = super().request_params(**kwargs)

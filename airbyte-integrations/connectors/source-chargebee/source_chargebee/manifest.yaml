@@ -1,11 +1,11 @@
-version: "0.1.0"
+version: "0.29.0"
 
 definitions:
   nested_selector:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: [ "list", '*', "{{ parameters.get('name') }}" ]
+      field_path: ["list", "*", "{{ parameters.get('name') }}"]
   custom_field_transformation:
     type: CustomTransformation
     class_name: source_chargebee.components.CustomFieldTransformation
@@ -121,6 +121,23 @@ definitions:
             stream: "#/definitions/customer_stream"
             parent_key: id
             partition_field: id
+      requester:
+        $ref: "#/definitions/requester"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [404]
+                  action: IGNORE
+                  error_message: "Entity unavailable. Customer must have been deleted."
+                - error_message_contains: "This API operation is not enabled for this site"
+                  action: IGNORE
+                  error_message: "Stream is available only for Product Catalog 1.0"
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: "Retry-After"
     $parameters:
       name: "contact"
       primary_key: "id"

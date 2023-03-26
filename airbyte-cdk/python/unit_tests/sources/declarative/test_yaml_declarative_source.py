@@ -45,7 +45,7 @@ class MockYamlDeclarativeSource(YamlDeclarativeSource):
 class TestYamlDeclarativeSource:
     def test_source_is_created_if_toplevel_fields_are_known(self):
         content = """
-        version: "version"
+        version: "0.29.3"
         definitions:
           schema_loader:
             name: "{{ parameters.stream_name }}"
