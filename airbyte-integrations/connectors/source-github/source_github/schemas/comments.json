@@ -110,7 +110,7 @@
               "type": ["null", "string"]
             },
             "site_admin": {
-              "type": ["null", "integer"]
+              "type": ["null", "boolean"]
             }
           }
         },
