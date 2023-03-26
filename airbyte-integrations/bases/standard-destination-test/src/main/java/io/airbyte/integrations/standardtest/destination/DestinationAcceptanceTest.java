@@ -130,7 +130,8 @@ public abstract class DestinationAcceptanceTest {
     return getImageName().contains(":") ? getImageName().split(":")[0] : getImageName();
   }
 
-  private Optional<StandardDestinationDefinition> getOptionalDestinationDefinitionFromProvider(final String imageNameWithoutTag) {
+  protected Optional<StandardDestinationDefinition> getOptionalDestinationDefinitionFromProvider(
+                                                                                                 final String imageNameWithoutTag) {
     final LocalDefinitionsProvider provider = new LocalDefinitionsProvider();
     return provider.getDestinationDefinitions().stream()
         .filter(definition -> imageNameWithoutTag.equalsIgnoreCase(definition.getDockerRepository()))
@@ -630,7 +631,7 @@ public abstract class DestinationAcceptanceTest {
   @Test
   public void testIncrementalSyncWithNormalizationDropOneColumn()
       throws Exception {
-    if (!normalizationFromDefinition()) {
+    if (!normalizationFromDefinition() || !supportIncrementalSchemaChanges()) {
       return;
     }
 
@@ -1631,6 +1632,10 @@ public abstract class DestinationAcceptanceTest {
   }
 
   protected boolean supportObjectDataTypeTest() {
+    return false;
+  }
+
+  protected boolean supportIncrementalSchemaChanges() {
     return false;
   }
 
