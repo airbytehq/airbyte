@@ -1,0 +1,9 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "date_received": "2050-03-25T15:37:22.567Z" },
+      "stream_descriptor": { "name": "reports" }
+    }
+  }
+]
