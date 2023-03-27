@@ -60,8 +60,8 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 ## Supported streams
 
 This source is capable of syncing the following tables and their data:
-- [FBA Inventory Reports](https://sellercentral.amazon.com/gp/help/200740930)
-- [FBA Orders Reports](https://sellercentral.amazon.com/gp/help/help.html?itemID=200989110)
+- [Manage FBA Inventory Reports](https://sellercentral.amazon.com/gp/help/200740930)
+- [Removal FBA Order Details Reports](https://sellercentral.amazon.com/gp/help/help.html?itemID=200989110)
 - [FBA Shipments Reports](https://sellercentral.amazon.com/gp/help/help.html?itemID=200989100)
 - [FBA Replacements Reports](https://sellercentral.amazon.com/help/hub/reference/200453300)
 - [FBA Storage Fees Report](https://sellercentral.amazon.com/help/hub/reference/G202086720)
