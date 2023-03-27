@@ -152,6 +152,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
         // store essential column metadata to a Json object from the result set about each column
         this::getColumnMetadata)
         .stream()
+        // exclude tables that for which Airbyte does not have SELECT access
         .filter(excludeNotAccessibleTables(tablesWithSelectGrantPrivilege))
         // group by schema and table name to handle the case where a table with the same name exists in
         // multiple schemas.
