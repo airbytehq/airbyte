@@ -8,6 +8,7 @@ import static io.airbyte.integrations.source.relationaldb.state.StateManager.LOG
 
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.source.postgres_strict_encrypt.PostgresSourceStrictEncrypt;
 
 public class AlloyDbStrictEncryptSource {
 
