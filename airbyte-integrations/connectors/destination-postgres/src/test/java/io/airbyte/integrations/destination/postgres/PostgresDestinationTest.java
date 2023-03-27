@@ -70,7 +70,7 @@ public class PostgresDestinationTest {
 
   private static final String EXPECTED_JDBC_URL = "jdbc:postgresql://localhost:1337/db?";
 
-  private JsonNode buildConfigNoJdbcParameters() {
+  private static JsonNode buildConfigNoJdbcParameters() {
     return Jsons.jsonNode(ImmutableMap.of(
         JdbcUtils.HOST_KEY, "localhost",
         JdbcUtils.PORT_KEY, 1337,
@@ -82,7 +82,7 @@ public class PostgresDestinationTest {
 
   private static final String EXPECTED_JDBC_ESCAPED_URL = "jdbc:postgresql://localhost:1337/db%2Ffoo?";
 
-  private JsonNode buildConfigEscapingNeeded() {
+  private static JsonNode buildConfigEscapingNeeded() {
     return Jsons.jsonNode(ImmutableMap.of(
         JdbcUtils.HOST_KEY, "localhost",
         JdbcUtils.PORT_KEY, 1337,
@@ -90,7 +90,7 @@ public class PostgresDestinationTest {
         JdbcUtils.DATABASE_KEY, "db/foo"));
   }
 
-  private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
+  private static JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
     return Jsons.jsonNode(ImmutableMap.of(
         JdbcUtils.HOST_KEY, "localhost",
         JdbcUtils.PORT_KEY, 1337,
@@ -99,7 +99,7 @@ public class PostgresDestinationTest {
         JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam));
   }
 
-  private JsonNode buildConfigNoExtraJdbcParametersWithoutSsl() {
+  private static JsonNode buildConfigNoExtraJdbcParametersWithoutSsl() {
     return Jsons.jsonNode(ImmutableMap.of(
         JdbcUtils.HOST_KEY, "localhost",
         JdbcUtils.PORT_KEY, 1337,
@@ -164,7 +164,7 @@ public class PostgresDestinationTest {
   }
 
   @Test
-  void testCheckIncorrectPasswordFailure() {
+  void testCheckIncorrectPasswordFailure() throws Exception {
     final var config = buildConfigNoJdbcParameters();
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
     ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
@@ -174,7 +174,7 @@ public class PostgresDestinationTest {
   }
 
   @Test
-  public void testCheckIncorrectUsernameFailure() {
+  public void testCheckIncorrectUsernameFailure() throws Exception {
     final var config = buildConfigNoJdbcParameters();
     ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "");
     ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
@@ -184,7 +184,7 @@ public class PostgresDestinationTest {
   }
 
   @Test
-  public void testCheckIncorrectHostFailure() {
+  public void testCheckIncorrectHostFailure() throws Exception {
     final var config = buildConfigNoJdbcParameters();
     ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
     ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
@@ -194,7 +194,7 @@ public class PostgresDestinationTest {
   }
 
   @Test
-  public void testCheckIncorrectPortFailure() {
+  public void testCheckIncorrectPortFailure() throws Exception {
     final var config = buildConfigNoJdbcParameters();
     ((ObjectNode) config).put(JdbcUtils.PORT_KEY, "30000");
     ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
@@ -204,7 +204,7 @@ public class PostgresDestinationTest {
   }
 
   @Test
-  public void testCheckIncorrectDataBaseFailure() {
+  public void testCheckIncorrectDataBaseFailure() throws Exception {
     final var config = buildConfigNoJdbcParameters();
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
     ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
@@ -267,7 +267,7 @@ public class PostgresDestinationTest {
         actualRecords.stream().map(o -> o.get("_airbyte_data").asText()).map(Jsons::deserialize).collect(Collectors.toList()));
   }
 
-  private List<AirbyteMessage> getNRecords(final int n) {
+  private static List<AirbyteMessage> getNRecords(final int n) {
     return IntStream.range(0, n)
         .boxed()
         .map(i -> new AirbyteMessage()
@@ -280,7 +280,7 @@ public class PostgresDestinationTest {
         .collect(Collectors.toList());
   }
 
-  private JdbcDatabase getJdbcDatabaseFromConfig(final DataSource dataSource) {
+  private static JdbcDatabase getJdbcDatabaseFromConfig(final DataSource dataSource) {
     return new DefaultJdbcDatabase(dataSource, JdbcUtils.getDefaultSourceOperations());
   }
 
@@ -305,7 +305,7 @@ public class PostgresDestinationTest {
         .build());
   }
 
-  private DataSource getDataSourceFromConfig(final JsonNode config) {
+  private static DataSource getDataSourceFromConfig(final JsonNode config) {
     return DataSourceFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
