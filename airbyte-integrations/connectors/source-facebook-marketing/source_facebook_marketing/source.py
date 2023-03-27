@@ -7,6 +7,7 @@ from typing import Any, List, Mapping, Optional, Tuple, Type
 
 import facebook_business
 import pendulum
+import pydantic
 import requests
 from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
 from airbyte_cdk.sources import AbstractSource
@@ -55,7 +56,11 @@ class SourceFacebookMarketing(AbstractSource):
         :param config:  the user-input config object conforming to the connector's spec.json
         :return Tuple[bool, Any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        config = self._validate_and_transform(config)
+        try:
+            config = self._validate_and_transform(config)
+        except pydantic.error_wrappers.ValidationError as e:
+            return False, str(e)
+
         if config.end_date < config.start_date:
             return False, "end_date must be equal or after start_date."
 

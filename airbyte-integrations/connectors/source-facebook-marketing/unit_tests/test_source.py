@@ -70,17 +70,15 @@ class TestSourceFacebookMarketing:
     def test_check_connection_empty_config(self, api, logger_mock):
         config = {}
 
-        with pytest.raises(pydantic.ValidationError):
-            SourceFacebookMarketing().check_connection(logger_mock, config=config)
-
+        status, _ = SourceFacebookMarketing().check_connection(logger_mock, config=config)
+        assert status is False
         assert not api.called
 
     def test_check_connection_invalid_config(self, api, config, logger_mock):
         config.pop("start_date")
 
-        with pytest.raises(pydantic.ValidationError):
-            SourceFacebookMarketing().check_connection(logger_mock, config=config)
-
+        status, _ = SourceFacebookMarketing().check_connection(logger_mock, config=config)
+        assert status is False
         assert not api.called
 
     def test_check_connection_exception(self, api, config, logger_mock):
