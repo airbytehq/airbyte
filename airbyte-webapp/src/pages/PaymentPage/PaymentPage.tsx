@@ -59,10 +59,10 @@ const PaymentPage: React.FC = () => {
   // console.log(product);
 
   useEffect(() => {
-    if (!selectedProduct) {
+    if (!selectedProduct && product === undefined) {
       setProduct(productOptions[1]);
     }
-  }, [selectedProduct, productOptions]);
+  }, [selectedProduct, productOptions, product]);
 
   useEffect(() => {
     if (selectedProduct && product === undefined) {
