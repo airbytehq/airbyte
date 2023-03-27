@@ -157,7 +157,7 @@ public class PerformanceTest {
             totalBytes / 1_000_000.0);
       }
     }
-    log.info("Test Ended");
+    log.info("Test ended successfully");
     final var end = System.currentTimeMillis();
     final var totalMB = totalBytes / 1_000_000.0;
     final var totalTimeSecs = (end - start) / 1000.0;
