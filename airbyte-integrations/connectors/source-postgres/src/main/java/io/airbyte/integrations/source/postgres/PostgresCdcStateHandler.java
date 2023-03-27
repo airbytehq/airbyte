@@ -101,4 +101,8 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
     return Integer.parseInt(lsnA) == Integer.parseInt(lsnB);
   }
 
+  @Override
+  public boolean isCdcCheckpointEnabled() {
+    return true;
+  }
 }
