@@ -242,8 +242,8 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
 
         records = super().read_records(**kwargs)
         for record in records:
-            if record.get("has_children", False):
-                # do the depth first traversal recursive call, get children blocks
+            if record.get("has_children", False) and record.get("type") != "ai_block":
+                # do the depth first traversal recursive call, get children blocks if not ai block to avoid 400
                 self.block_id_stack.append(record["id"])
                 yield from self.read_records(**kwargs)
             yield record
