@@ -107,6 +107,12 @@
     },
     "side": {
       "type": ["null", "string"]
+    },
+    "subject_type": {
+      "type": ["null", "string"]
+    },
+    "reactions": {
+      "$ref": "reactions.json"
     }
   }
 }
