@@ -3,12 +3,12 @@
 #
 
 
+import pytest
 from argparse import Namespace
 from copy import deepcopy
 from typing import Any, List, Mapping, MutableMapping, Union
 from unittest.mock import MagicMock
 
-import pytest
 from airbyte_cdk import AirbyteEntrypoint
 from airbyte_cdk import entrypoint as entrypoint_module
 from airbyte_cdk.models import (
@@ -202,12 +202,13 @@ def test_invalid_command(entrypoint: AirbyteEntrypoint, mocker, config_mock):
     ["args", "expected"],
     [
         ("spec", Namespace(command="spec", debug=False)),
-        ("check --config config_path", Namespace(command="check", debug=False, config="config_path")),
+        ("check --config config_path", Namespace(command="check", debug=False, config="config_path", catalog=None)),
         ("discover --config config_path", Namespace(command="discover", debug=False, config="config_path")),
         ("read --config config_path --catalog catalog_path", Namespace(command="read", state=None, debug=False, config="config_path",
                                                                        catalog="catalog_path")),
         ("spec --and a bunch --of --random values", Namespace(command="spec", debug=False)),
-        ("check --config config_path --catalog catalog_path", Namespace(command="check", debug=False, config="config_path")),
+        ("check --config config_path --catalog catalog_path --something else",
+         Namespace(command="check", debug=False, config="config_path", catalog="catalog_path")),
         ("discover --config config_path -vvvv", Namespace(command="discover", debug=False, config="config_path")),
         ("read --config config_path --catalog catalog_path --read_only --log-level ERROR", Namespace(command="read", state=None,
                                                                                                      debug=False, config="config_path",

@@ -111,7 +111,7 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
       if (field.typeName().equalsIgnoreCase("DATE")) {
         return DateTimeConverter.convertToDate(input);
       }
-      return DebeziumConverterUtils.convertDate(input);
+      return DateTimeConverter.convertToTimestamp(input);
     });
   }
 
