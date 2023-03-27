@@ -6,23 +6,19 @@ import io.airbyte.integrations.standardtest.destination.comparator.parameters.Ad
 import io.airbyte.integrations.standardtest.destination.comparator.parameters.EmptyNodeTestArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.parameters.IsDateTimeValueTestArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.parameters.IsDateTimeWithTzTestArgumentProvider;
+import io.airbyte.integrations.standardtest.destination.comparator.parameters.IsDateValueTestArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.parameters.IsNumericTestArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.parameters.IsTimeWithTimeZoneTestArgumentProvider;
+import io.airbyte.integrations.standardtest.destination.comparator.parameters.IsTimeWithoutTimeZoneTestArgumentProvider;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.opentest4j.AssertionFailedError;
 
 public class AdvancedTestDataComparatorTest {
 
-  private AdvancedTestDataComparator comparator;
-
-  @BeforeEach
-  void init() {
-    this.comparator = new AdvancedTestDataComparator();
-  }
+  private static final AdvancedTestDataComparator comparator = new AdvancedTestDataComparator();
 
   @ParameterizedTest
   @ArgumentsSource(AssertSameDataArgumentProvider.class)
@@ -69,6 +65,20 @@ public class AdvancedTestDataComparatorTest {
   @ArgumentsSource(IsTimeWithTimeZoneTestArgumentProvider.class)
   public void testIsTimeWithTimezone(final String value, final boolean expected) {
     final var actual = AdvancedTestDataComparator.isTimeWithTimezone(value);
+    Assertions.assertEquals(expected, actual);
+  }
+
+  @ParameterizedTest
+  @ArgumentsSource(IsTimeWithoutTimeZoneTestArgumentProvider.class)
+  public void testIsTimeWithoutTimezone(final String value, final boolean expected) {
+    final var actual = AdvancedTestDataComparator.isTimeWithoutTimezone(value);
+    Assertions.assertEquals(expected, actual);
+  }
+
+  @ParameterizedTest
+  @ArgumentsSource(IsDateValueTestArgumentProvider.class)
+  public void testIsDateValue(final String value, final boolean expected) {
+    final var actual = AdvancedTestDataComparator.isDateValue(value);
     Assertions.assertEquals(expected, actual);
   }
 
