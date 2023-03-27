@@ -9,13 +9,13 @@ import MainPageWithScroll from "components/MainPageWithScroll";
 import { useUser } from "core/AuthContext";
 import { getPaymentStatus, PAYMENT_STATUS } from "core/Constants/statuses";
 import { GetUpgradeSubscriptionDetail } from "core/domain/payment";
-import { ProductItem } from "core/domain/product";
+import { ProductOptionItem } from "core/domain/product";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 import { SettingsRoute } from "pages/SettingsPage/SettingsPage";
 import { useAuthenticationService } from "services/auth/AuthSpecificationService";
 import { useAsyncAction, useUserPlanDetail } from "services/payments/PaymentsService";
-import { usePackagesDetail, usePackagesMap } from "services/products/ProductsService";
+import { useProductOptions, usePackagesMap } from "services/products/ProductsService";
 
 import PaymentNav from "./components/PaymentNav";
 import styles from "./PaymentPage.module.scss";
@@ -40,7 +40,7 @@ const PaymentPage: React.FC = () => {
   const { push } = useRouter();
 
   const [currentStep, setCurrentStep] = useState<string>(PaymentSteps.SELECT_PLAN);
-  const [product, setProduct] = useState<ProductItem | undefined>();
+  const [product, setProduct] = useState<ProductOptionItem | undefined>();
   const [paymentLoading, setPaymentLoading] = useState<boolean>(false);
   const [planDetail, setPlanDetail] = useState<GetUpgradeSubscriptionDetail>();
   const [updatePlanLoading, setUpdatePlanLoading] = useState<boolean>(false);
@@ -51,21 +51,28 @@ const PaymentPage: React.FC = () => {
   const { updateUserStatus, user } = useUser();
   const userPlanDetail = useUserPlanDetail();
   const { selectedProduct } = userPlanDetail;
-  const packagesDetail = usePackagesDetail();
-  const { productItem } = packagesDetail;
+  // const packagesDetail = usePackagesDetail();
+  // const { productItem } = packagesDetail;
   const packagesMap = usePackagesMap();
+  const productOptions = useProductOptions();
+
+  // console.log(product);
 
   useEffect(() => {
     if (!selectedProduct) {
-      setProduct(productItem[1]);
+      setProduct(productOptions[1]);
     }
-  }, [selectedProduct, productItem]);
+  }, [selectedProduct, productOptions]);
 
   useEffect(() => {
-    if (selectedProduct) {
-      setProduct(selectedProduct);
+    if (selectedProduct && product === undefined) {
+      let index = -1;
+      index = productOptions.findIndex((option) => option.id === selectedProduct.id);
+      if (index >= 0) {
+        setProduct(productOptions[index]);
+      }
     }
-  }, [selectedProduct]);
+  }, [productOptions, selectedProduct, product]);
 
   const onSelectPlan = useCallback(async () => {
     setPaymentLoading(true);
@@ -95,7 +102,7 @@ const PaymentPage: React.FC = () => {
     }
   }, [product, selectedProduct]);
 
-  const onUpdadePlan = useCallback(async () => {
+  const onUpgradePlan = useCallback(async () => {
     setUpdatePlanLoading(true);
     onUpgradeSubscription()
       .then(() => {
@@ -134,17 +141,17 @@ const PaymentPage: React.FC = () => {
               setProduct={setProduct}
               selectedProduct={selectedProduct}
               paymentLoading={paymentLoading}
-              productItems={packagesDetail.productItem}
+              productOptions={productOptions}
               packagesMap={packagesMap}
               onSelectPlan={onSelectPlan}
             />
           )}
           {currentStep === PaymentSteps.BILLING_PAYMENT && (
             <BillingPaymentStep
-              productPrice={product?.price as number}
+              productPrice={Number(product?.price)}
               selectedProductPrice={selectedProduct?.price as number}
               planDetail={planDetail}
-              // onUpdadePlan={onUpdadePlan}
+              // onUpgradePlan={onUpgradePlan}
               // updatePlanLoading={updatePlanLoading}
             />
           )}
@@ -154,7 +161,7 @@ const PaymentPage: React.FC = () => {
             <FormattedMessage id="form.button.back" />
           </BigButton>
           {currentStep === PaymentSteps.BILLING_PAYMENT && (
-            <BigButton isLoading={updatePlanLoading} onClick={onUpdadePlan}>
+            <BigButton isLoading={updatePlanLoading} onClick={onUpgradePlan}>
               <FormattedMessage id="plan.update.btn" />
             </BigButton>
           )}

@@ -1,6 +1,6 @@
 import { useUser } from "core/AuthContext";
 import { PlanItemTypeEnum } from "core/domain/payment";
-import { ProductService } from "core/domain/product";
+import { ProductService, ProductOptionItem } from "core/domain/product";
 import {
   PackageItem,
   ProcessedPackageMapItem,
@@ -32,6 +32,61 @@ function useProductApiService() {
 export const useListProducts = () => {
   const service = useProductApiService();
   return useSuspenseQuery(productKeys.lists(), () => service.list()).data;
+};
+
+const setFunctionValue = (label: string): number => {
+  switch (label) {
+    case "1M":
+      return 1;
+
+    case "2M":
+      return 6;
+
+    case "3M":
+      return 11;
+
+    case "5M":
+      return 17;
+
+    case "10M":
+      return 28;
+
+    case "20M":
+      return 45;
+
+    case "50M":
+      return 65;
+
+    case "100M":
+      return 93;
+
+    default:
+      return 0;
+  }
+};
+
+export const useProductOptions = (): ProductOptionItem[] => {
+  const products = useListProducts();
+
+  const productOptions: ProductOptionItem[] = products.map((product) => {
+    return {
+      id: product.id,
+      itemName: product.itemName,
+      value: setFunctionValue(product.itemName),
+      label: product.itemName,
+      price: `${product.price}`,
+    };
+  });
+
+  const customProduct: ProductOptionItem = {
+    id: "",
+    itemName: "",
+    value: 100,
+    label: "",
+    price: "custom",
+  };
+
+  return [...productOptions, customProduct];
 };
 
 export const usePackagesDetail = () => {

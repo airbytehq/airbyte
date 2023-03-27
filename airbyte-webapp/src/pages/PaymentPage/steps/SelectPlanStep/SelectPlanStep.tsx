@@ -2,17 +2,17 @@ import _ from "lodash";
 import React from "react";
 import styled from "styled-components";
 
-import { ProcessedPackageMap, ProductItem } from "core/domain/product";
+import { ProcessedPackageMap, ProductItem, ProductOptionItem } from "core/domain/product";
 
 import FeaturesCard from "./components/FeaturesCard";
 import RangeCard from "./components/RangeCard";
 
 interface IProps {
-  product?: ProductItem;
-  setProduct: (item: ProductItem) => void;
+  product?: ProductOptionItem;
+  setProduct: (item: ProductOptionItem) => void;
   selectedProduct?: ProductItem;
   paymentLoading: boolean;
-  productItems: ProductItem[];
+  productOptions: ProductOptionItem[];
   packagesMap: ProcessedPackageMap;
   onSelectPlan: () => void;
 }
@@ -27,17 +27,17 @@ const SelectPlanStep: React.FC<IProps> = ({
   setProduct,
   selectedProduct,
   paymentLoading,
-  productItems,
+  productOptions,
   packagesMap,
   onSelectPlan,
 }) => {
   return (
     <>
-      <RangeCard products={productItems} product={product} setProduct={setProduct} />
+      <RangeCard productOptions={productOptions} product={product} setProduct={setProduct} />
       <CardSeperator />
       <FeaturesCard
         product={product}
-        selectPlanBtnDisability={_.isEqual(product, selectedProduct)}
+        selectPlanBtnDisability={_.isEqual(product?.id, selectedProduct?.id)}
         onSelectPlan={onSelectPlan}
         paymentLoading={paymentLoading}
         packagesMap={packagesMap}
