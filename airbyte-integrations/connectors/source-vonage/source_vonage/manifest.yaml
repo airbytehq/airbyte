@@ -5,7 +5,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: ['records']
+      field_path: ["records"]
   cursor_paginator:
     type: "DefaultPaginator"
     pagination_strategy:
