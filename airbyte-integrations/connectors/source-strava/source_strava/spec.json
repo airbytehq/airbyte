@@ -1,7 +1,7 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/strava",
   "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "Strava Spec",
     "type": "object",
     "required": [
@@ -57,7 +57,8 @@
         "type": "string",
         "description": "UTC date and time. Any data before this date will not be replicated.",
         "title": "Start Date",
-        "examples": ["2016-12-31 23:59:59"],
+        "examples": ["2021-03-01T00:00:00Z"],
+        "format": "date-time",
         "order": 4
       }
     }
