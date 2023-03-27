@@ -108,7 +108,8 @@ public class AirbyteFileOffsetBackingStore {
 
   /**
    * See FileOffsetBackingStore#load - logic is mostly borrowed from here. duplicated because this
-   * method is not public.
+   * method is not public. Reduced the try catch block to only the read operation from original code
+   * to reduce errors when reading the file.
    */
   @SuppressWarnings("unchecked")
   private Map<ByteBuffer, ByteBuffer> load() {
