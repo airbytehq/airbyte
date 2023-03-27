@@ -718,13 +718,13 @@ class TestBasicRead(BaseTest):
             ), f" Record {record} from {record.stream} stream with fields {record_fields} should have some fields mentioned by json schema: {schema_pathes}"
 
     @staticmethod
-    def _validate_schema(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
+    def _validate_schema(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog, fail_on_extra_columns: Boolean):
         """
         Check if data type and structure in records matches the one in json_schema of the stream in catalog
         """
         TestBasicRead._validate_records_structure(records, configured_catalog)
         bar = "-" * 80
-        streams_errors = verify_records_schema(records, configured_catalog)
+        streams_errors = verify_records_schema(records, configured_catalog, fail_on_extra_columns)
         for stream_name, errors in streams_errors.items():
             errors = map(str, errors.values())
             str_errors = f"\n{bar}\n".join(errors)
@@ -766,7 +766,7 @@ class TestBasicRead(BaseTest):
 
         return sorted(list(expected_paths))
 
-    def _validate_field_appears_at_least_once(self, records: List, configured_catalog: ConfiguredAirbyteCatalog):
+    def _validate_field_appears_at_least_once(self, records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
         """
         Validate if each field in a stream has appeared at least once in some record.
         """
@@ -827,6 +827,11 @@ class TestBasicRead(BaseTest):
         else:
             return inputs.validate_schema
 
+    @pytest.fixture(name="should_fail_on_extra_columns")
+    def should_fail_on_extra_columns_fixture(self, inputs: BasicReadTestConfig):
+        # TODO (Ella): enforce this param once all connectors are passing
+        return inputs.fail_on_extra_columns
+
     @pytest.fixture(name="should_validate_data_points")
     def should_validate_data_points_fixture(self, inputs: BasicReadTestConfig) -> Boolean:
         # TODO: we might want to enforce this when Config.TestStrictnessLevel.high
@@ -871,6 +876,7 @@ class TestBasicRead(BaseTest):
         expect_records_config: ExpectedRecordsConfig,
         should_validate_schema: Boolean,
         should_validate_data_points: Boolean,
+        should_fail_on_extra_columns: Boolean,
         empty_streams: Set[EmptyStreamConfiguration],
         ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]],
         expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
@@ -883,7 +889,9 @@ class TestBasicRead(BaseTest):
         assert records, "At least one record should be read using provided catalog"
 
         if should_validate_schema:
-            self._validate_schema(records=records, configured_catalog=configured_catalog)
+            self._validate_schema(
+                records=records, configured_catalog=configured_catalog, fail_on_extra_columns=should_fail_on_extra_columns
+            )
 
         self._validate_empty_streams(records=records, configured_catalog=configured_catalog, allowed_empty_streams=empty_streams)
         for pks, record in primary_keys_for_records(streams=configured_catalog.streams, records=records):
