@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.standardtest.destination.comparator.parameters.AdvancedTestDataComparatorTestParameters.AssertNotSameDataArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.parameters.AdvancedTestDataComparatorTestParameters.AssertSameDataArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.parameters.EmptyNodeTestArgumentProvider;
+import io.airbyte.integrations.standardtest.destination.comparator.parameters.IsNumericTestArgumentProvider;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,11 +38,21 @@ public class AdvancedTestDataComparatorTest {
   @ArgumentsSource(EmptyNodeTestArgumentProvider.class)
   public void testIsJsonNodeEmpty(final JsonNode value, final boolean expected) {
     final var actual = AdvancedTestDataComparator.isJsonNodeEmpty(value);
-    Assertions.assertEquals(actual, expected);
+    Assertions.assertEquals(expected, actual);
+  }
+
+  @ParameterizedTest
+  @ArgumentsSource(IsNumericTestArgumentProvider.class)
+  public void testIsNumeric(final String value, final boolean expected) {
+    final var actual = AdvancedTestDataComparator.isNumeric(value);
+    Assertions.assertEquals(expected, actual);
   }
 
   @ParameterizedTest
   @ArgumentsSource()
-  public void test
+  public void testIsDateTimeWithTzValue(final String value, final boolean expected) {
+    final var actual = AdvancedTestDataComparator.isDateTimeWithTzValue(value);
+    Assertions.assertEquals(expected, actual);
+  }
 
 }

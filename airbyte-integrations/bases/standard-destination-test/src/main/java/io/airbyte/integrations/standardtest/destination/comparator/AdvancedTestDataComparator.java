@@ -34,7 +34,7 @@ public class AdvancedTestDataComparator implements TestDataComparator {
   // TODO revisit dataset which used date as string: exchange_rate_catalog.json
   // tried to change it to date time type but some connectors failed to store it e.i.
   // bigquery-denormalized
-  private static final Set<String> TEST_DATASET_IGNORE_LIST =
+  public static final Set<String> TEST_DATASET_IGNORE_LIST =
       Set.of(
           "2020-08-29T00:00:00Z",
           "2020-08-30T00:00:00Z",
@@ -97,7 +97,7 @@ public class AdvancedTestDataComparator implements TestDataComparator {
     } else if (isDateValue(expectedValue.asText())) {
       return compareDateValues(expectedValue.asText(), actualValue.asText());
     } else if (isTimeWithTimezone(expectedValue.asText())) {
-      return compareTimeWithTimeZone(expectedValue.asText(), actualValue.asText());
+      return expectedValue.asText().equals(actualValue.asText());
     } else if (isTimeWithoutTimezone(expectedValue.asText())) {
       return compareTimeWithoutTimeZone(expectedValue.asText(), actualValue.asText());
     } else if (expectedValue.isArray()) {
@@ -115,7 +115,7 @@ public class AdvancedTestDataComparator implements TestDataComparator {
     return expectedValue.asText().equals(actualValue.asText());
   }
 
-  private static boolean isNumeric(final String value) {
+  protected static boolean isNumeric(final String value) {
     return value.matches("-?\\d+(\\.\\d+)?");
   }
 
@@ -210,10 +210,6 @@ public class AdvancedTestDataComparator implements TestDataComparator {
   }
 
   protected boolean compareTimeWithoutTimeZone(final String airbyteMessageValue, final String destinationValue) {
-    return airbyteMessageValue.equals(destinationValue);
-  }
-
-  protected static boolean compareTimeWithTimeZone(final String airbyteMessageValue, final String destinationValue) {
     return airbyteMessageValue.equals(destinationValue);
   }
 
