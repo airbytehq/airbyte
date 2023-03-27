@@ -75,7 +75,7 @@ public class PerformanceTest {
         .withCpuRequest("1")
         .withMemoryLimit("2Gi")
         .withMemoryRequest("2Gi");
-//    final var heartbeatMonitor = new HeartbeatMonitor(Duration.ofMillis(1));
+    // final var heartbeatMonitor = new HeartbeatMonitor(Duration.ofMillis(1));
     final var allowedHosts = new AllowedHosts().withHosts(List.of("*"));
     final var integrationLauncher =
         new AirbyteIntegrationLauncher("1", 0, this.imageName, processFactory, resourceReqs, allowedHosts, false, new EnvVariableFeatureFlags());
@@ -189,7 +189,8 @@ public class PerformanceTest {
                                      final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields,
                                      final Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields,
                                      final ConcurrentHashMap<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors,
-                                     final AirbyteMessage message) throws RecordSchemaValidationException {
+                                     final AirbyteMessage message)
+      throws RecordSchemaValidationException {
     if (message.getRecord() != null) {
       final AirbyteRecordMessage record = message.getRecord();
       final AirbyteStreamNameNamespacePair messageStream = AirbyteStreamNameNamespacePair.fromRecordMessage(record);
