@@ -68,6 +68,7 @@ jobs:
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
+            - **Note**: The following `dataset=` values are supported: `1m`, `10m`, `20m`, `bottleneck_stream1`
             > :runner: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Search for valid connector name format
         id: regex
