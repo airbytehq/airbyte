@@ -33,12 +33,12 @@
       "type": ["string", "null"]
     },
     "started_at": {
-      "format": "date-time",
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     },
     "completed_at": {
-      "format": "date-time",
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "date-time"
     },
     "name": {
       "type": "string"
@@ -61,12 +61,12 @@
             "type": "integer"
           },
           "started_at": {
-            "format": "date-time",
-            "type": ["string", "null"]
+            "type": ["string", "null"],
+            "format": "date-time"
           },
           "completed_at": {
-            "format": "date-time",
-            "type": ["string", "null"]
+            "type": ["string", "null"],
+            "format": "date-time"
           }
         }
       }
