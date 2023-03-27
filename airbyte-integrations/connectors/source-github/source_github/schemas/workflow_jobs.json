@@ -24,20 +24,20 @@
       "type": "string"
     },
     "html_url": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "status": {
       "type": "string"
     },
     "conclusion": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "started_at": {
       "type": "string",
       "format": "date-time"
     },
     "completed_at": {
-      "type": ["string", "null"],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "name": {
@@ -52,7 +52,7 @@
             "type": "string"
           },
           "conclusion": {
-            "type": ["string", "null"]
+            "type": ["null", "string"]
           },
           "name": {
             "type": "string"
@@ -61,11 +61,11 @@
             "type": "integer"
           },
           "started_at": {
-            "type": ["string", "null"],
+            "type": ["null", "string"],
             "format": "date-time"
           },
           "completed_at": {
-            "type": ["string", "null"],
+            "type": ["null", "string"],
             "format": "date-time"
           }
         }
@@ -84,13 +84,13 @@
       "type": ["integer", "null"]
     },
     "runner_name": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "runner_group_id": {
       "type": ["integer", "null"]
     },
     "runner_group_name": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     }
   }
 }
