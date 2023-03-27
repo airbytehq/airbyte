@@ -152,7 +152,7 @@ jobs:
           echo "reading end of log"
           kubectl logs --tail=5 $POD
           # RUN_RESULT=$(kubectl logs --tail=5 $POD 2>&1)
-          prefix='"LOG","log":{"level":"INFO","message":"INFO i.a.i.p.PerformanceTest(runTest):165'
+          prefix='{"type":"LOG","log":{"level":"INFO","message":"INFO i.a.i.p.PerformanceTest(runTest):165'
           suffix='"}}'
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "RUN_RESULT<<$EOF" >> $GITHUB_OUTPUT
