@@ -132,6 +132,9 @@ class IncrementalOrbStream(OrbStream, ABC):
 
         # State stores the timestamp is ISO format
         state_based_start_timestamp = stream_state.get(self.cursor_field)
+        print(f"xcxc {self.cursor_field}")
+        print(f"xcxc state based {state_based_start_timestamp} ")
+        print(f"xcxc lookback {self.lookback_window_days} ")
 
         if state_based_start_timestamp and self.lookback_window_days:
             self.logger.info(f"Applying lookback window of {self.lookback_window_days} days to stream {self.name}")
@@ -447,16 +450,17 @@ class Plans(IncrementalOrbStream):
     def path(self, **kwargs) -> str:
         return "plans"
 
+
 class Invoices(IncrementalOrbStream):
     """
-    Fetches issued invoices.
+    Fetches non-draft invoices, including those that are paid, issued, void, or synced.
     API Docs: https://docs.withorb.com/docs/orb-docs/api-reference/operations/list-invoices
     """
 
     @property
     def cursor_field(self) -> str:
         """
-        Invoices created in the past may be newly issued, so we store state on 
+        Invoices created in the past may be newly issued, so we store state on
         `invoice_date` instead.
         """
         return "invoice_date"
@@ -468,8 +472,15 @@ class Invoices(IncrementalOrbStream):
         request_params = super().request_params(stream_state, **kwargs)
         # This doesn't make sense for invoices, since the cursor field is `invoice_date`, and the
         # created_at for an invoice isn't meaningful, so any attempt to use it should be prevented.
-        del request_params["created_at[gte]"]
+        if "created_at[gte]" in request_params:
+            del request_params["created_at[gte]"]
+
+        # Filter to all statuses. Note that if you're currently expecting the status of the invoice
+        # to update at the sink, you should periodically still expect to re-sync this connector to
+        # fetch updates.
+        request_params["status[]"] = ["void", "paid", "issued", "synced"]
         return request_params
+
 
 class CreditsLedgerEntries(IncrementalOrbStream):
     page_size = 500
