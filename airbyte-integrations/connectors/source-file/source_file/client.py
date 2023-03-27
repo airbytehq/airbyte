@@ -186,8 +186,8 @@ class URLFile:
             try:
                 credentials = json.loads(self._provider["service_account_json"])
             except json.decoder.JSONDecodeError as err:
-                error_msg = f"Failed to parse gcs service account json: {repr(err)}\n{traceback.format_exc()}"
-                logger.error(error_msg)
+                error_msg = f"Failed to parse gcs service account json: {repr(err)}"
+                logger.error(f"{error_msg}\n{traceback.format_exc()}")
                 raise ConfigurationError(error_msg) from err
 
         if credentials:
@@ -316,8 +316,8 @@ class Client:
         try:
             reader = readers[self._reader_format]
         except KeyError as err:
-            error_msg = f"Reader {self._reader_format} is not supported\n{traceback.format_exc()}"
-            logger.error(error_msg)
+            error_msg = f"Reader {self._reader_format} is not supported."
+            logger.error(f"{error_msg}\n{traceback.format_exc()}")
             raise ConfigurationError(error_msg) from err
 
         reader_options = {**self._reader_options}
@@ -339,8 +339,9 @@ class Client:
             else:
                 yield reader(fp, **reader_options)
         except UnicodeDecodeError as err:
-            error_msg = f"File {fp} can't be parsed with reader of chosen type ({self._reader_format})\n{traceback.format_exc()}"
-            logger.error(error_msg)
+            error_msg = (f"File {fp} can't be parsed with reader of chosen type ({self._reader_format}). "
+                         f"Please check provided Format and Reader Options. {repr(err)}.")
+            logger.error(f"{error_msg}\n{traceback.format_exc()}")
             raise ConfigurationError(error_msg) from err
 
     @staticmethod

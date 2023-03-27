@@ -1,4 +1,4 @@
-FROM airbyte/source-file:0.2.35
+FROM airbyte/source-file:0.2.36
 
 WORKDIR /airbyte/integration_code
 COPY source_file_secure ./source_file_secure
