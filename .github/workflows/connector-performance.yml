@@ -1,4 +1,4 @@
-name: Test Connector Performance
+name: Connector Performance Harness
 on:
   workflow_dispatch:
     inputs:
