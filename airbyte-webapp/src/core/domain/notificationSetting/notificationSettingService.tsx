@@ -8,6 +8,7 @@ import {
   editNotificationSetting,
   deleteNotificationSetting,
   ignoreNotification,
+  IgnoreNotificationBody,
 } from "../../request/DaspireClient";
 
 export class NotificationService extends AirbyteRequestService {
@@ -35,7 +36,7 @@ export class NotificationService extends AirbyteRequestService {
     return deleteNotificationSetting(notificationSettingId, this.requestOptions);
   }
 
-  public ignore() {
-    return ignoreNotification(this.requestOptions);
+  public ignore(ignoreNotificationBody: IgnoreNotificationBody) {
+    return ignoreNotification(ignoreNotificationBody, this.requestOptions);
   }
 }

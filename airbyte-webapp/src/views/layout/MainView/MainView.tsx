@@ -134,10 +134,10 @@ const MainView: React.FC = (props) => {
         <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
           <React.Suspense fallback={<LoadingPage />}>
             <UpgradePlanBanner onBillingPage={onBillingPage} />
-            {usagePercentage > 0 && usagePercentage < 100 && (
+            {usage !== undefined && usagePercentage > 0 && usagePercentage < 100 && (
               <SyncNotificationBanner usagePercentage={usagePercentage} onBillingPage={onBillingPage} />
             )}
-            {usagePercentage >= 100 && <BillingWarningBanner onBillingPage={onBillingPage} />}
+            {usage !== undefined && usagePercentage >= 100 && <BillingWarningBanner onBillingPage={onBillingPage} />}
             {props.children}
           </React.Suspense>
         </ResourceNotFoundErrorBoundary>
