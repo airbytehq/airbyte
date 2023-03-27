@@ -112,12 +112,9 @@ pub struct ConfiguredCatalog {
     #[validate]
     pub streams: Vec<ConfiguredStream>,
 
-    #[serde(rename = "estuary.dev/tail")]
-    pub tail: bool,
-
     #[serde(rename = "estuary.dev/range")]
     #[validate]
-    pub range: Range,
+    pub range: Option<Range>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]

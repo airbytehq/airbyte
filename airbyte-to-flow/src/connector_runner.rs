@@ -5,8 +5,9 @@ use futures::{channel::oneshot, stream, StreamExt};
 use tokio::{io::{AsyncWrite, copy}, process::{ChildStdout, ChildStdin, Child}, sync::Mutex};
 use tokio_util::io::{ReaderStream, StreamReader};
 
-use proto_flow::capture::PullResponse;
-use proto_flow::flow::DriverCheckpoint;
+use proto_flow::capture::Response;
+use proto_flow::capture::response;
+use proto_flow::flow::ConnectorState;
 
 use crate::{apis::{InterceptorStream, FlowCaptureOperation}, interceptors::airbyte_source_interceptor::AirbyteSourceInterceptor, errors::{Error, io_stream_to_interceptor_stream, interceptor_stream_to_io_stream}, libs::{command::{invoke_connector_delayed, check_exit_status}, protobuf::{decode_message, encode_message}}};
 
@@ -63,9 +64,9 @@ pub async fn run_airbyte_source_connector(
                     Some(bytes) => {
                         let bytes = bytes?;
                         let mut buf = &bytes[..];
-                        // This is infallible because we must encode a PullResponse in response to
-                        // a PullRequest. See airbyte_source_interceptor.adapt_pull_response_stream
-                        let msg = decode_message::<PullResponse, _>(&mut buf)
+                        // This is infallible because we must encode a Response in response to
+                        // a Request. See airbyte_source_interceptor.adapt_pull_response_stream
+                        let msg = decode_message::<Response, _>(&mut buf)
                             .await
                             .unwrap()
                             .unwrap();
@@ -108,12 +109,13 @@ pub async fn run_airbyte_source_connector(
                 // We generate a synthetic commit now, and the empty checkpoint means the assumed behavior
                 // of the next invocation will be "full refresh".
                 tracing::warn!("go.estuary.dev/W001: connector exited without writing a final state checkpoint, writing an empty object {{}} merge patch driver checkpoint.");
-                let mut resp = PullResponse::default();
-                resp.checkpoint = Some(DriverCheckpoint {
-                    driver_checkpoint_json: b"{}".to_vec(),
-                    rfc7396_merge_patch: true,
-                });
-                let encoded_response = &encode_message(&resp)?;
+                let checkpoint = response::Checkpoint {
+                    state: Some(ConnectorState {
+                        updated_json: "{}".to_string(),
+                        merge_patch: true,
+                    })
+                };
+                let encoded_response = &encode_message(&checkpoint)?;
                 let mut buf = &encoded_response[..];
                 let mut writer = response_write.lock().await;
                 copy(&mut buf, writer.deref_mut()).await?;
