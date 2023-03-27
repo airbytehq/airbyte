@@ -1,8 +1,7 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
@@ -29,9 +28,13 @@ def patch_base_class(mocker):
 def test_next_page_token(patch_base_class):
     stream = BreezyStream(limit=1, page_size=1)
     # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
+    # val = {"total": 10}
+    mock = MagicMock(json=lambda: {"total": 10, "data": []})
+    # mock.json.__getitem__.side_effect = val.__getitem__
+    # mock.__gt__ = lambda self, compare: True
+    inputs = {"response": mock}
     # TODO: replace this with your expected next page token
-    expected_token = { 'limit': 1, 'skip': 0 }
+    expected_token = {"limit": 1, "skip": 0}
     assert stream.next_page_token(**inputs) == expected_token
 
 
@@ -45,11 +48,11 @@ def test_next_page_token(patch_base_class):
 
 
 def test_request_headers(patch_base_class):
-    stream = BreezyStream(limit=200, page_size=10, cookie='abcd', company='abcde')
+    stream = BreezyStream(limit=200, page_size=10, cookie="abcd", company="abcde")
     # TODO: replace this with your input parameters
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None }
+    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
     # TODO: replace this with your expected request headers
-    expected_headers = { 'cookie': 'abcd', 'company_id': 'abcde' }
+    expected_headers = {"cookie": "abcd", "origin": "https://app.breezy.hr"}
     assert stream.request_headers(**inputs) == expected_headers
 
 

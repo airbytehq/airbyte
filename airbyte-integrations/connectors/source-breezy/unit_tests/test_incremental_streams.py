@@ -1,9 +1,8 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
-from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_breezy.source import IncrementalBreezyStream
 
@@ -18,7 +17,7 @@ def patch_incremental_base_class(mocker):
 
 def test_cursor_field(patch_incremental_base_class):
     stream = IncrementalBreezyStream()
-    expected_cursor_field = ['updated_date']
+    expected_cursor_field = 'updated_date'
     assert stream.cursor_field == expected_cursor_field
 
 
@@ -54,5 +53,5 @@ def test_source_defined_cursor(patch_incremental_base_class):
 def test_stream_checkpoint_interval(patch_incremental_base_class):
     stream = IncrementalBreezyStream()
     # TODO: replace this with your expected checkpoint interval
-    expected_checkpoint_interval = 5000
+    expected_checkpoint_interval = 1000
     assert stream.state_checkpoint_interval == expected_checkpoint_interval

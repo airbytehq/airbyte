@@ -97,13 +97,12 @@
         },
         "category": {
           "type": [
-            "string",
+            "object",
             "null"
           ]
         }
       }
     },
-
     "education": {
       "type": [
         "array"
@@ -466,6 +465,7 @@
         "id": {
           "type": [
             "string",
+            "integer",
             "null"
           ]
         },
@@ -477,9 +477,29 @@
         },
         "type": {
           "type": [
-            "string",
+            "object",
             "null"
-          ]
+          ],
+          "properties": {
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "name": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "icon": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
         }
       }
     },

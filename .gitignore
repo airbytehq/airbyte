@@ -90,3 +90,5 @@ flags.yml
 
 # Java
 **/bin/**
+
+**/node_modules/**

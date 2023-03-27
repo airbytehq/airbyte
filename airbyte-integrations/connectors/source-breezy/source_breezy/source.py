@@ -1,31 +1,19 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 from abc import ABC
-from http import cookies
-from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
-from datetime import datetime
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.error import HTTPError
+
 import pendulum
-from airbyte_cdk.entrypoint import logger
-from airbyte_cdk.models import (
-    AirbyteCatalog,
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteStateMessage,
-    ConfiguredAirbyteCatalog,
-    ConfiguredAirbyteStream,
-    Status,
-    SyncMode,
-)
 import requests
+from airbyte_cdk.entrypoint import logger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 
 # Basic full refresh stream
@@ -55,6 +43,7 @@ class BreezyStream(HttpStream, ABC):
 
     See the reference docs for the full list of configurable options.
     """
+
     page_size: int
     cookie: str
     company_id: str
@@ -62,10 +51,11 @@ class BreezyStream(HttpStream, ABC):
     # TODO: Fill in the url base. Required.
     app_base = "https://app.breezy.hr"
     _current_rows = 0
+    _internal_cursor = None
     total_rows_read = 0
     limit: int
     start_time: str
-    data_field = 'data'
+    data_field = "data"
 
     def __init__(self, limit=None, page_size=5000, cookie=None, company=None, start_time="2017-01-25T00:00:00Z", **kwargs):
         super().__init__(**kwargs)
@@ -78,28 +68,42 @@ class BreezyStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return f'https://app.breezy.hr/api/company/{self.company_id}/'
+        return f"https://app.breezy.hr/api/company/{self.company_id}/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response = response.json()
-        max = response['total']
+        max_elements = response["total"]
         rows_read = len(response[self.data_field])
         self.total_rows_read += rows_read
         self._current_rows += rows_read
-        if self._current_rows < max or (self.limit and self.total_rows_read < self.limit):
-            result = {'limit': min(self.page_size, max - self.total_rows_read),
-                      'skip': self._current_rows }
+        if max_elements == 10001:
+            max_val = max(response[self.data_field], default=None, key=lambda obj: obj["updated_date"])
+            min_val = min(response[self.data_field], default=None, key=lambda obj: obj["updated_date"])
+            max_date = max_val["updated_date"]
+            min_date = min_val["updated_date"]
+            self.logger.info(f"Need further pagination : Max record: {max_date} / Min record : {min_date}")
+            self._current_rows = 0
+            self._internal_cursor = int(self._field_to_datetime(min_date).timestamp() * 1000)
+            return {
+                "limit": self.page_size,
+                "skip": self._current_rows,
+                "updated_date": {"end": self._internal_cursor},
+            }
+        elif self._current_rows < max_elements or (self.limit and self.total_rows_read < self.limit):
+            result = {"limit": self.page_size, "skip": self._current_rows}
+            if self._internal_cursor:
+                result.update({"updated_date": {"end": self._internal_cursor}})
             return result
         return None
 
     @property
     def http_method(self):
-        return 'POST'
+        return "POST"
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-        return {'cookie': self.cookie, 'origin': self.app_base}
+        return {"cookie": self.cookie, "origin": self.app_base}
 
     @staticmethod
     def _field_to_datetime(value: Union[int, str]) -> pendulum.datetime:
@@ -119,20 +123,19 @@ class BreezyStream(HttpStream, ABC):
         response = response.json()
         if isinstance(response, Mapping):
             if response.get("status", None) == "error":
-                self.logger.warning(
-                    f"Stream `{self.name}` cannot be procced. {response.get('message')}")
+                self.logger.warning(f"Stream `{self.name}` cannot be procced. {response.get('message')}")
                 return
 
             if response.get(self.data_field) is None:
                 """
                 When the response doen't have the stream's data, raise an exception.
                 """
-                raise RuntimeError("Unexpected API response: {} not in {}".format(
-                    self.data_field, response.keys()))
+                raise RuntimeError("Unexpected API response: {} not in {}".format(self.data_field, response.keys()))
             yield from response[self.data_field]
         else:
             response = list(response)
             yield from response
+
 
 # Basic incremental stream
 
@@ -162,7 +165,7 @@ class IncrementalBreezyStream(BreezyStream, ABC):
 
         :return str: The name of the cursor field.
         """
-        return 'updated_date'
+        return "updated_date"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         if self.state:
@@ -197,14 +200,14 @@ class IncrementalBreezyStream(BreezyStream, ABC):
 
     def _update_state(self, latest_cursor):
         self._current_rows = 0
+        self._internal_cursor = None
         if latest_cursor:
             new_state = max(latest_cursor, self._state) if self._state else latest_cursor
             if new_state != self._state:
                 logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
                 self._state = new_state
                 self._start_date = self._state
-        
-    
+
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         records = super().read_records(*args, **kwargs)
         latest_cursor = None
@@ -223,16 +226,10 @@ class IncrementalBreezyStream(BreezyStream, ABC):
         now_ts = int(pendulum.now().timestamp() * 1000)
         start_ts = int(self._start_date.timestamp() * 1000)
         max_delta = now_ts - start_ts
-        chunk_size = int(chunk_size.total_seconds() *
-                         1000) if self.need_chunk else max_delta
+        chunk_size = int(chunk_size.total_seconds() * 1000) if self.need_chunk else max_delta
         for ts in range(start_ts, now_ts, chunk_size):
             end_ts = ts + chunk_size
-            slices.append({'updated_date': {
-                "start": ts,
-                "end": end_ts
-            }}
-            )
-
+            slices.append({"updated_date": {"start": ts, "end": end_ts}})
         return slices
 
 
@@ -256,17 +253,17 @@ class Candidates(IncrementalBreezyStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
-        common = {"get_totals": True, "all_positions": True, "sort": {
-            "column": "updated_date", "sort": "DESC"}}
+        common = {"get_totals": True, "all_positions": True, "sort": {"column": "updated_date", "sort": "DESC"}}
         if stream_slice:
             common.update(stream_slice)
         if next_page_token:
+            if next_page_token.get("updated_date"):
+                next_page_token["updated_date"] = {**stream_slice["updated_date"], **next_page_token["updated_date"]}
             common.update(next_page_token)
         else:
-            common.update({'limit': self.page_size,
-                           'skip': 0})
-        #print(f'Requesting with headers : {common}')
+            common.update({"limit": self.page_size, "skip": 0})
         return common
+
 
 # Source
 
@@ -287,7 +284,8 @@ class SourceBreezy(AbstractSource):
         error_msg = None
         try:
             candidates = Candidates(
-                limit=1, page_size=1, cookie=config['credentials']["cookie"], company=config['company_id'], start_time=config['start_time'])
+                limit=1, page_size=1, cookie=config["credentials"]["cookie"], company=config["company_id"], start_time=config["start_time"]
+            )
             _ = next(candidates.read_records(sync_mode=SyncMode.full_refresh))
         except HTTPError as error:
             alive = False
@@ -303,5 +301,5 @@ class SourceBreezy(AbstractSource):
         """
         # TODO remove the authenticator if not required.
         # Oauth2Authenticator is also available if you need oauth support
-        auth = config['credentials']["cookie"]
-        return [Candidates(cookie=auth, company=config['company_id'], start_time=config['start_time'])]
+        auth = config["credentials"]["cookie"]
+        return [Candidates(authenticator=None, cookie=auth, company=config["company_id"], start_time=config["start_time"])]
