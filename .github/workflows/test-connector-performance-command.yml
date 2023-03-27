@@ -157,7 +157,7 @@ jobs:
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "RUN_RESULT<<$EOF" >> $GITHUB_OUTPUT
           #
-          kubectl logs --tail=1 $POD | while read line ; do line=${line#"$prefix"}; echo $line >> $GITHUB_OUTPUT ; done 
+          kubectl logs --tail=1 $POD | while read line ; do str=${line#"$prefix"}; echo $str >> $GITHUB_OUTPUT ; done 
           echo "$EOF" >> $GITHUB_OUTPUT
       - name: Link comment to workflow run
         uses: peter-evans/create-or-update-comment@v2
