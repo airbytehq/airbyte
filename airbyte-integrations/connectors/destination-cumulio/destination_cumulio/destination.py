@@ -16,19 +16,6 @@ logger = getLogger("airbyte")
 
 class DestinationCumulio(Destination):
 
-    dummy_stream_name = "check-test-stream"
-    dummy_data = [
-        [
-            "Text value 1",
-            1,
-            "2022-01-01T00:00:00.000Z",
-        ],
-        ["Text value 2", 2, "2022-02-01T00:00:00.000Z"],
-        ["Text value 3", 3, "2022-03-01T00:00:00.000Z"],
-    ]
-
-    dummy_data_columns = ["Text column", "Numeric column", "Datetime column"]
-
     def write(
         self,
         config: Mapping[str, Any],
@@ -67,6 +54,7 @@ class DestinationCumulio(Destination):
             if message.type == Type.STATE:
                 # Yielding a state message indicates that all records which came before it have been written to the destination.
                 # We flush all write buffers in the writer, and then output the state message itself.
+                writer.flush_all()
                 yield message
             elif message.type == Type.RECORD:
                 record = message.record
@@ -99,11 +87,7 @@ class DestinationCumulio(Destination):
             client.test_api_token()
 
             # We're no longer using testing a data push as this might take some time.
-            # If the API host, key, and token are valid, Data can be pushed
-            # # Verify data push by pushing dummy data into dummy dataset (will be deleted afterwards)
-            # # client.test_data_push(
-            # #     self.dummy_stream_name, self.dummy_data, self.dummy_data_columns
-            # # )
+            # If the API host, key, and token are valid, we can assume Data can be pushed using it.
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
