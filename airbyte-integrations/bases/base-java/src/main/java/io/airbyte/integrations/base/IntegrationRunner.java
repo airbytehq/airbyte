@@ -120,7 +120,7 @@ public class IntegrationRunner {
         // common
         case SPEC -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.SPEC).withSpec(integration.spec()));
         case CHECK -> {
-          AirbyteMessage message = isCheckWithCatalog(parsed) ? runCheckWithCatalog(parsed) : runCheck(parsed);
+          final AirbyteMessage message = isCheckWithCatalog(parsed) ? runCheckWithCatalog(parsed) : runCheck(parsed);
           outputRecordCollector.accept(message);
         }
         // source only
@@ -144,12 +144,13 @@ public class IntegrationRunner {
       final JsonNode config = getValidatedConfig(parsed, CHECK.toString());
       return new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config));
     } catch (final ConfigValidationException e) {
+      LOGGER.error("Encountered Config Validation error in CHECK method", e);
       // if validation fails don't throw an exception, return a failed connection check message
       return failedConnectionStatusMessage(e.getMessage());
     }
   }
 
-  private static boolean isCheckWithCatalog(IntegrationConfig parsed) {
+  private static boolean isCheckWithCatalog(final IntegrationConfig parsed) {
     return CHECK.equals(parsed.getCommand()) && parsed.getCatalogPath() != null;
   }
 
