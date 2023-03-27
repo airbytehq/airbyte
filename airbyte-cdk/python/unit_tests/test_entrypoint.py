@@ -3,12 +3,12 @@
 #
 
 
-import pytest
 from argparse import Namespace
 from copy import deepcopy
 from typing import Any, List, Mapping, MutableMapping, Union
 from unittest.mock import MagicMock
 
+import pytest
 from airbyte_cdk import AirbyteEntrypoint
 from airbyte_cdk import entrypoint as entrypoint_module
 from airbyte_cdk.models import (
