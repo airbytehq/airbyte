@@ -47,11 +47,13 @@ Daspire implements the [SuiteTalk REST Web Services](https://docs.oracle.com/en/
 
 3. **State** will keep **enabled**
 
-4. Enable checkbox **Token-Based Authentication** on _Authentication_ section
+4. Set up your **Concurrency limit**, and make sure it's equal or less than **concurrency limit**
 
-5. Save changes
+5. Enable checkbox **Token-Based Authentication** on _Authentication_ section
 
-6. After that, **Consumer Key** and **Consumer Secret** will be showed once, copy them.
+6. Save changes
+
+7. After that, **Consumer Key** and **Consumer Secret** will be showed once, copy them.
 
 #### Step 1.4: Setup Role
 

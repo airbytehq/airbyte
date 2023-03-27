@@ -375,6 +375,13 @@
   "connection.filter.allSources": "所有数据源",
   "connection.filter.allDestinations": "所有目的地",
 
+  "connection.unable.modal.title": "无法启用数据接口",
+  "connection.unable.limit.modal.text": "您已经达到了数据处理限制，目前无法启用数据接口。",
+  "connection.unable.freeTrial.modal.text": "您的免费试用期已经结束，目前无法启用数据接口。",
+  "connection.unable.expired.modal.text": "您订阅已过期，目前无法启用数据接口。",
+  "connection.unable.modal.cancel": "知道了",
+  "connection.unable.modal.confirm": "现在升级",
+
   "tables.name": "名称",
   "tables.connector": "接口",
   "tables.connections": "接口数",

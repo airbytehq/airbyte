@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/clickhouse",
+  "documentationUrl": "https://docs.daspire.com/setup-guide/destinations/clickhouse",
   "supportsIncremental": true,
   "supportsNormalization": true,
   "supportsDBT": false,

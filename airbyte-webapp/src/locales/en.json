@@ -375,6 +375,13 @@
   "connection.filter.allSources": "All Sources",
   "connection.filter.allDestinations": "All Destinations",
 
+  "connection.unable.modal.title": "Unable to enable connection",
+  "connection.unable.limit.modal.text": "We are unable to enable your connection because you have reached your data processing limit. ",
+  "connection.unable.freeTrial.modal.text": "We are unable to enable your connection because you free trial period has ended. ",
+  "connection.unable.expired.modal.text": "We are unable to enable your connection because your plan has expired.  ",
+  "connection.unable.modal.cancel": "Got it",
+  "connection.unable.modal.confirm": "Upgrade now",
+
   "tables.name": "Name",
   "tables.connector": "Integration",
   "tables.connections": "Connections",

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import { theme } from "theme";
 
@@ -54,25 +54,27 @@ const MainView: React.FC = (props) => {
     }
   }, [usage]);
 
-  const hasSidebarRoutes: string[] = [
-    RoutePaths.Source,
-    RoutePaths.SelectSource,
-    RoutePaths.Connections,
-    RoutePaths.Status,
-    RoutePaths.SelectConnection,
-    RoutePaths.Destination,
-    RoutePaths.SelectDestination,
-    RoutePaths.UserManagement,
-    RoutePaths.AccountSettings,
-    RoutePaths.PlanAndBilling,
-    RoutePaths.Notifications,
-    RoutePaths.Configurations,
-    RoutePaths.Language,
-  ];
-
   // TODO: not the proper solution but works for now
   // const isSidebar =
   //   !pathname.split("/").includes(RoutePaths.Payment) && !pathname.split("/").includes(RoutePaths.PaymentError);
+  const hasSidebarRoutes: string[] = useMemo(
+    () => [
+      RoutePaths.Source,
+      RoutePaths.SelectSource,
+      RoutePaths.Connections,
+      RoutePaths.Status,
+      RoutePaths.SelectConnection,
+      RoutePaths.Destination,
+      RoutePaths.SelectDestination,
+      RoutePaths.UserManagement,
+      RoutePaths.AccountSettings,
+      RoutePaths.PlanAndBilling,
+      RoutePaths.Notifications,
+      RoutePaths.Configurations,
+      RoutePaths.Language,
+    ],
+    []
+  );
 
   useEffect(() => {
     const pathnames = pathname.split("/");
@@ -104,16 +106,7 @@ const MainView: React.FC = (props) => {
         lastPathName === RoutePaths.SelectConnection
       ) {
         setBackgroundColor("#F8F8FE");
-      }
-      // else if(
-      //   lastPathName === RoutePaths.AccountSettings ||
-      //   lastPathName === RoutePaths.Language ||
-      //   lastPathName === RoutePaths.Notifications  ||
-      //   lastPathName === RoutePaths.PlanAndBilling
-      // ) {
-      //   setBackgroundColor(theme.white);
-      // }
-      else {
+      } else {
         setBackgroundColor(theme.backgroundColor);
       }
     } else {
@@ -121,7 +114,7 @@ const MainView: React.FC = (props) => {
       setBackgroundColor(theme.white);
     }
     setIsSidebar(isSidebarBol);
-  }, [pathname, hasSidebarRoutes]);
+  }, [pathname, hasSidebarRoutes, location.state]);
 
   const onBillingPage = () => {
     push(`/${RoutePaths.Settings}/${SettingsRoute.PlanAndBilling}`);

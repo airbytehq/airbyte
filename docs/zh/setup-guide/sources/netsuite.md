@@ -47,11 +47,13 @@ Daspire使用[SuiteTalk REST Web服务](https://docs.oracle.com/en/cloud/saas/ne
 
 3. **状态（State）**保持**已启用（enabled）**状态
 
-4. 在**验证（Authentication）**部分启用复选框**基于令牌的身份验证（Token-Based Authentication）**
+4. 设置您的**并发限制**，并确保它等于或小于**最大并发性限制**
 
-5. 保存更改
+5. 在**验证（Authentication）**部分启用复选框**基于令牌的身份验证（Token-Based Authentication）**
 
-6. 之后会出现一次**消费者密钥（Consumer Key）**和**消费者秘密（Consumer Secret）**，复制它们。
+6. 保存更改
+
+7. 之后会出现一次**消费者密钥（Consumer Key）**和**消费者秘密（Consumer Secret）**，复制它们。
 
 #### 步骤1.4：设置角色
 

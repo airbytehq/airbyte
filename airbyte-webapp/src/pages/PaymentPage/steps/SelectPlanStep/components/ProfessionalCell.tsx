@@ -9,7 +9,7 @@ import { useUser } from "core/AuthContext";
 import { getPaymentStatus, PAYMENT_STATUS } from "core/Constants/statuses";
 
 interface IProps {
-  price?: number;
+  price?: string;
   selectPlanBtnDisability: boolean;
   paymentLoading: boolean;
   onSelectPlan?: () => void;
@@ -52,10 +52,18 @@ const ProfessionalCell: React.FC<IProps> = ({ price = 0, selectPlanBtnDisability
   return (
     <Container>
       <PricingContainer>
-        <Price>${price}</Price>&nbsp;
-        <PerMonthText>
-          /<FormattedMessage id="feature.cell.professional.perMonth" />
-        </PerMonthText>
+        {price === "custom" ? (
+          <Price>
+            <FormattedMessage id="feature.cell.enterprise.btnText" />
+          </Price>
+        ) : (
+          <>
+            <Price>${price}</Price>&nbsp;
+            <PerMonthText>
+              /<FormattedMessage id="feature.cell.professional.perMonth" />
+            </PerMonthText>
+          </>
+        )}
       </PricingContainer>
       <Separator />
       <Message>
@@ -67,7 +75,7 @@ const ProfessionalCell: React.FC<IProps> = ({ price = 0, selectPlanBtnDisability
         size="lg"
         onClick={onSelectPlan}
         disabled={
-          ((price > 0 ? false : true) || selectPlanBtnDisability) &&
+          ((Number(price) > 0 ? false : true) || selectPlanBtnDisability) &&
           getPaymentStatus(user.status) !== PAYMENT_STATUS.Pause_Subscription
         }
         isLoading={paymentLoading}

@@ -10,7 +10,6 @@ connectionSpecification:
     - token_key
     - token_secret
     - language
-    - object_types
     - start_datetime
 
   additionalProperties: true
@@ -47,8 +46,8 @@ connectionSpecification:
       airbyte_secret: true
     language:
       type: string
-      title: language
-      description: The default company language, and do not support the language specified in your user preferences.
+      title: Language
+      description: The default company language. Note this is not the language specified in your user preferences.
       order: 5
       examples: [ "zh","en" ]
       default: zh
