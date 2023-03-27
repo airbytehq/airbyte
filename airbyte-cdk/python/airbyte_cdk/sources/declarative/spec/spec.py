@@ -22,7 +22,7 @@ class Spec:
     connection_specification: Mapping[str, Any]
     parameters: InitVar[Mapping[str, Any]]
     documentation_url: Optional[str] = None
-    auth_flow: Optional[AuthFlow] = None
+    advanced_auth: Optional[AuthFlow] = None
 
     def generate_spec(self) -> ConnectorSpecification:
         """
@@ -33,8 +33,8 @@ class Spec:
 
         if self.documentation_url:
             obj["documentationUrl"] = self.documentation_url
-        if self.auth_flow:
-            obj["advanced_auth"] = self.auth_flow
+        if self.advanced_auth:
+            obj["advanced_auth"] = self.advanced_auth
             obj["advanced_auth"].auth_flow_type = obj["advanced_auth"].auth_flow_type.value  # Get enum value
 
         # We remap these keys to camel case because that's the existing format expected by the rest of the platform
