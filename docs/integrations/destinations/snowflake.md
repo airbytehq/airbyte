@@ -287,7 +287,7 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.4.58  | 2023-03-27 | [#24615](https://github.com/airbytehq/airbyte/pull/24615)  | Added host validation by pattern on UI                                                                                                              |
+| 0.4.58  | 2023-03-27 | [#24615](https://github.com/airbytehq/airbyte/pull/24615)  | Fixed host validation by pattern on UI                                                                                                              |
 | 0.4.56 (broken) | 2023-03-22 | [#23904](https://github.com/airbytehq/airbyte/pull/23904)  | Added host validation by pattern on UI                                                                                                              |
 | 0.4.54  | 2023-03-17 | [#23788](https://github.com/airbytehq/airbyte/pull/23788)  | S3-Parquet: added handler to process null values in arrays                                                                                          |
 | 0.4.53  | 2023-03-15 | [\#24058](https://github.com/airbytehq/airbyte/pull/24058) | added write attempt to internal staging Check method                                                                                                |
