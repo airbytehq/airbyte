@@ -58,11 +58,11 @@ class Step(ABC):
     def __init__(self, context: ConnectorTestContext) -> None:
         self.context = context
 
-    def run(self, *args, **kwargs) -> StepResult:
+    async def run(self, *args, **kwargs) -> StepResult:
         try:
-            return self._run(*args, **kwargs)
+            return await self._run(*args, **kwargs)
         except QueryError as e:
-            return StepResult(self, StepResult.FAILURE, stderr=str(e))
+            return StepResult(self, StepStatus.FAILURE, stderr=str(e))
 
     @abstractmethod
     async def _run(self, dagger_client: Client, *args, **kwargs) -> StepResult:
