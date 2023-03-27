@@ -173,7 +173,7 @@ spec:
         description: Test API Key
         order: 0
   advanced_auth:
-    auth_flow_type: "oauth2.0"  
+    auth_flow_type: "oauth2.0"
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
