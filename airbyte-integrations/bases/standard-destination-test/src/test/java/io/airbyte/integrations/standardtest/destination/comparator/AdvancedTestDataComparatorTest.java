@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.standardtest.destination.comparator.parameters.AdvancedTestDataComparatorTestParameters.AssertNotSameDataArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.parameters.AdvancedTestDataComparatorTestParameters.AssertSameDataArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.parameters.EmptyNodeTestArgumentProvider;
+import io.airbyte.integrations.standardtest.destination.comparator.parameters.IsDateTimeValueTestArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.parameters.IsDateTimeWithTzTestArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.parameters.IsNumericTestArgumentProvider;
 import java.util.List;
@@ -53,6 +54,13 @@ public class AdvancedTestDataComparatorTest {
   @ArgumentsSource(IsDateTimeWithTzTestArgumentProvider.class)
   public void testIsDateTimeWithTzValue(final String value, final boolean expected) {
     final var actual = AdvancedTestDataComparator.isDateTimeWithTzValue(value);
+    Assertions.assertEquals(expected, actual);
+  }
+
+  @ParameterizedTest
+  @ArgumentsSource(IsDateTimeValueTestArgumentProvider.class)
+  public void testIsDateTimeValue(final String value, final boolean expected) {
+    final var actual = AdvancedTestDataComparator.isDateTimeValue(value);
     Assertions.assertEquals(expected, actual);
   }
 
