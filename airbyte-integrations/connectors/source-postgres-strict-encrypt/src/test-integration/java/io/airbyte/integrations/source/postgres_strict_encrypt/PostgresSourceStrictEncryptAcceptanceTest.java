@@ -66,20 +66,20 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
                                                           .put("method", "Standard")
                                                           .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
-                                .put(JdbcUtils.HOST_KEY, container.getHost())
-                                .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
-                                .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
-                                .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-                                .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-                                .put("replication_method", replicationMethod)
-                                .put("ssl_mode", ImmutableMap.builder()
-                                    .put("mode", "verify-full")
-                                    .put("ca_certificate", certs.getCaCertificate())
-                                    .put("client_certificate", certs.getClientCertificate())
-                                    .put("client_key", certs.getClientKey())
-                                    .put("client_key_password", PASSWORD)
-                                    .build())
-                                .build());
+                    .put(JdbcUtils.HOST_KEY, container.getHost())
+                    .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+                    .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
+                    .put(JdbcUtils.USERNAME_KEY, container.getUsername())
+                    .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
+                    .put("replication_method", replicationMethod)
+                    .put("ssl_mode", ImmutableMap.builder()
+                        .put("mode", "verify-full")
+                        .put("ca_certificate", certs.getCaCertificate())
+                        .put("client_certificate", certs.getClientCertificate())
+                        .put("client_key", certs.getClientKey())
+                        .put("client_key_password", PASSWORD)
+                        .build())
+                    .build());
 
     try (final DSLContext dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
