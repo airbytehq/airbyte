@@ -10,7 +10,8 @@ import os
 import subprocess
 import tempfile
 
-from definitions import BETA_DEFINITIONS, GA_DEFINITIONS, find_by_name, get_airbyte_connector_name_from_definition, is_airbyte_connector
+import utils
+from definitions import BETA_DEFINITIONS, GA_DEFINITIONS, get_airbyte_connector_name_from_definition, is_airbyte_connector
 from jinja2 import Environment, FileSystemLoader
 
 # SET THESE BEFORE USING THE SCRIPT
@@ -26,9 +27,9 @@ logging.basicConfig(level=logging.DEBUG)
 environment = Environment(loader=FileSystemLoader(TEMPLATES_FOLDER))
 
 parser = argparse.ArgumentParser(description="Create issues for a list of connectors from a template.")
-parser.add_argument("-d", "--dry", default=True)
+parser.add_argument("-d", "--dry", action=argparse.BooleanOptionalAction, default=True)
 parser.add_argument("--connectors", nargs="*")
-parser.add_argument("--file")
+parser.add_argument("--allow_alpha", action=argparse.BooleanOptionalAction, default=False)
 
 
 def get_issue_content(source_definition):
@@ -92,22 +93,15 @@ def create_issue(source_definition, dry_run=True):
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    dry_run = False if args.dry == "False" or args.dry == "false" else True
 
     definitions = []
-    if args.connectors:
-        definitions = find_by_name(args.connectors)
-    elif args.file:
-        with open(f"templates/{MODULE_NAME}/{args.file}", "r") as f:
-            connector_names = [line.strip() for line in f]
-        definitions = find_by_name(connector_names)
-    else:
-        definitions = GA_DEFINITIONS
+    definitions = utils.get_definitions_from_args(args)
 
     for definition in definitions:
         if not is_airbyte_connector(definition):
             logging.error(f"Couldn't create PR for non-airbyte connector: {definition.get('dockerRepository')}")
-        elif definition not in BETA_DEFINITIONS + GA_DEFINITIONS:
-            logging.info(f"Won't create an issue for non beta/GA conenctor {get_airbyte_connector_name_from_definition(definition)}")
+        if not args.allow_alpha and definition not in BETA_DEFINITIONS + GA_DEFINITIONS:
+            logging.info(f"Won't create an issue for non beta/GA connector {get_airbyte_connector_name_from_definition(definition)}")
         else:
-            create_issue(definition, dry_run=dry_run)
+            logging.info(f"got dry: {args.dry}")
+            create_issue(definition, dry_run=args.dry)

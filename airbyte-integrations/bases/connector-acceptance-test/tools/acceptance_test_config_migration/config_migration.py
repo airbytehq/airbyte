@@ -8,8 +8,7 @@ from pathlib import Path
 
 import utils
 from connector_acceptance_test.config import Config
-from create_issues import MODULE_NAME
-from definitions import BETA_DEFINITIONS, GA_DEFINITIONS, get_airbyte_connector_name_from_definition
+from definitions import BETA_DEFINITIONS, GA_DEFINITIONS, get_airbyte_connector_name_from_definition, is_airbyte_connector
 from ruamel.yaml import YAML
 
 yaml = YAML()
@@ -18,7 +17,7 @@ yaml.width = 150
 
 parser = argparse.ArgumentParser(description="Migrate legacy acceptance-test-config.yml to the latest configuration format.")
 parser.add_argument("--connectors", nargs="*")
-parser.add_argument("--file")
+parser.add_argument("--allow_alpha", action=argparse.BooleanOptionalAction, default=False)
 
 
 def load_config(config_path: Path) -> Config:
@@ -71,19 +70,13 @@ def update_configuration(config_path):
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    if args.connectors:
-        connector_names = args.connectors
-    elif args.file:
-        with open(f"templates/{MODULE_NAME}/{args.file}", "r") as f:
-            connector_names = [line.strip() for line in f]
-    else:
-        connector_names = []
+    definitions = utils.get_definitions_from_args(args)
 
-    ga_beta_connector_names = [get_airbyte_connector_name_from_definition(definition) for definition in (BETA_DEFINITIONS + GA_DEFINITIONS)]
-
-    for connector in connector_names:
-        if connector in ga_beta_connector_names:
-            config_path = utils.acceptance_test_config_path(connector)
-            update_configuration(config_path)
+    for definition in definitions:
+        if not is_airbyte_connector(definition):
+            logging.error(f"Couldn't create PR for non-airbyte connector: {definition.get('dockerRepository')}")
+        if not args.allow_alpha and definition not in BETA_DEFINITIONS + GA_DEFINITIONS:
+            logging.info(f"Not updating {get_airbyte_connector_name_from_definition} because it's not GA or Beta.")
         else:
-            logging.info(f"Not updating {connector} because it's not GA or Beta.")
+            config_path = utils.acceptance_test_config_path(get_airbyte_connector_name_from_definition)
+            update_configuration(config_path)

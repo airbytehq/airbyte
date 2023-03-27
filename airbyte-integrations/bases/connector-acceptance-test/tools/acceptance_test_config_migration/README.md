@@ -1,4 +1,4 @@
-# Tooling for `test_strictness_level` migration
+# Tooling for automated migration of `acceptance-test-config.yml` files
 
 This directory contains scripts that can help us manage the migration of connectors's `acceptance-test-config.yml` to `high` test strictness level.
 Before running these scripts you need to set up a local virtual environment in the **current directory**:
@@ -62,3 +62,6 @@ PR are added to the following project: `SAT-high-test-strictness-level`
 **Real execution**:
 `python create_prs.py --dry False`
 
+Existing migrations:
+* `strictness_level_migration`: Migrates a connector from the old format to the new format, and adds enforcement of high strictness level.
+* `fail_on_extra_columns`: Adds `fail_on_extra_columns: false` to connectors which fail the `Additional properties are not allowed` extra column validation.
