@@ -80,7 +80,7 @@ jobs:
         if: steps.regex.outputs.first_match != github.event.inputs.connector
         run: echo "The connector provided has an invalid format!" && exit 1
       - name: Filter supported connectors
-        if: github.event.inputs.connector != 'connectors/source-postgres'
+        if: "${{ github.event.inputs.connector != 'connectors/source-postgres' }}"
         run: echo "Only connectors/source-postgres currently supported by harness" && exit 1
       - name: Checkout Airbyte
         uses: actions/checkout@v3
