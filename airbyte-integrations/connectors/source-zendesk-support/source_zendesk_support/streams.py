@@ -467,6 +467,13 @@ class SourceZendeskIncrementalExportStream(SourceZendeskSupportCursorPaginationS
     response_list_name: str = None
     sideload_param: str = None
 
+    @property
+    def state_checkpoint_interval(self) -> Optional[int]:
+        """
+        Will allow the connector send state messages more frequent and not only at the end of the sync.
+        """
+        return 1000
+
     @staticmethod
     def check_start_time_param(requested_start_time: int, value: int = 1):
         """
