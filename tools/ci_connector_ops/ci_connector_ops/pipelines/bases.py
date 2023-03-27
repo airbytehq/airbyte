@@ -59,14 +59,20 @@ class Step(ABC):
         self.context = context
 
     async def run(self, *args, **kwargs) -> StepResult:
+        """Public method to run the step. It output a step result.
+        If an unexpected dagger error happens it outputs a failed step result with the exception payload.
+
+        Returns:
+            StepResult: The step result following the step run.
+        """
         try:
             return await self._run(*args, **kwargs)
         except QueryError as e:
             return StepResult(self, StepStatus.FAILURE, stderr=str(e))
 
     @abstractmethod
-    async def _run(self, dagger_client: Client, *args, **kwargs) -> StepResult:
-        """Run the step and output a step result.
+    async def _run(self, *args, **kwargs) -> StepResult:
+        """Implement the execution of the step and return a step result.
 
         Returns:
             StepResult: The result of the step run.
