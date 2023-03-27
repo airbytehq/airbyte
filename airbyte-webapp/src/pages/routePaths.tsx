@@ -9,6 +9,7 @@ export enum RoutePaths {
   Destination = "destination",
   Source = "source",
   Settings = "settings",
+  Documentation = "documentation",
 
   Payment = "payment",
   PaymentError = "payment_error",
