@@ -6,6 +6,7 @@ from typing import List
 from ci_connector_ops.pipelines.bases import StepResult
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.pipelines.tests import java_connectors, python_connectors
+from ci_connector_ops.pipelines.tests.common import AcceptanceTests, QaChecks  # noqa
 from ci_connector_ops.utils import ConnectorLanguage
 
 LANGUAGE_MAPPING = {

@@ -36,7 +36,7 @@ logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt=
 logger = logging.getLogger(__name__)
 
 
-async def run(context: ConnectorTestContext) -> ConnectorTestReport:
+async def run(context: ConnectorTestContext, semaphore: anyio.Semaphore) -> ConnectorTestReport:
     """Runs a CI pipeline for a single connector.
     A visual DAG can be found on the README.md file of the pipelines modules.
 
@@ -46,31 +46,34 @@ async def run(context: ConnectorTestContext) -> ConnectorTestReport:
     Returns:
         ConnectorTestReport: The test reports holding tests results.
     """
-    async with context:
-        async with asyncer.create_task_group() as task_group:
-            tasks = [
-                task_group.soonify(tests.common.QaChecks(context).run)(),
-                task_group.soonify(tests.run_code_format_checks)(context),
-                task_group.soonify(tests.run_all_tests)(context),
-            ]
-        results = list(itertools.chain(*(task.value for task in tasks)))
+    async with semaphore:
+        async with context:
+            async with asyncer.create_task_group() as task_group:
+                tasks = [
+                    task_group.soonify(tests.QaChecks(context).run)(),
+                    task_group.soonify(tests.run_code_format_checks)(context),
+                    task_group.soonify(tests.run_all_tests)(context),
+                ]
+            results = list(itertools.chain(*(task.value for task in tasks)))
 
-        context.test_report = ConnectorTestReport(context, steps_results=results)
+            context.test_report = ConnectorTestReport(context, steps_results=results)
 
-    return context.test_report
+        return context.test_report
 
 
-async def run_connectors_test_pipelines(contexts: List[ConnectorTestContext]):
+async def run_connectors_test_pipelines(contexts: List[ConnectorTestContext], concurrency: int = 5):
     """Runs a CI pipeline for all the connectors passed.
 
     Args:
         contexts (List[ConnectorTestContext]): List of connector test contexts for which a CI pipeline needs to be run.
+        concurrency (int): Number of test pipeline that can run in parallel. Defaults to 5
     """
+    semaphore = anyio.Semaphore(concurrency)
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         async with anyio.create_task_group() as tg:
             for context in contexts:
                 context.dagger_client = dagger_client.pipeline(f"{context.connector.technical_name} - Test Pipeline")
-                tg.start_soon(run, context)
+                tg.start_soon(run, context, semaphore)
 
 
 @click.group()
@@ -120,7 +123,7 @@ def connectors_ci(
         ctx.obj["gha_workflow_run_url"],
         GITHUB_GLOBAL_DESCRIPTION,
         GITHUB_GLOBAL_CONTEXT,
-        should_send=not ctx.obj["is_local"],
+        should_send=ctx.obj["ci_context"] == "pull_request",
         logger=logger,
     )
 
@@ -140,8 +143,11 @@ def connectors_ci(
     type=click.Choice(["alpha", "beta", "generally_available"]),
 )
 @click.option("--modified/--not-modified", help="Only test modified connectors in the current branch.", default=False, type=bool)
+@click.option("--concurrency", help="Number of connector tests pipeline to run in parallel.", default=5, type=int)
 @click.pass_context
-def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[ConnectorLanguage], release_stages: Tuple[str], modified: bool):
+def test_connectors(
+    ctx: click.Context, names: Tuple[str], languages: Tuple[ConnectorLanguage], release_stages: Tuple[str], modified: bool, concurrency: int
+):
     """Runs a CI pipeline the connector passed as CLI argument.
 
     Args:
@@ -184,14 +190,14 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
         for connector in connectors_under_test
     ]
     try:
-        anyio.run(run_connectors_test_pipelines, connectors_tests_contexts)
+        anyio.run(run_connectors_test_pipelines, connectors_tests_contexts, concurrency)
         update_commit_status_check(
             ctx.obj["git_revision"],
             "success",
             ctx.obj["gha_workflow_run_url"],
             GITHUB_GLOBAL_DESCRIPTION,
             GITHUB_GLOBAL_CONTEXT,
-            should_send=not ctx.obj["is_local"],
+            should_send=ctx.obj.get("ci_context") == "pull_request",
             logger=logger,
         )
     except dagger.DaggerError as e:
@@ -202,7 +208,7 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
             ctx.obj["gha_workflow_run_url"],
             GITHUB_GLOBAL_DESCRIPTION,
             GITHUB_GLOBAL_CONTEXT,
-            should_send=not ctx.obj["is_local"],
+            should_send=ctx.obj.get("ci_context") == "pull_request",
             logger=logger,
         )
 
