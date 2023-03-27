@@ -258,8 +258,35 @@
         },
         "pull": {
           "type": ["null", "boolean"]
+        },
+        "maintain": {
+          "type": ["null", "boolean"]
+        },
+        "triage": {
+          "type": ["null", "boolean"]
         }
       }
+    },
+    "allow_forking": {
+      "type": ["null", "boolean"]
+    },
+    "forks": {
+      "type": ["null", "integer"]
+    },
+    "has_discussions": {
+      "type": ["null", "boolean"]
+    },
+    "open_issues": {
+      "type": ["null", "integer"]
+    },
+    "organization": {
+      "type": ["null", "string"]
+    },
+    "watchers": {
+      "type": ["null", "integer"]
+    },
+    "web_commit_signoff_required": {
+      "type": ["null", "boolean"]
     }
   }
 }
