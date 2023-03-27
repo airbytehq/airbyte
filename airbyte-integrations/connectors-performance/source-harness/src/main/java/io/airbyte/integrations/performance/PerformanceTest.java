@@ -20,8 +20,8 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.exception.RecordSchemaValidationException;
 import io.airbyte.workers.internal.DefaultAirbyteSource;
-import io.airbyte.workers.internal.HeartbeatMonitor;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
@@ -29,7 +29,6 @@ import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.net.InetAddress;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -76,11 +75,11 @@ public class PerformanceTest {
         .withCpuRequest("1")
         .withMemoryLimit("2Gi")
         .withMemoryRequest("2Gi");
-    final var heartbeatMonitor = new HeartbeatMonitor(Duration.ofMillis(1));
+//    final var heartbeatMonitor = new HeartbeatMonitor(Duration.ofMillis(1));
     final var allowedHosts = new AllowedHosts().withHosts(List.of("*"));
     final var integrationLauncher =
         new AirbyteIntegrationLauncher("1", 0, this.imageName, processFactory, resourceReqs, allowedHosts, false, new EnvVariableFeatureFlags());
-    final var source = new DefaultAirbyteSource(integrationLauncher, new EnvVariableFeatureFlags(), heartbeatMonitor);
+    final var source = new DefaultAirbyteSource(integrationLauncher, new EnvVariableFeatureFlags());
     final var jobRoot = "/";
     final WorkerSourceConfig sourceConfig = new WorkerSourceConfig()
         .withSourceConnectionConfiguration(this.config)
@@ -190,14 +189,14 @@ public class PerformanceTest {
                                      final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields,
                                      final Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields,
                                      final ConcurrentHashMap<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors,
-                                     final AirbyteMessage message) {
+                                     final AirbyteMessage message) throws RecordSchemaValidationException {
     if (message.getRecord() != null) {
       final AirbyteRecordMessage record = message.getRecord();
       final AirbyteStreamNameNamespacePair messageStream = AirbyteStreamNameNamespacePair.fromRecordMessage(record);
       final boolean streamHasLessThenTenErrs =
           validationErrors.get(messageStream) == null || (Integer) ((ImmutablePair) validationErrors.get(messageStream)).getRight() < 10;
       if (streamHasLessThenTenErrs) {
-        recordSchemaValidator.validateSchema(record, messageStream, validationErrors);
+        recordSchemaValidator.validateSchema(record, messageStream);
         final Set<String> unexpectedFieldNames = (Set) unexpectedFields.getOrDefault(messageStream, new HashSet());
         populateUnexpectedFieldNames(record, (Set) streamToAllFields.get(messageStream), unexpectedFieldNames);
         unexpectedFields.put(messageStream, unexpectedFieldNames);
