@@ -36,6 +36,8 @@ use super::fix_document_schema::fix_document_schema_keys;
 use super::normalize::{normalize_doc, NormalizationEntry};
 use super::remap::remap;
 
+const PROTOCOL_VERSION: u32 = 3032023;
+
 const CONFIG_FILE_NAME: &str = "config.json";
 const CATALOG_FILE_NAME: &str = "catalog.json";
 const STATE_FILE_NAME: &str = "state.json";
@@ -120,7 +122,7 @@ impl AirbyteSourceInterceptor {
             };
 
             encode_message(&response::Spec {
-                protocol: 3032023,
+                protocol: PROTOCOL_VERSION,
                 config_schema_json: endpoint_spec.to_string(),
                 resource_config_schema_json: serde_json::to_string_pretty(&create_root_schema::<
                     ResourceSpec,
@@ -200,8 +202,12 @@ impl AirbyteSourceInterceptor {
                     cursor_field: stream.default_cursor_field,
                 };
 
-                let mut source_defined_primary_key =
-                    stream.source_defined_primary_key.unwrap_or(Vec::new());
+                let mut key: Vec<String> =
+                    stream.source_defined_primary_key
+                        .unwrap_or(Vec::new())
+                        .iter()
+                        .map(|key| format!("/{}", key.join("/")))
+                        .collect();
 
                 let recommended_name = stream_to_recommended_name(&stream.name);
 
@@ -213,24 +219,15 @@ impl AirbyteSourceInterceptor {
                 .map(|p| sj::from_str::<sj::Value>(&p))
                 .transpose()?;
                 if let Some(p) = doc_pk {
-                    source_defined_primary_key = p
+                    key = p
                         .as_array()
                         .ok_or(Error::InvalidPKPatch("expected an array".to_string()))?
                         .into_iter()
                         .map(|s| {
-                            s.as_str()
-                                .unwrap()
-                                .split('/')
-                                .map(|a| a.to_owned())
-                                .collect()
+                            format!("/{}", s.as_str().unwrap())
                         })
                         .collect();
                 }
-
-                let key = source_defined_primary_key
-                    .iter()
-                    .map(|k| doc::Pointer::from_vec(k).to_string())
-                    .collect();
 
                 let mut doc_schema = sj::from_str::<sj::Value>(stream.json_schema.get())?;
                 let doc_schema_patch = std::fs::read_to_string(format!(
@@ -248,10 +245,10 @@ impl AirbyteSourceInterceptor {
                 resp.bindings.push(response::discovered::Binding {
                     recommended_name,
                     resource_config_json: serde_json::to_string(&resource_spec)?,
-                    key,
+                    key: key.clone(),
                     document_schema_json: fix_document_schema_keys(
                         doc_schema,
-                        source_defined_primary_key,
+                        key,
                     )?
                     .to_string(),
                 })

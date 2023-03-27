@@ -45,7 +45,7 @@ fn normalize_datetime_to_date(doc: &mut serde_json::Value, ptr: doc::Pointer) {
                 ValidationResult::Valid => (), // Already a valid date
                 _ => {
                     EXTRACT_DATE_RE.find(v).map(|mat| {
-                        ptr.create(doc)
+                        ptr.create_value(doc)
                             .map(|val| *val = serde_json::json!(mat.as_str()))
                     });
                 }

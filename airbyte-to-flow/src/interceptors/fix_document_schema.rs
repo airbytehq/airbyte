@@ -6,10 +6,10 @@ use crate::errors::Error;
 
 /// Given a document_schema_json and key ptrs, updates the document_schema to ensure that
 /// the key pointers are always present in the document
-pub fn fix_document_schema_keys(mut doc: serde_json::Value, key_ptrs: Vec<Vec<String>>) -> Result<serde_json::Value, Error> {
+pub fn fix_document_schema_keys(mut doc: serde_json::Value, key_ptrs: Vec<String>) -> Result<serde_json::Value, Error> {
     let original = doc.clone();
     for key in key_ptrs {
-        let ptr = doc::Pointer::from_vec(&key);
+        let ptr = doc::Pointer::from_str(&key);
 
         let mut current = doc::Pointer::empty();
         for token in ptr.iter() {
@@ -88,8 +88,8 @@ pub fn fix_document_schema_keys(mut doc: serde_json::Value, key_ptrs: Vec<Vec<St
                         }
                     });
 
-                    current.push(Token::Property("properties"));
-                    current.push(Token::Property(prop));
+                    current.push(Token::Property("properties".to_string()));
+                    current.push(Token::Property(prop.to_string()));
                 },
                 doc::ptr::Token::NextIndex => return Err(Error::InvalidAirbyteSchema(format!("cannot use JSONPointer next index pointer /-/ in key pointer at {:?} in {:?}", current, original))),
             }
@@ -115,7 +115,7 @@ mod test {
             }
         }"#.to_string();
 
-        let key_ptrs = vec![vec!["id".to_string()]];
+        let key_ptrs = vec!["id".to_string()];
 
         assert_eq!(
             fix_document_schema_keys(serde_json::from_str(&doc_schema).unwrap(), key_ptrs).unwrap(),
@@ -145,7 +145,7 @@ mod test {
             "$ref": "test"
         }"#.to_string();
 
-        let key_ptrs = vec![vec!["id".to_string()]];
+        let key_ptrs = vec!["id".to_string()];
 
         assert_eq!(
             fix_document_schema_keys(serde_json::from_str(&doc_schema).unwrap(), key_ptrs).unwrap(),
@@ -187,7 +187,7 @@ mod test {
             }]
         }"#.to_string();
 
-        let key_ptrs = vec![vec!["id".to_string()]];
+        let key_ptrs = vec!["id".to_string()];
 
         assert_eq!(
             fix_document_schema_keys(serde_json::from_str(&doc_schema).unwrap(), key_ptrs).unwrap(),
@@ -221,7 +221,7 @@ mod test {
             }
         }"#.to_string();
 
-        let key_ptrs = vec![vec!["0".to_string()]];
+        let key_ptrs = vec!["0".to_string()];
 
         assert_eq!(
             fix_document_schema_keys(serde_json::from_str(&doc_schema).unwrap(), key_ptrs).unwrap(),
@@ -251,7 +251,7 @@ mod test {
             }
         }"#.to_string();
 
-        let key_ptrs = vec![vec!["doc".to_string(), "id".to_string()]];
+        let key_ptrs = vec!["doc/id".to_string()];
 
         assert_eq!(
             fix_document_schema_keys(serde_json::from_str(&doc_schema).unwrap(), key_ptrs).unwrap(),
@@ -286,7 +286,7 @@ mod test {
             }
         }"#.to_string();
 
-        let key_ptrs = vec![vec!["0".to_string(), "id".to_string()]];
+        let key_ptrs = vec!["0/id".to_string()];
 
         assert_eq!(
             fix_document_schema_keys(serde_json::from_str(&doc_schema).unwrap(), key_ptrs).unwrap(),
@@ -321,7 +321,7 @@ mod test {
             "minItems": 0
         }"#.to_string();
 
-        let key_ptrs = vec![vec!["0".to_string(), "id".to_string()]];
+        let key_ptrs = vec!["0/id".to_string()];
 
         assert_eq!(
             fix_document_schema_keys(serde_json::from_str(&doc_schema).unwrap(), key_ptrs).unwrap(),

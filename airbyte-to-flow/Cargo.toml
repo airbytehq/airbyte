@@ -6,10 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-doc = { git = "https://github.com/estuary/flow", version = "0.0.0" }
+doc = { git = "https://github.com/estuary/flow", branch = "johnny/more-sql", version = "0.0.0" }
 flow_cli_common = { git = "https://github.com/estuary/flow" }
 proto-flow = { git = "https://github.com/estuary/flow", branch = "johnny/more-sql", version = "0.0.0" }
-json = { git = "https://github.com/estuary/flow", version = "0.0.0" }
+json = { git = "https://github.com/estuary/flow", branch = "johnny/more-sql", version = "0.0.0" }
 
 json-patch = "*"
 validator = { version = "*", features = ["derive"] }

@@ -129,13 +129,13 @@ pub fn stream_runtime_messages<T: prost::Message + std::default::Default>(
 
 #[cfg(test)]
 mod test {
-    use std::{collections::HashMap, pin::Pin};
+    use std::{collections::BTreeMap, pin::Pin};
 
     use bytes::BytesMut;
     use futures::stream;
     use proto_flow::{
-        flow::EndpointType,
-        materialize::{validate_request, ValidateRequest},
+        flow::materialization_spec::ConnectorType,
+        materialize::request,
     };
     use tokio_util::io::ReaderStream;
 
@@ -262,22 +262,23 @@ mod test {
 
     #[tokio::test]
     async fn test_get_decoded_message() {
-        let msg = ValidateRequest {
-            materialization: "materialization".to_string(),
-            endpoint_type: EndpointType::AirbyteSource.into(),
-            endpoint_spec_json: "{}".to_string(),
-            bindings: vec![validate_request::Binding {
-                resource_spec_json: "{}".to_string(),
+        let msg = request::Validate {
+            name: "materialization".to_string(),
+            connector_type: ConnectorType::Image.into(),
+            config_json: "{}".to_string(),
+            bindings: vec![request::validate::Binding {
+                resource_config_json: "{}".to_string(),
                 collection: None,
-                field_config_json: HashMap::new(),
+                field_config_json_map: BTreeMap::new(),
             }],
+            network_ports: Vec::new(),
         };
 
         let msg_buf = encode_message(&msg).unwrap();
         let read_stream = io_stream_to_interceptor_stream(ReaderStream::new(std::io::Cursor::new(msg_buf)));
 
         let stream: InterceptorStream = Box::pin(read_stream);
-        let result = get_decoded_message::<ValidateRequest>(stream)
+        let result = get_decoded_message::<request::Validate>(stream)
             .await
             .unwrap();
 
@@ -286,25 +287,27 @@ mod test {
 
     #[tokio::test]
     async fn test_stream_runtime_messages() {
-        let msg1 = ValidateRequest {
-            materialization: "materialization".to_string(),
-            endpoint_type: EndpointType::AirbyteSource.into(),
-            endpoint_spec_json: "{}".to_string(),
-            bindings: vec![validate_request::Binding {
-                resource_spec_json: "{}".to_string(),
+        let msg1 = request::Validate {
+            name: "materialization".to_string(),
+            connector_type: ConnectorType::Image.into(),
+            config_json: "{}".to_string(),
+            bindings: vec![request::validate::Binding {
+                resource_config_json: "{}".to_string(),
                 collection: None,
-                field_config_json: HashMap::new(),
+                field_config_json_map: BTreeMap::new(),
             }],
+            network_ports: Vec::new(),
         };
-        let msg2 = ValidateRequest {
-            materialization: "materialization 2".to_string(),
-            endpoint_type: EndpointType::AirbyteSource.into(),
-            endpoint_spec_json: "{}".to_string(),
-            bindings: vec![validate_request::Binding {
-                resource_spec_json: "{}".to_string(),
+        let msg2 = request::Validate {
+            name: "materialization 2".to_string(),
+            connector_type: ConnectorType::Image.into(),
+            config_json: "{}".to_string(),
+            bindings: vec![request::validate::Binding {
+                resource_config_json: "{}".to_string(),
                 collection: None,
-                field_config_json: HashMap::new(),
+                field_config_json_map: BTreeMap::new(),
             }],
+            network_ports: Vec::new(),
         };
 
         let msg_buf1 = encode_message(&msg1).unwrap();
@@ -312,8 +315,8 @@ mod test {
         let read_stream = io_stream_to_interceptor_stream(ReaderStream::new(std::io::Cursor::new([msg_buf1, msg_buf2].concat())));
 
         let stream: InterceptorStream = Box::pin(read_stream);
-        let result = stream_runtime_messages::<ValidateRequest>(stream)
-            .collect::<Vec<Result<ValidateRequest, Error>>>()
+        let result = stream_runtime_messages::<request::Validate>(stream)
+            .collect::<Vec<Result<request::Validate, Error>>>()
             .await
             .into_iter()
             .filter_map(|item| {
@@ -321,7 +324,7 @@ mod test {
                     Ok(msg) => Some(msg),
                     Err(_) => None
                 }
-            }).collect::<Vec<ValidateRequest>>();
+            }).collect::<Vec<request::Validate>>();
 
         assert_eq!(result, vec![msg1, msg2]);
     }

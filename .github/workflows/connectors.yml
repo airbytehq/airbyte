@@ -32,8 +32,10 @@ jobs:
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
+          toolchain: nightly
           target: x86_64-unknown-linux-musl
+          default: true
+          override: true
 
       - name: Install protobuf compiler (it's not already included in CI runner)
         run: sudo apt install -y libprotobuf-dev protobuf-compiler

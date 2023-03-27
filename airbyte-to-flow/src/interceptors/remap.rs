@@ -13,7 +13,7 @@ pub fn remap(doc: &mut serde_json::Value, mapping: &serde_json::Value) -> Result
 
         // copy from "value" pointer to "key" pointer
         if key != "" {
-            let location = key_ptr.create(doc).ok_or(Error::InvalidMapping(format!("could not query {} in document", key)))?;
+            let location = key_ptr.create_value(doc).ok_or(Error::InvalidMapping(format!("could not query {} in document", key)))?;
             *location = value_ptr.query(&doc_copy).ok_or(Error::InvalidMapping(format!("could not query {} in document", value_str)))?.clone();
         }
 
@@ -22,7 +22,7 @@ pub fn remap(doc: &mut serde_json::Value, mapping: &serde_json::Value) -> Result
         // see https://github.com/estuary/flow/pull/768
         let (value_parent_str, child_key) = value_str.rsplit_once('/').ok_or(Error::InvalidMapping(format!("could not split {} to parent and child", value_str)))?;
         let value_parent_ptr = doc::Pointer::from_str(value_parent_str);
-        let parent = value_parent_ptr.create(doc).ok_or(Error::InvalidMapping(format!("could not find {} in document", value_parent_str)))?;
+        let parent = value_parent_ptr.create_value(doc).ok_or(Error::InvalidMapping(format!("could not find {} in document", value_parent_str)))?;
         parent.as_object_mut().ok_or(Error::InvalidMapping(format!("expected {} to be an object", value_parent_str)))?.remove(child_key);
     }
 
