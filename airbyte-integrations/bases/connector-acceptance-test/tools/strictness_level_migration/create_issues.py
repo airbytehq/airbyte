@@ -37,7 +37,7 @@ def get_issue_content(source_definition):
     template = environment.get_template(f"{MODULE_NAME}/issue.md.j2")
 
     test_failure_logs = ""
-    with open(f"templates/{MODULE_NAME}/output/{get_airbyte_connector_name_from_definition(definition)}.txt", "r") as f:
+    with open(f"templates/{MODULE_NAME}/output/{get_airbyte_connector_name_from_definition(definition)}", "r") as f:
         for line in f:
             test_failure_logs += line
 
