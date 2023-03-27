@@ -533,7 +533,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-aws-datalake:0.1.1"
+- dockerImage: "airbyte/destination-aws-datalake:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/aws-datalake"
     connectionSpecification:
@@ -544,7 +544,7 @@
       - "credentials"
       - "region"
       - "bucket_name"
-      - "bucket_prefix"
+      - "lakeformation_database_name"
       additionalProperties: false
       properties:
         aws_account_id:
@@ -553,11 +553,7 @@
           description: "target aws account id"
           examples:
           - "111111111111"
-        region:
-          title: "AWS Region"
-          type: "string"
-          description: "Region name"
-          airbyte_secret: false
+          order: 1
         credentials:
           title: "Authentication mode"
           description: "Choose How to Authenticate to AWS."
@@ -609,28 +605,152 @@
                 type: "string"
                 description: "Secret Access Key"
                 airbyte_secret: true
+          order: 2
+        region:
+          title: "S3 Bucket Region"
+          type: "string"
+          default: ""
+          description: "The region of the S3 bucket. See <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions\"\
+            >here</a> for all region codes."
+          enum:
+          - ""
+          - "us-east-1"
+          - "us-east-2"
+          - "us-west-1"
+          - "us-west-2"
+          - "af-south-1"
+          - "ap-east-1"
+          - "ap-south-1"
+          - "ap-northeast-1"
+          - "ap-northeast-2"
+          - "ap-northeast-3"
+          - "ap-southeast-1"
+          - "ap-southeast-2"
+          - "ca-central-1"
+          - "cn-north-1"
+          - "cn-northwest-1"
+          - "eu-central-1"
+          - "eu-north-1"
+          - "eu-south-1"
+          - "eu-west-1"
+          - "eu-west-2"
+          - "eu-west-3"
+          - "sa-east-1"
+          - "me-south-1"
+          - "us-gov-east-1"
+          - "us-gov-west-1"
+          order: 3
         bucket_name:
           title: "S3 Bucket Name"
           type: "string"
-          description: "Name of the bucket"
-          airbyte_secret: false
+          description: "The name of the S3 bucket. Read more <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html\"\
+            >here</a>."
+          order: 4
         bucket_prefix:
           title: "Target S3 Bucket Prefix"
           type: "string"
           description: "S3 prefix"
-          airbyte_secret: false
+          order: 5
         lakeformation_database_name:
-          title: "Lakeformation Database Name"
+          title: "Lake Formation Database Name"
           type: "string"
-          description: "Which database to use"
-          airbyte_secret: false
+          description: "The default database this destination will use to create tables\
+            \ in per stream. Can be changed per connection by customizing the namespace."
+          order: 6
+        lakeformation_database_default_tag_key:
+          title: "Lake Formation Database Tag Key"
+          description: "Add a default tag key to databases created by this destination"
+          examples:
+          - "pii_level"
+          type: "string"
+          order: 7
+        lakeformation_database_default_tag_values:
+          title: "Lake Formation Database Tag Values"
+          description: "Add default values for the `Tag Key` to databases created\
+            \ by this destination. Comma separate for multiple values."
+          examples:
+          - "private,public"
+          type: "string"
+          order: 8
+        lakeformation_governed_tables:
+          title: "Lake Formation Governed Tables"
+          description: "Whether to create tables as LF governed tables."
+          type: "boolean"
+          default: false
+          order: 9
+        format:
+          title: "Output Format *"
+          type: "object"
+          description: "Format of the data output."
+          oneOf:
+          - title: "JSON Lines: Newline-delimited JSON"
+            required:
+            - "format_type"
+            properties:
+              format_type:
+                title: "Format Type *"
+                type: "string"
+                enum:
+                - "JSONL"
+                default: "JSONL"
+              compression_codec:
+                title: "Compression Codec (Optional)"
+                description: "The compression algorithm used to compress data."
+                type: "string"
+                enum:
+                - "UNCOMPRESSED"
+                - "GZIP"
+                default: "UNCOMPRESSED"
+          - title: "Parquet: Columnar Storage"
+            required:
+            - "format_type"
+            properties:
+              format_type:
+                title: "Format Type *"
+                type: "string"
+                enum:
+                - "Parquet"
+                default: "Parquet"
+              compression_codec:
+                title: "Compression Codec (Optional)"
+                description: "The compression algorithm used to compress data."
+                type: "string"
+                enum:
+                - "UNCOMPRESSED"
+                - "SNAPPY"
+                - "GZIP"
+                - "ZSTD"
+                default: "SNAPPY"
+          order: 10
+        partitioning:
+          title: "Choose how to partition data"
+          description: "Partition data by cursor fields when a cursor field is a date"
+          type: "string"
+          enum:
+          - "NO PARTITIONING"
+          - "DATE"
+          - "YEAR"
+          - "MONTH"
+          - "DAY"
+          - "YEAR/MONTH"
+          - "YEAR/MONTH/DAY"
+          default: "NO PARTITIONING"
+          order: 11
+        glue_catalog_float_as_decimal:
+          title: "Glue Catalog: Float as Decimal"
+          description: "Cast float/double as decimal(38,18). This can help achieve\
+            \ higher accuracy and represent numbers correctly as received from the\
+            \ source."
+          type: "boolean"
+          default: false
+          order: 12
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-bigquery:1.2.17"
+- dockerImage: "airbyte/destination-bigquery:1.2.18"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/bigquery"
     connectionSpecification:
@@ -802,6 +922,7 @@
           title: "Service Account Key JSON (Required for cloud, optional for open-source)"
           airbyte_secret: true
           order: 4
+          always_show: true
         transformation_priority:
           type: "string"
           description: "Interactive run type means that the query is executed as soon\
@@ -840,7 +961,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:1.2.17"
+- dockerImage: "airbyte/destination-bigquery-denormalized:1.2.18"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/bigquery"
     connectionSpecification:
@@ -976,6 +1097,7 @@
           title: "Service Account Key JSON (Required for cloud, optional for open-source)"
           airbyte_secret: true
           order: 3
+          always_show: true
         dataset_location:
           type: "string"
           description: "The location of the dataset. Warning: Changes made after creation\
@@ -1584,7 +1706,35 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-databricks:0.3.1"
+- dockerImage: "airbyte/destination-convex:0.1.0"
+  spec:
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Convex"
+      type: "object"
+      required:
+      - "deployment_url"
+      - "access_key"
+      properties:
+        deployment_url:
+          type: "string"
+          title: "Deployment Url"
+          examples:
+          - "https://murky-swan-635.convex.cloud"
+          - "https://cluttered-owl-337.convex.cloud"
+        access_key:
+          type: "string"
+          title: "Access Key"
+          description: "API access key used to retrieve data from Convex."
+          airbyte_secret: true
+    supportsIncremental: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes:
+    - "overwrite"
+    - "append"
+    - "append_dedup"
+- dockerImage: "airbyte/destination-databricks:1.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/databricks"
     connectionSpecification:
@@ -1636,21 +1786,36 @@
           - "dapi0123456789abcdefghij0123456789AB"
           airbyte_secret: true
           order: 5
-        database_schema:
-          title: "Database Schema"
+        database:
+          title: "Databricks catalog"
+          description: "The name of the catalog. If not specified otherwise, the \"\
+            hive_metastore\" will be used."
           type: "string"
-          description: "The default schema tables are written to if the source does\
-            \ not specify a namespace. Unless specifically configured, the usual value\
-            \ for this field is \"public\"."
-          default: "public"
-          examples:
-          - "public"
           order: 6
+        schema:
+          title: "Default Schema"
+          description: "The default schema tables are written. If not specified otherwise,\
+            \ the \"default\" will be used."
+          type: "string"
+          examples:
+          - "default"
+          default: "default"
+          order: 7
         data_source:
           title: "Data Source"
           type: "object"
           description: "Storage on which the delta lake is built."
+          default: "MANAGED_TABLES_STORAGE"
+          order: 8
           oneOf:
+          - title: "[Recommended] Managed tables"
+            required:
+            - "data_source_type"
+            properties:
+              data_source_type:
+                type: "string"
+                const: "MANAGED_TABLES_STORAGE"
+                order: 0
           - title: "Amazon S3"
             required:
             - "data_source_type"
@@ -1662,9 +1827,7 @@
             properties:
               data_source_type:
                 type: "string"
-                enum:
-                - "S3"
-                default: "S3"
+                const: "S3_STORAGE"
                 order: 1
               s3_bucket_name:
                 title: "S3 Bucket Name"
@@ -1755,9 +1918,7 @@
             properties:
               data_source_type:
                 type: "string"
-                enum:
-                - "Azure_Blob_Storage"
-                default: "Azure_Blob_Storage"
+                const: "AZURE_BLOB_STORAGE"
                 order: 0
               azure_blob_storage_endpoint_domain_name:
                 title: "Endpoint Domain Name"
@@ -1792,13 +1953,12 @@
                 examples:
                 - "?sv=2016-05-31&ss=b&srt=sco&sp=rwdl&se=2018-06-27T10:05:50Z&st=2017-06-27T02:05:50Z&spr=https,http&sig=bgqQwoXwxzuD2GJfagRg7VOS8hzNr3QLT7rhS8OFRLQ%3D"
                 order: 4
-          order: 7
         purge_staging_data:
           title: "Purge Staging Files and Tables"
           type: "boolean"
           description: "Default to 'true'. Switch it to 'false' for debugging purpose."
           default: true
-          order: 8
+          order: 9
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: false
@@ -5911,9 +6071,9 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-s3-glue:0.1.2"
+- dockerImage: "airbyte/destination-s3-glue:0.1.3"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/s3"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/s3-glue"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "S3 Destination Spec"
@@ -6151,7 +6311,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.54"
+- dockerImage: "airbyte/destination-snowflake:0.4.57"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/snowflake"
     connectionSpecification:
@@ -7222,7 +7382,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-databend:0.1.1"
+- dockerImage: "airbyte/destination-databend:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/databend"
     connectionSpecification:
