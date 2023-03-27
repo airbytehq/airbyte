@@ -258,7 +258,7 @@ Airbyte outputs each stream into its own table with the following columns in Sno
 
 The Snowflake destination supports the following sync modes:
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
@@ -287,6 +287,10 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.57  | 2023-03-23 | [#23904](https://github.com/airbytehq/airbyte/pull/24405)  | Revert host validation change                                                                                                                       |
+| 0.4.56  | 2023-03-22 | [#23904](https://github.com/airbytehq/airbyte/pull/23904)  | Added host validation by pattern on UI                                                                                                              |
+| 0.4.54  | 2023-03-17 | [#23788](https://github.com/airbytehq/airbyte/pull/23788)  | S3-Parquet: added handler to process null values in arrays                                                                                          |
+| 0.4.53  | 2023-03-15 | [\#24058](https://github.com/airbytehq/airbyte/pull/24058) | added write attempt to internal staging Check method                                                                                                |
 | 0.4.52  | 2023-03-10 | [\#23931](https://github.com/airbytehq/airbyte/pull/23931) | Added support for periodic buffer flush                                                                                                             |
 | 0.4.51  | 2023-03-10 | [\#23466](https://github.com/airbytehq/airbyte/pull/23466) | Changed S3 Avro type from Int to Long                                                                                                               |
 | 0.4.49  | 2023-02-27 | [\#23360](https://github.com/airbytehq/airbyte/pull/23360) | Added logging for flushing and writing data to destination storage                                                                                  |

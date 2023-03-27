@@ -52,7 +52,7 @@ class TestManifestDeclarativeSource:
 
     def test_valid_manifest(self):
         manifest = {
-            "version": "version",
+            "version": "0.29.3",
             "definitions": {},
             "streams": [
                 {
@@ -125,7 +125,7 @@ class TestManifestDeclarativeSource:
 
     def test_manifest_with_spec(self):
         manifest = {
-            "version": "version",
+            "version": "0.29.3",
             "definitions": {
                 "schema_loader": {
                     "name": "{{ parameters.stream_name }}",
@@ -204,7 +204,7 @@ class TestManifestDeclarativeSource:
 
     def test_manifest_with_external_spec(self, use_external_yaml_spec):
         manifest = {
-            "version": "version",
+            "version": "0.29.3",
             "definitions": {
                 "schema_loader": {
                     "name": "{{ parameters.stream_name }}",
@@ -262,7 +262,7 @@ class TestManifestDeclarativeSource:
 
     def test_source_is_not_created_if_toplevel_fields_are_unknown(self):
         manifest = {
-            "version": "version",
+            "version": "0.29.3",
             "definitions": {
                 "schema_loader": {
                     "name": "{{ parameters.stream_name }}",
@@ -317,7 +317,7 @@ class TestManifestDeclarativeSource:
 
     def test_source_missing_checker_fails_validation(self):
         manifest = {
-            "version": "version",
+            "version": "0.29.3",
             "definitions": {
                 "schema_loader": {
                     "name": "{{ parameters.stream_name }}",
@@ -370,7 +370,7 @@ class TestManifestDeclarativeSource:
             ManifestDeclarativeSource(source_config=manifest)
 
     def test_source_with_missing_streams_fails(self):
-        manifest = {"version": "version", "definitions": None, "check": {"type": "CheckStream", "stream_names": ["lists"]}}
+        manifest = {"version": "0.29.3", "definitions": None, "check": {"type": "CheckStream", "stream_names": ["lists"]}}
         with pytest.raises(ValidationError):
             ManifestDeclarativeSource(source_config=manifest)
 
@@ -427,9 +427,108 @@ class TestManifestDeclarativeSource:
         with pytest.raises(ValidationError):
             ManifestDeclarativeSource(source_config=manifest)
 
+    @pytest.mark.parametrize(
+        "cdk_version, manifest_version, expected_error",
+        [
+            pytest.param("0.35.0", "0.30.0", None, id="manifest_version_less_than_cdk_package_should_run"),
+            pytest.param("1.5.0", "0.29.0", None, id="manifest_version_less_than_cdk_major_package_should_run"),
+            pytest.param("0.29.0", "0.29.0", None, id="manifest_version_matching_cdk_package_should_run"),
+            pytest.param(
+                "0.29.0",
+                "0.25.0",
+                ValidationError,
+                id="manifest_version_before_beta_that_uses_the_beta_0.29.0_cdk_package_should_throw_error",
+            ),
+            pytest.param(
+                "1.5.0",
+                "0.25.0",
+                ValidationError,
+                id="manifest_version_before_beta_that_uses_package_later_major_version_than_beta_0.29.0_cdk_package_should_throw_error",
+            ),
+            pytest.param("0.34.0", "0.35.0", ValidationError, id="manifest_version_greater_than_cdk_package_should_throw_error"),
+            pytest.param("0.29.0", "-1.5.0", ValidationError, id="manifest_version_has_invalid_major_format"),
+            pytest.param("0.29.0", "0.invalid.0", ValidationError, id="manifest_version_has_invalid_minor_format"),
+            pytest.param("0.29.0", "0.29.0.1", ValidationError, id="manifest_version_has_extra_version_parts"),
+            pytest.param("0.29.0", "5.0", ValidationError, id="manifest_version_has_too_few_version_parts"),
+            pytest.param("0.29.0:dev", "0.29.0", ValidationError, id="manifest_version_has_extra_release"),
+        ],
+    )
+    @patch("importlib.metadata.version")
+    def test_manifest_versions(self, version, cdk_version, manifest_version, expected_error):
+        # Used to mock the metadata.version() for test scenarios which normally returns the actual version of the airbyte-cdk package
+        version.return_value = cdk_version
+
+        manifest = {
+            "version": manifest_version,
+            "definitions": {},
+            "streams": [
+                {
+                    "type": "DeclarativeStream",
+                    "$parameters": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "schema_loader": {
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                    },
+                    "retriever": {
+                        "paginator": {
+                            "type": "DefaultPaginator",
+                            "page_size": 10,
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
+                            "pagination_strategy": {
+                                "type": "CursorPagination",
+                                "cursor_value": "{{ response._metadata.next }}",
+                                "page_size": 10,
+                            },
+                        },
+                        "requester": {
+                            "path": "/v3/marketing/lists",
+                            "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
+                            "request_parameters": {"page_size": "{{ 10 }}"},
+                        },
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
+                    },
+                },
+                {
+                    "type": "DeclarativeStream",
+                    "$parameters": {"name": "stream_with_custom_requester", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "schema_loader": {
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                    },
+                    "retriever": {
+                        "paginator": {
+                            "type": "DefaultPaginator",
+                            "page_size": 10,
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
+                            "pagination_strategy": {
+                                "type": "CursorPagination",
+                                "cursor_value": "{{ response._metadata.next }}",
+                                "page_size": 10,
+                            },
+                        },
+                        "requester": {
+                            "type": "CustomRequester",
+                            "class_name": "unit_tests.sources.declarative.external_component.SampleCustomComponent",
+                            "path": "/v3/marketing/lists",
+                            "custom_request_parameters": {"page_size": 10},
+                        },
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
+                    },
+                },
+            ],
+            "check": {"type": "CheckStream", "stream_names": ["lists"]},
+        }
+        if expected_error:
+            with pytest.raises(expected_error):
+                ManifestDeclarativeSource(source_config=manifest)
+        else:
+            ManifestDeclarativeSource(source_config=manifest)
+
     def test_source_with_invalid_stream_config_fails_validation(self):
         manifest = {
-            "version": "version",
+            "version": "0.29.3",
             "definitions": {
                 "schema_loader": {
                     "name": "{{ parameters.stream_name }}",
@@ -453,7 +552,7 @@ class TestManifestDeclarativeSource:
 
     def test_source_with_no_external_spec_and_no_in_yaml_spec_fails(self):
         manifest = {
-            "version": "version",
+            "version": "0.29.3",
             "definitions": {
                 "schema_loader": {
                     "name": "{{ parameters.stream_name }}",
@@ -510,7 +609,7 @@ class TestManifestDeclarativeSource:
 
     def test_manifest_without_at_least_one_stream(self):
         manifest = {
-            "version": "version",
+            "version": "0.29.3",
             "definitions": {
                 "schema_loader": {
                     "name": "{{ parameters.stream_name }}",
@@ -541,7 +640,7 @@ class TestManifestDeclarativeSource:
     @patch("airbyte_cdk.sources.declarative.declarative_source.DeclarativeSource.read")
     def test_given_debug_when_read_then_set_log_level(self, declarative_source_read):
         any_valid_manifest = {
-            "version": "version",
+            "version": "0.29.3",
             "definitions": {
                 "schema_loader": {
                     "name": "{{ parameters.stream_name }}",

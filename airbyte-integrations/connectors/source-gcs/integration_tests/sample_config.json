@@ -1,0 +1,5 @@
+{
+  "gcs_path": "",
+  "gcs_bucket": "airbyte-gcs-source",
+  "service_account": "{\"type\": \"service_account\", \"project_id\": ..."
+}
