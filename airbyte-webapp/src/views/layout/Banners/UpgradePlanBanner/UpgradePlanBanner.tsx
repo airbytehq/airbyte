@@ -3,7 +3,6 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components";
-// import { Separator } from "components/Separator";
 
 import { useUser } from "core/AuthContext";
 import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
@@ -21,8 +20,7 @@ interface IProps {
 }
 
 const Banner = styled.div`
-  width: calc(100% - 248px);
-  position: fixed;
+  width: 100%;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -100,7 +98,6 @@ export const UpgradePlanBanner: React.FC<IProps> = ({ onBillingPage }) => {
           </Button>
         </Banner>
         {isAuthorized && <UnauthorizedModal onClose={() => setIsAuthorized(false)} />}
-        {/* <Separator height="40px" /> */}
       </>
     );
   }
