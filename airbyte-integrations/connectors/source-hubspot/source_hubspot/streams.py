@@ -591,7 +591,7 @@ class Stream(HttpStream, ABC):
                         return
                     if self.page_field in response:
                         return {self.page_filter: response[self.page_field]}
-                if self.page_field in response and response[self.page_filter] + self.limit < response.get('total'):
+                if self.page_field in response and response[self.page_filter] + self.limit < response.get("total"):
                     return {self.page_filter: response[self.page_filter] + self.limit}
         else:
             if len(response) >= self.limit:

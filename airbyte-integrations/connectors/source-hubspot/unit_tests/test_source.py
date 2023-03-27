@@ -13,7 +13,7 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from source_hubspot.errors import HubspotRateLimited
 from source_hubspot.helpers import APIv3Property
 from source_hubspot.source import SourceHubspot
-from source_hubspot.streams import API, Companies, Deals, Engagements, Products, Stream, MarketingEmails
+from source_hubspot.streams import API, Companies, Deals, Engagements, MarketingEmails, Products, Stream
 
 from .utils import read_full_refresh, read_incremental
 
