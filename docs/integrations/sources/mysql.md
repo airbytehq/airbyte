@@ -256,6 +256,8 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.9   | 2022-03-24 | [24529](https://github.com/airbytehq/airbyte/pull/24529)   | Set SSL Mode to required on strict-encrypt variant                                                                                               |
+| 2.0.8   | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760)   | Removed redundant date-time datatypes formatting                                                                                                 |
 | 2.0.7   | 2022-03-21 | [24207](https://github.com/airbytehq/airbyte/pull/24207)   | Fix incorrect schema change warning in CDC mode                                                                                                  |
 | 2.0.6   | 2023-03-21 | [23984](https://github.com/airbytehq/airbyte/pull/23984)   | Support CDC heartbeats                                                                                                                           |
 | 2.0.5   | 2023-03-21 | [24147](https://github.com/airbytehq/airbyte/pull/24275)   | Fix error with CDC checkpointing                                                                                                                 |
