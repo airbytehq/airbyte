@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.postgres.PostgresSourceStrictEncrypt'
+    mainClass = 'io.airbyte.integrations.source.postgres_strict_encrypt.PostgresSourceStrictEncrypt'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
