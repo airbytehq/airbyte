@@ -1,18 +1,17 @@
+import Slider from "@mui/material/Slider";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-// import { Card } from "components";
+import { ProductOptionItem } from "core/domain/product";
+// import { NumberNaming } from "core/functions/numberFormatter";
 
-import { ProductItem } from "core/domain/product";
-import { NumberNaming } from "core/functions/numberFormatter";
-
-import Range from "./Range";
+// import Range from "./Range";
 
 interface IProps {
-  products: ProductItem[];
-  product?: ProductItem;
-  setProduct: (item: ProductItem) => void;
+  productOptions: ProductOptionItem[];
+  product?: ProductOptionItem;
+  setProduct: (item: ProductOptionItem) => void;
 }
 
 const Title = styled.div`
@@ -45,21 +44,87 @@ const NoteContainer = styled.div`
   color: #999999;
 `;
 
-const RangeCard: React.FC<IProps> = ({ products, product, setProduct }) => {
+const RangeCard: React.FC<IProps> = ({ productOptions, product, setProduct }) => {
+  const valueLabelFormat = (value: any) => {
+    return productOptions.findIndex((option) => option.value === value) + 1;
+  };
+
+  const getSinglePrice = (event: any) => {
+    const matchingOptions = productOptions.filter((option) => {
+      return option.value === event.target.value;
+    });
+    setProduct(matchingOptions[0]);
+  };
+
   return (
-    // <Card withPadding roundedBottom>
     <CardContainer>
       <Title>
         <FormattedMessage id="plan.rows.card.title" />
       </Title>
       <RangeContainer>
-        <Range min={0} max={110 * NumberNaming.M} marks={products} selectedMark={product} onSelect={setProduct} />
+        {/* <Range min={0} max={110 * NumberNaming.M} marks={products} selectedMark={product} onSelect={setProduct} /> */}
+        <Slider
+          aria-label="Restricted values"
+          valueLabelFormat={(value) => valueLabelFormat(value)}
+          value={typeof Number(product?.value) === "number" ? Number(product?.value) : 100}
+          step={null}
+          valueLabelDisplay="off"
+          marks={productOptions}
+          onChange={getSinglePrice}
+          sx={{
+            height: 18,
+            color: "#fff",
+            padding: "13px 0 0 0",
+            "& .MuiSlider-track": {
+              background: "#E4E8EF",
+              opacity: 1,
+            },
+            "& .MuiSlider-thumb": {
+              height: 22,
+              width: 22,
+              borderRadius: "50%",
+              color: "#4F46E5",
+            },
+            "& .MuiSlider-thumb::before": {
+              boxShadow: "none",
+            },
+            "& .MuiSlider-thumb::after": {
+              width: 10,
+              height: 10,
+              background: "#fff",
+            },
+            "& .MuiSlider-thumb:hover": {
+              boxShadow: "none",
+            },
+            "& .MuiSlider-thumb.Mui-focusVisible": {
+              boxShadow: "none",
+            },
+            "& .MuiSlider-thumb.Mui-selected": {
+              boxShadow: "none",
+            },
+            "& .MuiSlider-thumb.Mui-active": {
+              boxShadow: "none",
+            },
+            "& .MuiSlider-mark": {
+              width: 10,
+              height: 10,
+              borderRadius: "50%",
+              opacity: 1,
+            },
+            "& .MuiSlider-rail": {
+              background: "#E4E8EF",
+              opacity: 1,
+            },
+            "& .MuiSlider-markLabel": {
+              transform: "translateX(-40%)",
+            },
+          }}
+        />
       </RangeContainer>
       <NoteContainer>
         <FormattedMessage id="plan.rows.card.note" />
       </NoteContainer>
     </CardContainer>
-    // </Card>
   );
 };
 

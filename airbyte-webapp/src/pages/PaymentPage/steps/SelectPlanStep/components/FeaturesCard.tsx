@@ -8,7 +8,7 @@ import { TickIcon } from "components/icons/TickIcon";
 import { Separator } from "components/Separator";
 import { Row, Cell } from "components/SimpleTableComponents";
 
-import { ProductItem, ProcessedPackageMap } from "core/domain/product";
+import { ProductOptionItem, ProcessedPackageMap } from "core/domain/product";
 
 import EnterpriseCell from "./EnterpriseCell";
 import ProfessionalCell from "./ProfessionalCell";
@@ -16,7 +16,7 @@ import ProfessionalCell from "./ProfessionalCell";
 interface IProps {
   onSelectPlan?: () => void;
   selectPlanBtnDisability: boolean;
-  product?: ProductItem;
+  product?: ProductOptionItem;
   paymentLoading: boolean;
   packagesMap: ProcessedPackageMap;
 }
