@@ -135,7 +135,7 @@ const MainView: React.FC = (props) => {
           <React.Suspense fallback={<LoadingPage />}>
             <UpgradePlanBanner onBillingPage={onBillingPage} />
             {usagePercentage > 0 && usagePercentage < 100 && (
-              <SyncNotificationBanner usage={usagePercentage} onBillingPage={onBillingPage} />
+              <SyncNotificationBanner usagePercentage={usagePercentage} onBillingPage={onBillingPage} />
             )}
             {usagePercentage >= 100 && <BillingWarningBanner onBillingPage={onBillingPage} />}
             {props.children}
