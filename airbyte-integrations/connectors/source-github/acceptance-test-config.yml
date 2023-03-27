@@ -67,7 +67,6 @@ acceptance_tests:
           bypass_reason: "fast changing data"
         - name: watchers
           bypass_reason: "fast changing data"
-      fail_on_extra_columns: false
   incremental:
     tests:
     - config_path: "secrets/config.json"
