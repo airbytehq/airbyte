@@ -108,7 +108,6 @@ class MeliInvoices(HttpStream):
 
                 # Transforming XML in json
                 xml = xmltodict.parse(xml)
-                xml = xml.replace("ns0:","")
                 items.append(xml)
 
         # with open('./invoices.json', 'w+') as f:
