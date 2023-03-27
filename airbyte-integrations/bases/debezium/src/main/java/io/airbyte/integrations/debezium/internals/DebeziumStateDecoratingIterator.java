@@ -129,6 +129,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
     }
 
     if (cdcStateHandler.isCdcCheckpointEnabled() && sendCheckpointMessage) {
+      LOGGER.info("Sending CDC checkpoint state message.");
       final AirbyteMessage stateMessage = createStateMessage(checkpointOffsetToSend);
       previousCheckpointOffset.clear();
       previousCheckpointOffset.putAll(checkpointOffsetToSend);
