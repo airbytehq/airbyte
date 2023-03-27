@@ -102,6 +102,6 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
         String.valueOf(offsetJsonB.get("lsn_commit")) :
         String.valueOf(offsetJsonB.get("lsn"));
 
-    return Integer.parseInt(lsnA) == Integer.parseInt(lsnB);
+    return Long.parseLong(lsnA) == Long.parseLong(lsnB);
   }
 }
