@@ -104,7 +104,7 @@
           "type": ["null", "string"]
         },
         "owner": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "login": {
               "type": ["null", "string"]
@@ -158,7 +158,7 @@
               "type": ["null", "string"]
             },
             "site_admin": {
-              "type": ["null", "integer"]
+              "type": ["null", "boolean"]
             }
           }
         },
@@ -181,7 +181,7 @@
           "type": ["null", "string"]
         },
         "permissions": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "actions": {
               "type": ["null", "string"]
