@@ -68,7 +68,7 @@ jobs:
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            #### Note: The following `dataset=` values are supported: `1m`, `10m`, `20m`, `bottleneck_stream1`
+            #### Note: The following `dataset=` values are supported: `1m`<sub>(default)</sub>, `10m`, `20m`, `bottleneck_stream1`
             > :runner: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Search for valid connector name format
         id: regex
@@ -156,8 +156,7 @@ jobs:
           suffix='"}}'
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "RUN_RESULT<<$EOF" >> $GITHUB_OUTPUT
-          #
-          kubectl logs --tail=1 $POD | while read line ; do str=${line#"$prefix"}; echo $str >> $GITHUB_OUTPUT ; done 
+          kubectl logs --tail=1 $POD | while read line ; do line=${line#"$prefix"}; line=${line%"$suffix"}; echo $line >> $GITHUB_OUTPUT ; done 
           echo "$EOF" >> $GITHUB_OUTPUT
       - name: Link comment to workflow run
         uses: peter-evans/create-or-update-comment@v2
