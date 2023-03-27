@@ -227,7 +227,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   @Override
   public List<TableInfo<CommonField<PostgresType>>> discoverInternal(final JdbcDatabase database) throws Exception {
-    final List<TableInfo<CommonField<PostgresType>>> rawTables = discoverRawTables(database);
+    final List<TableInfo<CommonField<PostgresType>>> rawTables = super.discoverInternal(database);
     final Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc = PostgresCdcCatalogHelper.getPublicizedTables(database);
 
     if (publicizedTablesInCdc.isEmpty()) {
@@ -237,25 +237,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     return rawTables.stream()
         .filter(table -> publicizedTablesInCdc.contains(new AirbyteStreamNameNamespacePair(table.getName(), table.getNameSpace())))
         .collect(toList());
-  }
-
-  public List<TableInfo<CommonField<PostgresType>>> discoverRawTables(final JdbcDatabase database) throws Exception {
-    if (schemas != null && !schemas.isEmpty()) {
-      // process explicitly selected (from UI) schemas
-      final List<TableInfo<CommonField<PostgresType>>> internals = new ArrayList<>();
-      for (final String schema : schemas) {
-        LOGGER.info("Checking schema: {}", schema);
-        final List<TableInfo<CommonField<PostgresType>>> tables = super.discoverInternal(database, schema);
-        internals.addAll(tables);
-        for (final TableInfo<CommonField<PostgresType>> table : tables) {
-          LOGGER.info("Found table: {}.{}", table.getNameSpace(), table.getName());
-        }
-      }
-      return internals;
-    } else {
-      LOGGER.info("No schemas explicitly set on UI to process, so will process all of existing schemas in DB");
-      return super.discoverInternal(database);
-    }
   }
 
   @VisibleForTesting
@@ -451,11 +432,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     }
 
     return username;
-  }
-
-  @Override
-  protected boolean isNotInternalSchema(final JsonNode jsonNode, final Set<String> internalSchemas) {
-    return false;
   }
 
   // TODO This is a temporary override so that the Postgres source can take advantage of per-stream

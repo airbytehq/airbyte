@@ -98,11 +98,6 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
   }
 
   @Override
-  protected boolean isNotInternalSchema(final JsonNode jsonNode, final Set<String> internalSchemas) {
-    return false;
-  }
-
-  @Override
   public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
     final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
 

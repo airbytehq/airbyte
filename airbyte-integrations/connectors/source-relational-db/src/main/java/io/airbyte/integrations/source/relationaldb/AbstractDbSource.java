@@ -8,7 +8,6 @@ import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getError
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
@@ -23,7 +22,6 @@ import io.airbyte.config.StateWrapper;
 import io.airbyte.config.helpers.StateMessageHelper;
 import io.airbyte.db.AbstractDatabase;
 import io.airbyte.db.IncrementalUtils;
-import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Source;
@@ -32,8 +30,8 @@ import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
-import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.integrations.util.ApmTraceUtils;
+import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -65,8 +63,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import io.opencensus.trace.Span;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -271,7 +267,9 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                              final Database database)
       throws Exception {
     final Set<String> systemNameSpaces = getExcludedInternalNameSpaces();
+    LOGGER.info("System namespaces(schemas) to exclude: {}", systemNameSpaces);
     final Set<String> systemViews = getExcludedViews();
+    LOGGER.info("System views to exclude: {}", systemViews);
     final List<TableInfo<CommonField<DataType>>> discoveredTables = discoverInternal(database);
     return (systemNameSpaces == null || systemNameSpaces.isEmpty() ? discoveredTables
         : discoveredTables.stream()
@@ -515,20 +513,6 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
             .withNamespace(namespace)
             .withEmittedAt(emittedAt)
             .withData(r)));
-  }
-
-  /**
-   * @param database - The database where from privileges for tables will be consumed
-   * @param schema - The schema where from privileges for tables will be consumed
-   * @return Set with privileges for tables for current DB-session user The method is responsible for
-   *         SELECT-ing the table with privileges. In some cases such SELECT doesn't require (e.g. in
-   *         Oracle DB - the schema is the user, you cannot REVOKE a privilege on a table from its
-   *         owner).
-   */
-  protected <T> Set<T> getPrivilegesTableForCurrentUser(final JdbcDatabase database,
-                                                        final String schema)
-      throws SQLException {
-    return Collections.emptySet();
   }
 
   /**

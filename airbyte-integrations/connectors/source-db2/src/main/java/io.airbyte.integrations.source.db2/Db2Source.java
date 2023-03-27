@@ -102,11 +102,6 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
   }
 
   @Override
-  protected boolean isNotInternalSchema(final JsonNode jsonNode, final Set<String> internalSchemas) {
-    return false;
-  }
-
-  @Override
   protected int getStateEmissionFrequency() {
     return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
