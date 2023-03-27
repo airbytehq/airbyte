@@ -17,6 +17,12 @@
     "head_sha": {
       "type": ["null", "string"]
     },
+    "path": {
+      "type": ["null", "string"]
+    },
+    "display_title": {
+      "type": ["null", "string"]
+    },
     "run_number": {
       "type": ["null", "integer"]
     },
@@ -62,6 +68,9 @@
     },
     "run_attempt": {
       "type": ["null", "integer"]
+    },
+    "referenced_workflows": {
+      "type": "array"
     },
     "run_started_at": {
       "type": ["null", "string"]
@@ -414,6 +423,12 @@
           "type": ["null", "string"]
         }
       }
+    },
+    "actor": {
+      "$ref": "user.json"
+    },
+    "triggering_actor": {
+      "$ref": "user.json"
     }
   }
 }
