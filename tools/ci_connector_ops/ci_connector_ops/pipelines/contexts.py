@@ -90,6 +90,10 @@ class ConnectorTestContext:
         return self.is_local is False
 
     @property
+    def is_pr(self):
+        return self.ci_context == "pull_request"
+
+    @property
     def repo(self):
         return self.dagger_client.git(AIRBYTE_REPO_URL, keep_git_dir=True)
 
@@ -122,7 +126,7 @@ class ConnectorTestContext:
             "target_url": self.gha_workflow_run_url,
             "description": self.state.value["description"],
             "context": f"[POC please ignore] Connector tests: {self.connector.technical_name}",
-            "should_send": self.is_ci,
+            "should_send": self.is_pr,
             "logger": self.logger,
         }
 
@@ -173,6 +177,5 @@ class ConnectorTestContext:
                 )
                 if report_upload_exit_code != 0:
                     self.logger.error("Uploading the report to S3 failed.")
-
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         return True
