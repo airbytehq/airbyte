@@ -840,7 +840,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:1.2.17"
+- dockerImage: "airbyte/destination-bigquery-denormalized:1.2.18"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/bigquery"
     connectionSpecification:
@@ -976,6 +976,7 @@
           title: "Service Account Key JSON (Required for cloud, optional for open-source)"
           airbyte_secret: true
           order: 3
+          always_show: true
         dataset_location:
           type: "string"
           description: "The location of the dataset. Warning: Changes made after creation\
