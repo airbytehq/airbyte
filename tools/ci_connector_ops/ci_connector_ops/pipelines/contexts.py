@@ -28,7 +28,7 @@ class ContextState(Enum):
 class ConnectorTestContext:
     """The connector test context is used to store configuration for a specific connector pipeline run."""
 
-    DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE = "airbyte/connector-acceptance-test:0.8.0"
+    DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE = "airbyte/connector-acceptance-test:latest"
 
     def __init__(
         self,
