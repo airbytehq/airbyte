@@ -41,7 +41,7 @@
         "type": "string"
       }
     },
-    "ad_group.explorer_auto_optimizer_setting.opt_in": {
+    "ad_group.optimized_targeting_enabled": {
       "type": ["null", "boolean"]
     },
     "ad_group.final_url_suffix": {

@@ -85,7 +85,7 @@ class AcceptanceTests(PythonTests):
             StepResult: Failure or success of the acceptances tests with stdout and stdout.
         """
         if not self.context.connector.acceptance_test_config:
-            return StepResult(Step.ACCEPTANCE_TESTS, StepStatus.SKIPPED), None
+            return StepResult(self, StepStatus.SKIPPED), None
 
         dagger_client = self.get_dagger_pipeline(self.context.dagger_client)
 
