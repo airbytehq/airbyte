@@ -16,7 +16,8 @@ from airbyte_cdk.logger import init_logger
 from airbyte_cdk.models import AirbyteMessage, Status, Type
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 from airbyte_cdk.sources import Source
-from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
+from airbyte_cdk.sources.utils.schema_helpers import \
+    check_config_against_spec_or_exit, split_config
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
@@ -44,6 +45,9 @@ class AirbyteEntrypoint(object):
         check_parser = subparsers.add_parser("check", help="checks the config can be used to connect", parents=[parent_parser])
         required_check_parser = check_parser.add_argument_group("required named arguments")
         required_check_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
+        required_check_parser.add_argument(
+            "--catalog", type=str, required=False, help="path to the catalog used to determine which data to read"
+        )
 
         # discover
         discover_parser = subparsers.add_parser(
