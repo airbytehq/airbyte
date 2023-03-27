@@ -17,7 +17,6 @@ public class WriteConfig {
   private final String streamName;
   private final String namespace;
   private final String outputSchemaName;
-  private final String tmpTableName;
   private final String outputTableName;
   private final DestinationSyncMode syncMode;
   private final DateTime writeDatetime;
@@ -25,23 +24,20 @@ public class WriteConfig {
   public WriteConfig(final String streamName,
                      final String namespace,
                      final String outputSchemaName,
-                     final String tmpTableName,
                      final String outputTableName,
                      final DestinationSyncMode syncMode) {
-    this(streamName, namespace, outputSchemaName, tmpTableName, outputTableName, syncMode, DateTime.now(DateTimeZone.UTC));
+    this(streamName, namespace, outputSchemaName, outputTableName, syncMode, DateTime.now(DateTimeZone.UTC));
   }
 
   public WriteConfig(final String streamName,
                      final String namespace,
                      final String outputSchemaName,
-                     final String tmpTableName,
                      final String outputTableName,
                      final DestinationSyncMode syncMode,
                      final DateTime writeDatetime) {
     this.streamName = streamName;
     this.namespace = namespace;
     this.outputSchemaName = outputSchemaName;
-    this.tmpTableName = tmpTableName;
     this.outputTableName = outputTableName;
     this.syncMode = syncMode;
     this.writeDatetime = writeDatetime;
@@ -53,10 +49,6 @@ public class WriteConfig {
 
   public String getNamespace() {
     return namespace;
-  }
-
-  public String getTmpTableName() {
-    return tmpTableName;
   }
 
   public String getOutputSchemaName() {
@@ -81,7 +73,6 @@ public class WriteConfig {
         "streamName=" + streamName +
         ", namespace=" + namespace +
         ", outputSchemaName=" + outputSchemaName +
-        ", tmpTableName=" + tmpTableName +
         ", outputTableName=" + outputTableName +
         ", syncMode=" + syncMode +
         '}';

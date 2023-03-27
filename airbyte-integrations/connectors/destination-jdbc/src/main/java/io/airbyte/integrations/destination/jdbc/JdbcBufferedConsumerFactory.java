@@ -90,11 +90,10 @@ public class JdbcBufferedConsumerFactory {
       final String outputSchema = getOutputSchema(abStream, defaultSchemaName, namingResolver);
 
       final String streamName = abStream.getName();
-      final String tableName = namingResolver.getRawTableName(streamName);
-      final String tmpTableName = namingResolver.getTmpTableName(streamName);
+      final String dstTableName = namingResolver.getRawTableName(streamName);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
 
-      final WriteConfig writeConfig = new WriteConfig(streamName, abStream.getNamespace(), outputSchema, tmpTableName, tableName, syncMode);
+      final WriteConfig writeConfig = new WriteConfig(streamName, abStream.getNamespace(), outputSchema, dstTableName, syncMode);
       LOGGER.info("Write config: {}", writeConfig);
 
       return writeConfig;

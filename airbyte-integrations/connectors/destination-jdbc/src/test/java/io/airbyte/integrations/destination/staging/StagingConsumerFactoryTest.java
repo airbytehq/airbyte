@@ -23,8 +23,8 @@ class StagingConsumerFactoryTest {
             null,
             null,
             List.of(
-                new WriteConfig("example_stream", "source_schema", "destination_default_schema", null, null, null),
-                new WriteConfig("example_stream", "source_schema", "destination_default_schema", null, null, null)),
+                new WriteConfig("example_stream", "source_schema", "destination_default_schema", null, null),
+                new WriteConfig("example_stream", "source_schema", "destination_default_schema", null, null)),
             null));
 
     assertEquals(

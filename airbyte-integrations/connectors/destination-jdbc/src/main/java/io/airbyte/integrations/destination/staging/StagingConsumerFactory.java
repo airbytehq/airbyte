@@ -112,12 +112,11 @@ public class StagingConsumerFactory {
       final String outputSchema = getOutputSchema(abStream, config.get("schema").asText(), namingResolver);
 
       final String streamName = abStream.getName();
-      final String tableName = namingResolver.getRawTableName(streamName);
-      final String tmpTableName = namingResolver.getTmpTableName(streamName);
+      final String dstTableName = namingResolver.getRawTableName(streamName);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
 
       final WriteConfig writeConfig =
-          new WriteConfig(streamName, abStream.getNamespace(), outputSchema, tmpTableName, tableName, syncMode, SYNC_DATETIME);
+          new WriteConfig(streamName, abStream.getNamespace(), outputSchema, dstTableName, syncMode, SYNC_DATETIME);
       LOGGER.info("Write config: {}", writeConfig);
 
       return writeConfig;
