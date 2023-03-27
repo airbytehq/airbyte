@@ -8,6 +8,12 @@
     "run_id": {
       "type": "integer"
     },
+    "workflow_name": {
+      "type": ["null", "string"]
+    },
+    "head_branch": {
+      "type": ["null", "string"]
+    },
     "run_url": {
       "type": "string"
     },
@@ -31,6 +37,10 @@
     },
     "conclusion": {
       "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "started_at": {
       "type": "string",
@@ -90,6 +100,9 @@
       "type": ["integer", "null"]
     },
     "runner_group_name": {
+      "type": ["null", "string"]
+    },
+    "repository": {
       "type": ["null", "string"]
     }
   }
