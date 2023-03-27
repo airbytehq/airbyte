@@ -19,9 +19,9 @@ def check_source(repo_line: str) -> AirbyteConnectionStatus:
 
 @responses.activate
 def test_check_connection_repos_only():
-    responses.add("GET", "https://api.github.com/repos/airbyte", json={"full_name": "airbyte"})
+    responses.add("GET", "https://api.github.com/repos/airbytehq/airbyte", json={"full_name": "airbytehq/airbyte"})
 
-    status = check_source("airbyte airbyte airbyte")
+    status = check_source("airbytehq/airbyte airbytehq/airbyte airbytehq/airbyte")
     assert not status.message
     assert status.status == Status.SUCCEEDED
     # Only one request since 3 repos have same name
@@ -141,7 +141,7 @@ def test_organization_or_repo_available():
 @pytest.mark.parametrize(
     ("repos_config", "expected"),
     [
-        (("airbytehq/airbyte/", "airbytehq/", "airbytehq", "airbyte hq", "airbytehq/*/"), False),
+        (("airbytehq/airbyte/", "airbytehq/", "airbytehq", "airbyte hq", "airbytehq/*/", "adc/ff*f", "akj*/jahsd"), False),
         (("airbytehq/airbyte", ), True),
         (("airbytehq/airbyte-test", "airbytehq/airbyte_test", "airbytehq/airbyte-test/another-repo"), True),
         (("air232bytehq/air32byte", "airbyte_hq/another-repo", "airbytehq/*", "airbytehq/airbyte"), True),
