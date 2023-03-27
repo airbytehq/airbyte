@@ -7,6 +7,7 @@ import io.airbyte.integrations.standardtest.destination.comparator.parameters.Em
 import io.airbyte.integrations.standardtest.destination.comparator.parameters.IsDateTimeValueTestArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.parameters.IsDateTimeWithTzTestArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.parameters.IsNumericTestArgumentProvider;
+import io.airbyte.integrations.standardtest.destination.comparator.parameters.IsTimeWithTimeZoneTestArgumentProvider;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,6 +62,13 @@ public class AdvancedTestDataComparatorTest {
   @ArgumentsSource(IsDateTimeValueTestArgumentProvider.class)
   public void testIsDateTimeValue(final String value, final boolean expected) {
     final var actual = AdvancedTestDataComparator.isDateTimeValue(value);
+    Assertions.assertEquals(expected, actual);
+  }
+
+  @ParameterizedTest
+  @ArgumentsSource(IsTimeWithTimeZoneTestArgumentProvider.class)
+  public void testIsTimeWithTimezone(final String value, final boolean expected) {
+    final var actual = AdvancedTestDataComparator.isTimeWithTimezone(value);
     Assertions.assertEquals(expected, actual);
   }
 
