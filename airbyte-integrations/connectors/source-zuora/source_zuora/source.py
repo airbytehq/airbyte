@@ -262,7 +262,7 @@ class ZuoraObjectsBase(ZuoraBase):
         start_date = min(start_date, end_date)
 
         while start_date <= end_date:
-            end_date_slice = start_date.add(days=self.window_in_days)
+            end_date_slice = start_date.add(days=self.window_in_days).astimezone()
             yield {"start_date": self.to_datetime_str(start_date), "end_date": self.to_datetime_str(end_date_slice)}
             start_date = end_date_slice
 
