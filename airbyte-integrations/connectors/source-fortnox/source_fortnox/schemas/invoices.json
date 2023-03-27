@@ -1,0 +1,102 @@
+{
+  "type" : "object",
+  "properties" : {
+    "@url" : {
+      "type" : "string"
+    },
+    "Balance" : {
+      "type" : "number",
+      "format" : "double"
+    },
+    "Booked" : {
+      "type" : "boolean"
+    },
+    "Cancelled" : {
+      "type" : "boolean"
+    },
+    "CostCenter" : {
+      "type" : "string"
+    },
+    "Currency" : {
+      "type" : "string"
+    },
+    "CurrencyRate" : {
+      "type" : "number",
+      "format" : "double"
+    },
+    "CurrencyUnit" : {
+      "type" : "number",
+      "format" : "double"
+    },
+    "CustomerName" : {
+      "type" : "string"
+    },
+    "CustomerNumber" : {
+      "type" : "string"
+    },
+    "DocumentNumber" : {
+      "type" : "string"
+    },
+    "DueDate" : {
+      "type" : "string",
+      "format" : "date"
+    },
+    "ExternalInvoiceReference1" : {
+      "type" : "string"
+    },
+    "ExternalInvoiceReference2" : {
+      "type" : "string"
+    },
+    "InvoiceDate" : {
+      "type" : "string",
+      "format" : "date"
+    },
+    "InvoiceType" : {
+      "type" : "string",
+      "enum" : [
+        "INVOICE",
+        "AGREEMENTINVOICE",
+        "INTRESTINVOICE",
+        "SUMMARYINVOICE",
+        "CASHINVOICE"
+      ]
+    },
+    "NoxFinans" : {
+      "type" : "boolean"
+    },
+    "OCR" : {
+      "type" : "string"
+    },
+    "VoucherNumber" : {
+      "type" : "integer",
+      "format" : "int32"
+    },
+    "VoucherSeries" : {
+      "type" : "string"
+    },
+    "VoucherYear" : {
+      "type" : "integer",
+      "format" : "int32"
+    },
+    "WayOfDelivery" : {
+      "type" : "string"
+    },
+    "TermsOfPayment" : {
+      "type" : "string"
+    },
+    "Project" : {
+      "type" : "string"
+    },
+    "Sent" : {
+      "type" : "boolean"
+    },
+    "Total" : {
+      "type" : "number",
+      "format" : "double"
+    },
+    "FinalPayDate" : {
+      "type" : "string",
+      "format" : "date"
+    }
+  }
+}

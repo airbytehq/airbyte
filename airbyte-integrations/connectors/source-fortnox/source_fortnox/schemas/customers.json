@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "required" : [
+    "Name"
+  ],
+  "properties" : {
+    "@url" : {
+      "type" : "string"
+    },
+    "Address1" : {
+      "type" : "string",
+      "minLength" : 0,
+      "maxLength" : 1024
+    },
+    "Address2" : {
+      "type" : "string",
+      "minLength" : 0,
+      "maxLength" : 1024
+    },
+    "City" : {
+      "type" : "string",
+      "minLength" : 0,
+      "maxLength" : 1024
+    },
+    "CustomerNumber" : {
+      "type" : "string",
+      "minLength" : 0,
+      "maxLength" : 1024
+    },
+    "Email" : {
+      "type" : "string",
+      "minLength" : 0,
+      "maxLength" : 1024
+    },
+    "Name" : {
+      "type" : "string",
+      "minLength" : 1,
+      "maxLength" : 1024
+    },
+    "OrganisationNumber" : {
+      "type" : "string",
+      "minLength" : 0,
+      "maxLength" : 30
+    },
+    "Phone" : {
+      "type" : "string",
+      "minLength" : 0,
+      "maxLength" : 1024
+    },
+    "ZipCode" : {
+      "type" : "string",
+      "minLength" : 0,
+      "maxLength" : 10
+    }
+  }
+}

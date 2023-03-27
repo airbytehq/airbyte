@@ -1,0 +1,42 @@
+{
+  "type" : "object",
+  "required" : [
+    "Description"
+  ],
+  "properties" : {
+    "@url" : {
+      "type" : "string"
+    },
+    "Description" : {
+      "type" : "string",
+      "minLength" : 1,
+      "maxLength" : 50
+    },
+    "EndDate" : {
+      "type" : "string",
+      "format" : "date"
+    },
+    "ProjectLeader" : {
+      "type" : "string",
+      "minLength" : 0,
+      "maxLength" : 50
+    },
+    "ProjectNumber" : {
+      "type" : "string",
+      "minLength" : 0,
+      "maxLength" : 20
+    },
+    "Status" : {
+      "type" : "string",
+      "enum" : [
+        "NOTSTARTED",
+        "ONGOING",
+        "COMPLETED"
+      ]
+    },
+    "StartDate" : {
+      "type" : "string",
+      "format" : "date"
+    }
+  }
+}

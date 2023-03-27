@@ -1,0 +1,48 @@
+{
+  "type" : "object",
+  "properties" : {
+    "@url" : {
+      "type" : "string"
+    },
+    "Comments" : {
+      "type" : "string"
+    },
+    "Description" : {
+      "type" : "string"
+    },
+    "ReferenceNumber" : {
+      "type" : "string"
+    },
+    "ReferenceType" : {
+      "type" : "string",
+      "enum" : [
+        "INVOICE",
+        "SUPPLIERINVOICE",
+        "INVOICEPAYMENT",
+        "SUPPLIERPAYMENT",
+        "MANUAL",
+        "CASHINVOICE",
+        "ACCRUAL"
+      ]
+    },
+    "TransactionDate" : {
+      "type" : "string",
+      "format" : "date"
+    },
+    "VoucherNumber" : {
+      "type" : "integer",
+      "format" : "int32"
+    },
+    "VoucherSeries" : {
+      "type" : "string"
+    },
+    "Year" : {
+      "type" : "integer",
+      "format" : "int32"
+    },
+    "ApprovalState" : {
+      "type" : "integer",
+      "format" : "int32"
+    }
+  }
+}

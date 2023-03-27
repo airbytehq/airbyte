@@ -1,0 +1,63 @@
+{
+  "type" : "object",
+  "required" : [
+    "Description",
+    "Number"
+  ],
+  "properties" : {
+    "@url" : {
+      "type" : "string"
+    },
+    "Active" : {
+      "type" : "boolean"
+    },
+    "BalanceBroughtForward" : {
+      "type" : "number",
+      "format" : "double"
+    },
+    "CostCenter" : {
+      "type" : "string"
+    },
+    "CostCenterSettings" : {
+      "type" : "string",
+      "enum" : [
+        "ALLOWED",
+        "MANDATORY",
+        "NOTALLOWED"
+      ]
+    },
+    "Description" : {
+      "type" : "string",
+      "minLength" : 1,
+      "maxLength" : 200
+    },
+    "Number" : {
+      "type" : "integer",
+      "format" : "int32",
+      "minimum" : 1000,
+      "maximum" : 9999
+    },
+    "Project" : {
+      "type" : "string"
+    },
+    "ProjectSettings" : {
+      "type" : "string",
+      "enum" : [
+        "ALLOWED",
+        "MANDATORY",
+        "NOTALLOWED"
+      ]
+    },
+    "SRU" : {
+      "type" : "integer",
+      "format" : "int32"
+    },
+    "Year" : {
+      "type" : "integer",
+      "format" : "int32"
+    },
+    "VATCode" : {
+      "type" : "string"
+    }
+  }
+}

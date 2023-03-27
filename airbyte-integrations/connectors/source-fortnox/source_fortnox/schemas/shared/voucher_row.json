@@ -1,0 +1,43 @@
+{
+  "type" : "object",
+  "required" : [
+    "Account"
+  ],
+  "properties" : {
+    "Account" : {
+      "type" : "integer",
+      "format" : "int32",
+      "minimum" : 1000,
+      "maximum" : 9999
+    },
+    "CostCenter" : {
+      "type" : "string"
+    },
+    "Credit" : {
+      "type" : "number",
+      "format" : "double"
+    },
+    "Description" : {
+      "type" : "string"
+    },
+    "Debit" : {
+      "type" : "number",
+      "format" : "double"
+    },
+    "Project" : {
+      "type" : "string"
+    },
+    "Removed" : {
+      "type" : "boolean"
+    },
+    "TransactionInformation" : {
+      "type" : "string",
+      "minLength" : 0,
+      "maxLength" : 100
+    },
+    "Quantity" : {
+      "type" : "number",
+      "format" : "double"
+    }
+  }
+}
