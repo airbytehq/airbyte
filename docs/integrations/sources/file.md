@@ -27,6 +27,42 @@ Setup through Airbyte Cloud will be exactly the same as the open-source setup, e
 2. Depending on the provider choice and privacy of the data, you will have to configure more options.
 <!-- /env:oss -->
 
+### Fields description
+
+- For `Dataset Name` use the *name* of the final table to replicate this file into (should include letters, numbers dash and underscores only).
+- For `File Format` use the *format* of the file which should be replicated (Warning: some formats may be experimental, please refer to the docs).
+- For `Reader Options` use a *string in JSON* format. It depends on the chosen file format to provide additional options and tune its behavior. For example, `{}` for empty options, `{"sep": " "}` for set up separator to one space ' '.
+- For `URL` use the *URL* path to access the file which should be replicated.
+- For `Storage Provider` use the *storage Provider* or *Location* of the file(s) which should be replicated.
+  - [Default] *Public Web*
+    - `User-Agent` set to active if you want to add User-Agent to requests
+  - *GCS: Google Cloud Storage*
+    - `Service Account JSON` In order to access private Buckets stored on Google Cloud, this connector would need a service account json credentials with the proper permissions as described <a href="https://cloud.google.com/iam/docs/service-accounts" target="_blank">here</a>. Please generate the credentials.json file and copy/paste its content to this field (expecting JSON formats). If accessing publicly available data, this field is not necessary.
+  - *S3: Amazon Web Services*
+    - `AWS Access Key ID` In order to access private Buckets stored on AWS S3, this connector would need credentials with the proper permissions. If accessing publicly available data, this field is not necessary.
+    - `AWS Secret Access Key`In order to access private Buckets stored on AWS S3, this connector would need credentials with the proper permissions. If accessing publicly available data, this field is not necessary.
+  - *AzBlob: Azure Blob Storage*
+    - `Storage Account` The globally unique name of the storage account that the desired blob sits within. See <a href="https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview" target="_blank">here</a> for more details.
+    - `SAS Token` To access Azure Blob Storage, this connector would need credentials with the proper permissions. One option is a SAS (Shared Access Signature) token. If accessing publicly available data, this field is not necessary.
+    - `Shared Key` To access Azure Blob Storage, this connector would need credentials with the proper permissions. One option is a storage account shared key (aka account key or access key). If accessing publicly available data, this field is not necessary.
+  - *SSH: Secure Shell*
+    - `User` use *username*.
+    - `Password` use *password*.
+    - `Host` use a *host*.
+    - `Port` use a *port* for your host.
+  - *SCP: Secure copy protocol*
+    - `User` use *username*.
+    - `Password` use *password*.
+    - `Host` use a *host*.
+    - `Port` use a *port* for your host.
+  - *SFTP: Secure File Transfer Protocol*
+    - `User` use *username*.
+    - `Password` use *password*.
+    - `Host` use a *host*.
+    - `Port` use a *port* for your host.
+  - *Local Filesystem (limited)*
+    - `Storage` WARNING: Note that the local storage URL available for reading must start with the local mount "/local/" at the moment until we implement more advanced docker mounting options.
+
 #### Provider Specific Information
 
 - In case of Google Drive, it is necesary to use the Download URL, the format for that is `https://drive.google.com/uc?export=download&id=[DRIVE_FILE_ID]` where `[DRIVE_FILE_ID]` is the string found in the Share URL here `https://drive.google.com/file/d/[DRIVE_FILE_ID]/view?usp=sharing`
