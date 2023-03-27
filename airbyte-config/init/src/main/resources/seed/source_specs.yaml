@@ -11331,7 +11331,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-pipedrive:0.1.16"
+- dockerImage: "airbyte/source-pipedrive:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pipedrive"
     connectionSpecification:
