@@ -55,7 +55,7 @@ public class ClickhouseTestDataComparator extends AdvancedTestDataComparator {
     double firstValue = Double.parseDouble(firstNumericValue);
     double secondValue = Double.parseDouble(secondNumericValue);
 
-    return Math.abs(firstValue - secondValue) < epsilon;
+    return firstValue == secondValue || Math.abs(firstValue - secondValue) < epsilon;
   }
 
   @Override
