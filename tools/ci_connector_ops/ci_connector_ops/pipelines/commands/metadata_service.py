@@ -26,3 +26,14 @@ def test_metadata_service_lib(ctx):
     # TODO rename this command group to test_connectors
     # TODO move this command to test_metadata_lib
     anyio.run(run_metadata_lib_test_pipeline)
+
+@metadata_service.command(help="Run unit tests for the metadata service library.")
+@click.pass_context
+def demo_context(ctx):
+   # print the value of the context
+   print("ctx:")
+   for key, value in ctx.__dict__.items():
+       print(f"  {key}: {value}")
+
+if __name__ == "__main__":
+    metadata_service()
