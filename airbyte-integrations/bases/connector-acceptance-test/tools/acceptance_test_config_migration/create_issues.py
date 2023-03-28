@@ -14,11 +14,7 @@ import definitions
 import utils
 from jinja2 import Environment, FileSystemLoader
 
-# SET THESE BEFORE USING THE SCRIPT
-MODULE_NAME = "fail_on_extra_columns"
-GITHUB_PROJECT_NAME = None
-COMMON_ISSUE_LABELS = ["area/connectors", "team/connectors-python", "type/enhancement", "column-selection-sources"]
-ISSUE_TITLE = "Add undeclared columns to spec"
+from templates.fail_on_extra_columns import config
 
 # Don't need to set these
 TEMPLATES_FOLDER = "./templates/"
@@ -33,13 +29,13 @@ utils.add_allow_alpha_param(parser)
 
 
 def get_issue_content(source_definition):
-    issue_title = f"Source {source_definition['name']}: {ISSUE_TITLE}"
+    issue_title = f"Source {source_definition['name']}: {config.ISSUE_TITLE}"
 
-    template = environment.get_template(f"{MODULE_NAME}/issue.md.j2")
+    template = environment.get_template(f"{config.MODULE_NAME}/issue.md.j2")
 
     test_failure_logs = ""
     connector_technical_name = definitions.get_airbyte_connector_name_from_definition(definition)
-    with open(f"templates/{MODULE_NAME}/output/{connector_technical_name}", "r") as f:
+    with open(f"templates/{config.MODULE_NAME}/output/{connector_technical_name}", "r") as f:
         for line in f:
             test_failure_logs += line
 
@@ -52,7 +48,7 @@ def get_issue_content(source_definition):
     with os.fdopen(file_definition, "w") as tmp:
         tmp.write(issue_body)
 
-    return {"title": issue_title, "body_file": issue_body_path, "labels": COMMON_ISSUE_LABELS, "project": GITHUB_PROJECT_NAME}
+    return {"title": issue_title, "body_file": issue_body_path, "labels": config.COMMON_ISSUE_LABELS, "project": config.GITHUB_PROJECT_NAME}
 
 
 def existing_issues(issue_content):
@@ -73,7 +69,7 @@ def create_command(issue_content):
         "--body-file",
         issue_content["body_file"],
     ]
-    if GITHUB_PROJECT_NAME:
+    if config.GITHUB_PROJECT_NAME:
         create_command_arguments += ["--project", issue_content["project"]]
     for label in issue_content["labels"]:
         create_command_arguments += ["--label", label]

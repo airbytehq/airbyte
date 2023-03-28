@@ -11,17 +11,17 @@ import tempfile
 
 import definitions
 import utils
-from config_migration import update_configuration
-from create_issues import COMMON_ISSUE_LABELS as COMMON_PR_LABELS
-from create_issues import GITHUB_PROJECT_NAME
 from git import Repo
 from jinja2 import Environment, FileSystemLoader
+
+from config_migration import update_configuration
+
+from templates.fail_on_extra_columns import config
 
 REPO_ROOT = "../../../../../"
 AIRBYTE_REPO = Repo(REPO_ROOT)
 environment = Environment(loader=FileSystemLoader("./templates/"))
 PR_TEMPLATE = environment.get_template("strictness_level_migration/pr.md.j2")
-from create_issues import MODULE_NAME
 
 parser = argparse.ArgumentParser(description="Create PRs for a list of connectors from a template.")
 utils.add_dry_param(parser)
@@ -33,7 +33,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 def checkout_new_branch(connector_name):
     AIRBYTE_REPO.heads.master.checkout()
-    new_branch_name = f"{connector_name}/{MODULE_NAME}"
+    new_branch_name = f"{connector_name}/{config.MODULE_NAME}"
     new_branch = AIRBYTE_REPO.create_head(new_branch_name)
     new_branch.checkout()
     return new_branch
@@ -60,7 +60,7 @@ def get_pr_content(definition):
     with os.fdopen(file_definition, "w") as tmp:
         tmp.write(pr_body)
 
-    return {"title": pr_title, "body_file": pr_body_path, "labels": COMMON_PR_LABELS}
+    return {"title": pr_title, "body_file": pr_body_path, "labels": config.COMMON_ISSUE_LABELS}
 
 
 def open_pr(definition, new_branch, dry_run):
@@ -76,8 +76,8 @@ def open_pr(definition, new_branch, dry_run):
         "--body-file",
         pr_content["body_file"],
     ]
-    if GITHUB_PROJECT_NAME:
-        create_command_arguments += ["--project", GITHUB_PROJECT_NAME]
+    if config.GITHUB_PROJECT_NAME:
+        create_command_arguments += ["--project", config.GITHUB_PROJECT_NAME]
     for label in pr_content["labels"]:
         create_command_arguments += ["--label", label]
     list_existing_pr_process = subprocess.Popen(list_command_arguments, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

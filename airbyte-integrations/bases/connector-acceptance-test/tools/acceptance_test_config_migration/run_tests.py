@@ -8,10 +8,10 @@ import logging
 import os
 from pathlib import Path
 
+import definitions
 import utils
-from definitions import get_airbyte_connector_name_from_definition
 
-MODULE_NAME = "fail_on_extra_columns"
+from templates.fail_on_extra_columns import config
 
 parser = argparse.ArgumentParser(description="Run connector acceptance tests for a list of connectors.")
 utils.add_connectors_param(parser)
@@ -33,7 +33,7 @@ async def run_tests(connector_name):
     )
     return_code = await process.wait()
 
-    output_path = Path(f"templates/{MODULE_NAME}/results/{return_code}")  # TODO put this in the module
+    output_path = Path(f"templates/{config.MODULE_NAME}/results/{return_code}")  # TODO put this in the module
     output_path.mkdir(parents=True, exist_ok=True)
 
     contents = await process.stdout.read()
@@ -63,7 +63,7 @@ async def semaphore_gather(coroutines, num_semaphores):
 async def main(args):
     tasks = []
     for definition in utils.get_valid_definitions_from_args(args):
-        connector_name = get_airbyte_connector_name_from_definition(definition)
+        connector_name = definitions.get_airbyte_connector_name_from_definition(definition)
         tasks.append(run_tests(connector_name))
     await asyncio.gather(semaphore_gather(tasks, num_semaphores=args.max_concurrency))
 
