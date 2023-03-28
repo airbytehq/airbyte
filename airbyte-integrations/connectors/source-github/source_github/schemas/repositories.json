@@ -287,6 +287,27 @@
     },
     "web_commit_signoff_required": {
       "type": ["null", "boolean"]
+    },
+    "security_and_analysis": {
+      "type": ["null", "object"],
+      "properties": {
+        "secret_scanning": {
+          "type": ["null", "object"],
+          "properties": {
+            "status": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "secret_scanning_push_protection": {
+          "type": ["null", "object"],
+          "properties": {
+            "status": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
     }
   }
 }
