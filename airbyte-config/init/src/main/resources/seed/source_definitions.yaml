@@ -45,7 +45,7 @@
 - name: AlloyDB for PostgreSQL
   sourceDefinitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
   dockerRepository: airbyte/source-alloydb
-  dockerImageTag: 2.0.11
+  dockerImageTag: 2.0.13
   documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
   icon: alloydb.svg
   sourceType: database
@@ -1204,7 +1204,7 @@
 - name: Microsoft SQL Server (MSSQL)
   sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   dockerRepository: airbyte/source-mssql
-  dockerImageTag: 1.0.7
+  dockerImageTag: 1.0.8
   documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
   icon: mssql.svg
   sourceType: database
@@ -1237,6 +1237,10 @@
   icon: mixpanel.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "mixpanel.com"
+      - "eu.mixpanel.com"
 - name: Monday
   sourceDefinitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
   dockerRepository: airbyte/source-monday
@@ -1267,7 +1271,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 2.0.10
+  dockerImageTag: 2.0.11
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -1579,7 +1583,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 2.0.12
+  dockerImageTag: 2.0.13
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -2205,6 +2209,9 @@
   icon: youtube-analytics.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - "*.googleapis.com"
 - name: Vantage
   sourceDefinitionId: 28ce1fbd-1e15-453f-aa9f-da6c4d928e92
   dockerRepository: airbyte/source-vantage
