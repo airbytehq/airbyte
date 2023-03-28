@@ -164,6 +164,7 @@ def get_big_schema_configured_stream():
             },
             "empty_array": {"type": ["null", "array"]},
             "airbyte_type_object": {"type": "number", "airbyte_type": "integer"},
+            "airbyte_type_array": {"type": "array", "items": {"type": "number", "airbyte_type": "integer"}},
         },
     }
 
@@ -232,6 +233,7 @@ def test_get_glue_dtypes_from_json_schema():
     writer = get_big_schema_writer(get_config())
     result, json_casts = writer._get_glue_dtypes_from_json_schema(writer._schema)
     assert result == {
+        "airbyte_type_array": "array<bigint>",
         "airbyte_type_object": "bigint",
         "answers": "array<string>",
         "answers_nested_bad": "string",
