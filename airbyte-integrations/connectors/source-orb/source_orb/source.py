@@ -132,7 +132,7 @@ class IncrementalOrbStream(OrbStream, ABC):
 
         # State stores the timestamp is ISO format
         state_based_start_timestamp = stream_state.get(self.cursor_field)
-        
+
         if state_based_start_timestamp and self.lookback_window_days:
             self.logger.info(f"Applying lookback window of {self.lookback_window_days} days to stream {self.name}")
             state_based_start_timestamp_dt = pendulum.parse(state_based_start_timestamp)

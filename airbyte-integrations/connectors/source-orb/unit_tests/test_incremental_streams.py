@@ -8,7 +8,16 @@ import pytest
 import responses
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_orb.source import CreditsLedgerEntries, Customers, IncrementalOrbStream, OrbStream, Plans, Subscriptions, SubscriptionUsage, Invoices
+from source_orb.source import (
+    CreditsLedgerEntries,
+    Customers,
+    IncrementalOrbStream,
+    Invoices,
+    OrbStream,
+    Plans,
+    Subscriptions,
+    SubscriptionUsage,
+)
 
 
 @fixture
@@ -151,6 +160,7 @@ def test_credits_ledger_entries_get_updated_state(mocker, current_stream_state, 
     stream = CreditsLedgerEntries()
     inputs = {"current_stream_state": current_stream_state, "latest_record": latest_record}
     assert stream.get_updated_state(**inputs) == expected_state
+
 
 @pytest.mark.parametrize(
     ("current_stream_state", "latest_record", "expected_state"),
