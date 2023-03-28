@@ -3,7 +3,6 @@
 #
 
 from typing import Any, List, Mapping, Optional, Tuple
-from pydantic.error_wrappers import ValidationError
 
 import pendulum
 import requests
@@ -11,6 +10,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
+from pydantic.error_wrappers import ValidationError
 
 from .streams import (
     ApplicationRoles,
