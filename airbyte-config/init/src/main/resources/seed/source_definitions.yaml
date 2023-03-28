@@ -21,7 +21,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/airtable
   icon: airtable.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
   allowedHosts:
     hosts:
       - api.airtable.com
@@ -45,7 +45,7 @@
 - name: AlloyDB for PostgreSQL
   sourceDefinitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
   dockerRepository: airbyte/source-alloydb
-  dockerImageTag: 2.0.9
+  dockerImageTag: 2.0.11
   documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
   icon: alloydb.svg
   sourceType: database
@@ -374,7 +374,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/confluence
   icon: confluence.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
   allowedHosts:
     hosts:
       - "${subdomain}.atlassian.net"
@@ -657,11 +657,14 @@
 - name: Freshsales
   sourceDefinitionId: eca08d79-7b92-4065-b7f3-79c14836ebe7
   dockerRepository: airbyte/source-freshsales
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshsales
   icon: freshsales.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
+  allowedHosts:
+    hosts:
+      - "*.myfreshworks.com"
 - name: Freshservice
   sourceDefinitionId: 9bb85338-ea95-4c93-b267-6be89125b267
   dockerRepository: airbyte/source-freshservice
@@ -702,7 +705,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.4.5
+  dockerImageTag: 0.4.6
   documentationUrl: https://docs.airbyte.com/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -768,7 +771,7 @@
 - name: Google Ads
   sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   dockerRepository: airbyte/source-google-ads
-  dockerImageTag: 0.2.12
+  dockerImageTag: 0.2.13
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
   icon: google-adwords.svg
   sourceType: api
@@ -798,7 +801,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-data-api
   icon: google-analytics.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
   allowedHosts:
     hosts:
       - oauth2.googleapis.com
@@ -1045,7 +1048,7 @@
 - name: Klaviyo
   sourceDefinitionId: 95e8cffd-b8c4-4039-968e-d32fb4a69bde
   dockerRepository: airbyte/source-klaviyo
-  dockerImageTag: 0.1.13
+  dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/klaviyo
   icon: klaviyo.svg
   sourceType: api
@@ -1201,7 +1204,7 @@
 - name: Microsoft SQL Server (MSSQL)
   sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   dockerRepository: airbyte/source-mssql
-  dockerImageTag: 1.0.6
+  dockerImageTag: 1.0.7
   documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
   icon: mssql.svg
   sourceType: database
@@ -1264,7 +1267,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 2.0.8
+  dockerImageTag: 2.0.10
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -1576,7 +1579,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 2.0.10
+  dockerImageTag: 2.0.12
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -1760,7 +1763,7 @@
 - name: S3
   sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   dockerRepository: airbyte/source-s3
-  dockerImageTag: 2.0.3
+  dockerImageTag: 2.0.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/s3
   icon: s3.svg
   sourceType: file
@@ -1976,7 +1979,7 @@
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 3.0.3
+  dockerImageTag: 3.0.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api
