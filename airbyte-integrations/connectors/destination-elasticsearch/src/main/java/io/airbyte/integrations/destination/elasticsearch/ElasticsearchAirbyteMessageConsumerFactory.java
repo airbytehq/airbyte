@@ -38,20 +38,19 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
   private static final AtomicLong recordsWritten = new AtomicLong(0);
 
   /**
-   * Holds a mapping of temp to target indices. After closing a sync job, the target index is removed
-   * if it already exists, and the temp index is copied to replace it.
+   * Holds a mapping of temp to target indices. After closing a sync job, the target index is removed if it already exists, and the temp index is
+   * copied to replace it.
    */
   private static final Map<String, String> tempIndices = new HashMap<>();
 
   public static AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
-                                              final ElasticsearchConnection connection,
-                                              final List<ElasticsearchWriteConfig> writeConfigs,
-                                              final ConfiguredAirbyteCatalog catalog) {
+      final ElasticsearchConnection connection,
+      final List<ElasticsearchWriteConfig> writeConfigs,
+      final ConfiguredAirbyteCatalog catalog) {
 
     return new BufferedStreamConsumer(
-        outputRecordCollector,
         onStartFunction(connection, writeConfigs),
-        new InMemoryRecordBufferingStrategy(recordWriterFunction(connection, writeConfigs), MAX_BATCH_SIZE_BYTES),
+        new InMemoryRecordBufferingStrategy(recordWriterFunction(connection, writeConfigs), MAX_BATCH_SIZE_BYTES, outputRecordCollector),
         onCloseFunction(connection),
         catalog,
         isValidFunction(connection));
@@ -73,8 +72,8 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
   }
 
   private static RecordWriter<AirbyteRecordMessage> recordWriterFunction(
-                                                                         final ElasticsearchConnection connection,
-                                                                         final List<ElasticsearchWriteConfig> writeConfigs) {
+      final ElasticsearchConnection connection,
+      final List<ElasticsearchWriteConfig> writeConfigs) {
 
     return (pair, records) -> {
       log.info("writing {} records in bulk operation", records.size());
@@ -101,19 +100,19 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
     };
   }
 
-  private static List<String> extractErrorReport(BulkResponse response) {
+  private static List<String> extractErrorReport(final BulkResponse response) {
     final Map<String, ErrorCause> errorResult = new HashMap<>();
     response.items().forEach(item -> {
-      IndexResponseItem index = item.index();
+      final IndexResponseItem index = item.index();
       errorResult.put(index.index(), index.error());
     });
     final List<String> errorReport = new ArrayList<>();
     errorResult.forEach((index, error) -> {
 
       final String msg = String.format("""
-                                       failed to write bulk records for index: %s\s
-                                       error type: %s
-                                        reason: %s""", index, error.type(), error.reason());
+          failed to write bulk records for index: %s\s
+          error type: %s
+           reason: %s""", index, error.type(), error.reason());
       errorReport.add(msg);
     });
     return errorReport;

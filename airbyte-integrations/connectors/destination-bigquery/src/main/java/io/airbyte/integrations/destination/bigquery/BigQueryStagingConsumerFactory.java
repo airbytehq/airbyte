@@ -56,12 +56,12 @@ public class BigQueryStagingConsumerFactory {
         targetTableNameTransformer);
 
     return new BufferedStreamConsumer(
-        outputRecordCollector,
         onStartFunction(bigQueryGcsOperations, writeConfigs),
         new SerializedBufferingStrategy(
             onCreateBuffer,
             catalog,
-            flushBufferFunction(bigQueryGcsOperations, writeConfigs, catalog)),
+            flushBufferFunction(bigQueryGcsOperations, writeConfigs, catalog),
+            outputRecordCollector),
         onCloseFunction(bigQueryGcsOperations, writeConfigs),
         catalog,
         json -> true);
