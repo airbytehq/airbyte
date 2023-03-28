@@ -79,7 +79,7 @@ Depending on the sync mode you select, you may need to choose a cursor or primar
 
 :::
 
-3. Select the **Cursor** or **Primary key** if there are dropdowns in those fields.
+3. Select a **Cursor** or **Primary keys** when they are required by the stream sync mode.
 
 :::note
 
