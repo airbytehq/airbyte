@@ -17,7 +17,7 @@ from dagger import CacheSharingMode
 class QaChecks(Step):
     title = "QA checks"
 
-    async def run(self) -> List[StepResult]:
+    async def _run(self) -> List[StepResult]:
         """Runs our QA checks on a connector.
         The QA checks are defined in this module:
         https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/qa_checks.py
@@ -49,7 +49,7 @@ class QaChecks(Step):
 class AcceptanceTests(Step):
     title = "Acceptance tests"
 
-    async def run(self) -> StepResult:
+    async def _run(self) -> StepResult:
         """Runs the acceptance test suite on a connector dev image.
         It's rebuilding the connector acceptance test image if the tag is :dev.
         It's building the connector under test dev image if the connector image is :dev in the acceptance test config.

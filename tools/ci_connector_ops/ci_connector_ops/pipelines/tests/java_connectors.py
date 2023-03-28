@@ -17,7 +17,7 @@ class GradleTask(Step, ABC):
     build_include: ClassVar
     mount_secrets: bool = False
 
-    async def run(self) -> StepResult:
+    async def _run(self) -> StepResult:
         self.context.dagger_client = self.get_dagger_pipeline(self.context.dagger_client)
 
         connector_under_test = (

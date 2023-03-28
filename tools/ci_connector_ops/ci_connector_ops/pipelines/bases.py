@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, ClassVar, List, Optional, Union
 import asyncer
 from ci_connector_ops.pipelines.utils import with_exit_code, with_stderr, with_stdout
 from ci_connector_ops.utils import console
-from dagger import Client, Container
+from dagger import Client, Container, QueryError
 from rich.console import Group
 from rich.panel import Panel
 from rich.style import Style
@@ -58,9 +58,21 @@ class Step(ABC):
     def __init__(self, context: ConnectorTestContext) -> None:
         self.context = context
 
+    async def run(self, *args, **kwargs) -> StepResult:
+        """Public method to run the step. It output a step result.
+        If an unexpected dagger error happens it outputs a failed step result with the exception payload.
+
+        Returns:
+            StepResult: The step result following the step run.
+        """
+        try:
+            return await self._run(*args, **kwargs)
+        except QueryError as e:
+            return StepResult(self, StepStatus.FAILURE, stderr=str(e))
+
     @abstractmethod
-    async def run(self) -> StepResult:
-        """Run the step and output a step result.
+    async def _run(self, *args, **kwargs) -> StepResult:
+        """Implement the execution of the step and return a step result.
 
         Returns:
             StepResult: The result of the step run.
@@ -122,8 +134,16 @@ class ConnectorTestReport:
         return [step_result for step_result in self.steps_results if step_result.status is StepStatus.FAILURE]
 
     @property
+    def successful_steps(self) -> StepResult:
+        return [step_result for step_result in self.steps_results if step_result.status is StepStatus.SUCCESS]
+
+    @property
+    def skipped_steps(self) -> StepResult:
+        return [step_result for step_result in self.steps_results if step_result.status is StepStatus.SKIPPED]
+
+    @property
     def success(self) -> StepResult:
-        return len(self.failed_steps) == 0
+        return len(self.failed_steps) == 0 and len(self.steps_results) > 0
 
     @property
     def should_be_saved(self) -> bool:
@@ -141,7 +161,9 @@ class ConnectorTestReport:
                 "run_timestamp": self.created_at.isoformat(),
                 "run_duration": self.run_duration,
                 "success": self.success,
-                "failed_step": [failed_step_result.step.__class__.__name__ for failed_step_result in self.failed_steps],
+                "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],
+                "successful_steps": [s.step.__class__.__name__ for s in self.successful_steps],
+                "skipped_steps": [s.step.__class__.__name__ for s in self.skipped_steps],
                 "gha_workflow_run_url": self.connector_test_context.gha_workflow_run_url,
                 "pipeline_start_timestamp": self.connector_test_context.pipeline_start_timestamp,
                 "pipeline_end_timestamp": round(self.created_at.timestamp()),

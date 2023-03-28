@@ -23,7 +23,7 @@ class CodeFormatChecks(Step):
     RUN_ISORT_CMD = ["python", "-m", "isort", f"--settings-file=/{environments.PYPROJECT_TOML_FILE_PATH}", "--check-only", "--diff", "."]
     RUN_FLAKE_CMD = ["python", "-m", "pflake8", f"--config=/{environments.PYPROJECT_TOML_FILE_PATH}", "."]
 
-    async def run(self) -> List[StepResult]:
+    async def _run(self) -> List[StepResult]:
         """Run a code format check on the container source code.
         We call black, isort and flake commands:
         - Black formats the code: fails if the code is not formatted.
@@ -52,7 +52,7 @@ class CodeFormatChecks(Step):
 class ConnectorInstallTest(Step):
     title = "Connector package install"
 
-    async def run(self) -> Tuple[StepResult, Container]:
+    async def _run(self) -> Tuple[StepResult, Container]:
         """Install the connector under test package in a Python container.
 
         Returns:
@@ -99,7 +99,7 @@ class PythonTests(Step, ABC):
 class UnitTests(PythonTests):
     title = "Unit tests"
 
-    async def run(self, connector_under_test: Container) -> StepResult:
+    async def _run(self, connector_under_test: Container) -> StepResult:
         """Run all pytest tests declared in the unit_tests directory of the connector code.
 
         Args:
@@ -115,7 +115,7 @@ class UnitTests(PythonTests):
 class IntegrationTests(PythonTests):
     title = "Integration tests"
 
-    async def run(self, connector_under_test: Container) -> StepResult:
+    async def _run(self, connector_under_test: Container) -> StepResult:
         """Run all pytest tests declared in the integration_tests directory of the connector code.
 
         Args:
@@ -139,7 +139,6 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
         package_install_results,
         unit_tests_results,
     ]
-
     if unit_tests_results.status is StepStatus.FAILURE:
         return results + [IntegrationTests(context).skip(), AcceptanceTests(context).skip()]
 
