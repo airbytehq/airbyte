@@ -214,6 +214,16 @@ def test_connectors(
             logger=logger,
         )
 
+@connectors_ci.command()
+@click.pass_context
+def test_metadata_lib(ctx: click.Context):
+    # TODO: check for diff at path
+    # TODO: Install poetry
+    # TODO: Install dependencies
+    # TODO: Run tests
+    raise click.UsageError("Not implemented yet.")
+
+
 
 def validate_environment(is_local: bool, use_remote_secrets: bool):
 

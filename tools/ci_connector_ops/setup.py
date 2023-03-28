@@ -45,6 +45,7 @@ QA_ENGINE_REQUIREMENTS = [
 PIPELINES_REQUIREMENTS = [
     "dagger-io==0.4.2",
     "asyncer",
+    "anyio",
 ]
 
 setup(
