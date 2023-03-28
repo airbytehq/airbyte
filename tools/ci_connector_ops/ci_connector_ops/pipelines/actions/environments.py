@@ -222,6 +222,8 @@ async def with_gradle(context: ConnectorTestContext, sources_to_include: List[st
         "publish-repositories.gradle",
         "settings.gradle",
         "build.gradle",
+        "tools/gradle",
+        "spotbugs-exclude-filter-file.xml",
     ]
 
     if sources_to_include:
@@ -232,10 +234,10 @@ async def with_gradle(context: ConnectorTestContext, sources_to_include: List[st
     return (
         context.dagger_client.container()
         .from_("docker:23.0.1-cli")
-        .with_exec(["apk", "add", "openjdk17", "bash"])
+        .with_exec(["apk", "add", "openjdk17", "bash", "jq"])
         .with_exec(["mkdir", "-p", "~/.gradle/"])
         .with_file("~/.gradle/gradle.properties", gradle_properties_file)
-        .with_mounted_cache("~/.gradle", gradle_cache, sharing=CacheSharingMode.LOCKED)
+        .with_mounted_cache("~/.gradle", gradle_cache, sharing=CacheSharingMode.SHARED)
         .with_exec(["mkdir", "/airbyte"])
         .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
         .with_workdir("/airbyte")
