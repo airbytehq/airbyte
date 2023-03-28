@@ -109,13 +109,14 @@ pub async fn run_airbyte_source_connector(
                 // We generate a synthetic commit now, and the empty checkpoint means the assumed behavior
                 // of the next invocation will be "full refresh".
                 tracing::warn!("go.estuary.dev/W001: connector exited without writing a final state checkpoint, writing an empty object {{}} merge patch driver checkpoint.");
-                let checkpoint = response::Checkpoint {
+                let mut response = Response::default();
+                response.checkpoint = Some(response::Checkpoint {
                     state: Some(ConnectorState {
                         updated_json: "{}".to_string(),
                         merge_patch: true,
                     })
-                };
-                let encoded_response = &encode_message(&checkpoint)?;
+                });
+                let encoded_response = &encode_message(&response)?;
                 let mut buf = &encoded_response[..];
                 let mut writer = response_write.lock().await;
                 copy(&mut buf, writer.deref_mut()).await?;
