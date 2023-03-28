@@ -9,12 +9,13 @@ import os
 from pathlib import Path
 
 import utils
-from definitions import get_airbyte_connector_name_from_definition, is_airbyte_connector
+from definitions import get_airbyte_connector_name_from_definition
 
 MODULE_NAME = "fail_on_extra_columns"
 
 parser = argparse.ArgumentParser(description="Run connector acceptance tests for a list of connectors.")
 utils.add_connectors_param(parser)
+utils.add_allow_alpha_param(parser)
 parser.add_argument("--max_concurrency", type=int, default=10, help="The maximum number of acceptance tests that should happen at once.")
 
 
@@ -59,18 +60,14 @@ async def semaphore_gather(coroutines, num_semaphores):
     return await asyncio.gather(*(_wrap_coroutine(coroutine) for coroutine in coroutines), return_exceptions=False)
 
 
-async def main(definitions, num_semaphores):
+async def main(args):
     tasks = []
-    for definition in definitions:
-        if is_airbyte_connector(definition):
-            connector_name = get_airbyte_connector_name_from_definition(definition)
-            tasks.append(run_tests(connector_name))
-        else:
-            logging.warning(f"Won't run tests for non-airbyte connector {get_airbyte_connector_name_from_definition(definition)}")
-    await asyncio.gather(semaphore_gather(tasks, num_semaphores=num_semaphores))
+    for definition in utils.get_valid_definitions_from_args(args):
+        connector_name = get_airbyte_connector_name_from_definition(definition)
+        tasks.append(run_tests(connector_name))
+    await asyncio.gather(semaphore_gather(tasks, num_semaphores=args.max_concurrency))
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    definitions = utils.get_definitions_from_args(args)
-    asyncio.run(main(definitions=definitions, num_semaphores=args.max_concurrency))
+    asyncio.run(main(args))

@@ -13,7 +13,7 @@ import utils
 from config_migration import update_configuration
 from create_issues import COMMON_ISSUE_LABELS as COMMON_PR_LABELS
 from create_issues import GITHUB_PROJECT_NAME
-from definitions import GA_DEFINITIONS, get_airbyte_connector_name_from_definition, is_airbyte_connector
+from definitions import get_airbyte_connector_name_from_definition
 from git import Repo
 from jinja2 import Environment, FileSystemLoader
 
@@ -139,8 +139,5 @@ def migrate_definition_and_open_pr(definition, dry_run):
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    for definition in GA_DEFINITIONS[:1]:  # TODO make configurable. GA_DEFINITIONS, ALL DEFINITIONS, read from a list, etc
-        if is_airbyte_connector(definition):
-            migrate_definition_and_open_pr(definition, dry_run=args.dry)
-        else:
-            logging.error(f"Couldn't create PR for non-airbyte connector: {definition.get('dockerRepository')}")
+    for definition in utils.get_valid_definitions_from_args(args):
+        migrate_definition_and_open_pr(definition, dry_run=args.dry)

@@ -8,7 +8,7 @@ from pathlib import Path
 
 import utils
 from connector_acceptance_test.config import Config
-from definitions import BETA_DEFINITIONS, GA_DEFINITIONS, get_airbyte_connector_name_from_definition, is_airbyte_connector
+from definitions import get_airbyte_connector_name_from_definition
 from ruamel.yaml import YAML
 
 yaml = YAML()
@@ -72,13 +72,6 @@ def update_configuration(config_path, migrate_from_legacy: bool):
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    definitions = utils.get_definitions_from_args(args)
-
-    for definition in definitions:
-        if not is_airbyte_connector(definition):
-            logging.error(f"Couldn't create PR for non-airbyte connector: {definition.get('dockerRepository')}")
-        if not args.allow_alpha and definition not in BETA_DEFINITIONS + GA_DEFINITIONS:
-            logging.info(f"Not updating {get_airbyte_connector_name_from_definition} because it's not GA or Beta.")
-        else:
-            config_path = utils.acceptance_test_config_path(get_airbyte_connector_name_from_definition)
-            update_configuration(config_path, migrate_from_legacy=args.migrate_from_legacy)
+    for definition in utils.get_valid_definitions_from_args(args):
+        config_path = utils.acceptance_test_config_path(get_airbyte_connector_name_from_definition)
+        update_configuration(config_path, migrate_from_legacy=args.migrate_from_legacy)

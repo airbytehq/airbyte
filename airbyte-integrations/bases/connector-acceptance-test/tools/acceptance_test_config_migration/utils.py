@@ -2,9 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import argparse
+import logging
 from pathlib import Path
 
-from definitions import find_by_name, GA_DEFINITIONS
+from definitions import find_by_name, is_airbyte_connector, get_airbyte_connector_name_from_definition, BETA_DEFINITIONS, GA_DEFINITIONS
 
 CONNECTORS_DIRECTORY = "../../../../connectors"
 
@@ -27,15 +28,18 @@ def add_allow_alpha_param(parser: argparse.ArgumentParser):
 
 
 def add_connectors_param(parser: argparse.ArgumentParser):
-    parser.add_argument("--connectors", nargs="*", help="A list of connectors (separated by spaces) to run a script on.")
+    parser.add_argument("--connectors", required=True, nargs="*", help="A list of connectors (separated by spaces) to run a script on.")
 
 
+def get_valid_definitions_from_args(args):
+    definitions = find_by_name(args.connectors)
+    valid_definitions = []
+    for definition in definitions:
+        if not is_airbyte_connector(definition):
+            logging.warning(f"Skipping {get_airbyte_connector_name_from_definition(definition)} since it's not an airbyte connector.")
+        elif not args.allow_alpha and definition not in BETA_DEFINITIONS + GA_DEFINITIONS:
+            logging.warning(f"Skipping {get_airbyte_connector_name_from_definition(definition)} since it's not a beta or GA connector.")
+        else:
+            valid_definitions.append(definition)
 
-
-def get_definitions_from_args(args):
-    if args.connectors:
-        definitions = find_by_name(args.connectors)
-    else:
-        definitions = GA_DEFINITIONS
-
-    return definitions
+    return valid_definitions
