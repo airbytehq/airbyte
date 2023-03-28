@@ -20,21 +20,20 @@ export const ButtonRows = styled.div<{
   margin-bottom: ${({ bottom }) => (bottom ? bottom : 0)}px;
 `;
 
-const BtnText = styled.div`
+export const BtnText = styled.div`
   font-weight: 500;
   font-size: 16px;
   padding: 5px 3px;
-  // color: #ffffff;
 `;
 
-const BtnInnerContainer = styled.div`
+export const BtnInnerContainer = styled.div`
   width: 100%;
   display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: center;
   padding: 8px 4px;
   min-width: 150px;
-  justify-content: center;
 `;
 
 // export const ButtonContainer = styled(Button)`

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
+import {} from "components";
 import { BigButton, ButtonRows } from "components/base/Button/BigButton";
 import HeadTitle from "components/HeadTitle";
 import MainPageWithScroll from "components/MainPageWithScroll";
