@@ -23,8 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Buffering Strategy used to convert {@link io.airbyte.protocol.models.AirbyteRecordMessage} into a stream of bytes to more readily save and transmit
- * information
+ * Buffering Strategy used to convert {@link io.airbyte.protocol.models.AirbyteRecordMessage} into a
+ * stream of bytes to more readily save and transmit information
  *
  * <p>
  * This class is meant to be used in conjunction with {@link SerializableBuffer}
@@ -44,18 +44,19 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   private final Consumer<AirbyteMessage> outputRecordCollector;
 
   /**
-   * Creates instance of Serialized Buffering Strategy used to handle the logic of flushing buffer with an associated buffer type
+   * Creates instance of Serialized Buffering Strategy used to handle the logic of flushing buffer
+   * with an associated buffer type
    *
-   * @param onCreateBuffer        type of buffer used upon creation
-   * @param catalog               collection of {@link io.airbyte.protocol.models.ConfiguredAirbyteStream}
-   * @param onStreamFlush         buffer flush logic used throughout the streaming of messages
+   * @param onCreateBuffer type of buffer used upon creation
+   * @param catalog collection of {@link io.airbyte.protocol.models.ConfiguredAirbyteStream}
+   * @param onStreamFlush buffer flush logic used throughout the streaming of messages
    * @param outputRecordCollector
    */
   public SerializedBufferingStrategy(
-      final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
-      final ConfiguredAirbyteCatalog catalog,
-      final CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> onStreamFlush,
-      final Consumer<AirbyteMessage> outputRecordCollector) {
+                                     final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
+                                     final ConfiguredAirbyteCatalog catalog,
+                                     final CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> onStreamFlush,
+                                     final Consumer<AirbyteMessage> outputRecordCollector) {
     this.onCreateBuffer = onCreateBuffer;
     this.catalog = catalog;
     this.onStreamFlush = onStreamFlush;
@@ -67,7 +68,7 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   /**
    * Handles both adding records and when buffer is full to also flush
    *
-   * @param stream  stream associated with record
+   * @param stream stream associated with record
    * @param message {@link AirbyteMessage} to buffer
    * @return Optional which contains a {@link BufferFlushType} if a flush occurred, otherwise empty)
    * @throws Exception
@@ -155,8 +156,9 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   }
 
   /**
-   * After marking states as committed, return the state message to platform then clear state messages to avoid resending the same state message to
-   * the platform. Also updates the next time a buffer flush should occur since it is deterministic that when this method is called all data has been
+   * After marking states as committed, return the state message to platform then clear state messages
+   * to avoid resending the same state message to the platform. Also updates the next time a buffer
+   * flush should occur since it is deterministic that when this method is called all data has been
    * successfully committed to destination
    */
   private void markStatesAsFlushedToDestination() {

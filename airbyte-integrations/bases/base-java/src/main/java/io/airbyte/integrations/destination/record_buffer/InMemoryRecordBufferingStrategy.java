@@ -23,10 +23,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This is the default implementation of a {@link BufferStorage} to be backward compatible. Data is being buffered in a
- * {@link List<AirbyteRecordMessage>} as they are being consumed.
+ * This is the default implementation of a {@link BufferStorage} to be backward compatible. Data is
+ * being buffered in a {@link List<AirbyteRecordMessage>} as they are being consumed.
  * <p>
- * This should be deprecated as we slowly move towards using {@link SerializedBufferingStrategy} instead.
+ * This should be deprecated as we slowly move towards using {@link SerializedBufferingStrategy}
+ * instead.
  */
 public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
 
@@ -44,17 +45,17 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
   private long bufferSizeInBytes;
 
   public InMemoryRecordBufferingStrategy(
-      final RecordWriter<AirbyteRecordMessage> recordWriter,
-      final long maxQueueSizeInBytes,
-      final Consumer<AirbyteMessage> outputRecordCollector) {
+                                         final RecordWriter<AirbyteRecordMessage> recordWriter,
+                                         final long maxQueueSizeInBytes,
+                                         final Consumer<AirbyteMessage> outputRecordCollector) {
     this(recordWriter, null, maxQueueSizeInBytes, outputRecordCollector);
   }
 
   public InMemoryRecordBufferingStrategy(
-      final RecordWriter<AirbyteRecordMessage> recordWriter,
-      final CheckAndRemoveRecordWriter checkAndRemoveRecordWriter,
-      final long maxQueueSizeInBytes,
-      final Consumer<AirbyteMessage> outputRecordCollector) {
+                                         final RecordWriter<AirbyteRecordMessage> recordWriter,
+                                         final CheckAndRemoveRecordWriter checkAndRemoveRecordWriter,
+                                         final long maxQueueSizeInBytes,
+                                         final Consumer<AirbyteMessage> outputRecordCollector) {
     this.recordWriter = recordWriter;
     this.checkAndRemoveRecordWriter = checkAndRemoveRecordWriter;
 
@@ -107,8 +108,9 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
   }
 
   /**
-   * After marking states as committed, return the state message to platform then clear state messages to avoid resending the same state message to
-   * the platform. Also updates the next time a buffer flush should occur since it is deterministic that when this method is called all data has been
+   * After marking states as committed, return the state message to platform then clear state messages
+   * to avoid resending the same state message to the platform. Also updates the next time a buffer
+   * flush should occur since it is deterministic that when this method is called all data has been
    * successfully committed to destination
    */
   private void markStatesAsFlushedToDestination() {

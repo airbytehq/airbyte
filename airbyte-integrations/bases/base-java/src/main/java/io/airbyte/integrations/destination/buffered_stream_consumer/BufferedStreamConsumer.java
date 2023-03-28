@@ -33,15 +33,17 @@ import org.slf4j.LoggerFactory;
  * This class consumes AirbyteMessages from the worker.
  *
  * <p>
- * Record Messages: It adds record messages to a buffer. Under 2 conditions, it will flush the records in the buffer to a temporary table in the
- * destination. Condition 1: The buffer fills up (the buffer is designed to be small enough as not to exceed the memory of the container). Condition
- * 2: On close.
+ * Record Messages: It adds record messages to a buffer. Under 2 conditions, it will flush the
+ * records in the buffer to a temporary table in the destination. Condition 1: The buffer fills up
+ * (the buffer is designed to be small enough as not to exceed the memory of the container).
+ * Condition 2: On close.
  * </p>
  *
  * <p>
- * State Messages: This consumer tracks the last state message it has accepted. It also tracks the last state message that was committed to the
- * temporary table. For now, we only emit a message if everything is successful. Once checkpointing is turned on, we will emit the state message as
- * long as the onClose successfully commits any messages to the raw table.
+ * State Messages: This consumer tracks the last state message it has accepted. It also tracks the
+ * last state message that was committed to the temporary table. For now, we only emit a message if
+ * everything is successful. Once checkpointing is turned on, we will emit the state message as long
+ * as the onClose successfully commits any messages to the raw table.
  * </p>
  *
  * <p>
@@ -49,19 +51,25 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * <p>
- * Throughout the lifecycle of the consumer, messages get promoted from buffered to flushed to committed. A record message when it is received is
- * immediately buffered. When the buffer fills up, all buffered records are flushed out of memory using the user-provided recordBuffer. When this
- * flush happens, a state message is moved from pending to flushed. On close, if the user-provided onClose function is successful, then the flushed
- * state record is considered committed and is then emitted. We expect this class to only ever emit either 1 state message (in the case of a full or
- * partial success) or 0 state messages (in the case where the onClose step was never reached or did not complete without exception).
+ * Throughout the lifecycle of the consumer, messages get promoted from buffered to flushed to
+ * committed. A record message when it is received is immediately buffered. When the buffer fills
+ * up, all buffered records are flushed out of memory using the user-provided recordBuffer. When
+ * this flush happens, a state message is moved from pending to flushed. On close, if the
+ * user-provided onClose function is successful, then the flushed state record is considered
+ * committed and is then emitted. We expect this class to only ever emit either 1 state message (in
+ * the case of a full or partial success) or 0 state messages (in the case where the onClose step
+ * was never reached or did not complete without exception).
  * </p>
  *
  * <p>
- * When a record is "flushed" it is moved from the docker container to the destination. By convention, it is usually placed in some sort of temporary
- * storage on the destination (e.g. a temporary database or file store). The logic in close handles committing the temporary representation data to
- * the final store (e.g. final table). In the case of staging destinations they often have additional temporary stores. The common pattern for staging
- * destination is that flush pushes the data into a staging area in cloud storage and then close copies from staging to a temporary table AND then
- * copies from the temporary table into the final table. This abstraction is blind to the detail of how staging destinations implement their close.
+ * When a record is "flushed" it is moved from the docker container to the destination. By
+ * convention, it is usually placed in some sort of temporary storage on the destination (e.g. a
+ * temporary database or file store). The logic in close handles committing the temporary
+ * representation data to the final store (e.g. final table). In the case of staging destinations
+ * they often have additional temporary stores. The common pattern for staging destination is that
+ * flush pushes the data into a staging area in cloud storage and then close copies from staging to
+ * a temporary table AND then copies from the temporary table into the final table. This abstraction
+ * is blind to the detail of how staging destinations implement their close.
  * </p>
  */
 public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
@@ -76,7 +84,6 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final Map<AirbyteStreamNameNamespacePair, Long> streamToIgnoredRecordCount;
   private final BufferingStrategy bufferingStrategy;
 
-
   private boolean hasStarted;
   private boolean hasClosed;
 
@@ -84,10 +91,10 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final Duration bufferFlushFrequency;
 
   public BufferedStreamConsumer(final VoidCallable onStart,
-      final BufferingStrategy bufferingStrategy,
-      final CheckedConsumer<Boolean, Exception> onClose,
-      final ConfiguredAirbyteCatalog catalog,
-      final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord) {
+                                final BufferingStrategy bufferingStrategy,
+                                final CheckedConsumer<Boolean, Exception> onClose,
+                                final ConfiguredAirbyteCatalog catalog,
+                                final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord) {
     this(onStart,
         bufferingStrategy,
         onClose,
@@ -102,11 +109,11 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
    */
   @VisibleForTesting
   BufferedStreamConsumer(final VoidCallable onStart,
-      final BufferingStrategy bufferingStrategy,
-      final CheckedConsumer<Boolean, Exception> onClose,
-      final ConfiguredAirbyteCatalog catalog,
-      final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
-      final Duration flushFrequency) {
+                         final BufferingStrategy bufferingStrategy,
+                         final CheckedConsumer<Boolean, Exception> onClose,
+                         final ConfiguredAirbyteCatalog catalog,
+                         final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
+                         final Duration flushFrequency) {
     this.hasStarted = false;
     this.hasClosed = false;
     this.onStart = onStart;
@@ -131,8 +138,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   /**
-   * AcceptTracked will still process AirbyteMessages as usual with the addition of periodically flushing buffer and writing data to destination
-   * storage
+   * AcceptTracked will still process AirbyteMessages as usual with the addition of periodically
+   * flushing buffer and writing data to destination storage
    *
    * @param message {@link AirbyteMessage} to be processed
    * @throws Exception
@@ -172,7 +179,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   /**
-   * Periodically flushes buffered data to destination storage when exceeding flush deadline. Also resets the last time a flush occurred
+   * Periodically flushes buffered data to destination storage when exceeding flush deadline. Also
+   * resets the last time a flush occurred
    */
   private void periodicBufferFlush() {
     // When the last time the buffered has been flushed exceed the frequency, flush the current
@@ -195,9 +203,10 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   /**
-   * Cleans up buffer based on whether the sync was successful or some exception occurred. In the case where a failure occurred we do a simple clean
-   * up any lingering data. Otherwise, flush any remaining data that has been stored. This is fine even if the state has not been received since this
-   * Airbyte promises at least once delivery
+   * Cleans up buffer based on whether the sync was successful or some exception occurred. In the case
+   * where a failure occurred we do a simple clean up any lingering data. Otherwise, flush any
+   * remaining data that has been stored. This is fine even if the state has not been received since
+   * this Airbyte promises at least once delivery
    *
    * @param hasFailed true if the stream replication failed partway through, false otherwise
    * @throws Exception
