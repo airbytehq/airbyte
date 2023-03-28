@@ -605,7 +605,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
                 [
                     "campaign_id",
                     "adgroup_name",
-                    "placement",
+                    "placement_type",
                     "tt_app_id",
                     "tt_app_name",
                     "mobile_app_id",
@@ -656,7 +656,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
                 yield slice
 
     def path(self, *args, **kwargs) -> str:
-        return "reports/integrated/get/"
+        return "report/integrated/get/"
 
     def request_params(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
