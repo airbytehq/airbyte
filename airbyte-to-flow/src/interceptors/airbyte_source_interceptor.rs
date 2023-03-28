@@ -1,4 +1,4 @@
-use crate::apis::{FlowCaptureOperation, InterceptorStream};
+use crate::apis::InterceptorStream;
 use crate::libs::json::{create_root_schema, tokenize_jsonpointer};
 
 use crate::errors::Error;
@@ -7,15 +7,16 @@ use crate::libs::airbyte_catalog::{
     SyncMode,
 };
 use crate::libs::command::READY;
-use crate::libs::protobuf::encode_message;
+use crate::libs::protobuf::{encode_message, decode_message};
 use crate::libs::stream::{
-    get_airbyte_response, get_decoded_message, stream_airbyte_responses, stream_runtime_messages,
+    get_airbyte_response, stream_airbyte_responses,
 };
 
 use bytes::Bytes;
 use proto_flow::capture::{Request, Response};
 use proto_flow::capture::{request, response};
 use proto_flow::flow::ConnectorState;
+use tokio_util::io::StreamReader;
 
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -23,7 +24,7 @@ use tokio::sync::Mutex;
 
 use validator::Validate;
 
-use futures::{stream, StreamExt, TryStreamExt};
+use futures::{stream, StreamExt};
 use serde_json as sj;
 use serde_json::value::RawValue;
 use std::fs::File;
@@ -74,9 +75,8 @@ impl AirbyteSourceInterceptor {
         }
     }
 
-    fn adapt_spec_request_stream(&mut self, in_stream: InterceptorStream) -> InterceptorStream {
+    fn adapt_spec_request_stream(&mut self, _request: request::Spec, _in_stream: InterceptorStream) -> InterceptorStream {
         Box::pin(stream::once(async move {
-            get_decoded_message::<request::Spec>(in_stream).await?;
             Ok(Bytes::from(READY))
         }))
     }
@@ -151,10 +151,10 @@ impl AirbyteSourceInterceptor {
     fn adapt_discover_request(
         &mut self,
         config_file_path: String,
-        in_stream: InterceptorStream,
+        request: request::Discover,
+        _in_stream: InterceptorStream,
     ) -> InterceptorStream {
         Box::pin(stream::once(async move {
-            let request = get_decoded_message::<request::Discover>(in_stream).await?;
             let config_json =
                 AirbyteSourceInterceptor::adapt_config_json(&request.config_json)?;
 
@@ -262,10 +262,10 @@ impl AirbyteSourceInterceptor {
         &mut self,
         config_file_path: String,
         validate_request: Arc<Mutex<Option<request::Validate>>>,
-        in_stream: InterceptorStream,
+        request: request::Validate,
+        _in_stream: InterceptorStream,
     ) -> InterceptorStream {
         Box::pin(stream::once(async move {
-            let request = get_decoded_message::<request::Validate>(in_stream).await?;
             *validate_request.lock().await = Some(request.clone());
 
             let config_json =
@@ -311,9 +311,8 @@ impl AirbyteSourceInterceptor {
         }))
     }
 
-    fn adapt_apply_request_stream(&mut self, in_stream: InterceptorStream) -> InterceptorStream {
+    fn adapt_apply_request_stream(&mut self, _request: request::Apply, _in_stream: InterceptorStream) -> InterceptorStream {
         Box::pin(stream::once(async move {
-            get_decoded_message::<request::Apply>(in_stream).await?;
             Ok(Bytes::from(READY))
         }))
     }
@@ -334,100 +333,83 @@ impl AirbyteSourceInterceptor {
         catalog_file_path: String,
         state_file_path: String,
         stream_to_binding: Arc<Mutex<HashMap<String, SavedBinding>>>,
-        in_stream: InterceptorStream,
+        open: request::Open,
+        _in_stream: InterceptorStream,
     ) -> InterceptorStream {
-        let runtime_messages_stream = Box::pin(stream_runtime_messages::<Request>(in_stream));
-        Box::pin(
-            stream::try_unfold((stream_to_binding, runtime_messages_stream, config_file_path, catalog_file_path, state_file_path),
-            |(stb, mut stream, config_file_path, catalog_file_path, state_file_path)| async move {
-                let mut request = match stream.next().await {
-                    Some(m) => m?,
-                    None => {
-                        return Ok(None);
-                    }
-                };
-                if let Some(ref mut o) = request.open {
-                    File::create(state_file_path.clone())?.write_all(&o.state_json.as_bytes())?;
+        Box::pin(stream::once(async move {
+            File::create(state_file_path.clone())?.write_all(&open.state_json.as_bytes())?;
+            let c = open.capture.unwrap();
 
-                    if let Some(ref mut c) = o.capture {
-                        let config_json = AirbyteSourceInterceptor::adapt_config_json(&c.config_json)?;
+            let config_json = AirbyteSourceInterceptor::adapt_config_json(&c.config_json)?;
 
-                        File::create(config_file_path.clone())?.write_all(config_json.to_string().as_bytes())?;
+            File::create(config_file_path.clone())?.write_all(config_json.to_string().as_bytes())?;
 
-                        let mut catalog = ConfiguredCatalog {
-                            streams: Vec::new(),
-                            range: o.range.as_ref().map(|r| Range {
-                                begin: r.key_begin,
-                                end: r.key_end,
-                            }),
-                        };
+            let mut catalog = ConfiguredCatalog {
+                streams: Vec::new(),
+                range: open.range.as_ref().map(|r| Range {
+                    begin: r.key_begin,
+                    end: r.key_end,
+                }),
+            };
 
-                        for (i, binding) in c.bindings.iter().enumerate() {
-                            let resource: ResourceSpec =
-                                serde_json::from_str(&binding.resource_config_json)?;
+            for (i, binding) in c.bindings.iter().enumerate() {
+                let resource: ResourceSpec =
+                    serde_json::from_str(&binding.resource_config_json)?;
 
-                            let normalizations = std::fs::read_to_string(format!(
-                                "{}/{}{}",
-                                STREAM_PATCH_DIR_NAME,
-                                &resource.stream,
-                                STREAM_NORMALIZE_SUFFIX
-                            ))
-                            .ok()
-                            .map(|p| sj::from_str::<Vec<NormalizationEntry>>(&p))
-                            .transpose()?;
+                let normalizations = std::fs::read_to_string(format!(
+                    "{}/{}{}",
+                    STREAM_PATCH_DIR_NAME,
+                    &resource.stream,
+                    STREAM_NORMALIZE_SUFFIX
+                ))
+                .ok()
+                .map(|p| sj::from_str::<Vec<NormalizationEntry>>(&p))
+                .transpose()?;
 
-                            stb.lock().await.insert(resource.stream.clone(), (i, normalizations));
+                stream_to_binding.lock().await.insert(resource.stream.clone(), (i, normalizations));
 
-                            let mut projections = HashMap::new();
-                            if let Some(ref collection) = binding.collection {
-                                for p in &collection.projections {
-                                    projections.insert(p.field.clone(), p.ptr.clone());
-                                }
-
-                                let primary_key: Vec<Vec<String>> = collection
-                                    .key
-                                    .iter()
-                                    .map(|ptr| tokenize_jsonpointer(ptr))
-                                    .collect();
-                                catalog.streams.push(ConfiguredStream {
-                                    sync_mode: resource.sync_mode.clone(),
-                                    destination_sync_mode: DestinationSyncMode::Append,
-                                    cursor_field: resource.cursor_field,
-                                    primary_key: Some(primary_key),
-                                    stream: airbyte_catalog::Stream {
-                                        name: resource.stream,
-                                        namespace: resource.namespace,
-                                        json_schema: RawValue::from_string(
-                                            collection.write_schema_json.clone(),
-                                        )?,
-                                        supported_sync_modes: Some(vec![resource
-                                            .sync_mode
-                                            .clone()]),
-                                        default_cursor_field: None,
-                                        source_defined_cursor: None,
-                                        source_defined_primary_key: None,
-                                    },
-                                    projections,
-                                });
-                            }
-                        }
-
-                        if let Err(e) = catalog.validate() {
-                            return Err(Error::InvalidCatalog(e))
-                        }
-
-                        serde_json::to_writer(File::create(catalog_file_path.clone())?, &catalog)?
+                let mut projections = HashMap::new();
+                if let Some(ref collection) = binding.collection {
+                    for p in &collection.projections {
+                        projections.insert(p.field.clone(), p.ptr.clone());
                     }
 
-                    Ok(Some((Some(Bytes::from(READY)), (stb, stream, config_file_path, catalog_file_path, state_file_path))))
-                } else {
-                    // If we return Ok(None), we will stop consuming the input, but we want to
-                    // continue consuming input since we can receive ACK requests from runtime and
-                    // we need to consume those to avoid an accumulation of those requests in stdin
-                    Ok(Some((None, (stb, stream, config_file_path, catalog_file_path, state_file_path))))
+                    let primary_key: Vec<Vec<String>> = collection
+                        .key
+                        .iter()
+                        .map(|ptr| tokenize_jsonpointer(ptr))
+                        .collect();
+                    catalog.streams.push(ConfiguredStream {
+                        sync_mode: resource.sync_mode.clone(),
+                        destination_sync_mode: DestinationSyncMode::Append,
+                        cursor_field: resource.cursor_field,
+                        primary_key: Some(primary_key),
+                        stream: airbyte_catalog::Stream {
+                            name: resource.stream,
+                            namespace: resource.namespace,
+                            json_schema: RawValue::from_string(
+                                collection.write_schema_json.clone(),
+                            )?,
+                            supported_sync_modes: Some(vec![resource
+                                .sync_mode
+                                .clone()]),
+                            default_cursor_field: None,
+                            source_defined_cursor: None,
+                            source_defined_primary_key: None,
+                        },
+                        projections,
+                    });
                 }
-            }).try_filter_map(|item| futures::future::ok(item))
-        )
+            }
+
+            if let Err(e) = catalog.validate() {
+                return Err(Error::InvalidCatalog(e))
+            }
+
+            serde_json::to_writer(File::create(catalog_file_path.clone())?, &catalog)?;
+
+            Ok(Bytes::from(READY))
+        }))
     }
 
     fn adapt_pull_response_stream(
@@ -498,20 +480,53 @@ impl AirbyteSourceInterceptor {
     }
 }
 
+#[derive(Clone, PartialEq)]
+pub enum Operation {
+    Spec,
+    Discover,
+    Validate,
+    Apply,
+    Capture,
+}
+
 impl AirbyteSourceInterceptor {
-    pub fn adapt_command_args(&mut self, op: &FlowCaptureOperation) -> Vec<String> {
+    // Looks at the first request to determine the operation, and gives back the stream that will
+    // include the first request as well
+    pub async fn first_request(&mut self, in_stream: &mut InterceptorStream) -> Result<(Operation, Request), Error> {
+        let first_req_bytes = in_stream.next().await.ok_or(Error::EmptyStream)??;
+        let mut first_req_stream = Box::pin(StreamReader::new(stream::once(async { Ok::<_, std::io::Error>(first_req_bytes) })));
+        let first_req = decode_message::<Request, _>(&mut first_req_stream)
+            .await?
+            .ok_or(Error::MessageNotFound(std::any::type_name::<Request>()))?;
+
+        if first_req.spec.is_some() {
+            Ok((Operation::Spec, first_req))
+        } else if first_req.discover.is_some() {
+            Ok((Operation::Discover, first_req))
+        } else if first_req.validate.is_some() {
+            Ok((Operation::Validate, first_req))
+        } else if first_req.apply.is_some() {
+            Ok((Operation::Apply, first_req))
+        } else if first_req.open.is_some() {
+            Ok((Operation::Capture, first_req))
+        } else {
+            Err(Error::UnknownOperation(format!("{:#?}", first_req)))
+        }
+    }
+
+    pub fn adapt_command_args(&mut self, op: &Operation) -> Vec<String> {
         let config_file_path = self.input_file_path(CONFIG_FILE_NAME);
         let catalog_file_path = self.input_file_path(CATALOG_FILE_NAME);
         let state_file_path = self.input_file_path(STATE_FILE_NAME);
 
         let airbyte_args = match op {
-            FlowCaptureOperation::Spec => vec!["spec"],
-            FlowCaptureOperation::Discover => vec!["discover", "--config", &config_file_path],
-            FlowCaptureOperation::Validate => vec!["check", "--config", &config_file_path],
+            Operation::Spec => vec!["spec"],
+            Operation::Discover => vec!["discover", "--config", &config_file_path],
+            Operation::Validate => vec!["check", "--config", &config_file_path],
             // TODO(johnny): These are effective no-ops, but as-written must invoke the connector.
             // We should refactor this.
-            FlowCaptureOperation::ApplyUpsert | FlowCaptureOperation::ApplyDelete => vec!["spec"],
-            FlowCaptureOperation::Pull => {
+            Operation::Apply => vec!["spec"],
+            Operation::Capture => {
                 vec![
                     "read",
                     "--config",
@@ -529,7 +544,8 @@ impl AirbyteSourceInterceptor {
 
     pub fn adapt_request_stream(
         &mut self,
-        op: &FlowCaptureOperation,
+        op: &Operation,
+        first_request: Request,
         in_stream: InterceptorStream,
     ) -> Result<InterceptorStream, Error> {
         let config_file_path = self.input_file_path(CONFIG_FILE_NAME);
@@ -537,25 +553,27 @@ impl AirbyteSourceInterceptor {
         let state_file_path = self.input_file_path(STATE_FILE_NAME);
 
         match op {
-            FlowCaptureOperation::Spec => Ok(self.adapt_spec_request_stream(in_stream)),
-            FlowCaptureOperation::Discover => {
-                Ok(self.adapt_discover_request(config_file_path, in_stream))
+            Operation::Spec => Ok(self.adapt_spec_request_stream(first_request.spec.unwrap(), in_stream)),
+            Operation::Discover => {
+                Ok(self.adapt_discover_request(config_file_path, first_request.discover.unwrap(), in_stream))
             }
-            FlowCaptureOperation::Validate => Ok(self.adapt_validate_request_stream(
+            Operation::Validate => Ok(self.adapt_validate_request_stream(
                 config_file_path,
                 Arc::clone(&self.validate_request),
+                first_request.validate.unwrap(),
                 in_stream,
             )),
             // TODO(johnny): These are effective no-ops, but as-written must invoke the connector.
             // We should refactor this.
-            FlowCaptureOperation::ApplyUpsert | FlowCaptureOperation::ApplyDelete => {
-                Ok(self.adapt_apply_request_stream(in_stream))
+            Operation::Apply => {
+                Ok(self.adapt_apply_request_stream(first_request.apply.unwrap(), in_stream))
             }
-            FlowCaptureOperation::Pull => Ok(self.adapt_pull_request_stream(
+            Operation::Capture => Ok(self.adapt_pull_request_stream(
                 config_file_path,
                 catalog_file_path,
                 state_file_path,
                 Arc::clone(&self.stream_to_binding),
+                first_request.open.unwrap(),
                 in_stream,
             )),
         }
@@ -563,20 +581,20 @@ impl AirbyteSourceInterceptor {
 
     pub fn adapt_response_stream(
         &mut self,
-        op: &FlowCaptureOperation,
+        op: &Operation,
         in_stream: InterceptorStream,
     ) -> Result<InterceptorStream, Error> {
         match op {
-            FlowCaptureOperation::Spec => Ok(self.adapt_spec_response_stream(in_stream)),
-            FlowCaptureOperation::Discover => Ok(self.adapt_discover_response_stream(in_stream)),
-            FlowCaptureOperation::Validate => {
+            Operation::Spec => Ok(self.adapt_spec_response_stream(in_stream)),
+            Operation::Discover => Ok(self.adapt_discover_response_stream(in_stream)),
+            Operation::Validate => {
                 Ok(self
                     .adapt_validate_response_stream(Arc::clone(&self.validate_request), in_stream))
             }
-            FlowCaptureOperation::ApplyUpsert | FlowCaptureOperation::ApplyDelete => {
+            Operation::Apply => {
                 Ok(self.adapt_apply_response_stream(in_stream))
             }
-            FlowCaptureOperation::Pull => {
+            Operation::Capture => {
                 Ok(self.adapt_pull_response_stream(Arc::clone(&self.stream_to_binding), in_stream))
             }
         }

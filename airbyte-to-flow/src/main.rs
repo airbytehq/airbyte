@@ -8,7 +8,6 @@ pub mod errors;
 pub mod interceptors;
 pub mod libs;
 
-use apis::FlowCaptureOperation;
 use connector_runner::run_airbyte_source_connector;
 
 #[derive(clap::Parser, Debug)]
@@ -28,9 +27,6 @@ pub struct Args {
     #[clap(long)]
     connector_entrypoint: String,
 
-    #[clap(value_enum)]
-    operation: FlowCaptureOperation,
-
     #[clap(flatten)]
     log_args: LogArgs,
 }
@@ -38,7 +34,6 @@ pub struct Args {
 fn main() -> anyhow::Result<()> {
     let Args {
         connector_entrypoint,
-        operation,
         log_args,
     } = Args::parse();
     init_logging(&log_args);
@@ -50,7 +45,6 @@ fn main() -> anyhow::Result<()> {
 
     let result = runtime.block_on(run_airbyte_source_connector(
         connector_entrypoint,
-        operation,
         &log_args,
     ));
 

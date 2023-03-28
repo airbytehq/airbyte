@@ -83,6 +83,9 @@ pub enum Error {
 
     #[error("go.estuary.dev/E036: Invalid primary key patch file: {0}")]
     InvalidPKPatch(String),
+
+    #[error("go.estuary.dev/uzQS5j: Unknown operation: {0}")]
+    UnknownOperation(String),
 }
 
 pub fn raise_err<T>(message: &str) -> Result<T, std::io::Error> {

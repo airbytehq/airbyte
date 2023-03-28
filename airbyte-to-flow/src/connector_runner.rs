@@ -9,7 +9,7 @@ use proto_flow::capture::Response;
 use proto_flow::capture::response;
 use proto_flow::flow::ConnectorState;
 
-use crate::{apis::{InterceptorStream, FlowCaptureOperation}, interceptors::airbyte_source_interceptor::AirbyteSourceInterceptor, errors::{Error, io_stream_to_interceptor_stream, interceptor_stream_to_io_stream}, libs::{command::{invoke_connector_delayed, check_exit_status}, protobuf::{decode_message, encode_message}}};
+use crate::{apis::InterceptorStream, interceptors::airbyte_source_interceptor::{AirbyteSourceInterceptor, Operation}, errors::{Error, io_stream_to_interceptor_stream, interceptor_stream_to_io_stream}, libs::{command::{invoke_connector_delayed, check_exit_status}, protobuf::{decode_message, encode_message}}};
 
 async fn flow_read_stream() -> InterceptorStream {
     Box::pin(io_stream_to_interceptor_stream(ReaderStream::new(tokio::io::stdin())))
@@ -32,10 +32,12 @@ pub fn parse_child(mut child: Child) -> Result<(Child, ChildStdin, ChildStdout),
 
 pub async fn run_airbyte_source_connector(
     entrypoint: String,
-    op: FlowCaptureOperation,
     log_args: &LogArgs,
 ) -> Result<(), Error> {
     let mut airbyte_interceptor = AirbyteSourceInterceptor::new();
+
+    let mut in_stream = flow_read_stream().await;
+    let (op, first_request) = airbyte_interceptor.first_request(&mut in_stream).await?;
 
     let args = airbyte_interceptor.adapt_command_args(&op);
     let full_entrypoint = format!("{} \"{}\"", entrypoint, args.join("\" \""));
@@ -44,10 +46,10 @@ pub async fn run_airbyte_source_connector(
     let (mut child, child_stdin, child_stdout) =
         parse_child(invoke_connector_delayed(full_entrypoint, log_level)?)?;
 
-    // std::thread::sleep(std::time::Duration::from_secs(400));
     let adapted_request_stream = airbyte_interceptor.adapt_request_stream(
         &op,
-        flow_read_stream().await
+        first_request,
+        in_stream,
     )?;
 
     let adapted_response_stream =
@@ -56,7 +58,7 @@ pub async fn run_airbyte_source_connector(
     // Keep track of whether we did send a Driver Checkpoint as the final message of the response stream
     // See the comment of the block below for why this is necessary
     let (tp_sender, tp_receiver) = oneshot::channel::<bool>();
-    let adapted_response_stream = if op == FlowCaptureOperation::Pull {
+    let adapted_response_stream = if op == Operation::Capture {
         Box::pin(stream::try_unfold(
             (false, adapted_response_stream, tp_sender),
             |(transaction_pending, mut stream, sender)| async move {
@@ -101,7 +103,7 @@ pub async fn run_airbyte_source_connector(
         // There are some Airbyte connectors that write records, and exit successfully, without ever writing
         // a state (checkpoint). In those cases, we want to provide a default empty checkpoint. It's important that
         // this only happens if the connector exit successfully, otherwise we risk double-writing data.
-        if exit_status_result.is_ok() && cloned_op == FlowCaptureOperation::Pull {
+        if exit_status_result.is_ok() && cloned_op == Operation::Capture {
             tracing::debug!("airbyte-to-flow: waiting for tp_receiver");
             // the received value (transaction_pending) is true if the connector writes output messages and exits _without_ writing
             // a final state checkpoint.
