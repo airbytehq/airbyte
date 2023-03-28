@@ -129,7 +129,8 @@ def test_write_no_input_messages(
         assert cumulio_writer.mock_calls == [
             call(config, configured_catalog, logger),
             call().delete_stream_entries("overwrite_stream"),
-            call().flush_all(),
+            call().flush_all(), # The first flush_all is called before yielding the state message
+            call().flush_all(), # The second flush_all is called after going through all input messages
         ]
 
 
@@ -157,5 +158,6 @@ def test_write(
             call().queue_write_operation(
                 "overwrite_stream", {"string_column": "value_2", "int_column": 2}
             ),
-            call().flush_all(),
+            call().flush_all(), # The first flush_all is called before yielding the state message
+            call().flush_all(), # The second flush_all is called after going through all input messages        ]
         ]
