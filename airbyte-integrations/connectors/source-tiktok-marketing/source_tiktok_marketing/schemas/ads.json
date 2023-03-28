@@ -132,7 +132,7 @@
       "type": ["null", "boolean"]
     },
     "page_id": {
-      "type": ["number", "null"]
+      "type": ["null", "number"]
     },
     "creative_authorized": {
       "type": ["null", "boolean"]
@@ -141,18 +141,22 @@
       "type": ["null", "boolean"]
     },
     "create_time": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "modify_time": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
-    "dpa_fallback_type": {
+    "shopping_ads_fallback_type": {
       "type": ["null", "string"]
     },
-    "dpa_open_url_type": {
+    "shopping_deeplink_type": {
       "type": ["null", "string"]
     },
-    "dpa_video_tpl_id": {
+    "shopping_ads_video_package_id": {
       "type": ["null", "string"]
     },
     "promotional_music_disabled": {
