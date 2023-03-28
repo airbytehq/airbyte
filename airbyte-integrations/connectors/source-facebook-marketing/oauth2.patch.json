@@ -3,6 +3,5 @@
   "authUrlTemplate": "https://www.facebook.com/v15.0/dialog/oauth?client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&state={{#urlencode}}{{{  state }}}{{/urlencode}}&scope=ads_management,ads_read,read_insights,business_management",
   "accessTokenUrlTemplate": "https://graph.facebook.com/v15.0/oauth/access_token?client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&client_secret={{#urlencode}}{{{ client_secret }}}{{/urlencode}}&code={{#urlencode}}{{{ code }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}",
   "accessTokenBody": "",
-  "accessTokenHeaders": "",
-  "accessTokenResponseMap": "{\"access_token\": \"/access_token\"}"
+  "accessTokenResponseMap": {"access_token": "/access_token"}
 }

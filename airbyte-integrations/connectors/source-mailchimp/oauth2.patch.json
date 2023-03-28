@@ -3,6 +3,6 @@
   "authUrlTemplate": "https://login.mailchimp.com/oauth2/authorize?response_type=code&client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&state={{#urlencode}}{{{ state }}}{{/urlencode}}",
   "accessTokenUrlTemplate": "https://login.mailchimp.com/oauth2/token",
   "accessTokenBody": "grant_type=authorization_code&client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&client_secret={{#urlencode}}{{{ client_secret }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&code={{#urlencode}}{{{ code }}}{{/urlencode}}",
-  "accessTokenHeaders": "{\"content-type\": \"application/x-www-form-urlencoded\"}",
-  "accessTokenResponseMap": "{\"access_token\": \"/access_token\"}"
+  "accessTokenHeaders": {"content-type": "application/x-www-form-urlencoded"},
+  "accessTokenResponseMap": {"access_token": "/access_token"}
 }

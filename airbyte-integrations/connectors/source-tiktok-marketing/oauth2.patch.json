@@ -3,5 +3,5 @@
   "authUrlTemplate": "https://ads.tiktok.com/marketing_api/auth?app_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&response_type=code&state={{#urlencode}}{{{ state }}}{{/urlencode}}",
   "accessTokenUrlTemplate": "https://ads.tiktok.com/open_api/v1.2/oauth2/access_token/?app_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&secret={{#urlencode}}{{{ client_secret }}}{{/urlencode}}&auth_code={{#urlencode}}{{{ code }}}{{/urlencode}}&grant_type=authorization_code",
   "accessTokenBody": "",
-  "accessTokenResponseMap": "{\"access_token\": \"/data/access_token\"}"
+  "accessTokenResponseMap": {"access_token": "/data/access_token"}
 }
