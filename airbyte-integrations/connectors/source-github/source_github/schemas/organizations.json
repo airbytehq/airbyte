@@ -122,22 +122,22 @@
       "type": ["null", "string"]
     },
     "members_can_create_public_repositories": {
-      "type": ["null", "integer"]
+      "type": ["null", "boolean"]
     },
     "members_can_create_private_repositories": {
-      "type": ["null", "integer"]
+      "type": ["null", "boolean"]
     },
     "members_can_create_internal_repositories": {
-      "type": ["null", "integer"]
+      "type": ["null", "boolean"]
     },
     "members_can_create_pages": {
       "type": ["null", "boolean"]
     },
     "members_can_fork_private_repositories": {
-      "type": ["null", "integer"]
+      "type": ["null", "boolean"]
     },
     "web_commit_signoff_required": {
-      "type": ["null", "integer"]
+      "type": ["null", "boolean"]
     },
     "members_can_create_public_pages": {
       "type": ["null", "boolean"]
