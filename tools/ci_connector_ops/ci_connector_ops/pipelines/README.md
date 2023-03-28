@@ -17,7 +17,7 @@ cd tools/ci_connector_ops
 python -m venv .venv (please use at least Python 3.10)
 source .venv/bin/activate
 pip install --upgrade pip
-pip install -e .
+pip install -e .\[pipelines\]
 cd ../..
 ```
 
