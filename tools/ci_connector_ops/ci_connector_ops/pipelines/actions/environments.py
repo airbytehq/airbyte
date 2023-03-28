@@ -204,12 +204,55 @@ async def with_ci_connector_ops(context: ConnectorTestContext) -> Container:
     return await with_installed_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH, exclude=["pipelines"])
 
 
+def get_dind_container_and_host(dagger_client, cache_name):
+    share_tmp_volume = dagger_client.cache_volume("share-tmp")
+    dockerd = (
+        dagger_client.container()
+        .from_("docker:23.0.1-dind")
+        # .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(cache_name), sharing=CacheSharingMode.PRIVATE)
+        .with_mounted_cache("/tmp", share_tmp_volume)
+        .with_exposed_port(2375)
+        .with_exec(["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
+    )
+    return dockerd, dockerd.endpoint(scheme="tcp"), share_tmp_volume
+
+
 def with_java_base(context: ConnectorTestContext, jdk_version="17.0.4") -> Container:
     return context.dagger_client.container().from_(f"amazoncorretto:{jdk_version}")
 
 
+def with_bound_docker_host(container, dockerd, docker_host):
+    return container.with_env_variable("DOCKER_HOST", docker_host).with_service_binding("docker", dockerd)
+
+
+def with_docker_cli(context, dockerd, docker_host):
+    docker_cli = context.dagger_client.container().from_("docker:23.0.1-cli")
+    return with_bound_docker_host(docker_cli, dockerd, docker_host)
+
+
+def with_cat(context, dockerd, docker_host, share_tmp_volume, cachebuster):
+    if context.connector_acceptance_test_image.endswith(":dev"):
+        cat_container = context.connector_acceptance_test_source_dir.docker_build()
+    else:
+        cat_container = context.dagger_client.container().from_(context.connector_acceptance_test_image)
+    return (
+        with_bound_docker_host(cat_container, dockerd, docker_host)
+        .with_mounted_cache("/tmp", share_tmp_volume)
+        .with_entrypoint(["pip"])
+        .with_exec(["install", "pytest-custom_exit_code"])
+        .with_mounted_directory("/test_input", context.get_connector_dir(exclude=["secrets", ".venv"]))
+        .with_directory("/test_input/secrets", context.secrets_dir)
+        .with_workdir("/test_input")
+        .with_entrypoint(["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "--suppress-tests-failed-exit-code"])
+        .with_env_variable("CACHEBUSTER", cachebuster)
+        .with_exec(["--acceptance-test-config", "/test_input"])
+    )
+
+
 async def with_gradle(context: ConnectorTestContext, sources_to_include: List[str] = None) -> Container:
     gradle_cache: CacheVolume = context.dagger_client.cache_volume("gradle_cache")
+    dagger_client = context.dagger_client
+    dockerd, docker_host, share_tmp_volume = get_dind_container_and_host(dagger_client, "gradle")
 
     include = [
         ".env",
@@ -229,14 +272,11 @@ async def with_gradle(context: ConnectorTestContext, sources_to_include: List[st
     if sources_to_include:
         include += sources_to_include
 
-    gradle_properties_file = context.resources_dir.file("ci_gradle.properties")
-
     return (
-        context.dagger_client.container()
-        .from_("docker:23.0.1-cli")
+        with_docker_cli(context, dockerd, await docker_host)
+        .with_mounted_cache("/tmp", share_tmp_volume)
         .with_exec(["apk", "add", "openjdk17", "bash", "jq"])
         .with_exec(["mkdir", "-p", "~/.gradle/"])
-        .with_file("~/.gradle/gradle.properties", gradle_properties_file)
         .with_mounted_cache("~/.gradle", gradle_cache, sharing=CacheSharingMode.SHARED)
         .with_exec(["mkdir", "/airbyte"])
         .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))

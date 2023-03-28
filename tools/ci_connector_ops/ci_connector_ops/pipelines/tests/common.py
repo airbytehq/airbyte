@@ -67,25 +67,13 @@ class AcceptanceTests(Step):
         else:
             cat_container = dagger_client.container().from_(self.context.connector_acceptance_test_image)
 
-        dockerd = (
-            dagger_client.container()
-            .from_("docker:23.0.1-dind")
-            .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume("docker-lib"), sharing=CacheSharingMode.PRIVATE)
-            .with_mounted_cache("/tmp", dagger_client.cache_volume("share-tmp"))
-            .with_exposed_port(2375)
-            .with_exec(["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
-        )
-        docker_host = await dockerd.endpoint(scheme="tcp")
+        dockerd, docker_host, share_tmp_volume = environments.get_dind_container_and_host(dagger_client, "cat")
 
         acceptance_test_cache_buster = str(uuid.uuid4())
         if self.context.connector.acceptance_test_config["connector_image"].endswith(":dev"):
+            docker_cli = environments.with_docker_cli(self.context, dockerd, await docker_host)
             inspect_output = await (
-                dagger_client.pipeline(f"Building {self.context.connector.acceptance_test_config['connector_image']}")
-                .container()
-                .from_("docker:23.0.1-cli")
-                .with_env_variable("DOCKER_HOST", docker_host)
-                .with_service_binding("docker", dockerd)
-                .with_mounted_directory("/connector_to_build", self.context.get_connector_dir(exclude=[".venv"]))
+                docker_cli.with_mounted_directory("/connector_to_build", self.context.get_connector_dir(exclude=[".venv"]))
                 .with_workdir("/connector_to_build")
                 .with_exec(["docker", "build", ".", "-t", f"airbyte/{self.context.connector.technical_name}:dev"])
                 .with_exec(["docker", "image", "inspect", f"airbyte/{self.context.connector.technical_name}:dev"])
@@ -93,20 +81,7 @@ class AcceptanceTests(Step):
             )
             acceptance_test_cache_buster = json.loads(inspect_output)[0]["Id"]
 
-        cat_container = (
-            cat_container.with_env_variable("DOCKER_HOST", docker_host)
-            .with_entrypoint(["pip"])
-            .with_exec(["install", "pytest-custom_exit_code"])
-            .with_service_binding("docker", dockerd)
-            .with_mounted_cache("/tmp", dagger_client.cache_volume("share-tmp"))
-            .with_mounted_directory("/test_input", self.context.get_connector_dir(exclude=["secrets", ".venv"]))
-            .with_directory("/test_input/secrets", self.context.secrets_dir)
-            .with_workdir("/test_input")
-            .with_entrypoint(["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "--suppress-tests-failed-exit-code"])
-            .with_env_variable("CACHEBUSTER", acceptance_test_cache_buster)
-            .with_exec(["--acceptance-test-config", "/test_input"])
-        )
-
+        cat_container = environments.with_cat(self.context, dockerd, docker_host, share_tmp_volume, acceptance_test_cache_buster)
         secret_dir = cat_container.directory("/test_input/secrets")
 
         async with asyncer.create_task_group() as task_group:
