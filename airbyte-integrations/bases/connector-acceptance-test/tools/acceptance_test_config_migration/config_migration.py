@@ -15,9 +15,10 @@ yaml = YAML()
 yaml.preserve_quotes = True
 yaml.width = 150
 
-parser = argparse.ArgumentParser(description="Migrate legacy acceptance-test-config.yml to the latest configuration format.")
-parser.add_argument("--connectors", nargs="*")
-parser.add_argument("--allow_alpha", action=argparse.BooleanOptionalAction, default=False)
+parser = argparse.ArgumentParser(description="Migrate acceptance-test-config.yml files for a list of connectors.")
+utils.add_connectors_param(parser)
+utils.add_allow_alpha_param(parser)
+parser.add_argument("--migrate_from_legacy", action=argparse.BooleanOptionalAction, default=False, help="Whether to migrate config files from the legacy format before applying the migration.")
 
 
 def load_config(config_path: Path) -> Config:
@@ -36,7 +37,7 @@ def migrate_to_new_config_format(config: Config):
 
 def set_high_test_strictness_level(config):
     if Config.is_legacy(config):
-        raise Exception("You can't set a strictness level on a legacy config.")
+        raise Exception("You can't set a strictness level on a legacy config. Please use the `--migrate_from_legacy` flag.")
     config["test_strictness_level"] = "high"
     for basic_read_test in config["acceptance_tests"].get("basic_read", {"tests": []})["tests"]:
         basic_read_test.pop("configured_catalog_path", None)
@@ -59,10 +60,11 @@ def write_new_config(new_config, output_path):
     logging.info("Saved the configuration in its new format")
 
 
-def update_configuration(config_path):
-    old_config = load_config(config_path)
-    # migrated_config = migrate_to_new_config_format(old_config)
-    new_config = set_ignore_extra_columns(old_config)
+def update_configuration(config_path, migrate_from_legacy: bool):
+    config_to_migrate = load_config(config_path)
+    if migrate_from_legacy:
+        config_to_migrate = migrate_to_new_config_format(config_to_migrate)
+    new_config = set_ignore_extra_columns(config_to_migrate)  # TODO: make fillable
     write_new_config(new_config, config_path)
     logging.info(f"The configuration was successfully updated: {config_path}")
     return config_path
@@ -79,4 +81,4 @@ if __name__ == "__main__":
             logging.info(f"Not updating {get_airbyte_connector_name_from_definition} because it's not GA or Beta.")
         else:
             config_path = utils.acceptance_test_config_path(get_airbyte_connector_name_from_definition)
-            update_configuration(config_path)
+            update_configuration(config_path, migrate_from_legacy=args.migrate_from_legacy)

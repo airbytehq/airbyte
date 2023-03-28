@@ -27,9 +27,9 @@ logging.basicConfig(level=logging.DEBUG)
 environment = Environment(loader=FileSystemLoader(TEMPLATES_FOLDER))
 
 parser = argparse.ArgumentParser(description="Create issues for a list of connectors from a template.")
-parser.add_argument("-d", "--dry", action=argparse.BooleanOptionalAction, default=True)
-parser.add_argument("--connectors", nargs="*")
-parser.add_argument("--allow_alpha", action=argparse.BooleanOptionalAction, default=False)
+utils.add_dry_param(parser)
+utils.add_connectors_param(parser)
+utils.add_allow_alpha_param(parser)
 
 
 def get_issue_content(source_definition):

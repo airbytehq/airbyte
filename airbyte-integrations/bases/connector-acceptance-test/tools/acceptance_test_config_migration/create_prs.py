@@ -24,10 +24,9 @@ PR_TEMPLATE = environment.get_template("strictness_level_migration/pr.md.j2")
 from create_issues import MODULE_NAME
 
 parser = argparse.ArgumentParser(description="Create PRs for a list of connectors from a template.")
-parser.add_argument("-d", "--dry", action=argparse.BooleanOptionalAction, default=True)
-parser.add_argument("--connectors", nargs="*")
-parser.add_argument("--allow_alpha", action=argparse.BooleanOptionalAction, default=False)
-
+utils.add_dry_param(parser)
+utils.add_connectors_param(parser)
+utils.add_allow_alpha_param(parser)
 
 logging.basicConfig(level=logging.DEBUG)
 

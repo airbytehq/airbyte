@@ -13,9 +13,9 @@ from definitions import get_airbyte_connector_name_from_definition, is_airbyte_c
 
 MODULE_NAME = "fail_on_extra_columns"
 
-parser = argparse.ArgumentParser(description="Run tests for a list of connectors.")
-parser.add_argument("--connectors", nargs="*")
-parser.add_argument("--max_concurrency", type=int, default=10)
+parser = argparse.ArgumentParser(description="Run connector acceptance tests for a list of connectors.")
+utils.add_connectors_param(parser)
+parser.add_argument("--max_concurrency", type=int, default=10, help="The maximum number of acceptance tests that should happen at once.")
 
 
 async def run_tests(connector_name):
