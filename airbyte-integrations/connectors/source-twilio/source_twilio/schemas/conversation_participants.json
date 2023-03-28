@@ -13,7 +13,7 @@
       "type": ["null", "string"]
     },
     "identity": {
-      "type": ["null", "string", "integer"]
+      "type": ["null", "string"]
     },
     "attributes": {
       "type": ["null","object"],

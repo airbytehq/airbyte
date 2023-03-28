@@ -365,19 +365,6 @@ class Keys(TwilioNestedStream):
 
     parent_stream = Accounts
 
-class ConversationParticipants(TwilioNestedStream):
-    """https://www.twilio.com/docs/conversations/api/conversation-participant-resource"""
-
-    parent_stream = Accounts
-    url_base = TWILIO_CONVERSATION_BASE
-    data_field = "participants"
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs):
-        return f"Conversations/{stream_slice['conversation_sid']}/Participants"
-
-    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {"conversation_sid": record["conversation_sid"]}
-
 class Calls(IncrementalTwilioStream, TwilioNestedStream):
     """https://www.twilio.com/docs/voice/api/call-resource#create-a-call-resource"""
 
@@ -525,3 +512,17 @@ class Conversations(TwilioStream):
 
     def path(self, **kwargs):
         return self.name.title()
+
+class ConversationParticipants(TwilioNestedStream):
+    """https://www.twilio.com/docs/conversations/api/conversation-participant-resource"""
+
+    parent_stream = Conversations
+    url_base = TWILIO_CONVERSATIONS_URL_BASE
+    data_field = "participants"
+    uri_from_subresource = False
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs):
+        return f"Conversations/{stream_slice['conversation_sid']}/Participants"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"conversation_sid": record["sid"]}
