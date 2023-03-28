@@ -9,7 +9,7 @@ use proto_flow::capture::Response;
 use proto_flow::capture::response;
 use proto_flow::flow::ConnectorState;
 
-use crate::{apis::InterceptorStream, interceptors::airbyte_source_interceptor::{AirbyteSourceInterceptor, Operation}, errors::{Error, io_stream_to_interceptor_stream, interceptor_stream_to_io_stream}, libs::{command::{invoke_connector_delayed, check_exit_status}, protobuf::{decode_message, encode_message}}};
+use crate::{apis::InterceptorStream, interceptors::airbyte_source_interceptor::{AirbyteSourceInterceptor, Operation}, errors::{Error, io_stream_to_interceptor_stream, interceptor_stream_to_io_stream}, libs::{command::{invoke_connector_delayed, check_exit_status}}};
 
 async fn flow_read_stream() -> InterceptorStream {
     Box::pin(io_stream_to_interceptor_stream(ReaderStream::new(tokio::io::stdin())))
@@ -68,10 +68,7 @@ pub async fn run_airbyte_source_connector(
                         let mut buf = &bytes[..];
                         // This is infallible because we must encode a Response in response to
                         // a Request. See airbyte_source_interceptor.adapt_pull_response_stream
-                        let msg = decode_message::<Response, _>(&mut buf)
-                            .await
-                            .unwrap()
-                            .unwrap();
+                        let msg = serde_json::from_slice::<Response>(&mut buf)?;
                         (msg, bytes)
                     }
                     None => {
@@ -118,7 +115,7 @@ pub async fn run_airbyte_source_connector(
                         merge_patch: true,
                     })
                 });
-                let encoded_response = &encode_message(&response)?;
+                let encoded_response = &serde_json::to_vec(&response)?;
                 let mut buf = &encoded_response[..];
                 let mut writer = response_write.lock().await;
                 copy(&mut buf, writer.deref_mut()).await?;

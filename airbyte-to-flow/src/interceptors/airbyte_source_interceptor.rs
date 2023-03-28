@@ -7,7 +7,6 @@ use crate::libs::airbyte_catalog::{
     SyncMode,
 };
 use crate::libs::command::READY;
-use crate::libs::protobuf::{encode_message, decode_message};
 use crate::libs::stream::{
     get_airbyte_response, stream_airbyte_responses,
 };
@@ -121,7 +120,7 @@ impl AirbyteSourceInterceptor {
                 None => spec.documentation_url,
             };
 
-            encode_message(&response::Spec {
+            let v = serde_json::to_vec(&response::Spec {
                 protocol: PROTOCOL_VERSION,
                 config_schema_json: endpoint_spec.to_string(),
                 resource_config_schema_json: serde_json::to_string_pretty(&create_root_schema::<
@@ -131,7 +130,9 @@ impl AirbyteSourceInterceptor {
                     .map(|spec| serde_json::from_value(spec))
                     .transpose()?,
                 documentation_url: documentation_url.unwrap_or_default(),
-            })
+            })?;
+
+            Ok(v.into())
         }))
     }
 
@@ -254,7 +255,8 @@ impl AirbyteSourceInterceptor {
                 })
             }
 
-            encode_message(&resp)
+            let v = serde_json::to_vec(&resp)?;
+            Ok(v.into())
         }))
     }
 
@@ -307,7 +309,8 @@ impl AirbyteSourceInterceptor {
                 });
             }
 
-            encode_message(&resp)
+            let v = serde_json::to_vec(&resp)?;
+            Ok(v.into())
         }))
     }
 
@@ -323,7 +326,8 @@ impl AirbyteSourceInterceptor {
             // and discard its response. This is a bit silly.
             _ = get_airbyte_response(in_stream, |m| m.spec.is_some(), "spec").await?;
 
-            encode_message(&response::Applied::default())
+            let v = serde_json::to_vec(&response::Applied::default())?;
+            Ok(v.into())
         }))
     }
 
@@ -419,10 +423,11 @@ impl AirbyteSourceInterceptor {
     ) -> InterceptorStream {
         // Respond first with Opened.
         let opened = stream::once(async {
-            encode_message(&Response {
+            let v = serde_json::to_vec(&Response {
                 opened: Some(Default::default()),
                 ..Default::default()
-            })
+            })?;
+            Ok(v.into())
         });
 
         // Then stream airbyte messages converted to the native protocol.
@@ -446,7 +451,8 @@ impl AirbyteSourceInterceptor {
                         })
                     });
 
-                    Ok(Some((encode_message(&resp)?, (stb, stream))))
+                    let v = serde_json::to_vec(&resp)?;
+                    Ok(Some((v.into(), (stb, stream))))
                 } else if let Some(mut record) = message.record {
                     let stream_to_binding = stb.lock().await;
                     let binding = stream_to_binding
@@ -460,7 +466,9 @@ impl AirbyteSourceInterceptor {
                         doc_json: record.data.to_string(),
                     });
                     drop(stream_to_binding);
-                    Ok(Some((encode_message(&resp)?, (stb, stream))))
+
+                    let v = serde_json::to_vec(&resp)?;
+                    Ok(Some((v.into(), (stb, stream))))
                 } else {
                     Err(Error::InvalidPullResponse)
                 }
@@ -493,11 +501,8 @@ impl AirbyteSourceInterceptor {
     // Looks at the first request to determine the operation, and gives back the stream that will
     // include the first request as well
     pub async fn first_request(&mut self, in_stream: &mut InterceptorStream) -> Result<(Operation, Request), Error> {
-        let first_req_bytes = in_stream.next().await.ok_or(Error::EmptyStream)??;
-        let mut first_req_stream = Box::pin(StreamReader::new(stream::once(async { Ok::<_, std::io::Error>(first_req_bytes) })));
-        let first_req = decode_message::<Request, _>(&mut first_req_stream)
-            .await?
-            .ok_or(Error::MessageNotFound(std::any::type_name::<Request>()))?;
+        let mut first_req_bytes = in_stream.next().await.ok_or(Error::EmptyStream)??;
+        let first_req = serde_json::from_slice::<Request>(&mut first_req_bytes)?;
 
         if first_req.spec.is_some() {
             Ok((Operation::Spec, first_req))

@@ -9,7 +9,6 @@ use tokio_util::io::StreamReader;
 use validator::Validate;
 
 use super::airbyte_catalog::{Log, LogLevel, MessageType};
-use super::protobuf::decode_message;
 
 // Creates a stream of bytes of lines from the given stream
 // This allows our other methods such as stream_airbyte_responses to operate
@@ -98,33 +97,16 @@ where
 }
 
 /// Read the given stream of bytes from runtime and try to decode it to type <T>
-pub fn get_decoded_message<'a, T>(
+pub fn get_decoded_message<T>(
     in_stream: InterceptorStream,
 ) -> impl futures::Future<Output = Result<T, Error>>
 where
-    T: prost::Message + std::default::Default,
+    T: prost::Message + std::default::Default + for<'a> serde::Deserialize<'a>,
 {
     async move {
-        let mut reader = StreamReader::new(interceptor_stream_to_io_stream(in_stream));
-        decode_message::<T, _>(&mut reader)
-            .await?
-            .ok_or(Error::MessageNotFound(std::any::type_name::<T>()))
+        let msg = stream_lines(in_stream).next().await.ok_or(Error::MessageNotFound(std::any::type_name::<T>()))??;
+        Ok(serde_json::from_slice(&msg)?)
     }
-}
-
-// Stream bytes from runtime and continuously decode them into message type T in a stream
-pub fn stream_runtime_messages<T: prost::Message + std::default::Default>(
-    in_stream: InterceptorStream,
-) -> impl TryStream<Item = Result<T, Error>, Ok = T, Error = Error> {
-    let reader = StreamReader::new(interceptor_stream_to_io_stream(in_stream));
-
-    futures::stream::try_unfold(reader, |mut reader| async {
-        match decode_message::<T, _>(&mut reader).await {
-            Ok(Some(msg)) => Ok(Some((msg, reader))),
-            Ok(None) => Ok(None),
-            Err(e) => Err(e)
-        }
-    })
 }
 
 #[cfg(test)]
@@ -139,10 +121,7 @@ mod test {
     };
     use tokio_util::io::ReaderStream;
 
-    use crate::libs::{
-        airbyte_catalog::{ConnectionStatus, MessageType, Status},
-        protobuf::encode_message,
-    };
+    use crate::libs::airbyte_catalog::{ConnectionStatus, MessageType, Status};
 
     use super::*;
 
@@ -274,7 +253,7 @@ mod test {
             network_ports: Vec::new(),
         };
 
-        let msg_buf = encode_message(&msg).unwrap();
+        let msg_buf = serde_json::to_string(&msg).unwrap();
         let read_stream = io_stream_to_interceptor_stream(ReaderStream::new(std::io::Cursor::new(msg_buf)));
 
         let stream: InterceptorStream = Box::pin(read_stream);
@@ -283,49 +262,5 @@ mod test {
             .unwrap();
 
         assert_eq!(result, msg);
-    }
-
-    #[tokio::test]
-    async fn test_stream_runtime_messages() {
-        let msg1 = request::Validate {
-            name: "materialization".to_string(),
-            connector_type: ConnectorType::Image.into(),
-            config_json: "{}".to_string(),
-            bindings: vec![request::validate::Binding {
-                resource_config_json: "{}".to_string(),
-                collection: None,
-                field_config_json_map: BTreeMap::new(),
-            }],
-            network_ports: Vec::new(),
-        };
-        let msg2 = request::Validate {
-            name: "materialization 2".to_string(),
-            connector_type: ConnectorType::Image.into(),
-            config_json: "{}".to_string(),
-            bindings: vec![request::validate::Binding {
-                resource_config_json: "{}".to_string(),
-                collection: None,
-                field_config_json_map: BTreeMap::new(),
-            }],
-            network_ports: Vec::new(),
-        };
-
-        let msg_buf1 = encode_message(&msg1).unwrap();
-        let msg_buf2 = encode_message(&msg2).unwrap();
-        let read_stream = io_stream_to_interceptor_stream(ReaderStream::new(std::io::Cursor::new([msg_buf1, msg_buf2].concat())));
-
-        let stream: InterceptorStream = Box::pin(read_stream);
-        let result = stream_runtime_messages::<request::Validate>(stream)
-            .collect::<Vec<Result<request::Validate, Error>>>()
-            .await
-            .into_iter()
-            .filter_map(|item| {
-                match item {
-                    Ok(msg) => Some(msg),
-                    Err(_) => None
-                }
-            }).collect::<Vec<request::Validate>>();
-
-        assert_eq!(result, vec![msg1, msg2]);
     }
 }
