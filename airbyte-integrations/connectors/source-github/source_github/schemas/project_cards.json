@@ -35,13 +35,13 @@
       "type": ["null", "string"]
     },
     "repository": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "project_id": {
-      "type": ["null", "integer"]
+      "type": "integer"
     },
     "column_id": {
-      "type": ["null", "integer"]
+      "type": "integer"
     }
   }
 }

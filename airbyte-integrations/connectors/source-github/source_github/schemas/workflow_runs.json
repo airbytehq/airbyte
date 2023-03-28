@@ -151,7 +151,7 @@
           "type": ["null", "string"]
         },
         "full_name": {
-          "type": ["null", "string"]
+          "type": "string"
         },
         "private": {
           "type": ["null", "boolean"]

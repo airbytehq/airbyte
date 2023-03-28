@@ -71,7 +71,7 @@
       "type": ["null", "string"]
     },
     "repository": {
-      "type": ["null", "string"]
+      "type": "string"
     }
   }
 }

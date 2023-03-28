@@ -29,10 +29,10 @@
       "format": "date-time"
     },
     "repository": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "project_id": {
-      "type": ["null", "integer"]
+      "type": "integer"
     }
   }
 }

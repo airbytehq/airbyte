@@ -111,10 +111,10 @@
       }
     },
     "repository": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "pull_number": {
-      "type": ["null", "integer"]
+      "type": "integer"
     }
   }
 }
