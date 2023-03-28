@@ -21,8 +21,6 @@ from datetime import datetime
 # Basic full refresh stream
 class ProvetStream(HttpStream, ABC):
     """
-    TODO remove this comment
-
     This class represents a stream output by the connector.
     This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL, pagination strategy,
     parsing responses etc..
@@ -95,9 +93,8 @@ class ProvetStream(HttpStream, ABC):
         How a response is parsed.
         :return an iterable containing each record in the response
         """
-        print(response.url)
-        data = response.json().get("results", [])
-        yield from data
+        print(f"Request url: {response.url}")
+        yield from response.json().get("results", [])
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
@@ -125,7 +122,6 @@ class IncrementalProvetStream(ProvetStream, ABC):
     @property
     def cursor_field(self) -> str:
         """
-        TODO
         Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
         usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
 
@@ -148,14 +144,17 @@ class IncrementalProvetStream(ProvetStream, ABC):
         old_state_date = current_stream_state.get(self.cursor_field, None)
         latest_record_date = latest_record.get(self.cursor_field)
         if old_state_date is not None:
-            return {self.cursor_field: max(datetime.fromisoformat(latest_record_date) if not isinstance(latest_record_date, datetime) else latest_record_date, datetime.fromisoformat(old_state_date) if not isinstance(old_state_date) else old_state_date)}
+            return {self.cursor_field: max(datetime.fromisoformat(latest_record_date) if not isinstance(latest_record_date, datetime) else latest_record_date, datetime.fromisoformat(old_state_date) if not isinstance(old_state_date, datetime) else old_state_date)}
         return {self.cursor_field: latest_record_date}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
-        return params.update({self.cursor_field_filter: stream_state.get(self.cursor_field)}) if stream_state else params
+        if stream_state and self.cursor_field in stream_state:
+            params.update(
+                {self.cursor_field_filter: stream_state.get(self.cursor_field)})
+        return params
 
 
 class Patients(IncrementalProvetStream):
