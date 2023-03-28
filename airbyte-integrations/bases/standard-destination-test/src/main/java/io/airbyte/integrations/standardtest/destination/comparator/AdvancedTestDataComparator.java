@@ -63,7 +63,7 @@ public class AdvancedTestDataComparator implements TestDataComparator {
     if (isJsonNodeEmpty(expectedObject) && isJsonNodeEmpty(actualObject)) {
       LOGGER.info("Both rows are empty.");
     } else {
-//      assertEquals(expectedObject.size(), actualObject.size());
+      assertEquals(expectedObject.size(), actualObject.size());
       LOGGER.info("Expected Object : {}", expectedObject);
       LOGGER.info("Actual Object   : {}", actualObject);
       final Iterator<Map.Entry<String, JsonNode>> expectedDataIterator = expectedObject.fields();

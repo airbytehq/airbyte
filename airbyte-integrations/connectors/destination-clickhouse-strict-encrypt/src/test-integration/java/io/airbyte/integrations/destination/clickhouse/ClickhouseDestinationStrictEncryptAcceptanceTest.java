@@ -19,6 +19,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
+import io.airbyte.integrations.standardtest.destination.comparator.ClickhouseTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.SQLException;
@@ -184,6 +185,7 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
     db.close();
   }
 
+  @Override
   @ParameterizedTest
   @ArgumentsSource(DataTypeTestArgumentProvider.class)
   public void testDataTypeTestWithNormalization(final String messagesFilename,

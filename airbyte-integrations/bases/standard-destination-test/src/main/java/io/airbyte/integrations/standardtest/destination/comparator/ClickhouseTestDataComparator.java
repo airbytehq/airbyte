@@ -2,10 +2,9 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.clickhouse;
+package io.airbyte.integrations.standardtest.destination.comparator;
 
 import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -32,6 +31,8 @@ public class ClickhouseTestDataComparator extends AdvancedTestDataComparator {
   private final ZonedDateTime maxSupportedDateTime = ZonedDateTime.parse(
       "2283-11-10T20:23:45.000Z");
 
+  public static final double ACCEPTABLE_DIFFERENCE = 1.0E-15;
+
   @Override
   protected List<String> resolveIdentifier(final String identifier) {
     final List<String> result = new ArrayList<>();
@@ -48,14 +49,11 @@ public class ClickhouseTestDataComparator extends AdvancedTestDataComparator {
   @Override
   protected boolean compareNumericValues(final String firstNumericValue,
                                          final String secondNumericValue) {
-    // clickhouse stores double 1.14 as 1.1400000000000001
-    // https://clickhouse.com/docs/en/sql-reference/data-types/float/
-    final double epsilon = 0.000000000000001d;
 
     final double firstValue = Double.parseDouble(firstNumericValue);
     final double secondValue = Double.parseDouble(secondNumericValue);
 
-    return Math.abs(firstValue - secondValue) < epsilon;
+    return firstValue == secondValue || Math.abs(firstValue - secondValue) < Math.max(Math.ulp(firstValue), Math.ulp(secondValue));
   }
 
   @Override
@@ -74,7 +72,7 @@ public class ClickhouseTestDataComparator extends AdvancedTestDataComparator {
       // so actually you end up with unpredicted values, more
       // https://clickhouse.com/docs/en/sql-reference/data-types/date32
       LOGGER.warn(
-          "Test value is out of range and would be corrupted by Snowflake, so we skip this verification");
+          "Test value is out of range and would be corrupted by Clickhouse, so we skip this verification");
       return true;
     }
 
