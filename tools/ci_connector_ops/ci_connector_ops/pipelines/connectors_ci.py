@@ -216,25 +216,6 @@ def test_connectors(
             logger=logger,
         )
 
-async def run_metadata_lib_test_pipeline():
-    async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
-        print(f"Running metadata lib test pipeline...")
-        metadata_lib_module = with_poetry_module(
-            dagger_client,
-            "airbyte-ci/connectors/metadata_service/lib",
-            ["--with", "test"]
-        )
-        return await with_exit_code(metadata_lib_module.with_exec(["poetry", "run", "pytest"]))
-
-@connectors_ci.command()
-@click.pass_context
-def test_metadata_lib(ctx: click.Context):
-    # TODO create a top level ci group
-    # TODO rename this command group to test_connectors
-    # TODO move this command to test_metadata_lib
-    anyio.run(run_metadata_lib_test_pipeline)
-
-
 def validate_environment(is_local: bool, use_remote_secrets: bool):
 
     if is_local:

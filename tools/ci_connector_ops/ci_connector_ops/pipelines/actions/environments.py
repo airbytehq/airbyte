@@ -220,7 +220,7 @@ def with_poetry(dagger_client) -> Container:
 
     return poetry_with_cache
 
-def with_poetry_module(dagger_client, src_path: str, install_params: List[str] = []) -> Container:
+def with_poetry_module(dagger_client, src_path: str) -> Container:
     """Installs poetry in a python environment.
 
     Args:
@@ -231,11 +231,10 @@ def with_poetry_module(dagger_client, src_path: str, install_params: List[str] =
     """
     src = dagger_client.host().directory(src_path, exclude=POETRY_EXCLUDE)
     python_with_poetry = with_poetry(dagger_client)
-    install_cmd = POETRY_INSTALL_DEPENDENCIES_CMD + install_params
 
     return (
         python_with_poetry
         .with_mounted_directory("/src", src)
         .with_workdir("/src")
-        .with_exec(install_cmd)
+        .with_exec(POETRY_INSTALL_DEPENDENCIES_CMD)
     )
