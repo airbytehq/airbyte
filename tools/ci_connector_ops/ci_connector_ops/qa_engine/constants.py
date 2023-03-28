@@ -20,6 +20,7 @@ INAPPROPRIATE_FOR_CLOUD_USE_CONNECTORS = [
     "58e6f9da-904e-11ed-a1eb-0242ac120002",  # destination-teradata, no strict-encrypt variant
     "bb6071d9-6f34-4766-bec2-d1d4ed81a653",  # destination-exasol, no strict-encrypt variant
     "7b7d7a0d-954c-45a0-bcfc-39a634b97736",  # destination-weviate, no strict-encrypt variant
+    "06ec60c7-7468-45c0-91ac-174f6e1a788b",  # destination-tidb, no strict-encrypt variant
 ]
 
 GCS_QA_REPORT_PATH = "gs://airbyte-data-connectors-qa-engine/"
