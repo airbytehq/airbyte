@@ -214,6 +214,31 @@ def test_connectors(
             logger=logger,
         )
 
+async def run_metadata_lib_test_pipeline():
+    async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as client:
+        src = client.host().directory("airbyte-ci/connectors/metadata_service/lib", exclude=[".git", ".venv", "__pycache__"])
+        print(f"Running metadata lib test pipeline at {src}...")
+        python = (
+            client.container()
+            # pull container
+            .from_("python:3-alpine")
+            .with_exec(["apk", "add", "gcc", "libffi-dev", "musl-dev", "git"])
+            # get Python version
+            .with_exec(["python", "-V"])
+
+            .with_mounted_directory("/metadata_service", src)
+            .with_workdir("/metadata_service")
+            .with_exec(["python", "-m", "pip", "install", "poetry"])
+            .with_exec(["poetry", "--version"])
+            .with_exec(["poetry", "install"])
+            .with_exec(["poetry", "run", "pytest"])
+        )
+
+        # execute
+        version = await python.stdout()
+
+    print(f"Hello from Dagger and {version}, at {src}!")
+
 @connectors_ci.command()
 @click.pass_context
 def test_metadata_lib(ctx: click.Context):
@@ -221,7 +246,7 @@ def test_metadata_lib(ctx: click.Context):
     # TODO: Install poetry
     # TODO: Install dependencies
     # TODO: Run tests
-    raise click.UsageError("Not implemented yet.")
+    anyio.run(run_metadata_lib_test_pipeline)
 
 
 
