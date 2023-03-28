@@ -301,7 +301,7 @@ dependencies = [
 [[package]]
 name = "doc"
 version = "0.0.0"
-source = "git+https://github.com/estuary/flow?branch=johnny/more-sql#360720404f7c8048d00a932afd3bc15690ec5e61"
+source = "git+https://github.com/estuary/flow?branch=johnny/more-sql#8f1595c516a2172fcf70f19f64009bd7e0d32e3a"
 dependencies = [
  "base64",
  "bumpalo",
@@ -388,7 +388,7 @@ checksum = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"
 [[package]]
 name = "flow_cli_common"
 version = "0.0.0"
-source = "git+https://github.com/estuary/flow#c99765d2ef04729ae1b047aad8df633e278bfd3f"
+source = "git+https://github.com/estuary/flow?branch=johnny/more-sql#8f1595c516a2172fcf70f19f64009bd7e0d32e3a"
 dependencies = [
  "anyhow",
  "atty",
@@ -667,7 +667,7 @@ checksum = "453ad9f582a441959e5f0d088b02ce04cfe8d51a8eaf077f12ac6d3e94164ca6"
 [[package]]
 name = "json"
 version = "0.0.0"
-source = "git+https://github.com/estuary/flow?branch=johnny/more-sql#360720404f7c8048d00a932afd3bc15690ec5e61"
+source = "git+https://github.com/estuary/flow?branch=johnny/more-sql#8f1595c516a2172fcf70f19f64009bd7e0d32e3a"
 dependencies = [
  "addr",
  "bigdecimal",
@@ -1058,12 +1058,12 @@ dependencies = [
 [[package]]
 name = "proto-build"
 version = "0.0.0"
-source = "git+https://github.com/estuary/flow?branch=johnny/more-sql#360720404f7c8048d00a932afd3bc15690ec5e61"
+source = "git+https://github.com/estuary/flow?branch=johnny/more-sql#8f1595c516a2172fcf70f19f64009bd7e0d32e3a"
 
 [[package]]
 name = "proto-flow"
 version = "0.0.0"
-source = "git+https://github.com/estuary/flow?branch=johnny/more-sql#360720404f7c8048d00a932afd3bc15690ec5e61"
+source = "git+https://github.com/estuary/flow?branch=johnny/more-sql#8f1595c516a2172fcf70f19f64009bd7e0d32e3a"
 dependencies = [
  "bytes",
  "pbjson",
@@ -1081,7 +1081,7 @@ dependencies = [
 [[package]]
 name = "proto-gazette"
 version = "0.0.0"
-source = "git+https://github.com/estuary/flow?branch=johnny/more-sql#360720404f7c8048d00a932afd3bc15690ec5e61"
+source = "git+https://github.com/estuary/flow?branch=johnny/more-sql#8f1595c516a2172fcf70f19f64009bd7e0d32e3a"
 dependencies = [
  "bytes",
  "pbjson",
@@ -1688,7 +1688,7 @@ dependencies = [
 [[package]]
 name = "tuple"
 version = "0.0.0"
-source = "git+https://github.com/estuary/flow?branch=johnny/more-sql#360720404f7c8048d00a932afd3bc15690ec5e61"
+source = "git+https://github.com/estuary/flow?branch=johnny/more-sql#8f1595c516a2172fcf70f19f64009bd7e0d32e3a"
 dependencies = [
  "memchr",
  "serde_json",
