@@ -5,7 +5,6 @@
 
 from copy import deepcopy
 
-import pydantic
 import pytest
 from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification, Status
 from facebook_business import FacebookAdsApi, FacebookSession
