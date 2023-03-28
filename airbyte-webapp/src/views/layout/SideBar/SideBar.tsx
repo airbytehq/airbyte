@@ -1,5 +1,4 @@
 import { faHome, faGear, faInbox, faDatabase } from "@fortawesome/free-solid-svg-icons";
-// import {  } from "@fortawesome/free-solid-svg-icons";
 // import { faGear } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
@@ -9,8 +8,11 @@ import { NavLink } from "react-router-dom";
 import styled from "styled-components";
 
 import { Link } from "components";
-// import Version from "components/Version";
+import { DocumentationArrowIcon } from "components/icons/DocumentationArrowIcon";
+import { DocumentationIcon } from "components/icons/DocumentationIcon";
 
+import { links } from "config/links";
+// import Version from "components/Version";
 // import { useConfig } from "config";
 // import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useUser } from "core/AuthContext";
@@ -70,25 +72,6 @@ const Logo = styled.img`
   height: auto;
 `;
 
-// const ButtonCenter = styled.div`
-//   display: flex;
-//   flex-direction: column;
-//   justify-content: center;
-//   align-items: center;
-// `;
-
-// const Button = styled.button`
-//   border: none;
-//   border-radius: 8px;
-//   margin-bottom: 50px;
-//   padding: 15px 30px;
-//   display: flex;
-//   flex-direction: row;
-//   justify-content: center;
-//   align-items: center;
-//   background-color: #eae9ff;
-// `;
-
 const MenuItemIcon = styled(FontAwesomeIcon)`
   font-size: 16px;
   line-height: 16px;
@@ -103,11 +86,26 @@ const UserDetail = styled.div`
   margin-top: 40px;
 `;
 
-// const SettingIcon = styled(FontAwesomeIcon)`
-//   font-size: 21px;
-//   line-height: 21px;
-//   color: black;
+// const DocumentationItem = styled.div`
+//   padding-left: 54px;
+//   height: 50px;
+//   display: flex;
+//   flex-direction: row;
+//   align-items: center;
+//   margin-top: 7px;
+
+//   &:hover {
+//     background: #eae9ff;
+//     color: #4f46e5;
+//     cursor: pointer;
+//     transition: all $transition ease-out;
+//   }
 // `;
+
+const DocumentationArrowIconContainer = styled.div`
+  display: block;
+  margin-left: 16px;
+`;
 
 export const useCalculateSidebarStyles = () => {
   const { location } = useRouter();
@@ -141,6 +139,10 @@ export const useCalculateSidebarItemStyles = (route: string) => {
 export const getPopoutStyles = (isOpen?: boolean) => {
   return classnames(styles.menuItem, { [styles.popoutOpen]: isOpen });
 };
+
+// const toDocsPage = () =>{
+//  window.location.href = links.docsLink
+// }
 
 const SideBar: React.FC = () => {
   // const config = useConfig();
@@ -264,6 +266,19 @@ const SideBar: React.FC = () => {
             </Text>
           </NavLink>
         </MenuItem>
+        <NavLink
+          to={links.docsLink}
+          target="_blank"
+          className={useCalculateSidebarItemStyles(RoutePaths.Documentation)}
+        >
+          <DocumentationIcon width={16} height={16} />
+          <Text>
+            <FormattedMessage id="sidebar.documentation" />
+          </Text>
+          <DocumentationArrowIconContainer>
+            <DocumentationArrowIcon height={10} width={10} />
+          </DocumentationArrowIconContainer>
+        </NavLink>
         {/* <li>
           <ButtonCenter>
             <Button>
