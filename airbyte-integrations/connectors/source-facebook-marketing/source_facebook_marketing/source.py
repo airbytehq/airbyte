@@ -4,6 +4,7 @@
 
 import logging
 from typing import Any, List, Mapping, Optional, Tuple, Type
+from pydantic.error_wrappers import ValidationError
 
 import facebook_business
 import pendulum
@@ -55,14 +56,15 @@ class SourceFacebookMarketing(AbstractSource):
         :param config:  the user-input config object conforming to the connector's spec.json
         :return Tuple[bool, Any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        config = self._validate_and_transform(config)
-        if config.end_date < config.start_date:
-            return False, "end_date must be equal or after start_date."
-
         try:
+            config = self._validate_and_transform(config)
+
+            if config.end_date < config.start_date:
+                return False, "end_date must be equal or after start_date."
+
             api = API(account_id=config.account_id, access_token=config.access_token)
             logger.info(f"Select account {api.account}")
-        except requests.exceptions.RequestException as e:
+        except (requests.exceptions.RequestException, ValidationError) as e:
             return False, e
 
         # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
