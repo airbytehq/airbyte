@@ -45,7 +45,7 @@ To use [cron scheduling](http://www.quartz-scheduler.org/documentation/quartz-2.
 
 ## Modify streams in your connection
 
-In the **Activate the streams you want to sync** table, you can choose which streams to sync and how they are organized in the destination.
+In the **Activate the streams you want to sync** table, you can choose which streams to sync and how they are loaded to the destination.
 
 :::note
 A connection's schema consists of one or many streams. Each stream is most commonly associated with a database table or an API endpoint. Within a stream, there can be one or many fields or columns.
@@ -79,7 +79,7 @@ Depending on the sync mode you select, you may need to choose a cursor or primar
 
 :::
 
-3. Select a **Cursor** or **Primary keys** when they are required by the stream sync mode.
+3. Select the **Cursor** or **Primary keys** when they are required by the stream sync mode.
 
 :::note
 
@@ -99,7 +99,7 @@ Source-defined cursors and primary keys are selected automatically and cannot be
 
 :::
 
-6. Depending on the sync mode you chose for your connection, you can select the **Cursor** or **Primary key** for individual fields in this table. 
+6. Depending on the sync mode you chose for your connection, you can select the **Cursor** or **Primary keys** for individual fields in this table. 
 
 7. Click the **X** to close the stream details panel.
 
@@ -139,7 +139,7 @@ To select or deselect all streams, click the checkbox in the table header. To de
 
     :::
 
-    3. Select the **Cursor** and **Primary key** if there are dropdowns in those fields.
+    3. Select the **Cursor** and **Primary keys** if there are dropdowns in those fields.
 
     :::note
 
