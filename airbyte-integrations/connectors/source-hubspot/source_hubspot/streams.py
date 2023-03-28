@@ -1576,8 +1576,6 @@ class EmailSubscriptions(Stream):
     primary_key = "id"
     scopes = {"content"}
 
-
-
     def _filter_old_records(self, records: Iterable) -> Iterable:
         """No updated_at or created_at field hence allow records to ignore and read them"""
         for record in records:
