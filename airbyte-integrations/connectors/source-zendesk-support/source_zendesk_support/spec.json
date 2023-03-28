@@ -29,7 +29,7 @@
             "title": "OAuth2.0",
             "type": "object",
             "required": ["access_token"],
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
               "credentials": {
                 "type": "string",
@@ -48,7 +48,7 @@
             "title": "API Token",
             "type": "object",
             "required": ["email", "api_token"],
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
               "credentials": {
                 "type": "string",
