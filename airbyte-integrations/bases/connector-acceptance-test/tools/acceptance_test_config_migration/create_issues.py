@@ -9,6 +9,7 @@ import logging
 import os
 import subprocess
 import tempfile
+from typing import Any, Text, Dict, Optional
 
 import definitions
 import utils
@@ -28,16 +29,20 @@ utils.add_connectors_param(parser)
 utils.add_allow_alpha_param(parser)
 
 
-def get_issue_content(source_definition):
+def get_issue_content(source_definition) -> Optional[Dict[Text, Any]]:
     issue_title = f"Source {source_definition['name']}: {config.ISSUE_TITLE}"
 
     template = environment.get_template(f"{config.MODULE_NAME}/issue.md.j2")
 
     test_failure_logs = ""
     connector_technical_name = definitions.get_airbyte_connector_name_from_definition(definition)
-    with open(f"templates/{config.MODULE_NAME}/output/{connector_technical_name}", "r") as f:
-        for line in f:
-            test_failure_logs += line
+    try:
+        with open(f"templates/{config.MODULE_NAME}/output/{connector_technical_name}", "r") as f:
+            for line in f:
+                test_failure_logs += line
+    except FileNotFoundError:
+        logging.warning(f"Skipping creating an issue for {source_definition['name']} -- could not find an output file for it.")
+        return
 
     # TODO: Make list of variables to render, and how to render them, configurable
     issue_body = template.render(
@@ -51,7 +56,7 @@ def get_issue_content(source_definition):
     return {"title": issue_title, "body_file": issue_body_path, "labels": config.COMMON_ISSUE_LABELS, "project": config.GITHUB_PROJECT_NAME}
 
 
-def existing_issues(issue_content):
+def get_existing_issues(issue_content):
     list_command_arguments = ["gh", "issue", "list", "--state", "open", "--search", f"'{issue_content['title']}'", "--json", "url"]
     list_existing_issue_process = subprocess.Popen(list_command_arguments, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = list_existing_issue_process.communicate()
@@ -78,9 +83,12 @@ def create_command(issue_content):
 
 def create_issue(source_definition, dry_run=True):
     issue_content = get_issue_content(source_definition)
+    if not issue_content:
+        return
 
-    if len(existing_issues(issue_content)) > 0:
-        logging.warning(f"An issue was already created for this definition: {existing_issues[0]}")
+    existing_issues = get_existing_issues(issue_content)
+    if existing_issues:
+        logging.warning(f"An issue was already created for {source_definition['name']}: {existing_issues[0]}")
     else:
         if not dry_run:
             process = subprocess.Popen(create_command(issue_content), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
