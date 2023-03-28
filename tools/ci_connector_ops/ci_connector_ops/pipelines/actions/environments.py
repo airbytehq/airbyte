@@ -6,7 +6,7 @@
 
 from typing import List, Optional
 
-from ci_connector_ops.pipelines.contexts import ConnectorTestContext
+from ci_connector_ops.pipelines.contexts import ConnectorTestContext, PipelineContext
 from ci_connector_ops.pipelines.utils import get_file_contents
 from dagger import CacheSharingMode, CacheVolume, Container, Directory, Secret
 
@@ -35,11 +35,11 @@ CI_CREDENTIALS_SOURCE_PATH = "tools/ci_credentials"
 CI_CONNECTOR_OPS_SOURCE_PATH = "tools/ci_connector_ops"
 
 
-def with_python_base(context: ConnectorTestContext, python_image_name: str = "python:3.9-slim") -> Container:
+def with_python_base(context: PipelineContext, python_image_name: str = "python:3.9-slim") -> Container:
     """Builds a Python container with a cache volume for pip cache.
 
     Args:
-        context (ConnectorTestContext): The current test context, providing a dagger client and a repository directory.
+        context (PipelineContext): The current test context, providing a dagger client and a repository directory.
         python_image_name (str, optional): The python image to use to build the python base environment. Defaults to "python:3.9-slim".
 
     Raises:
@@ -60,11 +60,11 @@ def with_python_base(context: ConnectorTestContext, python_image_name: str = "py
     )
 
 
-def with_testing_dependencies(context: ConnectorTestContext) -> Container:
+def with_testing_dependencies(context: PipelineContext) -> Container:
     """Builds a testing environment by installing testing dependencies on top of a python base environment.
 
     Args:
-        context (ConnectorTestContext): The current test context, providing a dagger client and a repository directory.
+        context (PipelineContext): The current test context, providing a dagger client and a repository directory.
 
     Returns:
         Container: The testing environment container.
@@ -77,7 +77,7 @@ def with_testing_dependencies(context: ConnectorTestContext) -> Container:
 
 
 def with_python_package(
-    context: ConnectorTestContext,
+    context: PipelineContext,
     python_environment: Container,
     package_source_code_path: str,
     exclude: Optional[List] = None,
@@ -85,7 +85,7 @@ def with_python_package(
     """Load a python package source code to a python environment container.
 
     Args:
-        context (ConnectorTestContext): The current test context, providing the repository directory from which the python sources will be pulled.
+        context (PipelineContext): The current test context, providing the repository directory from which the python sources will be pulled.
         python_environment (Container): An existing python environment in which the package will be installed.
         package_source_code_path (str): The local path to the package source code.
         additional_dependency_groups (Optional[List]): extra_requires dependency of setup.py to install. Defaults to None.
@@ -173,11 +173,11 @@ async def with_installed_airbyte_connector(context: ConnectorTestContext) -> Con
     )
 
 
-async def with_ci_credentials(context: ConnectorTestContext, gsm_secret: Secret) -> Container:
+async def with_ci_credentials(context: PipelineContext, gsm_secret: Secret) -> Container:
     """Installs the ci_credentials package in a python environment.
 
     Args:
-        context (ConnectorTestContext): The current test context, providing the repository directory from which the ci_credentials sources will be pulled.
+        context (PipelineContext): The current test context, providing the repository directory from which the ci_credentials sources will be pulled.
         gsm_secret (Secret): The secret holding GCP_GSM_CREDENTIALS env variable value.
 
     Returns:
@@ -189,11 +189,11 @@ async def with_ci_credentials(context: ConnectorTestContext, gsm_secret: Secret)
     return ci_credentials.with_env_variable("VERSION", "dev").with_secret_variable("GCP_GSM_CREDENTIALS", gsm_secret).with_workdir("/")
 
 
-async def with_ci_connector_ops(context: ConnectorTestContext) -> Container:
+async def with_ci_connector_ops(context: PipelineContext) -> Container:
     """Installs the ci_connector_ops package in a Container running Python > 3.10 with git..
 
     Args:
-        context (ConnectorTestContext): The current test context, providing the repository directory from which the ci_connector_sources sources will be pulled.
+        context (PipelineContext): The current test context, providing the repository directory from which the ci_connector_sources sources will be pulled.
 
     Returns:
         Container: A python environment container with ci_connector_ops installed.
@@ -206,7 +206,7 @@ def with_poetry(dagger_client) -> Container:
     """Installs poetry in a python environment.
 
     Args:
-        context (ConnectorTestContext): The current test context, providing the repository directory from which the ci_credentials sources will be pulled.
+        context (PipelineContext): The current test context, providing the repository directory from which the ci_credentials sources will be pulled.
 
     Returns:
         Container: A python environment with poetry installed.
@@ -224,7 +224,7 @@ def with_poetry_module(dagger_client, src_path: str) -> Container:
     """Installs poetry in a python environment.
 
     Args:
-        context (ConnectorTestContext): The current test context, providing the repository directory from which the ci_credentials sources will be pulled.
+        context (PipelineContext): The current test context, providing the repository directory from which the ci_credentials sources will be pulled.
     TODO update this docstring
     Returns:
         Container: A python environment with poetry installed.
