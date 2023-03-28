@@ -422,6 +422,13 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
     next_page_field = "next_page"
     prev_start_time = None
 
+    @property
+    def state_checkpoint_interval(self) -> Optional[int]:
+        """
+        Will allow the connector send state messages more frequent and not only at the end of the sync.
+        """
+        return 1000
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         # try to save maximum value of a cursor field
         old_value = str((current_stream_state or {}).get(self.cursor_field, ""))
@@ -466,13 +473,6 @@ class SourceZendeskIncrementalExportStream(SourceZendeskSupportCursorPaginationS
 
     response_list_name: str = None
     sideload_param: str = None
-
-    @property
-    def state_checkpoint_interval(self) -> Optional[int]:
-        """
-        Will allow the connector send state messages more frequent and not only at the end of the sync.
-        """
-        return 1000
 
     @staticmethod
     def check_start_time_param(requested_start_time: int, value: int = 1):
