@@ -16,6 +16,7 @@ You can use OAuth, API key, or Private App to authenticate your HubSpot account.
 | `deal_pipelines`            | either the `crm.objects.contacts.read` scope \(to fetch deals pipelines\) or the `tickets` scope. |
 | `deals`                     | `crm.objects.deals.read`, `crm.schemas.deals.read`                               |
 | `email_events`              | `content`                                                                        |
+| `email_subscriptions`       | `content`                                                                        |
 | `engagements`               | `crm.objects.companies.read`, `crm.objects.contacts.read`, `crm.objects.deals.read`, `tickets`, `e-commerce`|
 | `engagements_emails`        | `sales-email-read`                                                               |
 | `forms`                     | `forms`                                                                          |
@@ -63,6 +64,7 @@ The HubSpot source connector supports the following streams:
 * [Deal Pipelines](https://developers.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type)
 * [Deals](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
 * [Email Events](https://developers.hubspot.com/docs/methods/email/get_events) \(Incremental\)
+* [Email Subscriptions](https://developers.hubspot.com/docs/methods/email/get_subscriptions)
 * [Engagements](https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements) \(Incremental\)
 * [Engagements Calls](https://developers.hubspot.com/docs/api/crm/calls) \(Incremental\)
 * [Engagements Emails](https://developers.hubspot.com/docs/api/crm/email) \(Incremental\)
