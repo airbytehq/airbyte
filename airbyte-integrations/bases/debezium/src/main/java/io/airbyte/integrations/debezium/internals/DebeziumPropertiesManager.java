@@ -53,8 +53,6 @@ public class DebeziumPropertiesManager {
     // default values from debezium CommonConnectorConfig
     props.setProperty("max.batch.size", "2048");
     props.setProperty("max.queue.size", "8192");
-    props.setProperty("slave_net_timeout", "120");
-    props.setProperty("thread_pool_idle_timeout", "120");
 
     props.setProperty("errors.max.retries", "10");
     props.setProperty("errors.retry.delay.initial.ms", "1000");
