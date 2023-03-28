@@ -9,11 +9,11 @@ import os
 import subprocess
 import tempfile
 
+import definitions
 import utils
 from config_migration import update_configuration
 from create_issues import COMMON_ISSUE_LABELS as COMMON_PR_LABELS
 from create_issues import GITHUB_PROJECT_NAME
-from definitions import get_airbyte_connector_name_from_definition
 from git import Repo
 from jinja2 import Environment, FileSystemLoader
 
@@ -101,7 +101,7 @@ def open_pr(definition, new_branch, dry_run):
 
 
 def add_test_comment(definition, new_branch, dry_run):
-    connector_name = get_airbyte_connector_name_from_definition(definition)
+    connector_name = definitions.get_airbyte_connector_name_from_definition(definition)
     comment = f"/test connector=connectors/{connector_name}"
     comment_command_arguments = ["gh", "pr", "comment", new_branch.name, "--body", comment]
     if not dry_run:
@@ -117,7 +117,7 @@ def add_test_comment(definition, new_branch, dry_run):
 
 def migrate_config_on_new_branch(definition, dry_run):
     AIRBYTE_REPO.heads.master.checkout()
-    connector_name = get_airbyte_connector_name_from_definition(
+    connector_name = definitions.get_airbyte_connector_name_from_definition(
         definition
     )  # TODO make sure they're airbyte connectors before trying to migrate
     new_branch = checkout_new_branch(connector_name)

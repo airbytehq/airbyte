@@ -6,9 +6,9 @@ import argparse
 import logging
 from pathlib import Path
 
+import definitions
 import utils
 from connector_acceptance_test.config import Config
-from definitions import get_airbyte_connector_name_from_definition
 from ruamel.yaml import YAML
 
 yaml = YAML()
@@ -73,5 +73,5 @@ def update_configuration(config_path, migrate_from_legacy: bool):
 if __name__ == "__main__":
     args = parser.parse_args()
     for definition in utils.get_valid_definitions_from_args(args):
-        config_path = utils.acceptance_test_config_path(get_airbyte_connector_name_from_definition)
+        config_path = utils.acceptance_test_config_path(definitions.get_airbyte_connector_name_from_definition)
         update_configuration(config_path, migrate_from_legacy=args.migrate_from_legacy)

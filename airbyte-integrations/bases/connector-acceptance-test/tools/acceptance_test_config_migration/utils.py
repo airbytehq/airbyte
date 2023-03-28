@@ -33,6 +33,7 @@ def add_connectors_param(parser: argparse.ArgumentParser):
 
 def get_valid_definitions_from_args(args):
     definitions = find_by_name(args.connectors)
+
     valid_definitions = []
     for definition in definitions:
         if not is_airbyte_connector(definition):

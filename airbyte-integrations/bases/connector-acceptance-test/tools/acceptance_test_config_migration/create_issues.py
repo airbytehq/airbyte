@@ -10,8 +10,8 @@ import os
 import subprocess
 import tempfile
 
+import definitions
 import utils
-from definitions import get_airbyte_connector_name_from_definition
 from jinja2 import Environment, FileSystemLoader
 
 # SET THESE BEFORE USING THE SCRIPT
@@ -38,13 +38,15 @@ def get_issue_content(source_definition):
     template = environment.get_template(f"{MODULE_NAME}/issue.md.j2")
 
     test_failure_logs = ""
-    with open(f"templates/{MODULE_NAME}/output/{get_airbyte_connector_name_from_definition(definition)}", "r") as f:
+    connector_technical_name = definitions.get_airbyte_connector_name_from_definition(definition)
+    with open(f"templates/{MODULE_NAME}/output/{connector_technical_name}", "r") as f:
         for line in f:
             test_failure_logs += line
 
+    # TODO: Make list of variables to render, and how to render them, configurable
     issue_body = template.render(
         connector_name=source_definition["name"], release_stage=source_definition["releaseStage"], test_failure_logs=test_failure_logs
-    )  # TODO: how to make whatever needs to be rendered configurable
+    )
     file_definition, issue_body_path = tempfile.mkstemp()
 
     with os.fdopen(file_definition, "w") as tmp:

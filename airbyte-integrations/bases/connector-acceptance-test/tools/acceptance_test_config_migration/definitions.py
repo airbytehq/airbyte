@@ -27,7 +27,7 @@ def find_by_name(connector_names: List[str]):
         definition for definition in ALL_DEFINITIONS if get_airbyte_connector_name_from_definition(definition) in connector_names
     ]
     if len(definitions) != len(connector_names):
-        logging.warning(f"Looked for {len(connector_names)} items, got {len(definitions)} items.")
+        logging.warning(f"Looked for {len(connector_names)} items, got {len(definitions)} items. Did you misspell something?")
     return definitions
 
 
