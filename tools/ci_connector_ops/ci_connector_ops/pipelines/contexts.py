@@ -5,6 +5,7 @@ import logging
 import os
 from datetime import datetime
 from enum import Enum
+from types import TracebackType
 from typing import Optional
 
 from anyio import Path
@@ -140,13 +141,39 @@ class ConnectorTestContext:
         return self.get_repo_dir(str(self.connector.code_directory), exclude=exclude, include=include)
 
     async def __aenter__(self):
+        """Performs setup operation for the ConnectorTestContext.
+        Updates the current commit status on Github.
+        Raises:
+            Exception: An error is raised when the context was not initialized with a Dagger client
+
+        Returns:
+            ConnectorTestContext: A running instance of the ConnectorTestContext.
+        """
         if self.dagger_client is None:
             raise Exception("A ConnectorTestContext can't be entered with an undefined dagger_client")
         self.state = ContextState.RUNNING
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         return self
 
-    async def __aexit__(self, exception_type, exception_value, traceback) -> bool:
+    async def __aexit__(
+        self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType]
+    ) -> bool:
+        """Performs teardown operation for the ConnectorTestContext.
+        On the context exit the following operations will happen:
+            - Upload updated connector secrets back to Google Secret Manager
+            - Write a test report in JSON format locally and to S3 if running in a CI environment
+            - Update the commit status check on GitHub if running in a CI environment.
+
+        It should gracefully handle the execution error that happens and always upload a test report and update commit status check.
+
+        Args:
+            exception_type (Optional[type[BaseException]]): The exception type if an exception was raised in the context execution, None otherwise.
+            exception_value (Optional[BaseException]): The exception value if an exception was raised in the context execution, None otherwise.
+            traceback (Optional[TracebackType]): The traceback if an exception was raised in the context execution, None otherwise.
+
+        Returns:
+            bool: Wether the teardown operation ran successfully.
+        """
         if exception_value:
             self.logger.error("An error got handled by the ConnectorTestContext", exc_info=True)
             self.state = ContextState.ERROR
