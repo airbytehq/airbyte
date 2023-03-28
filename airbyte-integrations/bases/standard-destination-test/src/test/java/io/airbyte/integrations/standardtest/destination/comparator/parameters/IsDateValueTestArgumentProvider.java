@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.standardtest.destination.comparator.parameters;
 
 import java.util.ArrayList;
@@ -12,8 +16,7 @@ public class IsDateValueTestArgumentProvider implements ArgumentsProvider {
   // "^\\d{4}-\\d{2}-\\d{2}( BC)?$"
   private static final List<String> shouldMatch = List.of(
       "1234-12-12",
-      "1234-12-12 BC"
-  );
+      "1234-12-12 BC");
 
   private static final List<String> shouldNotMatch = List.of(
       "",
@@ -41,8 +44,7 @@ public class IsDateValueTestArgumentProvider implements ArgumentsProvider {
       "2023-12-32T12:99:88+1:23 BC",
       "2023-12-32T12:99:88+12:23 BC",
       "2023-12-32T12:99:88-1:23 BC",
-      "2023-12-32T12:99:88-31:23 BC"
-  );
+      "2023-12-32T12:99:88-31:23 BC");
 
   @Override
   public Stream<? extends Arguments> provideArguments(final ExtensionContext context) {
@@ -51,4 +53,5 @@ public class IsDateValueTestArgumentProvider implements ArgumentsProvider {
     shouldNotMatch.forEach(dateTimeString -> arguments.add(Arguments.of(dateTimeString, false)));
     return arguments.stream();
   }
+
 }

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.standardtest.destination.comparator.parameters;
 
 import java.util.ArrayList;
@@ -16,8 +20,7 @@ public class IsTimeWithTimeZoneTestArgumentProvider implements ArgumentsProvider
       "12:99:88+1:23",
       "12:99:88+12:23",
       "12:99:88-1:23",
-      "12:99:88-31:23"
-  );
+      "12:99:88-31:23");
 
   private static final List<String> shouldNotMatch = List.of(
       "",
@@ -36,8 +39,7 @@ public class IsTimeWithTimeZoneTestArgumentProvider implements ArgumentsProvider
       "2023-12-32T12:99:88+1:23 BC",
       "2023-12-32T12:99:88+12:23 BC",
       "2023-12-32T12:99:88-1:23 BC",
-      "2023-12-32T12:99:88-31:23 BC"
-  );
+      "2023-12-32T12:99:88-31:23 BC");
 
   @Override
   public Stream<? extends Arguments> provideArguments(final ExtensionContext context) {
@@ -46,4 +48,5 @@ public class IsTimeWithTimeZoneTestArgumentProvider implements ArgumentsProvider
     shouldNotMatch.forEach(dateTimeString -> arguments.add(Arguments.of(dateTimeString, false)));
     return arguments.stream();
   }
+
 }

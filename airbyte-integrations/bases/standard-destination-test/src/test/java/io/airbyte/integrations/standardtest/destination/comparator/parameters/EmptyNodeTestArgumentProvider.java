@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.standardtest.destination.comparator.parameters;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,7 +21,7 @@ public class EmptyNodeTestArgumentProvider implements ArgumentsProvider {
         Arguments.of(mapper.readTree(""), true),
         Arguments.of(mapper.readTree("{}"), true),
         Arguments.of(mapper.readTree("{\"\":\"\"}"), true),
-        Arguments.of(mapper.readTree("{\"foo\":0}"), false)
-    );
+        Arguments.of(mapper.readTree("{\"foo\":0}"), false));
   }
+
 }

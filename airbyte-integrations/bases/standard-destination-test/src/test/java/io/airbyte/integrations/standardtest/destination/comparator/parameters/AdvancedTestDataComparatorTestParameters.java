@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.standardtest.destination.comparator.parameters;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -73,6 +77,7 @@ public class AdvancedTestDataComparatorTestParameters {
       }
       return arguments.stream();
     }
+
   }
 
   public static class AssertNotSameDataArgumentProvider implements ArgumentsProvider {
@@ -94,5 +99,7 @@ public class AdvancedTestDataComparatorTestParameters {
       IntStream.range(0, pairs.size() - 1).forEach(i -> arguments.add(Arguments.of(pairs.get(i), pairs.get(i + 1))));
       return arguments.stream();
     }
+
   }
+
 }

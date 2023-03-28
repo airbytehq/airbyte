@@ -1,6 +1,9 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.standardtest.destination.comparator.parameters;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
@@ -18,7 +21,7 @@ public class IsNumericTestArgumentProvider implements ArgumentsProvider {
         Arguments.of("1", true),
         Arguments.of("-123", true),
         Arguments.of("-1234567890.0987654321", true),
-        Arguments.of("1234567890.0987654321", true)
-    );
+        Arguments.of("1234567890.0987654321", true));
   }
+
 }
