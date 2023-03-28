@@ -11,7 +11,6 @@ import useRouter from "hooks/useRouter";
 import { Sidebar } from "./components";
 // import AccountPage from "./pages/AccountPage";
 // import PasswordPage from "./pages/PasswordPage";
-
 import LanguagePage from "./pages/LanguagePage";
 import NotificationPage from "./pages/NotificationPage";
 

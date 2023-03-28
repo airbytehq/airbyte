@@ -3,7 +3,7 @@ import { Config } from "./types";
 
 const defaultConfig: Config = {
   links,
-  segment: { enabled: true, token: "" },
+  segment: { enabled: false, token: "" },
   healthCheckInterval: 5000,
   userDetailInterval: 5000,
   version: "dev",

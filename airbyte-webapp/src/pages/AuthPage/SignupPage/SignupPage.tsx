@@ -5,7 +5,6 @@ import styled from "styled-components";
 import HeadTitle from "components/HeadTitle";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
-
 // import { Link } from "../../../components/Link";
 import { FormHeaderSection } from "pages/AuthPage/components/FormHeaderSection";
 

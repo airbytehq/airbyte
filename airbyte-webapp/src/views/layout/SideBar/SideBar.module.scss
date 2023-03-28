@@ -45,6 +45,7 @@
   &:focus-visible {
     background: #eae9ff;
     transition: variables.$transition-out;
+    border-radius: 0;
   }
 
   &.inActive {
@@ -67,6 +68,7 @@
       color: colors.$black;
       background: #eae9ff;
       transition: variables.$transition-out;
+      border-radius: 0;
     }
   }
 
