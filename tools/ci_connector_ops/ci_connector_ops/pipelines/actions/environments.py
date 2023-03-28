@@ -26,7 +26,11 @@ CONNECTOR_TESTING_REQUIREMENTS = [
 
 INSTALL_LOCAL_REQUIREMENTS_CMD = ["python", "-m", "pip", "install", "-r", "requirements.txt"]
 INSTALL_CONNECTOR_PACKAGE_CMD = ["python", "-m", "pip", "install", "."]
+INSTALL_POETRY_PACKAGE_CMD = ["python", "-m", "pip", "install", "poetry"]
+POETRY_INSTALL_DEPENDENCIES_CMD = ["poetry", "install"]
+
 DEFAULT_PYTHON_EXCLUDE = [".venv"]
+POETRY_EXCLUDE = ["__pycache__"] + DEFAULT_PYTHON_EXCLUDE
 CI_CREDENTIALS_SOURCE_PATH = "tools/ci_credentials"
 CI_CONNECTOR_OPS_SOURCE_PATH = "tools/ci_connector_ops"
 
@@ -209,23 +213,29 @@ def with_poetry(dagger_client) -> Container:
     """
     python_base_environment: Container = dagger_client.container().from_("python:3-alpine")
     python_with_git = python_base_environment.with_exec(["apk", "add", "gcc", "libffi-dev", "musl-dev", "git"])
-    return python_with_git.with_exec(["python", "-m", "pip", "install", "poetry"])
+    python_with_poetry = python_with_git.with_exec(INSTALL_POETRY_PACKAGE_CMD)
 
-POETRY_EXCLUDE = [".git", ".venv", "__pycache__"]
-def with_poetry_module(dagger_client, src_path: str) -> Container:
+    poetry_cache: CacheVolume = dagger_client.cache_volume("poetry_cache")
+    poetry_with_cache =  python_with_poetry.with_mounted_cache("/root/.cache/pypoetry", poetry_cache, sharing=CacheSharingMode.PRIVATE)
+
+    return poetry_with_cache
+
+def with_poetry_module(dagger_client, src_path: str, install_params: List[str] = []) -> Container:
     """Installs poetry in a python environment.
 
     Args:
         context (ConnectorTestContext): The current test context, providing the repository directory from which the ci_credentials sources will be pulled.
-
+    TODO update this docstring
     Returns:
         Container: A python environment with poetry installed.
     """
     src = dagger_client.host().directory(src_path, exclude=POETRY_EXCLUDE)
     python_with_poetry = with_poetry(dagger_client)
+    install_cmd = POETRY_INSTALL_DEPENDENCIES_CMD + install_params
+
     return (
         python_with_poetry
         .with_mounted_directory("/src", src)
         .with_workdir("/src")
-        .with_exec(["poetry", "install"])
+        .with_exec(install_cmd)
     )

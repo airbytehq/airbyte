@@ -219,10 +219,12 @@ def test_connectors(
 async def run_metadata_lib_test_pipeline():
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         print(f"Running metadata lib test pipeline...")
-        metadata_lib_module = with_poetry_module(dagger_client, "airbyte-ci/connectors/metadata_service/lib")
-        result = await with_exit_code(metadata_lib_module.with_exec(["poetry", "run", "pytest"]))
-
-    print(f"Hello from Dagger and {result}")
+        metadata_lib_module = with_poetry_module(
+            dagger_client,
+            "airbyte-ci/connectors/metadata_service/lib",
+            ["--with", "test"]
+        )
+        return await with_exit_code(metadata_lib_module.with_exec(["poetry", "run", "pytest"]))
 
 @connectors_ci.command()
 @click.pass_context
