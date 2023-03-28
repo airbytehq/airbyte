@@ -140,7 +140,7 @@ jobs:
           echo "loading pod..." 
           export CONNECTOR_IMAGE_NAME=${CONN/connectors/airbyte}:dev
           export DATASET=$DS
-          envsubst < ./tools/bin/test-postgres-source-process.yaml | kubectl create -f -
+          envsubst < ./tools/bin/source-harness-process.yaml | kubectl create -f -
           echo "get pods..."
           kubectl get po
           POD=$(kubectl get pod -l app=source-harness -o jsonpath="{.items[0].metadata.name}")

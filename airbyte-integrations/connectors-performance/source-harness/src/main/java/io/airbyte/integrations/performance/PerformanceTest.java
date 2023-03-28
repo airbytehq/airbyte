@@ -72,8 +72,8 @@ public class PerformanceTest {
     final var workerConfigs = new WorkerConfigs(new EnvConfigs());
     final var processFactory = new KubeProcessFactory(workerConfigs, "default", fabricClient, kubeHeartbeatUrl, false);
     final ResourceRequirements resourceReqs = new ResourceRequirements()
-        .withCpuLimit("1")
-        .withCpuRequest("1")
+        .withCpuLimit("2.5")
+        .withCpuRequest("2.5")
         .withMemoryLimit("2Gi")
         .withMemoryRequest("2Gi");
     final var heartbeatMonitor = new HeartbeatMonitor(Duration.ofMillis(1));
