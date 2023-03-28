@@ -120,7 +120,7 @@ impl AirbyteSourceInterceptor {
                 None => spec.documentation_url,
             };
 
-            let v = serde_json::to_vec(&response::Spec {
+            let v = serde_json::to_vec(&Response { spec: Some(response::Spec {
                 protocol: PROTOCOL_VERSION,
                 config_schema_json: endpoint_spec.to_string(),
                 resource_config_schema_json: serde_json::to_string_pretty(&create_root_schema::<
@@ -130,7 +130,7 @@ impl AirbyteSourceInterceptor {
                     .map(|spec| serde_json::from_value(spec))
                     .transpose()?,
                 documentation_url: documentation_url.unwrap_or_default(),
-            })?;
+            }), ..Default::default() })?;
 
             Ok(v.into())
         }))
@@ -255,7 +255,7 @@ impl AirbyteSourceInterceptor {
                 })
             }
 
-            let v = serde_json::to_vec(&resp)?;
+            let v = serde_json::to_vec(&Response { discovered: Some(resp), ..Default::default() })?;
             Ok(v.into())
         }))
     }
@@ -309,7 +309,7 @@ impl AirbyteSourceInterceptor {
                 });
             }
 
-            let v = serde_json::to_vec(&resp)?;
+            let v = serde_json::to_vec(&Response { validated: Some(resp), ..Default::default() })?;
             Ok(v.into())
         }))
     }
@@ -326,7 +326,7 @@ impl AirbyteSourceInterceptor {
             // and discard its response. This is a bit silly.
             _ = get_airbyte_response(in_stream, |m| m.spec.is_some(), "spec").await?;
 
-            let v = serde_json::to_vec(&response::Applied::default())?;
+            let v = serde_json::to_vec(&Response { applied: Some(response::Applied::default()), ..Default::default() })?;
             Ok(v.into())
         }))
     }
