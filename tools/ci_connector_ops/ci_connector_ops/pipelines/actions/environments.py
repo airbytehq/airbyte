@@ -21,7 +21,7 @@ CONNECTOR_TESTING_REQUIREMENTS = [
     "isort==5.6.4",
     "pytest==6.2.5",
     "coverage[toml]==6.3.1",
-    "pytest-custom_exit_code",
+    "pytest-custom_exit_code", # TODO maybe use in poetry?
 ]
 
 INSTALL_LOCAL_REQUIREMENTS_CMD = ["python", "-m", "pip", "install", "-r", "requirements.txt"]
@@ -197,3 +197,35 @@ async def with_ci_connector_ops(context: ConnectorTestContext) -> Container:
     python_base_environment: Container = with_python_base(context, "python:3-alpine")
     python_with_git = python_base_environment.with_exec(["apk", "add", "gcc", "libffi-dev", "musl-dev", "git"])
     return await with_installed_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH, exclude=["pipelines"])
+
+def with_poetry(dagger_client) -> Container:
+    """Installs poetry in a python environment.
+
+    Args:
+        context (ConnectorTestContext): The current test context, providing the repository directory from which the ci_credentials sources will be pulled.
+
+    Returns:
+        Container: A python environment with poetry installed.
+    """
+    python_base_environment: Container = dagger_client.container().from_("python:3-alpine")
+    python_with_git = python_base_environment.with_exec(["apk", "add", "gcc", "libffi-dev", "musl-dev", "git"])
+    return python_with_git.with_exec(["python", "-m", "pip", "install", "poetry"])
+
+POETRY_EXCLUDE = [".git", ".venv", "__pycache__"]
+def with_poetry_module(dagger_client, src_path: str) -> Container:
+    """Installs poetry in a python environment.
+
+    Args:
+        context (ConnectorTestContext): The current test context, providing the repository directory from which the ci_credentials sources will be pulled.
+
+    Returns:
+        Container: A python environment with poetry installed.
+    """
+    src = dagger_client.host().directory(src_path, exclude=POETRY_EXCLUDE)
+    python_with_poetry = with_poetry(dagger_client)
+    return (
+        python_with_poetry
+        .with_mounted_directory("/src", src)
+        .with_workdir("/src")
+        .with_exec(["poetry", "install"])
+    )

@@ -23,7 +23,9 @@ from ci_connector_ops.pipelines.utils import (
     get_current_git_revision,
     get_modified_connectors,
     get_modified_files,
+    with_exit_code,
 )
+from ci_connector_ops.pipelines.actions.environments import with_poetry_module
 from ci_connector_ops.utils import ConnectorLanguage, get_all_released_connectors
 from rich.logging import RichHandler
 
@@ -77,7 +79,7 @@ async def run_connectors_test_pipelines(contexts: List[ConnectorTestContext], co
 
 
 @click.group()
-@click.option("--use-remote-secrets", default=True)
+@click.option("--use-remote-secrets", default=True) # specific to connectors
 @click.option("--is-local/--is-ci", default=True)
 @click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
 @click.option("--git-revision", default=get_current_git_revision, envvar="CI_GIT_REVISION")
@@ -215,39 +217,20 @@ def test_connectors(
         )
 
 async def run_metadata_lib_test_pipeline():
-    async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as client:
-        src = client.host().directory("airbyte-ci/connectors/metadata_service/lib", exclude=[".git", ".venv", "__pycache__"])
-        print(f"Running metadata lib test pipeline at {src}...")
-        python = (
-            client.container()
-            # pull container
-            .from_("python:3-alpine")
-            .with_exec(["apk", "add", "gcc", "libffi-dev", "musl-dev", "git"])
-            # get Python version
-            .with_exec(["python", "-V"])
+    async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
+        print(f"Running metadata lib test pipeline...")
+        metadata_lib_module = with_poetry_module(dagger_client, "airbyte-ci/connectors/metadata_service/lib")
+        result = await with_exit_code(metadata_lib_module.with_exec(["poetry", "run", "pytest"]))
 
-            .with_mounted_directory("/metadata_service", src)
-            .with_workdir("/metadata_service")
-            .with_exec(["python", "-m", "pip", "install", "poetry"])
-            .with_exec(["poetry", "--version"])
-            .with_exec(["poetry", "install"])
-            .with_exec(["poetry", "run", "pytest"])
-        )
-
-        # execute
-        version = await python.stdout()
-
-    print(f"Hello from Dagger and {version}, at {src}!")
+    print(f"Hello from Dagger and {result}")
 
 @connectors_ci.command()
 @click.pass_context
 def test_metadata_lib(ctx: click.Context):
-    # TODO: check for diff at path
-    # TODO: Install poetry
-    # TODO: Install dependencies
-    # TODO: Run tests
+    # TODO create a top level ci group
+    # TODO rename this command group to test_connectors
+    # TODO move this command to test_metadata_lib
     anyio.run(run_metadata_lib_test_pipeline)
-
 
 
 def validate_environment(is_local: bool, use_remote_secrets: bool):

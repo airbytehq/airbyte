@@ -16,6 +16,22 @@ from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL
 from ci_connector_ops.utils import Connector
 from dagger import Client, Directory
+from abc import ABC, abstractmethod
+
+class PipelineContext(ABC):
+    def __init__(
+        # general
+        self,
+        is_local: bool,
+        git_branch: bool,
+        git_revision: bool,
+        gha_workflow_run_url: Optional[str] = None,
+        pipeline_start_timestamp: Optional[int] = None,
+        ci_context: Optional[str] = None,
+
+    ):
+        pass
+    pass
 
 
 class ContextState(Enum):
