@@ -47,7 +47,8 @@ RUN apt update -y \
     wget \
     zip \
     openjdk-17-jdk \
-    openjdk-17-jre
+    openjdk-17-jre \
+    protobuf-compiler
 
 RUN add-apt-repository ppa:deadsnakes/ppa
 
@@ -63,7 +64,7 @@ RUN locale-gen ${LOCALE}
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
-    RUST_VERSION=1.64.0 \
+    RUST_VERSION=1.68.1 \
     RUST_TARGET=x86_64-unknown-linux-musl
 
 RUN set -eux; \

@@ -123,7 +123,7 @@ impl AirbyteSourceInterceptor {
             let v = serde_json::to_vec(&Response { spec: Some(response::Spec {
                 protocol: PROTOCOL_VERSION,
                 config_schema_json: endpoint_spec.to_string(),
-                resource_config_schema_json: serde_json::to_string_pretty(&create_root_schema::<
+                resource_config_schema_json: serde_json::to_string(&create_root_schema::<
                     ResourceSpec,
                 >())?,
                 oauth2: auth_spec
