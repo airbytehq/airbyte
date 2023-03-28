@@ -190,8 +190,8 @@ class TiktokStream(HttpStream, ABC):
         Docs: https://business-api.tiktok.com/marketing_api/docs?id=1701890920013825
         """
         if self.is_sandbox:
-            return "https://sandbox-ads.tiktok.com/open_api/v1.2/"
-        return "https://business-api.tiktok.com/open_api/v1.2/"
+            return "https://sandbox-ads.tiktok.com/open_api/v1.3/"
+        return "https://business-api.tiktok.com/open_api/v1.3/"
 
     def next_page_token(self, *args, **kwargs) -> Optional[Mapping[str, Any]]:
         # this data without listing
@@ -234,16 +234,15 @@ class AdvertiserIds(TiktokStream):
     primary_key = "advertiser_id"
     use_cache = True  # it is used in all streams
 
-    def __init__(self, app_id: int, secret: str, access_token: str, **kwargs):
-        super().__init__(advertiser_id=0, authenticator=None)
+    def __init__(self, authenticator, app_id: int, secret: str, **kwargs):
+        super().__init__(authenticator=authenticator, advertiser_id=0)
 
         # for Production env
         self._secret = secret
         self._app_id = app_id
-        self._access_token = access_token
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        return {"access_token": self._access_token, "secret": self._secret, "app_id": self._app_id}
+        return {"secret": self._secret, "app_id": self._app_id}
 
     def path(self, *args, **kwargs) -> str:
         return "oauth2/advertiser/get/"
