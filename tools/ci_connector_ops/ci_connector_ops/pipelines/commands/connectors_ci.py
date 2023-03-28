@@ -29,14 +29,16 @@ from ci_connector_ops.pipelines.actions.environments import with_poetry_module
 from ci_connector_ops.utils import ConnectorLanguage, get_all_released_connectors
 from rich.logging import RichHandler
 
+# CONSTANTS
+
 GITHUB_GLOBAL_CONTEXT = "[POC please ignore] Connectors CI"
 GITHUB_GLOBAL_DESCRIPTION = "Running connectors tests"
-
 
 logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
 
 logger = logging.getLogger(__name__)
 
+# DAGGER PIPELINES
 
 async def run(context: ConnectorTestContext, semaphore: anyio.Semaphore) -> ConnectorTestReport:
     """Runs a CI pipeline for a single connector.
@@ -77,48 +79,46 @@ async def run_connectors_test_pipelines(contexts: List[ConnectorTestContext], co
                 context.dagger_client = dagger_client.pipeline(f"{context.connector.technical_name} - Test Pipeline")
                 tg.start_soon(run, context, semaphore)
 
+# HELPERS
 
-@click.group()
+def validate_environment(is_local: bool, use_remote_secrets: bool):
+
+    if is_local:
+        if not (os.getcwd().endswith("/airbyte") and Path(".git").is_dir()):
+            raise click.UsageError("You need to run this command from the airbyte repository root.")
+    else:
+        required_env_vars_for_ci = [
+            "GCP_GSM_CREDENTIALS",
+            "AWS_ACCESS_KEY_ID",
+            "AWS_SECRET_ACCESS_KEY",
+            "AWS_DEFAULT_REGION",
+            "TEST_REPORTS_BUCKET_NAME",
+            "CI_GITHUB_ACCESS_TOKEN",
+        ]
+        for required_env_var in required_env_vars_for_ci:
+            if os.getenv(required_env_var) is None:
+                raise click.UsageError(f"When running in a CI context a {required_env_var} environment variable must be set.")
+    if use_remote_secrets and os.getenv("GCP_GSM_CREDENTIALS") is None:
+        raise click.UsageError(
+            "You have to set the GCP_GSM_CREDENTIALS if you want to download secrets from GSM. Set the --use-remote-secrets option to false otherwise."
+        )
+
+# COMMANDS
+
+@click.group(help="Commands related to connectors and connector acceptance tests.")
 @click.option("--use-remote-secrets", default=True) # specific to connectors
-@click.option("--is-local/--is-ci", default=True)
-@click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
-@click.option("--git-revision", default=get_current_git_revision, envvar="CI_GIT_REVISION")
-@click.option(
-    "--diffed-branch",
-    help="Branch to which the git diff will happen to detect new or modified connectors",
-    default="origin/master",
-    type=str,
-)
-@click.option("--gha-workflow-run-id", help="[CI Only] The run id of the GitHub action workflow", default=None, type=str)
-@click.option("--ci-context", default="manual", envvar="CI_CONTEXT", type=click.Choice(["manual", "pull_request", "nightly_builds"]))
-@click.option("--pipeline-start-timestamp", default=get_current_epoch_time, envvar="CI_PIPELINE_START_TIMESTAMP", type=int)
 @click.pass_context
 def connectors_ci(
     ctx: click.Context,
     use_remote_secrets: str,
-    is_local: bool,
-    git_branch: str,
-    git_revision: str,
-    diffed_branch: str,
-    gha_workflow_run_id: str,
-    ci_context: str,
-    pipeline_start_timestamp: int,
 ):
     """A command group to gather all the connectors-ci command"""
 
-    validate_environment(is_local, use_remote_secrets)
+    validate_environment(ctx.obj["is_local"], use_remote_secrets)
 
     ctx.ensure_object(dict)
     ctx.obj["use_remote_secrets"] = use_remote_secrets
-    ctx.obj["is_local"] = is_local
-    ctx.obj["git_branch"] = git_branch
-    ctx.obj["git_revision"] = git_revision
-    ctx.obj["gha_workflow_run_id"] = gha_workflow_run_id
-    ctx.obj["gha_workflow_run_url"] = (
-        f"https://github.com/airbytehq/airbyte/actions/runs/{gha_workflow_run_id}" if gha_workflow_run_id else None
-    )
-    ctx.obj["ci_context"] = ci_context
-    ctx.obj["pipeline_start_timestamp"] = pipeline_start_timestamp
+
     update_commit_status_check(
         ctx.obj["git_revision"],
         "pending",
@@ -128,9 +128,6 @@ def connectors_ci(
         should_send=ctx.obj["ci_context"] == "pull_request",
         logger=logger,
     )
-
-    ctx.obj["modified_files"] = get_modified_files(git_branch, git_revision, diffed_branch, is_local)
-
 
 @connectors_ci.command()
 @click.option(
@@ -214,28 +211,6 @@ def test_connectors(
             GITHUB_GLOBAL_CONTEXT,
             should_send=ctx.obj.get("ci_context") == "pull_request",
             logger=logger,
-        )
-
-def validate_environment(is_local: bool, use_remote_secrets: bool):
-
-    if is_local:
-        if not (os.getcwd().endswith("/airbyte") and Path(".git").is_dir()):
-            raise click.UsageError("You need to run this command from the airbyte repository root.")
-    else:
-        required_env_vars_for_ci = [
-            "GCP_GSM_CREDENTIALS",
-            "AWS_ACCESS_KEY_ID",
-            "AWS_SECRET_ACCESS_KEY",
-            "AWS_DEFAULT_REGION",
-            "TEST_REPORTS_BUCKET_NAME",
-            "CI_GITHUB_ACCESS_TOKEN",
-        ]
-        for required_env_var in required_env_vars_for_ci:
-            if os.getenv(required_env_var) is None:
-                raise click.UsageError(f"When running in a CI context a {required_env_var} environment variable must be set.")
-    if use_remote_secrets and os.getenv("GCP_GSM_CREDENTIALS") is None:
-        raise click.UsageError(
-            "You have to set the GCP_GSM_CREDENTIALS if you want to download secrets from GSM. Set the --use-remote-secrets option to false otherwise."
         )
 
 

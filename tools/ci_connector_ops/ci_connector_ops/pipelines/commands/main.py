@@ -4,24 +4,54 @@
 
 import click
 from .metadata_service import metadata_service
+from .connectors_ci import connectors_ci
+from ci_connector_ops.pipelines.utils import (
+    get_current_epoch_time,
+    get_current_git_branch,
+    get_current_git_revision,
+    get_modified_files,
+)
 
 @click.group(help="Airbyte CI top-level command group.")
+@click.option("--is-local/--is-ci", default=True)
+@click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
+@click.option("--git-revision", default=get_current_git_revision, envvar="CI_GIT_REVISION")
+@click.option(
+    "--diffed-branch",
+    help="Branch to which the git diff will happen to detect new or modified connectors",
+    default="origin/master",
+    type=str,
+)
+@click.option("--gha-workflow-run-id", help="[CI Only] The run id of the GitHub action workflow", default=None, type=str)
+@click.option("--ci-context", default="manual", envvar="CI_CONTEXT", type=click.Choice(["manual", "pull_request", "nightly_builds"]))
+@click.option("--pipeline-start-timestamp", default=get_current_epoch_time, envvar="CI_PIPELINE_START_TIMESTAMP", type=int)
 @click.pass_context
-def airbyte_ci(ctx):
-    pass
+def airbyte_ci_pipeline(
+    ctx: click.Context,
+    is_local: bool,
+    git_branch: str,
+    git_revision: str,
+    diffed_branch: str,
+    gha_workflow_run_id: str,
+    ci_context: str,
+    pipeline_start_timestamp: int,
+):
 
-@airbyte_ci.group(help="Commands related to connectors and connector acceptance tests.")
-@click.pass_context
-def connectors(ctx):
-    pass
+    ctx.ensure_object(dict)
+    ctx.obj["is_local"] = is_local
+    ctx.obj["git_branch"] = git_branch
+    ctx.obj["git_revision"] = git_revision
+    ctx.obj["gha_workflow_run_id"] = gha_workflow_run_id
+    ctx.obj["gha_workflow_run_url"] = (
+        f"https://github.com/airbytehq/airbyte/actions/runs/{gha_workflow_run_id}" if gha_workflow_run_id else None
+    )
+    ctx.obj["ci_context"] = ci_context
+    ctx.obj["pipeline_start_timestamp"] = pipeline_start_timestamp
+    ctx.obj["modified_files"] = get_modified_files(git_branch, git_revision, diffed_branch, is_local)
 
-@connectors.command(help="Run CAT for a specific connector.")
-@click.pass_context
-def test_connectors(ctx):
-    raise NotImplementedError("test_connector not implemented yet")
-
-airbyte_ci.add_command(metadata_service)
+airbyte_ci_pipeline.add_command(connectors_ci)
+airbyte_ci_pipeline.add_command(metadata_service)
 
 if __name__ == '__main__':
-    airbyte_ci()
+    airbyte_ci_pipeline()
 
