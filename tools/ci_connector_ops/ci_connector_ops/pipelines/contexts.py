@@ -174,10 +174,6 @@ class ConnectorTestContext(PipelineContext):
         return self.use_remote_secrets and self.updated_secrets_dir is not None
 
     @property
-    def pipeline_log_name(self):
-        return f"CI test for {self.connector.technical_name}"
-
-    @property
     def test_report(self) -> ConnectorTestReport:
         return self._test_report
 
