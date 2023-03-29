@@ -63,6 +63,30 @@
     },
     "create_time": {
       "type": "integer"
+    },
+    "telephone_number": {
+      "type": ["null", "string"]
+    },
+    "display_timezone": {
+      "type": ["null", "string"]
+    },
+    "promotion_center_province": {
+      "type": ["null", "string"]
+    },
+    "advertiser_account_type": {
+      "type": ["null", "string"]
+    },
+    "license_city": {
+      "type": ["null", "string"]
+    },
+    "brand": {
+      "type": ["null", "string"]
+    },
+    "license_province": {
+      "type": ["null", "string"]
+    },
+    "promotion_center_city": {
+      "type": ["null", "string"]
     }
   }
 }
