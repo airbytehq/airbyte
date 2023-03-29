@@ -20,11 +20,11 @@ from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL
 from ci_connector_ops.utils import Connector
 
 class ContextState(Enum):
-    INITIALIZED = {"github_state": "pending", "description": "Tests are being initialized..."}
-    RUNNING = {"github_state": "pending", "description": "Tests are running..."}
-    ERROR = {"github_state": "error", "description": "Something went wrong while running the tests."}
-    SUCCESSFUL = {"github_state": "success", "description": "All tests ran successfully."}
-    FAILURE = {"github_state": "failure", "description": "Test failed."}
+    INITIALIZED = {"github_state": "pending", "description": "Pipelines are being initialized..."}
+    RUNNING = {"github_state": "pending", "description": "Pipelines are running..."}
+    ERROR = {"github_state": "error", "description": "Something went wrong while running the Pipelines."}
+    SUCCESSFUL = {"github_state": "success", "description": "All Pipelines ran successfully."}
+    FAILURE = {"github_state": "failure", "description": "Pipeline failed."}
 
 class PipelineContext(ABC):
     def __init__(
@@ -91,7 +91,9 @@ class PipelineContext(ABC):
             "logger": self.logger,
         }
 
-    async def __aenter__(self):
+    async def __aenter__(self, message: str = None):
+        if message:
+            self.logger.info(message)
         if self.dagger_client is None:
             raise Exception("A Pipeline can't be entered with an undefined dagger_client")
         self.state = ContextState.RUNNING
@@ -102,10 +104,12 @@ class PipelineContext(ABC):
         if exception_value:
             self.logger.error("An error was handled by the Pipeline", exc_info=True)
             self.state = ContextState.ERROR
+        else:
+            self.state = ContextState.SUCCESSFUL
 
-        # TODO figure out how we report success here ffs
+        print(f"{self.state}!: exception_value: {exception_value}, exception_type: {exception_type}")
         await asyncify(update_commit_status_check)(**self.github_commit_status)
-        return True
+        return self.state == ContextState.SUCCESSFUL
 
 
 class ConnectorTestContext(PipelineContext):

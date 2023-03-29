@@ -6,7 +6,7 @@
 
 from typing import List, Optional
 
-from ci_connector_ops.pipelines.contexts import ConnectorTestContext, PipelineContext
+from ci_connector_ops.pipelines.contexts import PipelineContext, ConnectorTestContext
 from ci_connector_ops.pipelines.utils import get_file_contents
 from dagger import CacheSharingMode, CacheVolume, Container, Directory, Secret
 

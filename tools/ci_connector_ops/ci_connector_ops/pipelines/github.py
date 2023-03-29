@@ -19,6 +19,8 @@ AIRBYTE_GITHUB_REPO = "airbytehq/airbyte"
 def update_commit_status_check(
     sha: str, state: str, target_url: str, description: str, context: str, should_send=True, logger: Logger = None
 ):
+    logger.info(f"Attempting to create {state} status for commit {sha} on Github in {context} context.")
+
     if not should_send:
         return
 
