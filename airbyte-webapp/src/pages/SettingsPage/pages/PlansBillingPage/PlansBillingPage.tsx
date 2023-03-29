@@ -18,7 +18,6 @@ import { RoutePaths } from "pages/routePaths";
 import { useAuthenticationService } from "services/auth/AuthSpecificationService";
 import { useUserPlanDetail, useAsyncAction } from "services/payments/PaymentsService";
 
-// import { CancelPlanModal } from "./components/CancelPlanModal";
 import PlanClause from "./components/PlanClause";
 import styles from "./style.module.scss";
 

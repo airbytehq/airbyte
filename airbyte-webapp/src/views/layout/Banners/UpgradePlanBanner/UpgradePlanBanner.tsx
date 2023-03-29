@@ -1,16 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components";
-// import { Separator } from "components/Separator";
 
 import { useUser } from "core/AuthContext";
 import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
 import { getPaymentStatus, PAYMENT_STATUS } from "core/Constants/statuses";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
-import { useAuthDetail } from "services/auth/AuthSpecificationService";
 import { useUserPlanDetail } from "services/payments/PaymentsService";
 
 import styles from "../banners.module.scss";
@@ -21,8 +19,7 @@ interface IProps {
 }
 
 const Banner = styled.div`
-  width: calc(100% - 248px);
-  position: fixed;
+  width: 100%;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -40,17 +37,10 @@ const Text = styled.div`
 `;
 
 export const UpgradePlanBanner: React.FC<IProps> = ({ onBillingPage }) => {
-  const { user, updateUserStatus } = useUser();
+  const { user } = useUser();
   const { pathname } = useRouter();
   const userPlanDetail = useUserPlanDetail();
-  const { status } = useAuthDetail();
   const { expiresTime } = userPlanDetail;
-
-  useEffect(() => {
-    if (status && user.status !== status) {
-      updateUserStatus?.(status);
-    }
-  }, [status, updateUserStatus, user.status]);
 
   const remainingDaysForFreeTrial = (): number => {
     const currentDate: Date = new Date();
@@ -100,7 +90,6 @@ export const UpgradePlanBanner: React.FC<IProps> = ({ onBillingPage }) => {
           </Button>
         </Banner>
         {isAuthorized && <UnauthorizedModal onClose={() => setIsAuthorized(false)} />}
-        {/* <Separator height="40px" /> */}
       </>
     );
   }

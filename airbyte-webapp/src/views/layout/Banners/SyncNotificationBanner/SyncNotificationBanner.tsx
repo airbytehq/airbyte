@@ -7,7 +7,7 @@ import { IgnoreNotificationModal } from "./components/IgnoreNotificationModal";
 import { CrossIcon } from "./icons/crossIcon";
 
 interface IProps {
-  usage: number;
+  usagePercentage: number;
   onBillingPage: () => void;
 }
 
@@ -39,14 +39,14 @@ const CrossBtn = styled.button`
     padding: 0;
 `;
 
-export const SyncNotificationBanner: React.FC<IProps> = ({ usage, onBillingPage }) => {
+export const SyncNotificationBanner: React.FC<IProps> = ({ usagePercentage, onBillingPage }) => {
   const [ignoreModal, setIgnoreModal] = useState<boolean>(false);
 
   return (
     <>
       <Banner className={styles.banner}>
         <Text>
-          <FormattedMessage id="usage.notification.banner.usageText" values={{ percentage: usage * 100 }} />
+          <FormattedMessage id="usage.notification.banner.usageText" values={{ percentage: usagePercentage }} />
         </Text>
         <CrossBtn onClick={() => setIgnoreModal(true)}>
           <CrossIcon />

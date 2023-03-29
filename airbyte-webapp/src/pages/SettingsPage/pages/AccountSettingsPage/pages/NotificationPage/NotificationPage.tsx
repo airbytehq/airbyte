@@ -10,6 +10,10 @@ import { useNotificationSetting, useAsyncActions } from "services/notificationSe
 import { SyncTable } from "./components/SyncTable";
 import { UsageTable } from "./components/UsageTable";
 
+export interface LoadingNotificationItem extends NotificationItem {
+  isLoading: boolean;
+}
+
 const PageContainer = styled.div`
   width: 100%;
   display: flex;
@@ -44,6 +48,7 @@ const NotificationPage: React.FC = () => {
     });
   };
 
+  const [updateLoading, setUpdateLoading] = useState<boolean>(false);
   const updateNotificationSetting = (data: NotificationItem) => {
     if (data.id.includes(CharacterInID)) {
       setUsageNotificationList((prev) => {
@@ -55,6 +60,7 @@ const NotificationPage: React.FC = () => {
         return usageList;
       });
     } else {
+      setUpdateLoading(true);
       onUpdateNotificationSetting(data)
         .then((res: EditNotificationRead) => {
           const { data } = res;
@@ -66,12 +72,15 @@ const NotificationPage: React.FC = () => {
             }
             setUsageNotificationList(myUsageNotificationList);
           }
+          setUpdateLoading(false);
         })
         .catch((err: any) => {
           setNotification({ message: err.message, type: "error" });
+          setUpdateLoading(false);
         });
     }
   };
+
   const deleteNotificationSetting = (id: string) => {
     if (id.includes(CharacterInID)) {
       setUsageNotificationList((prev) => prev.filter((usageItem) => usageItem.id !== id));
@@ -89,11 +98,17 @@ const NotificationPage: React.FC = () => {
         usageNotificationList={usageNotificationList}
         createNotificationSetting={createNotificationSetting}
         saveNotificationSetting={saveNotificationSetting}
+        updateLoading={updateLoading}
         updateNotificationSetting={updateNotificationSetting}
         deleteNotificationSetting={deleteNotificationSetting}
       />
       <Separator height="30px" />
-      <SyncTable syncFail={syncFail} syncSuccess={syncSuccess} updateNotificationSetting={updateNotificationSetting} />
+      <SyncTable
+        syncFail={syncFail}
+        syncSuccess={syncSuccess}
+        updateLoading={updateLoading}
+        updateNotificationSetting={updateNotificationSetting}
+      />
     </PageContainer>
   );
 };

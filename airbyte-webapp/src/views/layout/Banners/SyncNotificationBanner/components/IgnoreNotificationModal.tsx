@@ -68,12 +68,11 @@ const CheckboxText = styled.div`
 export const IgnoreNotificationModal: React.FC<IProps> = ({ onClose, onBillingPage }) => {
   const { onIgnoreNotifications } = useAsyncActions();
 
-  const [reminder, setReminder] = useState<boolean>(false);
-
+  const [noPrompt, setNoPrompt] = useState<boolean>(false);
   const [ignoreLoading, setIgnoreLoading] = useState<boolean>(false);
   const onIgnore = () => {
     setIgnoreLoading(true);
-    onIgnoreNotifications()
+    onIgnoreNotifications({ noPrompt })
       .then(() => {
         setIgnoreLoading(false);
         onClose?.();
@@ -109,7 +108,7 @@ export const IgnoreNotificationModal: React.FC<IProps> = ({ onClose, onBillingPa
           </ButtonsContainer>
           <Separator height="40px" />
           <CheckboxContainer>
-            <CheckBox checked={reminder} onClick={() => setReminder((prev) => !prev)} />
+            <CheckBox checked={noPrompt} onClick={() => setNoPrompt((prev) => !prev)} />
             <CheckboxText>
               <FormattedMessage id="ignore.notification.modal.checkboxText" />
             </CheckboxText>

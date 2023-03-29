@@ -14,7 +14,7 @@ import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
 import useRouter from "hooks/useRouter";
 
 import AccountSettingsPage from "./pages/AccountSettingsPage";
-import NotificationPage from "./pages/NotificationPage";
+// import NotificationPage from "./pages/NotificationPage";
 import PlansBillingPage from "./pages/PlansBillingPage";
 import UserManagementPage from "./pages/UserManagementPage";
 
@@ -116,12 +116,12 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
               ? true
               : false,
         },
-        {
-          path: `${SettingsRoute.Notifications}`,
-          name: <FormattedMessage id="settings.notificationSettings" />,
-          component: <NotificationPage />,
-          show: true,
-        },
+        // {
+        //   path: `${SettingsRoute.Notifications}`,
+        //   name: <FormattedMessage id="settings.notificationSettings" />,
+        //   component: <NotificationPage />,
+        //   show: true,
+        // },
       ],
     },
   ];

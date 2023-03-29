@@ -36,14 +36,16 @@ const SidebarContainer = styled.div`
 `;
 
 const SidebarItem = styled.div`
-  padding: 36px 0;
+  margin: 36px 0;
+  width: 100%;
   display: flex;
   flex-direction: row;
   align-items: center;
+  padding: 0 0 0 78px;
 `;
 
 const ItemText = styled.div<{
-  isSelected: boolean;
+  isSelected?: boolean;
 }>`
   cursor: pointer;
   font-style: normal;

@@ -79,6 +79,10 @@ export interface DeleteNotificationRead {
   data: boolean;
 }
 
+export interface IgnoreNotificationBody {
+  noPrompt: boolean;
+}
+
 export interface IgnoreNotificationRead {
   data: boolean;
 }
@@ -361,9 +365,17 @@ export const deleteNotificationSetting = (
   );
 };
 
-export const ignoreNotification = (options?: SecondParameter<typeof apiOverride>) => {
+export const ignoreNotification = (
+  ignoreNotificationBody: IgnoreNotificationBody,
+  options?: SecondParameter<typeof apiOverride>
+) => {
   return apiOverride<IgnoreNotificationRead>(
-    { url: `/notification/ignore`, method: "post", headers: { "Content-Type": "application/json" } },
+    {
+      url: `/notification/ignore`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: ignoreNotificationBody,
+    },
     options
   );
 };

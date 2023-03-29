@@ -2,7 +2,12 @@ import { useMutation, useQueryClient } from "react-query";
 
 import { useUser } from "core/AuthContext";
 import { NotificationService } from "core/domain/notificationSetting/notificationSettingService";
-import { NotificationItem, NotificationSetting, SaveNotificationUsageBody } from "core/request/DaspireClient";
+import {
+  IgnoreNotificationBody,
+  NotificationItem,
+  NotificationSetting,
+  SaveNotificationUsageBody,
+} from "core/request/DaspireClient";
 import { useSuspenseQuery } from "services/connector/useSuspenseQuery";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 
@@ -99,14 +104,14 @@ export const useDeleteNotificationSetting = () => {
 export const useIgnoreNotifications = () => {
   const service = useNotificationSettingApiService();
 
-  return useMutation(() => service.ignore());
+  return useMutation((ignoreNotificationBody: IgnoreNotificationBody) => service.ignore(ignoreNotificationBody));
 };
 
 export const useAsyncActions = (): {
   onCreateNotificationSetting: (notificationUsage: SaveNotificationUsageBody) => Promise<any>;
   onUpdateNotificationSetting: (data: NotificationItem) => Promise<any>;
   onDeleteNotificationSetting: (notificationSettingId: string) => Promise<any>;
-  onIgnoreNotifications: () => Promise<any>;
+  onIgnoreNotifications: (ignoreNotificationBody: IgnoreNotificationBody) => Promise<any>;
 } => {
   const { mutateAsync: createNotificationSetting } = useCreateNotificationSetting();
   const { mutateAsync: updateNotificationSetting } = useUpdateNotificationSetting();
@@ -125,8 +130,8 @@ export const useAsyncActions = (): {
     return await deleteNotificationSetting(notificationSettingId);
   };
 
-  const onIgnoreNotifications = async () => {
-    return await ignoreNotifications();
+  const onIgnoreNotifications = async (ignoreNotificationBody: IgnoreNotificationBody) => {
+    return await ignoreNotifications(ignoreNotificationBody);
   };
 
   return {
