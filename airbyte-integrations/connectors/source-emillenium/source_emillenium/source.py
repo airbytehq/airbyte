@@ -140,7 +140,7 @@ class EMilleniumBase(HttpStream):
         return item_list
 
 
-class NotasFiscais(EMilleniumBase):
+class Listafaturamentos(EMilleniumBase):
 
     cursor_field = "data_nota_fiscal"
     primary_key = "data_nota_fiscal"
@@ -182,7 +182,7 @@ class NotasFiscais(EMilleniumBase):
         
         return path
 
-class Pedidos(EMilleniumBase):
+class Listapedidos(EMilleniumBase):
 
     cursor_field = "data_pedidos"
     primary_key = "data_pedidos"
@@ -230,7 +230,7 @@ class SourceEMillenium(AbstractSource):
         try:
             auth = NoAuth()
             start_date = datetime.strptime(config['start_date'], '%d/%m/%Y')
-            stream = NotasFiscais(authenticator=auth, config=config, start_date=start_date)
+            stream = Listapedidos(authenticator=auth, config=config, start_date=start_date)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
             return True, None
@@ -243,6 +243,6 @@ class SourceEMillenium(AbstractSource):
         start_date = datetime.strptime(config['start_date'], '%d/%m/%Y')
 
         return [
-            NotasFiscais(authenticator=auth, config=config, start_date=start_date),
-            Pedidos(authenticator=auth, config=config, start_date=start_date)
+            Listafaturamentos(authenticator=auth, config=config, start_date=start_date),
+            Listapedidos(authenticator=auth, config=config, start_date=start_date)
         ]
