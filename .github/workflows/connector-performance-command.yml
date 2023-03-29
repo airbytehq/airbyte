@@ -123,6 +123,13 @@ jobs:
         uses: helm/kind-action@v1.4.0
         with:
           config: ./tools/bin/source-harness-kind-cluster-config.yaml
+      - name: Run performance harness
+        id: run-performance-harness
+        uses: Wandalen/wretry.action@master
+        with:
+          command: ./tools/bin/run_performance_harness.sh ${{ github.event.inputs.connector }} ${{ github.event.inputs.dataset }}
+          attempt_limit: 3
+          attempt_delay: 10000 # in ms
       - name: Run harness
         id: run-harness
         shell: bash
