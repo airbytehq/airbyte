@@ -6,7 +6,9 @@ Before running these scripts you need to set up a local virtual environment in t
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+brew install gh
 ```
+
 ## Requirements
 * [GitHub CLI](https://cli.github.com/) (`brew install gh`)
 

@@ -5,6 +5,7 @@
 import argparse
 import logging
 from pathlib import Path
+from typing import Callable
 
 import definitions
 import utils
@@ -60,11 +61,11 @@ def write_new_config(new_config, output_path):
     logging.info("Saved the configuration in its new format")
 
 
-def update_configuration(config_path, migrate_from_legacy: bool):
+def update_configuration(config_path, migration: Callable, migrate_from_legacy: bool):
     config_to_migrate = load_config(config_path)
     if migrate_from_legacy:
         config_to_migrate = migrate_to_new_config_format(config_to_migrate)
-    new_config = set_ignore_extra_columns(config_to_migrate)  # TODO: make fillable
+    new_config = migration(config_to_migrate)
     write_new_config(new_config, config_path)
     logging.info(f"The configuration was successfully updated: {config_path}")
     return config_path
@@ -72,6 +73,11 @@ def update_configuration(config_path, migrate_from_legacy: bool):
 
 if __name__ == "__main__":
     args = parser.parse_args()
+
+    # TODO: find a way to configure this via plugin
+    MIGRATION_TO_RUN = set_high_test_strictness_level
+
     for definition in utils.get_valid_definitions_from_args(args):
-        config_path = utils.acceptance_test_config_path(definitions.get_airbyte_connector_name_from_definition)
-        update_configuration(config_path, migrate_from_legacy=args.migrate_from_legacy)
+        config_path = utils.acceptance_test_config_path(definitions.get_airbyte_connector_name_from_definition(definition))
+        update_configuration(config_path, MIGRATION_TO_RUN, args.migrate_from_legacy)
+
