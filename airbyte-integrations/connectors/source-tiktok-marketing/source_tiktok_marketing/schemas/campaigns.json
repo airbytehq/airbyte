@@ -58,6 +58,12 @@
       "type": "string",
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
+    },
+    "roas_bid": {
+      "type": ["null", "number"]
+    },
+    "is_smart_performance_campaign": {
+      "type": ["null", "boolean"]
     }
   }
 }
