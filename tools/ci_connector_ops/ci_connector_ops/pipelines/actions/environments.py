@@ -21,7 +21,7 @@ CONNECTOR_TESTING_REQUIREMENTS = [
     "isort==5.6.4",
     "pytest==6.2.5",
     "coverage[toml]==6.3.1",
-    "pytest-custom_exit_code", # TODO maybe use in poetry?
+    "pytest-custom_exit_code",  # TODO maybe use in poetry?
 ]
 
 INSTALL_LOCAL_REQUIREMENTS_CMD = ["python", "-m", "pip", "install", "-r", "requirements.txt"]
@@ -202,6 +202,7 @@ async def with_ci_connector_ops(context: PipelineContext) -> Container:
     python_with_git = python_base_environment.with_exec(["apk", "add", "gcc", "libffi-dev", "musl-dev", "git"])
     return await with_installed_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH, exclude=["pipelines"])
 
+
 def with_poetry(dagger_client) -> Container:
     """Installs poetry in a python environment.
 
@@ -216,9 +217,10 @@ def with_poetry(dagger_client) -> Container:
     python_with_poetry = python_with_git.with_exec(INSTALL_POETRY_PACKAGE_CMD)
 
     poetry_cache: CacheVolume = dagger_client.cache_volume("poetry_cache")
-    poetry_with_cache =  python_with_poetry.with_mounted_cache("/root/.cache/pypoetry", poetry_cache, sharing=CacheSharingMode.PRIVATE)
+    poetry_with_cache = python_with_poetry.with_mounted_cache("/root/.cache/pypoetry", poetry_cache, sharing=CacheSharingMode.PRIVATE)
 
     return poetry_with_cache
+
 
 def with_poetry_module(dagger_client, src_path: str) -> Container:
     """Installs poetry in a python environment.
@@ -232,9 +234,4 @@ def with_poetry_module(dagger_client, src_path: str) -> Container:
     src = dagger_client.host().directory(src_path, exclude=POETRY_EXCLUDE)
     python_with_poetry = with_poetry(dagger_client)
 
-    return (
-        python_with_poetry
-        .with_mounted_directory("/src", src)
-        .with_workdir("/src")
-        .with_exec(POETRY_INSTALL_DEPENDENCIES_CMD)
-    )
+    return python_with_poetry.with_mounted_directory("/src", src).with_workdir("/src").with_exec(POETRY_INSTALL_DEPENDENCIES_CMD)

@@ -19,12 +19,14 @@ from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL
 from ci_connector_ops.utils import Connector
 
+
 class ContextState(Enum):
     INITIALIZED = {"github_state": "pending", "description": "Pipelines are being initialized..."}
     RUNNING = {"github_state": "pending", "description": "Pipelines are running..."}
     ERROR = {"github_state": "error", "description": "Something went wrong while running the Pipelines."}
     SUCCESSFUL = {"github_state": "success", "description": "All Pipelines ran successfully."}
     FAILURE = {"github_state": "failure", "description": "Pipeline failed."}
+
 
 class PipelineContext(ABC):
     def __init__(
@@ -36,7 +38,6 @@ class PipelineContext(ABC):
         gha_workflow_run_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
-
     ):
         self.pipeline_name = pipeline_name
         self.is_local = is_local

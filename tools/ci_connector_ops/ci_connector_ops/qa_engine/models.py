@@ -9,9 +9,11 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
+
 class ConnectorTypeEnum(str, Enum):
     source = "source"
     destination = "destination"
+
 
 class ReleaseStageEnum(str, Enum):
     unknown = "unknown"
@@ -19,8 +21,10 @@ class ReleaseStageEnum(str, Enum):
     beta = "beta"
     generally_available = "generally_available"
 
+
 PUBLIC_FIELD = Field(..., is_public=True)
 PRIVATE_FIELD = Field(..., is_public=False)
+
 
 class ConnectorQAReport(BaseModel):
     connector_type: ConnectorTypeEnum = PUBLIC_FIELD
@@ -41,6 +45,7 @@ class ConnectorQAReport(BaseModel):
     succeeded_syncs_count: int = PRIVATE_FIELD
     is_eligible_for_promotion_to_cloud: bool = PUBLIC_FIELD
     report_generation_datetime: datetime = PUBLIC_FIELD
+
 
 class QAReport(BaseModel):
     connectors_qa_report: List[ConnectorQAReport]

@@ -18,14 +18,8 @@ from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.utils import (
     DAGGER_CONFIG,
-    get_current_epoch_time,
-    get_current_git_branch,
-    get_current_git_revision,
     get_modified_connectors,
-    get_modified_files,
-    with_exit_code,
 )
-from ci_connector_ops.pipelines.actions.environments import with_poetry_module
 from ci_connector_ops.utils import ConnectorLanguage, get_all_released_connectors
 from rich.logging import RichHandler
 
@@ -39,6 +33,7 @@ logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt=
 logger = logging.getLogger(__name__)
 
 # DAGGER PIPELINES
+
 
 async def run(context: ConnectorTestContext, semaphore: anyio.Semaphore) -> ConnectorTestReport:
     """Runs a CI pipeline for a single connector.
@@ -79,10 +74,11 @@ async def run_connectors_test_pipelines(contexts: List[ConnectorTestContext], co
                 context.dagger_client = dagger_client.pipeline(f"{context.connector.technical_name} - Test Pipeline")
                 tg.start_soon(run, context, semaphore)
 
+
 # HELPERS
 
-def validate_environment(is_local: bool, use_remote_secrets: bool):
 
+def validate_environment(is_local: bool, use_remote_secrets: bool):
     if is_local:
         if not (os.getcwd().endswith("/airbyte") and Path(".git").is_dir()):
             raise click.UsageError("You need to run this command from the airbyte repository root.")
@@ -103,10 +99,12 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
             "You have to set the GCP_GSM_CREDENTIALS if you want to download secrets from GSM. Set the --use-remote-secrets option to false otherwise."
         )
 
+
 # COMMANDS
 
+
 @click.group(help="Commands related to connectors and connector acceptance tests.")
-@click.option("--use-remote-secrets", default=True) # specific to connectors
+@click.option("--use-remote-secrets", default=True)  # specific to connectors
 @click.pass_context
 def connectors_ci(
     ctx: click.Context,
@@ -128,6 +126,7 @@ def connectors_ci(
         should_send=ctx.obj["ci_context"] == "pull_request",
         logger=logger,
     )
+
 
 @connectors_ci.command()
 @click.option(

@@ -12,6 +12,7 @@ from ci_connector_ops.pipelines.utils import (
     get_modified_files,
 )
 
+
 @click.group(help="Airbyte CI top-level command group.")
 @click.option("--is-local/--is-ci", default=True)
 @click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
@@ -36,7 +37,6 @@ def airbyte_ci_pipeline(
     ci_context: str,
     pipeline_start_timestamp: int,
 ):
-
     ctx.ensure_object(dict)
     ctx.obj["is_local"] = is_local
     ctx.obj["git_branch"] = git_branch
@@ -49,9 +49,9 @@ def airbyte_ci_pipeline(
     ctx.obj["pipeline_start_timestamp"] = pipeline_start_timestamp
     ctx.obj["modified_files"] = get_modified_files(git_branch, git_revision, diffed_branch, is_local)
 
+
 airbyte_ci_pipeline.add_command(connectors_ci)
 airbyte_ci_pipeline.add_command(metadata_service)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     airbyte_ci_pipeline()
-
