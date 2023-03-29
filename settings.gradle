@@ -133,7 +133,6 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':tools:code-generator'
 
     include 'airbyte-integrations:connectors-performance:source-harness'
-    findProject(':airbyte-integrations:connectors-performance:source-harness')?.name = 'source-harness'
 }
 
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "OCTAVIA_CLI") {
