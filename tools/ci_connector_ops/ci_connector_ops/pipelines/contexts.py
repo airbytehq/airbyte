@@ -5,6 +5,7 @@ import logging
 import os
 from datetime import datetime
 from enum import Enum
+from types import TracebackType
 from typing import Optional
 
 from anyio import Path
@@ -90,6 +91,10 @@ class ConnectorTestContext:
         return self.is_local is False
 
     @property
+    def is_pr(self):
+        return self.ci_context == "pull_request"
+
+    @property
     def repo(self):
         return self.dagger_client.git(AIRBYTE_REPO_URL, keep_git_dir=True)
 
@@ -122,7 +127,7 @@ class ConnectorTestContext:
             "target_url": self.gha_workflow_run_url,
             "description": self.state.value["description"],
             "context": f"[POC please ignore] Connector tests: {self.connector.technical_name}",
-            "should_send": self.is_ci,
+            "should_send": self.is_pr,
             "logger": self.logger,
         }
 
@@ -136,46 +141,68 @@ class ConnectorTestContext:
         return self.get_repo_dir(str(self.connector.code_directory), exclude=exclude, include=include)
 
     async def __aenter__(self):
+        """Performs setup operation for the ConnectorTestContext.
+        Updates the current commit status on Github.
+        Raises:
+            Exception: An error is raised when the context was not initialized with a Dagger client
+
+        Returns:
+            ConnectorTestContext: A running instance of the ConnectorTestContext.
+        """
         if self.dagger_client is None:
             raise Exception("A ConnectorTestContext can't be entered with an undefined dagger_client")
         self.state = ContextState.RUNNING
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         return self
 
-    async def __aexit__(self, exception_type, exception_value, traceback) -> bool:
+    async def __aexit__(
+        self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType]
+    ) -> bool:
+        """Performs teardown operation for the ConnectorTestContext.
+        On the context exit the following operations will happen:
+            - Upload updated connector secrets back to Google Secret Manager
+            - Write a test report in JSON format locally and to S3 if running in a CI environment
+            - Update the commit status check on GitHub if running in a CI environment.
+
+        It should gracefully handle the execution error that happens and always upload a test report and update commit status check.
+
+        Args:
+            exception_type (Optional[type[BaseException]]): The exception type if an exception was raised in the context execution, None otherwise.
+            exception_value (Optional[BaseException]): The exception value if an exception was raised in the context execution, None otherwise.
+            traceback (Optional[TracebackType]): The traceback if an exception was raised in the context execution, None otherwise.
+
+        Returns:
+            bool: Wether the teardown operation ran successfully.
+        """
         if exception_value:
             self.logger.error("An error got handled by the ConnectorTestContext", exc_info=True)
             self.state = ContextState.ERROR
-        elif self.test_report is None:
+        if self.test_report is None:
             self.logger.error("No test report was provided. This is probably due to an upstream error")
             self.state = ContextState.ERROR
-            return True
-        else:
-            teardown_pipeline = self.dagger_client.pipeline(f"Teardown {self.connector.technical_name}")
-            if self.should_save_updated_secrets:
-                await secrets.upload(
-                    teardown_pipeline,
-                    self.connector,
-                )
-            self.test_report.print()
-            self.logger.info(self.test_report.to_json())
-            local_test_reports_path_root = "tools/ci_connector_ops/test_reports/"
-            connector_name = self.test_report.connector_test_context.connector.technical_name
-            connector_version = self.test_report.connector_test_context.connector.version
-            git_revision = self.test_report.connector_test_context.git_revision
-            git_branch = self.test_report.connector_test_context.git_branch.replace("/", "_")
-            suffix = f"{connector_name}/{git_branch}/{connector_version}/{git_revision}.json"
-            local_report_path = Path(local_test_reports_path_root + suffix)
-            await local_report_path.parents[0].mkdir(parents=True, exist_ok=True)
-            await local_report_path.write_text(self.test_report.to_json())
-            if self.test_report.should_be_saved:
-                s3_reports_path_root = "python-poc/tests/history/"
-                s3_key = s3_reports_path_root + suffix
-                report_upload_exit_code = await remote_storage.upload_to_s3(
-                    teardown_pipeline, str(local_report_path), s3_key, os.environ["TEST_REPORTS_BUCKET_NAME"]
-                )
-                if report_upload_exit_code != 0:
-                    self.logger.error("Uploading the report to S3 failed.")
+            self.test_report = ConnectorTestReport(self, [])
 
+        self.dagger_client = self.dagger_client.pipeline(f"Teardown {self.connector.technical_name}")
+        if self.should_save_updated_secrets:
+            await secrets.upload(self)
+        self.test_report.print()
+        self.logger.info(self.test_report.to_json())
+        local_test_reports_path_root = "tools/ci_connector_ops/test_reports/"
+        connector_name = self.test_report.connector_test_context.connector.technical_name
+        connector_version = self.test_report.connector_test_context.connector.version
+        git_revision = self.test_report.connector_test_context.git_revision
+        git_branch = self.test_report.connector_test_context.git_branch.replace("/", "_")
+        suffix = f"{connector_name}/{git_branch}/{connector_version}/{git_revision}.json"
+        local_report_path = Path(local_test_reports_path_root + suffix)
+        await local_report_path.parents[0].mkdir(parents=True, exist_ok=True)
+        await local_report_path.write_text(self.test_report.to_json())
+        if self.test_report.should_be_saved:
+            s3_reports_path_root = "python-poc/tests/history/"
+            s3_key = s3_reports_path_root + suffix
+            report_upload_exit_code = await remote_storage.upload_to_s3(
+                self.dagger_client, str(local_report_path), s3_key, os.environ["TEST_REPORTS_BUCKET_NAME"]
+            )
+            if report_upload_exit_code != 0:
+                self.logger.error("Uploading the report to S3 failed.")
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         return True

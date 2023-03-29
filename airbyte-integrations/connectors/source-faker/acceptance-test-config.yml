@@ -18,7 +18,6 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: secrets/config.json
-        empty_streams: []
         expect_records:
           path: integration_tests/expected_records.jsonl
   full_refresh:

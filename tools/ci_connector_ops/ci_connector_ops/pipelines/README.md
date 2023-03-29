@@ -1,14 +1,17 @@
 # POC of CI connector pipelines in python
 
 This Python subpackage of `ci-connector-ops` gathers the POC code we're working on to:
+
 - Rewrite [airbyte-python.gradle](https://github.com/airbytehq/airbyte/blob/7d7e48b2a342a328fa74c6fd11a9268e1dcdcd64/buildSrc/src/main/groovy/airbyte-python.gradle) and [airbyte-connector-acceptance-test.gradle](https://github.com/airbytehq/airbyte/blob/master/buildSrc/src/main/groovy/airbyte-connector-acceptance-test.gradle) in Python.
-- Centralize the CI logic for connector testing 
-- Try out Dagger.io as a promising tool that can provide parallelism and caching out of the box for CI 
+- Centralize the CI logic for connector testing
+- Try out Dagger.io as a promising tool that can provide parallelism and caching out of the box for CI
 
 ## Install and use
+
 From `airbyte` repo root:
 
 ### Install
+
 ```bash
 cd tools/ci_connector_ops
 python -m venv .venv (please use at least Python 3.10)
@@ -21,6 +24,7 @@ cd ../..
 ### Use
 
 ### Use remote secrets
+
 If you want the pipeline to pull connector secrets from Google Secrets manager you have to set the `GCP_GSM_CREDENTIALS` env variable.
 If you don't set this variable the local secrets files, under the `secrets` directory of a connector, will be used for acceptance test run.
 More details [here](https://github.com/airbytehq/airbyte/blob/master/tools/ci_credentials/README.md#L20).
@@ -30,20 +34,23 @@ export GCP_GSM_CREDENTIALS=`cat <path to service account json file>`
 ```
 
 If you don't want to use the remote secrets please call connectors-ci with the following flag:
+
 ```bash
 connectors-ci --use-remote-secrets=False
 ```
 
 ### Environment variables required for CI run:
-* `GCP_GSM_CREDENTIALS`: the credentials to connect to GSM
-* `TEST_REPORTS_BUCKET_NAME`: the name of the bucket where the test report will be uploaded.
-* `AWS_ACCESS_KEY_ID`: the access key id of a service account allowed to write to `TEST_REPORTS_BUCKET_NAME`
-* `AWS_SECRET_ACCESS_KEY`: the secret access key of a service account allowed to write to`TEST_REPORTS_BUCKET_NAME`
-* `AWS_REGION`: The AWS region of the `TEST_REPORTS_BUCKET_NAME`
 
+- `GCP_GSM_CREDENTIALS`: the credentials to connect to GSM
+- `TEST_REPORTS_BUCKET_NAME`: the name of the bucket where the test report will be uploaded.
+- `AWS_ACCESS_KEY_ID`: the access key id of a service account allowed to write to `TEST_REPORTS_BUCKET_NAME`
+- `AWS_SECRET_ACCESS_KEY`: the secret access key of a service account allowed to write to`TEST_REPORTS_BUCKET_NAME`
+- `AWS_REGION`: The AWS region of the `TEST_REPORTS_BUCKET_NAME`
 
 ### **Run the pipelines for a specific connectors**
+
 (source-pokeapi does not require GSM access)
+
 ```bash
 connectors-ci test-connectors --name=source-pokeapi
 ```
@@ -53,12 +60,12 @@ connectors-ci test-connectors --name=source-pokeapi
 ```bash
 connectors-ci test-connectors --name=source-pokeapi --name=source-openweather
 ```
+
 ### **Run the pipeline for generally available connectors**
 
 ```bash
 connectors-ci test-connectors --release-stage=generally_available
 ```
-
 
 ### **Run the pipeline for the connectors you changed on the branch**
 
@@ -68,16 +75,18 @@ connectors-ci test-connectors --modified #the source-pokeapi pipeline should run
 ```
 
 ### Local VS. CI
+
 The default behavior of the CLI is to run in a local context.
 You can tell the CLI that it is running in a CI context with the following flag:
+
 ```bash
 connectors-ci --is-ci
 ```
 
 The main differences are that:
-- The pipeline will pull the branch under test from Airbyte's GitHub repo
-- The pipeline will upload per connector test reports to S3 
 
+- The pipeline will pull the branch under test from Airbyte's GitHub repo
+- The pipeline will upload per connector test reports to S3
 
 ## What does a connector pipeline run
 
@@ -106,7 +115,7 @@ The connector secrets won't be downloaded nor uploaded if you use the `--use-rem
 
 ## Questions for the Dagger team 
 
-**Remaining questions:**
+### Remaining questions:
 TLDR; how can I benefit from caching in [this function](https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/pipelines/tests.py#L79). I've the impression no cache is used on each execution.
 After using the "proxy docker host" to build and tag images + run acceptance tests ([here](https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/pipelines/tests.py#L79)) I have the impression the docker build I'm running is never cached. Is it possible to have this step cached? The acceptance tests are also never cached, possibly because the secret directory is filled with fresh files on a each execution. Does the Python SDK has a feature to set file timestamps on a Directory or should I use a `touch` command `with_exec` after writing these file to the directory (happening [here](https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/pipelines/actions/secrets.py#L38))? 
 
@@ -118,6 +127,7 @@ This is a list of nice to have features that are not blocking because we found w
 3. Reorder log lines by pipeline number after execution?
 [A log grouping tool is under construction](https://www.youtube.com/watch&ab_channel=Dagger) but I'm not sure its meant to be used in a CI logging context.
 4. How to get access to visualizations: We'd love to have dynamic status checks on our GitHub PRs, with links to pipeline visualization [like](https://propeller.fly.dev/runs/da68273e-48d8-4354-8d8b-efaccf2792b9).
+
 
 ### Performance benchmarks
 
