@@ -106,8 +106,8 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
   }
 
   /**
-   * After marking states as committed, return the state message to platform then clear state messages to avoid resending the same state message to
-   * the platform.
+   * After marking states as committed, return the state message to platform then clear state messages
+   * to avoid resending the same state message to the platform.
    */
   private void markStatesAsFlushedToDestination() {
     stateManager.markPendingAsCommitted();
