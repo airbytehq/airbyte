@@ -14,7 +14,7 @@ This page guides you through the process of setting up the Stripe source connect
 ## Set up the Stripe source connector
 
 1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
-2. Click **Sources** and then click **+ New source**. 
+2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Stripe** from the Source type dropdown.
 4. Enter a name for your source.
 5. For **Account ID**, enter your [Stripe `Account ID`](https://dashboard.stripe.com/settings/account).
@@ -82,6 +82,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.5   | 2023-03-29 | [24666](https://github.com/airbytehq/airbyte/pull/24666) | Add new stream (credit_notes)                                                                                                         |
 | 3.0.4   | 2023-03-24 | [24471](https://github.com/airbytehq/airbyte/pull/24471) | Fix stream slices for single sliced streams                                                                                                          |
 | 3.0.3   | 2023-03-17 | [24179](https://github.com/airbytehq/airbyte/pull/24179) | Get customer's attributes safely                                                                                                                     |
 | 3.0.2   | 2023-03-13 | [24051](https://github.com/airbytehq/airbyte/pull/24051) | Cache `customers` stream; Do not request transactions of customers with zero balance.                                                                |
