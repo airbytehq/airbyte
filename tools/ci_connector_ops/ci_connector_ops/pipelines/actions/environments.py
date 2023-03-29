@@ -209,7 +209,7 @@ def get_dind_container_and_host(dagger_client, cache_name):
     dockerd = (
         dagger_client.container()
         .from_("docker:23.0.1-dind")
-        # .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(cache_name), sharing=CacheSharingMode.PRIVATE)
+        # .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(cache_name), sharing=CacheSharingMode.SHARED)
         .with_mounted_cache("/tmp", share_tmp_volume)
         .with_exposed_port(2375)
         .with_exec(["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
@@ -250,7 +250,9 @@ def with_cat(context, dockerd, docker_host, share_tmp_volume, cachebuster):
 
 
 async def with_gradle(context: ConnectorTestContext, sources_to_include: List[str] = None) -> Container:
-    gradle_cache: CacheVolume = context.dagger_client.cache_volume("gradle_cache")
+    airbyte_gradle_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}_airbyte_gradle_cache")
+    root_gradle_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}_root_gradle_cache")
+
     dagger_client = context.dagger_client
     dockerd, docker_host, share_tmp_volume = get_dind_container_and_host(dagger_client, "gradle")
 
@@ -276,9 +278,10 @@ async def with_gradle(context: ConnectorTestContext, sources_to_include: List[st
         with_docker_cli(context, dockerd, await docker_host)
         .with_mounted_cache("/tmp", share_tmp_volume)
         .with_exec(["apk", "add", "openjdk17", "bash", "jq"])
-        .with_exec(["mkdir", "-p", "~/.gradle/"])
-        .with_mounted_cache("~/.gradle", gradle_cache, sharing=CacheSharingMode.SHARED)
+        .with_exec(["mkdir", "/root/.gradle"])
+        .with_mounted_cache("/root/.gradle", root_gradle_cache)
         .with_exec(["mkdir", "/airbyte"])
         .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
+        .with_mounted_cache("/airbyte/.gradle", airbyte_gradle_cache)
         .with_workdir("/airbyte")
     )
