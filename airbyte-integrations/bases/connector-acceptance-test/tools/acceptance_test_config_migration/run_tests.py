@@ -33,7 +33,7 @@ async def run_tests(connector_name):
     )
     return_code = await process.wait()
 
-    output_path = Path(f"{utils.MIGRATIONS_FOLDER}/{config.MODULE_NAME}/results/{return_code}")  # TODO: gitignore
+    output_path = Path(utils.MIGRATIONS_FOLDER) / config.MODULE_NAME / "output" / str(return_code)
     output_path.mkdir(parents=True, exist_ok=True)
 
     contents = await process.stdout.read()

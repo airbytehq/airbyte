@@ -35,7 +35,7 @@ def get_issue_content(source_definition) -> Optional[Dict[Text, Any]]:
     test_failure_logs = ""
     connector_technical_name = definitions.get_airbyte_connector_name_from_definition(definition)
     try:
-        with open(f"{utils.MIGRATIONS_FOLDER}/{config.MODULE_NAME}/output/{connector_technical_name}", "r") as f:
+        with open(f"{utils.MIGRATIONS_FOLDER}/{config.MODULE_NAME}/test_failure_logs/{connector_technical_name}", "r") as f:
             for line in f:
                 test_failure_logs += line
     except FileNotFoundError:
