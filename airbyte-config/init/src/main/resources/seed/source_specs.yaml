@@ -370,7 +370,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:2.0.9"
+- dockerImage: "airbyte/source-alloydb:2.0.13"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -443,6 +443,7 @@
           type: "string"
           order: 6
           group: "advanced"
+          pattern_descriptor: "key1=value1&key2=value2"
         ssl:
           title: "Connect using SSL"
           description: "Encrypt data using SSL. When activating SSL, please select\
@@ -3808,7 +3809,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.3.0"
+- dockerImage: "airbyte/source-facebook-marketing:0.3.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -4787,7 +4788,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-freshsales:0.1.3"
+- dockerImage: "airbyte/source-freshsales:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/freshsales"
     connectionSpecification:
@@ -4977,7 +4978,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.4.5"
+- dockerImage: "airbyte/source-github:0.4.6"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -5600,7 +5601,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.2.12"
+- dockerImage: "airbyte/source-google-ads:0.2.13"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -7654,7 +7655,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-klaviyo:0.1.13"
+- dockerImage: "airbyte/source-klaviyo:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/klaviyo"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/klaviyo"
@@ -8502,7 +8503,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:1.0.6"
+- dockerImage: "airbyte/source-mssql:1.0.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
@@ -9377,7 +9378,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:2.0.8"
+- dockerImage: "airbyte/source-mysql:2.0.11"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -11953,7 +11954,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:2.0.10"
+- dockerImage: "airbyte/source-postgres:2.0.13"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -13162,7 +13163,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:2.0.3"
+- dockerImage: "airbyte/source-s3:2.0.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -14951,7 +14952,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-stripe:3.0.3"
+- dockerImage: "airbyte/source-stripe:3.0.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
     connectionSpecification:
