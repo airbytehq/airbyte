@@ -269,6 +269,22 @@ async def with_gradle(context: ConnectorTestContext, sources_to_include: List[st
         "build.gradle",
         "tools/gradle",
         "spotbugs-exclude-filter-file.xml",
+        "airbyte-api",
+        "airbyte-commons-cli",
+        "airbyte-commons-protocol",
+        "airbyte-commons",
+        "airbyte-config",
+        "airbyte-connector-test-harnesses",
+        "airbyte-db",
+        "airbyte-integrations/bases",
+        "airbyte-integrations/connectors/source-jdbc",
+        "airbyte-integrations/connectors/source-relational-db",
+        "airbyte-json-validation",
+        "airbyte-protocol",
+        "airbyte-test-utils",
+        "buildSrc",
+        "tools/bin/build_image.sh",
+        "tools/lib/lib.sh",
     ]
 
     if sources_to_include:
@@ -284,4 +300,68 @@ async def with_gradle(context: ConnectorTestContext, sources_to_include: List[st
         .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
         .with_mounted_cache("/airbyte/.gradle", airbyte_gradle_cache)
         .with_workdir("/airbyte")
+    )
+
+
+def with_integration_base(context):
+    return (
+        context.dagger_client.container()
+        .from_("amazonlinux:2022.0.20220831.1")
+        .with_workdir("/airbyte")
+        .with_file("base.sh", context.get_repo_dir(include="airbyte-integrations/bases/base").file("base.sh"))
+        .with_env_variable("AIRBYTE_ENTRYPOINT", "/airbyte/base.sh")
+        .with_entrypoint("/airbyte/base.sh")
+    )
+
+
+def with_integration_base_java(context):
+    return (
+        context.dagger_client.container()
+        .from_("amazoncoretto:17.0.4")
+        .with_directory("/airbyte", with_java_base(context).directory("/airbyte"))
+        .with_exec(["yum", "install", "-y", "tar", "openssl", "&&", "yum", "clean", "all"])
+        .with_workdir("/airbyte")
+        .with_file("dd-java-agent.jar", context.dagger_client.http("https://dtdg.co/latest-java-tracer"))
+        .with_file("base.sh", context.get_repo_dir(include="airbyte-integrations/bases/base-java").file("javabase.sh"))
+        .with_env_variable("AIRBYTE_SPEC_CMD", "/airbyte/javabase.sh --spec")
+        .with_env_variable("AIRBYTE_CHECK_CMD", "/airbyte/javabase.sh --check")
+        .with_env_variable("AIRBYTE_DISCOVER_CMD", "/airbyte/javabase.sh --discover")
+        .with_env_variable("AIRBYTE_WRITE_CMD", "/airbyte/javabase.sh --write")
+        .with_env_variable("AIRBYTE_ENTRYPOINT", "/airbyte/base.sh")
+        .with_entrypoint("/airbyte/base.sh")
+    )
+
+
+async def with_java_connector(context):
+    build_dir = (
+        with_gradle(context)
+        .with_mounted_directory(str(context.connector.code_directory), context.get_connector_dir(exclude=["secrets", "builds"]))
+        .with_exec(["./gradlew", f":airbyte-integrations:connectors:{context.connector.technical_name}:build"])
+        .directory(f"{str(context.connector.code_directory)}/build")
+    )
+
+    tar_file = None
+    for entry in await build_dir.entries():
+        if entry.endswith(".tar"):
+            tar_file = build_dir.file(tar_file)
+    if tar_file is None:
+        raise Exception("Could not find the tar file")
+
+    return (
+        with_integration_base_java(context)
+        .with_workdir("/airbyte")
+        .with_env_variable("APPLICATION", context.connector.technical_name)
+        .with_file(f"{context.connector.technical_name}.tar", tar_file)
+        .with_exec(
+            [
+                "tar",
+                "xf",
+                f"{context.connector.technical_name}.tar",
+                "--strip-components=1",
+                "&&",
+                "rm",
+                "-rf",
+                f"{context.connector.technical_name}.tar",
+            ]
+        )
     )
