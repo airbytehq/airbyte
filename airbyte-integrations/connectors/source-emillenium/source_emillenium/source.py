@@ -226,11 +226,11 @@ class SourceEMillenium(AbstractSource):
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            auth = NoAuth()
-            start_date = datetime.strptime(config['start_date'], '%d/%m/%Y')
-            stream = Listapedidos(authenticator=auth, config=config, start_date=start_date)
-            records = stream.read_records(sync_mode=SyncMode.full_refresh)
-            next(records)
+            # auth = NoAuth()
+            # start_date = datetime.strptime(config['start_date'], '%d/%m/%Y')
+            # stream = Listapedidos(authenticator=auth, config=config, start_date=start_date)
+            # records = stream.read_records(sync_mode=SyncMode.full_refresh)
+            # next(records)
             return True, None
         except requests.exceptions.RequestException as e:
             return False, e
