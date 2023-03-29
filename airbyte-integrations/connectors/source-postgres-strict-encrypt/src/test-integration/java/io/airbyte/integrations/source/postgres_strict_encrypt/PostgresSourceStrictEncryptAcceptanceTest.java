@@ -59,36 +59,36 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
     environmentVariables.set("DEPLOYMENT_MODE", "CLOUD");
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     container = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
-                                              .asCompatibleSubstituteFor("postgres"));
+        .asCompatibleSubstituteFor("postgres"));
     container.start();
     certs = getCertificate(container);
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-                                                          .put("method", "Standard")
-                                                          .build());
+        .put("method", "Standard")
+        .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
-                    .put(JdbcUtils.HOST_KEY, container.getHost())
-                    .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
-                    .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
-                    .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-                    .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-                    .put("replication_method", replicationMethod)
-                    .put("ssl_mode", ImmutableMap.builder()
-                        .put("mode", "verify-full")
-                        .put("ca_certificate", certs.getCaCertificate())
-                        .put("client_certificate", certs.getClientCertificate())
-                        .put("client_key", certs.getClientKey())
-                        .put("client_key_password", PASSWORD)
-                        .build())
-                    .build());
+        .put(JdbcUtils.HOST_KEY, container.getHost())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
+        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
+        .put("replication_method", replicationMethod)
+        .put("ssl_mode", ImmutableMap.builder()
+            .put("mode", "verify-full")
+            .put("ca_certificate", certs.getCaCertificate())
+            .put("client_certificate", certs.getClientCertificate())
+            .put("client_key", certs.getClientKey())
+            .put("client_key_password", PASSWORD)
+            .build())
+        .build());
 
     try (final DSLContext dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-                      config.get(JdbcUtils.HOST_KEY).asText(),
-                      config.get(JdbcUtils.PORT_KEY).asInt(),
-                      config.get(JdbcUtils.DATABASE_KEY).asText()),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES)) {
       final Database database = new Database(dslContext);
 
@@ -106,10 +106,12 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
   protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
   }
+
   @Override
   protected String getImageName() {
     return "airbyte/source-postgres-strict-encrypt:dev";
   }
+
   @Override
   protected ConnectorSpecification getSpec() throws Exception {
     return SshHelpers.injectSshIntoSpec(
@@ -130,21 +132,21 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    STREAM_NAME, SCHEMA_NAME,
-                    Field.of("id", JsonSchemaType.NUMBER),
-                    Field.of("name", JsonSchemaType.STRING))
-                            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-                            .withSourceDefinedPrimaryKey(List.of(List.of("id")))),
+                STREAM_NAME, SCHEMA_NAME,
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedPrimaryKey(List.of(List.of("id")))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    STREAM_NAME2, SCHEMA_NAME,
-                    Field.of("id", JsonSchemaType.NUMBER),
-                    Field.of("name", JsonSchemaType.STRING))
-                            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-                            .withSourceDefinedPrimaryKey(List.of(List.of("id"))))));
+                STREAM_NAME2, SCHEMA_NAME,
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedPrimaryKey(List.of(List.of("id"))))));
   }
 
   @Override
