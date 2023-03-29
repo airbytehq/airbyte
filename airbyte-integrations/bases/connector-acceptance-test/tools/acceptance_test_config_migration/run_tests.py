@@ -11,7 +11,7 @@ from pathlib import Path
 import definitions
 import utils
 
-from templates.fail_on_extra_columns import config
+from migrations.fail_on_extra_columns import config
 
 parser = argparse.ArgumentParser(description="Run connector acceptance tests for a list of connectors.")
 utils.add_connectors_param(parser)
@@ -33,7 +33,7 @@ async def run_tests(connector_name):
     )
     return_code = await process.wait()
 
-    output_path = Path(f"templates/{config.MODULE_NAME}/results/{return_code}")  # TODO put this in the module
+    output_path = Path(f"{utils.MIGRATIONS_FOLDER}/{config.MODULE_NAME}/results/{return_code}")  # TODO: gitignore
     output_path.mkdir(parents=True, exist_ok=True)
 
     contents = await process.stdout.read()

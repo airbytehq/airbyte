@@ -8,6 +8,7 @@ from pathlib import Path
 from definitions import find_by_name, is_airbyte_connector, get_airbyte_connector_name_from_definition, BETA_DEFINITIONS, GA_DEFINITIONS
 
 CONNECTORS_DIRECTORY = "../../../../connectors"
+MIGRATIONS_FOLDER = "./migrations/"
 
 
 def acceptance_test_config_path(connector_name):

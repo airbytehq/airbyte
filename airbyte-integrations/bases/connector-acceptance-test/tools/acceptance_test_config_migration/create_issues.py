@@ -15,13 +15,10 @@ import definitions
 import utils
 from jinja2 import Environment, FileSystemLoader
 
-from templates.fail_on_extra_columns import config
-
-# Don't need to set these
-TEMPLATES_FOLDER = "./templates/"
+from migrations.fail_on_extra_columns import config
 
 logging.basicConfig(level=logging.DEBUG)
-environment = Environment(loader=FileSystemLoader(TEMPLATES_FOLDER))
+environment = Environment(loader=FileSystemLoader(utils.MIGRATIONS_FOLDER))
 
 parser = argparse.ArgumentParser(description="Create issues for a list of connectors from a template.")
 utils.add_dry_param(parser)
@@ -37,7 +34,7 @@ def get_issue_content(source_definition) -> Optional[Dict[Text, Any]]:
     test_failure_logs = ""
     connector_technical_name = definitions.get_airbyte_connector_name_from_definition(definition)
     try:
-        with open(f"templates/{config.MODULE_NAME}/output/{connector_technical_name}", "r") as f:
+        with open(f"{utils.MIGRATIONS_FOLDER}/{config.MODULE_NAME}/output/{connector_technical_name}", "r") as f:
             for line in f:
                 test_failure_logs += line
     except FileNotFoundError:

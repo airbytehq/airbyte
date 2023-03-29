@@ -15,13 +15,13 @@ from git import Repo
 from jinja2 import Environment, FileSystemLoader
 
 from config_migration import update_configuration
+from migrations.fail_on_extra_columns import config
 
-from templates.fail_on_extra_columns import config
 
 REPO_ROOT = "../../../../../"
 AIRBYTE_REPO = Repo(REPO_ROOT)
-environment = Environment(loader=FileSystemLoader("./templates/"))
-PR_TEMPLATE = environment.get_template("strictness_level_migration/pr.md.j2")
+environment = Environment(loader=FileSystemLoader(utils.MIGRATIONS_FOLDER))
+PR_TEMPLATE = environment.get_template(f"{config}/pr.md.j2")
 
 parser = argparse.ArgumentParser(description="Create PRs for a list of connectors from a template.")
 utils.add_dry_param(parser)
