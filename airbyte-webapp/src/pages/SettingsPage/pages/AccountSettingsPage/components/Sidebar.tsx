@@ -67,12 +67,12 @@ const LogOut = styled.div`
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  justify-content: center;
   color: #6b6b6f;
   margin: 20px 0 40px 0;
   font-size: 14px;
   line-height: 16px;
   font-weight: 500;
+  padding: 0 0 0 78px;
 
   position: absolute;
   bottom: 0px;
@@ -113,7 +113,9 @@ export const Sidebar: React.FC<IProps> = ({ menuItems, onSelectItem }) => {
       submitButtonText: "settings.logout.modal.confirmText",
       onSubmit: () => {
         closeConfirmationModal();
-        removeUser!();
+        if (removeUser) {
+          removeUser();
+        }
         push(`/${RoutePaths.Signin}`);
       },
     });
