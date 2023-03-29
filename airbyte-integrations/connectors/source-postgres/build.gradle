@@ -12,7 +12,6 @@ application {
 }
 
 dependencies {
-    implementation 'io.debezium:debezium-api:2.1.2.Final'
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:bases:debezium')

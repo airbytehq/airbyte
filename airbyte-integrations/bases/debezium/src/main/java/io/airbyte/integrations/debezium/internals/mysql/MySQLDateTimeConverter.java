@@ -2,10 +2,11 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.debezium.internals;
+package io.airbyte.integrations.debezium.internals.mysql;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.DateTimeConverter;
+import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.debezium.internals.DebeziumConverterUtils;
 import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
 import io.debezium.time.Conversions;
@@ -26,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * https://debezium.io/documentation/reference/2.1/development/converters.html This is built from
  * reference with {@link io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter} If you
  * rename this class then remember to rename the datetime.type property value in
- * {@link io.airbyte.integrations.source.mysql.MySqlCdcProperties#getDebeziumProperties(JsonNode)}
+ * {@link io.airbyte.integrations.source.mysql.MySqlCdcProperties#commonProperties(JdbcDatabase)}
  * (If you don't rename, a test would still fail but it might be tricky to figure out where to
  * change the property name)
  */
