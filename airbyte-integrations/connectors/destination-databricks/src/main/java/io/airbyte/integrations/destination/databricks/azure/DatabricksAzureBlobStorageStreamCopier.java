@@ -57,6 +57,7 @@ public class DatabricksAzureBlobStorageStreamCopier extends DatabricksStreamCopi
   protected String currentFile;
 
   public DatabricksAzureBlobStorageStreamCopier(final String stagingFolder,
+                                                final String catalog,
                                                 final String schema,
                                                 final ConfiguredAirbyteStream configuredStream,
                                                 final JdbcDatabase database,
@@ -65,7 +66,7 @@ public class DatabricksAzureBlobStorageStreamCopier extends DatabricksStreamCopi
                                                 final SqlOperations sqlOperations,
                                                 final SpecializedBlobClientBuilder specializedBlobClientBuilder,
                                                 final AzureBlobStorageConfig azureConfig) {
-    super(stagingFolder, schema, configuredStream, database, databricksConfig, nameTransformer, sqlOperations);
+    super(stagingFolder, catalog, schema, configuredStream, database, databricksConfig, nameTransformer, sqlOperations);
 
     this.specializedBlobClientBuilder = specializedBlobClientBuilder;
     this.azureConfig = azureConfig;
