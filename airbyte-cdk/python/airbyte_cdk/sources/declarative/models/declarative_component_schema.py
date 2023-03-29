@@ -321,39 +321,51 @@ class OAuthConfigSpecification(BaseModel):
     oauth_user_input_from_connector_config_specification: Optional[Dict[str, Any]] = Field(
         None,
         description="OAuth specific blob. This is a Json Schema used to validate Json configurations used as input to OAuth.\nMust be a valid non-nested JSON that refers to properties from ConnectorSpecification.connectionSpecification\nusing special annotation 'path_in_connector_config'.\nThese are input values the user is entering through the UI to authenticate to the connector, that might also shared\nas inputs for syncing data via the connector.\nExamples:\nif no connector values is shared during oauth flow, oauth_user_input_from_connector_config_specification=[]\nif connector values such as 'app_id' inside the top level are used to generate the API url for the oauth flow,\n  oauth_user_input_from_connector_config_specification={\n    app_id: {\n      type: string\n      path_in_connector_config: ['app_id']\n    }\n  }\nif connector values such as 'info.app_id' nested inside another object are used to generate the API url for the oauth flow,\n  oauth_user_input_from_connector_config_specification={\n    app_id: {\n      type: string\n      path_in_connector_config: ['info', 'app_id']\n    }\n  }",
-        example={"app_id": {"type": "string", "path_in_connector_config": ["app_id"]}},
+        examples=[
+            {"app_id": {"type": "string", "path_in_connector_config": ["app_id"]}},
+            {
+                "app_id": {
+                    "type": "string",
+                    "path_in_connector_config": ["info", "app_id"],
+                }
+            },
+        ],
         title="OAuth user input",
     )
     complete_oauth_output_specification: Optional[Dict[str, Any]] = Field(
         None,
         description="OAuth specific blob. This is a Json Schema used to validate Json configurations produced by the OAuth flows as they are\nreturned by the distant OAuth APIs.\nMust be a valid JSON describing the fields to merge back to `ConnectorSpecification.connectionSpecification`.\nFor each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,\nExamples:\n    complete_oauth_output_specification={\n      refresh_token: {\n        type: string,\n        path_in_connector_config: ['credentials', 'refresh_token']\n      }\n    }",
-        example={
-            "refresh_token": {
-                "type": "string,",
-                "path_in_connector_config": ["credentials", "refresh_token"],
+        examples=[
+            {
+                "refresh_token": {
+                    "type": "string,",
+                    "path_in_connector_config": ["credentials", "refresh_token"],
+                }
             }
-        },
+        ],
         title="OAuth output specification",
     )
     complete_oauth_server_input_specification: Optional[Dict[str, Any]] = Field(
         None,
         description="OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations.\nMust be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the\nserver when completing an OAuth flow (typically exchanging an auth code for refresh token).\nExamples:\n    complete_oauth_server_input_specification={\n      client_id: {\n        type: string\n      },\n      client_secret: {\n        type: string\n      }\n    }",
-        example={"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
+        examples=[{"client_id": {"type": "string"}, "client_secret": {"type": "string"}}],
         title="OAuth input specification",
     )
     complete_oauth_server_output_specification: Optional[Dict[str, Any]] = Field(
         None,
         description="OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations that\nalso need to be merged back into the connector configuration at runtime.\nThis is a subset configuration of `complete_oauth_server_input_specification` that filters fields out to retain only the ones that\nare necessary for the connector to function with OAuth. (some fields could be used during oauth flows but not needed afterwards, therefore\nthey would be listed in the `complete_oauth_server_input_specification` but not `complete_oauth_server_output_specification`)\nMust be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the\nconnector when using OAuth flow APIs.\nThese fields are to be merged back to `ConnectorSpecification.connectionSpecification`.\nFor each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,\nExamples:\n      complete_oauth_server_output_specification={\n        client_id: {\n          type: string,\n          path_in_connector_config: ['credentials', 'client_id']\n        },\n        client_secret: {\n          type: string,\n          path_in_connector_config: ['credentials', 'client_secret']\n        }\n      }",
-        example={
-            "client_id": {
-                "type": "string,",
-                "path_in_connector_config": ["credentials", "client_id"],
-            },
-            "client_secret": {
-                "type": "string,",
-                "path_in_connector_config": ["credentials", "client_secret"],
-            },
-        },
+        examples=[
+            {
+                "client_id": {
+                    "type": "string,",
+                    "path_in_connector_config": ["credentials", "client_id"],
+                },
+                "client_secret": {
+                    "type": "string,",
+                    "path_in_connector_config": ["credentials", "client_secret"],
+                },
+            }
+        ],
         title="OAuth server output specification",
     )
 

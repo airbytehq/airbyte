@@ -1096,10 +1096,13 @@ definitions:
               }
             }
         type: object
-        example:
-          app_id:
-            type: string
-            path_in_connector_config: ["app_id"]
+        examples:
+          - app_id:
+              type: string
+              path_in_connector_config: ["app_id"]
+          - app_id:
+              type: string
+              path_in_connector_config: ["info", "app_id"]
       complete_oauth_output_specification:
         title: "OAuth output specification"
         description: |-
@@ -1116,10 +1119,10 @@ definitions:
               }
         type: object
         additionalProperties: true
-        example:
-          refresh_token:
-            type: string,
-            path_in_connector_config: ["credentials", "refresh_token"]
+        examples:
+          - refresh_token:
+              type: string,
+              path_in_connector_config: ["credentials", "refresh_token"]
       complete_oauth_server_input_specification:
         title: "OAuth input specification"
         description: |-
@@ -1137,11 +1140,11 @@ definitions:
               }
         type: object
         additionalProperties: true
-        example:
-          client_id:
-            type: string
-          client_secret:
-            type: string
+        examples:
+          - client_id:
+              type: string
+            client_secret:
+              type: string
       complete_oauth_server_output_specification:
         title: "OAuth server output specification"
         description: |-
@@ -1167,13 +1170,13 @@ definitions:
                 }
         type: object
         additionalProperties: true
-        example:
-          client_id:
-            type: string,
-            path_in_connector_config: ["credentials", "client_id"]
-          client_secret:
-            type: string,
-            path_in_connector_config: ["credentials", "client_secret"]
+        examples:
+          - client_id:
+              type: string,
+              path_in_connector_config: ["credentials", "client_id"]
+            client_secret:
+              type: string,
+              path_in_connector_config: ["credentials", "client_secret"]
   SubstreamPartitionRouter:
     description: Partition router that is used to retrieve records that have been partitioned according to records from the specified parent streams
     type: object
