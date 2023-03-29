@@ -1,5 +1,5 @@
-import { faSignOut } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+// import { faSignOut } from "@fortawesome/free-solid-svg-icons";
+// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import * as React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
@@ -17,6 +17,7 @@ import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 
 import { AccountSettingsRoute } from "../AccountSettingsPage";
+import { SignOutIcon } from "./SignOutIcon";
 
 interface IProps {
   menuItems: SideMenuItem[];
@@ -52,8 +53,11 @@ const ItemText = styled.div<{
   margin-left: 12px;
 `;
 
-const MenuItemIcon = styled(FontAwesomeIcon)`
+const MenuItemIcon = styled.div`
   margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const LogOut = styled.div`
@@ -122,7 +126,9 @@ export const Sidebar: React.FC<IProps> = ({ menuItems, onSelectItem }) => {
         </SidebarItem>
       ))}
       <LogOut onClick={toggleSignOutConfirmModal}>
-        <MenuItemIcon icon={faSignOut} />
+        <MenuItemIcon>
+          <SignOutIcon width={14} height={14} />
+        </MenuItemIcon>
         <FormattedMessage id="sidebar.DaspireSignOut" />
       </LogOut>
     </SidebarContainer>
