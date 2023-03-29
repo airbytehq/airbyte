@@ -722,7 +722,7 @@ class AdGroupsReports(BasicReports):
 
 
 class AudienceReport(BasicReports):
-    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1707957217727489"""
+    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1738864928947201"""
 
     audience_dimensions: List = ["gender", "age"]
     schema_name = "audience_reports"
