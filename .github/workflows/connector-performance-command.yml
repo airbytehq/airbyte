@@ -123,44 +123,24 @@ jobs:
         uses: helm/kind-action@v1.4.0
         with:
           config: ./tools/bin/source-harness-kind-cluster-config.yaml
-      - name: Run performance harness
-        id: run-performance-harness
-        uses: Wandalen/wretry.action@master
-        with:
-          command: ./tools/bin/run_performance_harness.sh ${{ github.event.inputs.connector }} ${{ github.event.inputs.dataset }}
-          attempt_limit: 3
-          attempt_delay: 10000 # in ms
       - name: Run harness
         id: run-harness
         shell: bash
         env:
           CONN: ${{ github.event.inputs.connector }}
           DS: ${{ github.event.inputs.dataset }}
+          prefix: '{"type":"LOG","log":{"level":"INFO","message":"INFO i.a.i.p.PerformanceTest(runTest):165'
+          suffix: '"}}'
         run: |
-          echo "Setting admin account permissions"
           kubectl apply -f ./tools/bin/admin-service-account.yaml
-          echo "Loading connector image into kind" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY # this is a blank line
           kind load docker-image airbyte/source-postgres:dev --name chart-testing
-          echo "Loading harness image into kind" >> $GITHUB_STEP_SUMMARY
           kind load docker-image airbyte/source-harness:dev --name chart-testing
-          echo "loading pod..." 
           export CONNECTOR_IMAGE_NAME=${CONN/connectors/airbyte}:dev
           export DATASET=$DS
           envsubst < ./tools/bin/source-harness-process.yaml | kubectl create -f -
-          echo "get pods..."
-          kubectl get po
           POD=$(kubectl get pod -l app=source-harness -o jsonpath="{.items[0].metadata.name}")
-          echo "pod name is $POD"
-          #sleep 3
-          #kubectl get events --sort-by=.metadata.creationTimestamp
           kubectl wait --for=condition=Ready --timeout=20s "pod/$POD"
           kubectl logs --follow $POD
-          echo "reading end of log"
-          kubectl logs --tail=5 $POD
-          # RUN_RESULT=$(kubectl logs --tail=5 $POD 2>&1)
-          prefix='{"type":"LOG","log":{"level":"INFO","message":"INFO i.a.i.p.PerformanceTest(runTest):165'
-          suffix='"}}'
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "RUN_RESULT<<$EOF" >> $GITHUB_OUTPUT
           kubectl logs --tail=1 $POD | while read line ; do line=${line#"$prefix"}; line=${line%"$suffix"}; echo $line >> $GITHUB_OUTPUT ; done 
