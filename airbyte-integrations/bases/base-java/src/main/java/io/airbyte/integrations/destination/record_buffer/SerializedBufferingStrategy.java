@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.record_buffer;
 
-import io.airbyte.commons.functional.CheckedBiConsumer;
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DefaultDestStateLifecycleManager;
@@ -35,7 +34,7 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   private static final Logger LOGGER = LoggerFactory.getLogger(SerializedBufferingStrategy.class);
 
   private final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer;
-  private final CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> onStreamFlush;
+  private final FlushBufferFunction onStreamFlush;
   private final DefaultDestStateLifecycleManager stateManager;
 
   private Map<AirbyteStreamNameNamespacePair, SerializableBuffer> allBuffers = new HashMap<>();
@@ -53,7 +52,7 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
    */
   public SerializedBufferingStrategy(final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
                                      final ConfiguredAirbyteCatalog catalog,
-                                     final CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> onStreamFlush,
+                                     final FlushBufferFunction onStreamFlush,
                                      final Consumer<AirbyteMessage> outputRecordCollector) {
     this.onCreateBuffer = onCreateBuffer;
     this.catalog = catalog;
