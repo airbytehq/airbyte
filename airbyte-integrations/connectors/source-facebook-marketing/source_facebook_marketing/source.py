@@ -12,6 +12,7 @@ import requests
 from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from pydantic.error_wrappers import ValidationError
 from source_facebook_marketing.api import API
 from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams import (
@@ -58,16 +59,13 @@ class SourceFacebookMarketing(AbstractSource):
         """
         try:
             config = self._validate_and_transform(config)
-        except pydantic.error_wrappers.ValidationError as e:
-            return False, str(e)
 
-        if config.end_date < config.start_date:
-            return False, "end_date must be equal or after start_date."
+            if config.end_date < config.start_date:
+                return False, "end_date must be equal or after start_date."
 
-        try:
             api = API(account_id=config.account_id, access_token=config.access_token)
             logger.info(f"Select account {api.account}")
-        except requests.exceptions.RequestException as e:
+        except (requests.exceptions.RequestException, ValidationError) as e:
             return False, e
 
         # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
