@@ -8,15 +8,16 @@ import { NavLink } from "react-router-dom";
 import styled from "styled-components";
 
 import { Link } from "components";
-import { DocumentationArrowIcon } from "components/icons/DocumentationArrowIcon";
-import { DocumentationIcon } from "components/icons/DocumentationIcon";
+// import { DocumentationArrowIcon } from "components/icons/DocumentationArrowIcon";
+// import { DocumentationIcon } from "components/icons/DocumentationIcon";
 
-import { links } from "config/links";
+// import { links } from "config/links";
 // import Version from "components/Version";
 // import { useConfig } from "config";
 // import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useUser } from "core/AuthContext";
 import useRouter from "hooks/useRouter";
+// import { LOCALES } from "locales";
 
 import { RoutePaths } from "../../../pages/routePaths";
 // import ConnectionsIcon from "./components/ConnectionsIcon";
@@ -86,26 +87,10 @@ const UserDetail = styled.div`
   margin-top: 40px;
 `;
 
-// const DocumentationItem = styled.div`
-//   padding-left: 54px;
-//   height: 50px;
-//   display: flex;
-//   flex-direction: row;
-//   align-items: center;
-//   margin-top: 7px;
-
-//   &:hover {
-//     background: #eae9ff;
-//     color: #4f46e5;
-//     cursor: pointer;
-//     transition: all $transition ease-out;
-//   }
+// const DocumentationArrowIconContainer = styled.div`
+//   display: block;
+//   margin-left: 14px;
 // `;
-
-const DocumentationArrowIconContainer = styled.div`
-  display: block;
-  margin-left: 16px;
-`;
 
 export const useCalculateSidebarStyles = () => {
   const { location } = useRouter();
@@ -140,14 +125,11 @@ export const getPopoutStyles = (isOpen?: boolean) => {
   return classnames(styles.menuItem, { [styles.popoutOpen]: isOpen });
 };
 
-// const toDocsPage = () =>{
-//  window.location.href = links.docsLink
-// }
-
 const SideBar: React.FC = () => {
   // const config = useConfig();
   // const workspace = useCurrentWorkspace();
   const { user } = useUser();
+  // const docsLink = user.lang === LOCALES.ENGLISH ? links.docsLink : `${links.docsLink}/${user.lang}/`;
   return (
     <div className={styles.sidebar}>
       <div>
@@ -266,9 +248,10 @@ const SideBar: React.FC = () => {
             </Text>
           </NavLink>
         </MenuItem>
-        <NavLink
-          to={links.docsLink}
+        {/* <a
+          href={docsLink}
           target="_blank"
+          rel="noreferrer"
           className={useCalculateSidebarItemStyles(RoutePaths.Documentation)}
         >
           <DocumentationIcon width={16} height={16} />
@@ -276,9 +259,9 @@ const SideBar: React.FC = () => {
             <FormattedMessage id="sidebar.documentation" />
           </Text>
           <DocumentationArrowIconContainer>
-            <DocumentationArrowIcon height={10} width={10} />
+            <DocumentationArrowIcon height={11} width={11} />
           </DocumentationArrowIconContainer>
-        </NavLink>
+        </a> */}
         {/* <li>
           <ButtonCenter>
             <Button>

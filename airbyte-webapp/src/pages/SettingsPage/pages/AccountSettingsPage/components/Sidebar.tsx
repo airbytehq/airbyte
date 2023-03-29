@@ -1,5 +1,5 @@
-import { faSignOut } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+// import { faSignOut } from "@fortawesome/free-solid-svg-icons";
+// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import * as React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
@@ -17,6 +17,7 @@ import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 
 import { AccountSettingsRoute } from "../AccountSettingsPage";
+import { SignOutIcon } from "./SignOutIcon";
 
 interface IProps {
   menuItems: SideMenuItem[];
@@ -52,6 +53,33 @@ const ItemText = styled.div<{
   font-size: 14px;
   color: ${({ isSelected, theme }) => (isSelected ? theme.blue400 : "#6B6B6F")};
   margin-left: 12px;
+`;
+
+const MenuItemIcon = styled.div`
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const LogOut = styled.div`
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b6b6f;
+  margin: 20px 0 40px 0;
+  font-size: 14px;
+  line-height: 16px;
+  font-weight: 500;
+
+  position: absolute;
+  bottom: 0px;
+  &:hover {
+    cursor: pointer;
+    color: ${({ theme }) => theme.blue400};
+  }
 `;
 
 const SidebarItemIcon = (path: string, color: string) => {
@@ -99,13 +127,12 @@ export const Sidebar: React.FC<IProps> = ({ menuItems, onSelectItem }) => {
           <ItemText isSelected={pathname.split("/").at(-1) === path}>{name}</ItemText>
         </SidebarItem>
       ))}
-      <div style={{ marginTop: "auto" }} />
-      <SidebarItem onClick={toggleSignOutConfirmModal}>
-        <FontAwesomeIcon icon={faSignOut} />
-        <ItemText>
-          <FormattedMessage id="sidebar.DaspireSignOut" />
-        </ItemText>
-      </SidebarItem>
+      <LogOut onClick={toggleSignOutConfirmModal}>
+        <MenuItemIcon>
+          <SignOutIcon width={14} height={14} />
+        </MenuItemIcon>
+        <FormattedMessage id="sidebar.DaspireSignOut" />
+      </LogOut>
     </SidebarContainer>
   );
 };

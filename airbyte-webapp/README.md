@@ -33,11 +33,6 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
-#### 2023.03.28
-1. Add Fullstory snippet to webapp
-
-#### 2023.03.27
-1. Link to documentation(Sidebar)
 
 #### 2023.03.24
 1. Optimization when plan runs out(connection/config page/add modal)
