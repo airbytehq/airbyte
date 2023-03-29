@@ -1046,6 +1046,7 @@ definitions:
       advanced_auth:
         "$ref": "#/definitions/AuthFlow"
   AuthFlow:
+    title: "Auth flow"
     type: object
     description: |-
       Additional and optional specification object to describe what an 'advanced' Auth flow would need to function.
@@ -1055,16 +1056,24 @@ definitions:
         inputs anymore and the auth process is faster and easier to complete.
     properties:
       auth_flow_type:
+        title: "Auth flow type"
+        description: "The type of auth to use"
         type: string
         enum: ["oauth2.0", "oauth1.0"] # Future auth types should be added here
       predicate_key:
+        title: "Predicate key"
         description: Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable.
         type: array
         items:
           type: string
+        examples:
+          - ["credentials", "auth_type"]
       predicate_value:
+        title: "Predicate value"
         description: Value of the predicate_key fields for the advanced auth to be applicable.
         type: string
+        examples:
+          - "Oauth"
       oauth_config_specification:
         "$ref": "#/definitions/OAuthConfigSpecification"
   OAuthConfigSpecification:
