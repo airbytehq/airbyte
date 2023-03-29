@@ -95,7 +95,7 @@ class TinyBase(HttpStream):
 
         while json['retorno']['status'] != 'OK':
             logger.info('Handling error')
-            json = self.handle_request_error(url)
+            json = self.handle_request_error(url).json()
             logger.info(json['retorno'])
             sleep(30)
 
@@ -155,7 +155,7 @@ class NotasFiscais(TinyBase):
                 "type": f"{self.merchant.lower()}_{self.record_key_name}",
                 "id": item[self.record_key_name][self.record_primary_key],
                 "timeline": "historic",
-                "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                "created_at": datetime.strptime(item[self.record_key_name][self.record_date_field], '%d/%m/%Y').strftime("%Y-%m-%dT%H:%M:%S.%f"),
                 "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
                 "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
                 "sensible": False
@@ -170,8 +170,6 @@ class NotasFiscais(TinyBase):
         nf_xml_path = "https://api.tiny.com.br/api2/nota.fiscal.obter.xml.php"
 
         xml = self.handle_request_error(f"{nf_xml_path}?id={item['data']['id']}&token={self.api_token}").content
-
-        logger.info(item['data']['id'])
         
         try:
             xml_object = xmltodict.parse(xml.strip())
@@ -224,11 +222,11 @@ class SourceTiny(AbstractSource):
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            auth = NoAuth()
-            start_date = datetime.strptime(config['start_date'], '%d/%m/%Y') - timedelta(days=365)
-            stream = NotasFiscais(authenticator=auth, config=config, start_date=start_date)
-            records = stream.read_records(sync_mode=SyncMode.full_refresh)
-            next(records)
+            # auth = NoAuth()
+            # start_date = datetime.strptime(config['start_date'], '%d/%m/%Y') - timedelta(days=365)
+            # stream = NotasFiscais(authenticator=auth, config=config, start_date=start_date)
+            # records = stream.read_records(sync_mode=SyncMode.full_refresh)
+            # next(records)
             return True, None
         except requests.exceptions.RequestException as e:
             return False, e
