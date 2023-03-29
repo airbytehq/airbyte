@@ -475,14 +475,18 @@ class RecordSelector(BaseModel):
 
 
 class AuthFlow(BaseModel):
-    auth_flow_type: Optional[AuthFlowType] = None
+    auth_flow_type: Optional[AuthFlowType] = Field(None, description="The type of auth to use", title="Auth flow type")
     predicate_key: Optional[List[str]] = Field(
         None,
         description="Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable.",
+        examples=[["credentials", "auth_type"]],
+        title="Predicate key",
     )
     predicate_value: Optional[str] = Field(
         None,
         description="Value of the predicate_key fields for the advanced auth to be applicable.",
+        examples=["Oauth"],
+        title="Predicate value",
     )
     oauth_config_specification: Optional[OAuthConfigSpecification] = None
 
