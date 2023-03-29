@@ -15,7 +15,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.functional.CheckedBiConsumer;
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -41,9 +40,7 @@ public class SerializedBufferingStrategyTest {
   private static final long MAX_PER_STREAM_BUFFER_SIZE_BYTES = 21L;
 
   private final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
-  @SuppressWarnings("unchecked")
-  private final CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> perStreamFlushHook =
-      mock(CheckedBiConsumer.class);
+  private final FlushBufferFunction perStreamFlushHook = mock(FlushBufferFunction.class);
 
   private final SerializableBuffer recordWriter1 = mock(SerializableBuffer.class);
   private final SerializableBuffer recordWriter2 = mock(SerializableBuffer.class);
