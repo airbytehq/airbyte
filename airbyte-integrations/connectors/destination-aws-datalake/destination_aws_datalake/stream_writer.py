@@ -257,10 +257,15 @@ class StreamWriter:
         for (col, definition) in schema.items():
 
             result_typ = None
-            col_typ = definition.get("airbyte_type") or definition.get("type")
+            col_typ = definition.get("type")
+            airbyte_type = definition.get("airbyte_type")
             col_format = definition.get("format")
 
             col_typ = self._get_json_schema_type(col_typ)
+
+            # special case where the json schema type contradicts the airbyte type
+            if airbyte_type and col_typ == "number" and airbyte_type == "integer":
+                col_typ = "integer"
 
             if col_typ == "string" and col_format == "date-time":
                 result_typ = "timestamp"
@@ -283,7 +288,13 @@ class StreamWriter:
                 if isinstance(items, list):
                     items = items[0]
 
-                raw_item_type = items.get("airbyte_type") or items.get("type")
+                raw_item_type = items.get("type")
+                airbyte_raw_item_type = items.get("airbyte_type")
+
+                # special case where the json schema type contradicts the airbyte type
+                if airbyte_raw_item_type and raw_item_type == "number" and airbyte_raw_item_type == "integer":
+                    raw_item_type = "integer"
+
                 item_type = self._get_json_schema_type(raw_item_type)
                 item_properties = items.get("properties")
 
