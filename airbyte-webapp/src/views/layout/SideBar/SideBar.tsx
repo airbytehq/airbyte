@@ -8,16 +8,16 @@ import { NavLink } from "react-router-dom";
 import styled from "styled-components";
 
 import { Link } from "components";
-import { DocumentationArrowIcon } from "components/icons/DocumentationArrowIcon";
-import { DocumentationIcon } from "components/icons/DocumentationIcon";
+// import { DocumentationArrowIcon } from "components/icons/DocumentationArrowIcon";
+// import { DocumentationIcon } from "components/icons/DocumentationIcon";
 
-import { links } from "config/links";
+// import { links } from "config/links";
 // import Version from "components/Version";
 // import { useConfig } from "config";
 // import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useUser } from "core/AuthContext";
 import useRouter from "hooks/useRouter";
-import { LOCALES } from "locales";
+// import { LOCALES } from "locales";
 
 import { RoutePaths } from "../../../pages/routePaths";
 // import ConnectionsIcon from "./components/ConnectionsIcon";
@@ -87,10 +87,10 @@ const UserDetail = styled.div`
   margin-top: 40px;
 `;
 
-const DocumentationArrowIconContainer = styled.div`
-  display: block;
-  margin-left: 14px;
-`;
+// const DocumentationArrowIconContainer = styled.div`
+//   display: block;
+//   margin-left: 14px;
+// `;
 
 export const useCalculateSidebarStyles = () => {
   const { location } = useRouter();
@@ -129,7 +129,7 @@ const SideBar: React.FC = () => {
   // const config = useConfig();
   // const workspace = useCurrentWorkspace();
   const { user } = useUser();
-  const docsLink = user.lang === LOCALES.ENGLISH ? links.docsLink : `${links.docsLink}/${user.lang}/`;
+  // const docsLink = user.lang === LOCALES.ENGLISH ? links.docsLink : `${links.docsLink}/${user.lang}/`;
   return (
     <div className={styles.sidebar}>
       <div>
@@ -248,7 +248,7 @@ const SideBar: React.FC = () => {
             </Text>
           </NavLink>
         </MenuItem>
-        <a
+        {/* <a
           href={docsLink}
           target="_blank"
           rel="noreferrer"
@@ -261,7 +261,7 @@ const SideBar: React.FC = () => {
           <DocumentationArrowIconContainer>
             <DocumentationArrowIcon height={11} width={11} />
           </DocumentationArrowIconContainer>
-        </a>
+        </a> */}
         {/* <li>
           <ButtonCenter>
             <Button>
