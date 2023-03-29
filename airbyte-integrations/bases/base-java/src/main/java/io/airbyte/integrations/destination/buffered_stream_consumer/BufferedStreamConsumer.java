@@ -84,7 +84,6 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final Map<AirbyteStreamNameNamespacePair, Long> streamToIgnoredRecordCount;
   private final BufferingStrategy bufferingStrategy;
 
-
   private boolean hasStarted;
   private boolean hasClosed;
 
@@ -176,8 +175,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   /**
-   * Updates the next time a buffer flush should occur since it is deterministic that when this method is called all data has been
-   * scheduled to flush to the destination
+   * Updates the next time a buffer flush should occur since it is deterministic that when this method
+   * is called all data has been scheduled to flush to the destination
    */
   private void resetFlushDeadline() {
     nextFlushDeadline = Instant.now().plus(bufferFlushFrequency);
