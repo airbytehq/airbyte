@@ -553,7 +553,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.3.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -1237,6 +1237,10 @@
   icon: mixpanel.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "mixpanel.com"
+      - "eu.mixpanel.com"
 - name: Monday
   sourceDefinitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
   dockerRepository: airbyte/source-monday
@@ -2205,6 +2209,9 @@
   icon: youtube-analytics.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - "*.googleapis.com"
 - name: Vantage
   sourceDefinitionId: 28ce1fbd-1e15-453f-aa9f-da6c4d928e92
   dockerRepository: airbyte/source-vantage
