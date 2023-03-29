@@ -5,5 +5,5 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_liverpool'
+    moduleDirectory 'source_emillenium'
 }
