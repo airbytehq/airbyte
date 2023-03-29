@@ -190,7 +190,7 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date        | Pull Request                                             | Subject                                                                                                 |
 |:--------|:------------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
-| 0.2.36  | 2023-03-027 |                                                          | Remove traceback from user massages.                                                                    |
+| 0.2.36  | 2023-03-027 | [24588](https://github.com/airbytehq/airbyte/pull/24588) | Remove traceback from user massages.                                                                    |
 | 0.2.35  | 2023-03-03  | [24278](https://github.com/airbytehq/airbyte/pull/24278) | Read only file header when checking connectivity; read only a single chunk when discovering the schema. |
 | 0.2.34  | 2023-03-03  | [23723](https://github.com/airbytehq/airbyte/pull/23723) | Update description in spec, make user-friendly error messages and docs.                                 |
 | 0.2.33  | 2023-01-04  | [21012](https://github.com/airbytehq/airbyte/pull/21012) | Fix special characters bug                                                                              |
