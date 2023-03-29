@@ -47,5 +47,5 @@ def test_streams(mocker):
     config_mock = {"playground": False, "username": "dummy_username", "password": "dummy_password"}
     streams = source.streams(config_mock)
 
-    expected_streams_number = 3
+    expected_streams_number = 5
     assert len(streams) == expected_streams_number
