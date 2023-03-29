@@ -414,7 +414,9 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
 
 
 class Advertisers(FullRefreshTiktokStream):
-    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1708503202263042"""
+    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1739593083610113"""
+
+    primary_key = "advertiser_id"
 
     def request_params(
         self,

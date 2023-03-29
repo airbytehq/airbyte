@@ -1,7 +1,7 @@
 {
   "type": ["null", "object"],
   "properties": {
-    "id": {
+    "advertiser_id": {
       "type": "integer"
     },
     "name": {
@@ -40,13 +40,13 @@
     "license_url": {
       "type": ["null", "string"]
     },
-    "phonenumber": {
+    "cellphone_number": {
       "type": ["null", "string"]
     },
     "promotion_area": {
       "type": ["null", "string"]
     },
-    "reason": {
+    "rejection_reason": {
       "type": ["null", "string"]
     },
     "role": {
