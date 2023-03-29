@@ -380,6 +380,54 @@
           }
         }
       }
+    },
+    "schedule_infos": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object"
+      }
+    },
+    "share_disabled": {
+      "type": ["null", "boolean"]
+    },
+    "auto_targeting_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "ios14_quota_type": {
+      "type": ["null", "string"]
+    },
+    "campaign_name": {
+      "type": ["null", "string"]
+    },
+    "bid_display_mode": {
+      "type": ["null", "string"]
+    },
+    "scheduled_budget": {
+      "type": ["null", "number"]
+    },
+    "adgroup_app_profile_page_state": {
+      "type": ["null", "string"]
+    },
+    "keywords": {
+      "type": ["null", "string"]
+    },
+    "next_day_retention": {
+      "type": ["null", "number"]
+    },
+    "category_id": {
+      "type": ["null", "integer"]
+    },
+    "search_result_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "app_type": {
+      "type": ["null", "string"]
+    },
+    "feed_type": {
+      "type": ["null", "string"]
+    },
+    "delivery_mode": {
+      "type": ["null", "string"]
     }
   }
 }
