@@ -26,7 +26,7 @@ class AmplitudeStream(HttpStream, ABC):
 
     def __init__(self, data_region: str, event_time_interval: dict = None, **kwargs):
         if event_time_interval is None:
-            event_time_interval = {}
+            event_time_interval = {"size_unit": "days", "size": 1}
         self.data_region = data_region
         self.event_time_interval = event_time_interval
         super().__init__(**kwargs)
