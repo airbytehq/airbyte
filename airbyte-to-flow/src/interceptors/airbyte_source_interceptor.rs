@@ -8,7 +8,7 @@ use crate::libs::airbyte_catalog::{
 };
 use crate::libs::command::READY;
 use crate::libs::stream::{
-    get_airbyte_response, stream_airbyte_responses,
+    get_airbyte_response, stream_airbyte_responses, get_decoded_message
 };
 
 use bytes::Bytes;
@@ -73,7 +73,7 @@ impl AirbyteSourceInterceptor {
         }
     }
 
-    fn adapt_spec_request_stream(&mut self, _request: request::Spec, _in_stream: InterceptorStream) -> InterceptorStream {
+    fn adapt_spec_request_stream(&mut self, _request: request::Spec) -> InterceptorStream {
         Box::pin(stream::once(async move {
             Ok(Bytes::from(READY))
         }))
@@ -152,7 +152,6 @@ impl AirbyteSourceInterceptor {
         &mut self,
         config_file_path: String,
         request: request::Discover,
-        _in_stream: InterceptorStream,
     ) -> InterceptorStream {
         Box::pin(stream::once(async move {
             let config_json =
@@ -264,7 +263,6 @@ impl AirbyteSourceInterceptor {
         config_file_path: String,
         validate_request: Arc<Mutex<Option<request::Validate>>>,
         request: request::Validate,
-        _in_stream: InterceptorStream,
     ) -> InterceptorStream {
         Box::pin(stream::once(async move {
             *validate_request.lock().await = Some(request.clone());
@@ -313,7 +311,7 @@ impl AirbyteSourceInterceptor {
         }))
     }
 
-    fn adapt_apply_request_stream(&mut self, _request: request::Apply, _in_stream: InterceptorStream) -> InterceptorStream {
+    fn adapt_apply_request_stream(&mut self, _request: request::Apply) -> InterceptorStream {
         Box::pin(stream::once(async move {
             Ok(Bytes::from(READY))
         }))
@@ -336,8 +334,7 @@ impl AirbyteSourceInterceptor {
         catalog_file_path: String,
         state_file_path: String,
         stream_to_binding: Arc<Mutex<HashMap<String, SavedBinding>>>,
-        open: request::Open,
-        _in_stream: InterceptorStream,
+        open: request::Open
     ) -> InterceptorStream {
         Box::pin(stream::once(async move {
             File::create(state_file_path.clone())?.write_all(&open.state_json.as_bytes())?;
@@ -499,9 +496,8 @@ pub enum Operation {
 impl AirbyteSourceInterceptor {
     // Looks at the first request to determine the operation, and gives back the stream that will
     // include the first request as well
-    pub async fn first_request(&mut self, in_stream: &mut InterceptorStream) -> Result<(Operation, Request), Error> {
-        let mut first_req_bytes = in_stream.next().await.ok_or(Error::EmptyStream)??;
-        let first_req = serde_json::from_slice::<Request>(&mut first_req_bytes)?;
+    pub async fn first_request(&mut self, in_stream: InterceptorStream) -> Result<(Operation, Request), Error> {
+        let first_req = get_decoded_message::<Request>(in_stream).await?;
 
         if first_req.spec.is_some() {
             Ok((Operation::Spec, first_req))
@@ -549,28 +545,26 @@ impl AirbyteSourceInterceptor {
     pub fn adapt_request_stream(
         &mut self,
         op: &Operation,
-        first_request: Request,
-        in_stream: InterceptorStream,
+        first_request: Request
     ) -> Result<InterceptorStream, Error> {
         let config_file_path = self.input_file_path(CONFIG_FILE_NAME);
         let catalog_file_path = self.input_file_path(CATALOG_FILE_NAME);
         let state_file_path = self.input_file_path(STATE_FILE_NAME);
 
         match op {
-            Operation::Spec => Ok(self.adapt_spec_request_stream(first_request.spec.unwrap(), in_stream)),
+            Operation::Spec => Ok(self.adapt_spec_request_stream(first_request.spec.unwrap())),
             Operation::Discover => {
-                Ok(self.adapt_discover_request(config_file_path, first_request.discover.unwrap(), in_stream))
+                Ok(self.adapt_discover_request(config_file_path, first_request.discover.unwrap()))
             }
             Operation::Validate => Ok(self.adapt_validate_request_stream(
                 config_file_path,
                 Arc::clone(&self.validate_request),
                 first_request.validate.unwrap(),
-                in_stream,
             )),
             // TODO(johnny): These are effective no-ops, but as-written must invoke the connector.
             // We should refactor this.
             Operation::Apply => {
-                Ok(self.adapt_apply_request_stream(first_request.apply.unwrap(), in_stream))
+                Ok(self.adapt_apply_request_stream(first_request.apply.unwrap()))
             }
             Operation::Capture => Ok(self.adapt_pull_request_stream(
                 config_file_path,
@@ -578,7 +572,6 @@ impl AirbyteSourceInterceptor {
                 state_file_path,
                 Arc::clone(&self.stream_to_binding),
                 first_request.open.unwrap(),
-                in_stream,
             )),
         }
     }

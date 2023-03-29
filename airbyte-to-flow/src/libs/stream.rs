@@ -105,9 +105,7 @@ where
 {
     async move {
         let msg = stream_lines(in_stream).next().await.ok_or(Error::MessageNotFound(std::any::type_name::<T>()))??;
-        eprintln!("bytes: {:#?}", std::str::from_utf8(&msg));
         let v = serde_json::from_slice(&msg)?;
-        eprintln!("v: {:#?}", v);
         Ok(v)
     }
 }

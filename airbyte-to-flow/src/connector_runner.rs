@@ -38,8 +38,8 @@ pub async fn run_airbyte_source_connector(
 ) -> Result<(), Error> {
     let mut airbyte_interceptor = AirbyteSourceInterceptor::new();
 
-    let mut in_stream = flow_read_stream().await;
-    let (op, first_request) = airbyte_interceptor.first_request(&mut in_stream).await?;
+    let in_stream = flow_read_stream().await;
+    let (op, first_request) = airbyte_interceptor.first_request(in_stream).await?;
 
     let args = airbyte_interceptor.adapt_command_args(&op);
     let full_entrypoint = format!("{} \"{}\"", entrypoint, args.join("\" \""));
@@ -50,8 +50,7 @@ pub async fn run_airbyte_source_connector(
 
     let adapted_request_stream = airbyte_interceptor.adapt_request_stream(
         &op,
-        first_request,
-        in_stream,
+        first_request
     )?;
 
     let adapted_response_stream =
