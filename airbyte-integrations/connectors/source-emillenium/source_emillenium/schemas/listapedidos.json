@@ -1,8 +1,8 @@
 {
     "type": "object",
     "required": [
-        "api_key",
-        "shop_id",
+        "username",
+        "password",
         "merchant",
         "start_date"
     ],
