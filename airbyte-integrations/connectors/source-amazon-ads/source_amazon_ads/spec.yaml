@@ -69,6 +69,7 @@ connectionSpecification:
         auth_type:
           title: Auth Type
           const: oauth2.0
+          default: oauth2.0
           order: 0
           type: string
         client_id:
