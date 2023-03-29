@@ -275,7 +275,7 @@ Now that you have set up the Snowflake destination connector, check out the foll
 ## Troubleshooting
 
 ### 'Current role does not have permissions on the target schema'
-If you receive an error stating `Current role does not have permissions on the target schema` make sure that the 
+If you receive an error stating `Current role does not have permissions on the target schema` make sure that the
 Snowflake destination `SCHEMA` is one that the role you've provided has permissions on. When creating a connection,
 it may allow you to select `Mirror source structure` for the `Destination namespace`, which if you have followed
 some of our default examples and tutorials may result in the connection trying to write to a `PUBLIC` schema.
@@ -287,8 +287,8 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.4.57  | 2023-03-23 | [#23904](https://github.com/airbytehq/airbyte/pull/24405)  | Revert host validation change                                                                                                                       |
-| 0.4.56  | 2023-03-22 | [#23904](https://github.com/airbytehq/airbyte/pull/23904)  | Added host validation by pattern on UI                                                                                                              |
+| 0.4.58  | 2023-03-27 | [#24615](https://github.com/airbytehq/airbyte/pull/24615)  | Fixed host validation by pattern on UI                                                                                                              |
+| 0.4.56 (broken) | 2023-03-22 | [#23904](https://github.com/airbytehq/airbyte/pull/23904)  | Added host validation by pattern on UI                                                                                                              |
 | 0.4.54  | 2023-03-17 | [#23788](https://github.com/airbytehq/airbyte/pull/23788)  | S3-Parquet: added handler to process null values in arrays                                                                                          |
 | 0.4.53  | 2023-03-15 | [\#24058](https://github.com/airbytehq/airbyte/pull/24058) | added write attempt to internal staging Check method                                                                                                |
 | 0.4.52  | 2023-03-10 | [\#23931](https://github.com/airbytehq/airbyte/pull/23931) | Added support for periodic buffer flush                                                                                                             |
