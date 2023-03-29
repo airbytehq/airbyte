@@ -218,7 +218,7 @@ class CreditNotes(IncrementalStripeStream):
     cursor_field = "created"
 
     def path(self, **kwargs):
-        return "transfers"
+        return "credit_notes"
 
 
 class Coupons(IncrementalStripeStream):
