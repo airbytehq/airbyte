@@ -438,7 +438,7 @@ class Advertisers(FullRefreshTiktokStream):
 
 
 class Campaigns(IncrementalTiktokStream):
-    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1708582970809346"""
+    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1739315828649986"""
 
     primary_key = "campaign_id"
 
