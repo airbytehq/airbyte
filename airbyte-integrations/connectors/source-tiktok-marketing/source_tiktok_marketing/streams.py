@@ -465,7 +465,7 @@ class Ads(IncrementalTiktokStream):
 
 
 class BasicReports(IncrementalTiktokStream, ABC):
-    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1707957200780290"""
+    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1738864915188737"""
 
     primary_key = "ad_id"
     schema_name = "basic_reports"
