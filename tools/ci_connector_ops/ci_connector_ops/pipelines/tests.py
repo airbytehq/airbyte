@@ -59,7 +59,7 @@ class PythonTests(Step, ABC):
                     "python",
                     "-m",
                     "pytest",
-                    "--suppress-tests-failed-exit-code",  # TODO ben use the supress plugin and this flag in poetry
+                    "--suppress-tests-failed-exit-code",
                     "--suppress-no-test-exit-code",
                     "-s",
                     test_directory,

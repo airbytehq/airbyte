@@ -23,7 +23,7 @@ async def run_metadata_lib_test_pipeline(metadata_pipeline_context):
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
         async with metadata_pipeline_context:
-            metadata_lib_module = environments.with_poetry_module(dagger_client, METADATA_LIB_MODULE_PATH)
+            metadata_lib_module = environments.with_poetry_module(metadata_pipeline_context, METADATA_LIB_MODULE_PATH)
             exit_code = await with_exit_code(metadata_lib_module.with_exec(["poetry", "run", "pytest"]))
 
             # Raise an exception if the exit code is not 0
