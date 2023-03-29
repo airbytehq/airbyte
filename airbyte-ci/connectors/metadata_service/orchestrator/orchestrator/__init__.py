@@ -1,18 +1,18 @@
 from dagster import Definitions
 
-from .resources.gcp_resources import gcp_gcs_client, gcs_bucket_manager, gcs_file_manager, gcs_file_blob
-from .resources.github_resources import github_client, github_connector_repo, github_connectors_directory
-from .resources.local_resources import simple_local_file_manager
+from .resources.gcp import gcp_gcs_client, gcs_bucket_manager, gcs_file_manager, gcs_file_blob
+from .resources.github import github_client, github_connector_repo, github_connectors_directory
+from .resources.local import simple_local_file_manager
 
-from .assets.github_assets import github_connector_folders
-from .assets.spec_cache_assets import cached_specs
-from .assets.catalog_report_assets import (
+from .assets.github import github_connector_folders
+from .assets.spec_cache import cached_specs
+from .assets.catalog_report import (
     all_sources_dataframe,
     all_destinations_dataframe,
     connector_catalog_location_markdown,
     connector_catalog_location_html,
 )
-from .assets.catalog_assets import (
+from .assets.catalog import (
     oss_destinations_dataframe,
     cloud_destinations_dataframe,
     oss_sources_dataframe,
@@ -22,20 +22,20 @@ from .assets.catalog_assets import (
     oss_catalog_from_metadata,
     cloud_catalog_from_metadata,
 )
-from .assets.metadata_assets import (
+from .assets.metadata import (
     catalog_derived_metadata_definitions,
     valid_metadata_list,
 )
 
-from .assets.dev_assets import (
+from .assets.dev import (
     persist_metadata_definitions,
     overrode_metadata_definitions,
     oss_catalog_diff,
     cloud_catalog_diff,
 )
 
-from .jobs.catalog_jobs import generate_catalog_markdown, generate_local_metadata_files
-from .sensors.catalog_sensors import catalog_updated_sensor
+from .jobs.catalog import generate_catalog_markdown, generate_local_metadata_files
+from .sensors.catalog import catalog_updated_sensor
 
 from .config import REPORT_FOLDER, CATALOG_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME
 

@@ -2,11 +2,11 @@ import pandas as pd
 from metadata_service.spec_cache import CachedSpec
 
 
-from orchestrator.assets.catalog_report_assets import (
+from orchestrator.assets.catalog_report import (
     all_sources_dataframe,
     all_destinations_dataframe,
 )
-from orchestrator.assets.catalog_assets import (
+from orchestrator.assets.catalog import (
     oss_destinations_dataframe,
     cloud_destinations_dataframe,
     oss_sources_dataframe,

@@ -1,9 +1,9 @@
 from dagster import build_op_context
 
-from orchestrator.resources.gcp_resources import gcp_gcs_client, gcs_bucket_manager, gcs_file_manager, gcs_file_blob
-from orchestrator.resources.github_resources import github_client, github_connector_repo, github_connectors_directory
+from orchestrator.resources.gcp import gcp_gcs_client, gcs_bucket_manager, gcs_file_manager, gcs_file_blob
+from orchestrator.resources.github import github_client, github_connector_repo, github_connectors_directory
 
-from orchestrator.assets.catalog_assets import (
+from orchestrator.assets.catalog import (
     oss_destinations_dataframe,
     cloud_destinations_dataframe,
     oss_sources_dataframe,
@@ -11,7 +11,7 @@ from orchestrator.assets.catalog_assets import (
     latest_oss_catalog_dict,
     latest_cloud_catalog_dict,
 )
-from orchestrator.assets.metadata_assets import (
+from orchestrator.assets.metadata import (
     catalog_derived_metadata_definitions,
 )
 
