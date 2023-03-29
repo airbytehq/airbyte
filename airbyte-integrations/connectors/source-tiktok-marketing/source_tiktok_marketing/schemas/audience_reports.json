@@ -16,13 +16,11 @@
     },
     "stat_time_day": {
       "type": ["null", "string"],
-      "format": "date-time",
-      "airbyte_type": "timestamp_without_timezone"
+      "format": "date-time"
     },
     "stat_time_hour": {
       "type": ["null", "string"],
-      "format": "date-time",
-      "airbyte_type": "timestamp_without_timezone"
+      "format": "date-time"
     },
     "metrics": {
       "type": ["null", "object"],
