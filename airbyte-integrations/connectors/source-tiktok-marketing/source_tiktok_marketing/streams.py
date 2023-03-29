@@ -234,6 +234,8 @@ class AdvertiserIds(TiktokStream):
     primary_key = "advertiser_id"
     use_cache = True  # it is used in all streams
 
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+
     def __init__(self, authenticator, app_id: int, secret: str, **kwargs):
         super().__init__(authenticator=authenticator, advertiser_id=0)
 
