@@ -111,7 +111,9 @@ export const Sidebar: React.FC<IProps> = ({ menuItems, onSelectItem }) => {
       submitButtonText: "settings.logout.modal.confirmText",
       onSubmit: () => {
         closeConfirmationModal();
-        removeUser!();
+        if (removeUser) {
+          removeUser();
+        }
         push(`/${RoutePaths.Signin}`);
       },
     });

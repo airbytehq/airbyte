@@ -3,7 +3,6 @@
   "notifications.error.health": "Cannot reach server",
   "notifications.error.somethingWentWrong": "Something went wrong",
   "notifications.error.noMessage": "No error message",
-
   "sidebar.sources": "Sources",
   "sidebar.destinations": "Destinations",
   "sidebar.admin": "Admin",
@@ -22,7 +21,6 @@
   "sidebar.support": "Support",
   "sidebar.supportTicket": "Submit a Ticket",
   "sidebar.recipes": "Tutorials - Use cases",
-
   "form.continue": "Continue",
   "form.yourEmail": "Your email",
   "form.email.placeholder": "you@company.com",
@@ -110,7 +108,6 @@
   "form.advancedMode.label": "Advanced mode",
   "form.advancedMode.switchLabel": "Enable advanced mode",
   "form.advancedMode.tooltip": "When Advanced Mode is enabled, certain views will display additional technical information.",
-
   "connectionForm.validation.error": "The form is invalid. Please make sure that all fields are correct.",
   "connectionForm.normalization.title": "Normalization",
   "connectionForm.operations.notSupported": "Transformation and Normalization operations are not supported for this connection",
@@ -142,14 +139,12 @@
   "connectionForm.defaultSyncMode.message": "Set how Daspire reads from the source and writes to the destination, across all streams <b>when the option is available</b>.",
   "connectionForm.bulkEdit.cancel": "Cancel",
   "connectionForm.bulkEdit.apply": "Apply",
-
   "connectorForm.authenticate": "Authenticate your {connector} account",
   "connectorForm.signInWithGoogle": "Sign in with Google",
   "connectorForm.authenticate.succeeded": "Authentication succeeded!",
   "connectorForm.authenticate.required": "Authentication required",
   "connectorForm.reauthenticate": "Re-authenticate",
   "connectorForm.expandForm": "Expand this form to continue setting up your integration",
-
   "form.rawData": "Raw data (JSON)",
   "form.basicNormalization": "Normalized tabular data",
   "form.basicNormalization.message": "Map the JSON object to the types and format native to the destination. <lnk>Learn more</lnk>",
@@ -167,7 +162,6 @@
   "form.gitBranch": "Git branch name (leave blank for default branch)",
   "form.selectType": "Select a type",
   "form.repositoryUrl.placeholder": "https://github.com/<angle>organisation</angle>/<angle>git_repo</angle>.git",
-
   "form.sourceNamespace": "Source namespace",
   "form.sourceStreamName": "Source stream name",
   "form.destinationNamespace": "Dest. namespace",
@@ -182,7 +176,6 @@
   "form.field.destinationName": "Destination name",
   "form.field.primaryKey": "Primary key",
   "form.field.cursorField": "Cursor field",
-
   "preferences.headTitle": "Preferences",
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",
@@ -193,7 +186,6 @@
   "preferences.featureUpdates": "Receive feature updates.",
   "preferences.unsubscribeAnyTime": " You can unsubscribe any time.",
   "preferences.securityUpdates": "Receive emails about security updates.",
-
   "onboarding.headTitle": "Get Started!",
   "onboarding.title": "Let’s set up your first connection.",
   "onboarding.subtitle": "Connections are automated data pipelines that sync data from a source to a destination.",
@@ -237,7 +229,6 @@
   "onboarding.syncFailed": "Your sync is failed. Please try again",
   "onboarding.startAgain": "Your sync was cancelled. You can start it again",
   "onboarding.tryAgainText": "Sorry, something went wrong.",
-
   "sources.description": "<b>Sources</b> are where you want to <b>pull data</b> from.",
   "sources.searchIncremental": "Search cursor value for incremental",
   "sources.incrementalDefault": "{value} (default)",
@@ -297,7 +288,6 @@
   "sources.message": "Message",
   "sources.additionalFailureInfo": "Additional Failure Information",
   "sources.lastAttempt": "Last attempt:",
-
   "destination.destinationSettings": "Destination Settings",
   "destinations.newDestination": "New destination",
   "destinations.description": "<b>Destinations</b> are where you <b>send</b> or <b>push</b> your data to.",
@@ -306,16 +296,12 @@
   "destinations.addSourceReplicateData": "Add sources where to replicate data from.",
   "destinations.newDestinationTitle": "New destination",
   "destinations.destinationSetUp": "Set up the destination",
-
   "connection.stream.syncMode": "{syncMode} - {destinationSyncMode}",
-
   "destinationSyncMode.append": "Append",
   "destinationSyncMode.append_dedup": "Deduped + history",
   "destinationSyncMode.overwrite": "Overwrite",
-
   "syncMode.full_refresh": "Full refresh",
   "syncMode.incremental": "Incremental",
-
   "connection.resetModalTitle": "Stream configuration changed",
   "connection.streamResetHint": "Due to changes in the stream configuration, we recommend a data reset. A reset will delete data in the destination of the affected streams and then re-sync that data. Skipping the reset is discouraged and might lead to unexpected behavior.",
   "connection.streamFullResetHint": "Due to changes in the stream configuration, we recommend a data reset. A reset will delete data in the destination of the affected streams and then re-sync that data. Skipping the reset is discouraged and might lead to unexpected behavior.",
@@ -342,7 +328,6 @@
   "connection.updateSchema.streamName": "Stream name",
   "connection.updateSchema.namespace": "Namespace",
   "connection.updateSchema.dataType": "Data type",
-
   "connection.pageTitle": "Connections",
   "connection.newConnection": "New connection",
   "connection.newConnectionTitle": "New connection",
@@ -362,26 +347,21 @@
   "connection.cancelSync": "Cancel Sync",
   "connection.cancelReset": "Cancel Reset",
   "connection.canceling": "Canceling...",
-
   "form.frequency": "Replication frequency*",
   "form.frequency.placeholder": "Select a frequency",
-
   "connection.replicationFrequency": "Replication frequency*",
   "connection.replicationFrequency.subtitle": "Set how often data should sync to the destination",
   "connection.normalization": "Normalization",
   "connection.customTransformations": "Custom Transformations",
-
   "connection.filter.allStatus": "All Status",
   "connection.filter.allSources": "All Sources",
   "connection.filter.allDestinations": "All Destinations",
-
   "connection.unable.modal.title": "Unable to enable connection",
   "connection.unable.limit.modal.text": "We are unable to enable your connection because you have reached your data processing limit. ",
   "connection.unable.freeTrial.modal.text": "We are unable to enable your connection because you free trial period has ended. ",
   "connection.unable.expired.modal.text": "We are unable to enable your connection because your plan has expired.  ",
   "connection.unable.modal.cancel": "Got it",
   "connection.unable.modal.confirm": "Upgrade now",
-
   "tables.name": "Name",
   "tables.connector": "Integration",
   "tables.connections": "Connections",
@@ -426,7 +406,6 @@
   "tables.connectionState.title": "Connection State",
   "tables.connectionState.noConnectionState": "This connection doesn‘t have a state (yet).",
   "tables.emptyList": "No matching result found",
-
   "admin.dashboard": "Dashboard",
   "admin.destinations": "Destinations",
   "admin.sources": "Sources",
@@ -467,7 +446,6 @@
   "admin.upgradeAll": "Upgrade all",
   "admin.upgraded": "Upgraded!",
   "admin.customImage": "custom",
-
   "settings.accountSettings": "Account Settings",
   "settings.changeSaved": "change saved!",
   "settings.webhook": "Connection status Webhook",
@@ -512,7 +490,6 @@
   "settings.logout.modal.title": "Sign out?",
   "settings.logout.modal.content": "Are you sure you want to sign out?",
   "settings.logout.modal.confirmText": "Sign out",
-
   "payment.tabTitle": "Payment",
   "plan.type.heading": "Plan type",
   "plan.endsOn.heading": "Ends on",
@@ -536,30 +513,24 @@
   "feature.cell.enterprise.btnText": "Get a Quote",
   "feature.cell.enterprise.mailBody": "Get quotation for custom enterprise plan",
   "daspire.support.mail": "support@daspire.com",
-
   "plan.detail.rows": "No. of rows",
   "plan.detail.billing": "Monthly billing",
   "plan.detail.dueToday": "Total due today",
   "plan.detail.reoccuringBilling": "Reoccuring billing",
   "plan.update.btn": "Update",
-
   "plan.feature.heading": "Features",
   "plan.dataReplication.heading": "Data Replication",
   "plan.support.heading": "Support",
-
   "subscription.cancel.successfull": "Your plan is now cancelled. You can still use Daspire until the end of the billing cycle.",
   "subscription.plan.update": "Congrats! Your change was successful!",
-
   "subscription.cancelSubscriptionModal.title": "Cancel subscription?",
   "subscription.cancelSubscriptionModal.content": "Your current plan expires on {expiryDate}.\nYou will still be able to use your current plan until it expires.\nAre you sure you want to cancel your subscription?",
-
   "payment.planName": "{planName} Plan",
   "payment.planDeductionTime": "month",
   "payment.paymentToReturn": "(The difference you have paid will be deducted from next month’s billing)",
   "payment.amount": "{amount} million",
   "payment.nextBillingDate": "Next billing date",
   "payment.cancelTime": "You can cancel at any time.",
-
   "connector.requestConnectorBlock": "+ Request a new connector",
   "connector.requestConnector": "Request a new connector",
   "connector.request": "Request",
@@ -584,7 +555,6 @@
   "connector.connectorsInDevelopment.docLink": "<lnk>Contact us</lnk> if you encounter any issues or find any bugs.",
   "connector.setupGuide": "Setup Guide",
   "connector.setupGuide.notFound": "No Setup Guide found for this connector.",
-
   "credits.credits": "Credits",
   "credits.whatAreCredits": "What are credits?",
   "credits.buyCredits": "+ Buy credits",
@@ -592,7 +562,6 @@
   "credits.remainingCredits": "Remaining credits",
   "credits.creditUsage": "Credit Usage",
   "credits.totalUsage": "Total usage",
-
   "docs.notFoundError": "We were not able to receive docs. Please click the link above to open docs on our website",
   "errorView.notFound": "Resource not found.",
   "errorView.notAuthorized": "You don’t have permission to access this page.",
@@ -600,11 +569,9 @@
   "errorView.retry": "Retry",
   "errorView.unknown": "Unknown",
   "errorView.unknownError": "Unknown error occurred",
-
   "frequency.manual": "Manual",
   "frequency.minutes": "{value} min",
   "frequency.hours": "{value, plural, one {# hour} other {# hours}}",
-
   "ui.goBack": "Go back",
   "ui.input.showPassword": "Show password",
   "ui.input.hidePassword": "Hide password",
@@ -612,7 +579,6 @@
   "ui.keyValuePairV2": "{key} ({value})",
   "ui.keyValuePairV3": "{key}, {value}",
   "ui.learnMore": "Learn more",
-
   "airbyte.datatype.string": "String",
   "airbyte.datatype.date": "Date",
   "airbyte.datatype.timestamp_with_timezone": "Timestamp with Timezone",
@@ -628,7 +594,6 @@
   "airbyte.datatype.union": "Union",
   "airbyte.datatype.unknown": "Unknown",
   "airbyte.datatype.boolean": "Boolean",
-
   "signup.pageTitle": "Free Trial",
   "daspire": "Daspire",
   "auth.authSeparator": "Or",
@@ -671,7 +636,6 @@
   "signup.terms": "Terms of Service",
   "signup.privacy": "Privacy Policy",
   "signup.mobile.title": "Start you {text}",
-
   "login.pageTitle": "Sign In",
   "login.title": "Sign in to your account",
   "login.button": "Sign In",
@@ -686,7 +650,6 @@
   "sidebar.DaspireDashboard": "Dashboard",
   "sidebar.DaspireSetting": "Settings",
   "sidebar.DaspireSignOut": "Sign out",
-
   "upgrade.plan.trialPeriod.countdown": "You’re using the trial version of Daspire. Your trial ends in {count} days.",
   "upgrade.plan.trialPeriod.end": "You don’t have an active plan. Upgrade now to continue sync your data.",
   "upgrade.plan.btn": "Upgrade Now",
@@ -695,7 +658,6 @@
   "unauthorized.modal.btn": "OK",
   "cancelSubscription.modal.btn.confirm": "Confirm",
   "cancelSubscription.modal.btn.notNow": "Not Now",
-
   "user.newUser": "New User",
   "user.heading.name": "Name",
   "user.heading.email": "Email",
@@ -704,17 +666,14 @@
   "user.heading.action": "Action",
   "user.actionBtn.resendInvite": "Resend invite",
   "user.actionBtn.delete": "Delete user",
-
   "user.deleteModal.heading": "Delete user?",
   "user.deleteModal.confirmationMessage": "Are you sure you want to delete this user?",
   "user.deleteModal.deleteBtn": "Delete",
   "user.deleteModal.cancelBtn": "Cancel",
-
   "user.changeRoleModal.heading": "Change user role?",
   "user.changeRoleModal.confirmationMessage": "Are you sure you want to change user’s role?",
   "user.changeRoleModal.changeBtn": "Change",
   "user.changeRoleModal.cancelBtn": "Cancel",
-
   "user.addUserModal.heading": "Add new user",
   "user.addUserModal.email.empty.error": "required",
   "user.addUserModal.email.valid.error": "invalid email",
@@ -724,7 +683,6 @@
   "user.addUserModal.addMoreBtn": "Add more",
   "user.addUserModal.cancelBtn": "Cancel",
   "user.addUserModal.sendInviteBtn": "Send Invite",
-
   "user.signupPage.title": "User Signup",
   "user.signupPage.heading": "Sign up",
   "user.signup.firstName": "First name",
@@ -733,7 +691,6 @@
   "user.signup.password": "Password (8 character or longer)",
   "user.signup.confirmPassword": "Confirm password",
   "user.signup.submitButton": "Sign Up",
-
   "user.signup.firstName.minLength": "Enter a valid name",
   "user.signupfirstName.empty.error": "First name is required",
   "user.signup.lastName.minLength": "Enter a valid name",
@@ -751,16 +708,13 @@
   "user.resendInvite.message": "Invite has been sent!",
   "user.changeRole.message": "User role has been changed!",
   "user.remove": "Remove",
-
   "signup.google": "Sign up with Google",
-
   "payment.error.text": "Something went wrong in payment",
   "payment.errorPage.btnText": "Back to payment page",
   "connection.select.source": "Select your data source",
   "connection.streamsSettings": "Stream settings",
   "connection.basicSettings": "Basic Settings",
   "form.button.finishSetup": "Finish Setup",
-
   "onboarding.addSource": "Add a source",
   "onboarding.addDestination": "Add a destination",
   "onboarding.configurations": "Configurations",
