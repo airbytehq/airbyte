@@ -1,12 +1,19 @@
 {
     "type": "object",
     "required": [
-        "api_key",
-        "shop_id",
-        "merchant"
+        "username",
+        "password",
+        "merchant",
+        "start_date"
     ],
     "properties": {
         "data": {
+            "type": [
+                "null",
+                "object"
+            ]
+        },
+        "data_xml": {
             "type": [
                 "null",
                 "object"

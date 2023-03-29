@@ -53,8 +53,6 @@ class EMilleniumBase(HttpStream):
             "WTS-LicenseType": 'prat_api'
         }
 
-        logger.info(headers)
-
         return headers
 
     def set_initial_date(self, stream_state):
@@ -76,31 +74,6 @@ class EMilleniumBase(HttpStream):
         self.current_date = datetime.strftime(current_date_datetime, '%Y-%m-%d')
 
         return self.current_date
-    
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-
-        response_json = response.json()
-
-        item_list = []
-
-        for item in response_json[self.record_list_name]:
-            item_json = {
-                "data":item,
-                "data_xml": xmltodict.parse(item['xml'].strip()),
-                "merchant": self.merchant.upper(),
-                "source": "BR_EMILLENIUM",
-                "type": f"{self.merchant.lower()}_{self.record_key_name}",
-                "id": item[self.record_primary_key],
-                "timeline": "historic",
-                "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
-                "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
-                "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
-                "sensible": False
-            }
-
-            item_list.append(item_json)
-            
-        return item_list
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         latest_record_date = datetime.fromtimestamp(int(latest_record['data'][self.record_date_field].split('(')[1].split('-')[0])/1000)
@@ -129,7 +102,7 @@ class EMilleniumBase(HttpStream):
                 "type": f"{self.merchant.lower()}_{self.record_key_name}",
                 "id": item[self.record_primary_key],
                 "timeline": "historic",
-                "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                "created_at": datetime.fromtimestamp(int(item[self.record_date_field].split('(')[1].split('-')[0])/1000).strftime("%Y-%m-%dT%H:%M:%S.%f"),
                 "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
                 "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
                 "sensible": False
@@ -181,6 +154,31 @@ class Listafaturamentos(EMilleniumBase):
         logger.info(path)
         
         return path
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+
+        response_json = response.json()
+
+        item_list = []
+
+        for item in response_json[self.record_list_name]:
+            item_json = {
+                "data":item,
+                "data_xml": xmltodict.parse(item['xml'].strip()),
+                "merchant": self.merchant.upper(),
+                "source": "BR_EMILLENIUM",
+                "type": f"{self.merchant.lower()}_{self.record_key_name}",
+                "id": item[self.record_primary_key],
+                "timeline": "historic",
+                "created_at": datetime.fromtimestamp(int(item[self.record_date_field].split('(')[1].split('-')[0])/1000).strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                "sensible": False
+            }
+
+            item_list.append(item_json)
+            
+        return item_list
 
 class Listapedidos(EMilleniumBase):
 
