@@ -15,30 +15,29 @@ const Banner = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 7%;
+  justify-content: center;
+  padding: 8px 5%;
 `;
 
 const TextContainer = styled.div`
   display: flex;
-  flex-direction: column;
   align-items: flex-start;
-`;
-
-const Text = styled.div`
   font-weight: 500;
   font-size: 13px;
-  line-height: 24px;
+  line-height: 20px;
+  margin-right: 50px;
   color: ${({ theme }) => theme.white};
+`;
+
+const Text = styled.span`
+  padding-left: 4px;
 `;
 
 export const BillingWarningBanner: React.FC<IProps> = ({ onBillingPage }) => {
   return (
     <Banner className={styles.banner}>
       <TextContainer>
-        <Text>
-          <FormattedMessage id="billing.warning.banner.text1" />
-        </Text>
+        <FormattedMessage id="billing.warning.banner.text1" />
         <Text>
           <FormattedMessage id="billing.warning.banner.text2" />
         </Text>
