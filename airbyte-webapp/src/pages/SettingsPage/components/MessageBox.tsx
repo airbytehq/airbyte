@@ -25,6 +25,9 @@ const Container = styled.div<{ type: "info" | "error" }>`
   top: 4%;
   right: 5%;
   z-index: 10003;
+  &:last-child {
+    top: 80px;
+  }
 `;
 
 const Message = styled.div<{ type: "info" | "error" }>`
