@@ -22,6 +22,9 @@ class EMilleniumBase(HttpStream):
 
     url_base = "http://179.124.195.19:6017/api/"
 
+    max_tries = 5
+    retry_interval = 30
+
     def __init__(
         self, 
         config: Mapping[str, Any],
@@ -53,14 +56,9 @@ class EMilleniumBase(HttpStream):
             "WTS-LicenseType": 'prat_api'
         }
 
-        return headers
+        self.headers = headers
 
-    def set_initial_date(self, stream_state):
-        inital_date = self.start_date 
-        if self.cursor_field in stream_state.keys():
-            inital_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S')
-        
-        return datetime.strftime(inital_date, '%Y-%m-%d')
+        return headers
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
 
@@ -92,6 +90,10 @@ class EMilleniumBase(HttpStream):
 
         response_json = response.json()
 
+        if response.status_code != 200:
+            logger.info('Handling error %s:', response.status_code)
+            response_json = self.handle_request(response).json()
+
         item_list = []
 
         for item in response_json[self.record_list_name]:
@@ -111,6 +113,29 @@ class EMilleniumBase(HttpStream):
             item_list.append(item_json)
             
         return item_list
+    
+    @property
+    def raise_on_http_errors(self) -> bool:
+        """
+        Override if needed. If set to False, allows opting-out of raising HTTP code exception.
+        """
+        return False
+    
+    def handle_request(self, response):
+        try_count = 1
+
+        while try_count < self.max_retries:
+            logger.info('Retry number: %s', try_count)
+            new_response = requests.get(response.url, headers=self.headers)
+
+            if new_response.status_code == 200:
+                logger.info('Success for url: %s', response.url)
+                return new_response
+            
+            try_count += 1
+            sleep(self.retry_interval)
+        
+        raise
 
 
 class Listafaturamentos(EMilleniumBase):
@@ -154,10 +179,21 @@ class Listafaturamentos(EMilleniumBase):
         logger.info(path)
         
         return path
+
+    def set_initial_date(self, stream_state):
+        inital_date = self.start_date 
+        if self.cursor_field in stream_state.keys():
+            inital_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S')
+        
+        return datetime.strftime(inital_date, '%Y-%m-%d')
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
 
         response_json = response.json()
+
+        if response.status_code != 200:
+            logger.info('Handling error %s:', response.status_code)
+            response_json = self.handle_request(response).json()
 
         item_list = []
 
@@ -221,6 +257,13 @@ class Listapedidos(EMilleniumBase):
         logger.info(path)
         
         return path
+
+    def set_initial_date(self, stream_state):
+        inital_date = self.start_date 
+        if self.cursor_field in stream_state.keys():
+            inital_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S') - timedelta(days = 7)
+        
+        return datetime.strftime(inital_date, '%Y-%m-%d')
     
 class SourceEMillenium(AbstractSource):
 
