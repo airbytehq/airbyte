@@ -30,7 +30,7 @@ connectionSpecification:
         properties:
           method:
             type: string
-            const: exportVersions
+            const: "exportVersions"
             order: 0
       - required:
         - method
@@ -43,7 +43,7 @@ connectionSpecification:
         properties:
           method:
             type: string
-            const: exportData
+            const: "exportData"
             order: 0
           version:
             type: string

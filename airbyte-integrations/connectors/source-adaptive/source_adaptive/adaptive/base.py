@@ -15,6 +15,7 @@ import xmltodict
 from typing import Generator
 
 REQUEST_RETRIES_BEFORE_ERROR = 20
+REQUEST_TIMEOUT = 600
 
 
 def get_config_as_dict(config: json) -> dict:
@@ -50,6 +51,11 @@ class Adaptive(ABC):
         package. All logic should be enclosed here for easier maintainance
         """
 
+        def _handle_too_many_retries_error(counter,e):
+            if counter >= REQUEST_RETRIES_BEFORE_ERROR:
+                self.logger.error(f"Tried for {counter} times and something is erronnious, abort...")
+                raise e
+
         response = None
         counter = 0
         while response is None:
@@ -57,19 +63,19 @@ class Adaptive(ABC):
             if counter > 1:
                 self.logger.warn(f"Perform request try: {counter}")
             try:
-                return requests.request("POST", url, timeout=30, headers=headers, data=payload)
+                return requests.request("POST", url, timeout=REQUEST_TIMEOUT, headers=headers, data=payload)
             except requests.ConnectionError as e:
-                if counter >= REQUEST_RETRIES_BEFORE_ERROR:
-                    self.logger.error(f"Tried for {counter} times and something is erronnious, abort...")
-                    raise e
+                _handle_too_many_retries_error(counter,e)
                 self.logger.warn("Connection error occurred", e)
                 sleep(3)
                 continue
             except requests.Timeout as e:
+                _handle_too_many_retries_error(counter,e)
                 self.logger.warn("Timeout error - request took too long", e)
                 sleep(3)
                 continue
             except requests.RequestException as e:
+                _handle_too_many_retries_error(counter,e)
                 self.logger.warn("General error", e)
                 sleep(3)
                 continue

@@ -62,35 +62,36 @@ class AdaptiveExportData(Adaptive):
         """
 
         for date_selected in self._get_months_of_interest():
+            for account_selected in self.config["method_obj"]["accounts"]:
+                self.logger.info(f"Progress: date_selected:{date_selected} account_selected:{account_selected}")
 
-            TEMPLATE = """<?xml version='1.0' encoding='UTF-8'?>
-            <call method="{{method_obj["method"]}}" callerName="Airbyte - auto">
-                <credentials login="{{username}}" password="{{password}}"/>
-                <version name="{{method_obj["version"]}}" isDefault="false"/>
-                <format useInternalCodes="true" includeCodes="false" includeNames="true" displayNameEnabled="true"/>
-                <filters>
-                    <accounts>
-                        {% for acc in method_obj["accounts"] -%}
-                        <account code="{{acc}}" isAssumption="false" includeDescendants="true"/>
+                TEMPLATE = """<?xml version='1.0' encoding='UTF-8'?>
+                <call method="{{method_obj["method"]}}" callerName="Airbyte - auto">
+                    <credentials login="{{username}}" password="{{password}}"/>
+                    <version name="{{method_obj["version"]}}" isDefault="false"/>
+                    <format useInternalCodes="true" includeCodes="false" includeNames="true" displayNameEnabled="true"/>
+                    <filters>
+                        <accounts>
+                            <account code="{{account_selected}}" isAssumption="false" includeDescendants="true"/>
+                        </accounts>
+                        <timeSpan start="{{date_selected}}" end="{{date_selected}}"/>
+                    </filters>
+                    <dimensions>
+                        {% for dim in method_obj["dimensions"] -%}
+                        <dimension name="{{dim}}"/>
                         {% endfor -%}
-                    </accounts>
-                    <timeSpan start="{{date_selected}}" end="{{date_selected}}"/>
-                </filters>
-                <dimensions>
-                    {% for dim in method_obj["dimensions"] -%}
-                    <dimension name="{{dim}}"/>
-                    {% endfor -%}
-                </dimensions>
-                <rules includeZeroRows="false" includeRollupAccounts="true" timeRollups="false">
-                    <currency override="USD"/>
-                </rules>
-            </call>"""
+                    </dimensions>
+                    <rules includeZeroRows="false" includeRollupAccounts="true" timeRollups="false">
+                        <currency override="USD"/>
+                    </rules>
+                </call>"""
 
-            config_with_added_properties = self.config
-            config_with_added_properties.update({"date_selected": date_selected})
+                config_with_added_properties = self.config
+                config_with_added_properties.update({"date_selected": date_selected})
+                config_with_added_properties.update({"account_selected": account_selected})
 
-            payload = Template(TEMPLATE).render(**config_with_added_properties)
-            yield payload
+                payload = Template(TEMPLATE).render(**config_with_added_properties)
+                yield payload
 
     def construct_payload_fast(self) -> str:
 
@@ -105,11 +106,9 @@ class AdaptiveExportData(Adaptive):
             <format useInternalCodes="true" includeCodes="false" includeNames="true" displayNameEnabled="true"/>
             <filters>
                 <accounts>
-                    {% for acc in method_obj["accounts"] -%}
-                    <account code="{{acc}}" isAssumption="false" includeDescendants="true"/>
-                    {% endfor -%}
+                    <account code="{{method_obj["accounts"][0]}}" isAssumption="false" includeDescendants="true"/>
                 </accounts>
-                <timeSpan start="{{method_obj["date_start"]}}" end="{{method_obj["date_end"]}}"/>
+                <timeSpan start="{{method_obj["date_start"]}}" end="{{method_obj["date_start"]}}"/>
             </filters>
             <dimensions>
                 {% for dim in method_obj["dimensions"] -%}
