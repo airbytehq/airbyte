@@ -1,3 +1,4 @@
+import sys
 import click
 import anyio
 import dagger
@@ -10,7 +11,6 @@ from ci_connector_ops.pipelines.utils import (
     with_exit_code,
 )
 from rich.logging import RichHandler
-import sys
 
 
 logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
