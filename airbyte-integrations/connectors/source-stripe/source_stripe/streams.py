@@ -214,6 +214,12 @@ class CustomerBalanceTransactions(StripeStream):
                     continue
                 yield customer
 
+class CreditNotes(IncrementalStripeStream):
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "transfers"
+
 
 class Coupons(IncrementalStripeStream):
     """

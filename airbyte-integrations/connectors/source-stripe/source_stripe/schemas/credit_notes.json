@@ -1,0 +1,123 @@
+{
+    "type": [
+        "null",
+        "object"
+    ],
+    "properties": {
+        "metadata": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {}
+        },
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "total": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "amount": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "voided_at": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "created": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "number": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "subtotal": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "livemode": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        "reason": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "pdf": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "invoice": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "status": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "type": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "currency": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "refund": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "memo": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "customer_balance_transaction": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "discount_amount": {
+            "type": [
+                "null",
+                "number"
+            ]
+        }
+    }
+}
