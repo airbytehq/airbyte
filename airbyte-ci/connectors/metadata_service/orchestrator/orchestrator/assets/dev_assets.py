@@ -9,6 +9,9 @@ TODO (ben): Remove this file once we have metadata files checked into source con
 
 GROUP_NAME = "dev"
 
+
+# These are the overrides for our generated metadata files.
+# Applying these overrides is what is required for them to pass validation.
 OVERRIDES = {
     # airbyte/source-freshcaller
     "8a5d48f6-03bb-4038-a942-a8d3f175cca3": {"connectionType": "api", "releaseStage": "alpha"},
