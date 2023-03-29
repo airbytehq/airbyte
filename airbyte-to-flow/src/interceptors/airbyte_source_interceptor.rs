@@ -15,7 +15,6 @@ use bytes::Bytes;
 use proto_flow::capture::{Request, Response};
 use proto_flow::capture::{request, response};
 use proto_flow::flow::ConnectorState;
-use tokio_util::io::StreamReader;
 
 use std::collections::HashMap;
 use std::sync::Arc;

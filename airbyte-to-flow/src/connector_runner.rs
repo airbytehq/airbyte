@@ -1,7 +1,7 @@
 use std::{pin::Pin, sync::{Arc}, ops::DerefMut};
 
 use flow_cli_common::LogArgs;
-use futures::{channel::oneshot, stream, StreamExt};
+use futures::{channel::oneshot, stream, StreamExt, TryStreamExt};
 use tokio::{io::{AsyncWrite, copy}, process::{ChildStdout, ChildStdin, Child}, sync::Mutex};
 use tokio_util::io::{ReaderStream, StreamReader};
 
@@ -10,6 +10,8 @@ use proto_flow::capture::response;
 use proto_flow::flow::ConnectorState;
 
 use crate::{apis::InterceptorStream, interceptors::airbyte_source_interceptor::{AirbyteSourceInterceptor, Operation}, errors::{Error, io_stream_to_interceptor_stream, interceptor_stream_to_io_stream}, libs::{command::{invoke_connector_delayed, check_exit_status}}};
+
+const NEWLINE: u8 = 10;
 
 async fn flow_read_stream() -> InterceptorStream {
     Box::pin(io_stream_to_interceptor_stream(ReaderStream::new(tokio::io::stdin())))
@@ -82,7 +84,9 @@ pub async fn run_airbyte_source_connector(
         ))
     } else {
         adapted_response_stream
-    };
+    }.map_ok(|bytes| {
+        bytes::Bytes::from([&bytes[..],&[NEWLINE]].concat())
+    });
 
     let response_write = flow_write_stream();
 
@@ -115,7 +119,8 @@ pub async fn run_airbyte_source_connector(
                         merge_patch: true,
                     })
                 });
-                let encoded_response = &serde_json::to_vec(&response)?;
+                let mut encoded_response = serde_json::to_vec(&response)?;
+                encoded_response.push(NEWLINE);
                 let mut buf = &encoded_response[..];
                 let mut writer = response_write.lock().await;
                 copy(&mut buf, writer.deref_mut()).await?;
