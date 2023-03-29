@@ -27,24 +27,29 @@ utils.add_connectors_param(parser)
 utils.add_allow_alpha_param(parser)
 
 
+def get_test_failure_logs(definition):
+    test_failure_logs = ""
+    if config.MODULE_NAME == "fail_on_extra_columns":
+        connector_technical_name = definitions.get_airbyte_connector_name_from_definition(definition)
+
+        try:
+            with open(f"{utils.MIGRATIONS_FOLDER}/{config.MODULE_NAME}/test_failure_logs/{connector_technical_name}", "r") as f:
+                for line in f:
+                    test_failure_logs += line
+        except FileNotFoundError:
+            logging.warning(f"Skipping creating an issue for {definition['name']} -- could not find an output file for it.")
+            return
+
+    return test_failure_logs
+
 def get_issue_content(source_definition) -> Optional[Dict[Text, Any]]:
     issue_title = f"Source {source_definition['name']}: {config.ISSUE_TITLE}"
 
     template = environment.get_template(f"{config.MODULE_NAME}/issue.md.j2")
 
-    test_failure_logs = ""
-    connector_technical_name = definitions.get_airbyte_connector_name_from_definition(definition)
-    try:
-        with open(f"{utils.MIGRATIONS_FOLDER}/{config.MODULE_NAME}/test_failure_logs/{connector_technical_name}", "r") as f:
-            for line in f:
-                test_failure_logs += line
-    except FileNotFoundError:
-        logging.warning(f"Skipping creating an issue for {source_definition['name']} -- could not find an output file for it.")
-        return
-
     # TODO: Make list of variables to render, and how to render them, configurable
     issue_body = template.render(
-        connector_name=source_definition["name"], release_stage=source_definition["releaseStage"], test_failure_logs=test_failure_logs
+        connector_name=source_definition["name"], release_stage=source_definition["releaseStage"], test_failure_logs=get_test_failure_logs(source_definition)
     )
     file_definition, issue_body_path = tempfile.mkstemp()
 
@@ -76,7 +81,7 @@ def create_command(issue_content):
         create_command_arguments += ["--project", issue_content["project"]]
     for label in issue_content["labels"]:
         create_command_arguments += ["--label", label]
-    return create_command
+    return create_command_arguments
 
 
 def create_issue(source_definition, dry_run=True):
