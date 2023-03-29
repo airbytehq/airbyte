@@ -18,7 +18,7 @@
         "type": "string",
         "title": "Domain",
         "examples": ["domainname.atlassian.net"],
-        "description": "The Domain for your Jira account, e.g. airbyteio.atlassian.net",
+        "description": "The Domain for your Jira account, e.g. airbyteio.atlassian.net or jira.your-domain.com",
         "order": 1
       },
       "email": {
