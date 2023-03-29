@@ -43,3 +43,4 @@ LABEL io.airbyte.version=v3
 LABEL io.airbyte.name=airbyte/source-hubspot
 LABEL FLOW_RUNTIME_PROTOCOL=capture
 LABEL CONNECTOR_PROTOCOL=flow-capture
+LABEL FLOW_RUNTIME_CODEC=json

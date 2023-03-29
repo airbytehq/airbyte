@@ -20,3 +20,4 @@ LABEL io.airbyte.version=v1
 LABEL io.airbyte.name=airbyte/source-github
 LABEL FLOW_RUNTIME_PROTOCOL=capture
 LABEL CONNECTOR_PROTOCOL=flow-capture
+LABEL FLOW_RUNTIME_CODEC=json
