@@ -111,7 +111,7 @@ class CatalogOverrides(BaseModel):
     supportsNormalization: Optional[bool] = None
     license: Optional[str] = None
     supportUrl: Optional[AnyUrl] = None
-    connectionType: Optional[str] = None
+    connectorSubtype: Optional[str] = None
     allowedHosts: Optional[AllowedHosts] = None
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
     suggestedStreams: Optional[SuggestedStreams] = None
@@ -137,7 +137,7 @@ class Data(BaseModel):
     license: str
     supportUrl: AnyUrl
     githubIssueLabel: str
-    connectionType: str
+    connectorSubtype: str
     releaseStage: ReleaseStage
     catalogs: Optional[Catalog] = None
     allowedHosts: Optional[AllowedHosts] = None

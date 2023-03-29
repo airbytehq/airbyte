@@ -24,7 +24,7 @@ properties:
       - license
       - supportUrl
       - githubIssueLabel
-      - connectionType
+      - connectorSubtype
       - releaseStage
     properties:
       name:
@@ -52,7 +52,7 @@ properties:
         format: uri
       githubIssueLabel:
         type: string
-      connectionType:
+      connectorSubtype:
         type: string
         enum:
           - api
