@@ -32,6 +32,8 @@ from .assets.dev import (
     overrode_metadata_definitions,
     oss_catalog_diff,
     cloud_catalog_diff,
+    cloud_catalog_diff_dataframe,
+    oss_catalog_diff_dataframe
 )
 
 from .jobs.catalog import generate_catalog_markdown, generate_local_metadata_files
@@ -60,6 +62,8 @@ ASSETS = [
     oss_catalog_from_metadata,
     cloud_catalog_diff,
     cloud_catalog_from_metadata,
+    cloud_catalog_diff_dataframe,
+    oss_catalog_diff_dataframe
 ]
 
 RESOURCES = {

@@ -1,7 +1,9 @@
 import pandas as pd
 import json
-from dagster import asset, OpExecutionContext
+import copy
 from typing import List
+
+from dagster import asset, OpExecutionContext
 
 from ..utils.dagster_helpers import OutputDataFrame
 
@@ -10,20 +12,29 @@ GROUP_NAME = "catalog"
 
 # HELPERS
 
+def apply_overrides_from_catalog(metadata_data: dict, override_catalog_key: str) -> dict:
+     # Make a deep copy of the input dictionary to avoid side effects
+    metadata_data_copy = copy.deepcopy(metadata_data)
 
-def apply_overrides_from_catalog(metadata_data: dict, override_catalog: str) -> dict:
-    catalog_fields = metadata_data["catalogs"][override_catalog]
-    del catalog_fields["enabled"]
-    for field, value in catalog_fields.items():
-        metadata_data[field] = value
-    return metadata_data
+    # Extract the override_catalog dictionary
+    override_catalog = metadata_data_copy["catalogs"][override_catalog_key]
+
+    # Remove the "enabled" key from the override_catalog dictionary
+    del override_catalog["enabled"]
+
+    # Update the metadata_data_copy dictionary with the values from the override_catalog dictionary
+    metadata_data_copy.update(override_catalog)
+
+    return metadata_data_copy
 
 
-def metadata_to_catalog_entry(metadata_definition: dict, connector_type: str, override_catalog: str) -> dict:
-    metadata_data = metadata_definition["data"]
+def metadata_to_catalog_entry(metadata_definition: dict, connector_type: str, override_catalog_key: str) -> dict:
+    # Make a deep copy of the input dictionary to avoid side effects
+    metadata_definition_copy = copy.deepcopy(metadata_definition)
+    metadata_data = metadata_definition_copy["data"]
 
     # remove the metadata fields that were added
-    overrode_metadata_data = apply_overrides_from_catalog(metadata_data, override_catalog)
+    overrode_metadata_data = apply_overrides_from_catalog(metadata_data, override_catalog_key)
     del overrode_metadata_data["catalogs"]
 
     # remove connectorType field
@@ -59,25 +70,25 @@ def metadata_to_catalog_entry(metadata_definition: dict, connector_type: str, ov
 
     return overrode_metadata_data
 
+def is_metadata_catalog_enabled(metadata_definition: dict, catalog_name: str) -> bool:
+    return metadata_definition["data"]["catalogs"][catalog_name]["enabled"]
+
+def is_metadata_connector_type(metadata_definition: dict, connector_type: str) -> bool:
+    return metadata_definition["data"]["connectorType"] == connector_type
 
 def construct_catalog_from_metadata(catalog_derived_metadata_definitions: List[dict], catalog_name: str) -> dict:
-    # get only definitions with data.catalogs.cloud.enabled = true
-    metadata_definitions = [
-        metadata for metadata in catalog_derived_metadata_definitions if metadata["data"]["catalogs"][catalog_name]["enabled"]
-    ]
-
-    metadata_sources = [metadata for metadata in metadata_definitions if metadata["data"]["connectorType"] == "source"]
-    metadata_destinations = [metadata for metadata in metadata_definitions if metadata["data"]["connectorType"] == "destination"]
-
     catalog_sources = [
-        metadata_to_catalog_entry(
-            metadata,
-            "source",
-            catalog_name,
-        )
-        for metadata in metadata_sources
+        metadata_to_catalog_entry(metadata, "source", catalog_name)
+        for metadata
+        in catalog_derived_metadata_definitions
+        if is_metadata_catalog_enabled(metadata, catalog_name) and is_metadata_connector_type(metadata, "source")
     ]
-    catalog_destinations = [metadata_to_catalog_entry(metadata, "destination", catalog_name) for metadata in metadata_destinations]
+    catalog_destinations = [
+        metadata_to_catalog_entry(metadata, "destination", catalog_name)
+        for metadata
+        in catalog_derived_metadata_definitions
+        if is_metadata_catalog_enabled(metadata, catalog_name) and is_metadata_connector_type(metadata, "destination")
+    ]
 
     catalog = {"sources": catalog_sources, "destinations": catalog_destinations}
 

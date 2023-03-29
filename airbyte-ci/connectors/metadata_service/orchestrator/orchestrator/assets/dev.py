@@ -138,11 +138,11 @@ OVERRIDES = {
 # HELPERS
 
 
-def key_catalog_entries(catalog_dict: List[dict]) -> dict:
-    catalog_dict_keyed = catalog_dict.copy()
-    for connector_type, id_field in [["sources", "sourceDefinitionId"], ["destinations", "destinationDefinitionId"]]:
-        catalog_dict_keyed[connector_type] = key_by(catalog_dict_keyed[connector_type], id_field)
-    return catalog_dict_keyed
+def key_catalog_entries(catalog: List[dict]) -> dict:
+    catalog_keyed = catalog.copy()
+    for connector_type, id_field in [("sources", "sourceDefinitionId"), ("destinations", "destinationDefinitionId")]:
+        catalog_keyed[connector_type] = key_by(catalog_keyed[connector_type], id_field)
+    return catalog_keyed
 
 
 def diff_catalogs(catalog_dict_1: dict, catalog_dict_2: dict) -> DeepDiff:
@@ -164,9 +164,7 @@ def diff_catalogs(catalog_dict_1: dict, catalog_dict_2: dict) -> DeepDiff:
     keyed_catalog_dict_1 = key_catalog_entries(catalog_dict_1)
     keyed_catalog_dict_2 = key_catalog_entries(catalog_dict_2)
 
-    diff = DeepDiff(keyed_catalog_dict_1, keyed_catalog_dict_2, ignore_order=True, exclude_regex_paths=excludedRegex, verbose_level=2)
-
-    return diff
+    return DeepDiff(keyed_catalog_dict_1, keyed_catalog_dict_2, ignore_order=True, exclude_regex_paths=excludedRegex, verbose_level=2)
 
 
 # ASSETS
@@ -212,22 +210,27 @@ def persist_metadata_definitions(context, overrode_metadata_definitions):
 
 
 @asset(group_name=GROUP_NAME)
-def cloud_catalog_diff(cloud_catalog_from_metadata: dict, latest_cloud_catalog_dict: dict):
+def cloud_catalog_diff(cloud_catalog_from_metadata: dict, latest_cloud_catalog_dict: dict) -> dict:
     """
     Compares the cloud catalog from the metadata with the latest OSS catalog.
     """
-    diff = diff_catalogs(latest_cloud_catalog_dict, cloud_catalog_from_metadata)
-    diff_df = pd.DataFrame.from_dict(diff.to_dict())
+    return diff_catalogs(latest_cloud_catalog_dict, cloud_catalog_from_metadata).to_dict()
 
+
+@asset(group_name=GROUP_NAME)
+def oss_catalog_diff(oss_catalog_from_metadata: dict, latest_oss_catalog_dict: dict) -> dict:
+    """
+    Compares the OSS catalog from the metadata with the latest OSS catalog.
+    """
+    return diff_catalogs(latest_oss_catalog_dict, oss_catalog_from_metadata).to_dict()
+
+@asset(group_name=GROUP_NAME)
+def cloud_catalog_diff_dataframe(cloud_catalog_diff: dict):
+    diff_df = pd.DataFrame.from_dict(cloud_catalog_diff)
     return OutputDataFrame(diff_df)
 
 
 @asset(group_name=GROUP_NAME)
-def oss_catalog_diff(oss_catalog_from_metadata: dict, latest_oss_catalog_dict: dict):
-    """
-    Compares the OSS catalog from the metadata with the latest OSS catalog.
-    """
-    diff = diff_catalogs(latest_oss_catalog_dict, oss_catalog_from_metadata)
-    diff_df = pd.DataFrame.from_dict(diff)
-
+def oss_catalog_diff_dataframe(oss_catalog_diff: dict):
+    diff_df = pd.DataFrame.from_dict(oss_catalog_diff)
     return OutputDataFrame(diff_df)
