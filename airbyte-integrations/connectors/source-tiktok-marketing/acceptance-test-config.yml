@@ -85,7 +85,6 @@ acceptance_tests:
         bypass_reason: "This stream is tested on the new style config."
       - name: campaigns
         bypass_reason: "This stream is tested on the new style config."
-      fail_on_extra_columns: false
   full_refresh:
     tests:
     - config_path: "secrets/prod_config_with_day_granularity.json"
