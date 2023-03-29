@@ -6,10 +6,8 @@ connectionSpecification:
   required:
     - api_key
     - twitter_uri
-    - fp_api
-    - x_token
-    - submit_id
-    - created_time
+    - campaign_id
+    - campaign_created_time
   properties:
     api_key:
       title: API Key Token
@@ -20,20 +18,15 @@ connectionSpecification:
       title: Twitter Uri
       description: Twitter Uri
       type: string
-    fp_api:
-      title: Footprint API
-      description: Footprint API
+    campaign_id:
+      title: Campaign ID
+      description: Campaign ID
       type: string
-    x_token:
-      title: X-Token
-      description: x-token
+    campaign_created_time:
+      title: Campaign Created Time
+      description: Airbyte Connector Created Time
       type: string
-      airbyte_secret: true
     submit_id:
       title: Submit ID
       description: Footprint User ID
-      type: string
-    created_time:
-      title: Created Time
-      description: Airbyte Connector Created Time
       type: string

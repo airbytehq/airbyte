@@ -29,10 +29,9 @@ class TwitterWalletMapping(HttpStream, ABC):
         self.tweet_id = config["twitter_uri"].split('/')[5]
         self.tweet_author_name = config["twitter_uri"].split('/')[3]
         self.tweet_created_at = self.get_tweet_created_at()
-        self.fp_api = config["fp_api"]
-        self.x_token = config["x_token"]
-        self.submit_id = config["submit_id"]
-        self.created_time = config["created_time"]
+        self.campaign_id = config["campaign_id"]
+        self.campaign_created_time = config["campaign_created_time"]
+        self.submit_id = pydash.get(config, "submit_id")
 
         self.job_time = datetime.datetime.now()
 
@@ -41,7 +40,8 @@ class TwitterWalletMapping(HttpStream, ABC):
             url=f'https://api.twitter.com/2/tweets/{self.tweet_id}?tweet.fields=created_at',
             headers=self.auth.get_auth_header()
         ).json()
-        tweet_created_at = datetime.datetime.strptime(tweet_detail['data']['created_at'], '%Y-%m-%dT%H:%M:%S.000Z')
+        tweet_created_at = datetime.datetime.strptime(str(tweet_detail['data']['created_at']).split('.')[0], '%Y-%m-%dT%H:%M:%S')
+        print('====> tweet_created_at:', tweet_created_at)
         return tweet_created_at
 
     def path(
@@ -57,14 +57,15 @@ class TwitterWalletMapping(HttpStream, ABC):
         if not data:
             return None
 
-        last_reply_created_at = datetime.datetime.strptime(data[-1]['created_at'], '%Y-%m-%dT%H:%M:%S.000Z')
+        last_reply_created_at = datetime.datetime.strptime(str(data[-1]['created_at']).split('.')[0], '%Y-%m-%dT%H:%M:%S')
+        print('====> last_reply_created_at:', last_reply_created_at)
 
         if last_reply_created_at < self.tweet_created_at:
             print('The earliest response to this round of requests is beyond tweet created time, no need for the next page')
             return None
 
         # This execution time is not connector created_time, only yesterday's data is run
-        if self.created_time != self.job_time.strftime("%Y-%m-%d"):
+        if self.campaign_created_time != self.job_time.strftime("%Y-%m-%d"):
             yesterday = datetime.datetime.now()+datetime.timedelta(days=-1)
 
             if last_reply_created_at < yesterday:
@@ -94,7 +95,7 @@ class TwitterWalletMapping(HttpStream, ABC):
         param = {
             'query': 'in_reply_to_tweet_id:{}'.format(self.tweet_id),
             # 'since_id': self.tweet_id,       # The use of this parameter is limited by the requirement that the tweet id be within 7 days
-            'tweet.fields': 'author_id,created_at,public_metrics,conversation_id',
+            'tweet.fields': 'author_id,created_at,conversation_id',
             'expansions': 'author_id,in_reply_to_user_id',
             'user.fields': 'username',
             'max_results': 100
@@ -110,9 +111,6 @@ class TwitterWalletMapping(HttpStream, ABC):
         # reply detail data
         reply_detail_data = []
 
-        # wallet mapping list in all reply detail
-        reply_wallet_list = []
-
         result = response.json()
 
         if 'data' not in result.keys():
@@ -123,10 +121,10 @@ class TwitterWalletMapping(HttpStream, ABC):
             reply_text = reply_detail['text']
             reply_author = pydash.find(result['includes']['users'], {'id': reply_author_id})
 
-            reply_wallet_list.extend(self.format_reply_text(reply_author_id, reply_author['username'], reply_text))
-
             # reply detail data
             reply_detail_data.append({
+                'campaign_id': self.campaign_id,
+                'campaign_created_time': self.campaign_created_time,
                 'submit_id': self.submit_id,
                 'tweet_uri': self.twitter_uri,
                 'tweet_id': self.tweet_id,
@@ -136,19 +134,9 @@ class TwitterWalletMapping(HttpStream, ABC):
                 'reply_name': reply_author['name'],
                 'reply_username': reply_author['username'],
                 'reply_text': reply_text,
-                # 'reply_public_metrics': reply_detail['public_metrics'],
-                # 'reply_edit_history_tweet_ids': reply_detail['edit_history_tweet_ids'],
                 'reply_created_at': reply_detail['created_at'],
                 'job_time': self.job_time
             })
-
-        # write to footprint wallet_address_mapping
-        requests.post(
-            url=self.fp_api,
-            headers={'x-token': self.x_token},
-            json={'list': reply_wallet_list}
-        )
-        print(f'''reply_wallet_list: {len(reply_wallet_list), pydash.get(reply_wallet_list, '0')}''')
 
         return reply_detail_data
 
@@ -179,12 +167,12 @@ class SourceTwitterWalletMapping(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         api_key = config["api_key"]
         twitter_uri = config["twitter_uri"]
-        x_token = config["x_token"]
-        fp_api = config["fp_api"]
-        if api_key and twitter_uri and x_token and fp_api:
+        campaign_id = config["campaign_id"]
+        campaign_created_time = config["campaign_created_time"]
+        if api_key and twitter_uri and campaign_id and campaign_created_time:
             return True, None
         else:
-            return False, "Api key of Screen Name should not be null!"
+            return False, "Required fields should not be null!"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         print("config: \n", config)
