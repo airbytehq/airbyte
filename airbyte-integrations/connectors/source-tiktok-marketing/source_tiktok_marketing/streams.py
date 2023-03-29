@@ -443,7 +443,7 @@ class Campaigns(IncrementalTiktokStream):
 
 
 class AdGroups(IncrementalTiktokStream):
-    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1708503489590273"""
+    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1739314558673922"""
 
     primary_key = "adgroup_id"
 
