@@ -66,7 +66,6 @@ acceptance_tests:
       # Old style streams with granularity config (for < 0.1.13)
       # Note: not needed to be tested separately in full and incremental tests, because code of
       # these streams is called directly in new style streams
-      fail_on_extra_columns: false
     - config_path: "secrets/prod_config_with_day_granularity.json"
       expect_records:
         path: "integration_tests/expected_records2.jsonl"
