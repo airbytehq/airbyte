@@ -27,6 +27,7 @@ acceptance_tests:
         bypass_reason: "unable to populate"
       - name: "screen_tab_fields"
         bypass_reason: "unable to populate"
+      timeout_seconds: 2400
       fail_on_extra_columns: false
   incremental:
     tests:

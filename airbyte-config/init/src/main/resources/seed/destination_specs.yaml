@@ -6311,7 +6311,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.57"
+- dockerImage: "airbyte/destination-snowflake:0.4.58"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/snowflake"
     connectionSpecification:
@@ -6335,6 +6335,9 @@
           - "accountname.snowflakecomputing.com"
           type: "string"
           title: "Host"
+          pattern: "^(http(s)?:\\/\\/)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\\
+            .snowflakecomputing\\.com)$"
+          pattern_descriptor: "{account_name}.snowflakecomputing.com or {accountname}.{aws_location}.aws.snowflakecomputing.com"
           order: 0
         role:
           description: "Enter the <a href=\"https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles\"\
