@@ -65,13 +65,11 @@
     },
     "modify_time": {
       "type": "string",
-      "format": "date-time",
-      "airbyte_type": "timestamp_without_timezone"
+      "format": "date-time"
     },
     "create_time": {
       "type": "string",
-      "format": "date-time",
-      "airbyte_type": "timestamp_without_timezone"
+      "format": "date-time"
     },
     "audience_ids": {
       "type": "array",
@@ -168,13 +166,11 @@
     },
     "schedule_start_time": {
       "type": "string",
-      "format": "date-time",
-      "airbyte_type": "timestamp_without_timezone"
+      "format": "date-time"
     },
     "schedule_end_time": {
       "type": "string",
-      "format": "date-time",
-      "airbyte_type": "timestamp_without_timezone"
+      "format": "date-time"
     },
     "dayparting": {
       "type": ["null", "string"]

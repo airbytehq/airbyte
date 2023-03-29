@@ -51,13 +51,11 @@
     },
     "create_time": {
       "type": "string",
-      "format": "date-time",
-      "airbyte_type": "timestamp_without_timezone"
+      "format": "date-time"
     },
     "modify_time": {
       "type": "string",
-      "format": "date-time",
-      "airbyte_type": "timestamp_without_timezone"
+      "format": "date-time"
     },
     "roas_bid": {
       "type": ["null", "number"]
