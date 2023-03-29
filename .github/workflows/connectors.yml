@@ -169,7 +169,7 @@ jobs:
       - name: Install virtualenv
         run: python3 -m pip install virtualenv==20.4.2 --user
 
-      - name: Build ${{ matrix.connector }}
+      - name: Build ${{ matrix.connector.name }}
         id: build
         run: |
           ./gradlew :airbyte-integrations:connectors:${{ matrix.connector.name }}:build
@@ -220,10 +220,10 @@ jobs:
           PGDATABASE: ${{ secrets.POSTGRES_CONNECTOR_REFRESH_DATABASE }}
         run: |
           source tools/lib/lib.sh
-          export VERSION=$(_get_docker_image_version airbyte-integrations/connectors/${{ matrix.connector }}/Dockerfile)
+          export VERSION=$(_get_docker_image_version airbyte-integrations/connectors/${{ matrix.connector.name }}/Dockerfile)
           echo "UPDATE connector_tags SET job_status='{\"type\": \"queued\"}'
                   WHERE connector_id IN (
-                    SELECT id FROM connectors WHERE image_name='ghcr.io/estuary/${{ matrix.connector }}'
+                    SELECT id FROM connectors WHERE image_name='ghcr.io/estuary/${{ matrix.connector.name }}'
                   )
                   AND
                   image_tag IN (':$VERSION', ':dev');" | psql
