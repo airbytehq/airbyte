@@ -80,7 +80,7 @@ class KoboToolStream(HttpStream, IncrementalMixin):
 
         params = {"start": 0, "limit": self.PAGINATION_LIMIT, "sort": json.dumps({self.cursor_field: 1})}
         # submission_time = datetime.strptime(self.state[self.cursor_field], self.submission_date_format)
-        params["query"] = json.dumps({self.cursor_field: {"$gt": self.state[self.cursor_field]}})
+        params["query"] = json.dumps({self.cursor_field: {"$gte": self.state[self.cursor_field]}})
 
         if next_page_token:
             params.update(next_page_token)
