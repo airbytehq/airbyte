@@ -33,4 +33,4 @@ def main(create_prs):
     if create_prs:
         logger.info("Start eligible connectors deployment to Cloud.")
         eligible_connectors = validations.get_connectors_eligible_for_cloud(qa_report)
-        cloud_availability_updater.deploy_eligible_connectors_to_cloud_repo(eligible_connectors)
+        cloud_availability_updater.batch_deploy_eligible_connectors_to_cloud_repo(eligible_connectors)

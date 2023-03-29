@@ -24,52 +24,19 @@
       "maxLength": 50
     },
     "status": {
-      "type": ["string", "null"],
-      "enum": [
-        "new",
-        "processing",
-        "complete",
-        "cancelled",
-        "voided",
-        "queued",
-        "awaiting_shipment",
-        "on_hold",
-        "delivered",
-        "shipped",
-        "partially_delivered",
-        "returned"
-      ]
+      "type": ["string", "null"]
     },
     "cancellation_reason": {
-      "type": ["string", "null"],
-      "enum": [
-        "shipping_cut_off_passed",
-        "product_unsatisfactory",
-        "third_party_cancellation",
-        "product_not_required",
-        "delivery_date_missed",
-        "alternative_found",
-        "invoice_written_off",
-        "invoice_voided",
-        "fraudulent_transaction",
-        "payment_declined",
-        "subscription_cancelled",
-        "product_not_available",
-        "others",
-        "order_resent"
-      ]
+      "type": ["string", "null"]
     },
     "payment_status": {
-      "type": ["string", "null"],
-      "enum": ["not_paid", "paid"]
+      "type": ["string", "null"]
     },
     "order_type": {
-      "type": ["string", "null"],
-      "enum": ["manual", "system_generated"]
+      "type": ["string", "null"]
     },
     "price_type": {
-      "type": ["string", "null"],
-      "enum": ["tax_inclusive", "tax_exclusive"]
+      "type": ["string", "null"]
     },
     "reference_id": {
       "type": ["string", "null"],
@@ -165,8 +132,7 @@
       "type": ["integer", "null"]
     },
     "resent_status": {
-      "type": ["string", "null"],
-      "enum": ["fully_resent", "partially_resent"]
+      "type": ["string", "null"]
     },
     "is_resent": {
       "type": ["boolean", "null"]
@@ -275,31 +241,10 @@
           },
 
           "status": {
-            "type": ["string", "null"],
-            "enum": [
-              "queued",
-              "awaiting_shipment",
-              "on_hold",
-              "delivered",
-              "shipped",
-              "partially_delivered",
-              "returned",
-              "cancelled"
-            ]
+            "type": ["string", "null"]
           },
           "entity_type": {
-            "type": ["string", "null"],
-            "enum": [
-              "adhoc",
-
-              "plan_setup",
-              "plan",
-              "addon",
-
-              "plan_item_price",
-              "addon_item_price",
-              "charge_item_price"
-            ]
+            "type": ["string", "null"]
           },
           "item_level_discount_amount": {
             "type": ["integer", "null"],
@@ -372,8 +317,7 @@
           "maxLength": 20
         },
         "validation_status": {
-          "type": ["string", "null"],
-          "enum": ["not_validated", "valid", "partially_valid", "invalid"]
+          "type": ["string", "null"]
         }
       }
     },
@@ -433,8 +377,7 @@
           "maxLength": 20
         },
         "validation_status": {
-          "type": ["string", "null"],
-          "enum": ["not_validated", "valid", "partially_valid", "invalid"]
+          "type": ["string", "null"]
         }
       }
     },
@@ -471,17 +414,7 @@
             "minimum": 0
           },
           "tax_juris_type": {
-            "type": ["string", "null"],
-            "enum": [
-              "country",
-              "federal",
-              "state",
-              "county",
-              "city",
-              "special",
-              "unincorporated",
-              "other"
-            ]
+            "type": ["string", "null"]
           },
           "tax_juris_name": {
             "type": ["string", "null"],
@@ -511,14 +444,7 @@
             "maxLength": 50
           },
           "discount_type": {
-            "type": ["string", "null"],
-            "enum": [
-              "item_level_coupon",
-              "document_level_coupon",
-              "promotional_credits",
-              "prorated_credits",
-              "custom_discount"
-            ]
+            "type": ["string", "null"]
           },
           "coupon_id": {
             "type": ["string", "null"],
@@ -541,16 +467,14 @@
             "minimum": 0
           },
           "type": {
-            "type": ["string", "null"],
-            "enum": ["adjustment", "refundable"]
+            "type": ["string", "null"]
           },
           "id": {
             "type": ["string", "null"],
             "maxLength": 50
           },
           "status": {
-            "type": ["string", "null"],
-            "enum": ["adjusted", "refunded", "refund_due", "voided"]
+            "type": ["string", "null"]
           },
           "amount_adjusted": {
             "type": ["integer", "null"],

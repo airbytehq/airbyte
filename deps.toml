@@ -1,4 +1,5 @@
 [versions]
+airbyte-protocol = "1.0.0"
 commons_io = "2.7"
 connectors-destination-testcontainers-clickhouse = "1.17.3"
 connectors-destination-testcontainers-elasticsearch = "1.17.3"
@@ -33,6 +34,7 @@ slf4j = "1.7.36"
 temporal = "1.17.0"
 
 [libraries]
+airbyte-protocol = { module = "io.airbyte.airbyte-protocol:protocol-models", version.ref = "airbyte-protocol" }
 apache-commons = { module = "org.apache.commons:commons-compress", version = "1.20" }
 apache-commons-lang = { module = "org.apache.commons:commons-lang3", version = "3.11" }
 appender-log4j2 = { module = "com.therealvan:appender-log4j2", version = "3.6.0" }
@@ -64,7 +66,7 @@ fasterxml = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "faste
 findsecbugs-plugin = { module = "com.h3xstream.findsecbugs:findsecbugs-plugin", version = "1.12.0" }
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
 glassfish = { module = "org.glassfish.jersey:jackson-bom", version.ref = "glassfish_version" }
-google-cloud-storage = { module = "com.google.cloud:google-cloud-storage", version = "2.2.2" }
+google-cloud-storage = { module = "com.google.cloud:google-cloud-storage", version = "2.17.2" }
 guava = { module = "com.google.guava:guava", version = "31.1-jre" }
 hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
 jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "fasterxml_version" }

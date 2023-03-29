@@ -1,25 +1,24 @@
-version: "0.1.0"
+version: "0.29.0"
 
 definitions:
   selector:
     extractor:
-      field_pointer:
+      field_path:
         - response
         - results
   requester:
     url_base: "https://content.guardianapis.com"
     http_method: "GET"
-    request_options_provider:
-      request_parameters:
-        api-key: "{{ config['api_key'] }}"
-        q: "{{ config['query'] }}"
-        tag: "{{ config['tag'] }}"
-        section: "{{ config['section'] }}"
-        order-by: "oldest"
-        # from-date: "{{ config['start_date'] }}"
-        # to-date: "{{ config['end_date'] or now_utc().strftime('%Y-%m-%d') }}"
-  stream_slicer:
-    type: "DatetimeStreamSlicer"
+    request_parameters:
+      api-key: "{{ config['api_key'] }}"
+      q: "{{ config['query'] }}"
+      tag: "{{ config['tag'] }}"
+      section: "{{ config['section'] }}"
+      order-by: "oldest"
+      # from-date: "{{ config['start_date'] }}"
+      # to-date: "{{ config['end_date'] or now_utc().strftime('%Y-%m-%d') }}"
+  incremental_sync:
+    type: "DatetimeBasedCursor"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%d"
@@ -29,7 +28,7 @@ definitions:
     step: "P7D"
     datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     cursor_granularity: "PT1S"
-    cursor_field: "{{ options['stream_cursor_field'] }}"
+    cursor_field: "webPublicationDate"
     start_time_option:
       field_name: "from-date"
       inject_into: "request_parameter"
@@ -39,36 +38,35 @@ definitions:
 
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: "DefaultPaginator"
-      url_base: "*ref(definitions.requester.url_base)"
       pagination_strategy:
         class_name: "source_the_guardian_api.custom_page_strategy.CustomPageIncrement"
         page_size: 10
       page_token_option:
+        type: RequestOption
         inject_into: "request_parameter"
         field_name: "page"
       page_size_option:
         inject_into: "body_data"
         field_name: "page_size"
     requester:
-      $ref: "*ref(definitions.requester)"
-    stream_slicer:
-      $ref: "*ref(definitions.stream_slicer)"
+      $ref: "#/definitions/requester"
   base_stream:
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   content_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "content"
       primary_key: "id"
       path: "/search"
-      stream_cursor_field: "webPublicationDate"
 
 streams:
-  - "*ref(definitions.content_stream)"
+  - "#/definitions/content_stream"
 
 check:
   stream_names:

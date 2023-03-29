@@ -18,7 +18,7 @@ This page contains the setup guide and reference information for the Jira source
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Jira** from the Source type dropdown and enter a name for this connector.
 4. Enter the **API Token** that you have created.
@@ -34,7 +34,7 @@ This page contains the setup guide and reference information for the Jira source
 
 The Jira source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
@@ -122,10 +122,11 @@ Check out common troubleshooting issues for the Jira connector on our Discourse 
 
 The Jira connector should not run into Jira API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
-## CHANGELOG
+## CHANGELOG 
 
 | Version | Date       | Pull Request                                                | Subject                                                                                                                 |
 |:--------|:-----------|:------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| 0.3.4   | 2023-02-14 | [\#23006](https://github.com/airbytehq/airbyte/pull/23006)  | Remove caching for `Issues` stream                                                                                      |
 | 0.3.3   | 2023-01-04 | [\#20739](https://github.com/airbytehq/airbyte/pull/20739)  | fix: check_connection fails if no projects are defined                                                                  |
 | 0.3.2   | 2022-12-23 | [\#20859](https://github.com/airbytehq/airbyte/pull/20859)  | Fixed pagination for streams `issue_remote_links`, `sprints`                                                            |
 | 0.3.1   | 2022-12-14 | [\#20128](https://github.com/airbytehq/airbyte/pull/20128)  | Improved code to become beta                                                                                            |

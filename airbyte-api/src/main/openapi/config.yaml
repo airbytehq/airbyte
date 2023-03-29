@@ -2789,6 +2789,8 @@ components:
           format: uuid
         disable_cache:
           type: boolean
+        notifySchemaChange:
+          type: boolean
     SourceUpdate:
       type: object
       required:
