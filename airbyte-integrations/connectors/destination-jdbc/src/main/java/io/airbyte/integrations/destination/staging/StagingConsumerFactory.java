@@ -73,12 +73,12 @@ public class StagingConsumerFactory {
                                        final boolean purgeStagingData) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
     return new BufferedStreamConsumer(
-        outputRecordCollector,
         onStartFunction(database, stagingOperations, writeConfigs),
         new SerializedBufferingStrategy(
             onCreateBuffer,
             catalog,
-            flushBufferFunction(database, stagingOperations, writeConfigs, catalog)),
+            flushBufferFunction(database, stagingOperations, writeConfigs, catalog),
+            outputRecordCollector),
         onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData),
         catalog,
         stagingOperations::isValidData);

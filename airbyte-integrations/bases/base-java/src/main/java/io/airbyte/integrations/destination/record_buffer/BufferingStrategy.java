@@ -35,16 +35,22 @@ public interface BufferingStrategy extends AutoCloseable {
   /**
    * Flush buffered messages in a writer from a particular stream
    */
-  void flushWriter(AirbyteStreamNameNamespacePair stream, SerializableBuffer writer) throws Exception;
+  void flushSingleStream(AirbyteStreamNameNamespacePair stream, SerializableBuffer writer) throws Exception;
 
   /**
    * Flush all writers that were buffering message data so far.
    */
-  void flushAll() throws Exception;
+  void flushAllStreams() throws Exception;
 
   /**
    * Removes all stream buffers.
    */
   void clear() throws Exception;
 
+  /**
+   * State management as it relates to flushing and state commit
+   * acknowledgement is handled by the BufferingStrategy now
+   * @param message the incoming AirbyteMessage state object
+   */
+  void addStateMessage(AirbyteMessage message);
 }

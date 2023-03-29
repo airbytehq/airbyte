@@ -54,12 +54,12 @@ public class S3GlueConsumerFactory {
                                        final ConfiguredAirbyteCatalog catalog) {
     final List<S3GlueWriteConfig> writeConfigs = createWriteConfigs(storageOperations, s3Config, catalog);
     return new BufferedStreamConsumer(
-        outputRecordCollector,
         onStartFunction(storageOperations, writeConfigs),
         new SerializedBufferingStrategy(
             onCreateBuffer,
             catalog,
-            flushBufferFunction(storageOperations, writeConfigs, catalog)),
+            flushBufferFunction(storageOperations, writeConfigs, catalog),
+            outputRecordCollector),
         onCloseFunction(storageOperations, metastoreOperations, writeConfigs, glueConfig, s3Config),
         catalog,
         storageOperations::isValidData);
@@ -155,8 +155,8 @@ public class S3GlueConsumerFactory {
   private OnCloseFunction onCloseFunction(final BlobStorageOperations storageOperations,
                                           final MetastoreOperations metastoreOperations,
                                           final List<S3GlueWriteConfig> writeConfigs,
-                                          GlueDestinationConfig glueDestinationConfig,
-                                          S3DestinationConfig s3DestinationConfig) {
+                                          final GlueDestinationConfig glueDestinationConfig,
+                                          final S3DestinationConfig s3DestinationConfig) {
     return (hasFailed) -> {
       if (hasFailed) {
         LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());

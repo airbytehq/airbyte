@@ -57,9 +57,9 @@ public class JdbcBufferedConsumerFactory {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, sqlOperations.isSchemaRequired());
 
     return new BufferedStreamConsumer(
-        outputRecordCollector,
         onStartFunction(database, sqlOperations, writeConfigs),
-        new InMemoryRecordBufferingStrategy(recordWriterFunction(database, sqlOperations, writeConfigs, catalog), DEFAULT_MAX_BATCH_SIZE_BYTES),
+        new InMemoryRecordBufferingStrategy(recordWriterFunction(database, sqlOperations, writeConfigs, catalog), DEFAULT_MAX_BATCH_SIZE_BYTES,
+            outputRecordCollector),
         onCloseFunction(database, sqlOperations, writeConfigs),
         catalog,
         sqlOperations::isValidData);
@@ -193,9 +193,8 @@ public class JdbcBufferedConsumerFactory {
         sqlOperations.dropTableIfExists(database, schemaName, tmpTableName);
       }
       LOGGER.info("Cleaning tmp tables in destination completed.");
-    }
+    };
 
-    ;
   }
 
   private static AirbyteStreamNameNamespacePair toNameNamespacePair(final WriteConfig config) {

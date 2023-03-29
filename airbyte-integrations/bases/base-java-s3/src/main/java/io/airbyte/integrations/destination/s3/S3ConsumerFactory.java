@@ -45,12 +45,12 @@ public class S3ConsumerFactory {
                                        final ConfiguredAirbyteCatalog catalog) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(storageOperations, namingResolver, s3Config, catalog);
     return new BufferedStreamConsumer(
-        outputRecordCollector,
         onStartFunction(storageOperations, writeConfigs),
         new SerializedBufferingStrategy(
             onCreateBuffer,
             catalog,
-            flushBufferFunction(storageOperations, writeConfigs, catalog)),
+            flushBufferFunction(storageOperations, writeConfigs, catalog),
+            outputRecordCollector),
         onCloseFunction(storageOperations, writeConfigs),
         catalog,
         storageOperations::isValidData);
