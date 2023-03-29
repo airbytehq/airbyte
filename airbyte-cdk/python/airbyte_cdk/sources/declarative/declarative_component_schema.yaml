@@ -1072,6 +1072,7 @@ definitions:
     additionalProperties: true
     properties:
       oauth_user_input_from_connector_config_specification:
+        title: "OAuth user input"
         description: |-
           OAuth specific blob. This is a Json Schema used to validate Json configurations used as input to OAuth.
           Must be a valid non-nested JSON that refers to properties from ConnectorSpecification.connectionSpecification
@@ -1095,8 +1096,12 @@ definitions:
               }
             }
         type: object
-        existingJavaType: com.fasterxml.jackson.databind.JsonNode
+        example:
+          app_id:
+            type: string
+            path_in_connector_config: ["app_id"]
       complete_oauth_output_specification:
+        title: "OAuth output specification"
         description: |-
           OAuth specific blob. This is a Json Schema used to validate Json configurations produced by the OAuth flows as they are
           returned by the distant OAuth APIs.
@@ -1110,8 +1115,13 @@ definitions:
                 }
               }
         type: object
-        existingJavaType: com.fasterxml.jackson.databind.JsonNode
+        additionalProperties: true
+        example:
+          refresh_token:
+            type: string,
+            path_in_connector_config: ["credentials", "refresh_token"]
       complete_oauth_server_input_specification:
+        title: "OAuth input specification"
         description: |-
           OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations.
           Must be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the
@@ -1126,8 +1136,14 @@ definitions:
                 }
               }
         type: object
-        existingJavaType: com.fasterxml.jackson.databind.JsonNode
+        additionalProperties: true
+        example:
+          client_id:
+            type: string
+          client_secret:
+            type: string
       complete_oauth_server_output_specification:
+        title: "OAuth server output specification"
         description: |-
           OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations that
           also need to be merged back into the connector configuration at runtime.
@@ -1150,7 +1166,14 @@ definitions:
                   }
                 }
         type: object
-        existingJavaType: com.fasterxml.jackson.databind.JsonNode
+        additionalProperties: true
+        example:
+          client_id:
+            type: string,
+            path_in_connector_config: ["credentials", "client_id"]
+          client_secret:
+            type: string,
+            path_in_connector_config: ["credentials", "client_secret"]
   SubstreamPartitionRouter:
     description: Partition router that is used to retrieve records that have been partitioned according to records from the specified parent streams
     type: object
