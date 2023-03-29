@@ -55,12 +55,12 @@ public class CopyConsumerFactory {
 
     final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount = new HashMap<>();
     return new BufferedStreamConsumer(
-        outputRecordCollector,
         onStartFunction(pairToIgnoredRecordCount),
         new InMemoryRecordBufferingStrategy(
             recordWriterFunction(pairToCopier, sqlOperations, pairToIgnoredRecordCount),
             removeStagingFilePrinter(pairToCopier),
-            DEFAULT_MAX_BATCH_SIZE_BYTES),
+            DEFAULT_MAX_BATCH_SIZE_BYTES,
+            outputRecordCollector),
         onCloseFunction(pairToCopier, database, sqlOperations, pairToIgnoredRecordCount, dataSource),
         catalog,
         sqlOperations::isValidData);
@@ -93,7 +93,7 @@ public class CopyConsumerFactory {
   private static RecordWriter<AirbyteRecordMessage> recordWriterFunction(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier,
                                                                          final SqlOperations sqlOperations,
                                                                          final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount) {
-    return (AirbyteStreamNameNamespacePair pair, List<AirbyteRecordMessage> records) -> {
+    return (final AirbyteStreamNameNamespacePair pair, final List<AirbyteRecordMessage> records) -> {
       final var fileName = pairToCopier.get(pair).prepareStagingFile();
       for (final AirbyteRecordMessage recordMessage : records) {
         final var id = UUID.randomUUID();
@@ -109,7 +109,7 @@ public class CopyConsumerFactory {
   }
 
   private static CheckAndRemoveRecordWriter removeStagingFilePrinter(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier) {
-    return (AirbyteStreamNameNamespacePair pair, String stagingFileName) -> {
+    return (final AirbyteStreamNameNamespacePair pair, final String stagingFileName) -> {
       final String currentFileName = pairToCopier.get(pair).getCurrentFile();
       if (stagingFileName != null && currentFileName != null && !stagingFileName.equals(currentFileName)) {
         pairToCopier.get(pair).closeNonCurrentStagingFileWriters();

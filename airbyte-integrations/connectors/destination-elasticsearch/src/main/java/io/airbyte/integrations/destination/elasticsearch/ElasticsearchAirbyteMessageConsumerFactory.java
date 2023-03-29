@@ -49,9 +49,8 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
                                               final ConfiguredAirbyteCatalog catalog) {
 
     return new BufferedStreamConsumer(
-        outputRecordCollector,
         onStartFunction(connection, writeConfigs),
-        new InMemoryRecordBufferingStrategy(recordWriterFunction(connection, writeConfigs), MAX_BATCH_SIZE_BYTES),
+        new InMemoryRecordBufferingStrategy(recordWriterFunction(connection, writeConfigs), MAX_BATCH_SIZE_BYTES, outputRecordCollector),
         onCloseFunction(connection),
         catalog,
         isValidFunction(connection));
@@ -101,10 +100,10 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
     };
   }
 
-  private static List<String> extractErrorReport(BulkResponse response) {
+  private static List<String> extractErrorReport(final BulkResponse response) {
     final Map<String, ErrorCause> errorResult = new HashMap<>();
     response.items().forEach(item -> {
-      IndexResponseItem index = item.index();
+      final IndexResponseItem index = item.index();
       errorResult.put(index.index(), index.error());
     });
     final List<String> errorReport = new ArrayList<>();
