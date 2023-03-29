@@ -4,9 +4,6 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { ProductOptionItem } from "core/domain/product";
-// import { NumberNaming } from "core/functions/numberFormatter";
-
-// import Range from "./Range";
 
 interface IProps {
   productOptions: ProductOptionItem[];
