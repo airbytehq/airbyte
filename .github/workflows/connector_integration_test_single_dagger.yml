@@ -13,8 +13,11 @@ jobs:
   connectors_ci:
     name: Connectors CI
     timeout-minutes: 240 # 4 hours
-    runs-on:  medium-runner
+    runs-on: medium-runner
     steps:
+      - name: Get start timestamp
+        id: get-start-timestamp
+        run: echo "::set-output name=start-timestamp::$(date +%s)"
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
@@ -44,6 +47,7 @@ jobs:
           fi
           connectors-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} test-connectors ${{ github.event.inputs.test-connectors-options }}
         env:
+          _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
           AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
@@ -53,7 +57,7 @@ jobs:
           CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
           CI_GIT_REVISION: ${{ github.sha }}
           CI_CONTEXT: "manual"
-          CI_PIPELINE_START_TIMESTAMP: ${{ needs.start-runner.outputs.pipeline-start-timestamp }}
+          CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
       - name: Run connectors-ci test-connectors [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         run: |
@@ -67,6 +71,7 @@ jobs:
           fi
           connectors-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} test-connectors --modified
         env:
+          _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
           AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
@@ -76,4 +81,4 @@ jobs:
           CI_GIT_BRANCH: ${{ github.head_ref }}
           CI_GIT_REVISION: ${{ github.event.pull_request.head.sha }}
           CI_CONTEXT: "pull_request"
-          CI_PIPELINE_START_TIMESTAMP: ${{ needs.start-runner.outputs.pipeline-start-timestamp }}
+          CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
