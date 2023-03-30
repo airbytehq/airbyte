@@ -37,7 +37,11 @@ public class SshWrappedSource implements Source {
     this.setSshKeyPatterns = false;
   }
 
-  public SshWrappedSource(final Source delegate, final List<String> hostKey, final List<String> portKey, final String sshGroup, final boolean setSshKeyPatterns) {
+  public SshWrappedSource(final Source delegate,
+                          final List<String> hostKey,
+                          final List<String> portKey,
+                          final String sshGroup,
+                          final boolean setSshKeyPatterns) {
     this.delegate = delegate;
     this.hostKey = hostKey;
     this.portKey = portKey;

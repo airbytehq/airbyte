@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 public class SshHelpers {
+
   private static final String SSH_KEY_PATTERN = "-----BEGIN[ a-zA-Z0-9]+-----(.|\\n)*-----END[ a-zA-Z0-9]+-----";
   private static final String SSH_KEY_PATTERN_DESCRIPTOR = "PEM format";
 
@@ -29,7 +30,9 @@ public class SshHelpers {
     return injectSshIntoSpec(connectorSpecification, Optional.empty(), false);
   }
 
-  public static ConnectorSpecification injectSshIntoSpec(final ConnectorSpecification connectorSpecification, final Optional<String> group, final boolean setSshKeyPatterns)
+  public static ConnectorSpecification injectSshIntoSpec(final ConnectorSpecification connectorSpecification,
+                                                         final Optional<String> group,
+                                                         final boolean setSshKeyPatterns)
       throws IOException {
     final ConnectorSpecification originalSpec = Jsons.clone(connectorSpecification);
     final ObjectNode propNode = (ObjectNode) originalSpec.getConnectionSpecification().get("properties");
@@ -50,4 +53,5 @@ public class SshHelpers {
     propNode.set("tunnel_method", tunnelMethod);
     return originalSpec;
   }
+
 }
