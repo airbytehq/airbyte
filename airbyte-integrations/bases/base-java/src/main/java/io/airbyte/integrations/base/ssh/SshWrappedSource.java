@@ -27,24 +27,27 @@ public class SshWrappedSource implements Source {
   private final List<String> hostKey;
   private final List<String> portKey;
   private final Optional<String> sshGroup;
+  private final boolean setSshKeyPatterns;
 
   public SshWrappedSource(final Source delegate, final List<String> hostKey, final List<String> portKey) {
     this.delegate = delegate;
     this.hostKey = hostKey;
     this.portKey = portKey;
     this.sshGroup = Optional.empty();
+    this.setSshKeyPatterns = false;
   }
 
-  public SshWrappedSource(final Source delegate, final List<String> hostKey, final List<String> portKey, final String sshGroup) {
+  public SshWrappedSource(final Source delegate, final List<String> hostKey, final List<String> portKey, final String sshGroup, final boolean setSshKeyPatterns) {
     this.delegate = delegate;
     this.hostKey = hostKey;
     this.portKey = portKey;
     this.sshGroup = Optional.of(sshGroup);
+    this.setSshKeyPatterns = setSshKeyPatterns;
   }
 
   @Override
   public ConnectorSpecification spec() throws Exception {
-    return SshHelpers.injectSshIntoSpec(delegate.spec(), sshGroup);
+    return SshHelpers.injectSshIntoSpec(delegate.spec(), sshGroup, setSshKeyPatterns);
   }
 
   @Override
