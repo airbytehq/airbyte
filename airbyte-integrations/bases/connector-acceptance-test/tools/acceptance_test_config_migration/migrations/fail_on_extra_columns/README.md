@@ -1,10 +1,15 @@
-# Title
-Description
+# Bypassing column selection validation for sources which fail it
+This migration adds `fail_on_extra_columns: false` to the `basic_read` test in the `acceptance-test-config.yml`
+file for all Beta and GA connectors which fail the stricter validation added to the `basic_read` test. It creates
+issues for each of the connectors whose configs were modified as a result.
+
+Before following this README, please reference the `acceptance_test_config_migraton` README for general
+usage information for the given scripts.
 
 ## Add bypass for connectors that fail the new CAT test
 
 ### Run tests on all connectors
-Run CAT on all connectors.
+Run CAT on all Beta and GA connectors.
 
 ```
 python run_tests.py
@@ -27,8 +32,8 @@ python config_migration.py --connectors $(ls migrations/fail_on_extra_columns/te
 Add these bypasses to the PR that adds the new CAT test!
 
 
-## Create migration issue for failing connectors (`create_issues.py`)
-Create one issue per GA connectors to migrate to `high` test strictness level.
+## Create issues for failing connectors (`create_issues.py`)
+Create one issue per GA connectors to add the missing columns to the spec and remove the `fail_on_extra_columns` bypass.
 
 Issues get created with the following labels:
 * `area/connectors`

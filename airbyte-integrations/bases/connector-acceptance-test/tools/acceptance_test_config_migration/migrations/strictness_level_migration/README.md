@@ -16,12 +16,12 @@ Issues are added to the following project: `SAT-high-test-strictness-level`
 ### How to run:
 **Dry run**:
 ```
-python create_issues.py --connectors GA_CONNECTORS  # TODO: make passing GA an option
+python create_issues.py
 ```
 
 **Real execution**:
 ```
-python create_issues.py --connectors GA_CONNECTORS --no-dry
+python create_issues.py --no-dry
 ```
 
 ## Create migration PRs for GA connectors (`create_prs.py`)
@@ -39,7 +39,7 @@ PR are added to the following project: `SAT-high-test-strictness-level`
 
 ### How to run:
 **Dry run**:
-`python create_prs.py --connectors GA_CONNECTORS`
+`python create_prs.py`
 
 **Real execution**:
-`python create_prs.py --connectors GA_CONNECTORS --no-dry`
+`python create_prs.py --no-dry`

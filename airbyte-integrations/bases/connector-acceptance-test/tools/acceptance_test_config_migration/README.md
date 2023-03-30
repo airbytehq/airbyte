@@ -49,10 +49,13 @@ TODO: Replace this process with Dagger
 
 #### Before running
 
-The tests will run on the `latest` version of CAT by default. To run the `dev` version of CAT, and select a specific 
+1. The tests will run on the `latest` version of CAT by default. To run the `dev` version of CAT, and select a specific 
 test, commit the following hacky changes: (TODO: fill with changes to `acceptance-test-docker.sh` and CAT `Dockerfile`)
 
-Note: you will need to give Docker a _lot_ of space to build all the connector images!
+2. Give Docker a _lot_ of space to build all the connector images!
+
+3. Make sure you have the secrets downloaded from GSM for all of the connectors you want to run tests on. Please keep 
+in mind that secrets need to be re-uploaded for connectors with single-use Oauth tokens.
 
 #### How to run 
 
@@ -70,7 +73,7 @@ Run connector acceptance tests for a list of connectors.
 options:
   -h, --help            show this help message and exit
   --connectors [CONNECTORS ...]
-                        A list of connectors (separated by spaces) to run a script on.
+                        A list of connectors (separated by spaces) to run a script on .
   --allow_alpha, --no-allow_alpha
                         Whether to apply the change to alpha connectors, if they are included in the list of connectors. (default: False)
   --max_concurrency MAX_CONCURRENCY
@@ -145,7 +148,7 @@ options:
   -h, --help            show this help message and exit
   -d, --dry, --no-dry   Whether the action performed is a dry run. In the case of a dry run, no git actions will be pushed to the remote. (default: True)
   --connectors [CONNECTORS ...]
-                        A list of connectors (separated by spaces) to run a script on.
+                        A list of connectors (separated by spaces) to run a script on. (default: all GA connectors)
   --allow_alpha, --no-allow_alpha
                         Whether to apply the change to alpha connectors, if they are included in the list of connectors. (default: False)
 ```
@@ -190,7 +193,7 @@ options:
   -h, --help            show this help message and exit
   -d, --dry, --no-dry   Whether the action performed is a dry run. In the case of a dry run, no git actions will be pushed to the remote. (default: True)
   --connectors [CONNECTORS ...]
-                        A list of connectors (separated by spaces) to run a script on.
+                        A list of connectors (separated by spaces) to run a script on. (default: all GA connectors)
   --allow_alpha, --no-allow_alpha
                         Whether to apply the change to alpha connectors, if they are included in the list of connectors. (default: False)
 ```
@@ -269,7 +272,7 @@ Migrate acceptance-test-config.yml files for a list of connectors.
 options:
   -h, --help            show this help message and exit
   --connectors [CONNECTORS ...]
-                        A list of connectors (separated by spaces) to run a script on.
+                        A list of connectors (separated by spaces) to run a script on. (default: all GA connectors)
   --allow_alpha, --no-allow_alpha
                         Whether to apply the change to alpha connectors, if they are included in the list of connectors. (default: False)
   --migrate_from_legacy, --no-migrate_from_legacy
