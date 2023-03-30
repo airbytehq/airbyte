@@ -74,6 +74,14 @@ class SourceTiktokMarketingSpec(BaseModel):
         order=3,
         airbyte_hidden=True,
     )
+    
+    attribution_window: int = Field(
+        None,
+        title="Attribution Window",
+        description="The attribution window in days.",
+        default=0,
+        order=4
+    )
 
     @classmethod
     def change_format_to_oneOf(cls, schema: dict) -> dict:

@@ -87,6 +87,7 @@ class SourceTiktokMarketing(AbstractSource):
             "secret": secret,
             "access_token": access_token,
             "is_sandbox": is_sandbox,
+            "attribution_window": config.get("attribution_window")
         }
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:

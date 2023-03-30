@@ -98,6 +98,13 @@
         "order": 3,
         "airbyte_hidden": true,
         "type": "string"
+      },
+      "attribution_window": {
+        "title": "Attribution Window",
+        "description": "The attribution window in days.",
+        "default": 0,
+        "order": 4,
+        "type": "integer"
       }
     }
   },
