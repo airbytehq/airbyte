@@ -230,8 +230,14 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   @Override
-  public List<TableInfo<CommonField<PostgresType>>> discoverInternal(final JdbcDatabase database) throws Exception {
+  public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
+    final JdbcDatabase database = super.createDatabase(config);
     this.publicizedTablesInCdc = PostgresCdcCatalogHelper.getPublicizedTables(database);
+    return database;
+  }
+
+  @Override
+  public List<TableInfo<CommonField<PostgresType>>> discoverInternal(final JdbcDatabase database) throws Exception {
     return discoverRawTables(database);
   }
 
