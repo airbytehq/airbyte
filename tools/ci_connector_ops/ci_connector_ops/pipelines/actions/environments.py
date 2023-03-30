@@ -293,13 +293,22 @@ def with_gradle(context: ConnectorTestContext, sources_to_include: List[str] = N
         include += sources_to_include
 
     shared_tmp_volume = ("/tmp", context.dagger_client.cache_volume("share-tmp-gradle"))
+    centos_docker_cli = (
+        context.dagger_client.container()
+        .from_("centos:centos7")
+        # .with_exec(["yum", "update", "-y"])
+        .with_exec(["yum", "install", "-y", "yum-utils"])
+        .with_exec(["yum-config-manager", "--add-repo", "https://download.docker.com/linux/centos/docker-ce.repo"])
+        .with_exec(["yum", "install", "-y", "java-17-openjdk", "bash", "jq", "python3", "docker-ce-cli"])
+    )
+
+    centos_docker_cli = with_bound_docker_host(context, centos_docker_cli, shared_tmp_volume)
     return (
-        with_docker_cli(context, shared_tmp_volume)
-        .with_exec(["apk", "add", "openjdk17", "bash", "jq"])
-        # .with_exec(["apk", "add", "python3"])
+        centos_docker_cli
         # .with_exec(["ln", "-sf", "python3", "/usr/bin/python3"])
         # .with_exec(["python3", "-m", "ensurepip"])
         # .with_exec(["pip3", "install", "--no-cache", "--upgrade", "pip", "setuptools"])
+        .with_env_variable("JAVA_HOME", "/etc/alternatives/jre")
         .with_exec(["mkdir", "/root/.gradle"])
         .with_mounted_cache("/root/.gradle", root_gradle_cache)
         .with_exec(["mkdir", "/airbyte"])
