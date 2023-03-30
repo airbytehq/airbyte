@@ -467,11 +467,6 @@ class Invoices(IncrementalOrbStream):
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         request_params = super().request_params(stream_state, **kwargs)
-        # This doesn't make sense for invoices, since the cursor field is `invoice_date`, and the
-        # created_at for an invoice isn't meaningful, so any attempt to use it should be prevented.
-        if "created_at[gte]" in request_params:
-            del request_params["created_at[gte]"]
-
         # Filter to all statuses. Note that if you're currently expecting the status of the invoice
         # to update at the sink, you should periodically still expect to re-sync this connector to
         # fetch updates.
@@ -736,7 +731,7 @@ class SourceOrb(AbstractSource):
             Customers(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
             Subscriptions(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
             Plans(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
-            Invoices(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
+            Invoices(authenticator=authenticator, lookback_window_days=lookback_window),
             CreditsLedgerEntries(
                 authenticator=authenticator,
                 lookback_window_days=lookback_window,
