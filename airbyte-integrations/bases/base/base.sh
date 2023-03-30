@@ -42,7 +42,7 @@ function main() {
     eval "$AIRBYTE_SPEC_CMD"
     ;;
   check)
-    eval "$AIRBYTE_CHECK_CMD" --config "$CONFIG_FILE"
+    eval "$AIRBYTE_CHECK_CMD" --config "$CONFIG_FILE" --catalog "$CATALOG_FILE"
     ;;
   discover)
     eval "$AIRBYTE_DISCOVER_CMD" --config "$CONFIG_FILE"
