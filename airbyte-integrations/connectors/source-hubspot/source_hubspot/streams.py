@@ -685,7 +685,7 @@ class SemiIncrementalStream(Stream, IncrementalMixin):
         record_value = (
             pendulum.parse(record.get(self.cursor_field)).int_timestamp
             if isinstance(record.get(self.cursor_field), str)
-            else record.get(self.cursor_field)
+            else record.get(self.cursor_field) // 1000
         )
         start_date = pendulum.from_timestamp(int(stream_state.get(self.cursor_field))) if stream_state else self._start_date
         cursor_value = max(start_date.int_timestamp, record_value)
