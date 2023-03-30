@@ -172,7 +172,8 @@ class Payslip(TripletexPaginationStream):
     def request_params(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = {"fields": "specifications"}
+        params = {
+            "fields": "id,version,url,employee,date,year,month,specifications,vacationAllowanceAmount,grossAmount,amount,number"}
         params.update(super().request_params(
             stream_state, stream_slice, next_page_token))
         return params
