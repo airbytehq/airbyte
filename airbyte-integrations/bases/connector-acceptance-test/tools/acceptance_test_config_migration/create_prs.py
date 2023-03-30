@@ -120,9 +120,7 @@ def add_test_comment(definition, new_branch, dry_run):
 
 def migrate_config_on_new_branch(definition, dry_run):
     AIRBYTE_REPO.heads.master.checkout()
-    connector_name = definitions.get_airbyte_connector_name_from_definition(
-        definition
-    )  # TODO make sure they're airbyte connectors before trying to migrate
+    connector_name = definitions.get_airbyte_connector_name_from_definition(definition)
     new_branch = checkout_new_branch(connector_name)
     config_path = utils.acceptance_test_config_path(connector_name)
     update_configuration(config_path, migration=set_high_test_strictness_level, migrate_from_legacy=True)
