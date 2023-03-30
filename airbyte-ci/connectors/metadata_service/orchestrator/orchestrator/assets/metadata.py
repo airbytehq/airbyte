@@ -4,7 +4,7 @@ from dagster import Output, asset
 
 from metadata_service.models.generated.ConnectorMetadataDefinitionV1 import ConnectorMetadataDefinitionV1
 from ..utils.object_helpers import are_values_equal, merge_values
-from ..utils.dagster_helpers import OutputDataFrame
+from ..utils.dagster_helpers import OutputDataFrame, output_dataframe
 from ..models.metadata import PartialMetadataDefinition
 
 GROUP_NAME = "metadata"
@@ -148,7 +148,7 @@ def validate_metadata(metadata: PartialMetadataDefinition) -> tuple[bool, str]:
 
 
 @asset(group_name=GROUP_NAME)
-def valid_metadata_list(overrode_metadata_definitions: List[PartialMetadataDefinition]):
+def valid_metadata_list(overrode_metadata_definitions: List[PartialMetadataDefinition]) -> OutputDataFrame:
     """
     Validates the metadata definitions and returns a dataframe with the results
     """
@@ -169,18 +169,16 @@ def valid_metadata_list(overrode_metadata_definitions: List[PartialMetadataDefin
 
     result_df = pd.DataFrame(result)
 
-    return OutputDataFrame(result_df)
+    return output_dataframe(result_df)
 
 
 @asset(group_name=GROUP_NAME)
 def catalog_derived_metadata_definitions(
-    context, cloud_sources_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, oss_destinations_dataframe
-):
+    cloud_sources_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, oss_destinations_dataframe
+) -> Output[List[PartialMetadataDefinition]]:
     sources_metadata_list = merge_into_metadata_definitions("sourceDefinitionId", "source", oss_sources_dataframe, cloud_sources_dataframe)
     destinations_metadata_list = merge_into_metadata_definitions(
         "destinationDefinitionId", "destination", oss_destinations_dataframe, cloud_destinations_dataframe
     )
     all_definitions = sources_metadata_list + destinations_metadata_list
-    # log all definitions
-    # context.log.info(f"all_definitions: {all_definitions}")
     return Output(all_definitions, metadata={"count": len(all_definitions)})

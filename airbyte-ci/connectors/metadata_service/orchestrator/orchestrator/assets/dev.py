@@ -4,7 +4,7 @@ from pydash.collections import key_by
 from deepdiff import DeepDiff
 from dagster import Output, asset
 from typing import List
-from ..utils.dagster_helpers import OutputDataFrame
+from ..utils.dagster_helpers import OutputDataFrame, output_dataframe
 from ..models.metadata import PartialMetadataDefinition
 
 
@@ -172,13 +172,11 @@ def diff_catalogs(catalog_dict_1: dict, catalog_dict_2: dict) -> DeepDiff:
 
 
 @asset(group_name=GROUP_NAME)
-def overrode_metadata_definitions(context, catalog_derived_metadata_definitions: List[PartialMetadataDefinition]) -> List[PartialMetadataDefinition]:
+def overrode_metadata_definitions(catalog_derived_metadata_definitions: List[PartialMetadataDefinition]) -> List[PartialMetadataDefinition]:
     """
     Overrides the metadata definitions with the values in the OVERRIDES dictionary.
     This is useful for ensuring all connectors are passing validation when we go live.
     """
-    # log
-    # context.log.info(f"Overriding metadata definitions with {catalog_derived_metadata_definitions}")
     overrode_definitions = []
     for metadata_definition in catalog_derived_metadata_definitions:
         definition_id = metadata_definition["data"]["definitionId"]
@@ -228,12 +226,12 @@ def oss_catalog_diff(oss_catalog_from_metadata: dict, latest_oss_catalog_dict: d
     return diff_catalogs(latest_oss_catalog_dict, oss_catalog_from_metadata).to_dict()
 
 @asset(group_name=GROUP_NAME)
-def cloud_catalog_diff_dataframe(cloud_catalog_diff: dict):
+def cloud_catalog_diff_dataframe(cloud_catalog_diff: dict) -> OutputDataFrame:
     diff_df = pd.DataFrame.from_dict(cloud_catalog_diff)
-    return OutputDataFrame(diff_df)
+    return output_dataframe(diff_df)
 
 
 @asset(group_name=GROUP_NAME)
-def oss_catalog_diff_dataframe(oss_catalog_diff: dict):
+def oss_catalog_diff_dataframe(oss_catalog_diff: dict) -> OutputDataFrame:
     diff_df = pd.DataFrame.from_dict(oss_catalog_diff)
-    return OutputDataFrame(diff_df)
+    return output_dataframe(diff_df)

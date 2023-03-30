@@ -1,7 +1,10 @@
 from dagster import MetadataValue, Output
+import pandas as pd
+from typing import NewType
 
+OutputDataFrame = Output[pd.DataFrame]
 
-def OutputDataFrame(result_df):
+def output_dataframe(result_df: pd.DataFrame) -> Output[pd.DataFrame]:
     """
     Returns a Dagster Output object with a dataframe as the result and a markdown preview.
     """

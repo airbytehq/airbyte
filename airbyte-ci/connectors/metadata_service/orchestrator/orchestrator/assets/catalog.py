@@ -5,7 +5,7 @@ from typing import List
 
 from dagster import asset, OpExecutionContext
 
-from ..utils.dagster_helpers import OutputDataFrame
+from ..utils.dagster_helpers import OutputDataFrame, output_dataframe
 from ..models.metadata import PartialMetadataDefinition
 
 
@@ -41,11 +41,11 @@ def metadata_to_catalog_entry(metadata_definition: dict, connector_type: str, ov
     # remove connectorType field
     del overrode_metadata_data["connectorType"]
 
-    # rename field connectionType to sourceType
-    connection_type = overrode_metadata_data.get("connectionType")
+    # rename field connectorSubtype to sourceType
+    connection_type = overrode_metadata_data.get("connectorSubtype")
     if connection_type:
-        overrode_metadata_data["sourceType"] = overrode_metadata_data["connectionType"]
-        del overrode_metadata_data["connectionType"]
+        overrode_metadata_data["sourceType"] = overrode_metadata_data["connectorSubtype"]
+        del overrode_metadata_data["connectorSubtype"]
 
     # rename supportUrl to documentationUrl
     support_url = overrode_metadata_data.get("supportUrl")
@@ -120,27 +120,27 @@ def oss_catalog_from_metadata(catalog_derived_metadata_definitions: List[Partial
 
 
 @asset(group_name=GROUP_NAME)
-def cloud_sources_dataframe(latest_cloud_catalog_dict: dict):
+def cloud_sources_dataframe(latest_cloud_catalog_dict: dict) -> OutputDataFrame:
     sources = latest_cloud_catalog_dict["sources"]
-    return OutputDataFrame(pd.DataFrame(sources))
+    return output_dataframe(pd.DataFrame(sources))
 
 
 @asset(group_name=GROUP_NAME)
-def oss_sources_dataframe(latest_oss_catalog_dict: dict):
+def oss_sources_dataframe(latest_oss_catalog_dict: dict) -> OutputDataFrame:
     sources = latest_oss_catalog_dict["sources"]
-    return OutputDataFrame(pd.DataFrame(sources))
+    return output_dataframe(pd.DataFrame(sources))
 
 
 @asset(group_name=GROUP_NAME)
-def cloud_destinations_dataframe(latest_cloud_catalog_dict: dict):
+def cloud_destinations_dataframe(latest_cloud_catalog_dict: dict) -> OutputDataFrame:
     destinations = latest_cloud_catalog_dict["destinations"]
-    return OutputDataFrame(pd.DataFrame(destinations))
+    return output_dataframe(pd.DataFrame(destinations))
 
 
 @asset(group_name=GROUP_NAME)
-def oss_destinations_dataframe(latest_oss_catalog_dict: dict):
+def oss_destinations_dataframe(latest_oss_catalog_dict: dict) -> OutputDataFrame:
     destinations = latest_oss_catalog_dict["destinations"]
-    return OutputDataFrame(pd.DataFrame(destinations))
+    return output_dataframe(pd.DataFrame(destinations))
 
 
 @asset(required_resource_keys={"latest_cloud_catalog_gcs_file"}, group_name=GROUP_NAME)
