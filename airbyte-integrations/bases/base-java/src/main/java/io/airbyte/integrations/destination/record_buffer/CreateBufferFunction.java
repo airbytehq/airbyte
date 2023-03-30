@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.record_buffer;
 
 import io.airbyte.commons.functional.CheckedBiFunction;
@@ -11,4 +15,5 @@ public interface CreateBufferFunction extends
   @Override
   SerializableBuffer apply(AirbyteStreamNameNamespacePair streamName, ConfiguredAirbyteCatalog configuredCatalog)
       throws Exception;
+
 }
