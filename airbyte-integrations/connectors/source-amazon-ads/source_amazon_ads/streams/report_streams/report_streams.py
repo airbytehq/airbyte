@@ -90,6 +90,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     """
     Common base class for report streams
     """
+
     API_VERSION = "v2"
     primary_key = ["profileId", "recordType", "reportDate", "recordId"]
     # https://advertising.amazon.com/API/docs/en-us/reporting/v2/faq#what-is-the-available-report-history-for-the-version-2-reporting-api
@@ -228,11 +229,15 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         return MetricsReport.generate_metric_model(metrics)
 
     def _get_auth_headers(self, profile_id: int):
-        return {
-            "Amazon-Advertising-API-ClientId": self._client_id,
-            "Amazon-Advertising-API-Scope": str(profile_id),
-            **self._authenticator.get_auth_header(),
-        } if profile_id else {}
+        return (
+            {
+                "Amazon-Advertising-API-ClientId": self._client_id,
+                "Amazon-Advertising-API-Scope": str(profile_id),
+                **self._authenticator.get_auth_header(),
+            }
+            if profile_id
+            else {}
+        )
 
     @abstractmethod
     def report_init_endpoint(self, record_type: str) -> str:
