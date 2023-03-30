@@ -130,8 +130,8 @@ public abstract class DestinationAcceptanceTest {
     return getImageName().contains(":") ? getImageName().split(":")[0] : getImageName();
   }
 
-  protected Optional<StandardDestinationDefinition> getOptionalDestinationDefinitionFromProvider(
-                                                                                                 final String imageNameWithoutTag) {
+  protected static Optional<StandardDestinationDefinition> getOptionalDestinationDefinitionFromProvider(
+      final String imageNameWithoutTag) {
     final LocalDefinitionsProvider provider = new LocalDefinitionsProvider();
     return provider.getDestinationDefinitions().stream()
         .filter(definition -> imageNameWithoutTag.equalsIgnoreCase(definition.getDockerRepository()))
@@ -139,7 +139,7 @@ public abstract class DestinationAcceptanceTest {
   }
 
   protected String getNormalizationImageName() {
-    return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
+    return getOptionalDestinationDefinitionFromProvider(getDestinationDefinitionKey())
         .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
         .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationConfig().getNormalizationRepository() + ":"
             + NORMALIZATION_VERSION)
@@ -240,8 +240,13 @@ public abstract class DestinationAcceptanceTest {
         .orElse(false);
   }
 
+
+  protected String getDestinationDefinitionKey() {
+    return getImageNameWithoutTag();
+  }
+
   protected String getNormalizationIntegrationType() {
-    return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
+    return getOptionalDestinationDefinitionFromProvider(getDestinationDefinitionKey())
         .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
         .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationConfig().getNormalizationIntegrationType())
         .orElse(null);
@@ -1425,26 +1430,24 @@ public abstract class DestinationAcceptanceTest {
   }
 
   /**
-   * Same as {@link #pruneMutate(JsonNode)}, except does a defensive copy and returns a new json node
-   * object instead of mutating in place.
+   * Same as {@link #pruneMutate(JsonNode)}, except does a defensive copy and returns a new json node object instead of mutating in place.
    *
    * @param record - record that will be pruned.
    * @return pruned json node.
    */
-  private AirbyteRecordMessage safePrune(final AirbyteRecordMessage record) {
+  private static AirbyteRecordMessage safePrune(final AirbyteRecordMessage record) {
     final AirbyteRecordMessage clone = Jsons.clone(record);
     pruneMutate(clone.getData());
     return clone;
   }
 
   /**
-   * Prune fields that are added internally by airbyte and are not part of the original data. Used so
-   * that we can compare data that is persisted by an Airbyte worker to the original data. This method
-   * mutates the provided json in place.
+   * Prune fields that are added internally by airbyte and are not part of the original data. Used so that we can compare data that is persisted by an
+   * Airbyte worker to the original data. This method mutates the provided json in place.
    *
    * @param json - json that will be pruned. will be mutated in place!
    */
-  private void pruneMutate(final JsonNode json) {
+  private static void pruneMutate(final JsonNode json) {
     for (final String key : Jsons.keys(json)) {
       final JsonNode node = json.get(key);
       // recursively prune all airbyte internal fields.
@@ -1655,7 +1658,7 @@ public abstract class DestinationAcceptanceTest {
    *
    * @return SpecialNumericTypes with support flags
    */
-  protected SpecialNumericTypes getSpecialNumericTypesSupportTest() {
+  protected static SpecialNumericTypes getSpecialNumericTypesSupportTest() {
     return SpecialNumericTypes.builder().build();
   }
 
@@ -1770,11 +1773,11 @@ public abstract class DestinationAcceptanceTest {
     }
   }
 
-  private AirbyteCatalog readCatalogFromFile(final String catalogFilename) throws IOException {
+  private static AirbyteCatalog readCatalogFromFile(final String catalogFilename) throws IOException {
     return Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
   }
 
-  private List<AirbyteMessage> readMessagesFromFile(final String messagesFilename)
+  private static List<AirbyteMessage> readMessagesFromFile(final String messagesFilename)
       throws IOException {
     return MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
