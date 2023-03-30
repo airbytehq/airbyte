@@ -74,7 +74,7 @@ def update_configuration(config_path, migration: Callable, migrate_from_legacy: 
 if __name__ == "__main__":
     args = parser.parse_args()
 
-    # TODO: find a way to configure this via plugin
+    # Update this before running the script
     MIGRATION_TO_RUN = set_high_test_strictness_level
 
     for definition in utils.get_valid_definitions_from_args(args):

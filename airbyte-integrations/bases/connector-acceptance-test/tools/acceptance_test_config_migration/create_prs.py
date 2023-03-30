@@ -54,7 +54,7 @@ def commit_push_migrated_config(config_path, connector_name, new_branch, dry_run
 
 
 def get_pr_content(definition):
-    pr_title = f"Source {definition['name']}: enable `high` test strictness level in connector acceptance test"
+    pr_title = f"Source {definition['name']}: {config.ISSUE_TITLE}"
 
     pr_body = PR_TEMPLATE.render(connector_name=definition["name"], release_stage=definition["releaseStage"])
     file_definition, pr_body_path = tempfile.mkstemp()

@@ -9,3 +9,4 @@ MODULE_NAME: str = "fail_on_extra_columns"
 GITHUB_PROJECT_NAME: Optional[str] = None
 COMMON_ISSUE_LABELS: List[str] = ["area/connectors", "team/connectors-python", "type/enhancement", "column-selection-sources"]
 ISSUE_TITLE: str = "Add undeclared columns to spec"
+# PR_TITLE: str =
