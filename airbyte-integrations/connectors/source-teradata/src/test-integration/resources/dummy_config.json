@@ -1,10 +1,5 @@
 {
   "host": "127.0.0.1",
-  "port": 1234,
   "database": "database_name",
-  "username": "demo_user",
-  "password": "pw",
-  "jdbc_url_params": "",
-  "replication_method": "STANDARD",
-  "ssl": false
+  "username": "demo_user"
 }

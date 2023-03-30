@@ -5,4 +5,4 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "src/test-integration/resources/expected_spec.json"
-        config_path: "src/test-integration/resources/dummy_config.json"
+        config_path: "secrets/config.json"

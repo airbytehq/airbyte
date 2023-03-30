@@ -7,12 +7,16 @@ package io.airbyte.integrations.source.teradata;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.JdbcDataSourceUtils;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import java.io.IOException;
@@ -20,10 +24,12 @@ import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.JDBCType;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,7 +105,34 @@ public class TeradataSource extends AbstractJdbcSource<JDBCType> implements Sour
     }
 
     @Override
-    protected Map<String, String> getDefaultConnectionProperties(JsonNode config) {
+    public JdbcDatabase createDatabase(JsonNode sourceConfig) throws SQLException {
+        final Map<String, String> customProperties = JdbcUtils.parseJdbcParameters(sourceConfig, JdbcUtils.JDBC_URL_PARAMS_KEY);
+        final Map<String, String> sslConnectionProperties = getSslConnectionProperties(sourceConfig);
+        JdbcDataSourceUtils.assertCustomParametersDontOverwriteDefaultParameters(customProperties, sslConnectionProperties);
+
+        final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
+        // Create the data source
+        final DataSource dataSource = DataSourceFactory.create(
+            jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
+            jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+            driverClass,
+            jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+            MoreMaps.merge(customProperties, sslConnectionProperties));
+        // Record the data source so that it can be closed.
+        dataSources.add(dataSource);
+
+        final JdbcDatabase database = new StreamingJdbcDatabase(
+            dataSource,
+            sourceOperations,
+            streamingQueryConfigProvider);
+
+        quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
+        database.setSourceConfig(sourceConfig);
+        database.setDatabaseConfig(jdbcConfig);
+        return database;
+    }
+
+    private Map<String, String> getSslConnectionProperties(JsonNode config) {
         final Map<String, String> additionalParameters = new HashMap<>();
         if (config.has(PARAM_SSL) && config.get(PARAM_SSL).asBoolean()) {
             LOGGER.debug("SSL Enabled");
