@@ -16,7 +16,7 @@ import utils
 from jinja2 import Environment, FileSystemLoader
 
 ## Update this line before running the script
-from migrations.fail_on_extra_columns import config
+from migrations.strictness_level_migration import config
 
 logging.basicConfig(level=logging.DEBUG)
 environment = Environment(loader=FileSystemLoader(utils.MIGRATIONS_FOLDER))

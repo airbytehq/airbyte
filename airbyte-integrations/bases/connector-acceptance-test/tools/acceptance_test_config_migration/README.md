@@ -50,7 +50,7 @@ TODO: Replace this process with Dagger
 #### Before running
 
 1. The tests will run on the `latest` version of CAT by default. To run the `dev` version of CAT, and select a specific 
-test, commit the following hacky changes: (TODO: fill with changes to `acceptance-test-docker.sh` and CAT `Dockerfile`)
+test, commit the hacky changes in [this commit](https://github.com/airbytehq/airbyte/pull/24377/commits/7d9fb1414911a512cd5d5ffafe2a384e8004fb1e).
 
 2. Give Docker a _lot_ of space to build all the connector images!
 
@@ -61,7 +61,7 @@ in mind that secrets need to be re-uploaded for connectors with single-use Oauth
 
 Typical usage: 
 ```
-python run_tests.py --connectors <connectors> 
+python run_tests.py
 ```
 
 Full options: 
@@ -257,6 +257,9 @@ PRs get created with the title according to `ISSUE_TITLE`. Labels are added acco
     ## Update this line before running the script
     from migrations.<migration_name> import config
     ```
+
+4. Ensure that your current git envronment is clean by (perhaps temorarily) committing changes.
+
 
 #### How to run:
 

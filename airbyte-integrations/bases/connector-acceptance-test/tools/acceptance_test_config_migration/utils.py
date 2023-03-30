@@ -5,8 +5,7 @@ import argparse
 import logging
 from pathlib import Path
 
-from definitions import find_by_name, is_airbyte_connector, get_airbyte_connector_name_from_definition, ALL_DEFINITIONS, ALPHA_DEFINTIONS, BETA_DEFINITIONS, GA_DEFINITIONS
-
+import definitions
 CONNECTORS_DIRECTORY = "../../../../connectors"
 MIGRATIONS_FOLDER = "./migrations/"
 
@@ -31,23 +30,26 @@ def add_allow_beta_param(parser: argparse.ArgumentParser):
     parser.add_argument("--allow_beta", action=argparse.BooleanOptionalAction, default=False, help="Whether to apply the change to bets connectors, if they are included in the list of connectors.")
 
 def add_connectors_param(parser: argparse.ArgumentParser):
-    parser.add_argument("--connectors", required=True, nargs="*", help="A list of connectors (separated by spaces) to run a script on. (default: all connectors)")
+    parser.add_argument("--connectors", nargs="*", help="A list of connectors (separated by spaces) to run a script on. (default: all connectors)")
 
 
 def get_valid_definitions_from_args(args):
     if not args.connectors:
-        definitions = ALL_DEFINITIONS
+        requested_defintions = definitions.ALL_DEFINITIONS
     else:
-        definitions = find_by_name(args.connectors)
+        requested_defintions = definitions.find_by_name(args.connectors)
 
     valid_definitions = []
-    for definition in definitions:
-        if not is_airbyte_connector(definition):
-            logging.warning(f"Skipping {get_airbyte_connector_name_from_definition(definition)} since it's not an airbyte connector.")
-        elif not args.allow_beta and definition in ALPHA_DEFINTIONS:
-            logging.warning(f"Skipping {get_airbyte_connector_name_from_definition(definition)} since it's a beta connector. This is configurable via `--allow_beta`")
-        elif not args.allow_alpha and definition in BETA_DEFINITIONS:
-            logging.warning(f"Skipping {get_airbyte_connector_name_from_definition(definition)} since it's an alpha connector. This is configurable via `--allow_alpha`")
+    for definition in requested_defintions:
+        connector_technical_name = definitions.get_airbyte_connector_name_from_definition(definition)
+        if not definitions.is_airbyte_connector(definition):
+            logging.warning(f"Skipping {connector_technical_name} since it's not an airbyte connector.")
+        elif not args.allow_beta and definition in definitions.BETA_DEFINITIONS:
+            logging.warning(f"Skipping {connector_technical_name} since it's a beta connector. This is configurable via `--allow_beta`")
+        elif not args.allow_alpha and definition in definitions.ALPHA_DEFINTIONS:
+            logging.warning(f"Skipping {connector_technical_name} since it's an alpha connector. This is configurable via `--allow_alpha`")
+        elif definition in definitions.OTHER_DEFINITIONS:
+            logging.warning(f"Skipping {connector_technical_name} since it doesn't have a release stage.")
         else:
             valid_definitions.append(definition)
 

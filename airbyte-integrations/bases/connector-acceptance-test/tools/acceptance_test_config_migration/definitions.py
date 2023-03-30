@@ -19,7 +19,10 @@ def read_source_definitions():
 
 
 def find_by_release_stage(source_definitions, release_stage):
-    return [definition for definition in source_definitions if definition.get("releaseStage") == release_stage]
+    if release_stage == "other":
+        return [definition for definition in source_definitions if definition.get("releaseStage", "") not in ["alpha", "beta", "generally_available"]]
+    else:
+        return [definition for definition in source_definitions if definition.get("releaseStage") == release_stage]
 
 
 def find_by_name(connector_names: List[str]):
@@ -43,3 +46,4 @@ ALL_DEFINITIONS = read_source_definitions()
 GA_DEFINITIONS = find_by_release_stage(ALL_DEFINITIONS, "generally_available")
 BETA_DEFINITIONS = find_by_release_stage(ALL_DEFINITIONS, "beta")
 ALPHA_DEFINTIONS = find_by_release_stage(ALL_DEFINITIONS, "alpha")
+OTHER_DEFINITIONS = find_by_release_stage(ALL_DEFINITIONS, "other")
