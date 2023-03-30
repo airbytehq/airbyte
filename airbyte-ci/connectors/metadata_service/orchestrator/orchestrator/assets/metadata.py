@@ -93,6 +93,7 @@ def compute_catalog_overrides(merged_df):
 
     return catalogs
 
+
 # todo change this return value
 def merge_into_metadata_definitions(id_field, connector_type, oss_connector_df, cloud_connector_df) -> pd.Series:
     merged_connectors = pd.merge(

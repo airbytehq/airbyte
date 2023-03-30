@@ -4,6 +4,7 @@ from pydantic import ValidationError
 from pydantic import ValidationError
 from typing import Tuple, Any, Optional
 
+
 class PydanticDelayValidationMixin:
     """
     This is to allow us to delay validation until we have all the data we need.
@@ -11,8 +12,9 @@ class PydanticDelayValidationMixin:
     `construct` method. This will allow you to set the values of the model before
     validation occurs.
     """
+
     def validate(self):
-        if hasattr(super(), 'validate'):
+        if hasattr(super(), "validate"):
             super().validate(self.dict())
 
     @property

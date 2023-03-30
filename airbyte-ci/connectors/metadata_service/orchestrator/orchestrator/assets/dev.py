@@ -225,6 +225,7 @@ def oss_catalog_diff(oss_catalog_from_metadata: dict, latest_oss_catalog_dict: d
     """
     return diff_catalogs(latest_oss_catalog_dict, oss_catalog_from_metadata).to_dict()
 
+
 @asset(group_name=GROUP_NAME)
 def cloud_catalog_diff_dataframe(cloud_catalog_diff: dict) -> OutputDataFrame:
     diff_df = pd.DataFrame.from_dict(cloud_catalog_diff)

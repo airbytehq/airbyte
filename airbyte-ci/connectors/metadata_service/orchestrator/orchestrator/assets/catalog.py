@@ -13,8 +13,9 @@ GROUP_NAME = "catalog"
 
 # HELPERS
 
+
 def apply_overrides_from_catalog(metadata_data: dict, override_catalog_key: str) -> dict:
-     # Make a deep copy of the input dictionary to avoid side effects
+    # Make a deep copy of the input dictionary to avoid side effects
     metadata_data_copy = copy.deepcopy(metadata_data)
 
     # Extract the override_catalog dictionary
@@ -71,23 +72,24 @@ def metadata_to_catalog_entry(metadata_definition: dict, connector_type: str, ov
 
     return overrode_metadata_data
 
+
 def is_metadata_catalog_enabled(metadata_definition: dict, catalog_name: str) -> bool:
     return metadata_definition["data"]["catalogs"][catalog_name]["enabled"]
+
 
 def is_metadata_connector_type(metadata_definition: dict, connector_type: str) -> bool:
     return metadata_definition["data"]["connectorType"] == connector_type
 
+
 def construct_catalog_from_metadata(catalog_derived_metadata_definitions: List[dict], catalog_name: str) -> dict:
     catalog_sources = [
         metadata_to_catalog_entry(metadata, "source", catalog_name)
-        for metadata
-        in catalog_derived_metadata_definitions
+        for metadata in catalog_derived_metadata_definitions
         if is_metadata_catalog_enabled(metadata, catalog_name) and is_metadata_connector_type(metadata, "source")
     ]
     catalog_destinations = [
         metadata_to_catalog_entry(metadata, "destination", catalog_name)
-        for metadata
-        in catalog_derived_metadata_definitions
+        for metadata in catalog_derived_metadata_definitions
         if is_metadata_catalog_enabled(metadata, catalog_name) and is_metadata_connector_type(metadata, "destination")
     ]
 

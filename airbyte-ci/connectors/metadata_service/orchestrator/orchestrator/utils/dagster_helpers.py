@@ -4,6 +4,7 @@ from typing import NewType
 
 OutputDataFrame = Output[pd.DataFrame]
 
+
 def output_dataframe(result_df: pd.DataFrame) -> Output[pd.DataFrame]:
     """
     Returns a Dagster Output object with a dataframe as the result and a markdown preview.
