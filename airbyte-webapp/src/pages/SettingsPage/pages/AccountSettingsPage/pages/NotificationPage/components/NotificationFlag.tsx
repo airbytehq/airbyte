@@ -11,11 +11,13 @@ interface IProps {
   isLoading?: boolean;
 }
 
-const IconContainer = styled.div`
+const IconContainer = styled.div<{
+  isLoading?: boolean;
+}>`
   width: 25px;
   height: 25px;
   background-color: transparent;
-  cursor: pointer;
+  cursor: ${({ isLoading }) => (isLoading ? "default" : "pointer")};
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -27,6 +29,7 @@ export const NotificationFlag: React.FC<IProps> = ({ isActive, onClick, isLoadin
     <Tooltip
       control={
         <IconContainer
+          isLoading={isLoading}
           onClick={() => {
             if (!isLoading) {
               onClick?.();
