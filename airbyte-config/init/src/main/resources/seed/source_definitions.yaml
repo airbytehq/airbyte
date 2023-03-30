@@ -917,7 +917,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.3.2
+  dockerImageTag: 0.3.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -955,7 +955,7 @@
 - name: Instagram
   sourceDefinitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
   dockerRepository: airbyte/source-instagram
-  dockerImageTag: 1.0.4
+  dockerImageTag: 1.0.5
   documentationUrl: https://docs.airbyte.com/integrations/sources/instagram
   icon: instagram.svg
   sourceType: api
@@ -1922,7 +1922,7 @@
 - name: Snowflake
   sourceDefinitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
   dockerRepository: airbyte/source-snowflake
-  dockerImageTag: 0.1.33
+  dockerImageTag: 0.1.34
   documentationUrl: https://docs.airbyte.com/integrations/sources/snowflake
   icon: snowflake.svg
   sourceType: database
