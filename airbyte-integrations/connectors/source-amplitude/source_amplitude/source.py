@@ -60,7 +60,7 @@ class SourceAmplitude(AbstractSource):
                 authenticator=auth,
                 start_date=config["start_date"],
                 data_region=config["data_region"],
-                event_time_interval=config.get("event_time_interval", None)
+                event_time_interval=config.get("event_time_interval", None),
             ),
             ActiveUsers(authenticator=auth, start_date=config["start_date"], data_region=config["data_region"]),
             AverageSessionLength(authenticator=auth, start_date=config["start_date"], data_region=config["data_region"]),

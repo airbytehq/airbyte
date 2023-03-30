@@ -172,9 +172,7 @@ class Events(IncrementalAmplitudeStream):
 
     @property
     def time_interval(self) -> dict:
-        return {
-            self.event_time_interval.get('size_unit'): self.event_time_interval.get("size")
-        }
+        return {self.event_time_interval.get("size_unit"): self.event_time_interval.get("size")}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         state_value = stream_state[self.cursor_field] if stream_state else self._start_date.strftime(self.compare_date_template)
