@@ -1,0 +1,280 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "ad_account",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": null,
+        "default_cursor_field": null,
+        "source_defined_primary_key": [["id"]],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "ad_sets",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_time"],
+        "source_defined_primary_key": [["id"]],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "ads",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_time"],
+        "source_defined_primary_key": [["id"]],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "ad_creatives",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": null,
+        "default_cursor_field": null,
+        "source_defined_primary_key": [["id"]],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "ads_insights",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date_start"],
+        "source_defined_primary_key": [
+          ["date_start"],
+          ["account_id"],
+          ["ad_id"]
+        ],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "ads_insights_age_and_gender",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date_start"],
+        "source_defined_primary_key": [
+          ["date_start"],
+          ["account_id"],
+          ["ad_id"],
+          ["age"],
+          ["gender"]
+        ],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "ads_insights_country",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date_start"],
+        "source_defined_primary_key": [
+          ["date_start"],
+          ["account_id"],
+          ["ad_id"],
+          ["country"]
+        ],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "ads_insights_region",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date_start"],
+        "source_defined_primary_key": [
+          ["date_start"],
+          ["account_id"],
+          ["ad_id"],
+          ["region"]
+        ],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "ads_insights_dma",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date_start"],
+        "source_defined_primary_key": [
+          ["date_start"],
+          ["account_id"],
+          ["ad_id"],
+          ["dma"]
+        ],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "ads_insights_platform_and_device",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date_start"],
+        "source_defined_primary_key": [
+          ["date_start"],
+          ["account_id"],
+          ["ad_id"],
+          ["publisher_platform"],
+          ["platform_position"],
+          ["impression_device"]
+        ],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "ads_insights_action_type",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date_start"],
+        "source_defined_primary_key": [
+          ["date_start"],
+          ["account_id"],
+          ["ad_id"]
+        ],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "campaigns",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_time"],
+        "source_defined_primary_key": [["id"]],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "images",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_time"],
+        "source_defined_primary_key": [["id"]],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "videos",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_time"],
+        "source_defined_primary_key": [["id"]],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "custommy_custom_insights",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date_start"],
+        "source_defined_primary_key": [
+          ["date_start"],
+          ["account_id"],
+          ["ad_id"]
+        ],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "custom_conversions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append",
+      "primary_key": [["id"]]
+    }
+  ]
+}
