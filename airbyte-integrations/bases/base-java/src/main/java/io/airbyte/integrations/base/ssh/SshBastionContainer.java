@@ -17,7 +17,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.images.builder.ImageFromDockerfile;
-import io.airbyte.integrations.util.HostPortResolver;
 
 public class SshBastionContainer {
 
@@ -25,7 +24,7 @@ public class SshBastionContainer {
   private static final String SSH_PASSWORD = "secret";
   private GenericContainer bastion;
 
-  public void initAndStartBastion(Network network) {
+  public void initAndStartBastion(final Network network) {
     bastion = new GenericContainer(
         new ImageFromDockerfile("bastion-test")
             .withFileFromClasspath("Dockerfile", "bastion/Dockerfile"))
@@ -36,12 +35,17 @@ public class SshBastionContainer {
 
   public JsonNode getTunnelConfig(final SshTunnel.TunnelMethod tunnelMethod, final ImmutableMap.Builder<Object, Object> builderWithSchema)
       throws IOException, InterruptedException {
-
+    final String tunnelHost = bastion.getHost();
+    final Integer firstMappedPort = bastion.getFirstMappedPort();
     return Jsons.jsonNode(builderWithSchema
         .put("tunnel_method", Jsons.jsonNode(ImmutableMap.builder()
-            .put("tunnel_host", HostPortResolver.resolveHost(bastion))
+            .put("tunnel_host",
+                Objects.requireNonNull(tunnelHost/*
+                                                  * bastion.getContainerInfo().getNetworkSettings() .getNetworks()
+                                                  * .entrySet().stream().findFirst().get().getValue().getIpAddress()
+                                                  */))
             .put("tunnel_method", tunnelMethod)
-            .put("tunnel_port", HostPortResolver.resolveHost(bastion))
+            .put("tunnel_port", /* bastion.getExposedPorts().get(0) */firstMappedPort)
             .put("tunnel_user", SSH_USER)
             .put("tunnel_user_password", tunnelMethod.equals(SSH_PASSWORD_AUTH) ? SSH_PASSWORD : "")
             .put("ssh_key", tunnelMethod.equals(SSH_KEY_AUTH) ? bastion.execInContainer("cat", "var/bastion/id_rsa").getStdout() : "")
