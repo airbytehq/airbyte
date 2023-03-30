@@ -48,9 +48,11 @@ public interface BufferingStrategy extends AutoCloseable {
   void clear() throws Exception;
 
   /**
-   * State management as it relates to flushing and state commit
-   * acknowledgement is handled by the BufferingStrategy now
+   * State management as it relates to flushing and state commit acknowledgement is handled by the
+   * BufferingStrategy now
+   *
    * @param message the incoming AirbyteMessage state object
    */
   void addStateMessage(AirbyteMessage message);
+
 }
