@@ -2,6 +2,41 @@
   {
     "type": "STREAM",
     "stream": {
+      "stream_state": { "lastUpdatedTime": "4000179370" },
+      "stream_descriptor": { "name": "campaigns" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "4000179370" },
+      "stream_descriptor": { "name": "deal_pipelines" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" },
+      "stream_descriptor": { "name": "ticket_pipelines" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "4000179370" },
+      "stream_descriptor": { "name": "forms" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "4000179370" },
+      "stream_descriptor": { "name": "form_submissions" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
       "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" },
       "stream_descriptor": { "name": "companies" }
     }
@@ -116,6 +151,13 @@
     "stream": {
       "stream_state": { "timestamp": 7966012325000 },
       "stream_descriptor": { "name": "property_history" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "4000179370" },
+      "stream_descriptor": { "name": "workflows" }
     }
   }
 ]

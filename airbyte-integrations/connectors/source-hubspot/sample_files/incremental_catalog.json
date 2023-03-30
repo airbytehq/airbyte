@@ -4,10 +4,13 @@
       "stream": {
         "name": "campaigns",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["lastUpdatedTime"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["lastUpdatedTime"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -49,10 +52,13 @@
       "stream": {
         "name": "deal_pipelines",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["lastUpdatedTime"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -154,19 +160,25 @@
       "stream": {
         "name": "forms",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["lastUpdatedTime"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "form_submissions",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -196,10 +208,13 @@
       "stream": {
         "name": "owners",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -241,19 +256,25 @@
       "stream": {
         "name": "ticket_pipelines",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["lastUpdatedTime"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "workflows",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
     }
   ]
 }

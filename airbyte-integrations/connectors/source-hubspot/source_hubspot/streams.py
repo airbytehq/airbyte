@@ -22,6 +22,8 @@ from requests import codes
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
+from sources.streams import IncrementalMixin
+from sources.streams.core import StreamData
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
@@ -664,6 +666,43 @@ class Stream(HttpStream, ABC):
             yield record
 
 
+class SemiIncrementalStream(Stream, IncrementalMixin):
+    _cursor_value = 1
+
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        return self.updated_at_field
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        return {self.cursor_field: str(self._cursor_value)}
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._cursor_value = value[self.cursor_field]
+
+    def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> bool:
+        record_value = pendulum.parse(record.get(self.cursor_field)).int_timestamp if isinstance(
+            record.get(self.cursor_field), str) else record.get(self.cursor_field)
+        # start_date = (stream_state or {}).get(self.cursor_field, self._start_date)
+        start_date = pendulum.from_timestamp(int(stream_state.get(self.cursor_field))) if stream_state else self._start_date
+        cursor_value = max(start_date.int_timestamp, record_value)
+        max_state = max(int(self.state.get(self.cursor_field)), cursor_value)
+        self.state = {self.cursor_field: max_state}
+        return not stream_state or int(stream_state.get(self.cursor_field, 0)) < record_value
+
+    def read_records(
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[StreamData]:
+        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            if self.filter_by_state(stream_state=stream_state, record=record):
+                yield record
+
+
 class AssociationsStream(Stream):
     """
     Designed to read associations of CRM objects during incremental syncs, since Search API does not support
@@ -1068,7 +1107,7 @@ class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):
         yield from self._flat_associations(records)
 
 
-class Campaigns(Stream):
+class Campaigns(SemiIncrementalStream):
     """Email campaigns, API v1
     There is some confusion between emails and campaigns in docs, this endpoint returns actual emails
     Docs: https://legacydocs.hubspot.com/docs/methods/email/get_campaign_data
@@ -1091,7 +1130,8 @@ class Campaigns(Stream):
     ) -> Iterable[Mapping[str, Any]]:
         for row in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
             record, response = self._api.get(f"/email/public/v1/campaigns/{row['id']}")
-            yield {**row, **record}
+            if self.filter_by_state(stream_state=stream_state, record=row):
+                yield {**row, **record}
 
 
 class ContactLists(IncrementalStream):
@@ -1163,7 +1203,7 @@ class Deals(CRMSearchStream):
     scopes = {"contacts", "crm.objects.deals.read"}
 
 
-class DealPipelines(Stream):
+class DealPipelines(SemiIncrementalStream):
     """Deal pipelines, API v1,
     This endpoint requires the contacts scope the tickets scope.
     Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
@@ -1176,7 +1216,7 @@ class DealPipelines(Stream):
     scopes = {"contacts", "tickets"}
 
 
-class TicketPipelines(Stream):
+class TicketPipelines(SemiIncrementalStream):
     """Ticket pipelines, API v1
     This endpoint requires the tickets scope.
     Docs: https://developers.hubspot.com/docs/api/crm/pipelines
@@ -1305,7 +1345,7 @@ class Engagements(IncrementalStream):
         self._update_state(latest_cursor=latest_cursor, is_last_record=True)
 
 
-class Forms(Stream):
+class Forms(SemiIncrementalStream):
     """Marketing Forms, API v3
     by default non-marketing forms are filtered out of this endpoint
     Docs: https://developers.hubspot.com/docs/api/marketing/forms
@@ -1319,7 +1359,7 @@ class Forms(Stream):
     scopes = {"forms"}
 
 
-class FormSubmissions(Stream):
+class FormSubmissions(SemiIncrementalStream):
     """Marketing Forms, API v1
     This endpoint requires the forms scope.
     Docs: https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form
@@ -1375,8 +1415,9 @@ class FormSubmissions(Stream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
-            record["formId"] = stream_slice["form_id"]
-            yield record
+            if self.filter_by_state(stream_state=stream_state, record=record):
+                record["formId"] = stream_slice["form_id"]
+                yield record
 
 
 class MarketingEmails(Stream):
@@ -1394,7 +1435,7 @@ class MarketingEmails(Stream):
     scopes = {"content"}
 
 
-class Owners(Stream):
+class Owners(SemiIncrementalStream):
     """Owners, API v3
     Docs: https://legacydocs.hubspot.com/docs/methods/owners/get_owners
     """
@@ -1471,7 +1512,7 @@ class SubscriptionChanges(IncrementalStream):
     scopes = {"content"}
 
 
-class Workflows(Stream):
+class Workflows(SemiIncrementalStream):
     """Workflows, API v3
     Docs: https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows
     """
