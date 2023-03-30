@@ -67,7 +67,8 @@ public class SerializedBufferingStrategyTest {
 
   @Test
   public void testPerStreamThresholdFlush() throws Exception {
-    final SerializedBufferingStrategy buffering = new SerializedBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook, outputRecordCollector);
+    final SerializedBufferingStrategy buffering =
+        new SerializedBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook, outputRecordCollector);
     final AirbyteStreamNameNamespacePair stream1 = new AirbyteStreamNameNamespacePair(STREAM_1, "namespace");
     final AirbyteStreamNameNamespacePair stream2 = new AirbyteStreamNameNamespacePair(STREAM_2, null);
     // To test per stream threshold, we are sending multiple test messages on a single stream
@@ -110,7 +111,8 @@ public class SerializedBufferingStrategyTest {
 
   @Test
   public void testTotalStreamThresholdFlush() throws Exception {
-    final SerializedBufferingStrategy buffering = new SerializedBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook, outputRecordCollector);
+    final SerializedBufferingStrategy buffering =
+        new SerializedBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook, outputRecordCollector);
     final AirbyteStreamNameNamespacePair stream1 = new AirbyteStreamNameNamespacePair(STREAM_1, "namespace");
     final AirbyteStreamNameNamespacePair stream2 = new AirbyteStreamNameNamespacePair(STREAM_2, "namespace");
     final AirbyteStreamNameNamespacePair stream3 = new AirbyteStreamNameNamespacePair(STREAM_3, "namespace");
@@ -156,7 +158,8 @@ public class SerializedBufferingStrategyTest {
 
   @Test
   public void testConcurrentStreamThresholdFlush() throws Exception {
-    final SerializedBufferingStrategy buffering = new SerializedBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook, outputRecordCollector);
+    final SerializedBufferingStrategy buffering =
+        new SerializedBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook, outputRecordCollector);
     final AirbyteStreamNameNamespacePair stream1 = new AirbyteStreamNameNamespacePair(STREAM_1, "namespace1");
     final AirbyteStreamNameNamespacePair stream2 = new AirbyteStreamNameNamespacePair(STREAM_2, "namespace2");
     final AirbyteStreamNameNamespacePair stream3 = new AirbyteStreamNameNamespacePair(STREAM_3, null);
@@ -198,7 +201,8 @@ public class SerializedBufferingStrategyTest {
 
   @Test
   public void testCreateBufferFailure() {
-    final SerializedBufferingStrategy buffering = new SerializedBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook, outputRecordCollector);
+    final SerializedBufferingStrategy buffering =
+        new SerializedBufferingStrategy(onCreateBufferFunction(), catalog, perStreamFlushHook, outputRecordCollector);
     final AirbyteStreamNameNamespacePair stream = new AirbyteStreamNameNamespacePair("unknown_stream", "namespace1");
     assertThrows(RuntimeException.class, () -> buffering.addRecord(stream, generateMessage(stream)));
   }
