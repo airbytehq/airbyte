@@ -1,8 +1,10 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.parquet;
+
+import static org.apache.parquet.avro.AvroWriteSupport.WRITE_OLD_LIST_STRUCTURE;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -69,7 +71,9 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
     final Path path = new Path(new URI(fullFilePath));
     final S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
     final Configuration hadoopConfig = getHadoopConfig(config);
+    hadoopConfig.setBoolean(WRITE_OLD_LIST_STRUCTURE, false);
     this.parquetWriter = AvroParquetWriter.<Record>builder(HadoopOutputFile.fromPath(path, hadoopConfig))
+        .withConf(hadoopConfig) // yes, this should be here despite the fact we pass this config above in path
         .withSchema(schema)
         .withCompressionCodec(formatConfig.getCompressionCodec())
         .withRowGroupSize(formatConfig.getBlockSize())

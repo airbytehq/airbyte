@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -59,7 +59,7 @@ def test__read_file_not_found(provider_config, provider_name, file_path, file_fo
 )
 def test__streams_from_ssh_providers(provider_config, provider_name, file_path, file_format):
     client = Client(dataset_name="output", format=file_format, url=file_path, provider=provider_config(provider_name))
-    streams = list(client.streams)
+    streams = list(client.streams())
     assert len(streams) == 1
     assert streams[0].json_schema["properties"] == {
         "header1": {"type": ["string", "null"]},

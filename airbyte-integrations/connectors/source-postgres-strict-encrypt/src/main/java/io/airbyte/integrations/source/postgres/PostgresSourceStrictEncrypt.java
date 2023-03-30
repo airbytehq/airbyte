@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -32,6 +32,7 @@ public class PostgresSourceStrictEncrypt extends SpecModifyingSource implements 
   public static final String SSL_MODE_ALLOW = "allow";
   public static final String SSL_MODE_PREFER = "prefer";
   public static final String SSL_MODE_DISABLE = "disable";
+  public static final String SSL_MODE_REQUIRE = "require";
 
   PostgresSourceStrictEncrypt() {
     super(PostgresSource.sshWrappedSource());
@@ -40,7 +41,10 @@ public class PostgresSourceStrictEncrypt extends SpecModifyingSource implements 
   @Override
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
-    ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
+    final ObjectNode properties = (ObjectNode) spec.getConnectionSpecification().get("properties");
+    properties.remove(JdbcUtils.SSL_KEY);
+    ((ObjectNode) properties.get(SSL_MODE)).put("default", SSL_MODE_REQUIRE);
+
     return spec;
   }
 

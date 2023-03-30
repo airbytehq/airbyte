@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -26,10 +26,10 @@ def test_get_updated_state(patch_incremental_base_class, config):
     stream = IncrementalTrelloStream(config)
     expected_cursor_field = "date"
     inputs = {
-        "current_stream_state": {expected_cursor_field: "2021-07-12T10:44:09+00:00"},
-        "latest_record": {expected_cursor_field: "2021-07-15T10:44:09+00:00"},
+        "current_stream_state": {"611aa0ef37acd675af67dc9b": {expected_cursor_field: "2021-07-12T10:44:09+00:00"}},
+        "latest_record": {"data": {"board": {"id": "611aa0ef37acd675af67dc9b"}}, expected_cursor_field: "2021-07-15T10:44:09+00:00"},
     }
-    expected_state = {expected_cursor_field: "2021-07-15T10:44:09+00:00"}
+    expected_state = {"611aa0ef37acd675af67dc9b": {expected_cursor_field: "2021-07-15T10:44:09+00:00"}}
     assert stream.get_updated_state(**inputs) == expected_state
 
 

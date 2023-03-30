@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, BinaryIO, Iterator, List, Mapping, TextIO, Tuple, Union
@@ -143,3 +143,7 @@ class ParquetParser(AbstractFileParser):
                         batch_columns[i]: self.convert_field_data(logical_types[batch_columns[i]], record_values[i])
                         for i in range(len(batch_columns))
                     }
+
+    @classmethod
+    def set_minimal_block_size(cls, format: Mapping[str, Any]):
+        format["buffer_size"] = 2

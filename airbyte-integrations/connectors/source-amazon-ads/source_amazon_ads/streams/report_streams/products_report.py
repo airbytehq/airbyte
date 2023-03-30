@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -240,6 +240,17 @@ METRICS_MAP = {
 }
 
 
+METRICS_TYPE_TO_ID_MAP = {
+    "campaigns": "campaignId",
+    "adGroups": "adGroupId",
+    "keywords": "keywordId",
+    "productAds": "adId",
+    "asins_keywords": "asin",
+    "asins_targets": "asin",
+    "targets": "targetId",
+}
+
+
 class SponsoredProductsReportStream(ReportStream):
     """
     https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Reports
@@ -252,6 +263,7 @@ class SponsoredProductsReportStream(ReportStream):
     ad_product = "SPONSORED_PRODUCTS"
     report_is_created = HTTPStatus.OK
     metrics_map = METRICS_MAP
+    metrics_type_to_id_map = METRICS_TYPE_TO_ID_MAP
 
     def report_init_endpoint(self, record_type: str) -> str:
         return f"/{self.API_VERSION}/reports"

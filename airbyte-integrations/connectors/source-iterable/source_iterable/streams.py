@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import csv
@@ -20,7 +20,7 @@ from pendulum.datetime import DateTime
 from requests import codes
 from requests.exceptions import ChunkedEncodingError
 from source_iterable.slice_generators import AdjustableSliceGenerator, RangeSliceGenerator, StreamSlice
-from source_iterable.utils import dateutil_parse
+from source_iterable.utils import IterableGenericErrorHandler, dateutil_parse
 
 EVENT_ROWS_LIMIT = 200
 CAMPAIGNS_PER_REQUEST = 20
@@ -31,9 +31,8 @@ class IterableStream(HttpStream, ABC):
     # in case we get a 401 error (api token disabled or deleted) on a stream slice, do not make further requests within the current stream
     # to prevent 429 error on other streams
     ignore_further_slices = False
-    # Hardcode the value because it is not returned from the API
-    BACKOFF_TIME_CONSTANT = 10.0
-    # define date-time fields with potential wrong format
+    # to handle the Generic Errors (500 with msg pattern)
+    generic_error_handler: IterableGenericErrorHandler = IterableGenericErrorHandler()
 
     url_base = "https://api.iterable.com/api/"
     primary_key = "id"
@@ -41,6 +40,18 @@ class IterableStream(HttpStream, ABC):
     def __init__(self, authenticator):
         self._cred = authenticator
         super().__init__(authenticator)
+        # placeholder for last slice used for API request
+        # to reuse it later in logs or whatever
+        self._last_slice: Mapping[str, Any] = {}
+
+    @property
+    def retry_factor(self) -> int:
+        return 20
+
+    # With factor 20 it would be from 20 to 400 seconds delay
+    @property
+    def max_retries(self) -> Union[int, None]:
+        return 10
 
     @property
     @abstractmethod
@@ -61,9 +72,6 @@ class IterableStream(HttpStream, ABC):
             return False
         return True
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        return self.BACKOFF_TIME_CONSTANT
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
         Iterable API does not support pagination
@@ -73,15 +81,21 @@ class IterableStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if not self.check_unauthorized_key(response):
             return []
-        response_json = response.json()
+        response_json = response.json() or {}
         records = response_json.get(self.data_field, [])
 
         for record in records:
             yield record
 
     def should_retry(self, response: requests.Response) -> bool:
+        # check the authentication
         if not self.check_unauthorized_key(response):
             return False
+        # retry on generic error 500
+        if response.status_code == 500:
+            # will retry for 2 times, then give up and skip the fetch for slice
+            return self.generic_error_handler.handle(response, self.name, self._last_slice)
+        # all other cases
         return super().should_retry(response)
 
     def read_records(
@@ -93,6 +107,8 @@ class IterableStream(HttpStream, ABC):
     ) -> Iterable[Mapping[str, Any]]:
         if self.ignore_further_slices:
             return []
+        # save last slice
+        self._last_slice = stream_slice
         yield from super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
 
 
@@ -119,24 +135,6 @@ class IterableExportStream(IterableStream, ABC):
 
     def path(self, **kwargs) -> str:
         return "export/data.json"
-
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        # Use default exponential backoff
-        return None
-
-    # For python backoff package expo backoff delays calculated according to formula:
-    # delay = factor * base ** n where base is 2
-    # With default factor equal to 5 and 5 retries delays would be 5, 10, 20, 40 and 80 seconds.
-    # For exports stream there is a limit of 4 requests per minute.
-    # Tune up factor and retries to send a lot of excessive requests before timeout exceed.
-    @property
-    def retry_factor(self) -> int:
-        return 20
-
-    # With factor 20 it woud be 20, 40, 80 and 160 seconds delays.
-    @property
-    def max_retries(self) -> Union[int, None]:
-        return 4
 
     @staticmethod
     def _field_to_datetime(value: Union[int, str]) -> pendulum.datetime:
@@ -260,14 +258,14 @@ class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
 
     In case of slice processing request failed with ChunkedEncodingError (which
     means that API server closed connection cause of request takes to much
-    time) make CHUNKED_ENCODING_ERROR_RETRIES (3) retries each time reducing
+    time) make CHUNKED_ENCODING_ERROR_RETRIES (6) retries each time reducing
     slice length.
 
     See AdjustableSliceGenerator description for more details on next slice length adjustment alghorithm.
     """
 
     _adjustable_generator: AdjustableSliceGenerator = None
-    CHUNKED_ENCODING_ERROR_RETRIES = 3
+    CHUNKED_ENCODING_ERROR_RETRIES = 6
 
     def stream_slices(
         self,
@@ -329,6 +327,8 @@ class ListUsers(IterableStream):
     primary_key = "listId"
     data_field = "getUsers"
     name = "list_users"
+    # enable caching, because this stream used by other ones
+    use_cache = True
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"lists/{self.data_field}?listId={stream_slice['list_id']}"
