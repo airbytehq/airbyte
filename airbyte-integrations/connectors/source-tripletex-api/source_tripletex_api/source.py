@@ -39,7 +39,8 @@ class TripletexApiStream(HttpStream, ABC):
 
         session_token = json.loads(response.text)["value"]["token"]
         username_and_pass = str.encode("0:{}".format(session_token))
-        self.session_token = base64.b64encode(username_and_pass).decode("utf-8")
+        self.session_token = base64.b64encode(
+            username_and_pass).decode("utf-8")
 
     def request_headers(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -50,7 +51,9 @@ class TripletexApiStream(HttpStream, ABC):
         """
         :return an iterable containing each record in the response
         """
-        yield from response.json().get("values")
+        print(response.url)
+        print(response.json().get("values", []))
+        yield from response.json().get("values", [])
 
 
 class DateRequiredStream(TripletexApiStream, ABC):
@@ -145,6 +148,51 @@ class Accounts(TripletexApiStream):
         return "ledger/account"
 
 
+class TripletexPaginationStream(TripletexApiStream, ABC):
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        full_result_size = response.json().get("fullResultSize")
+        data = response.json()
+        index = data.get("from")
+        count = data.get("count")
+        return None if index + count >= full_result_size else {"from": index + count}
+
+    def request_params(
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = {}
+        if next_page_token:
+            params.update(next_page_token)
+
+        return params
+
+
+class Payslip(TripletexPaginationStream):
+    primary_key = "id"
+
+    def request_params(
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = {"fields": "specifications"}
+        params.update(super().request_params(
+            stream_state, stream_slice, next_page_token))
+        return params
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "salary/payslip"
+
+
+class SalaryType(TripletexPaginationStream):
+    primary_key = "id"
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "salary/type"
+
+
 class Employee(TripletexApiStream):
     primary_key = "id"
 
@@ -181,4 +229,4 @@ class SourceTripletexApi(AbstractSource):
         """
 
         return [Postings(config=config), Departments(config=config), Accounts(config=config), BalanceSheet(config=config),
-                Employee(config=config), Invoice(config=config)]
+                Employee(config=config), Invoice(config=config), Payslip(config=config), SalaryType(config=config)]
