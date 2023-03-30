@@ -36,6 +36,12 @@ Note: needs to be run from the root directory of the Airbyte project.
 #### 2023.03.29
 1. BugFixed：plans run out modal error message
 2. Change BillingWarningBanner component style
+3. Change the sign out icon
+4. Update translation
+#### 2023.03.28
+1. Add Fullstory snippet to webapp
+#### 2023.03.27
+1. Link to documentation(Sidebar)
 #### 2023.03.24
 1. Optimization when plan runs out(connection/config page/add modal)
 #### 2023.03.23
