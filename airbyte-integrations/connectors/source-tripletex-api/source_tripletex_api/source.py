@@ -52,7 +52,6 @@ class TripletexApiStream(HttpStream, ABC):
         :return an iterable containing each record in the response
         """
         print(response.url)
-        print(response.json().get("values", []))
         yield from response.json().get("values", [])
 
 
