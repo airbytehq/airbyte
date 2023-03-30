@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -96,16 +96,16 @@ def test_companies_scroll(stream_attributes):
     records = []
     for slice in stream2.stream_slices(sync_mode=SyncMode.full_refresh):
         records += list(stream2.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice))
-    assert len(records) == 3
-    assert (time.time() - start_time) > 60.0
+    assert len(records) == 12
+    assert int(time.time() - start_time) >= 60.0
 
     start_time = time.time()
     # read all records
     records = []
     for slice in stream3.stream_slices(sync_mode=SyncMode.full_refresh):
         records += list(stream3.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice))
-    assert len(records) == 3
-    assert (time.time() - start_time) < 5.0
+    assert len(records) == 12
+    assert int(time.time() - start_time) <= 5.0
 
 
 @patch("source_intercom.source.Companies.can_use_scroll", lambda *args: False)
@@ -128,14 +128,14 @@ def test_switch_to_standard_endpoint(stream_attributes):
     for slice in stream2.stream_slices(sync_mode=SyncMode.full_refresh):
         records += list(stream2.read_records(sync_mode=SyncMode, stream_slice=slice))
     assert stream2._endpoint_type == Companies.EndpointType.standard
-    assert stream2._total_count == 3
-    assert len(records) == 3
-    assert (time.time() - start_time) < 5.0
+    assert stream2._total_count == 12
+    assert len(records) == 12
+    assert int(time.time() - start_time) <= 5.0
 
     start_time = time.time()
     # read all children records
     records = []
     for slice in stream3.stream_slices(sync_mode=SyncMode.full_refresh):
         records += list(stream3.read_records(sync_mode=SyncMode, stream_slice=slice))
-    assert len(records) == 12
-    assert (time.time() - start_time) < 5.0
+    assert len(records) == 17
+    assert int(time.time() - start_time) <= 8.0

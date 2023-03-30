@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import time
@@ -41,7 +41,6 @@ class GithubStream(HttpStream, ABC):
         MAX_RETRIES = 3
         adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
         self._session.mount("https://", adapter)
-        self._session.mount("http://", adapter)
 
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
@@ -244,12 +243,12 @@ class SemiIncrementalMixin:
         self._starting_point_cache = {}
 
     @property
-    def __slice_key(self):
+    def slice_keys(self):
         if hasattr(self, "repositories"):
-            return "repository"
-        return "organization"
+            return ["repository"]
+        return ["organization"]
 
-    record_slice_key = __slice_key
+    record_slice_key = slice_keys
 
     def convert_cursor_value(self, value):
         return value
@@ -274,17 +273,17 @@ class SemiIncrementalMixin:
 
     def _get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
         if stream_state:
-            slice_value = stream_slice[self.__slice_key]
-            stream_state_value = stream_state.get(slice_value, {}).get(self.cursor_field)
+            state_path = [stream_slice[k] for k in self.slice_keys] + [self.cursor_field]
+            stream_state_value = getter(stream_state, state_path, strict=False)
             if stream_state_value:
                 return max(self._start_date, stream_state_value)
         return self._start_date
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
-        slice_value = stream_slice[self.__slice_key]
-        if slice_value not in self._starting_point_cache:
-            self._starting_point_cache[slice_value] = self._get_starting_point(stream_state, stream_slice)
-        return self._starting_point_cache[slice_value]
+        cache_key = tuple([stream_slice[k] for k in self.slice_keys])
+        if cache_key not in self._starting_point_cache:
+            self._starting_point_cache[cache_key] = self._get_starting_point(stream_state, stream_slice)
+        return self._starting_point_cache[cache_key]
 
     def read_records(
         self,
@@ -636,6 +635,7 @@ class Commits(IncrementalMixin, GithubStream):
 
     primary_key = "sha"
     cursor_field = "created_at"
+    slice_keys = ["repository", "branch"]
 
     def __init__(self, branches_to_pull: Mapping[str, List[str]], default_branches: Mapping[str, str], **kwargs):
         super().__init__(**kwargs)
@@ -668,36 +668,14 @@ class Commits(IncrementalMixin, GithubStream):
         return record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        state_value = latest_cursor_value = latest_record.get(self.cursor_field)
-        current_repository = latest_record["repository"]
-        current_branch = latest_record["branch"]
-
-        if current_stream_state.get(current_repository):
-            repository_commits_state = current_stream_state[current_repository]
-            if repository_commits_state.get(self.cursor_field):
-                # transfer state from old source version to per-branch version
-                if current_branch == self.default_branches[current_repository]:
-                    state_value = max(latest_cursor_value, repository_commits_state[self.cursor_field])
-                    del repository_commits_state[self.cursor_field]
-            elif repository_commits_state.get(current_branch, {}).get(self.cursor_field):
-                state_value = max(latest_cursor_value, repository_commits_state[current_branch][self.cursor_field])
-
-        if current_repository not in current_stream_state:
-            current_stream_state[current_repository] = {}
-
-        current_stream_state[current_repository][current_branch] = {self.cursor_field: state_value}
+        repository = latest_record["repository"]
+        branch = latest_record["branch"]
+        updated_state = latest_record[self.cursor_field]
+        stream_state_value = current_stream_state.get(repository, {}).get(branch, {}).get(self.cursor_field)
+        if stream_state_value:
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state.setdefault(repository, {}).setdefault(branch, {})[self.cursor_field] = updated_state
         return current_stream_state
-
-    def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
-        repository = stream_slice["repository"]
-        branch = stream_slice["branch"]
-        if stream_state:
-            stream_state_value = stream_state.get(repository, {}).get(branch, {}).get(self.cursor_field)
-            if stream_state_value:
-                return max(self._start_date, stream_state_value)
-        if branch == self.default_branches[repository]:
-            return super().get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
-        return self._start_date
 
 
 class Issues(IncrementalMixin, GithubStream):

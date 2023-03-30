@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -110,3 +110,7 @@ class JsonlParser(AbstractFileParser):
         """
         table = self._read_table(file, self._master_schema)
         yield from table.to_pylist()
+
+    @classmethod
+    def set_minimal_block_size(cls, format: Mapping[str, Any]):
+        format["block_size"] = 0

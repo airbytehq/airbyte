@@ -30,7 +30,7 @@
     },
     "created_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "creative_sequence": {
       "type": ["array", "null"],
@@ -55,7 +55,7 @@
     },
     "end_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "existing_customer_budget_percentage": {
       "type": ["integer", "null"]
@@ -116,7 +116,7 @@
     },
     "start_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "status": {
       "type": ["string", "null"]
@@ -141,7 +141,7 @@
     },
     "updated_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "use_new_app_click": {
       "type": ["boolean", "null"]

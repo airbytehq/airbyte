@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -34,6 +34,7 @@ public class PostgresSourceStrictEncrypt extends SpecModifyingSource implements 
   public static final String SSL_MODE_ALLOW = "allow";
   public static final String SSL_MODE_PREFER = "prefer";
   public static final String SSL_MODE_DISABLE = "disable";
+  public static final String SSL_MODE_REQUIRE = "require";
 
   public PostgresSourceStrictEncrypt() {
     super(PostgresSource.sshWrappedSource());
@@ -46,8 +47,9 @@ public class PostgresSourceStrictEncrypt extends SpecModifyingSource implements 
     final ArrayNode modifiedSslModes = spec.getConnectionSpecification().get("properties").get("ssl_mode").get("oneOf").deepCopy();
     // Assume that the first item is the "disable" option; remove it
     modifiedSslModes.remove(0);
-    ((ObjectNode) spec.getConnectionSpecification().get("properties").get("ssl_mode")).remove("oneOf");
-    ((ObjectNode) spec.getConnectionSpecification().get("properties").get("ssl_mode")).put("oneOf", modifiedSslModes);
+    ((ObjectNode) spec.getConnectionSpecification().get("properties").get(SSL_MODE)).remove("oneOf");
+    ((ObjectNode) spec.getConnectionSpecification().get("properties").get(SSL_MODE)).set("oneOf", modifiedSslModes);
+    ((ObjectNode) spec.getConnectionSpecification().get("properties").get(SSL_MODE)).put("default", SSL_MODE_REQUIRE);
     return spec;
   }
 

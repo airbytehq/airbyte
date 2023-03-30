@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres;
@@ -12,7 +12,7 @@ import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.integrations.util.HostPortResolver;
@@ -26,7 +26,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public class PostgresDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private PostgreSQLContainer<?> db;
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   @Override
   protected String getImageName() {
@@ -95,6 +95,9 @@ public class PostgresDestinationAcceptanceTest extends JdbcDestinationAcceptance
   protected boolean supportObjectDataTypeTest() {
     return true;
   }
+
+  @Override
+  protected boolean supportIncrementalSchemaChanges() { return true; }
 
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -15,7 +15,6 @@ import pendulum as pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -206,13 +205,8 @@ class Stream(HttpStream, ABC):
     primary_key = None
     filter_old_records: bool = True
     denormalize_records: bool = False  # one record from API response can result in multiple records emitted
-    raise_on_http_errors: bool = True
     granted_scopes: Set = None
     properties_scopes: Set = None
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
 
     @property
     @abstractmethod
@@ -262,12 +256,6 @@ class Stream(HttpStream, ABC):
         creds_title = self._credentials["credentials_title"]
         if creds_title in (OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS):
             self._authenticator = api.get_authenticator()
-
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == HTTPStatus.FORBIDDEN:
-            setattr(self, "raise_on_http_errors", False)
-            logger.warning("You have not permission to API for this stream. " "Please check your scopes for Hubspot account.")
-        return super().should_retry(response)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == codes.too_many_requests:
@@ -468,7 +456,7 @@ class Stream(HttpStream, ABC):
 
         if target_type_name == "number":
             # do not cast numeric IDs into float, use integer instead
-            target_type = int if field_name.endswith("_id") else target_type
+            target_type = int if field_value.isnumeric() else target_type
             field_value = field_value.replace(",", "")
 
         if target_type_name != "string" and field_value == "":
@@ -479,7 +467,7 @@ class Stream(HttpStream, ABC):
         try:
             casted_value = target_type(field_value)
         except ValueError:
-            logger.exception(f"Could not cast `{field_value}` to `{target_type}`")
+            logger.exception(f"Could not cast in stream `{cls.__name__}` `{field_name}` {field_value=} to `{target_type}`")
             return field_value
 
         return casted_value
@@ -598,10 +586,13 @@ class Stream(HttpStream, ABC):
                 if "next" in response["paging"]:
                     return {"after": response["paging"]["next"]["after"]}
             else:
-                if not response.get(self.more_key, False):
-                    return
-                if self.page_field in response:
-                    return {self.page_filter: response[self.page_field]}
+                if self.more_key:
+                    if not response.get(self.more_key, False):
+                        return
+                    if self.page_field in response:
+                        return {self.page_filter: response[self.page_field]}
+                if self.page_field in response and response[self.page_filter] + self.limit < response.get("total"):
+                    return {self.page_filter: response[self.page_filter] + self.limit}
         else:
             if len(response) >= self.limit:
                 self.offset += self.limit
@@ -1396,6 +1387,7 @@ class MarketingEmails(Stream):
     url = "/marketing-emails/v1/emails/with-statistics"
     data_field = "objects"
     limit = 250
+    page_field = "limit"
     updated_at_field = "updated"
     created_at_field = "created"
     primary_key = "id"

@@ -51,7 +51,7 @@ Airbyte should be allowed to write messages into topics. Based on the MQTT broke
 
 #### Target topics
 
-You can determine the topics to which messages are written via the `topic_pattern` configuration parameter. Messages can be written to either a hardcoded, pre-defined topic, or dynamically written to different topics based on the [namespace](https://docs.airbyte.io/understanding-airbyte/namespaces) or stream they came from.
+You can determine the topics to which messages are written via the `topic_pattern` configuration parameter. Messages can be written to either a hardcoded, pre-defined topic, or dynamically written to different topics based on the [namespace](https://docs.airbyte.com/understanding-airbyte/namespaces) or stream they came from.
 
 To write all messages to a single hardcoded topic, enter its name in the `topic_pattern` field e.g: setting `topic_pattern` to `path1/path2/my-topic-name` will write all messages from all streams and namespaces to that topic.
 

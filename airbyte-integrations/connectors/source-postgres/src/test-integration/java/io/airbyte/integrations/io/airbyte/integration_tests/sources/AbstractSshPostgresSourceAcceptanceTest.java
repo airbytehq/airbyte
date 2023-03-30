@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -37,7 +37,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 @ExtendWith(SystemStubsExtension.class)
-public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
+public abstract class AbstractSshPostgresSourceAcceptanceTest extends AbstractPostgresSourceAcceptanceTest {
 
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
@@ -103,16 +103,6 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     bastion.stopAndCloseContainers(db);
-  }
-
-  @Override
-  protected String getImageName() {
-    return "airbyte/source-postgres:dev";
-  }
-
-  @Override
-  protected ConnectorSpecification getSpec() throws Exception {
-    return SshHelpers.getSpecAndInjectSsh();
   }
 
   @Override

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import copy
@@ -22,6 +22,7 @@ from requests.auth import AuthBase
 TWILIO_API_URL_BASE = "https://api.twilio.com"
 TWILIO_API_URL_BASE_VERSIONED = f"{TWILIO_API_URL_BASE}/2010-04-01/"
 TWILIO_MONITOR_URL_BASE = "https://monitor.twilio.com/v1/"
+TWILIO_CONVERSATIONS_URL_BASE = "https://conversations.twilio.com/v1/"
 
 
 class TwilioStream(HttpStream, ABC):
@@ -499,6 +500,15 @@ class Alerts(IncrementalTwilioStream):
     lower_boundary_filter_field = "StartDate="
     upper_boundary_filter_field = "EndDate="
     cursor_field = "date_generated"
+
+    def path(self, **kwargs):
+        return self.name.title()
+
+
+class Conversations(TwilioStream):
+    """https://www.twilio.com/docs/conversations/api/conversation-resource#read-multiple-conversation-resources"""
+
+    url_base = TWILIO_CONVERSATIONS_URL_BASE
 
     def path(self, **kwargs):
         return self.name.title()
