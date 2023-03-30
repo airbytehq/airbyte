@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 METADATA_LIB_MODULE_PATH = "airbyte-ci/connectors/metadata_service/lib"
 
 
-async def run_metadata_lib_test_pipeline(metadata_pipeline_context: MetadatePipelineContext):
+async def run_metadata_lib_test_pipeline(metadata_pipeline_context: PipelineContext):
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
         async with metadata_pipeline_context:
@@ -39,12 +39,7 @@ def metadata_service(ctx):
 
 @metadata_service.command(help="Run unit tests for the metadata service library.")
 @click.pass_context
-def test_metadata_service_lib(ctx: Click.Context):
-    # check the set of modified file paths, if there are no paths containing the metadata service lib path, exit
-    if not any(METADATA_LIB_MODULE_PATH in path for path in ctx.obj["modified_files"]):
-        logger.info("No metadata service lib changes detected, skipping metadata service lib unit tests.")
-        return
-
+def test_metadata_service_lib(ctx: click.Context):
     logger.info("Running metadata service lib unit tests...")
     metadata_pipeline_context = PipelineContext(
         pipeline_name="Metadata Service Lib Unit Test Pipeline",

@@ -5,12 +5,15 @@
 import click
 from .metadata_service import metadata_service
 from .connectors_ci import connectors_ci
+from ci_connector_ops.pipelines.contexts import CIContext
 from ci_connector_ops.pipelines.utils import (
     get_current_epoch_time,
     get_current_git_branch,
     get_current_git_revision,
     get_modified_files,
 )
+
+CI_CONTEXT_VALUES = [member.value for member in CIContext]
 
 
 @click.group(help="Airbyte CI top-level command group.")
@@ -24,7 +27,7 @@ from ci_connector_ops.pipelines.utils import (
     type=str,
 )
 @click.option("--gha-workflow-run-id", help="[CI Only] The run id of the GitHub action workflow", default=None, type=str)
-@click.option("--ci-context", default="manual", envvar="CI_CONTEXT", type=click.Choice(["manual", "pull_request", "nightly_builds"]))
+@click.option("--ci-context", default="manual", envvar="CI_CONTEXT", type=click.Choice(CI_CONTEXT_VALUES))
 @click.option("--pipeline-start-timestamp", default=get_current_epoch_time, envvar="CI_PIPELINE_START_TIMESTAMP", type=int)
 @click.pass_context
 def airbyte_ci(

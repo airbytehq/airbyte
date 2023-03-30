@@ -14,7 +14,7 @@ import click
 import dagger
 from ci_connector_ops.pipelines import checks, tests
 from ci_connector_ops.pipelines.bases import ConnectorTestReport
-from ci_connector_ops.pipelines.contexts import ConnectorTestContext
+from ci_connector_ops.pipelines.contexts import ConnectorTestContext, CIContext
 from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.utils import (
     DAGGER_CONFIG,
@@ -123,7 +123,7 @@ def connectors_ci(
         ctx.obj["gha_workflow_run_url"],
         GITHUB_GLOBAL_DESCRIPTION,
         GITHUB_GLOBAL_CONTEXT,
-        should_send=ctx.obj["ci_context"] == "pull_request",
+        should_send=ctx.obj["ci_context"] == CIContext.PULL_REQUEST,
         logger=logger,
     )
 
@@ -197,7 +197,7 @@ def test_connectors(
             ctx.obj["gha_workflow_run_url"],
             GITHUB_GLOBAL_DESCRIPTION,
             GITHUB_GLOBAL_CONTEXT,
-            should_send=ctx.obj.get("ci_context") == "pull_request",
+            should_send=ctx.obj.get("ci_context") == CIContext.PULL_REQUEST,
             logger=logger,
         )
     except dagger.DaggerError as e:
@@ -208,7 +208,7 @@ def test_connectors(
             ctx.obj["gha_workflow_run_url"],
             GITHUB_GLOBAL_DESCRIPTION,
             GITHUB_GLOBAL_CONTEXT,
-            should_send=ctx.obj.get("ci_context") == "pull_request",
+            should_send=ctx.obj.get("ci_context") == CIContext.PULL_REQUEST,
             logger=logger,
         )
 

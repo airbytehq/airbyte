@@ -19,6 +19,12 @@ from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL
 from ci_connector_ops.utils import Connector
 
+# create an enum for ci context values which can be ["manual", "pull_request", "nightly_builds"]
+# and use it in the context class
+class CIContext(Enum):
+    MANUAL = "manual"
+    PULL_REQUEST = "pull_request"
+    NIGHTLY_BUILDS = "nightly_builds"
 
 class ContextState(Enum):
     INITIALIZED = {"github_state": "pending", "description": "Pipelines are being initialized..."}
@@ -68,7 +74,7 @@ class PipelineContext(ABC):
 
     @property
     def is_pr(self):
-        return self.ci_context == "pull_request"
+        return self.ci_context == CIContext.PULL_REQUEST
 
     @property
     def repo(self):
@@ -131,6 +137,15 @@ class ConnectorTestContext(PipelineContext):
         ci_context: Optional[str] = None,
     ):
         pipeline_name = f"CI test for {connector.technical_name}"
+
+        self.connector = connector
+        self.use_remote_secrets = use_remote_secrets
+        self.connector_acceptance_test_image = connector_acceptance_test_image
+
+        self._secrets_dir = None
+        self._updated_secrets_dir = None
+        self._test_report = None
+
         super().__init__(
             pipeline_name=pipeline_name,
             is_local=is_local,
@@ -140,14 +155,6 @@ class ConnectorTestContext(PipelineContext):
             pipeline_start_timestamp=pipeline_start_timestamp,
             ci_context=ci_context,
         )
-        self.connector = connector
-        self.use_remote_secrets = use_remote_secrets
-        self.connector_acceptance_test_image = connector_acceptance_test_image
-
-        self._secrets_dir = None
-        self._updated_secrets_dir = None
-        self._test_report = None
-        update_commit_status_check(**self.github_commit_status)
 
     @property
     def secrets_dir(self) -> Directory:

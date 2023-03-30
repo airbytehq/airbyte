@@ -114,8 +114,6 @@ The Airbyte git repo will be the local one if you use `--is-local=True` command 
 The connector secrets won't be downloaded nor uploaded if you use the `--use-remote-secrets=False` command line option.
 
 
-
-
 ### Performance benchmarks
 
 | Connector      | Run integration test GHA duration                                      | Dagger POC duration (CI no cache)                                      |
