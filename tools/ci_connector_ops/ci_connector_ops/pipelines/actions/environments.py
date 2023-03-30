@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from ci_connector_ops.pipelines.utils import get_file_contents
 from dagger import CacheSharingMode, CacheVolume, Container, Directory, Secret
@@ -204,39 +204,42 @@ async def with_ci_connector_ops(context: ConnectorTestContext) -> Container:
     return await with_installed_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH, exclude=["pipelines"])
 
 
-def with_dockerd_service(context, shared_tmp_volume):
-    dockerd = (
+def with_dockerd_service(context, shared_volume: Optional(Tuple[str, CacheVolume]) = None) -> Container:
+    dind = (
         context.dagger_client.container()
         .from_("docker:23.0.1-dind")
-        .with_mounted_cache("/var/lib/docker/overlays2", context.dagger_client.cache_volume("docker-lib-overlays2"))
-        .with_mounted_cache("/tmp", shared_tmp_volume)
-        .with_exposed_port(2375)
-        .with_exec(["dockerd", "--log-level=info", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
+        .with_mounted_cache("/var/lib/docker", context.dagger_client.cache_volume("docker-lib"))
     )
-    return dockerd
+    if shared_volume is not None:
+        dind = dind.with_mounted_cache(*shared_volume)
+    return dind.with_exposed_port(2375).with_exec(
+        ["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True
+    )
 
 
-def with_java_base(context: ConnectorTestContext, jdk_version="17.0.4") -> Container:
-    return context.dagger_client.container().from_(f"amazoncorretto:{jdk_version}")
+def with_bound_docker_host(
+    context: ConnectorTestContext, container: Container, shared_volume: Optional(Tuple[str, CacheVolume]) = None
+) -> Container:
+    dockerd = with_dockerd_service(context, shared_volume)
+    bound = container.with_env_variable("DOCKER_HOST", "tcp://docker:2375").with_service_binding("docker", dockerd)
+    if shared_volume:
+        bound = bound.with_mounted_cache(*shared_volume)
+    return bound
 
 
-def with_bound_docker_host(container, dockerd):
-    return container.with_env_variable("DOCKER_HOST", "tcp://docker:2375").with_service_binding("docker", dockerd)
-
-
-def with_docker_cli(context, dockerd):
+def with_docker_cli(context: ConnectorTestContext, shared_volume: Optional(Tuple[str, CacheVolume]) = None) -> Container:
     docker_cli = context.dagger_client.container().from_("docker:23.0.1-cli")
-    return with_bound_docker_host(docker_cli, dockerd)
+    return with_bound_docker_host(context, docker_cli, shared_volume)
 
 
-def with_cat(context, dockerd, shared_tmp_volume):
+def with_connector_acceptance_test(context: ConnectorTestContext) -> Container:
     if context.connector_acceptance_test_image.endswith(":dev"):
         cat_container = context.connector_acceptance_test_source_dir.docker_build()
     else:
         cat_container = context.dagger_client.container().from_(context.connector_acceptance_test_image)
+    shared_tmp_volume = ("/tmp", context.dagger_client.cache_volume("share-tmp-cat"))
     return (
-        with_bound_docker_host(cat_container, dockerd)
-        .with_mounted_cache("/tmp", shared_tmp_volume)
+        with_bound_docker_host(context, cat_container, shared_tmp_volume)
         .with_entrypoint(["pip"])
         .with_exec(["install", "pytest-custom_exit_code"])
         .with_mounted_directory("/test_input", context.get_connector_dir(exclude=["secrets", ".venv"]))
@@ -247,12 +250,13 @@ def with_cat(context, dockerd, shared_tmp_volume):
     )
 
 
-async def with_gradle(context: ConnectorTestContext, sources_to_include: List[str] = None) -> Container:
+def with_java_base(context: ConnectorTestContext, jdk_version: str = "17.0.4") -> Container:
+    return context.dagger_client.container().from_(f"amazoncorretto:{jdk_version}")
+
+
+def with_gradle(context: ConnectorTestContext, sources_to_include: List[str] = None) -> Container:
     airbyte_gradle_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}_airbyte_gradle_cache")
     root_gradle_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}_root_gradle_cache")
-
-    dagger_client = context.dagger_client
-    dockerd, docker_host, shared_tmp_volume = get_dind_container_and_host(dagger_client, "gradle")
 
     include = [
         ".env",
@@ -288,78 +292,18 @@ async def with_gradle(context: ConnectorTestContext, sources_to_include: List[st
     if sources_to_include:
         include += sources_to_include
 
+    shared_tmp_volume = ("/tmp", context.dagger_client.cache_volume("share-tmp-gradle"))
     return (
-        with_docker_cli(context, dockerd, await docker_host)
-        .with_mounted_cache("/tmp", shared_tmp_volume)
+        with_docker_cli(context, shared_tmp_volume)
         .with_exec(["apk", "add", "openjdk17", "bash", "jq"])
+        # .with_exec(["apk", "add", "python3"])
+        # .with_exec(["ln", "-sf", "python3", "/usr/bin/python3"])
+        # .with_exec(["python3", "-m", "ensurepip"])
+        # .with_exec(["pip3", "install", "--no-cache", "--upgrade", "pip", "setuptools"])
         .with_exec(["mkdir", "/root/.gradle"])
         .with_mounted_cache("/root/.gradle", root_gradle_cache)
         .with_exec(["mkdir", "/airbyte"])
         .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
         .with_mounted_cache("/airbyte/.gradle", airbyte_gradle_cache)
         .with_workdir("/airbyte")
-    )
-
-
-def with_integration_base(context):
-    return (
-        context.dagger_client.container()
-        .from_("amazonlinux:2022.0.20220831.1")
-        .with_workdir("/airbyte")
-        .with_file("base.sh", context.get_repo_dir(include="airbyte-integrations/bases/base").file("base.sh"))
-        .with_env_variable("AIRBYTE_ENTRYPOINT", "/airbyte/base.sh")
-        .with_entrypoint("/airbyte/base.sh")
-    )
-
-
-def with_integration_base_java(context):
-    return (
-        context.dagger_client.container()
-        .from_("amazoncoretto:17.0.4")
-        .with_directory("/airbyte", with_java_base(context).directory("/airbyte"))
-        .with_exec(["yum", "install", "-y", "tar", "openssl", "&&", "yum", "clean", "all"])
-        .with_workdir("/airbyte")
-        .with_file("dd-java-agent.jar", context.dagger_client.http("https://dtdg.co/latest-java-tracer"))
-        .with_file("base.sh", context.get_repo_dir(include="airbyte-integrations/bases/base-java").file("javabase.sh"))
-        .with_env_variable("AIRBYTE_SPEC_CMD", "/airbyte/javabase.sh --spec")
-        .with_env_variable("AIRBYTE_CHECK_CMD", "/airbyte/javabase.sh --check")
-        .with_env_variable("AIRBYTE_DISCOVER_CMD", "/airbyte/javabase.sh --discover")
-        .with_env_variable("AIRBYTE_WRITE_CMD", "/airbyte/javabase.sh --write")
-        .with_env_variable("AIRBYTE_ENTRYPOINT", "/airbyte/base.sh")
-        .with_entrypoint("/airbyte/base.sh")
-    )
-
-
-async def with_java_connector(context):
-    build_dir = (
-        with_gradle(context)
-        .with_mounted_directory(str(context.connector.code_directory), context.get_connector_dir(exclude=["secrets", "builds"]))
-        .with_exec(["./gradlew", f":airbyte-integrations:connectors:{context.connector.technical_name}:build"])
-        .directory(f"{str(context.connector.code_directory)}/build")
-    )
-
-    tar_file = None
-    for entry in await build_dir.entries():
-        if entry.endswith(".tar"):
-            tar_file = build_dir.file(tar_file)
-    if tar_file is None:
-        raise Exception("Could not find the tar file")
-
-    return (
-        with_integration_base_java(context)
-        .with_workdir("/airbyte")
-        .with_env_variable("APPLICATION", context.connector.technical_name)
-        .with_file(f"{context.connector.technical_name}.tar", tar_file)
-        .with_exec(
-            [
-                "tar",
-                "xf",
-                f"{context.connector.technical_name}.tar",
-                "--strip-components=1",
-                "&&",
-                "rm",
-                "-rf",
-                f"{context.connector.technical_name}.tar",
-            ]
-        )
     )
