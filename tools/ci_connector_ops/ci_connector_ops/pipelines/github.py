@@ -15,6 +15,7 @@ from github import Github
 
 AIRBYTE_GITHUB_REPO = "airbytehq/airbyte"
 
+
 def safe_log(logger: Optional[Logger], message: str, level: str = "info") -> None:
     if logger:
         log_method = getattr(logger, level.lower())

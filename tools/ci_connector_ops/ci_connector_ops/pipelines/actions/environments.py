@@ -184,6 +184,7 @@ async def with_ci_credentials(context: PipelineContext, gsm_secret: Secret) -> C
 
     return ci_credentials.with_env_variable("VERSION", "dev").with_secret_variable("GCP_GSM_CREDENTIALS", gsm_secret).with_workdir("/")
 
+
 def with_git(base_container: Container) -> Container:
     """Installs git in a alpine based container.
     Args:
