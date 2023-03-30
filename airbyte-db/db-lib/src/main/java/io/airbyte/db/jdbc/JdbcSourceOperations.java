@@ -18,8 +18,6 @@ import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.format.DateTimeParseException;
@@ -96,23 +94,20 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
     }
   }
 
-  private void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+  protected void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value)
+      throws SQLException {
     try {
       preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
     } catch (final DateTimeParseException e) {
-      // attempt to parse the datetime w/o timezone. This can be caused by schema created with a different
-      // version of the connector
-      preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
+      throw new RuntimeException(e);
     }
   }
 
-  private void setTimeWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+  protected void setTimeWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     try {
       preparedStatement.setObject(parameterIndex, OffsetTime.parse(value));
     } catch (final DateTimeParseException e) {
-      // attempt to parse the time w/o timezone. This can be caused by schema created with a different
-      // version of the connector
-      preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
+      throw new RuntimeException(e);
     }
   }
 
