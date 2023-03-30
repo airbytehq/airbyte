@@ -101,6 +101,10 @@ class InstagramAPI:
             raise InstagramAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
 
         if not instagram_business_accounts:
-            raise InstagramAPIException("Couldn't find an Instagram business account for current Access Token")
+            raise InstagramAPIException(
+                "Couldn't find an Instagram business account for current Access Token. "
+                "Please ensure you had create a facebook developer application."
+                " See more here https://developers.facebook.com/docs/development/create-an-app/"
+            )
 
         return instagram_business_accounts
