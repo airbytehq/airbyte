@@ -4,10 +4,9 @@
 
 package io.airbyte.integrations.destination.s3.csv;
 
-import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.integrations.destination.record_buffer.BaseSerializedBuffer;
 import io.airbyte.integrations.destination.record_buffer.BufferStorage;
-import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.integrations.destination.record_buffer.CreateBufferFunction;
 import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -71,9 +70,8 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
     csvPrinter.close();
   }
 
-  public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> createFunction(
-                                                                                                                                          final S3CsvFormatConfig config,
-                                                                                                                                          final Callable<BufferStorage> createStorageFunction) {
+  public static CreateBufferFunction createFunction(final S3CsvFormatConfig config,
+                                                    final Callable<BufferStorage> createStorageFunction) {
     return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) -> {
       if (config == null) {
         return new CsvSerializedBuffer(createStorageFunction.call(), new StagingDatabaseCsvSheetGenerator(), true);

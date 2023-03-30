@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.s3_glue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -15,8 +14,8 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
+import io.airbyte.integrations.destination.record_buffer.CreateBufferFunction;
 import io.airbyte.integrations.destination.record_buffer.FlushBufferFunction;
-import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
 import io.airbyte.integrations.destination.s3.BlobStorageOperations;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
@@ -48,7 +47,7 @@ public class S3GlueConsumerFactory {
                                        final BlobStorageOperations storageOperations,
                                        final MetastoreOperations metastoreOperations,
                                        final NamingConventionTransformer namingResolver,
-                                       final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
+                                       final CreateBufferFunction onCreateBuffer,
                                        final S3DestinationConfig s3Config,
                                        final GlueDestinationConfig glueConfig,
                                        final ConfiguredAirbyteCatalog catalog) {
@@ -130,18 +129,18 @@ public class S3GlueConsumerFactory {
         writeConfigs.stream()
             .collect(Collectors.toUnmodifiableMap(S3GlueConsumerFactory::toNameNamespacePair, Function.identity()));
 
-    return (pair, writer) -> {
-      LOGGER.info("Flushing buffer for stream {} ({}) to storage", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
-      if (!pairToWriteConfig.containsKey(pair)) {
+    return (streamName, buffer) -> {
+      LOGGER.info("Flushing buffer for stream {} ({}) to storage", streamName.getName(), FileUtils.byteCountToDisplaySize(buffer.getByteCount()));
+      if (!pairToWriteConfig.containsKey(streamName)) {
         throw new IllegalArgumentException(
-            String.format("Message contained record from a stream %s that was not in the catalog. \ncatalog: %s", pair, Jsons.serialize(catalog)));
+            String.format("Message contained record from a stream %s that was not in the catalog. \ncatalog: %s", streamName, Jsons.serialize(catalog)));
       }
 
-      final WriteConfig writeConfig = pairToWriteConfig.get(pair);
-      try (writer) {
-        writer.flush();
+      final WriteConfig writeConfig = pairToWriteConfig.get(streamName);
+      try (buffer) {
+        buffer.flush();
         writeConfig.addStoredFile(storageOperations.uploadRecordsToBucket(
-            writer,
+            buffer,
             writeConfig.getNamespace(),
             writeConfig.getStreamName(),
             writeConfig.getFullOutputPath()));

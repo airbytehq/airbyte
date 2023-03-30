@@ -165,6 +165,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       final Optional<BufferFlushType> flushType = bufferingStrategy.addRecord(stream, message);
       // if present means that a flush occurred
       if (flushType.isPresent()) {
+        // this resets the time based flushing behavior
         resetFlushDeadline();
       }
     } else if (message.getType() == Type.STATE) {

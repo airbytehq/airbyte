@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.destination.s3;
 
-import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.record_buffer.BufferStorage;
+import io.airbyte.integrations.destination.record_buffer.CreateBufferFunction;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.avro.AvroSerializedBuffer;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
@@ -15,8 +15,6 @@ import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.jsonl.JsonLSerializedBuffer;
 import io.airbyte.integrations.destination.s3.jsonl.S3JsonlFormatConfig;
 import io.airbyte.integrations.destination.s3.parquet.ParquetSerializedBuffer;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 import org.slf4j.Logger;
@@ -43,8 +41,8 @@ public class SerializedBufferFactory {
    * creating a new buffer where to store data. Note that we typically associate which format is being
    * stored in the storage object thanks to its file extension.
    */
-  public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> getCreateFunction(final S3DestinationConfig config,
-                                                                                                                                             final Function<String, BufferStorage> createStorageFunctionWithoutExtension) {
+  public static CreateBufferFunction getCreateFunction(final S3DestinationConfig config,
+                                                       final Function<String, BufferStorage> createStorageFunctionWithoutExtension) {
     final S3FormatConfig formatConfig = config.getFormatConfig();
     LOGGER.info("S3 format config: {}", formatConfig.toString());
     switch (formatConfig.getFormat()) {

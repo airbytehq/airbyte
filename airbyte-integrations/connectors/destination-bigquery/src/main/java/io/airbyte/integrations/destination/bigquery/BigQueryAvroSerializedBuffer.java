@@ -5,16 +5,14 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.record_buffer.BufferStorage;
-import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.integrations.destination.record_buffer.CreateBufferFunction;
 import io.airbyte.integrations.destination.s3.avro.AvroSerializedBuffer;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
@@ -46,10 +44,10 @@ public class BigQueryAvroSerializedBuffer extends AvroSerializedBuffer {
     dataFileWriter.append(avroRecordFactory.getAvroRecord(recordFormatter.formatRecord(recordMessage)));
   }
 
-  public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> createFunction(final S3AvroFormatConfig config,
-                                                                                                                                          final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
-                                                                                                                                          final BiFunction<BigQueryRecordFormatter, AirbyteStreamNameNamespacePair, Schema> schemaCreator,
-                                                                                                                                          final Callable<BufferStorage> createStorageFunction) {
+  public static CreateBufferFunction createFunction(final S3AvroFormatConfig config,
+                                                    final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
+                                                    final BiFunction<BigQueryRecordFormatter, AirbyteStreamNameNamespacePair, Schema> schemaCreator,
+                                                    final Callable<BufferStorage> createStorageFunction) {
     final CodecFactory codecFactory = config.getCodecFactory();
     return (pair, catalog) -> {
       final AirbyteStream stream = catalog.getStreams()
