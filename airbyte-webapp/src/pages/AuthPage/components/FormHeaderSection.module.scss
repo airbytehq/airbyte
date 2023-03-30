@@ -1,0 +1,63 @@
+@use "../../../scss/colors";
+
+.head {
+  width: 90%;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  flex-direction: column;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.selectBox {
+  min-width: 144px;
+}
+
+.headRight {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.headRightText {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 30px;
+  color: #6b6b6f;
+  padding-right: 12px;
+}
+
+.button {
+  background-color: #fff;
+  padding: 5px 10px;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 17px;
+  color: colors.$blue;
+  border-radius: 5px;
+  border: 1px solid colors.$blue;
+}
+
+@media screen and (min-width: 769px) {
+  .head {
+    width: 100%;
+    padding: 0 70px;
+    display: flex;
+    align-items: flex-end;
+    flex-direction: row;
+    justify-content: space-between;
+
+    // margin: 24px 0 5%;
+  }
+
+  .headRight {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+  }
+}

@@ -6,6 +6,7 @@
 .checkboxCell {
   @extend %headerCell;
 
+  display: flex;
   max-width: 43px;
   text-align: center;
 }
@@ -14,7 +15,8 @@
 %catalogHeader {
   min-height: 33px;
   margin-bottom: 0 !important;
-  margin-left: 20px;
+
+  // margin-left: 20px;
 }
 
 .readonlyCatalogHeader {
@@ -23,16 +25,23 @@
   margin-left: 50px;
 }
 
+.catalogSubheaderBorderTop {
+  border-top: 1px solid #f8f8fa;
+  margin-top: 6px;
+}
+
 .catalogSubheader {
   @extend %catalogHeader;
 
-  padding-top: 10px;
-  margin-left: 155px;
+  padding-top: 6px;
+
+  // margin-left: 155px;
 }
 
 .readonlyCatalogSubheader {
   @extend %catalogHeader;
 
-  padding-top: 10px;
-  margin-left: 115px;
+  padding-top: 6px;
+
+  // margin-left: 115px;
 }

@@ -1,9 +1,8 @@
-import React, { Suspense, useState } from "react";
+import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
 import { Navigate, Route, Routes } from "react-router-dom";
 import styled from "styled-components";
 
-import MessageBox from "components/base/MessageBox";
 import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
@@ -15,15 +14,30 @@ import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
 import useRouter from "hooks/useRouter";
 
 import AccountSettingsPage from "./pages/AccountSettingsPage";
-import NotificationPage from "./pages/NotificationPage";
+// import NotificationPage from "./pages/NotificationPage";
 import PlansBillingPage from "./pages/PlansBillingPage";
 import UserManagementPage from "./pages/UserManagementPage";
+
+export interface PageConfig {
+  menuConfig: CategoryItem[];
+}
+
+interface SettingsPageProps {
+  pageConfig?: PageConfig;
+}
+
+export interface Notification {
+  message: string;
+  type: "info" | "error";
+}
 
 const PageContainer = styled.div`
   width: 100%;
   height: auto;
   display: flex;
   flex-direction: row;
+  // height: 1px;
+  flex: 1;
 `;
 
 const Seperator = styled.div`
@@ -34,7 +48,7 @@ const Seperator = styled.div`
 
 const ContentContainer = styled.div`
   width: 100%;
-  min-height: 100vh;
+  // min-height: 100vh;
   background-color: white;
   padding: 16px 26px 26px 26px;
 `;
@@ -57,14 +71,6 @@ const MainView = styled.div`
   width: 100%;
 `;
 
-export interface PageConfig {
-  menuConfig: CategoryItem[];
-}
-
-interface SettingsPageProps {
-  pageConfig?: PageConfig;
-}
-
 export const SettingsRoute = {
   Account: "account",
   Destination: "destination",
@@ -77,12 +83,9 @@ export const SettingsRoute = {
   PlanAndBilling: "plan-and-billing",
 } as const;
 
-const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
+export const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   const { push } = useRouter();
   const { user } = useUser();
-
-  const [messageId, setMessageId] = useState<string>("");
-  const [messageType, setMessageType] = useState<"info" | "error">("info");
 
   const menuItems: CategoryItem[] = pageConfig?.menuConfig || [
     {
@@ -90,7 +93,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
         {
           path: `${SettingsRoute.UserManagement}`,
           name: <FormattedMessage id="settings.user.management" />,
-          component: <UserManagementPage setMessageId={setMessageId} setMessageType={setMessageType} />,
+          component: <UserManagementPage />,
           show:
             getRoleAgainstRoleNumber(user.role) === ROLES.Administrator_Owner ||
             getRoleAgainstRoleNumber(user.role) === ROLES.Administrator
@@ -106,19 +109,19 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
         {
           path: `${SettingsRoute.PlanAndBilling}`,
           name: <FormattedMessage id="settings.plan.billing" />,
-          component: <PlansBillingPage setMessageId={setMessageId} setMessageType={setMessageType} />,
+          component: <PlansBillingPage />,
           show:
             getRoleAgainstRoleNumber(user.role) === ROLES.Administrator_Owner ||
             getRoleAgainstRoleNumber(user.role) === ROLES.Administrator
               ? true
               : false,
         },
-        {
-          path: `${SettingsRoute.Notifications}`,
-          name: <FormattedMessage id="settings.notificationSettings" />,
-          component: <NotificationPage />,
-          show: true,
-        },
+        // {
+        //   path: `${SettingsRoute.Notifications}`,
+        //   name: <FormattedMessage id="settings.notificationSettings" />,
+        //   component: <NotificationPage />,
+        //   show: true,
+        // },
       ],
     },
   ];
@@ -137,7 +140,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
     <PageContainer>
       <Seperator />
       <ContentContainer>
-        <MessageBox message={messageId} onClose={() => setMessageId("")} type={messageType} />
         <MainPageWithScroll
           withPadding
           headTitle={<HeadTitle titles={[{ id: "sidebar.settings" }]} />}
@@ -172,5 +174,3 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
     </PageContainer>
   );
 };
-
-export default SettingsPage;

@@ -1,15 +1,18 @@
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+// import { faPlus } from "@fortawesome/free-solid-svg-icons";
+// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Field, FieldArray, FieldProps, Form, Formik } from "formik";
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
+import { theme } from "theme";
 import * as yup from "yup";
 
-import { Button, DropDownRow, LabeledInput, LoadingButton, Modal, ModalBody } from "components";
+import { Button, DropDownRow, LabeledInput, LoadingButton, Modal, Tooltip } from "components"; // ModalBody
 import { DashIcon } from "components/icons/DashIcon";
+import { PlusCircleIcon } from "components/icons/PlusCircleIcon";
 import { Separator } from "components/Separator";
 
+import { useAppNotification } from "hooks/services/AppNotification";
 import { useUserAsyncAction } from "services/users/UsersService";
 
 import UserRoleDropDown from "./UserRoleDropdown";
@@ -17,8 +20,6 @@ import UserRoleDropDown from "./UserRoleDropdown";
 interface IProps {
   roles: DropDownRow.IDataItem[];
   onClose?: () => void;
-  setMessageId: React.Dispatch<React.SetStateAction<string>>;
-  setMessageType: React.Dispatch<React.SetStateAction<"info" | "error">>;
 }
 
 const ModalBodyContainer = styled.div`
@@ -66,18 +67,25 @@ const SendInvitationButton = styled(LoadingButton)`
 `;
 
 const RemoveUserBtn = styled.button`
-  width: 26px;
-  height: 26px;
-  border-radius: 30px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
   border: 2px solid #6b6b6f;
   background-color: transparent;
   cursor: pointer;
   margin-left: auto;
-  padding: 0px 0px 6px 0px;
+  padding: 0px 0px 0px 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const CancelBtn = styled(Button)`
   margin-right: 48px;
+`;
+
+const RemoveIconMargin = styled.div`
+  margin-left: 16px;
 `;
 
 const AddMoreBtn = styled(Button)`
@@ -88,14 +96,22 @@ const AddMoreBtn = styled(Button)`
   cursor: pointer;
   border: none;
   background-color: transparent;
+  display: flex;
+  align-items: center;
+  padding: 0;
+
+  &:disabled {
+    border: none;
+    background-color: transparent;
+  }
 `;
 
-const BtnIcon = styled(FontAwesomeIcon)`
-  font-size: 16px;
-  margin-right: 10px;
+const ButtonText = styled.div`
+  margin-left: 6px;
 `;
 
-const AddUserModal: React.FC<IProps> = ({ onClose, roles, setMessageId, setMessageType }) => {
+const AddUserModal: React.FC<IProps> = ({ onClose, roles }) => {
+  const { setNotification } = useAppNotification();
   const [loading, setLoading] = useState(false);
 
   const inviteUsersSchema = yup.object({
@@ -114,132 +130,146 @@ const AddUserModal: React.FC<IProps> = ({ onClose, roles, setMessageId, setMessa
   const { onAddUser } = useUserAsyncAction();
   return (
     <Modal size="lg" onClose={() => onClose?.()}>
-      <ModalBody>
-        <Formik
-          validateOnBlur
-          validateOnChange
-          validationSchema={inviteUsersSchema}
-          initialValues={{ users: [{ email: "", role: 3 }] }}
-          onSubmit={(values) => {
-            const { users } = values;
-            setLoading(true);
-            onAddUser(users)
-              .then(() => {
-                setLoading(false);
-                onClose?.();
-              })
-              .catch((error: any) => {
-                setLoading(false);
-                setMessageId(error.message);
-                setMessageType("error");
-              });
-          }}
-        >
-          {({ values, isValid, dirty, setFieldValue }) => {
-            return (
-              <Form>
-                <ModalBodyContainer>
-                  <ModalHeading>
-                    <FormattedMessage id="user.addUserModal.heading" />
-                  </ModalHeading>
-                  <Separator height="30px" />
-                  <FieldArray
-                    name="users"
-                    render={(arrayHelpers) => (
-                      <>
-                        {values.users?.map((_, index) => (
-                          <>
-                            <FieldsContainer>
-                              <InputFieldContainer style={{ marginRight: "30px" }}>
-                                <Field name={`users[${index}].email`}>
-                                  {({ field, meta }: FieldProps<string>) => (
-                                    <LabeledInput
-                                      {...field}
-                                      label={
-                                        index === 0 && <FormattedMessage id="user.addUserModal.email.fieldLabel" />
-                                      }
-                                      type="text"
-                                      error={!!meta.error && meta.touched}
-                                      message={meta.touched && meta.error && formatMessage({ id: meta.error })}
-                                      style={{ width: "100%" }}
-                                    />
-                                  )}
-                                </Field>
-                              </InputFieldContainer>
-                              <InputFieldContainer>
-                                {index === 0 && (
-                                  <>
-                                    <InputFieldLabel>
-                                      <FormattedMessage id="user.addUserModal.role.fieldLabel" />
-                                    </InputFieldLabel>
-                                    <Separator height="4px" />
-                                  </>
+      <ModalHeading>
+        <FormattedMessage id="user.addUserModal.heading" />
+      </ModalHeading>
+      {/* <ModalBody> */}
+      <Formik
+        validateOnBlur
+        validateOnChange
+        validationSchema={inviteUsersSchema}
+        initialValues={{ users: [{ email: "", role: 3 }] }}
+        onSubmit={(values) => {
+          const { users } = values;
+          setLoading(true);
+          onAddUser(users)
+            .then(() => {
+              setLoading(false);
+              onClose?.();
+            })
+            .catch((error: any) => {
+              setLoading(false);
+              setNotification({ message: error.message, type: "error" });
+            });
+        }}
+      >
+        {({ values, isValid, dirty, setFieldValue }) => {
+          return (
+            <Form>
+              <ModalBodyContainer>
+                <Separator height="30px" />
+                <FieldArray
+                  name="users"
+                  render={(arrayHelpers) => (
+                    <>
+                      {values.users?.map((_, index) => (
+                        <div key={index} style={{ width: "100%" }}>
+                          <FieldsContainer>
+                            <InputFieldContainer style={{ marginRight: "30px" }}>
+                              <Field name={`users[${index}].email`}>
+                                {({ field, meta }: FieldProps<string>) => (
+                                  <LabeledInput
+                                    {...field}
+                                    label={index === 0 && <FormattedMessage id="user.addUserModal.email.fieldLabel" />}
+                                    type="text"
+                                    error={!!meta.error && meta.touched}
+                                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
+                                    style={{ width: "100%" }}
+                                  />
                                 )}
-                                <Field name={`users[${index}].role`}>
-                                  {({ field }: FieldProps) => {
-                                    return (
-                                      <UserRoleDropDown
-                                        value={field.value}
-                                        options={roles}
-                                        onChange={(option) => {
-                                          setFieldValue(field.name, option.value);
-                                        }}
-                                      />
-                                    );
-                                  }}
-                                </Field>
-                              </InputFieldContainer>
-                              {index !== 0 && (
-                                <RemoveUserBtn
-                                  onClick={() => {
-                                    setFieldValue("users", [
-                                      ...values.users.slice(0, index),
-                                      ...values.users.slice(index + 1),
-                                    ]);
-                                  }}
-                                >
-                                  <DashIcon color="#6B6B6F" width={13} />
-                                </RemoveUserBtn>
+                              </Field>
+                            </InputFieldContainer>
+                            <InputFieldContainer>
+                              {index === 0 && (
+                                <>
+                                  <InputFieldLabel>
+                                    <FormattedMessage id="user.addUserModal.role.fieldLabel" />
+                                  </InputFieldLabel>
+                                  <Separator height="4px" />
+                                </>
                               )}
-                            </FieldsContainer>
-                            <Separator />
-                          </>
-                        ))}
-                        {values.users.length >= 5 ? null : (
-                          <AddMoreBtn
-                            type="button"
-                            disabled={!isValid || !dirty}
-                            onClick={() => arrayHelpers.push({ email: "", role: 3 })}
-                            secondary
-                          >
-                            <BtnIcon icon={faPlus} />
+                              <Field name={`users[${index}].role`}>
+                                {({ field }: FieldProps) => {
+                                  return (
+                                    <UserRoleDropDown
+                                      value={field.value}
+                                      options={roles}
+                                      onChange={(option) => {
+                                        setFieldValue(field.name, option.value);
+                                      }}
+                                    />
+                                  );
+                                }}
+                              </Field>
+                            </InputFieldContainer>
+                            {index !== 0 && (
+                              <RemoveIconMargin>
+                                <Tooltip
+                                  placement="top"
+                                  control={
+                                    <RemoveUserBtn
+                                      onClick={() => {
+                                        arrayHelpers.remove(index);
+                                        // setFieldValue("users", [
+                                        //   ...values.users.slice(0, index),
+                                        //   ...values.users.slice(index + 1),
+                                        // ]);
+                                      }}
+                                    >
+                                      <DashIcon color="#6B6B6F" width={13} />
+                                    </RemoveUserBtn>
+                                  }
+                                >
+                                  <FormattedMessage id="user.remove" />
+                                </Tooltip>
+                              </RemoveIconMargin>
+                            )}
+                          </FieldsContainer>
+                          <Separator />
+                        </div>
+                      ))}
+                      {values.users.length >= 5 ? null : (
+                        <AddMoreBtn
+                          // size="lg"
+                          type="button"
+                          disabled={!isValid || !dirty}
+                          onClick={() => arrayHelpers.push({ email: "", role: 3 })}
+                          secondary
+                        >
+                          <PlusCircleIcon
+                            width={16}
+                            height={16}
+                            color={!isValid || !dirty ? theme.grey400 : theme.blue}
+                          />
+                          <ButtonText>
                             <FormattedMessage id="user.addUserModal.addMoreBtn" />
-                          </AddMoreBtn>
-                        )}
-                      </>
-                    )}
-                  />
-                  <Controls>
-                    <CancelBtn size="lg" type="button" secondary onClick={() => onClose?.()}>
-                      <FormattedMessage id="user.addUserModal.cancelBtn" />
-                    </CancelBtn>
-                    <SendInvitationButton
-                      data-testid="user.addUserModal.sendInviteBtn"
-                      size="lg"
-                      white
-                      type="submit"
-                      disabled={!isValid || !dirty}
-                      isLoading={loading}
-                    >
-                      <FormattedMessage id="user.addUserModal.sendInviteBtn" />
-                    </SendInvitationButton>
-                  </Controls>
-                </ModalBodyContainer>
-              </Form>
-            );
-          }}
-        </Formik>
-      </ModalBody>
+                          </ButtonText>
+                        </AddMoreBtn>
+                      )}
+                    </>
+                  )}
+                />
+                <Controls>
+                  <CancelBtn size="lg" type="button" secondary onClick={() => onClose?.()}>
+                    <FormattedMessage id="user.addUserModal.cancelBtn" />
+                  </CancelBtn>
+                  <SendInvitationButton
+                    data-testid="user.addUserModal.sendInviteBtn"
+                    size="lg"
+                    white
+                    type="submit"
+                    disabled={!isValid || !dirty}
+                    isLoading={loading}
+                  >
+                    <FormattedMessage id="user.addUserModal.sendInviteBtn" />
+                  </SendInvitationButton>
+                </Controls>
+              </ModalBodyContainer>
+            </Form>
+          );
+        }}
+      </Formik>
+      {/* </ModalBody> */}
     </Modal>
   );
 };

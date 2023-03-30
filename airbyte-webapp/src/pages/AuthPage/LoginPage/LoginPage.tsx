@@ -4,17 +4,18 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { LabeledInput, Link, LoadingButton } from "components";
+import { LabeledInput, LoadingButton } from "components";
 import Alert from "components/Alert";
 import HeadTitle from "components/HeadTitle";
 import { Separator } from "components/Separator";
 
 import { useUser } from "core/AuthContext";
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
-import { BottomBlock, FieldItem, Form } from "packages/cloud/views/auth/components/FormComponents";
+import { FormHeaderSection } from "pages/AuthPage/components/FormHeaderSection";
 import { useAuthenticationService } from "services/auth/AuthSpecificationService";
 
 import { RoutePaths } from "../../routePaths";
+import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
 import { GoogleAuthBtn } from "../GoogleAuthBtn";
 import styles from "./LoginPage.module.scss";
 
@@ -44,9 +45,10 @@ const LoginPageValidationSchema = yup.object().shape({
 });
 
 const LoginPage: React.FC = () => {
-  const [errorMessage, setErrorMessage] = useState<string>("");
   const { formatMessage } = useIntl();
-  const { setUser } = useUser();
+  const { user, setUser } = useUser();
+
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const Signin = useAuthenticationService();
   useTrackPage(PageTrackingCodes.LOGIN);
 
@@ -59,86 +61,93 @@ const LoginPage: React.FC = () => {
           setErrorMessage("");
         }}
       />
-      <img src="/daspireLogo.svg" alt="logo" width={50} />
-      <div className={styles.formTitle}>
-        <FormattedMessage id="login.title" />
-      </div>
-      <Formik
-        initialValues={{
-          email: "",
-          password: "",
-        }}
-        validationSchema={LoginPageValidationSchema}
-        onSubmit={async (values) => {
-          Signin.post(values)
-            .then((res: any) => {
-              setUser?.(res);
-            })
-            .catch((err: any) => {
-              setErrorMessage(err.message);
-            });
-        }}
-        validateOnBlur
-        validateOnChange
-      >
-        {({ isValid, dirty, isSubmitting }) => (
-          <Form className={styles.form}>
-            <GoogleAuthBtn buttonText="signin_with" />
-            <Separator height="28px" />
-            <AuthSeperatorContainer>
-              <Line />
-              <SeperatorText>
-                <FormattedMessage id="auth.authSeparator" />
-              </SeperatorText>
-              <Line />
-            </AuthSeperatorContainer>
-            <Separator height="40px" />
-            <FieldItem>
-              <Field name="email">
-                {({ field, meta }: FieldProps<string>) => (
-                  <LabeledInput
-                    {...field}
-                    grey
-                    label={<FormattedMessage id="login.yourEmail" />}
-                    placeholder={formatMessage({
-                      id: "login.yourEmail.placeholder",
-                    })}
-                    type="text"
-                    error={!!meta.error && meta.touched}
-                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
-                  />
-                )}
-              </Field>
-            </FieldItem>
-            <FieldItem>
-              <Field name="password">
-                {({ field, meta }: FieldProps<string>) => (
-                  <LabeledInput
-                    {...field}
-                    grey
-                    label={<FormattedMessage id="login.yourPassword" />}
-                    placeholder={formatMessage({
-                      id: "login.yourPassword.placeholder",
-                    })}
-                    type="password"
-                    error={!!meta.error && meta.touched}
-                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
-                  />
-                )}
-              </Field>
-            </FieldItem>
-            <BottomBlock>
-              <LoadingButton
-                white
-                className={styles.logInBtn}
-                disabled={!(isValid && dirty)}
-                type="submit"
-                isLoading={isSubmitting}
-              >
-                <FormattedMessage id="login.button" />
-              </LoadingButton>
-            </BottomBlock>
-            <div className={styles.signupLink}>
+
+      <FormHeaderSection
+        link={`/${RoutePaths.Signup}`}
+        buttonText={formatMessage({ id: "login.signup" })}
+        text={formatMessage({ id: "login.signupDescription" })}
+      />
+      <div className={styles.formContainer}>
+        <img src="/daspireLogo.svg" alt="logo" width={50} style={{ marginTop: "40px" }} />
+        <div className={styles.formTitle}>
+          <FormattedMessage id="login.title" />
+        </div>
+        <Formik
+          initialValues={{
+            email: "",
+            password: "",
+          }}
+          validationSchema={LoginPageValidationSchema}
+          onSubmit={async (values) => {
+            Signin.post(values, user?.lang)
+              .then((res: any) => {
+                setUser?.(res);
+              })
+              .catch((err: any) => {
+                setErrorMessage(err.message);
+              });
+          }}
+          validateOnBlur
+          validateOnChange
+        >
+          {({ isValid, dirty, isSubmitting }) => (
+            <Form className={styles.form}>
+              <GoogleAuthBtn buttonText="signin_with" />
+              <Separator height="28px" />
+              <AuthSeperatorContainer>
+                <Line />
+                <SeperatorText>
+                  <FormattedMessage id="auth.authSeparator" />
+                </SeperatorText>
+                <Line />
+              </AuthSeperatorContainer>
+              <Separator height="40px" />
+              <FieldItem bottom="24">
+                <Field name="email">
+                  {({ field, meta }: FieldProps<string>) => (
+                    <LabeledInput
+                      {...field}
+                      labelAdditionLength={0}
+                      label={<FormattedMessage id="login.yourEmail" />}
+                      placeholder={formatMessage({
+                        id: "login.yourEmail.placeholder",
+                      })}
+                      type="text"
+                      error={!!meta.error && meta.touched}
+                      message={meta.touched && meta.error && formatMessage({ id: meta.error })}
+                    />
+                  )}
+                </Field>
+              </FieldItem>
+              <FieldItem bottom="24">
+                <Field name="password">
+                  {({ field, meta }: FieldProps<string>) => (
+                    <LabeledInput
+                      {...field}
+                      labelAdditionLength={0}
+                      label={<FormattedMessage id="login.yourPassword" />}
+                      placeholder={formatMessage({
+                        id: "login.yourPassword.placeholder",
+                      })}
+                      type="password"
+                      error={!!meta.error && meta.touched}
+                      message={meta.touched && meta.error && formatMessage({ id: meta.error })}
+                    />
+                  )}
+                </Field>
+              </FieldItem>
+              <BottomBlock>
+                <LoadingButton
+                  white
+                  className={styles.logInBtn}
+                  disabled={!(isValid && dirty)}
+                  type="submit"
+                  isLoading={isSubmitting}
+                >
+                  <FormattedMessage id="login.button" />
+                </LoadingButton>
+              </BottomBlock>
+              {/* <div className={styles.signupLink}>
               <FormattedMessage
                 id="login.signupDescription"
                 values={{
@@ -149,10 +158,11 @@ const LoginPage: React.FC = () => {
                   ),
                 }}
               />
-            </div>
-          </Form>
-        )}
-      </Formik>
+            </div> */}
+            </Form>
+          )}
+        </Formik>
+      </div>
     </div>
   );
 };

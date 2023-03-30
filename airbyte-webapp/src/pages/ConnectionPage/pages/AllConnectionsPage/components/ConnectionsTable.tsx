@@ -10,6 +10,7 @@ import { getConnectionTableData } from "components/EntityTable/utils";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { invalidateConnectionsList } from "hooks/services/useConnectionHook";
 import useRouter from "hooks/useRouter";
+import { UpdateStatusError } from "pages/ConnectionPage/pages/AllConnectionsPage/components/UpdateStatusError";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 
@@ -27,6 +28,7 @@ interface IProps {
 const ConnectionsTable: React.FC<IProps> = ({ connections, onSetMessageId }) => {
   const [rowId, setRowID] = useState<string>("");
   const [statusLoading, setStatusLoading] = useState<boolean>(false);
+  const [statusCode, setStatusCode] = useState<number | undefined>(200);
   const { push } = useRouter();
   const { changeStatus, syncManualConnection } = useSyncActions();
   const queryClient = useQueryClient();
@@ -38,35 +40,28 @@ const ConnectionsTable: React.FC<IProps> = ({ connections, onSetMessageId }) => 
 
   const data = getConnectionTableData(connections, sourceDefinitions, destinationDefinitions, "connection");
 
-  // const onChangeStatus = useCallback(
-  //   async (connectionId: string) => {
-  //     const connection = connections.find((item) => item.connectionId === connectionId);
-
-  //     if (connection) {
-  //       setRowID(connectionId);
-  //       setStatusLoading(true);
-  //       await changeStatus(connection);
-  //       await invalidateConnectionsList(queryClient);
-  //       setRowID("");
-  //       setStatusLoading(false);
-  //     }
-  //   },
-  //   [changeStatus, connections, queryClient]
-  // );
-
   const updateStatus = useCallback(
     async (connectionId: string) => {
       const connection = connections.find((item) => item.connectionId === connectionId);
       if (connection) {
         setRowID(connectionId);
         setStatusLoading(true);
-        await changeStatus(connection);
-        await invalidateConnectionsList(queryClient);
-        setRowID("");
-        setStatusLoading(false);
-        onSetMessageId(
-          connection.status === "active" ? "tables.connection.disabled.text" : "tables.connection.enabled.text"
-        );
+        setStatusCode(undefined);
+        try {
+          await changeStatus(connection);
+          await invalidateConnectionsList(queryClient);
+          setStatusCode(200);
+          setRowID("");
+          setStatusLoading(false);
+          onSetMessageId(
+            connection.status === "active" ? "tables.connection.disabled.text" : "tables.connection.enabled.text"
+          );
+        } catch (err) {
+          setRowID("");
+          setStatusLoading(false);
+          const responseStatus = err.response.status;
+          setStatusCode(responseStatus);
+        }
       }
     },
     [changeStatus, connections, queryClient]
@@ -102,6 +97,7 @@ const ConnectionsTable: React.FC<IProps> = ({ connections, onSetMessageId }) => 
 
   return (
     <Content>
+      <UpdateStatusError statusCode={statusCode} />
       <ConnectionTable
         data={data}
         onClickRow={clickRow}

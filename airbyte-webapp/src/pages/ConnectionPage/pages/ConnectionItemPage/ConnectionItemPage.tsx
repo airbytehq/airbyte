@@ -1,7 +1,7 @@
 import React, { Suspense, useState } from "react";
 import { Navigate, Route, Routes, useParams } from "react-router-dom";
 
-import { LoadingPage, MainPageWithScroll } from "components";
+import { LoadingPage } from "components"; // MainPageWithScroll
 import MessageBox from "components/base/MessageBox";
 import HeadTitle from "components/HeadTitle";
 
@@ -11,7 +11,6 @@ import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useAnalyticsService, useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useGetConnection } from "hooks/services/useConnectionHook";
 // import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/components/TransformationView";
-
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 
@@ -81,73 +80,58 @@ const ConnectionItemPage: React.FC = () => {
   return (
     <>
       <MessageBox message={messageId} onClose={() => setMessageId("")} type="info" position="center" />
-      <MainPageWithScroll
-        withPadding
-        headTitle={
-          <HeadTitle
-            titles={[
-              { id: "sidebar.connections" },
-              {
-                id: "connection.fromTo",
-                values: {
-                  source: source.name,
-                  destination: destination.name,
-                },
-              },
-            ]}
+      <HeadTitle
+        titles={[
+          { id: "connection.pageTitle" },
+          {
+            id: "connection.fromTo",
+            values: {
+              source: source.name,
+              destination: destination.name,
+            },
+          },
+        ]}
+      />
+      <ConnectionPageTitle
+        source={source}
+        destination={destination}
+        connection={connection}
+        currentStep={currentStep}
+        onStatusUpdating={setStatusUpdating}
+        onSync={onSync}
+        disabled={disabled}
+        lastSyncTime={lastSyncTime}
+      />
+      <Suspense fallback={<LoadingPage />}>
+        <Routes>
+          <Route
+            path={ConnectionSettingsRoutes.STATUS}
+            element={
+              <StatusView
+                onOpenMessageBox={onOpenMessageBox}
+                connection={connection}
+                isStatusUpdating={isStatusUpdating}
+                isSync={isSync}
+                afterSync={afterSync}
+                getLastSyncTime={getLastSyncTime}
+              />
+            }
           />
-        }
-        // pageTitle={
-        //   //   <ConnectionPageTitle
-        //   //     source={source}
-        //   //     destination={destination}
-        //   //     connection={connection}
-        //   //     currentStep={currentStep}
-        //   //     onStatusUpdating={setStatusUpdating}
-        //   //   />
-        // }
-      >
-        <ConnectionPageTitle
-          source={source}
-          destination={destination}
-          connection={connection}
-          currentStep={currentStep}
-          onStatusUpdating={setStatusUpdating}
-          onSync={onSync}
-          disabled={disabled}
-          lastSyncTime={lastSyncTime}
-        />
-        <Suspense fallback={<LoadingPage />}>
-          <Routes>
-            <Route
-              path={ConnectionSettingsRoutes.STATUS}
-              element={
-                <StatusView
-                  onOpenMessageBox={onOpenMessageBox}
-                  connection={connection}
-                  isStatusUpdating={isStatusUpdating}
-                  isSync={isSync}
-                  afterSync={afterSync}
-                  getLastSyncTime={getLastSyncTime}
-                />
-              }
-            />
-            <Route
-              path={ConnectionSettingsRoutes.CONFIGURATIONS}
-              element={<ReplicationView onAfterSaveSchema={onAfterSaveSchema} connectionId={connectionId} />}
-            />
-            {/* <Route
+          <Route
+            path={ConnectionSettingsRoutes.CONFIGURATIONS}
+            element={<ReplicationView onAfterSaveSchema={onAfterSaveSchema} connectionId={connectionId} />}
+          />
+          {/* <Route
             path={ConnectionSettingsRoutes.TRANSFORMATION}
             element={<TransformationView connection={connection} />}
           /> */}
-            <Route
-              path={ConnectionSettingsRoutes.DANGERZONE}
-              element={isConnectionDeleted ? <Navigate replace to=".." /> : <SettingsView connection={connection} />}
-            />
-            <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace />} />
-          </Routes>
-        </Suspense>
-      </MainPageWithScroll>
+          <Route
+            path={ConnectionSettingsRoutes.DANGERZONE}
+            element={isConnectionDeleted ? <Navigate replace to=".." /> : <SettingsView connection={connection} />}
+          />
+          <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace />} />
+        </Routes>
+      </Suspense>
     </>
   );
 };

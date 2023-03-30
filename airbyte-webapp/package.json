@@ -24,6 +24,7 @@
     "validate-links": "ts-node --skip-project ./scripts/validate-links.ts"
   },
   "dependencies": {
+    "@emotion/styled": "^11.10.6",
     "@floating-ui/react-dom": "^1.0.0",
     "@fortawesome/fontawesome-svg-core": "^6.1.1",
     "@fortawesome/free-brands-svg-icons": "^6.1.1",
@@ -32,6 +33,8 @@
     "@fortawesome/react-fontawesome": "^0.1.18",
     "@headlessui/react": "^1.6.5",
     "@monaco-editor/react": "^4.4.5",
+    "@mui/material": "^5.11.14",
+    "@mui/styled-engine-sc": "^5.11.11",
     "@react-oauth/google": "^0.5.1",
     "@sentry/react": "^6.19.6",
     "@sentry/tracing": "^6.19.6",

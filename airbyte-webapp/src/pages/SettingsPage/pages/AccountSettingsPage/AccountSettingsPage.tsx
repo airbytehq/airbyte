@@ -11,23 +11,20 @@ import useRouter from "hooks/useRouter";
 import { Sidebar } from "./components";
 // import AccountPage from "./pages/AccountPage";
 // import PasswordPage from "./pages/PasswordPage";
-
 import LanguagePage from "./pages/LanguagePage";
-// import NotificationPage from "./pages/NotificationPage";
+import NotificationPage from "./pages/NotificationPage";
 
 const Container = styled.div`
   width: 100%;
-  height: 100%;
   border: 1px solid #eff0f5;
   border-radius: 6px;
   display: flex;
-  flex-direction: row;
-  align-items: flex-start;
 `;
 
 const ContentContainer = styled.div`
-  padding: 50px 100px;
+  padding: 20px 30px;
   width: 100%;
+  min-height: 490px;
 `;
 
 export const AccountSettingsRoute = {
@@ -46,11 +43,11 @@ const AccountSettingsPage: React.FC = () => {
       name: <FormattedMessage id="settings.accountSetting.language" />,
       component: <LanguagePage />,
     },
-    // {
-    //   path: `${AccountSettingsRoute.Notifications}`,
-    //   name: <FormattedMessage id="settings.accountSetting.notifications" />,
-    //   component: <NotificationPage />,
-    // },
+    {
+      path: `${AccountSettingsRoute.Notifications}`,
+      name: <FormattedMessage id="settings.accountSetting.notifications" />,
+      component: <NotificationPage />,
+    },
     // {
     //   path: `${AccountSettingsRoute.Account}`,
     //   name: <FormattedMessage id="settings.accountSetting.account" />,

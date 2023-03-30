@@ -48,6 +48,8 @@ const Container = styled.div`
   width: 100%;
   height: 100%;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 `;
 
 const TabContainer = styled.div`

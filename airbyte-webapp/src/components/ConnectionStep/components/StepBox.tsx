@@ -53,8 +53,8 @@ export const StepLine = styled.div<{
 `;
 
 const Image = styled.img`
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   display: inline-block;
   margin-right: 12px;
 `;

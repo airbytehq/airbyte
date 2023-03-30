@@ -8,7 +8,14 @@
     "plugin:css-modules/recommended",
     "plugin:jsx-a11y/recommended"
   ],
-  "plugins": ["react", "@typescript-eslint", "prettier", "unused-imports", "css-modules", "jsx-a11y"],
+  "plugins": [
+    "react",
+    "@typescript-eslint",
+    "prettier",
+    "unused-imports",
+    "css-modules",
+    "jsx-a11y"
+  ],
   "parserOptions": {
     "ecmaVersion": 2020,
     "sourceType": "module",
@@ -19,11 +26,26 @@
   "rules": {
     "jsx-a11y/label-has-associated-control": "error",
     "curly": "warn",
-    "css-modules/no-undef-class": ["error", { "camelCase": true }],
-    "css-modules/no-unused-class": ["error", { "camelCase": true }],
+    "css-modules/no-undef-class": [
+      "error",
+      {
+        "camelCase": true
+      }
+    ],
+    "css-modules/no-unused-class": [
+      "error",
+      {
+        "camelCase": true
+      }
+    ],
     "dot-location": "warn",
     "eqeqeq": "error",
-    "prettier/prettier": "warn",
+    "prettier/prettier": [
+      "warn",
+      {
+        "endOfLine": "auto"
+      }
+    ],
     "unused-imports/no-unused-imports": "warn",
     "no-else-return": "warn",
     "no-lonely-if": "warn",
@@ -32,20 +54,50 @@
     "no-useless-computed-key": "warn",
     "no-useless-return": "warn",
     "no-var": "warn",
-    "object-shorthand": ["warn", "always"],
+    "object-shorthand": [
+      "warn",
+      "always"
+    ],
     "prefer-arrow-callback": "warn",
     "prefer-const": "warn",
-    "prefer-destructuring": ["warn", { "AssignmentExpression": { "array": true } }],
+    "prefer-destructuring": [
+      "warn",
+      {
+        "AssignmentExpression": {
+          "array": true
+        }
+      }
+    ],
     "prefer-object-spread": "warn",
     "prefer-template": "warn",
-    "spaced-comment": ["warn", "always", { "markers": ["/"] }],
+    "spaced-comment": [
+      "warn",
+      "always",
+      {
+        "markers": [
+          "/"
+        ]
+      }
+    ],
     "yoda": "warn",
     "import/order": [
       "warn",
       {
         "newlines-between": "always",
-        "groups": ["type", "builtin", "external", "internal", ["parent", "sibling"], "index"],
-        "pathGroupsExcludedImportTypes": ["builtin"],
+        "groups": [
+          "type",
+          "builtin",
+          "external",
+          "internal",
+          [
+            "parent",
+            "sibling"
+          ],
+          "index"
+        ],
+        "pathGroupsExcludedImportTypes": [
+          "builtin"
+        ],
         "pathGroups": [
           {
             "pattern": "components{/**,}",
@@ -63,7 +115,12 @@
         }
       }
     ],
-    "@typescript-eslint/array-type": ["warn", { "default": "array-simple" }],
+    "@typescript-eslint/array-type": [
+      "warn",
+      {
+        "default": "array-simple"
+      }
+    ],
     "@typescript-eslint/ban-ts-comment": [
       "warn",
       {
@@ -71,8 +128,14 @@
       }
     ],
     "@typescript-eslint/ban-types": "warn",
-    "@typescript-eslint/consistent-indexed-object-style": ["warn", "record"],
-    "@typescript-eslint/consistent-type-definitions": ["warn", "interface"],
+    "@typescript-eslint/consistent-indexed-object-style": [
+      "warn",
+      "record"
+    ],
+    "@typescript-eslint/consistent-type-definitions": [
+      "warn",
+      "interface"
+    ],
     "@typescript-eslint/no-unused-vars": "warn",
     "react/function-component-definition": [
       "warn",
@@ -84,13 +147,20 @@
     "react/jsx-boolean-value": "warn",
     "react/jsx-curly-brace-presence": "warn",
     "react/jsx-fragments": "warn",
-    "react/jsx-no-useless-fragment": ["warn", { "allowExpressions": true }],
+    "react/jsx-no-useless-fragment": [
+      "warn",
+      {
+        "allowExpressions": true
+      }
+    ],
     "react/self-closing-comp": "warn"
   },
   "parser": "@typescript-eslint/parser",
   "overrides": [
     {
-      "files": ["scripts/**/*"],
+      "files": [
+        "scripts/**/*"
+      ],
       "rules": {
         "@typescript-eslint/no-var-requires": "off"
       }

@@ -1,26 +1,20 @@
 import React, { useState } from "react";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { DropDown, LoadingButton, DropDownRow } from "components";
+import { LoadingButton } from "components";
 import { Separator } from "components/Separator";
 
 import { useUser } from "core/AuthContext";
-import { LOCALES } from "locales";
 import { useUserAsyncAction } from "services/users/UsersService";
+
+import { LanguageDropdown } from "./components/LanguageDropdown";
 
 const PageContainer = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
-`;
-
-const DDLabel = styled.div`
-  font-style: normal;
-  font-weight: 500;
-  font-size: 13px;
-  line-height: 20px;
-  color: #374151;
+  padding: 30px 70px;
 `;
 
 const ChangeBtnContainer = styled.div`
@@ -32,12 +26,6 @@ const ChangeBtnContainer = styled.div`
 `;
 
 const LanguagePage: React.FC = () => {
-  const { formatMessage } = useIntl();
-  const languages: DropDownRow.IDataItem[] = [
-    { label: formatMessage({ id: "English" }), value: LOCALES.ENGLISH },
-    { label: formatMessage({ id: "简体中文" }), value: LOCALES.CHINESE_SIMPLIFIED },
-  ];
-
   const { user, updateUserLang } = useUser();
   const { onUpdateLang } = useUserAsyncAction();
 
@@ -61,15 +49,10 @@ const LanguagePage: React.FC = () => {
 
   return (
     <PageContainer>
-      <DDLabel>
-        <FormattedMessage id="settings.language.dropdownLabel" />
-      </DDLabel>
-      <DropDown
-        $withBorder
-        $background="white"
-        options={languages}
+      <LanguageDropdown
+        labelId="settings.language.dropdownLabel"
         value={language}
-        onChange={(option: DropDownRow.IDataItem) => {
+        onChange={(option) => {
           setLanguage((prevState) => {
             if (prevState !== option.value) {
               setIsUpdated(true);

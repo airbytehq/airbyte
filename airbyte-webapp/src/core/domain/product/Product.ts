@@ -7,3 +7,11 @@ export interface ProductItem {
 export interface ProductItemsList {
   data: ProductItem[];
 }
+
+export interface ProductOptionItem {
+  id?: string;
+  itemName?: string;
+  value: number;
+  label?: string;
+  price: string;
+}

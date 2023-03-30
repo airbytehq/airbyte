@@ -1,15 +1,17 @@
 import React from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { LoadingButton } from "components";
+import { LoadingButton, Button } from "components";
 import { Separator } from "components/Separator";
 
 import { useUser } from "core/AuthContext";
 import { getPaymentStatus, PAYMENT_STATUS } from "core/Constants/statuses";
 
+import { Mailto } from "./Mailto";
+
 interface IProps {
-  price?: number;
+  price?: string;
   selectPlanBtnDisability: boolean;
   paymentLoading: boolean;
   onSelectPlan?: () => void;
@@ -49,31 +51,53 @@ const Message = styled.div`
 
 const ProfessionalCell: React.FC<IProps> = ({ price = 0, selectPlanBtnDisability, paymentLoading, onSelectPlan }) => {
   const { user } = useUser();
+  const { formatMessage } = useIntl();
+
   return (
     <Container>
       <PricingContainer>
-        <Price>${price}</Price>&nbsp;
-        <PerMonthText>
-          /<FormattedMessage id="feature.cell.professional.perMonth" />
-        </PerMonthText>
+        {price === "custom" ? (
+          <Price>
+            <FormattedMessage id="feature.cell.professional.custom.pricing" />
+          </Price>
+        ) : (
+          <>
+            <Price>${price}</Price>&nbsp;
+            <PerMonthText>
+              /<FormattedMessage id="feature.cell.professional.perMonth" />
+            </PerMonthText>
+          </>
+        )}
       </PricingContainer>
       <Separator />
       <Message>
         <FormattedMessage id="feature.cell.professional.message" />
       </Message>
       <Separator />
-      <LoadingButton
-        full
-        size="lg"
-        onClick={onSelectPlan}
-        disabled={
-          ((price > 0 ? false : true) || selectPlanBtnDisability) &&
-          getPaymentStatus(user.status) !== PAYMENT_STATUS.Pause_Subscription
-        }
-        isLoading={paymentLoading}
-      >
-        <FormattedMessage id="feature.cell.professional.btnText" />
-      </LoadingButton>
+      {price === "custom" ? (
+        <Mailto
+          email={formatMessage({ id: "daspire.support.mail" })}
+          subject={formatMessage({ id: "feature.cell.professional.contact.sales.btn" })}
+          body={formatMessage({ id: "feature.cell.professional.mailBody" })}
+        >
+          <Button full size="lg">
+            <FormattedMessage id="feature.cell.professional.contact.sales.btn" />
+          </Button>
+        </Mailto>
+      ) : (
+        <LoadingButton
+          full
+          size="lg"
+          onClick={onSelectPlan}
+          disabled={
+            ((Number(price) > 0 ? false : true) || selectPlanBtnDisability) &&
+            getPaymentStatus(user.status) !== PAYMENT_STATUS.Pause_Subscription
+          }
+          isLoading={paymentLoading}
+        >
+          <FormattedMessage id="feature.cell.professional.select.btn" />
+        </LoadingButton>
+      )}
     </Container>
   );
 };

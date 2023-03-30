@@ -4,7 +4,6 @@ import styled from "styled-components";
 import { Button } from "components";
 
 import { StartIcon, PrevIcon, NextIcon, EndIcon } from "./Icons";
-
 interface IProps {
   pages: number;
   value?: number;
@@ -14,6 +13,8 @@ interface IProps {
 interface ButtonProps {
   isSelected?: boolean;
   buttonType?: "start" | "prev" | "page" | "next" | "end";
+  clickable?: boolean;
+  disabled?: boolean;
 }
 
 const getBorderRadius = (props: ButtonProps): string => {
@@ -40,6 +41,15 @@ const getMargin = (props: ButtonProps): string => {
   return "0";
 };
 
+const getBackgroundColor = (props: ButtonProps): string => {
+  if (props.disabled) {
+    return "#E5E7EB";
+  } else if (props.isSelected) {
+    return "#EEF2FF";
+  }
+  return "#ffffff";
+};
+
 const Container = styled.div`
   display: flex;
   flex-direction: row;
@@ -49,7 +59,7 @@ const Container = styled.div`
 const PageButton = styled(Button)<ButtonProps>`
   min-width: 40px;
   height: 34px;
-  background-color: ${({ theme, isSelected }) => (isSelected ? "#EEF2FF" : theme.white)};
+  background-color: ${(props) => getBackgroundColor(props)};
   border-top: 1px solid ${({ isSelected }) => (isSelected ? "#6366F1" : "#D1D5DB")};
   border-bottom: 1px solid ${({ isSelected }) => (isSelected ? "#6366F1" : "#D1D5DB")};
   border-left: 1px solid ${({ isSelected }) => (isSelected ? "#6366F1" : "#D1D5DB")};
@@ -57,9 +67,11 @@ const PageButton = styled(Button)<ButtonProps>`
   color: ${({ theme, isSelected }) => (isSelected ? "#6366F1" : theme.textColor)};
   border-radius: ${(props) => getBorderRadius(props)};
   margin: ${(props) => getMargin(props)};
+  pointer-events: ${({ clickable }) => (clickable ? "none" : "all")};
 `;
 
 export const Pagination: React.FC<IProps> = ({ pages, value, onChange }) => {
+  const totalPage = Math.ceil(pages);
   const formPages = (numberOfPages: number): number[] => {
     const myPages = [];
     for (let index = 0; index < numberOfPages; index++) {
@@ -95,9 +107,68 @@ export const Pagination: React.FC<IProps> = ({ pages, value, onChange }) => {
   const onStart = () => setCurrentPage(1);
 
   const onEnd = () => setCurrentPage(formPages(pages).at(-1) as number);
-  if (pages <= 1) {
+
+  if (totalPage <= 1) {
     return null;
   }
+
+  const renderPageNumbers = () => {
+    const pageNumbers = [];
+    if (totalPage <= 10) {
+      for (let i = 1; i <= totalPage; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      let left = currentPage - 3;
+      let right = currentPage + 3;
+
+      if (left < 2) {
+        left = 1;
+        right = 7;
+      } else if (right > totalPage) {
+        left = totalPage - 6;
+        right = totalPage;
+      } else if (right === totalPage - 2) {
+        left = left + 2;
+      } else if (right === totalPage - 1) {
+        left = left + 1;
+      }
+
+      for (let i = left; i <= right; i++) {
+        pageNumbers.push(i);
+      }
+
+      if (left > 3 && right >= totalPage - 2) {
+        pageNumbers.unshift("...");
+        pageNumbers.unshift(2);
+        pageNumbers.unshift(1);
+      }
+
+      if (right < totalPage - 2) {
+        pageNumbers.push("...");
+        pageNumbers.push(totalPage - 1);
+        pageNumbers.push(totalPage);
+      } else if (right === totalPage - 2) {
+        pageNumbers.push(totalPage - 1);
+        pageNumbers.push(totalPage);
+      } else if (right === totalPage - 1) {
+        pageNumbers.push(totalPage);
+      }
+    }
+
+    return pageNumbers.map((page, index) => (
+      <PageButton
+        isSelected={page === currentPage}
+        clickable={typeof page === "string"}
+        onClick={() => typeof page === "number" && setCurrentPage(page)}
+        key={index}
+        buttonType="page"
+      >
+        {page}
+      </PageButton>
+    ));
+  };
+
   return (
     <Container>
       <PageButton onClick={onStart} buttonType="start">
@@ -106,11 +177,12 @@ export const Pagination: React.FC<IProps> = ({ pages, value, onChange }) => {
       <PageButton onClick={onPrev} buttonType="prev">
         <PrevIcon />
       </PageButton>
-      {formPages(pages).map((page) => (
+      {/* {formPages(pages).map((page) => (
         <PageButton isSelected={page === currentPage} onClick={() => setCurrentPage(page)} buttonType="page">
           {page}
         </PageButton>
-      ))}
+      ))} */}
+      {renderPageNumbers()}
       <PageButton onClick={onNext} buttonType="next">
         <NextIcon />
       </PageButton>

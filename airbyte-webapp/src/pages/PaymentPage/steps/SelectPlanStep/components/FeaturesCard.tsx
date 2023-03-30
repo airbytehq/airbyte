@@ -2,13 +2,12 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-// import { Card } from "components";
 import { DashIcon } from "components/icons/DashIcon";
 import { TickIcon } from "components/icons/TickIcon";
 import { Separator } from "components/Separator";
 import { Row, Cell } from "components/SimpleTableComponents";
 
-import { ProductItem, ProcessedPackageMap } from "core/domain/product";
+import { ProductOptionItem, ProcessedPackageMap } from "core/domain/product";
 
 import EnterpriseCell from "./EnterpriseCell";
 import ProfessionalCell from "./ProfessionalCell";
@@ -16,7 +15,7 @@ import ProfessionalCell from "./ProfessionalCell";
 interface IProps {
   onSelectPlan?: () => void;
   selectPlanBtnDisability: boolean;
-  product?: ProductItem;
+  product?: ProductOptionItem;
   paymentLoading: boolean;
   packagesMap: ProcessedPackageMap;
 }
@@ -68,7 +67,6 @@ const FeaturesCard: React.FC<IProps> = ({
   packagesMap,
 }) => {
   return (
-    // <Card withPadding roundedBottom>
     <CardContainer>
       <Row borderBottom="1px solid #E5E7EB">
         <HeaderCell>
@@ -155,7 +153,6 @@ const FeaturesCard: React.FC<IProps> = ({
         </FeatureBodyRow>
       ))}
     </CardContainer>
-    // </Card>
   );
 };
 

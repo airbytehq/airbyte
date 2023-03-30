@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { BigButton, ButtonRows } from "components/base/Button/BigButton";
 import { ConnectionStep } from "components/ConnectionStep";
 import DefinitionCard from "components/DataPanel";
+import HeadTitle from "components/HeadTitle";
 
 import { Action, Namespace } from "core/analytics";
 import { Connector, ConnectorDefinition } from "core/domain/connector";
@@ -21,6 +22,7 @@ export interface ButtonItems {
 const Container = styled.div`
   max-width: 758px;
   margin: 0 auto 40px auto;
+  flex: 1;
 `;
 
 const hasSourceDefinitionId = (state: unknown): state is { sourceDefinitionId: string } => {
@@ -64,6 +66,7 @@ const SelectNewSourceCard: React.FC = () => {
   };
   return (
     <>
+      <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />
       <ConnectionStep lightMode type="source" />
       <Container>
         <DefinitionCard

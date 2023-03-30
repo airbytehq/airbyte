@@ -16,9 +16,6 @@ import SourceCopy from "./components/SourceCopy";
 
 const Container = styled.div`
   padding: 0px 0px 0px 70px;
-  // width: 100%;
-  // height: calc(100vh - 70px);
-  // box-sizing: border-box;
 `;
 
 const CopySourcePage: React.FC = () => {
@@ -42,7 +39,6 @@ const CopySourcePage: React.FC = () => {
   return (
     <>
       <ConnectionStep lightMode type="source" activeStep={CreateStepTypes.CREATE_SOURCE} />
-
       <ConnectorDocumentationWrapper>
         <Container>
           {currentStep === CreateStepTypes.TEST_CONNECTION && (

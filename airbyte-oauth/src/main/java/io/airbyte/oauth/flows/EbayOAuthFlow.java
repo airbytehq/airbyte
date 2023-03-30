@@ -27,11 +27,13 @@ public class EbayOAuthFlow extends BaseOAuth2Flow {
   public EbayOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
     super.setHeaderAuth(true);
+    super.setMultiParameterAuth(true);
   }
 
   public EbayOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
     super.setHeaderAuth(true);
+    super.setMultiParameterAuth(true);
   }
 
   /**
@@ -54,6 +56,7 @@ public class EbayOAuthFlow extends BaseOAuth2Flow {
           .addParameter("client_id", clientId)
           .addParameter("scope", "https://api.ebay.com/oauth/api_scope https://api.ebay.com/oauth/api_scope/sell.marketing.readonly https://api.ebay.com/oauth/api_scope/sell.marketing https://api.ebay.com/oauth/api_scope/sell.inventory.readonly https://api.ebay.com/oauth/api_scope/sell.inventory https://api.ebay.com/oauth/api_scope/sell.account.readonly https://api.ebay.com/oauth/api_scope/sell.account https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly https://api.ebay.com/oauth/api_scope/sell.fulfillment https://api.ebay.com/oauth/api_scope/sell.analytics.readonly https://api.ebay.com/oauth/api_scope/sell.finances https://api.ebay.com/oauth/api_scope/sell.payment.dispute https://api.ebay.com/oauth/api_scope/commerce.identity.readonly https://api.ebay.com/oauth/api_scope/commerce.notification.subscription https://api.ebay.com/oauth/api_scope/commerce.notification.subscription.readonly")
           .addParameter("response_type", "code")
+          .addParameter("state", getState())
           .addParameter("redirect_uri", redirectUrl)
           .build().toString();
     } catch (final URISyntaxException e) {

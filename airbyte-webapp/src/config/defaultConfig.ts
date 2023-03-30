@@ -3,8 +3,8 @@ import { Config } from "./types";
 
 const defaultConfig: Config = {
   links,
-  segment: { enabled: true, token: "" },
-  healthCheckInterval: 20000,
+  segment: { enabled: false, token: "" },
+  healthCheckInterval: 5000,
   userDetailInterval: 5000,
   version: "dev",
   // TODO: hard coding this just to check the deployment issue.

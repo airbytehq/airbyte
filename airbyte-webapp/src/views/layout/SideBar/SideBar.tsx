@@ -1,5 +1,4 @@
-import { faSignOut, faHome, faGear, faInbox, faDatabase } from "@fortawesome/free-solid-svg-icons";
-// import {  } from "@fortawesome/free-solid-svg-icons";
+import { faHome, faGear, faInbox, faDatabase } from "@fortawesome/free-solid-svg-icons";
 // import { faGear } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
@@ -9,12 +8,16 @@ import { NavLink } from "react-router-dom";
 import styled from "styled-components";
 
 import { Link } from "components";
-// import Version from "components/Version";
+import { DocumentationArrowIcon } from "components/icons/DocumentationArrowIcon";
+import { DocumentationIcon } from "components/icons/DocumentationIcon";
 
+import { links } from "config/links";
+// import Version from "components/Version";
 // import { useConfig } from "config";
 // import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useUser } from "core/AuthContext";
 import useRouter from "hooks/useRouter";
+import { LOCALES } from "locales";
 
 import { RoutePaths } from "../../../pages/routePaths";
 // import ConnectionsIcon from "./components/ConnectionsIcon";
@@ -26,20 +29,6 @@ import { RoutePaths } from "../../../pages/routePaths";
 // import SourceIcon from "./components/SourceIcon";
 // import { NotificationIndicator } from "./NotificationIndicator";
 import styles from "./SideBar.module.scss";
-
-const Bar = styled.nav`
-  width: 300px;
-  min-width: 65px;
-  height: 100%;
-  background: ${({ theme }) => theme.white};
-  padding: 23px 0px 15px 0px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-  z-index: 9999;
-`;
 
 const Menu = styled.ul`
   padding: 0;
@@ -84,40 +73,6 @@ const Logo = styled.img`
   height: auto;
 `;
 
-const LogOut = styled.div`
-  width: 100%;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  // justify-content: center;
-  color: #6b6b6f;
-  margin: 20px 0 40px 0;
-  padding-left: 54px;
-  &:hover {
-    cursor: pointer;
-    color: #4f46e5;
-  }
-`;
-
-// const ButtonCenter = styled.div`
-//   display: flex;
-//   flex-direction: column;
-//   justify-content: center;
-//   align-items: center;
-// `;
-
-// const Button = styled.button`
-//   border: none;
-//   border-radius: 8px;
-//   margin-bottom: 50px;
-//   padding: 15px 30px;
-//   display: flex;
-//   flex-direction: row;
-//   justify-content: center;
-//   align-items: center;
-//   background-color: #eae9ff;
-// `;
-
 const MenuItemIcon = styled(FontAwesomeIcon)`
   font-size: 16px;
   line-height: 16px;
@@ -129,13 +84,13 @@ const UserDetail = styled.div`
   font-size: 12px;
   line-height: 15px;
   color: #aaaaaa;
+  margin-top: 40px;
 `;
 
-// const SettingIcon = styled(FontAwesomeIcon)`
-//   font-size: 21px;
-//   line-height: 21px;
-//   color: black;
-// `;
+const DocumentationArrowIconContainer = styled.div`
+  display: block;
+  margin-left: 14px;
+`;
 
 export const useCalculateSidebarStyles = () => {
   const { location } = useRouter();
@@ -173,10 +128,10 @@ export const getPopoutStyles = (isOpen?: boolean) => {
 const SideBar: React.FC = () => {
   // const config = useConfig();
   // const workspace = useCurrentWorkspace();
-  const { removeUser, user } = useUser();
-  const { push } = useRouter();
+  const { user } = useUser();
+  const docsLink = user.lang === LOCALES.ENGLISH ? links.docsLink : `${links.docsLink}/${user.lang}/`;
   return (
-    <Bar>
+    <div className={styles.sidebar}>
       <div>
         <Link to="" $clear>
           <LogoContainer>
@@ -293,19 +248,20 @@ const SideBar: React.FC = () => {
             </Text>
           </NavLink>
         </MenuItem>
-        <LogOut
-          onClick={() => {
-            removeUser!();
-            push(`/${RoutePaths.Signin}`);
-          }}
+        <a
+          href={docsLink}
+          target="_blank"
+          rel="noreferrer"
+          className={useCalculateSidebarItemStyles(RoutePaths.Documentation)}
         >
-          <div>
-            <MenuItemIcon icon={faSignOut} />
-          </div>
+          <DocumentationIcon width={16} height={16} />
           <Text>
-            <FormattedMessage id="sidebar.DaspireSignOut" />
+            <FormattedMessage id="sidebar.documentation" />
           </Text>
-        </LogOut>
+          <DocumentationArrowIconContainer>
+            <DocumentationArrowIcon height={11} width={11} />
+          </DocumentationArrowIconContainer>
+        </a>
         {/* <li>
           <ButtonCenter>
             <Button>
@@ -327,7 +283,7 @@ const SideBar: React.FC = () => {
           {`(${user.account})`}
         </UserDetail>
       </Menu>
-    </Bar>
+    </div>
   );
 };
 

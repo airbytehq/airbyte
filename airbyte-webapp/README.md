@@ -33,6 +33,48 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2023.03.29
+1. BugFixed：plans run out modal error message
+2. Change BillingWarningBanner component style
+3. Change the sign out icon
+4. Update translation
+#### 2023.03.28
+1. Add Fullstory snippet to webapp
+#### 2023.03.27
+1. Link to documentation(Sidebar)
+#### 2023.03.24
+1. Optimization when plan runs out(connection/config page/add modal)
+#### 2023.03.23
+1. UI Too many paginations(connection page)
+#### 2023.03.22
+1. Connection config update
+2. UI when there is no source/destination
+#### 2023.03.21
+1. Indicate integration authentication status
+2. Center the form in the Sign in page
+3. Fix the select/breadcuumbs text is too long and not hidden
+#### 2023.03.17
+1. UI related changes - stream table
+#### 2023.03.16
+1. UI related changes - add new user
+2. UI related changes - error message popup
+3. Readjust ConnectorDocumentationLayout height
+#### 2023.03.15
+1. Sign up / sign in page responsiveness
+2. UI related changes - add new user
+#### 2023.03.14
+1. Add a source page UI optimization
+2. UI related changes - source/destination testing page
+#### 2023.03.13
+1. Frontend translation update
+2. UI related changes - config page UI(create_connection bgColor)
+#### 2023.03.10
+1. UI related changes - change plan page(add back button)
+2. UI related changes - modal size(change CancelPlanModal/DeleteUserModal/ChangeRoleModal)
+#### 2023.03.09
+1. Sign out confirmation message.
+2. UI related changes - sign out button location
+3. UI related changes - add/edit source/destination page (Change the phrase to: Expand this form to continue setting up your integration )
 #### 2023.03.08
 1. Overall size improvements
 #### 2023.03.07

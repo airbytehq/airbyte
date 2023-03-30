@@ -46,7 +46,7 @@ const ButtonsContainer = styled.div`
 `;
 
 const ConfirmBtn = styled(LoadingButton)`
-  background-color: ${({ theme }) => theme.white};
+  //  background-color: ${({ theme }) => theme.white};
   color: #6b6b6f;
   border: 1px solid #d1d5db;
 `;
@@ -73,20 +73,22 @@ export const CancelPlanModal: React.FC<IProps> = ({ onClose, onConfirm, onNotNow
           </ModalHeading>
           <ModalBodyText>
             <FormattedMessage
-              id="subscription.cancelSubscriptionModal.desc1"
+              id="subscription.cancelSubscriptionModal.content"
               values={{
                 expiryDate: (
                   <FormattedDate value={(expiresOn as number) * 1000} day="numeric" month="long" year="numeric" />
                 ),
               }}
             />
-            <br />
-            <FormattedMessage id="subscription.cancelSubscriptionModal.desc2" />
-            <br />
-            <FormattedMessage id="subscription.cancelSubscriptionModal.desc3" />
           </ModalBodyText>
           <ButtonsContainer>
-            <ConfirmBtn size="lg" onClick={onConfirmModal} isLoading={confirmLoading} disabled={confirmLoading}>
+            <ConfirmBtn
+              secondary
+              size="lg"
+              onClick={onConfirmModal}
+              isLoading={confirmLoading}
+              disabled={confirmLoading}
+            >
               <BtnText color="#6B6B6F" hide={confirmLoading}>
                 <FormattedMessage id="cancelSubscription.modal.btn.confirm" />
               </BtnText>

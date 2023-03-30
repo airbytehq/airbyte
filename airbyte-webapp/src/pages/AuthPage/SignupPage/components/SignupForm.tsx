@@ -2,6 +2,7 @@ import { Field, FieldProps, Formik } from "formik";
 import React, { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
+import { theme } from "theme";
 import * as yup from "yup";
 
 import { LabeledInput, Link, LoadingButton } from "components";
@@ -34,7 +35,7 @@ export const FirstNameField: React.FC = () => {
       {({ field, meta }: FieldProps<string>) => (
         <LabeledInput
           {...field}
-          grey
+          labelAdditionLength={0}
           label={<FormattedMessage id="signup.firstName" />}
           placeholder={formatMessage({
             id: "signup.firstName.placeholder",
@@ -56,7 +57,7 @@ export const LastNameField: React.FC = () => {
       {({ field, meta }: FieldProps<string>) => (
         <LabeledInput
           {...field}
-          grey
+          labelAdditionLength={0}
           label={<FormattedMessage id="signup.lastName" />}
           placeholder={formatMessage({
             id: "signup.lastName.placeholder",
@@ -78,7 +79,7 @@ export const CompanyNameField: React.FC = () => {
       {({ field, meta }: FieldProps<string>) => (
         <LabeledInput
           {...field}
-          grey
+          labelAdditionLength={0}
           label={<FormattedMessage id="signup.companyName" />}
           placeholder={formatMessage({
             id: "signup.companyName.placeholder",
@@ -100,7 +101,7 @@ export const EmailField: React.FC<{ label?: React.ReactNode }> = ({ label }) => 
       {({ field, meta }: FieldProps<string>) => (
         <LabeledInput
           {...field}
-          grey
+          labelAdditionLength={0}
           label={label || <FormattedMessage id="signup.Email" />}
           placeholder={formatMessage({
             id: "signup.Email.placeholder",
@@ -122,7 +123,7 @@ export const PasswordField: React.FC<{ label?: React.ReactNode }> = ({ label }) 
       {({ field, meta }: FieldProps<string>) => (
         <LabeledInput
           {...field}
-          grey
+          labelAdditionLength={0}
           label={label || <FormattedMessage id="signup.password" />}
           placeholder={formatMessage({
             id: "signup.password.placeholder",
@@ -144,7 +145,7 @@ export const ConfirmPasswordField: React.FC<{ label?: React.ReactNode }> = ({ la
       {({ field, meta }: FieldProps<string>) => (
         <LabeledInput
           {...field}
-          grey
+          labelAdditionLength={0}
           label={label || <FormattedMessage id="signup.confirmPassword" />}
           placeholder={formatMessage({
             id: "signup.confirmPassword.placeholder",
@@ -221,7 +222,7 @@ export const SignupForm: React.FC = () => {
 
   const config = useConfig();
   return (
-    <>
+    <div className={styles.formContent}>
       <Alert
         message={errorMessage}
         onClose={() => {
@@ -240,7 +241,7 @@ export const SignupForm: React.FC = () => {
         validationSchema={validationSchema}
         onSubmit={async (values) => {
           signUp
-            .create(values)
+            .create(values, user?.lang)
             .then((res: any) => {
               setUser?.(res);
             })
@@ -253,6 +254,18 @@ export const SignupForm: React.FC = () => {
       >
         {({ isValid, dirty, isSubmitting, status }) => (
           <Form className={styles.form}>
+            <div className={styles.title}>
+              <FormattedMessage
+                id="signup.mobile.title"
+                values={{
+                  text: (
+                    <span style={{ color: theme.blue }}>
+                      <FormattedMessage id="signup.List1" />
+                    </span>
+                  ),
+                }}
+              />
+            </div>
             <GoogleAuthBtn buttonText="signup_with" />
             <Separator height="28px" />
             <AuthSeperatorContainer>
@@ -263,20 +276,20 @@ export const SignupForm: React.FC = () => {
               <Line />
             </AuthSeperatorContainer>
             <Separator height="40px" />
-            <RowFieldItem>
+            <RowFieldItem bottom="24">
               <FirstNameField />
               <LastNameField />
             </RowFieldItem>
-            <FieldItem>
+            <FieldItem bottom="24">
               <EmailField />
             </FieldItem>
-            <FieldItem>
+            <FieldItem bottom="24">
               <CompanyNameField />
             </FieldItem>
-            <FieldItem>
+            <FieldItem bottom="24">
               <PasswordField />
             </FieldItem>
-            <FieldItem>
+            <FieldItem bottom="24">
               <ConfirmPasswordField />
             </FieldItem>
             <BottomBlock>
@@ -289,10 +302,10 @@ export const SignupForm: React.FC = () => {
                 values={{
                   termLink: (
                     <Link
+                      $light
                       target="_blank"
                       href={user.lang === LOCALES.ENGLISH ? config.links.enTermsLink : config.links.zhTermsLink}
                       as="a"
-                      $clear
                     >
                       <FormattedMessage id="signup.terms" />
                     </Link>
@@ -302,7 +315,7 @@ export const SignupForm: React.FC = () => {
                       target="_blank"
                       href={user.lang === LOCALES.ENGLISH ? config.links.enPrivacyLink : config.links.zhPrivacyLink}
                       as="a"
-                      $clear
+                      $light
                     >
                       <FormattedMessage id="signup.privacy" />
                     </Link>
@@ -313,6 +326,6 @@ export const SignupForm: React.FC = () => {
           </Form>
         )}
       </Formik>
-    </>
+    </div>
   );
 };

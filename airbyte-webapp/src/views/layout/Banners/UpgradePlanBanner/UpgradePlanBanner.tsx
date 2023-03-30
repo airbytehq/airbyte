@@ -3,27 +3,27 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components";
-import { Separator } from "components/Separator";
 
 import { useUser } from "core/AuthContext";
 import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
 import { getPaymentStatus, PAYMENT_STATUS } from "core/Constants/statuses";
 import useRouter from "hooks/useRouter";
-import { UnauthorizedModal } from "pages/ConnectionPage/pages/AllConnectionsPage/components/UnauthorizedModal";
 import { RoutePaths } from "pages/routePaths";
-import { SettingsRoute } from "pages/SettingsPage/SettingsPage";
 import { useUserPlanDetail } from "services/payments/PaymentsService";
 
-const Container = styled.div`
+import styles from "../banners.module.scss";
+import { UnauthorizedModal } from "./components/UnauthorizedModal";
+
+interface IProps {
+  onBillingPage: () => void;
+}
+
+const Banner = styled.div`
   width: 100%;
-  height: 40px;
-  background-color: #9596a4;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  position: fixed;
-  z-index: 1000;
 `;
 
 const Text = styled.div`
@@ -36,28 +36,28 @@ const Text = styled.div`
   margin-right: 50px;
 `;
 
-export const UpgradePlanBar: React.FC = () => {
+export const UpgradePlanBanner: React.FC<IProps> = ({ onBillingPage }) => {
   const { user } = useUser();
-  const { pathname, push } = useRouter();
+  const { pathname } = useRouter();
   const userPlanDetail = useUserPlanDetail();
   const { expiresTime } = userPlanDetail;
 
   const remainingDaysForFreeTrial = (): number => {
-    const currentDate: any = new Date();
-    const expiryDate: any = new Date(expiresTime * 1000);
-    const diff = expiryDate - currentDate;
+    const currentDate: Date = new Date();
+    const expiryDate: Date = new Date(expiresTime * 1000);
+    const diff = expiryDate.getTime() - currentDate.getTime();
     const diffDays = Math.ceil(diff / (1000 * 60 * 60 * 24));
     return diffDays;
   };
 
-  const isUpgradePlanBar = (): boolean => {
-    let showUpgradePlanBar = false;
+  const isUpgradePlanBanner = (): boolean => {
+    let showUpgradePlanBanner = false;
     if (getPaymentStatus(user.status) === PAYMENT_STATUS.Free_Trial) {
       if (!pathname.split("/").includes(RoutePaths.Payment)) {
-        showUpgradePlanBar = true;
+        showUpgradePlanBanner = true;
       }
     }
-    return showUpgradePlanBar;
+    return showUpgradePlanBanner;
   };
 
   const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
@@ -67,16 +67,16 @@ export const UpgradePlanBar: React.FC = () => {
       getRoleAgainstRoleNumber(user.role) === ROLES.Administrator_Owner ||
       getRoleAgainstRoleNumber(user.role) === ROLES.Administrator
     ) {
-      push(`/${RoutePaths.Settings}/${SettingsRoute.PlanAndBilling}`);
+      onBillingPage();
     } else {
       setIsAuthorized(true);
     }
   };
 
-  if (isUpgradePlanBar()) {
+  if (isUpgradePlanBanner()) {
     return (
       <>
-        <Container>
+        <Banner className={styles.banner}>
           <Text>
             <FormattedMessage
               id={
@@ -88,9 +88,8 @@ export const UpgradePlanBar: React.FC = () => {
           <Button size="m" black onClick={() => onUpgradePlan()}>
             <FormattedMessage id="upgrade.plan.btn" />
           </Button>
-        </Container>
+        </Banner>
         {isAuthorized && <UnauthorizedModal onClose={() => setIsAuthorized(false)} />}
-        <Separator height="40px" />
       </>
     );
   }

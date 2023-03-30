@@ -1,7 +1,7 @@
 import { faGripLinesVertical } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import React, { lazy, Suspense } from "react";
+import React, { lazy, Suspense, useRef, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 import { useWindowSize } from "react-use";
@@ -12,24 +12,22 @@ import { LoadingPage } from "components/LoadingPage";
 import styles from "./ConnectorDocumentationLayout.module.scss";
 import { useDocumentationPanelContext } from "./DocumentationPanelContext";
 
-// .pageContainer {
-//   height: calc(100% - 80px);
-// }
-
-// .panelGrabber {
-//   height: calc(100vh - 80px);
-//   padding: 6px;
-//   display: flex;
-// }
-
-const PageContainer = styled.div`
-  height: calc(100% - 70px);
+const PageContainer = styled.div<{
+  offsetTop: number;
+}>`
+  height: calc(100% - ${({ offsetTop }) => offsetTop}px);
+  // flex:1;
 `;
 
-const PnelGrabber = styled.div`
-  height: calc(100vh - 70px);
+const PnelGrabber = styled.div<{
+  offsetTop: number;
+}>`
+  height: calc(100% - ${({ offsetTop }) => offsetTop}px);
   padding: 6px;
   display: flex;
+  align-items: center;
+  justify-content: center;
+  // flex:1;
 `;
 
 const LazyDocumentationPanel = lazy(() =>
@@ -87,18 +85,25 @@ const RightPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>
 export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
   const { documentationPanelOpen } = useDocumentationPanelContext();
   const screenWidth = useWindowSize().width;
+  const [offsetTop, setOffsetTop] = useState<number>(70);
+
+  const divRef = useRef(null);
+  useEffect(() => {
+    const top: number = divRef.current ? divRef.current?.["offsetTop"] : 0;
+    setOffsetTop(top);
+  }, []);
 
   return (
-    // <div className={styles.pageContainer}>
-    <PageContainer>
+    <PageContainer ref={divRef} offsetTop={offsetTop}>
+      {/* // <PageContainer> className={styles.pageContainer}*/}
       <ReflexContainer orientation="vertical">
         <ReflexElement className={styles.leftPanelStyle} propagateDimensions minSize={150}>
           <LeftPanelContainer>{children}</LeftPanelContainer>
         </ReflexElement>
         {documentationPanelOpen && (
-          <ReflexSplitter style={{ border: 0, background: "rgba(255, 165, 0, 0)" }}>
+          <ReflexSplitter style={{ border: 0, background: "rgba(255, 165, 0, 0)", display: "flex" }}>
             {/* <div className={styles.panelGrabber}> */}
-            <PnelGrabber>
+            <PnelGrabber offsetTop={offsetTop}>
               <FontAwesomeIcon className={styles.grabberHandleIcon} icon={faGripLinesVertical} size="1x" />
               {/* </div> */}
             </PnelGrabber>
@@ -114,7 +119,7 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
           </ReflexElement>
         )}
       </ReflexContainer>
-      {/* </div> */}
+      {/* </PageContainer> */}
     </PageContainer>
   );
 };

@@ -132,7 +132,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
         <HeaderCell ellipsis title={stream.stream?.name || ""}>
           {stream.stream?.name}
         </HeaderCell>
-        <Cell flex={1.5}>
+        <Cell flex={1.5} addWidth="250">
           {mode !== "readonly" ? (
             <SyncSettingsDropdown value={syncSchema} options={availableSyncModes} onChange={onSelectSyncMode} />
           ) : (

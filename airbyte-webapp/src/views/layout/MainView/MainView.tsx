@@ -1,15 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import { theme } from "theme";
 
 import { LoadingPage } from "components";
 import { CreateStepTypes } from "components/ConnectionStep";
 
+// import { useUser } from "core/AuthContext";
+// import { useAuthDetail } from "services/auth/AuthSpecificationService";
+import { useHealth } from "hooks/services/Health";
 import useRouter from "hooks/useRouter";
-import { UpgradePlanBar } from "pages/ConnectionPage/pages/AllConnectionsPage/components/UpgradePlanBar";
 import { RoutePaths } from "pages/routePaths";
+import { SettingsRoute } from "pages/SettingsPage/SettingsPage";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
+import { UpgradePlanBanner, SyncNotificationBanner, BillingWarningBanner } from "views/layout/Banners";
 import SideBar from "views/layout/SideBar";
 
 const MainContainer = styled.div`
@@ -28,6 +32,8 @@ const Content = styled.div<{
   overflow-y: auto;
   width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
 `;
 
 const hasCurrentStep = (state: unknown): state is { currentStep: string } => {
@@ -37,29 +43,54 @@ const hasCurrentStep = (state: unknown): state is { currentStep: string } => {
 };
 
 const MainView: React.FC = (props) => {
-  const { pathname, location } = useRouter();
+  const { healthData } = useHealth();
+  const { usage } = healthData;
+  // const { status } = useAuthDetail();
+  // const { user, updateUserStatus } = useUser();
+  const { pathname, location, push } = useRouter();
+  const [usagePercentage, setUsagePercentage] = useState<number>(0);
   const [isSidebar, setIsSidebar] = useState<boolean>(true);
   const [backgroundColor, setBackgroundColor] = useState<string>(theme.backgroundColor);
 
-  const hasSidebarRoutes: string[] = [
-    RoutePaths.Source,
-    RoutePaths.SelectSource,
-    RoutePaths.Connections,
-    RoutePaths.Status,
-    RoutePaths.SelectConnection,
-    RoutePaths.Destination,
-    RoutePaths.SelectDestination,
-    RoutePaths.UserManagement,
-    RoutePaths.AccountSettings,
-    RoutePaths.PlanAndBilling,
-    RoutePaths.Notifications,
-    RoutePaths.Configurations,
-    RoutePaths.Language,
-  ];
+  // useEffect(() => {
+  //   console.log("TEST: 01 PASS");
+  //   if (status && user.status !== status) {
+  //     console.log("TEST: 02 PASS");
+  //     console.log("====> STATUS <====");
+  //     console.log(status);
+  //     console.log("====> USER.STATUS <====");
+  //     console.log(user.status);
+  //     updateUserStatus?.(status);
+  //   }
+  // }, [status, updateUserStatus, user.status]);
+
+  useEffect(() => {
+    if (usage) {
+      setUsagePercentage(usage * 100);
+    }
+  }, [usage]);
 
   // TODO: not the proper solution but works for now
   // const isSidebar =
   //   !pathname.split("/").includes(RoutePaths.Payment) && !pathname.split("/").includes(RoutePaths.PaymentError);
+  const hasSidebarRoutes: string[] = useMemo(
+    () => [
+      RoutePaths.Source,
+      RoutePaths.SelectSource,
+      RoutePaths.Connections,
+      RoutePaths.Status,
+      RoutePaths.SelectConnection,
+      RoutePaths.Destination,
+      RoutePaths.SelectDestination,
+      RoutePaths.UserManagement,
+      RoutePaths.AccountSettings,
+      RoutePaths.PlanAndBilling,
+      RoutePaths.Notifications,
+      RoutePaths.Configurations,
+      RoutePaths.Language,
+    ],
+    []
+  );
 
   useEffect(() => {
     const pathnames = pathname.split("/");
@@ -91,16 +122,7 @@ const MainView: React.FC = (props) => {
         lastPathName === RoutePaths.SelectConnection
       ) {
         setBackgroundColor("#F8F8FE");
-      }
-      // else if(
-      //   lastPathName === RoutePaths.AccountSettings ||
-      //   lastPathName === RoutePaths.Language ||
-      //   lastPathName === RoutePaths.Notifications  ||
-      //   lastPathName === RoutePaths.PlanAndBilling
-      // ) {
-      //   setBackgroundColor(theme.white);
-      // }
-      else {
+      } else {
         setBackgroundColor(theme.backgroundColor);
       }
     } else {
@@ -108,7 +130,11 @@ const MainView: React.FC = (props) => {
       setBackgroundColor(theme.white);
     }
     setIsSidebar(isSidebarBol);
-  }, [pathname, hasSidebarRoutes]);
+  }, [pathname, hasSidebarRoutes, location.state]);
+
+  const onBillingPage = () => {
+    push(`/${RoutePaths.Settings}/${SettingsRoute.PlanAndBilling}`);
+  };
 
   return (
     <MainContainer>
@@ -116,7 +142,11 @@ const MainView: React.FC = (props) => {
       <Content backgroundColor={backgroundColor}>
         <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
           <React.Suspense fallback={<LoadingPage />}>
-            <UpgradePlanBar />
+            <UpgradePlanBanner onBillingPage={onBillingPage} />
+            {usage !== undefined && usagePercentage > 0 && usagePercentage < 100 && (
+              <SyncNotificationBanner usagePercentage={usagePercentage} onBillingPage={onBillingPage} />
+            )}
+            {usage !== undefined && usagePercentage >= 100 && <BillingWarningBanner onBillingPage={onBillingPage} />}
             {props.children}
           </React.Suspense>
         </ResourceNotFoundErrorBoundary>

@@ -4,26 +4,22 @@ import { FormattedMessage, FormattedDate } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components";
+import { ConfirmationModal } from "components/ConfirmationModal";
 import { CalendarIcon } from "components/icons/CalendarIcon";
 import { Separator } from "components/Separator";
 
 import { useUser } from "core/AuthContext";
 import { getPaymentStatus, PAYMENT_STATUS } from "core/Constants/statuses";
 import { PlanItem, PlanItemTypeEnum } from "core/domain/payment";
+import { useAppNotification } from "hooks/services/AppNotification";
 import { usePrevious } from "hooks/usePrevstate";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
-import { useAuthDetail, useAuthenticationService } from "services/auth/AuthSpecificationService";
+import { useAuthenticationService } from "services/auth/AuthSpecificationService";
 import { useUserPlanDetail, useAsyncAction } from "services/payments/PaymentsService";
 
-import { CancelPlanModal } from "./components/CancelPlanModal";
 import PlanClause from "./components/PlanClause";
 import styles from "./style.module.scss";
-
-interface IProps {
-  setMessageId: React.Dispatch<React.SetStateAction<string>>;
-  setMessageType: React.Dispatch<React.SetStateAction<"info" | "error">>;
-}
 
 const CancelSubscriptionBtn = styled(Button)`
   background-color: ${({ theme }) => theme.white};
@@ -51,27 +47,19 @@ export const convert_M_To_Million = (string: string): string | React.ReactElemen
   return string;
 };
 
-const PlansBillingPage: React.FC<IProps> = ({ setMessageId, setMessageType }) => {
+const PlansBillingPage: React.FC = () => {
+  const { setNotification } = useAppNotification();
   const { push } = useRouter();
   const { user, updateUserStatus } = useUser();
   const { onPauseSubscription } = useAsyncAction();
   const authService = useAuthenticationService();
-  const authDetail = useAuthDetail();
-  const { status } = authDetail;
   const userPlanDetail = useUserPlanDetail();
   const prevUserPlanDetail = usePrevious(userPlanDetail);
 
   useEffect(() => {
-    if (status && user.status !== status) {
-      updateUserStatus?.(status);
-    }
-  }, [status]);
-
-  useEffect(() => {
     if (prevUserPlanDetail?.selectedProduct !== undefined) {
       if (!_.isEqual(userPlanDetail.selectedProduct, prevUserPlanDetail?.selectedProduct)) {
-        setMessageId?.("subscription.plan.update");
-        setMessageType("info");
+        setNotification({ message: "subscription.plan.update", type: "info" });
       }
     }
   }, [prevUserPlanDetail, userPlanDetail]);
@@ -91,8 +79,7 @@ const PlansBillingPage: React.FC<IProps> = ({ setMessageId, setMessageType }) =>
             updateUserStatus?.(4);
             setConfirmLoading(false);
             setToggleCancel(false);
-            setMessageId?.("subscription.cancel.successfull");
-            setMessageType("info");
+            setNotification({ message: "subscription.cancel.successfull", type: "info" });
           })
           .catch(() => {
             setConfirmLoading(false);
@@ -126,7 +113,7 @@ const PlansBillingPage: React.FC<IProps> = ({ setMessageId, setMessageType }) =>
 
   return (
     <>
-      {toggleCancel && (
+      {/* {toggleCancel && (
         <CancelPlanModal
           onClose={toggleCancleSuscriptionModal}
           onConfirm={onCancelSubscription}
@@ -134,7 +121,29 @@ const PlansBillingPage: React.FC<IProps> = ({ setMessageId, setMessageType }) =>
           confirmLoading={confirmLoading}
           expiresOn={userPlanDetail.expiresTime}
         />
+      )} */}
+      {toggleCancel && (
+        <ConfirmationModal
+          title="subscription.cancelSubscriptionModal.title"
+          text="subscription.cancelSubscriptionModal.content"
+          submitButtonText="cancelSubscription.modal.btn.confirm"
+          cancelButtonText="cancelSubscription.modal.btn.notNow"
+          onSubmit={onCancelSubscription}
+          onClose={toggleCancleSuscriptionModal}
+          loading={confirmLoading}
+          contentValues={{
+            expiryDate: (
+              <FormattedDate
+                value={(userPlanDetail.expiresTime as number) * 1000}
+                day="numeric"
+                month="long"
+                year="numeric"
+              />
+            ),
+          }}
+        />
       )}
+
       <div className={styles.container}>
         <div className={styles.header}>
           <CalendarIcon />

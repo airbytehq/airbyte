@@ -9,7 +9,6 @@ import { ConnectionStatus, DestinationRead, SourceRead, WebBackendConnectionRead
 import useRouter from "hooks/useRouter";
 
 import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
-// import ConnectionName from "./ConnectionName";
 import styles from "./ConnectionPageTitle.module.scss";
 import { StatusMainInfo } from "./StatusMainInfo";
 
@@ -84,7 +83,7 @@ const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
           <FormattedMessage id="connection.connectionDeletedView" />
         </InfoBox>
       )}
-      {/* <ConnectionName connection={connection} /> */}
+
       <div className={styles.statusContainer}>
         <StatusMainInfo
           connection={connection}

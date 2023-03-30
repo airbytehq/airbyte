@@ -19,8 +19,9 @@ export interface ButtonItems {
 }
 
 const Container = styled.div`
-  max-width: 858px;
+  max-width: 758px;
   margin: 0 auto 40px auto;
+  flex: 1;
 `;
 
 const hasDestinationDefinitionId = (state: unknown): state is { destinationDefinitionId: string } => {

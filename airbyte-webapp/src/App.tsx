@@ -7,9 +7,11 @@ import { ApiServices } from "core/ApiServices";
 import { AuthContextProvider } from "core/AuthContext";
 import { I18nProvider } from "core/i18n";
 import { ServicesProvider } from "core/servicesProvider";
+import { AppNotificationProvider } from "hooks/services/AppNotification";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { defaultFeatures, FeatureService } from "hooks/services/Feature";
 import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
+import { HealthProvider } from "hooks/services/Health";
 import { ModalServiceProvider } from "hooks/services/Modal";
 import NotificationService from "hooks/services/Notification";
 import { AnalyticsProvider } from "views/common/AnalyticsProvider";
@@ -48,7 +50,11 @@ const Services: React.FC = ({ children }) => (
             <ConfirmationModalService>
               <ModalServiceProvider>
                 <FormChangeTrackerService>
-                  <ApiServices>{children}</ApiServices>
+                  <ApiServices>
+                    <HealthProvider>
+                      <AppNotificationProvider>{children}</AppNotificationProvider>
+                    </HealthProvider>
+                  </ApiServices>
                 </FormChangeTrackerService>
               </ModalServiceProvider>
             </ConfirmationModalService>
