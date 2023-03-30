@@ -103,15 +103,20 @@ def setup_responses(init_response=None, init_response_products=None, init_respon
     if init_response_products:
         responses.add(
             responses.POST,
-            re.compile(r"https://advertising-api.amazon.com/v2/sp/[a-zA-Z]+/report"),
+            re.compile(r"https://advertising-api.amazon.com/reporting/reports"),
             body=init_response_products,
-            status=202,
+            status=200,
         )
     if init_response_brands:
         responses.add(
             responses.POST, re.compile(r"https://advertising-api.amazon.com/v2/hsa/[a-zA-Z]+/report"), body=init_response_brands, status=202
         )
     if status_response:
+        responses.add(
+            responses.GET,
+            re.compile(r"https://advertising-api.amazon.com/reporting/reports/[^/]+$"),
+            body=status_response,
+        )
         responses.add(
             responses.GET,
             re.compile(r"https://advertising-api.amazon.com/v2/reports/[^/]+$"),
@@ -178,7 +183,7 @@ def test_products_report_stream(config):
     profiles = make_profiles(profile_type="vendor")
 
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
-    stream_slice = {"profile": profiles[0], "reportDate": "20210725", "retry_count": 3}
+    stream_slice = {"profile": profiles[0], "reportDate": "2021-07-25", "retry_count": 3}
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
     assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)
 
@@ -384,9 +389,9 @@ def test_get_start_date(config):
 
     profile_id = str(profiles[0].profileId)
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
-    assert stream.get_start_date(profiles[0], {profile_id: {"reportDate": "20210810"}}) == Date(2021, 8, 10)
+    assert stream.get_start_date(profiles[0], {profile_id: {"reportDate": "2021-08-10"}}) == Date(2021, 8, 10)
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
-    assert stream.get_start_date(profiles[0], {profile_id: {"reportDate": "20210510"}}) == Date(2021, 6, 1)
+    assert stream.get_start_date(profiles[0], {profile_id: {"reportDate": "2021-05-10"}}) == Date(2021, 6, 1)
 
     config.pop("start_date")
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
@@ -399,7 +404,7 @@ def test_stream_slices_different_timezones(config):
     profile2 = Profile(profileId=2, timezone="UTC", accountInfo=AccountInfo(marketplaceStringId="", id="", type="seller"))
     stream = SponsoredProductsReportStream(config, [profile1, profile2], authenticator=mock.MagicMock())
     slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state={}))
-    assert slices == [{"profile": profile1, "reportDate": "20210731"}, {"profile": profile2, "reportDate": "20210801"}]
+    assert slices == [{"profile": profile1, "reportDate": "2021-07-31"}, {"profile": profile2, "reportDate": "2021-08-01"}]
 
 
 def test_stream_slices_lazy_evaluation(config):
@@ -728,7 +733,7 @@ def test_products_report_stream_with_custom_record_types(config_gen, custom_reco
     profiles = make_profiles(profile_type="vendor")
 
     stream = SponsoredProductsReportStream(config_gen(report_record_types=custom_record_types), profiles, authenticator=mock.MagicMock())
-    stream_slice = {"profile": profiles[0], "reportDate": "20210725", "retry_count": 3}
+    stream_slice = {"profile": profiles[0], "reportDate": "2021-07-25", "retry_count": 3}
     records = list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
     for record in records:
         print(record)
