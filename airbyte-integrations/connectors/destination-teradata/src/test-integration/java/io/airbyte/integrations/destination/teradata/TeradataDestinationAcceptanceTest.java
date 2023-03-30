@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.teradata;
@@ -18,7 +18,7 @@ import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import java.nio.file.Files;
@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TeradataDestinationAcceptanceTest.class);
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   private JsonNode configJson;
   private JdbcDatabase database;
@@ -95,7 +95,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
   protected void setup(TestDestinationEnv testEnv) {
     final String schemaName = Strings.addRandomSuffix("integration_test_teradata", "_", 5);
     final String createSchemaQuery = String
-        .format(String.format("CREATE DATABASE \"%s\" AS PERM = 1e9 SKEW = 10 PERCENT", schemaName));
+        .format(String.format("CREATE DATABASE \"%s\" AS PERMANENT = 60e6, SPOOL = 60e6 SKEW = 10 PERCENT", schemaName));
     try {
       this.configJson = Jsons.clone(getStaticConfig());
       ((ObjectNode) configJson).put("schema", schemaName);

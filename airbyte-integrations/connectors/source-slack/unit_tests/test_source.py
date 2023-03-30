@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -32,7 +32,7 @@ def test_streams(conversations_list, join_channels, config, is_valid):
             "Bad request",
             False,
             "Got an exception while trying to set up the connection: 400 Client Error: "
-            "None for url: https://slack.com/api/users.list?limit=100. Most probably, there are no users in the given Slack instance or "
+            "None for url: https://slack.com/api/users.list?limit=1000. Most probably, there are no users in the given Slack instance or "
             "your token is incorrect",
         ),
         (
@@ -40,13 +40,13 @@ def test_streams(conversations_list, join_channels, config, is_valid):
             "Forbidden",
             False,
             "Got an exception while trying to set up the connection: 403 Client Error: "
-            "None for url: https://slack.com/api/users.list?limit=100. Most probably, there are no users in the given Slack instance or "
+            "None for url: https://slack.com/api/users.list?limit=1000. Most probably, there are no users in the given Slack instance or "
             "your token is incorrect",
         ),
     ),
 )
 def test_check_connection(token_config, requests_mock, status_code, response, is_connection_successful, error_msg):
-    requests_mock.register_uri("GET", "https://slack.com/api/users.list?limit=100", status_code=status_code, json=response)
+    requests_mock.register_uri("GET", "https://slack.com/api/users.list?limit=1000", status_code=status_code, json=response)
     source = SourceSlack()
     success, error = source.check_connection(logger=logging.getLogger("airbyte"), config=token_config)
     assert success is is_connection_successful

@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mysql;
 
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 
 /**
  * Note that MySQL documentation discusses about identifiers case sensitivity using the
@@ -16,7 +16,7 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
  *
  * As a result, we are here forcing all identifier (table, schema and columns) names to lowercase.
  */
-public class MySQLNameTransformer extends ExtendedNameTransformer {
+public class MySQLNameTransformer extends StandardNameTransformer {
 
   // These constants must match those in destination_name_transformer.py
   public static final int MAX_MYSQL_NAME_LENGTH = 64;

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -11,6 +11,7 @@ import requests
 from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from pydantic.error_wrappers import ValidationError
 from source_facebook_marketing.api import API
 from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams import (
@@ -55,14 +56,15 @@ class SourceFacebookMarketing(AbstractSource):
         :param config:  the user-input config object conforming to the connector's spec.json
         :return Tuple[bool, Any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        config = self._validate_and_transform(config)
-        if config.end_date < config.start_date:
-            return False, "end_date must be equal or after start_date."
-
         try:
+            config = self._validate_and_transform(config)
+
+            if config.end_date < config.start_date:
+                return False, "end_date must be equal or after start_date."
+
             api = API(account_id=config.account_id, access_token=config.access_token)
             logger.info(f"Select account {api.account}")
-        except requests.exceptions.RequestException as e:
+        except (requests.exceptions.RequestException, ValidationError) as e:
             return False, e
 
         # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
@@ -203,6 +205,7 @@ class SourceFacebookMarketing(AbstractSource):
                 start_date=insight.start_date or config.start_date,
                 end_date=insight.end_date or config.end_date,
                 insights_lookback_window=insight.insights_lookback_window or config.insights_lookback_window,
+                level=insight.level,
             )
             streams.append(stream)
         return streams

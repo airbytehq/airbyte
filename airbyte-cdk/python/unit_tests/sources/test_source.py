@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -23,7 +23,6 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sources import AbstractSource, Source
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.http import HttpStream
@@ -496,11 +495,6 @@ def test_read_default_http_availability_strategy_stream_available(catalog, mocke
             HttpStream.__init__(self, *args, kvargs)
             self.read_records = mocker.MagicMock()
 
-        # TODO (Ella): Remove explicit definition when turning on default
-        @property
-        def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-            return HttpAvailabilityStrategy()
-
     class MockStream(mocker.MagicMock, Stream):
         page_size = None
         get_json_schema = mocker.MagicMock()
@@ -553,11 +547,6 @@ def test_read_default_http_availability_strategy_stream_unavailable(catalog, moc
             stub_response = {"data": self.resp_counter}
             self.resp_counter += 1
             yield stub_response
-
-        # TODO (Ella): Remove explicit definition when turning on default
-        @property
-        def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-            return HttpAvailabilityStrategy()
 
     class MockStream(mocker.MagicMock, Stream):
         page_size = None

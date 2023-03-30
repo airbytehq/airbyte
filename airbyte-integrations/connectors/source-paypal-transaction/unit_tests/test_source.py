@@ -1,10 +1,10 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import MagicMock
 
-from source_paypal_transaction.source import PayPalOauth2Authenticator, get_endpoint
+from source_paypal_transaction.source import PaypalHttpException, PayPalOauth2Authenticator, get_endpoint
 
 
 class TestAuthentication:
@@ -51,7 +51,9 @@ class TestAuthentication:
             + "?start_date=2021-07-01T00%3A00%3A00%2B00%3A00&end_date=2021-07-02T00%3A00%3A00%2B00%3A00&fields=all&page_size=500&page=1"
         )
         requests_mock.get(url, status_code=400, json={})
-        assert not source_instance.check_connection(logger=MagicMock(), config=prod_config)[0]
+        check_result, error = source_instance.check_connection(logger=MagicMock(), config=prod_config)
+        assert not check_result
+        assert isinstance(error, PaypalHttpException)
 
     def test_get_prod_endpoint(self, prod_config, api_endpoint):
         assert get_endpoint(prod_config["is_sandbox"]) == api_endpoint

@@ -15,7 +15,7 @@ acceptance_tests:
     - config_path: secrets/service_config.json
       status: succeed
     - config_path: integration_tests/invalid_config.json
-      status: exception
+      status: failed
   discovery:
     tests:
     - config_path: secrets/service_config.json
@@ -27,5 +27,5 @@ acceptance_tests:
     bypass_reason: "Incremental sync are not supported on this connector"
   spec:
     tests:
-    - spec_path: google_sheets_source/spec.yaml
+    - spec_path: source_google_sheets/spec.yaml
 

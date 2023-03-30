@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.protocol.migrations.v1;
@@ -65,7 +65,7 @@ public class SchemaMigrationV1 {
    * Detects any schema that looks like a reference type declaration, e.g.: { "$ref":
    * "WellKnownTypes.json...." } or { "oneOf": [{"$ref": "..."}, {"type": "object"}] }
    */
-  private static boolean isPrimitiveReferenceTypeDeclaration(final JsonNode schema) {
+  static boolean isPrimitiveReferenceTypeDeclaration(final JsonNode schema) {
     if (!schema.isObject()) {
       // Non-object schemas (i.e. true/false) never need to be modified
       return false;

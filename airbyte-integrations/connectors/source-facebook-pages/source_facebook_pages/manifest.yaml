@@ -1,20 +1,23 @@
-version: "0.1.0"
+version: "0.29.0"
 
 definitions:
   schema_loader:
     type: JsonFileSchemaLoader
-    file_path: "./source_facebook_pages/schemas/{{ options['name'] }}.json"
+    file_path: "./source_facebook_pages/schemas/{{ parameters['name'] }}.json"
   selector:
     extractor:
-      field_pointer: ["data"]
+      field_path: ["data"]
   requester:
     url_base: "https://graph.facebook.com/v15.0"
     http_method: "GET"
     error_handler:
-      type: DefaultErrorHandler
-      response_filters:
-        - http_codes: [ 400 ]
-          action: RETRY
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          response_filters:
+            - http_codes: [400]
+              action: RETRY
+        - type: DefaultErrorHandler
     authenticator:
       type: CustomAuthenticator
       class_name: source_facebook_pages.components.AuthenticatorFacebookPageAccessToken
@@ -31,39 +34,42 @@ definitions:
       field_name: "page_size"
       inject_into: "request_parameter"
     page_token_option:
+      type: RequestOption
       field_name: "after"
       inject_into: "request_parameter"
-    url_base: "*ref(definitions.requester.url_base)"
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
 
   base_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.retriever)"
-
+      $ref: "#/definitions/retriever"
+    transformations:
+      - type: CustomTransformation
+        class_name: source_facebook_pages.components.CustomFieldTransformation
   page_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "page"
       primary_key: "id"
       path: "/{{ config['page_id'] }}"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       record_selector:
         extractor:
-          field_pointer: []
+          field_path: []
       requester:
-        $ref: "*ref(definitions.requester)"
-        request_options_provider:
-          request_parameters:
-            fields: " {{ ','.join([
+        $ref: "#/definitions/requester"
+        request_parameters:
+          fields: |
+            {{ 
+              ','.join([
               'id',
               'about',
               'ad_campaign',
@@ -208,23 +214,25 @@ definitions:
               'rtb_dynamic_posts',
               'video_lists',
               'videos',
-            ]) }} "
+              ]) 
+            }}
 
   post_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "post"
       primary_key: "id"
       path: "/{{ config['page_id'] }}/posts"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       paginator:
-        $ref: "*ref(definitions.facebook_post_paginator)"
+        $ref: "#/definitions/facebook_post_paginator"
       requester:
-        $ref: "*ref(definitions.requester)"
-        request_options_provider:
-          request_parameters:
-            fields: "{{ ','.join([
+        $ref: "#/definitions/requester"
+        request_parameters:
+          fields: |
+            {{ 
+              ','.join([
               'id',
               'actions',
               'admin_creator',
@@ -282,28 +290,29 @@ definitions:
               'sharedposts',
               'sponsor_tags',
               'to'
-            ]) }}"
+              ])
+            }}
 
   post_insights_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "post_insights"
       primary_key: "id"
       path: "/{{ config['page_id'] }}/posts"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       paginator:
-        $ref: "*ref(definitions.facebook_post_paginator)"
+        $ref: "#/definitions/facebook_post_paginator"
       record_selector:
         type: RecordSelector
         extractor:
-          class_name: source_facebook_pages.components.NestedDpathExtractor
-          field_pointer: ["data", "insights", "data"]
+          field_path: ["data", "*", "insights", "data", "*"]
       requester:
-        $ref: "*ref(definitions.requester)"
-        request_options_provider:
-          request_parameters:
-            fields: "{{ 'insights.metric(%s)' % ','.join([
+        $ref: "#/definitions/requester"
+        request_parameters:
+          fields: |
+            {{ 
+              'insights.metric(%s)' % ','.join([
               'post_impressions',
               'post_impressions_unique',
               'post_impressions_paid',
@@ -331,21 +340,23 @@ definitions:
               'post_clicks_by_type',
               'post_clicks_by_type_unique',
               'post_reactions_by_type_total',
-            ]) }}"
+              ])
+            }}
 
   page_insights_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "page_insights"
       primary_key: "id"
       path: "/{{ config['page_id'] }}/insights"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
-        request_options_provider:
-          request_parameters:
-            metric: "{{ ','.join([
+        $ref: "#/definitions/requester"
+        request_parameters:
+          metric: |
+            {{
+              ','.join([
               'page_tab_views_login_top_unique',
               'page_tab_views_login_top',
               'page_tab_views_logout_top',
@@ -411,14 +422,14 @@ definitions:
               'page_impressions_by_age_gender_unique',
               'page_impressions_frequency_distribution',
               'page_impressions_viral_frequency_distribution',
-            ]) }}"
+              ])
+            }}
 streams:
-  - "*ref(definitions.page_stream)"
-  - "*ref(definitions.post_stream)"
-  - "*ref(definitions.post_insights_stream)"
-  - "*ref(definitions.page_insights_stream)"
+  - "#/definitions/page_stream"
+  - "#/definitions/post_stream"
+  - "#/definitions/post_insights_stream"
+  - "#/definitions/page_insights_stream"
 
 check:
   stream_names:
     - "page"
-

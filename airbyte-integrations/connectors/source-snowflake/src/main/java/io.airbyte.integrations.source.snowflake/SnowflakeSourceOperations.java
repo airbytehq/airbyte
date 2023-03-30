@@ -1,10 +1,9 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.snowflake;
 
-import static io.airbyte.db.jdbc.DateTimeConverter.putJavaSQLDate;
 import static io.airbyte.db.jdbc.DateTimeConverter.putJavaSQLTime;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
@@ -124,15 +123,6 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     final Timestamp timestamp = resultSet.getTimestamp(index);
     node.put(columnName, DateTimeConverter.convertToTimestamp(timestamp));
-  }
-
-  @Override
-  protected void putDate(final ObjectNode node,
-                         final String columnName,
-                         final ResultSet resultSet,
-                         final int index)
-      throws SQLException {
-    putJavaSQLDate(node, columnName, resultSet, index);
   }
 
   @Override

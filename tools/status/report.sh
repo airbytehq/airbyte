@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# This script is used to report the status of a connector build to S3.
+# BEFORE RUNNING THIS SCRIPT:
+#   - Ensure you have read the documentation on how this system works: https://internal-docs.airbyte.io/Generated-Reports/Build-Status-Reports
+
 set -e
 
 . tools/lib/lib.sh

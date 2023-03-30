@@ -14,7 +14,7 @@ LOGGER = Logger()
 AVAILABLE_SCAN_FOLDERS = (
     "airbyte-integrations/connectors",
     "airbyte-cdk/python",
-    "airbyte-integrations/bases/source-acceptance-test",
+    "airbyte-integrations/bases/connector-acceptance-test",
 )
 
 
