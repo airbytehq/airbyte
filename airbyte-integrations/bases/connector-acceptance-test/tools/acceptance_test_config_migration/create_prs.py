@@ -14,7 +14,7 @@ import utils
 from git import Repo
 from jinja2 import Environment, FileSystemLoader
 
-from config_migration import update_configuration
+from config_migration import update_configuration, set_high_test_strictness_level
 
 # Update this before running the script
 from migrations.strictness_level_migration import config
@@ -124,7 +124,7 @@ def migrate_config_on_new_branch(definition, dry_run):
     )  # TODO make sure they're airbyte connectors before trying to migrate
     new_branch = checkout_new_branch(connector_name)
     config_path = utils.acceptance_test_config_path(connector_name)
-    update_configuration(config_path)
+    update_configuration(config_path, migration=set_high_test_strictness_level, migrate_from_legacy=True)
     commit_push_migrated_config(config_path, connector_name, new_branch, dry_run)
     return new_branch
 
