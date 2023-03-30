@@ -8,6 +8,7 @@ import { Separator } from "components/Separator";
 import { useAsyncActions } from "services/notificationSetting/NotificationSettingService";
 
 interface IProps {
+  setBannerVisibility?: React.Dispatch<React.SetStateAction<boolean>>;
   onClose?: () => void;
   onBillingPage: () => void;
 }
@@ -65,16 +66,18 @@ const CheckboxText = styled.div`
   user-select: none;
 `;
 
-export const IgnoreNotificationModal: React.FC<IProps> = ({ onClose, onBillingPage }) => {
+export const IgnoreNotificationModal: React.FC<IProps> = ({ setBannerVisibility, onClose, onBillingPage }) => {
   const { onIgnoreNotifications } = useAsyncActions();
 
   const [noPrompt, setNoPrompt] = useState<boolean>(false);
   const [ignoreLoading, setIgnoreLoading] = useState<boolean>(false);
+  const [upgradeLoading, setUpgradeLoading] = useState<boolean>(false);
   const onIgnore = () => {
     setIgnoreLoading(true);
     onIgnoreNotifications({ noPrompt })
       .then(() => {
         setIgnoreLoading(false);
+        setBannerVisibility?.(false);
         onClose?.();
       })
       .catch(() => {
@@ -83,8 +86,17 @@ export const IgnoreNotificationModal: React.FC<IProps> = ({ onClose, onBillingPa
   };
 
   const onUpgrade = () => {
-    onBillingPage();
-    onClose?.();
+    setUpgradeLoading(true);
+    onIgnoreNotifications({ noPrompt })
+      .then(() => {
+        setUpgradeLoading(false);
+        setBannerVisibility?.(false);
+        onBillingPage();
+        onClose?.();
+      })
+      .catch(() => {
+        setUpgradeLoading(false);
+      });
   };
   return (
     <Modal size="sm" onClose={onClose}>
@@ -102,7 +114,7 @@ export const IgnoreNotificationModal: React.FC<IProps> = ({ onClose, onBillingPa
             <ModalButton size="lg" secondary onClick={onIgnore} isLoading={ignoreLoading}>
               <FormattedMessage id="ignore.notification.modal.ignoreBtnText" />
             </ModalButton>
-            <ModalButton size="lg" onClick={onUpgrade}>
+            <ModalButton size="lg" onClick={onUpgrade} isLoading={upgradeLoading}>
               <FormattedMessage id="ignore.notification.modal.upgradeBtnText" />
             </ModalButton>
           </ButtonsContainer>

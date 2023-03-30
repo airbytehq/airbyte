@@ -16,9 +16,9 @@ const UpdateStatusError: React.FC<IProps> = ({ statusCode }) => {
     if (statusCode === 705 || statusCode === 707 || statusCode === 708) {
       let modalText = "connection.unable.freeTrial.modal.text";
       if (statusCode === 707) {
-        modalText = "connection.unable.limit.modal.text";
-      } else if (statusCode === 708) {
         modalText = "connection.unable.expired.modal.text";
+      } else if (statusCode === 708) {
+        modalText = "connection.unable.limit.modal.text";
       }
       openConfirmationModal({
         title: "connection.unable.modal.title",
