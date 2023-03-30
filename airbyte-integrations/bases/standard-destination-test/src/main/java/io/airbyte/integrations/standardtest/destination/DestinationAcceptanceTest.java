@@ -131,7 +131,7 @@ public abstract class DestinationAcceptanceTest {
   }
 
   protected static Optional<StandardDestinationDefinition> getOptionalDestinationDefinitionFromProvider(
-      final String imageNameWithoutTag) {
+                                                                                                        final String imageNameWithoutTag) {
     final LocalDefinitionsProvider provider = new LocalDefinitionsProvider();
     return provider.getDestinationDefinitions().stream()
         .filter(definition -> imageNameWithoutTag.equalsIgnoreCase(definition.getDockerRepository()))
@@ -239,7 +239,6 @@ public abstract class DestinationAcceptanceTest {
             && standardDestinationDefinition.getSupportsDbt())
         .orElse(false);
   }
-
 
   protected String getDestinationDefinitionKey() {
     return getImageNameWithoutTag();
@@ -1430,7 +1429,8 @@ public abstract class DestinationAcceptanceTest {
   }
 
   /**
-   * Same as {@link #pruneMutate(JsonNode)}, except does a defensive copy and returns a new json node object instead of mutating in place.
+   * Same as {@link #pruneMutate(JsonNode)}, except does a defensive copy and returns a new json node
+   * object instead of mutating in place.
    *
    * @param record - record that will be pruned.
    * @return pruned json node.
@@ -1442,8 +1442,9 @@ public abstract class DestinationAcceptanceTest {
   }
 
   /**
-   * Prune fields that are added internally by airbyte and are not part of the original data. Used so that we can compare data that is persisted by an
-   * Airbyte worker to the original data. This method mutates the provided json in place.
+   * Prune fields that are added internally by airbyte and are not part of the original data. Used so
+   * that we can compare data that is persisted by an Airbyte worker to the original data. This method
+   * mutates the provided json in place.
    *
    * @param json - json that will be pruned. will be mutated in place!
    */
