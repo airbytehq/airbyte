@@ -6311,7 +6311,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.59"
+- dockerImage: "airbyte/destination-snowflake:0.4.60"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/snowflake"
     connectionSpecification:
@@ -6724,6 +6724,20 @@
                 examples:
                 - "?sv=2016-05-31&ss=b&srt=sco&sp=rwdl&se=2018-06-27T10:05:50Z&st=2017-06-27T02:05:50Z&spr=https,http&sig=bgqQwoXwxzuD2GJfagRg7VOS8hzNr3QLT7rhS8OFRLQ%3D"
                 order: 4
+        file_buffer_count:
+          title: "File Buffer Count"
+          type: "integer"
+          minimum: 10
+          maximum: 50
+          default: 10
+          description: "Number of file buffers allocated for writing data. Increasing\
+            \ this number is beneficial for connections using Change Data Capture\
+            \ (CDC) and up to the number of streams within a connection. Increasing\
+            \ the number of file buffers past the maximum number of streams has deteriorating\
+            \ effects"
+          examples:
+          - "10"
+          order: 9
     supportsIncremental: true
     supportsNormalization: true
     supportsDBT: true
