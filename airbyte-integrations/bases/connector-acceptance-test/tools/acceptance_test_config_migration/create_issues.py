@@ -24,6 +24,7 @@ environment = Environment(loader=FileSystemLoader(utils.MIGRATIONS_FOLDER))
 parser = argparse.ArgumentParser(description="Create issues for a list of connectors from a template.")
 utils.add_dry_param(parser)
 utils.add_connectors_param(parser)
+utils.add_allow_beta_param(parser)
 utils.add_allow_alpha_param(parser)
 
 

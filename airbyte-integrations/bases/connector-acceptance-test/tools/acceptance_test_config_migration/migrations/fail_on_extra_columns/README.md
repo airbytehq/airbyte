@@ -12,7 +12,7 @@ usage information for the given scripts.
 Run CAT on all Beta and GA connectors.
 
 ```
-python run_tests.py
+python run_tests.py --allow_beta
 ```
 
 ### Collect output from connectors that fail due to `additionalProperties`
@@ -26,7 +26,7 @@ For the connectors that failed due to `Additional properties are not allowed:`, 
 `fail_on_extra_columns` input parameter to the basic read test. To do this, 
 
 ```
-python config_migration.py --connectors $(ls migrations/fail_on_extra_columns/test_failure_logs)
+python config_migration.py --connectors $(ls migrations/fail_on_extra_columns/test_failure_logs) --allow_beta
 ```
 
 Add these bypasses to the PR that adds the new CAT test!
@@ -44,10 +44,10 @@ Issues get created with the following labels:
 ### How to run:
 **Dry run**:
 ```
-python create_issues.py --connectors $(ls migrations/fail_on_extra_columns/test_failure_logs)
+python create_issues.py --connectors $(ls migrations/fail_on_extra_columns/test_failure_logs) --allow_beta
 ```
 
 **Real execution**:
 ```
-python create_issues.py --connectors $(ls migrations/fail_on_extra_columns/test_failure_logs) --no-dry
+python create_issues.py --connectors $(ls migrations/fail_on_extra_columns/test_failure_logs) --allow_beta --no-dry
 ```

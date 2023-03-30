@@ -66,18 +66,20 @@ python run_tests.py --connectors <connectors>
 
 Full options: 
 ```
-usage: run_tests.py [-h] --connectors [CONNECTORS ...] [--allow_alpha | --no-allow_alpha] [--max_concurrency MAX_CONCURRENCY]
+usage: run_tests.py [-h] --connectors [CONNECTORS ...] [--allow_alpha | --no-allow_alpha] [--allow_beta | --no-allow_beta] [--max_concurrency MAX_CONCURRENCY]
 
 Run connector acceptance tests for a list of connectors.
 
 options:
   -h, --help            show this help message and exit
   --connectors [CONNECTORS ...]
-                        A list of connectors (separated by spaces) to run a script on .
+                        A list of connectors (separated by spaces) to run a script on. (default: all connectors)
   --allow_alpha, --no-allow_alpha
                         Whether to apply the change to alpha connectors, if they are included in the list of connectors. (default: False)
+  --allow_beta, --no-allow_beta
+                        Whether to apply the change to bets connectors, if they are included in the list of connectors. (default: False)
   --max_concurrency MAX_CONCURRENCY
-                        The maximum number of acceptance tests that should happen at once. (default: 10)
+                        The maximum number of acceptance tests that should happen at once.
 ```
 
 ### `create_issues.py`: Create issues in bulk
@@ -140,7 +142,7 @@ python create_issues.py --connectors <connectors> --no-dry
 
 Full options: 
 ```
-usage: create_issues.py [-h] [-d | --dry | --no-dry] --connectors [CONNECTORS ...] [--allow_alpha | --no-allow_alpha]
+usage: create_issues.py [-h] [-d | --dry | --no-dry] --connectors [CONNECTORS ...] [--allow_beta | --no-allow_beta] [--allow_alpha | --no-allow_alpha]
 
 Create issues for a list of connectors from a template.
 
@@ -148,7 +150,9 @@ options:
   -h, --help            show this help message and exit
   -d, --dry, --no-dry   Whether the action performed is a dry run. In the case of a dry run, no git actions will be pushed to the remote. (default: True)
   --connectors [CONNECTORS ...]
-                        A list of connectors (separated by spaces) to run a script on. (default: all GA connectors)
+                        A list of connectors (separated by spaces) to run a script on. (default: all connectors)
+  --allow_beta, --no-allow_beta
+                        Whether to apply the change to bets connectors, if they are included in the list of connectors. (default: False)
   --allow_alpha, --no-allow_alpha
                         Whether to apply the change to alpha connectors, if they are included in the list of connectors. (default: False)
 ```
@@ -185,17 +189,20 @@ python config_migration.py --connectors <connectors>
 
 Full options:
 ```
-usage: create_prs.py [-h] [-d | --dry | --no-dry] --connectors [CONNECTORS ...] [--allow_alpha | --no-allow_alpha]
+usage: config_migration.py [-h] --connectors [CONNECTORS ...] [--allow_alpha | --no-allow_alpha] [--allow_beta | --no-allow_beta] [--migrate_from_legacy | --no-migrate_from_legacy]
 
-Create PRs for a list of connectors from a template.
+Migrate acceptance-test-config.yml files for a list of connectors.
 
 options:
   -h, --help            show this help message and exit
-  -d, --dry, --no-dry   Whether the action performed is a dry run. In the case of a dry run, no git actions will be pushed to the remote. (default: True)
   --connectors [CONNECTORS ...]
-                        A list of connectors (separated by spaces) to run a script on. (default: all GA connectors)
+                        A list of connectors (separated by spaces) to run a script on. (default: all connectors)
   --allow_alpha, --no-allow_alpha
                         Whether to apply the change to alpha connectors, if they are included in the list of connectors. (default: False)
+  --allow_beta, --no-allow_beta
+                        Whether to apply the change to bets connectors, if they are included in the list of connectors. (default: False)
+  --migrate_from_legacy, --no-migrate_from_legacy
+                        Whether to migrate config files from the legacy format before applying the migration. (default: False)
 ```
 
 
@@ -265,18 +272,19 @@ python create_prs.py --connectors <connectors> --no-dry
 
 Full options:
 ```
-usage: config_migration.py [-h] --connectors [CONNECTORS ...] [--allow_alpha | --no-allow_alpha] [--migrate_from_legacy | --no-migrate_from_legacy]
+usage: create_prs.py [-h] [-d | --dry | --no-dry] --connectors [CONNECTORS ...] [--allow_alpha | --no-allow_alpha] [--allow_beta | --no-allow_beta]
 
-Migrate acceptance-test-config.yml files for a list of connectors.
+Create PRs for a list of connectors from a template.
 
 options:
   -h, --help            show this help message and exit
+  -d, --dry, --no-dry   Whether the action performed is a dry run. In the case of a dry run, no git actions will be pushed to the remote. (default: True)
   --connectors [CONNECTORS ...]
-                        A list of connectors (separated by spaces) to run a script on. (default: all GA connectors)
+                        A list of connectors (separated by spaces) to run a script on. (default: all connectors)
   --allow_alpha, --no-allow_alpha
                         Whether to apply the change to alpha connectors, if they are included in the list of connectors. (default: False)
-  --migrate_from_legacy, --no-migrate_from_legacy
-                        Whether to migrate config files from the legacy format before applying the migration. (default: False)
+  --allow_beta, --no-allow_beta
+                        Whether to apply the change to bets connectors, if they are included in the list of connectors. (default: False)
 ```
 
 ## Existing migrations

@@ -19,6 +19,7 @@ yaml.width = 150
 parser = argparse.ArgumentParser(description="Migrate acceptance-test-config.yml files for a list of connectors.")
 utils.add_connectors_param(parser)
 utils.add_allow_alpha_param(parser)
+utils.add_allow_beta_param(parser)
 parser.add_argument("--migrate_from_legacy", action=argparse.BooleanOptionalAction, default=False, help="Whether to migrate config files from the legacy format before applying the migration.")
 
 

@@ -29,6 +29,7 @@ parser = argparse.ArgumentParser(description="Create PRs for a list of connector
 utils.add_dry_param(parser)
 utils.add_connectors_param(parser)
 utils.add_allow_alpha_param(parser)
+utils.add_allow_beta_param(parser)
 
 logging.basicConfig(level=logging.DEBUG)
 

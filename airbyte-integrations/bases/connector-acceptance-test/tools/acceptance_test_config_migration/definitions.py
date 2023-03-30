@@ -42,3 +42,4 @@ def is_airbyte_connector(connector_definition):
 ALL_DEFINITIONS = read_source_definitions()
 GA_DEFINITIONS = find_by_release_stage(ALL_DEFINITIONS, "generally_available")
 BETA_DEFINITIONS = find_by_release_stage(ALL_DEFINITIONS, "beta")
+ALPHA_DEFINTIONS = find_by_release_stage(ALL_DEFINITIONS, "alpha")
