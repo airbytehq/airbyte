@@ -321,6 +321,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                   |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.14  | 2022-03-30 | [24681](https://github.com/airbytehq/airbyte/pull/24681)   | Add ssh key and certificate format validation to spec                                                                                     |
 | 2.0.13  | 2022-03-28 | [24166](https://github.com/airbytehq/airbyte/pull/24166)   | Fix InterruptedException bug during Debezium shutdown                                                                                     |
 | 2.0.11  | 2022-03-27 | [24529](https://github.com/airbytehq/airbyte/pull/24373)   | Preparing the connector for CDC checkpointing                                                                                             |
 | 2.0.10  | 2022-03-24 | [24529](https://github.com/airbytehq/airbyte/pull/24529)   | Set SSL Mode to required on strict-encrypt variant                                                                                        |
