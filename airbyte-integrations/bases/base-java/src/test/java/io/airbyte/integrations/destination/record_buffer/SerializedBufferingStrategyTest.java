@@ -15,7 +15,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -211,7 +210,7 @@ public class SerializedBufferingStrategyTest {
         .withData(MESSAGE_DATA));
   }
 
-  private CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBufferFunction() {
+  private CreateBufferFunction onCreateBufferFunction() {
     return (stream, catalog) -> switch (stream.getName()) {
       case STREAM_1 -> recordWriter1;
       case STREAM_2 -> recordWriter2;

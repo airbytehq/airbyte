@@ -8,14 +8,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.concurrency.VoidCallable;
-import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
+import io.airbyte.integrations.destination.record_buffer.CreateBufferFunction;
 import io.airbyte.integrations.destination.record_buffer.FlushBufferFunction;
-import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
@@ -44,7 +43,7 @@ public class BigQueryStagingConsumerFactory {
                                        final ConfiguredAirbyteCatalog catalog,
                                        final Consumer<AirbyteMessage> outputRecordCollector,
                                        final BigQueryStagingOperations bigQueryGcsOperations,
-                                       final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
+                                       final CreateBufferFunction onCreateBuffer,
                                        final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
                                        final Function<String, String> tmpTableNameTransformer,
                                        final Function<String, String> targetTableNameTransformer) {
@@ -143,19 +142,19 @@ public class BigQueryStagingConsumerFactory {
   private FlushBufferFunction flushBufferFunction(final BigQueryStagingOperations bigQueryGcsOperations,
                                                   final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
                                                   final ConfiguredAirbyteCatalog catalog) {
-    return (pair, writer) -> {
-      LOGGER.info("Flushing buffer for stream {} ({}) to staging", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
-      if (!writeConfigs.containsKey(pair)) {
+    return (streamName, buffer) -> {
+      LOGGER.info("Flushing buffer for stream {} ({}) to staging", streamName.getName(), FileUtils.byteCountToDisplaySize(buffer.getByteCount()));
+      if (!writeConfigs.containsKey(streamName)) {
         throw new IllegalArgumentException(
             String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s", Jsons.serialize(catalog)));
       }
 
-      final BigQueryWriteConfig writeConfig = writeConfigs.get(pair);
+      final BigQueryWriteConfig writeConfig = writeConfigs.get(streamName);
       final String datasetId = writeConfig.datasetId();
       final String stream = writeConfig.streamName();
-      try (writer) {
-        writer.flush();
-        final String stagedFile = bigQueryGcsOperations.uploadRecordsToStage(datasetId, stream, writer);
+      try (buffer) {
+        buffer.flush();
+        final String stagedFile = bigQueryGcsOperations.uploadRecordsToStage(datasetId, stream, buffer);
         /*
          * The primary reason for still adding staged files despite immediately uploading the staged file to
          * the destination's raw table is because the cleanup for the staged files will occur at the end of

@@ -5,15 +5,14 @@
 package io.airbyte.integrations.destination.s3;
 
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
+import io.airbyte.integrations.destination.record_buffer.CreateBufferFunction;
 import io.airbyte.integrations.destination.record_buffer.FlushBufferFunction;
-import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
@@ -40,7 +39,7 @@ public class S3ConsumerFactory {
   public AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
                                        final BlobStorageOperations storageOperations,
                                        final NamingConventionTransformer namingResolver,
-                                       final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
+                                       final CreateBufferFunction onCreateBuffer,
                                        final S3DestinationConfig s3Config,
                                        final ConfiguredAirbyteCatalog catalog) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(storageOperations, namingResolver, s3Config, catalog);
@@ -116,18 +115,18 @@ public class S3ConsumerFactory {
             .collect(Collectors.toUnmodifiableMap(
                 S3ConsumerFactory::toNameNamespacePair, Function.identity()));
 
-    return (pair, writer) -> {
-      LOGGER.info("Flushing buffer for stream {} ({}) to storage", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
-      if (!pairToWriteConfig.containsKey(pair)) {
+    return (streamName, buffer) -> {
+      LOGGER.info("Flushing buffer for stream {} ({}) to storage", streamName.getName(), FileUtils.byteCountToDisplaySize(buffer.getByteCount()));
+      if (!pairToWriteConfig.containsKey(streamName)) {
         throw new IllegalArgumentException(
-            String.format("Message contained record from a stream %s that was not in the catalog. \ncatalog: %s", pair, Jsons.serialize(catalog)));
+            String.format("Message contained record from a stream %s that was not in the catalog. \ncatalog: %s", streamName, Jsons.serialize(catalog)));
       }
 
-      final WriteConfig writeConfig = pairToWriteConfig.get(pair);
-      try (writer) {
-        writer.flush();
+      final WriteConfig writeConfig = pairToWriteConfig.get(streamName);
+      try (buffer) {
+        buffer.flush();
         writeConfig.addStoredFile(storageOperations.uploadRecordsToBucket(
-            writer,
+            buffer,
             writeConfig.getNamespace(),
             writeConfig.getStreamName(),
             writeConfig.getFullOutputPath()));

@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.s3.parquet;
 
 import static org.apache.parquet.avro.AvroWriteSupport.WRITE_OLD_LIST_STRUCTURE;
 
-import io.airbyte.commons.functional.CheckedBiFunction;
+import io.airbyte.integrations.destination.record_buffer.CreateBufferFunction;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
@@ -72,7 +72,7 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
     Files.deleteIfExists(bufferFile);
     avroRecordFactory = new AvroRecordFactory(schema, AvroConstants.JSON_CONVERTER);
     final S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
-    Configuration avroConfig = new Configuration();
+    final Configuration avroConfig = new Configuration();
     avroConfig.setBoolean(WRITE_OLD_LIST_STRUCTURE, false);
     parquetWriter = AvroParquetWriter.<Record>builder(HadoopOutputFile
         .fromPath(new org.apache.hadoop.fs.Path(bufferFile.toUri()), avroConfig))
@@ -161,7 +161,7 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
     }
   }
 
-  public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> createFunction(final S3DestinationConfig s3DestinationConfig) {
+  public static CreateBufferFunction createFunction(final S3DestinationConfig s3DestinationConfig) {
     return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) -> new ParquetSerializedBuffer(s3DestinationConfig,
         stream, catalog);
   }
