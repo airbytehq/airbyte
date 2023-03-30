@@ -28,8 +28,17 @@
           "loss_reason_id": {
             "type": ["integer", "null"]
           },
+          "score": {
+            "type": ["integer", "null"]
+          },
           "created_at": {
             "type": "integer"
+          },
+          "labor_cost": {
+            "type": "integer"
+          },
+          "source_id": {
+            "type": ["integer", "null"]
           },
           "updated_at": {
             "type": "integer"
