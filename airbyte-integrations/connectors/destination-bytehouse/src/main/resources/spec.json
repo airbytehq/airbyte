@@ -30,7 +30,7 @@
         "order" : 1
       },
       "database" : {
-        "title" : "DB Name",
+        "title" : "Database Name",
         "description" : "Name of the database.",
         "type" : "string",
         "order" : 2
