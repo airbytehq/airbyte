@@ -1,13 +1,9 @@
 import React, { useState } from "react";
-// import { FormattedMessage } from "react-intl";
-// import { useNavigate } from "react-router-dom";
 
 import { LoadingPage } from "components";
-// import ConnectionBlock from "components/ConnectionBlock";
 import { ConnectionStep, CreateStepTypes } from "components/ConnectionStep";
 import { FormPageContent } from "components/ConnectorBlocks";
 import CreateConnectionContent from "components/CreateConnectionContent";
-// import StepsMenu from "components/StepsMenu";
 import HeadTitle from "components/HeadTitle";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
@@ -16,8 +12,6 @@ import { useGetSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
 import TestConnection from "pages/ConnectionPage/pages/CreationFormPage/components/TestConnection";
 import { RoutePaths } from "pages/routePaths";
-// import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
-// import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 
@@ -64,10 +58,8 @@ function usePreloadData(): {
 
   const source = useGetSource(hasSourceId(location.state) ? location.state.sourceId : null);
 
-  // const sourceDefinition = useSourceDefinition(source?.sourceDefinitionId);
   const destination = useGetDestination(hasDestinationId(location.state) ? location.state.destinationId : null);
-  // const destinationDefinition = useDestinationDefinition(destination?.destinationDefinitionId);
-  return { source, destination }; // sourceDefinition,destinationDefinition
+  return { source, destination };
 }
 
 export const CreationFormPage: React.FC<{
@@ -75,7 +67,6 @@ export const CreationFormPage: React.FC<{
 }> = ({ backtrack }) => {
   useTrackPage(PageTrackingCodes.CONNECTIONS_NEW);
   const { location, push } = useRouter();
-  // const navigator = useNavigate();
 
   const [currentStep, setCurrentStep] = useState(
     hasCurrentStep(location.state) ? location.state.currentStep : CreateStepTypes.CREATE_SOURCE
@@ -155,14 +146,6 @@ export const CreationFormPage: React.FC<{
                 }
               }}
               onBack={() => {
-                // navigator(`../${RoutePaths.SelectConnection}`, {
-                //   state: {
-                //     ...(location.state as Record<string, unknown>),
-                //     currentStep: CreateStepTypes.CREATE_SOURCE,
-                //   },
-                //   replace:true
-                // });
-                // navigator(-1);
                 push(`../${RoutePaths.SelectConnection}`, {
                   state: {
                     ...(location.state as Record<string, unknown>),
@@ -279,7 +262,6 @@ export const CreationFormPage: React.FC<{
       <FormPageContent big={currentStep === CreateStepTypes.CREATE_CONNECTION}>
         <CreateConnectionContent
           onBack={() => {
-            // navigator(-1);
             push(`../${RoutePaths.SelectConnection}`, {
               state: {
                 ...(location.state as Record<string, unknown>),

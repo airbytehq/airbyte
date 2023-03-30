@@ -46,7 +46,6 @@ const ButtonsContainer = styled.div`
 `;
 
 const ConfirmBtn = styled(LoadingButton)`
-  //  background-color: ${({ theme }) => theme.white};
   color: #6b6b6f;
   border: 1px solid #d1d5db;
 `;

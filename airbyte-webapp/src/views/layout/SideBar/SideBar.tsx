@@ -1,5 +1,4 @@
 import { faHome, faGear, faInbox, faDatabase } from "@fortawesome/free-solid-svg-icons";
-// import { faGear } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import React from "react";
@@ -12,22 +11,11 @@ import { DocumentationArrowIcon } from "components/icons/DocumentationArrowIcon"
 import { DocumentationIcon } from "components/icons/DocumentationIcon";
 
 import { links } from "config/links";
-// import Version from "components/Version";
-// import { useConfig } from "config";
-// import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useUser } from "core/AuthContext";
 import useRouter from "hooks/useRouter";
 import { LOCALES } from "locales";
 
 import { RoutePaths } from "../../../pages/routePaths";
-// import ConnectionsIcon from "./components/ConnectionsIcon";
-// import DestinationIcon from "./components/DestinationIcon";
-// import DocsIcon from "./components/DocsIcon";
-// import OnboardingIcon from "./components/OnboardingIcon";
-// import SettingsIcon from "./components/SettingsIcon";
-// import SidebarPopout from "./components/SidebarPopout";
-// import SourceIcon from "./components/SourceIcon";
-// import { NotificationIndicator } from "./NotificationIndicator";
 import styles from "./SideBar.module.scss";
 
 const Menu = styled.ul`
@@ -44,17 +32,10 @@ const MenuItem = styled.li`
 `;
 
 const Text = styled.div`
-  // margin-top: 2px;
   margin-left: 10px;
   font-weight: 500;
   font-size: 15px;
 `;
-
-// const TextSetting = styled.div`
-//   color: black;
-//   padding-left: 15px;
-//   font-weight: bold;
-// `;
 
 const LogoContainer = styled.div`
   margin-top: 30px;
@@ -96,7 +77,6 @@ export const useCalculateSidebarStyles = () => {
   const { location } = useRouter();
 
   const menuItemStyle = (isActive: boolean) => {
-    // const isChild = location.pathname.split("/").length > 4 && location.pathname.split("/")[3] !== "settings";
     const isChild = location.pathname.split("/").length > 2 && location.pathname.split("/")[1] !== "settings";
     return classnames(styles.menuItem, { [styles.active]: isActive, [styles.activeChild]: isChild && isActive });
   };
@@ -107,15 +87,8 @@ export const useCalculateSidebarStyles = () => {
 export const useCalculateSidebarItemStyles = (route: string) => {
   const { location } = useRouter();
   const menuItemStyle = () => {
-    // const isActive = location.pathname.split("/").length >= 4 && location.pathname.split("/")[3] === route;
     const isActive = location.pathname.split("/").length >= 2 && location.pathname.split("/")[1] === route;
-    // const isSetting = route === "settings";
-    return classnames(
-      styles.menuItem,
-      { [styles.inActive]: !isActive },
-      // { [styles.inActiveSetting]: isSetting },
-      { [styles.active]: isActive }
-    );
+    return classnames(styles.menuItem, { [styles.inActive]: !isActive }, { [styles.active]: isActive });
   };
 
   return menuItemStyle();
@@ -126,8 +99,6 @@ export const getPopoutStyles = (isOpen?: boolean) => {
 };
 
 const SideBar: React.FC = () => {
-  // const config = useConfig();
-  // const workspace = useCurrentWorkspace();
   const { user } = useUser();
   const docsLink = user.lang === LOCALES.ENGLISH ? links.docsLink : `${links.docsLink}/${user.lang}/`;
   return (
@@ -169,75 +140,9 @@ const SideBar: React.FC = () => {
               </Text>
             </NavLink>
           </MenuItem>
-          {/* {workspace.displaySetupWizard ? (*/}
-          {/*  <li>*/}
-          {/*    <NavLink className={navLinkClassName} to={RoutePaths.Onboarding}>*/}
-          {/*      <OnboardingIcon />*/}
-          {/*      <Text>*/}
-          {/*        <FormattedMessage id="sidebar.onboarding" />*/}
-          {/*      </Text>*/}
-          {/*    </NavLink>*/}
-          {/*  </li>*/}
-          {/* ) : null}*/}
-          {/* <li>*/}
-          {/*  <NavLink className={navLinkClassName} to={RoutePaths.Connections}>*/}
-          {/*    <ConnectionsIcon />*/}
-          {/*    <Text>*/}
-          {/*      <FormattedMessage id="sidebar.connections" />*/}
-          {/*    </Text>*/}
-          {/*  </NavLink>*/}
-          {/* </li>*/}
-          {/* <li>*/}
-          {/*  <NavLink className={navLinkClassName} to={RoutePaths.Source}>*/}
-          {/*    <SourceIcon />*/}
-          {/*    <Text>*/}
-          {/*      <FormattedMessage id="sidebar.sources" />*/}
-          {/*    </Text>*/}
-          {/*  </NavLink>*/}
-          {/* </li>*/}
-          {/* <li>*/}
-          {/*  <NavLink className={navLinkClassName} to={RoutePaths.Destination}>*/}
-          {/*    <DestinationIcon />*/}
-          {/*    <Text>*/}
-          {/*      <FormattedMessage id="sidebar.destinations" />*/}
-          {/*    </Text>*/}
-          {/*  </NavLink>*/}
-          {/* </li>*/}
         </Menu>
       </div>
       <Menu>
-        {/* <li>*/}
-        {/*  <a href={config.links.updateLink} target="_blank" rel="noreferrer" className={styles.menuItem}>*/}
-        {/*    <MenuItemIcon icon={faRocket} />*/}
-        {/*    <Text>*/}
-        {/*      <FormattedMessage id="sidebar.update" />*/}
-        {/*    </Text>*/}
-        {/*  </a>*/}
-        {/* </li>*/}
-        {/* <li>*/}
-        {/*  <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "recipes" }]}>*/}
-        {/*    {({ onOpen, isOpen }) => (*/}
-        {/*      <button className={getPopoutStyles(isOpen)} onClick={onOpen}>*/}
-        {/*        <DocsIcon />*/}
-        {/*        <Text>*/}
-        {/*          <FormattedMessage id="sidebar.resources" />*/}
-        {/*        </Text>*/}
-        {/*      </button>*/}
-        {/*    )}*/}
-        {/*  </SidebarPopout>*/}
-        {/* </li>*/}
-
-        {/* <li>*/}
-        {/*  <NavLink className={navLinkClassName} to={RoutePaths.Settings}>*/}
-        {/*    <React.Suspense fallback={null}>*/}
-        {/*      <NotificationIndicator />*/}
-        {/*    </React.Suspense>*/}
-        {/*    <SettingsIcon />*/}
-        {/*    <Text>*/}
-        {/*      <FormattedMessage id="sidebar.settings" />*/}
-        {/*    </Text>*/}
-        {/*  </NavLink>*/}
-        {/* </li>*/}
         <MenuItem>
           <NavLink className={useCalculateSidebarItemStyles(RoutePaths.Settings)} to={RoutePaths.Settings}>
             <div>
@@ -262,21 +167,6 @@ const SideBar: React.FC = () => {
             <DocumentationArrowIcon height={11} width={11} />
           </DocumentationArrowIconContainer>
         </a>
-        {/* <li>
-          <ButtonCenter>
-            <Button>
-              <SettingIcon icon={faGear} />
-              <TextSetting>
-                <FormattedMessage id="sidebar.DaspireSetting" />
-              </TextSetting>
-            </Button>
-          </ButtonCenter>
-        </li>
-        {config.version ? (
-          <li>
-            <Version primary />
-          </li>
-        ) : null} */}
         <UserDetail>
           {`${user.firstName} ${user.lastName}`}
           <br />

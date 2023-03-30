@@ -1,5 +1,3 @@
-// import { faPlus } from "@fortawesome/free-solid-svg-icons";
-// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Field, FieldArray, FieldProps, Form, Formik } from "formik";
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -7,7 +5,7 @@ import styled from "styled-components";
 import { theme } from "theme";
 import * as yup from "yup";
 
-import { Button, DropDownRow, LabeledInput, LoadingButton, Modal, Tooltip } from "components"; // ModalBody
+import { Button, DropDownRow, LabeledInput, LoadingButton, Modal, Tooltip } from "components";
 import { DashIcon } from "components/icons/DashIcon";
 import { PlusCircleIcon } from "components/icons/PlusCircleIcon";
 import { Separator } from "components/Separator";
@@ -133,7 +131,6 @@ const AddUserModal: React.FC<IProps> = ({ onClose, roles }) => {
       <ModalHeading>
         <FormattedMessage id="user.addUserModal.heading" />
       </ModalHeading>
-      {/* <ModalBody> */}
       <Formik
         validateOnBlur
         validateOnChange
@@ -207,15 +204,7 @@ const AddUserModal: React.FC<IProps> = ({ onClose, roles }) => {
                                 <Tooltip
                                   placement="top"
                                   control={
-                                    <RemoveUserBtn
-                                      onClick={() => {
-                                        arrayHelpers.remove(index);
-                                        // setFieldValue("users", [
-                                        //   ...values.users.slice(0, index),
-                                        //   ...values.users.slice(index + 1),
-                                        // ]);
-                                      }}
-                                    >
+                                    <RemoveUserBtn onClick={() => arrayHelpers.remove(index)}>
                                       <DashIcon color="#6B6B6F" width={13} />
                                     </RemoveUserBtn>
                                   }
@@ -230,7 +219,6 @@ const AddUserModal: React.FC<IProps> = ({ onClose, roles }) => {
                       ))}
                       {values.users.length >= 5 ? null : (
                         <AddMoreBtn
-                          // size="lg"
                           type="button"
                           disabled={!isValid || !dirty}
                           onClick={() => arrayHelpers.push({ email: "", role: 3 })}
@@ -269,7 +257,6 @@ const AddUserModal: React.FC<IProps> = ({ onClose, roles }) => {
           );
         }}
       </Formik>
-      {/* </ModalBody> */}
     </Modal>
   );
 };

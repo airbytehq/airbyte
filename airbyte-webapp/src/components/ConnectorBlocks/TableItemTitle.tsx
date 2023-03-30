@@ -70,44 +70,32 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({ type, dropDownData, onS
   ];
 
   return (
-    <>
-      {/* <EntityInfo>
-        {entityIcon && <EntityIcon>{entityIcon}</EntityIcon>}
-        <div>
-          <H3 bold>{entityName}</H3>
-          <EntityType>
-            <span>{entity}</span>
-            <ReleaseStageBadge stage={releaseStage} />
-          </EntityType>
-        </div>
-      </EntityInfo> */}
-      <Content>
-        <LeftPanel>
-          <FormattedMessage id={`tables.${type}ConnectWithNum`} values={{ num }} />
-        </LeftPanel>
+    <Content>
+      <LeftPanel>
+        <FormattedMessage id={`tables.${type}ConnectWithNum`} values={{ num }} />
+      </LeftPanel>
 
-        <Popout
-          data-testid={`select-${type}`}
-          options={options}
-          isSearchable={false}
-          styles={{
-            menuPortal: (base) => ({
-              ...base,
-              "margin-left": "-70px",
-            }),
-          }}
-          onChange={onSelect}
-          targetComponent={({ onOpen }) => (
-            <Button onClick={onOpen} disabled={!allowCreateConnection}>
-              <BtnInnerContainer>
-                <BtnIcon icon={faPlus} />
-                <BtnText>{btnText}</BtnText>
-              </BtnInnerContainer>
-            </Button>
-          )}
-        />
-      </Content>
-    </>
+      <Popout
+        data-testid={`select-${type}`}
+        options={options}
+        isSearchable={false}
+        styles={{
+          menuPortal: (base) => ({
+            ...base,
+            "margin-left": "-70px",
+          }),
+        }}
+        onChange={onSelect}
+        targetComponent={({ onOpen }) => (
+          <Button onClick={onOpen} disabled={!allowCreateConnection}>
+            <BtnInnerContainer>
+              <BtnIcon icon={faPlus} />
+              <BtnText>{btnText}</BtnText>
+            </BtnInnerContainer>
+          </Button>
+        )}
+      />
+    </Content>
   );
 };
 

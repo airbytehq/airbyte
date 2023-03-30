@@ -59,7 +59,6 @@ const RangeCard: React.FC<IProps> = ({ productOptions, product, setProduct }) =>
         <FormattedMessage id="plan.rows.card.title" />
       </Title>
       <RangeContainer>
-        {/* <Range min={0} max={110 * NumberNaming.M} marks={products} selectedMark={product} onSelect={setProduct} /> */}
         <Slider
           aria-label="Restricted values"
           valueLabelFormat={(value) => valueLabelFormat(value)}

@@ -14,7 +14,6 @@ import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
 import useRouter from "hooks/useRouter";
 
 import AccountSettingsPage from "./pages/AccountSettingsPage";
-// import NotificationPage from "./pages/NotificationPage";
 import PlansBillingPage from "./pages/PlansBillingPage";
 import UserManagementPage from "./pages/UserManagementPage";
 
@@ -36,7 +35,6 @@ const PageContainer = styled.div`
   height: auto;
   display: flex;
   flex-direction: row;
-  // height: 1px;
   flex: 1;
 `;
 
@@ -48,7 +46,6 @@ const Seperator = styled.div`
 
 const ContentContainer = styled.div`
   width: 100%;
-  // min-height: 100vh;
   background-color: white;
   padding: 16px 26px 26px 26px;
 `;
@@ -116,12 +113,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
               ? true
               : false,
         },
-        // {
-        //   path: `${SettingsRoute.Notifications}`,
-        //   name: <FormattedMessage id="settings.notificationSettings" />,
-        //   component: <NotificationPage />,
-        //   show: true,
-        // },
       ],
     },
   ];

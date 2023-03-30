@@ -44,28 +44,14 @@ const useStepsConfig = (
       {
         id: StepType.CREATE_SOURCE,
         name: <FormattedMessage id="onboarding.createSource" />,
-        // don't navigate by steps for now
-        // onSelect: hasSources
-        //   ? () => updateStep(StepType.CREATE_SOURCE)
-        //   : undefined
       },
       {
         id: StepType.CREATE_DESTINATION,
         name: <FormattedMessage id="onboarding.createDestination" />,
-        // don't navigate by steps for now
-        // onSelect:
-        //   hasSources || hasDestinations
-        //     ? () => updateStep(StepType.CREATE_DESTINATION)
-        //     : undefined
       },
       {
         id: StepType.SET_UP_CONNECTION,
         name: <FormattedMessage id="onboarding.setUpConnection" />,
-        // don't navigate by steps for now
-        // onSelect:
-        //   hasSources && hasDestinations
-        //     ? () => updateStep(StepType.SET_UP_CONNECTION)
-        //     : undefined
       },
       {
         id: StepType.FINAL,

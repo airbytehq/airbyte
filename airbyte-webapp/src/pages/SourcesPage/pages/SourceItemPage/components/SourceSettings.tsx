@@ -4,8 +4,8 @@ import { FormattedMessage } from "react-intl";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceRead } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
-import { useUniqueFormId } from "hooks/services/FormChangeTracker"; // useFormChangeTrackerService
-import { useUpdateSource } from "hooks/services/useSourceHook"; //
+import { useUniqueFormId } from "hooks/services/FormChangeTracker";
+import { useUpdateSource } from "hooks/services/useSourceHook";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
@@ -38,7 +38,6 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({
   const { mutateAsync: updateSource } = useUpdateSource();
   const { setDocumentationPanelOpen } = useDocumentationPanelContext();
   const formId = useUniqueFormId();
-  // const { clearFormChange } = useFormChangeTrackerService();
 
   useTrackPage(PageTrackingCodes.SOURCE_ITEM_SETTINGS);
   useEffect(() => {

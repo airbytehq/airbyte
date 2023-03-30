@@ -65,19 +65,6 @@ export const UsersSettingsView: React.FC = () => {
         accessor: "email",
         Cell: ({ cell }: CellProps<User>) => cell.value,
       },
-      // TEMP: Currently all cloud users are admins.
-      // Remove when there is more than role
-      // {
-      //   Header: (
-      //     <>
-      //       <FormattedMessage id="userSettings.table.column.role" />
-      //       <RoleToolTip />
-      //     </>
-      //   ),
-      //   headerHighlighted: true,
-      //   accessor: "userId",
-      //   Cell: (_: CellProps<User>) => "Admin",
-      // },
       {
         Header: <FormattedMessage id="userSettings.table.column.action" />,
         headerHighlighted: true,
@@ -87,7 +74,6 @@ export const UsersSettingsView: React.FC = () => {
             user?.userId !== row.original.userId ? (
               <RemoveUserSection workspaceId={workspaceId} email={row.original.email} />
             ) : null,
-            // cell.value === "invited" && <Button secondary>send again</Button>,
           ].filter(Boolean),
       },
     ],

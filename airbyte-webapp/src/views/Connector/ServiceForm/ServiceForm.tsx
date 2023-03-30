@@ -16,7 +16,6 @@ import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 import { CheckConnectionRead } from "../../../core/request/AirbyteClient";
 import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
-// import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServiceTypeControl";
 import { FormRoot } from "./FormRoot";
 import { ServiceFormContextProvider, useServiceForm } from "./serviceFormContext";
 import { ServiceFormValues } from "./types";
@@ -27,9 +26,6 @@ import {
   useConstructValidationSchema,
   usePatchFormik,
 } from "./useBuildForm";
-
-// import { SourceDefinitionRead } from "core/request/AirbyteClient";
-// import { useGetSource } from "hooks/services/useSourceHook";
 
 const FormikPatch: React.FC = () => {
   usePatchFormik();
@@ -136,10 +132,9 @@ export interface ServiceFormProps {
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const formId = useUniqueFormId(props.formId);
   const { clearFormChange } = useFormChangeTrackerService();
-  // const { push } = useRouter();
 
   const [isOpenRequestModal, toggleOpenRequestModal] = useToggle(false);
-  const [initialRequestName] = useState<string>(); // setInitialRequestName
+  const [initialRequestName] = useState<string>();
 
   const {
     formType,
@@ -214,27 +209,8 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
         ),
       },
       serviceType: {
-        component: () => (
-          // property: FormBaseItem, componentProps: FormComponentOverrideProps
-          <></>
-        ),
+        component: () => <></>,
       },
-      // serviceType: {
-      //   component: (property: FormBaseItem, componentProps: FormComponentOverrideProps) => (
-      //     // <ConnectorServiceTypeControl
-      //     //   property={property}
-      //     //   formType={formType}
-      //     //   onChangeServiceType={props.onServiceSelect}
-      //     //   availableServices={props.availableServices}
-      //     //   isEditMode={props.isEditMode}
-      //     //   onOpenRequestConnectorModal={(name) => {
-      //     //     setInitialRequestName(name);
-      //     //     toggleOpenRequestModal();
-      //     //   }}
-      //     //   {...componentProps}
-      //     // />
-      //   ),
-      // },
     }),
     [formType, props.onServiceSelect, props.availableServices, props.isEditMode, toggleOpenRequestModal]
   );

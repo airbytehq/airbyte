@@ -75,7 +75,7 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, f
     } catch (err) {
       setEnabledStatus(connection.status);
 
-      setStatusCode(708); // err.response.status
+      setStatusCode(708);
     }
   };
 
@@ -95,7 +95,6 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, f
         <Switch
           swithSize="medium"
           disabled={disabled}
-          // onChange={onChangeStatus}
           checked={enabledStatus === ConnectionStatus.active}
           loading={isLoading}
           key={`enabled-${enabledStatus}`}

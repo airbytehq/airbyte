@@ -1,6 +1,5 @@
 import { useQuery } from "react-query";
 
-// import { useConfig } from "config";
 import { useUser } from "core/AuthContext";
 import { SourceDefinitionSpecificationService } from "core/domain/connector/SourceDefinitionSpecificationService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
@@ -17,7 +16,6 @@ export const sourceDefinitionSpecificationKeys = {
 };
 
 function useGetService(): SourceDefinitionSpecificationService {
-  // const { apiUrl } = useConfig();
   const { removeUser } = useUser();
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 

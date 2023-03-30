@@ -177,11 +177,6 @@ export const Pagination: React.FC<IProps> = ({ pages, value, onChange }) => {
       <PageButton onClick={onPrev} buttonType="prev">
         <PrevIcon />
       </PageButton>
-      {/* {formPages(pages).map((page) => (
-        <PageButton isSelected={page === currentPage} onClick={() => setCurrentPage(page)} buttonType="page">
-          {page}
-        </PageButton>
-      ))} */}
       {renderPageNumbers()}
       <PageButton onClick={onNext} buttonType="next">
         <NextIcon />

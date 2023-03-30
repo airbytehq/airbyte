@@ -5,7 +5,6 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button, MainPageWithScroll } from "components";
-// import { EmptyResourceListView } from "components/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
 import PageTitle from "components/PageTitle";
 
@@ -39,16 +38,14 @@ const AllSourcesPage: React.FC = () => {
   const { push } = useRouter();
   const { sources } = useSourceList();
   useTrackPage(PageTrackingCodes.SOURCE_LIST);
-  const onCreateSource = () => push(`${RoutePaths.SelectSource}`); // SourceNew
+  const onCreateSource = () => push(`${RoutePaths.SelectSource}`);
 
   if (sources.length === 0) {
     onCreateSource();
     return null;
   }
-  // sources.length ?
   return (
     <MainPageWithScroll
-      // withPadding
       headTitle={<HeadTitle titles={[{ id: "admin.sources" }]} />}
       pageTitle={
         <PageTitle
@@ -70,9 +67,6 @@ const AllSourcesPage: React.FC = () => {
       <SourcesTable sources={sources} />
     </MainPageWithScroll>
   );
-  // : (
-  //   <EmptyResourceListView resourceType="sources" onCreateClick={onCreateSource} />
-  // );
 };
 
 export default AllSourcesPage;

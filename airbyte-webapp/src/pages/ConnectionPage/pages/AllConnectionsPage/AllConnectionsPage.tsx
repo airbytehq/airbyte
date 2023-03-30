@@ -118,7 +118,7 @@ const AllConnectionsPage: React.FC = () => {
 
   const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
 
-  const onCreateClick = () => push(`${RoutePaths.SelectConnection}`); // ConnectionNew
+  const onCreateClick = () => push(`${RoutePaths.SelectConnection}`);
   const onSetMessageId = (id: string) => setMessageId(id);
 
   return (
@@ -127,7 +127,6 @@ const AllConnectionsPage: React.FC = () => {
         <>
           <MessageBox message={messageId} onClose={() => setMessageId("")} type="info" position="center" />
           <MainPageWithScroll
-            // withPadding
             headTitle={<HeadTitle titles={[{ id: "connection.pageTitle" }]} />}
             pageTitle={
               <PageTitle
@@ -146,7 +145,6 @@ const AllConnectionsPage: React.FC = () => {
               />
             }
           >
-            {/* <Separator /> */}
             <DDsContainer>
               <DDContainer margin="0 24px 0 0">
                 <DropDown

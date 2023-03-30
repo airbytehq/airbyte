@@ -52,8 +52,6 @@ const PaymentPage: React.FC = () => {
   const { updateUserStatus, user } = useUser();
   const userPlanDetail = useUserPlanDetail();
   const { selectedProduct } = userPlanDetail;
-  // const packagesDetail = usePackagesDetail();
-  // const { productItem } = packagesDetail;
   const packagesMap = usePackagesMap();
   const productOptions = useProductOptions();
 
@@ -150,8 +148,6 @@ const PaymentPage: React.FC = () => {
               productPrice={Number(product?.price)}
               selectedProductPrice={selectedProduct?.price as number}
               planDetail={planDetail}
-              // onUpgradePlan={onUpgradePlan}
-              // updatePlanLoading={updatePlanLoading}
             />
           )}
         </MainView>

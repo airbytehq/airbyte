@@ -113,15 +113,6 @@ const PlansBillingPage: React.FC = () => {
 
   return (
     <>
-      {/* {toggleCancel && (
-        <CancelPlanModal
-          onClose={toggleCancleSuscriptionModal}
-          onConfirm={onCancelSubscription}
-          onNotNow={toggleCancleSuscriptionModal}
-          confirmLoading={confirmLoading}
-          expiresOn={userPlanDetail.expiresTime}
-        />
-      )} */}
       {toggleCancel && (
         <ConfirmationModal
           title="subscription.cancelSubscriptionModal.title"

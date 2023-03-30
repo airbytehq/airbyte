@@ -72,12 +72,7 @@ export const JobItem: React.FC<JobItemProps> = ({ job }) => {
               </div>
             }
           >
-            {isOpen && (
-              <>
-                <ErrorDetails attempts={getJobAttemps(job)} />
-                {/* <JobLogs job={job} jobIsFailed={!didSucceed} /> */}
-              </>
-            )}
+            {isOpen && <ErrorDetails attempts={getJobAttemps(job)} />}
           </Suspense>
         </div>
       </ContentWrapper>

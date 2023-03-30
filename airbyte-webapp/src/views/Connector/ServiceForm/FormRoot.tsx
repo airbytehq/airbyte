@@ -8,16 +8,10 @@ import { DefinitioDetails } from "components/ConnectorBlocks";
 import { FormBlock } from "core/form/types";
 
 import CreateControls from "./components/CreateControls";
-// import EditControls from "./components/EditControls";
 import { FormSection } from "./components/Sections/FormSection";
 import ShowLoadingMessage from "./components/ShowLoadingMessage";
 import { useServiceForm } from "./serviceFormContext";
 import { ServiceFormValues } from "./types";
-
-const FormContainer = styled(Form)`
-  //padding: 22px 27px 23px 24px;
-  // padding: 34px 40px 34px 80px;
-`;
 
 const LoaderContainer = styled.div`
   text-align: center;
@@ -46,9 +40,7 @@ interface FormRootProps {
 
 const FormRoot: React.FC<FormRootProps> = ({
   isTestConnectionInProgress = false,
-  // onRetest,
   formFields,
-  // successMessage,
   errorMessage,
   fetchingConnectorError,
   hasSuccess,
@@ -57,10 +49,10 @@ const FormRoot: React.FC<FormRootProps> = ({
   onBack,
 }) => {
   const { dirty, isSubmitting, isValid } = useFormikContext<ServiceFormValues>();
-  const { isLoadingSchema, selectedService, isEditMode, formType } = useServiceForm(); // resetServiceForm
+  const { isLoadingSchema, selectedService, isEditMode, formType } = useServiceForm();
 
   return (
-    <FormContainer>
+    <Form>
       {!isEditMode && <DefinitioDetails name={selectedService?.name} icon={selectedService?.icon} type={formType} />}
       <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
       {isLoadingSchema && (
@@ -71,22 +63,6 @@ const FormRoot: React.FC<FormRootProps> = ({
           </LoadingMessage>
         </LoaderContainer>
       )}
-      {/* {isEditMode ? (
-        <EditControls
-          isTestConnectionInProgress={isTestConnectionInProgress}
-          onCancelTesting={onStopTestingConnector}
-          isSubmitting={isSubmitting || isTestConnectionInProgress}
-          errorMessage={errorMessage}
-          formType={formType}
-          onRetestClick={onRetest}
-          isValid={isValid}
-          dirty={dirty}
-          onCancelClick={() => {
-            resetServiceForm();
-          }}
-          successMessage={successMessage}
-        />
-      ) : ( */}
       {!isLoadingSchema && (
         <CreateControls
           isTestConnectionInProgress={isTestConnectionInProgress}
@@ -101,9 +77,7 @@ const FormRoot: React.FC<FormRootProps> = ({
           onBack={onBack}
         />
       )}
-
-      {/* )} */}
-    </FormContainer>
+    </Form>
   );
 };
 

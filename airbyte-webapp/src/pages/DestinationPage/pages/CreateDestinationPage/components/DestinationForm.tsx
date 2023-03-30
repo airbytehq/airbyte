@@ -39,7 +39,6 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
   error,
   hasSuccess,
   formValues,
-  // afterSelectConnector,
   onShowLoading,
   onBack,
 }) => {
@@ -57,10 +56,6 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
 
   const onDropDownSelect = (destinationDefinitionId: string) => {
     setDestinationDefinitionId(destinationDefinitionId);
-    // const connector = destinationDefinitions.find((item) => item.destinationDefinitionId === destinationDefinitionId);
-    // if (afterSelectConnector) {
-    //   afterSelectConnector();
-    // }
   };
 
   const onSubmitForm = async (values: { name: string; serviceType: string }) => {

@@ -16,7 +16,6 @@ const PageContainer = styled.div<{
   offsetTop: number;
 }>`
   height: calc(100% - ${({ offsetTop }) => offsetTop}px);
-  // flex:1;
 `;
 
 const PnelGrabber = styled.div<{
@@ -27,7 +26,6 @@ const PnelGrabber = styled.div<{
   display: flex;
   align-items: center;
   justify-content: center;
-  // flex:1;
 `;
 
 const LazyDocumentationPanel = lazy(() =>
@@ -40,10 +38,6 @@ interface PanelContainerProps {
     height: number;
   };
 }
-
-// interface ConnectorDocumentationProps {
-//   topComponent?: React.ReactNode;
-// }
 
 const LeftPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>> = ({ children, dimensions }) => {
   const width = dimensions?.width ?? 0;
@@ -95,17 +89,14 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
 
   return (
     <PageContainer ref={divRef} offsetTop={offsetTop}>
-      {/* // <PageContainer> className={styles.pageContainer}*/}
       <ReflexContainer orientation="vertical">
         <ReflexElement className={styles.leftPanelStyle} propagateDimensions minSize={150}>
           <LeftPanelContainer>{children}</LeftPanelContainer>
         </ReflexElement>
         {documentationPanelOpen && (
           <ReflexSplitter style={{ border: 0, background: "rgba(255, 165, 0, 0)", display: "flex" }}>
-            {/* <div className={styles.panelGrabber}> */}
             <PnelGrabber offsetTop={offsetTop}>
               <FontAwesomeIcon className={styles.grabberHandleIcon} icon={faGripLinesVertical} size="1x" />
-              {/* </div> */}
             </PnelGrabber>
           </ReflexSplitter>
         )}
@@ -119,7 +110,6 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
           </ReflexElement>
         )}
       </ReflexContainer>
-      {/* </PageContainer> */}
     </PageContainer>
   );
 };

@@ -2,8 +2,6 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-// import { Button } from "components";
-
 import { BigButton, ButtonRows } from "components/base/Button/BigButton";
 
 import { TestingConnectionError, FetchingConnectorError } from "./TestingConnectionError";
@@ -30,15 +28,11 @@ const ButtonContainer = styled.div`
 `;
 
 const CreateControls: React.FC<CreateControlProps> = ({
-  // isTestConnectionInProgress,
   isSubmitting,
-  // formType,
   disabled,
   hasSuccess,
   errorMessage,
   fetchingConnectorError,
-  // isLoadSchema,
-  // onCancelTesting,
   onBack,
 }) => {
   if (isSubmitting) {

@@ -1,12 +1,10 @@
-import React, { useState } from "react"; // useMemo
+import React, { useState } from "react";
 import styled from "styled-components";
 
-// import { useConnectionList } from "hooks/services/useConnectionHook";
 import { ConnectionStep, CreateStepTypes } from "components/ConnectionStep";
 
 import { useGetSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
-// import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 import TestConnection from "views/Connector/TestConnection";
@@ -30,7 +28,6 @@ const CopySourcePage: React.FC = () => {
   });
 
   const source = useGetSource(query.id);
-  //   const sourceDefinition = useSourceDefinition(source?.sourceDefinitionId);
 
   const goBack = () => {
     push(`/${RoutePaths.Source}`);

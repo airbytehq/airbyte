@@ -1,12 +1,8 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-// import { useDataCardContext } from "components/DataPanel/DataCardContext";
-
-// import { Action, Namespace } from "core/analytics";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { LogsRequestError } from "core/request/LogsRequestError";
-// import { useAnalyticsService } from "hooks/services/Analytics";
 import useRouter from "hooks/useRouter";
 import { SourceDefinitionReadWithLatestTag } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
@@ -48,8 +44,6 @@ export const SourceForm: React.FC<SourceFormProps> = ({
   onBack,
 }) => {
   const { location } = useRouter();
-  // const analyticsService = useAnalyticsService();
-  // const { sourceServiceValues } = useDataCardContext();
 
   const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
     hasSourceDefinitionId(location.state) ? location.state.sourceDefinitionId : null
@@ -64,17 +58,9 @@ export const SourceForm: React.FC<SourceFormProps> = ({
   const onDropDownSelect = (sourceDefinitionId: string) => {
     setSourceDefinitionId(sourceDefinitionId);
 
-    // const connector = sourceDefinitions.find((item) => item.sourceDefinitionId === sourceDefinitionId);
-
     if (afterSelectConnector) {
       afterSelectConnector();
     }
-
-    // analyticsService.track(Namespace.SOURCE, Action.SELECT, {
-    //   actionDescription: "Source connector type selected",
-    //   connector_source: connector?.name,
-    //   connector_source_definition_id: sourceDefinitionId,
-    // });
   };
 
   const onSubmitForm = async (values: ServiceFormValues) => {

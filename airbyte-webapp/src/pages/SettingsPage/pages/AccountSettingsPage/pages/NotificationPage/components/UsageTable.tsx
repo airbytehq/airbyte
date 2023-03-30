@@ -55,7 +55,6 @@ export const UsageTable: React.FC<IProps> = ({
 }) => {
   return (
     <>
-      {/* Table Header Row */}
       <Row>
         <Cell flex={FirstCellFlexValue}>
           <FirstHeaderText>
@@ -73,7 +72,6 @@ export const UsageTable: React.FC<IProps> = ({
           </HeaderText>
         </BodyCell>
       </Row>
-      {/* Table Body Rows */}
       {usageNotificationList
         .slice(0)
         .reverse()

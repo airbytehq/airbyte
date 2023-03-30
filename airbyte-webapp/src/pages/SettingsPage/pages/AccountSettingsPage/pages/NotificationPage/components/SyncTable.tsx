@@ -19,7 +19,6 @@ interface IProps {
 export const SyncTable: React.FC<IProps> = ({ syncFail, syncSuccess, updateNotificationSetting, updateLoading }) => {
   return (
     <>
-      {/* Table Header Row */}
       <Row>
         <Cell flex={FirstCellFlexValue}>
           <FirstHeaderText>
@@ -28,7 +27,6 @@ export const SyncTable: React.FC<IProps> = ({ syncFail, syncSuccess, updateNotif
         </Cell>
       </Row>
       <Separator />
-      {/* Table Body Rows */}
       <BodyRow>
         <Cell flex={FirstCellFlexValue}>
           <HeaderText>

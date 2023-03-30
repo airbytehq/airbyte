@@ -45,14 +45,6 @@ const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
         id: ConnectionSettingsRoutes.CONFIGURATIONS,
         name: <FormattedMessage id="onboarding.configurations" />,
       },
-      // {
-      //   id: ConnectionSettingsRoutes.REPLICATION,
-      //   name: <FormattedMessage id="connection.replication" />,
-      // },
-      // {
-      //   id: ConnectionSettingsRoutes.TRANSFORMATION,
-      //   name: <FormattedMessage id="connectionForm.transformation.title" />,
-      // },
     ];
 
     connection.status !== ConnectionStatus.deprecated &&

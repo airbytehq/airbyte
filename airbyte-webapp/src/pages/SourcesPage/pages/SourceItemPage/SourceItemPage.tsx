@@ -62,8 +62,7 @@ const TableContainer = styled.div`
 
 const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   useTrackPage(PageTrackingCodes.SOURCE_ITEM);
-  const { query, push, pathname } = useRouter<{ id: string }, { id: string; "*": string }>(); // params
-  // const currentStep = useMemo<string>(() => (params["*"] === "" ? StepsTypes.OVERVIEW : params["*"]), [params]);
+  const { query, push, pathname } = useRouter<{ id: string }, { id: string; "*": string }>();
   const [currentStep, setCurrentStep] = useState(StepsTypes.CREATE_ENTITY);
   const [loadingStatus, setLoadingStatus] = useState<boolean>(true);
   const [fetchingConnectorError, setFetchingConnectorError] = useState<JSX.Element | string | null>(null);
@@ -108,11 +107,6 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
     [destinations, destinationDefinitions]
   );
 
-  // const onSelectStep = (id: string) => {
-  //   const path = id === StepsTypes.OVERVIEW ? "." : id.toLowerCase();
-  //   push(path);
-  // };
-
   const onSelect = (data: DropDownRow.IDataItem) => {
     if (data.value === "create-new-item") {
       push(`../${RoutePaths.SelectConnection}`, {
@@ -123,19 +117,6 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
         state: { destinationId: data.value, sourceId: source.sourceId, currentStep: CreateStepTypes.CREATE_CONNECTION },
       });
     }
-
-    // const path = `../${RoutePaths.ConnectionNew}`;
-    // const path = `/${RoutePaths.Connections}/${RoutePaths.ConnectionNew}`;
-    // const state =
-    //   data.value === "create-new-item"
-    //     ?
-    //     : {
-    //         destinationId: data.value,
-    //         sourceId: source.sourceId,
-    //         currentStep: CreateStepTypes.CREATE_CONNECTION,
-    //       };
-
-    // push(path, { state });
   };
 
   const goBack = () => {
@@ -145,10 +126,6 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   const onDelete = async () => {
     await deleteSource({ connectionsWithSource, source });
   };
-
-  // const onCreateClick = () => {
-  //   push(`/${RoutePaths.Destination}/${RoutePaths.SelectDestination}`);
-  // };
 
   const menuItems: CategoryItem[] = pageConfig?.menuConfig || [
     {
@@ -160,9 +137,7 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
             <TableContainer>
               <TableItemTitle
                 dropDownData={destinationsDropDownData}
-                // onClick={onCreateClick}
                 onSelect={onSelect}
-                // type="source"
                 num={connectionsWithSource.length}
                 btnText={<FormattedMessage id="destinations.newDestinationTitle" />}
                 type="destination"

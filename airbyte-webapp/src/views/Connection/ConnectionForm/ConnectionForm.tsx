@@ -4,7 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 
-import { ControlLabels, DropDown, DropDownRow, H4, Input } from "components"; // Card
+import { ControlLabels, DropDown, DropDownRow, H4, Input } from "components";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
 import {
@@ -62,20 +62,14 @@ export const LeftFieldCol = styled.div`
 
 export const RightFieldCol = styled.div`
   flex: 1;
-  // max-width: 300px;
 `;
 
 const StyledSection = styled.div`
   padding: 34px 44px 10px 44px;
   display: flex;
   flex-direction: column;
-  // gap: 15px;
   background: #ffffff;
   border-radius: 16px;
-
-  // &:not(:last-child) {
-  //   box-shadow: 0 1px 0 rgba(139, 139, 160, 0.25);
-  // }
 `;
 
 interface SectionProps {
@@ -89,28 +83,20 @@ const ConfigurationsLabel = styled.div`
   margin-bottom: 4px;
 `;
 
-// const LabelHeading = styled(H5)`
-//   line-height: 16px;
-//   display: inline;
-// `;
-
 const SectionTitle = styled(H4)`
   margin-bottom: 30px;
 `;
 
 const Section: React.FC<SectionProps> = ({ title, children }) => (
-  // <Card>
   <StyledSection>
     {title && <SectionTitle bold>{title}</SectionTitle>}
     {children}
   </StyledSection>
-  // </Card>
 );
 
 const FormContainer = styled(Form)`
   display: flex;
   flex-direction: column;
-  // margin-bottom: 30px;
   gap: 20px;
 `;
 
@@ -296,7 +282,6 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
               )}
             </Field>
           </Section>
-          {/* <Card> */}
           <Section title={<FormattedMessage id="connection.streamsSettings" />}>
             <span style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
               <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
@@ -354,8 +339,6 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 </FlexRow>
               )}
             </Field>
-            {/* </StyledSection>
-            <StyledSection> */}
             <Field
               name="syncCatalog.streams"
               destinationSupportedSyncModes={destDefinition.supportedDestinationSyncModes}
@@ -365,7 +348,6 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
               mode={mode}
             />
           </Section>
-          {/* </Card> */}
           {mode === "edit" && (
             <>
               <OperationsSection

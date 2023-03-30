@@ -64,7 +64,7 @@ export const InviteUsersModal: React.FC<{
   const { inviteUserLogic } = useUserHook();
   const { mutateAsync: invite } = inviteUserLogic;
 
-  const isRoleVisible = false; // Temporarily hiding roles because there's only 'Admin' in cloud.
+  const isRoleVisible = false;
 
   return (
     <Modal title={<FormattedMessage id="modals.addUser.title" />} onClose={props.onClose}>

@@ -13,8 +13,6 @@ import { useAppNotification } from "hooks/services/AppNotification";
 import { useRoleOptions } from "services/roles/RolesService";
 import { useListUsers, useUserAsyncAction } from "services/users/UsersService";
 
-// import ChangeRoleModal from "./components/ChangeRoleModal";
-// import DeleteUserModal from "./components/DeleteUserModal";
 import InviteUserModal from "./components/InviteUserModal";
 import UserTable from "./components/UserTable";
 
@@ -54,7 +52,6 @@ const UserManagementPage: React.FC = () => {
   const [userId, setUserId] = useState<string>("");
   const [userRole, setUserRole] = useState<number | undefined>();
 
-  // Delete user functionality
   const [deleteModal, setDeleteModal] = useState<boolean>(false);
   const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
   const toggleDeleteModal = () => setDeleteModal(!deleteModal);
@@ -78,7 +75,6 @@ const UserManagementPage: React.FC = () => {
     toggleDeleteModal();
   };
 
-  // Resend invite functionality
   const resendInvite = useCallback(async (userId: string) => {
     onResendInvite(userId)
       .then(() => {
@@ -89,7 +85,6 @@ const UserManagementPage: React.FC = () => {
       });
   }, []);
 
-  // Change role user functionality
   const [changeRoleModal, setChangeRoleModal] = useState<boolean>(false);
   const [changeRoleLoading, setChangeRoleLoading] = useState<boolean>(false);
 
@@ -124,7 +119,6 @@ const UserManagementPage: React.FC = () => {
     setUserRole(undefined);
   };
 
-  // Add user funcationality
   const [addUserModal, setAddUserModal] = useState<boolean>(false);
   const toggleAddUserModal = () => setAddUserModal(!addUserModal);
 
@@ -170,23 +164,6 @@ const UserManagementPage: React.FC = () => {
           onSubmit={onConfirmDelete}
         />
       )}
-
-      {/* {changeRoleModal && (
-        <ChangeRoleModal
-          onClose={toggleChangeRoleModal}
-          onChangeRole={onConfirmChangeRole}
-          onCancel={onCancelChangeRole}
-          isLoading={changeRoleLoading}
-        />
-      )} */}
-      {/* {deleteModal && (
-        <DeleteUserModal
-          onClose={toggleDeleteModal}
-          onDelete={onConfirmDelete}
-          onCancel={onCancelDelete}
-          isLoading={deleteLoading}
-        />
-      )} */}
     </>
   );
 };

@@ -1,7 +1,7 @@
 import React, { Suspense, useState } from "react";
 import { Navigate, Route, Routes, useParams } from "react-router-dom";
 
-import { LoadingPage } from "components"; // MainPageWithScroll
+import { LoadingPage } from "components";
 import MessageBox from "components/base/MessageBox";
 import HeadTitle from "components/HeadTitle";
 
@@ -10,7 +10,6 @@ import { Action, Namespace } from "core/analytics";
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useAnalyticsService, useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useGetConnection } from "hooks/services/useConnectionHook";
-// import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/components/TransformationView";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 
@@ -51,7 +50,6 @@ const ConnectionItemPage: React.FC = () => {
 
     onOpenMessageBox("connection.messagebox.saveChange");
   };
-  // setMessageId()
   const isConnectionDeleted = connection.status === ConnectionStatus.deprecated;
 
   const onSync = () => {
@@ -121,10 +119,6 @@ const ConnectionItemPage: React.FC = () => {
             path={ConnectionSettingsRoutes.CONFIGURATIONS}
             element={<ReplicationView onAfterSaveSchema={onAfterSaveSchema} connectionId={connectionId} />}
           />
-          {/* <Route
-            path={ConnectionSettingsRoutes.TRANSFORMATION}
-            element={<TransformationView connection={connection} />}
-          /> */}
           <Route
             path={ConnectionSettingsRoutes.DANGERZONE}
             element={isConnectionDeleted ? <Navigate replace to=".." /> : <SettingsView connection={connection} />}

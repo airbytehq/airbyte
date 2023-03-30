@@ -15,8 +15,6 @@
 %catalogHeader {
   min-height: 33px;
   margin-bottom: 0 !important;
-
-  // margin-left: 20px;
 }
 
 .readonlyCatalogHeader {
@@ -34,14 +32,10 @@
   @extend %catalogHeader;
 
   padding-top: 6px;
-
-  // margin-left: 155px;
 }
 
 .readonlyCatalogSubheader {
   @extend %catalogHeader;
 
   padding-top: 6px;
-
-  // margin-left: 115px;
 }

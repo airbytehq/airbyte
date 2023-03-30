@@ -69,7 +69,6 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
     <div className={styles.container}>
       <ConnectionName connection={connection} />
       <div className={styles.mainInfoContainer}>
-        {/* <div className={styles.enabledControlContainer} /> */}
         <div className={styles.leftContainer}>
           <div className={styles.pathContainer}>
             <Link to={sourceConnectionPath} className={styles.connectorLink}>
@@ -80,7 +79,6 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
                 releaseStage={sourceDefinition?.releaseStage}
               />
             </Link>
-            {/* <FontAwesomeIcon icon={faArrowRight} /> */}
             <RightArrowIcon />
             <Link to={destinationConnectionPath} className={styles.connectorLink}>
               <ConnectorCard

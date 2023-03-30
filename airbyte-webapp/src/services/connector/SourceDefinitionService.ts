@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "react-query";
 
-// import { useConfig } from "config";
 import { useUser } from "core/AuthContext";
 import { SourceDefinitionService } from "core/domain/connector/SourceDefinitionService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
@@ -18,7 +17,6 @@ export const sourceDefinitionKeys = {
 };
 
 function useGetSourceDefinitionService(): SourceDefinitionService {
-  // const { apiUrl } = useConfig();
   const { removeUser } = useUser();
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
@@ -39,25 +37,7 @@ const useSourceDefinitionList = (): {
   const { user } = useUser();
 
   return useSuspenseQuery(sourceDefinitionKeys.lists(), async () => {
-    const [
-      // definition,
-      latestDefinition,
-    ] = await Promise.all([
-      // service.list(),
-      // service.listLatest(),
-      service.listLatestForWorkspace({ workspaceId: user.workspaceId }),
-    ]);
-
-    // const sourceDefinitions = definition.sourceDefinitions.map((source) => {
-    //   const withLatest = latestDefinition.sourceDefinitions.find(
-    //     (latestSource) => latestSource.sourceDefinitionId === source.sourceDefinitionId
-    //   );
-
-    //   return {
-    //     ...source,
-    //     latestDockerImageTag: withLatest?.dockerImageTag,
-    //   };
-    // });
+    const [latestDefinition] = await Promise.all([service.listLatestForWorkspace({ workspaceId: user.workspaceId })]);
 
     const sourceDefinitions = latestDefinition.sourceDefinitions.map((source) => {
       return {

@@ -5,7 +5,6 @@ import styled from "styled-components";
 import HeadTitle from "components/HeadTitle";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
-// import { Link } from "../../../components/Link";
 import { FormHeaderSection } from "pages/AuthPage/components/FormHeaderSection";
 
 import { RoutePaths } from "../../routePaths";
@@ -108,19 +107,7 @@ const SignupPage: React.FC<SignupPageProps> = () => {
           buttonText={formatMessage({ id: "signup.siginButton" })}
           text={formatMessage({ id: "signup.haveAccount" })}
         />
-        {/* <SigninButtonContent>
-          <SigninText>
-            <FormattedMessage id="signup.haveAccount" />
-          </SigninText>
-          <SigninButton>
-            <Link $clear to={`/${RoutePaths.Signin}`}>
-              <FormattedMessage id="signup.siginButton" />
-            </Link>
-          </SigninButton>
-        </SigninButtonContent> */}
-        {/* <SignupFormContainer> */}
         <SignupForm />
-        {/* </SignupFormContainer> */}
       </div>
     </div>
   );

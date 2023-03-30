@@ -147,18 +147,6 @@ const LoginPage: React.FC = () => {
                   <FormattedMessage id="login.button" />
                 </LoadingButton>
               </BottomBlock>
-              {/* <div className={styles.signupLink}>
-              <FormattedMessage
-                id="login.signupDescription"
-                values={{
-                  signupLink: (
-                    <Link to={`/${RoutePaths.Signup}`} $clear>
-                      <FormattedMessage id="login.signup" />
-                    </Link>
-                  ),
-                }}
-              />
-            </div> */}
             </Form>
           )}
         </Formik>

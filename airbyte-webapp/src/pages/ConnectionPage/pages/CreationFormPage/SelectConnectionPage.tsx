@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-// import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import { BigButton, ButtonRows } from "components/base/Button/BigButton";
@@ -69,7 +68,6 @@ const SelectNewConnectionCard: React.FC<{
 }> = ({ backtrack }) => {
   const { push, location } = useRouter();
   const { formatMessage } = useIntl();
-  // const navigator = useNavigate();
   const { sourceDefinitions } = useSourceDefinitionList();
   const { destinationDefinitions } = useDestinationDefinitionList();
 
@@ -106,8 +104,6 @@ const SelectNewConnectionCard: React.FC<{
       } else {
         push(`/${RoutePaths.Destination}/${destinationId}/overview`);
       }
-
-      // navigator(-1);
       return;
     }
     setCurrentStep(CreateStepTypes.CREATE_SOURCE);
@@ -127,9 +123,7 @@ const SelectNewConnectionCard: React.FC<{
   };
 
   const clickSelect = () => {
-    const locationState: State = {
-      // currentStep,
-    };
+    const locationState: State = {};
     if (sourceId) {
       locationState.sourceId = sourceId;
     }
@@ -215,7 +209,6 @@ const SelectNewConnectionCard: React.FC<{
       <Container>
         {currentStep === CreateStepTypes.CREATE_SOURCE && (
           <>
-            {/* {!backtrack && ( */}
             <ExistingEntityForm
               type="source"
               onSubmit={onSelectExistingSource}
@@ -224,7 +217,6 @@ const SelectNewConnectionCard: React.FC<{
                 id: "form.select.placeholder.source",
               })}
             />
-            {/* )} */}
             <DataPanel
               onSelect={afterSelect}
               data={sourceDefinitions}
@@ -239,7 +231,6 @@ const SelectNewConnectionCard: React.FC<{
 
         {currentStep === CreateStepTypes.CREATE_DESTINATION && (
           <>
-            {/* {!backtrack && ( */}
             <ExistingEntityForm
               type="destination"
               onSubmit={onSelectExistingSource}
@@ -248,7 +239,6 @@ const SelectNewConnectionCard: React.FC<{
                 id: "form.select.placeholder.destination",
               })}
             />
-            {/* )} */}
             <DataPanel
               onSelect={afterSelect}
               data={destinationDefinitions}
