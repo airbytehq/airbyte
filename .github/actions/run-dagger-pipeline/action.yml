@@ -2,7 +2,7 @@ name: "Run Dagger pipeline"
 description: "Runs a given dagger pipeline"
 inputs:
   subcommand:
-    description: "Subcommand for airbyte-ci-pipeline"
+    description: "Subcommand for airbyte-ci"
     required: true
   options:
     description: "Options for the subcommand"
@@ -34,7 +34,7 @@ runs:
     - name: Install ci-connector-ops package
       shell: bash
       run: pip install ./tools/ci_connector_ops\[pipelines]\
-    - name: Run airbyte-ci-pipeline
+    - name: Run airbyte-ci
       shell: bash
       run: |
         export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
@@ -46,7 +46,7 @@ runs:
             curl "https://dl.dagger.io/dagger/main/${DAGGER_CLI_COMMIT}/dagger_${DAGGER_CLI_COMMIT}_$(uname -s | tr A-Z a-z)_$(uname -m | sed s/x86_64/amd64/).tar.gz" | tar xvz -C "$DAGGER_TMP_BINDIR"
         fi
 
-        airbyte-ci-pipeline --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
+        airbyte-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
 
       env:
         CI_GIT_BRANCH: ${{ github.head_ref }}

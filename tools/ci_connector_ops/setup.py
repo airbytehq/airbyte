@@ -72,7 +72,7 @@ setup(
             "allowed-hosts-checks = ci_connector_ops.allowed_hosts_checks:check_allowed_hosts",
             "run-qa-engine = ci_connector_ops.qa_engine.main:main",
             "run-qa-checks = ci_connector_ops.qa_checks:run_qa_checks",
-            "airbyte-ci-pipeline = ci_connector_ops.pipelines.commands.main:airbyte_ci_pipeline",
+            "airbyte-ci = ci_connector_ops.pipelines.commands.airbyte_ci:airbyte_ci",
         ],
     },
 )

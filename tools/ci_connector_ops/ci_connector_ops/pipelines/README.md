@@ -33,10 +33,10 @@ More details [here](https://github.com/airbytehq/airbyte/blob/master/tools/ci_cr
 export GCP_GSM_CREDENTIALS=`cat <path to service account json file>`
 ```
 
-If you don't want to use the remote secrets please call airbyte-ci-pipeline connectors-ci with the following flag:
+If you don't want to use the remote secrets please call airbyte-ci connectors-ci with the following flag:
 
 ```bash
-airbyte-ci-pipeline connectors-ci --use-remote-secrets=False
+airbyte-ci connectors-ci --use-remote-secrets=False
 ```
 
 ### Environment variables required for CI run:
@@ -52,26 +52,26 @@ airbyte-ci-pipeline connectors-ci --use-remote-secrets=False
 (source-pokeapi does not require GSM access)
 
 ```bash
-airbyte-ci-pipeline connectors-ci test-connectors --name=source-pokeapi
+airbyte-ci connectors-ci test-connectors --name=source-pokeapi
 ```
 
 ### **Run the pipeline for multiple connectors**
 
 ```bash
-airbyte-ci-pipeline connectors-ci test-connectors --name=source-pokeapi --name=source-openweather
+airbyte-ci connectors-ci test-connectors --name=source-pokeapi --name=source-openweather
 ```
 
 ### **Run the pipeline for generally available connectors**
 
 ```bash
-airbyte-ci-pipeline connectors-ci test-connectors --release-stage=generally_available
+airbyte-ci connectors-ci test-connectors --release-stage=generally_available
 ```
 
 ### **Run the pipeline for the connectors you changed on the branch**
 
 ```bash
 touch airbyte-integrations/connectors/source-pokeapi/random_file_addition.txt
-airbyte-ci-pipeline connectors-ci test-connectors --modified #the source-pokeapi pipeline should run
+airbyte-ci connectors-ci test-connectors --modified #the source-pokeapi pipeline should run
 ```
 
 ### Local VS. CI
@@ -80,7 +80,7 @@ The default behavior of the CLI is to run in a local context.
 You can tell the CLI that it is running in a CI context with the following flag:
 
 ```bash
-airbyte-ci-pipeline --is-ci connectors-ci
+airbyte-ci --is-ci connectors-ci
 ```
 
 The main differences are that:

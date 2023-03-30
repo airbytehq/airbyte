@@ -27,7 +27,7 @@ from ci_connector_ops.pipelines.utils import (
 @click.option("--ci-context", default="manual", envvar="CI_CONTEXT", type=click.Choice(["manual", "pull_request", "nightly_builds"]))
 @click.option("--pipeline-start-timestamp", default=get_current_epoch_time, envvar="CI_PIPELINE_START_TIMESTAMP", type=int)
 @click.pass_context
-def airbyte_ci_pipeline(
+def airbyte_ci(
     ctx: click.Context,
     is_local: bool,
     git_branch: str,
@@ -50,8 +50,8 @@ def airbyte_ci_pipeline(
     ctx.obj["modified_files"] = get_modified_files(git_branch, git_revision, diffed_branch, is_local)
 
 
-airbyte_ci_pipeline.add_command(connectors_ci)
-airbyte_ci_pipeline.add_command(metadata_service)
+airbyte_ci.add_command(connectors_ci)
+airbyte_ci.add_command(metadata_service)
 
 if __name__ == "__main__":
-    airbyte_ci_pipeline()
+    airbyte_ci()

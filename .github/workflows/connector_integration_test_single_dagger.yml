@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       test-connectors-options:
-        description: "Options to pass to the 'airbyte-ci-pipeline connectors-ci test-connectors' command"
+        description: "Options to pass to the 'airbyte-ci connectors-ci test-connectors' command"
         default: "--modified"
   pull_request:
     paths:
@@ -35,7 +35,7 @@ jobs:
           python-version: "3.10"
       - name: Install ci-connector-ops package
         run: pip install ./tools/ci_connector_ops\[pipelines]\
-      - name: Run airbyte-ci-pipeline connectors-ci test-connectors [WORKFLOW DISPATCH]
+      - name: Run airbyte-ci connectors-ci test-connectors [WORKFLOW DISPATCH]
         if: github.event_name == 'workflow_dispatch'
         run: |
           export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
@@ -46,7 +46,7 @@ jobs:
               mkdir -p "$DAGGER_TMP_BINDIR"
               curl "https://dl.dagger.io/dagger/main/${DAGGER_CLI_COMMIT}/dagger_${DAGGER_CLI_COMMIT}_$(uname -s | tr A-Z a-z)_$(uname -m | sed s/x86_64/amd64/).tar.gz" | tar xvz -C "$DAGGER_TMP_BINDIR"
           fi
-          airbyte-ci-pipeline --is-ci --gha-workflow-run-id=${{ github.run_id }} connectors-ci test-connectors ${{ github.event.inputs.test-connectors-options }}
+          airbyte-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} connectors-ci test-connectors ${{ github.event.inputs.test-connectors-options }}
         env:
           _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -59,7 +59,7 @@ jobs:
           CI_GIT_REVISION: ${{ github.sha }}
           CI_CONTEXT: "manual"
           CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
-      - name: Run airbyte-ci-pipeline connectors-ci test-connectors [PULL REQUESTS]
+      - name: Run airbyte-ci connectors-ci test-connectors [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         run: |
           export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
@@ -70,7 +70,7 @@ jobs:
               mkdir -p "$DAGGER_TMP_BINDIR"
               curl "https://dl.dagger.io/dagger/main/${DAGGER_CLI_COMMIT}/dagger_${DAGGER_CLI_COMMIT}_$(uname -s | tr A-Z a-z)_$(uname -m | sed s/x86_64/amd64/).tar.gz" | tar xvz -C "$DAGGER_TMP_BINDIR"
           fi
-          airbyte-ci-pipeline --is-ci --gha-workflow-run-id=${{ github.run_id }} connectors-ci test-connectors --modified
+          airbyte-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} connectors-ci test-connectors --modified
         env:
           _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
