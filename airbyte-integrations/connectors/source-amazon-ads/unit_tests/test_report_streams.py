@@ -3,7 +3,7 @@
 #
 
 import re
-from base64 import b64decode
+from base64 import b64decode, b64encode
 from datetime import timedelta
 from functools import partial
 from unittest import mock
@@ -41,6 +41,7 @@ METRIC_RESPONSE is gzip compressed binary representing this string:
     "adId": "665320125",
     "targetId": "791320341",
     "asin": "G000PSH142",
+    "advertisedAsin": "G000PSH142",
     "keywordBid": "511234974",
     "keywordId": "965783021"
   },
@@ -51,6 +52,7 @@ METRIC_RESPONSE is gzip compressed binary representing this string:
     "adId": "665320125",
     "targetId": "791320341",
     "asin": "G000PSH142",
+    "advertisedAsin": "G000PSH142",
     "keywordBid": "511234974",
     "keywordId": "965783021"
   },
@@ -61,6 +63,7 @@ METRIC_RESPONSE is gzip compressed binary representing this string:
     "adId": "665320125",
     "targetId": "791320341",
     "asin": "G000PSH142",
+    "advertisedAsin": "G000PSH142",
     "keywordBid": "511234974",
     "keywordId": "965783021"
   },
@@ -71,6 +74,7 @@ METRIC_RESPONSE is gzip compressed binary representing this string:
     "adId": "665320125",
     "targetId": "791320341",
     "asin": "G000PSH142",
+    "advertisedAsin": "G000PSH142",
     "keywordBid": "511234974",
     "keywordId": "965783021"
   },
@@ -81,6 +85,7 @@ METRIC_RESPONSE is gzip compressed binary representing this string:
     "adId": "665320125",
     "targetId": "791320341",
     "asin": "G000PSH142",
+    "advertisedAsin": "G000PSH142",
     "keywordBid": "511234974",
     "keywordId": "965783021"
   }
@@ -88,10 +93,12 @@ METRIC_RESPONSE is gzip compressed binary representing this string:
 """
 METRIC_RESPONSE = b64decode(
     """
-H4sIANnqymMC/92SsYrCQBBA+3zFsrWBmdnZ7K6lTbSRgyvFYjFBwl2iJIqI+O+3p2aPEyxSmmKLnceb4jHJKhHiEp
-4QcuPrva+2zaKQU0HIYCyTnfyHS1+XAcsu/L/LtB+nTZinUZIPyxd5uzvubxtlxg5Q8R97jDOtCJB0Dw6+3ZaHOzQO
-A1SM0eqq5hfkAPDxOUemnnyV59OuLWbVTdSIpNgZfsL3tS7TxioglAFeJy8aMGtgbWlIgt4ZRwENDpmtGnQFURpHA1
-JokGDYGURpHA2s0woyYBjSIErv1SBZJz+HyV3zFgUAAA==
+    H4sIAAAAAAAACuWSPWvDMBCGd/8KoTmGu9PJkrq1S5olBDqWDqIWwbRxgu
+    02hJD/HjX+ooUMXutBg95Hzwle7jUR4hyPEPLd7w6+2JarXD4IQgZjmezi
+    N1z7XYhY1vH+GdI+TsuYp4MkO8vny2r/dbhNlBk7QMUj6+JMKwIk3YPGV9
+    vQtNA4jFAxDlZdlD9gCQCbl2dkGud9h6op6pA/3n3zEU7HfZU/FbfhGpEU
+    O8N/cPu1y7SxCghlhJfFnZ6YNbC2NKWm3plPSxocMls1aZsGaT49kUKDBN
+    PWaZDm05N1WkEGDFN6sr30/3pK3q5AhIPlyAUAAA==
 """
 )
 METRICS_COUNT = 5
