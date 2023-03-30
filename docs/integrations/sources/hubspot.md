@@ -126,6 +126,7 @@ Now that you have set up the Hubspot source connector, check out the following H
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.4   | 2023-03-28 | [24641](https://github.com/airbytehq/airbyte/pull/24641) | Convert to int only numeric values                                                                                                             |
 | 0.3.3   | 2023-03-27 | [24591](https://github.com/airbytehq/airbyte/pull/24591) | Fix pagination for `marketing emails` stream                                                                                                   |
 | 0.3.2   | 2023-02-07 | [22479](https://github.com/airbytehq/airbyte/pull/22479) | Turn on default HttpAvailabilityStrategy                                                                                                       |
 | 0.3.1   | 2023-01-27 | [22009](https://github.com/airbytehq/airbyte/pull/22009) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                                    |
