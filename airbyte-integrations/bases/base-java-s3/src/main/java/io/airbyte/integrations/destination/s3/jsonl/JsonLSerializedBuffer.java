@@ -72,7 +72,7 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
   }
 
   public static CreateBufferFunction createFunction(final S3JsonlFormatConfig config,
-                                                                                                                                          final Callable<BufferStorage> createStorageFunction) {
+                                                    final Callable<BufferStorage> createStorageFunction) {
     return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) -> {
       final CompressionType compressionType = config == null
           ? S3DestinationConstants.DEFAULT_COMPRESSION_TYPE

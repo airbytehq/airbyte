@@ -160,7 +160,8 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   }
 
   /**
-   * Get the states that will be flushed to the destination. Callers will pass this list to reportStatesAsFlushed() once completed.
+   * Get the states that will be flushed to the destination. Callers will pass this list to
+   * reportStatesAsFlushed() once completed.
    *
    * @return Queue of AirbyteMessage state messages
    */

@@ -119,7 +119,8 @@ public class S3ConsumerFactory {
       LOGGER.info("Flushing buffer for stream {} ({}) to storage", streamName.getName(), FileUtils.byteCountToDisplaySize(buffer.getByteCount()));
       if (!pairToWriteConfig.containsKey(streamName)) {
         throw new IllegalArgumentException(
-            String.format("Message contained record from a stream %s that was not in the catalog. \ncatalog: %s", streamName, Jsons.serialize(catalog)));
+            String.format("Message contained record from a stream %s that was not in the catalog. \ncatalog: %s", streamName,
+                Jsons.serialize(catalog)));
       }
 
       final WriteConfig writeConfig = pairToWriteConfig.get(streamName);
