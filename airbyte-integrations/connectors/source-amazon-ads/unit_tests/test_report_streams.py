@@ -76,6 +76,12 @@ def setup_responses(init_response=None, init_response_products=None, init_respon
             body=init_response_products,
             status=202,
         )
+        responses.add(
+            responses.POST,
+            re.compile(r"https://advertising-api.amazon.com/reporting/reports"),
+            body=init_response_products,
+            status=200,
+        )
     if init_response_brands:
         responses.add(
             responses.POST, re.compile(r"https://advertising-api.amazon.com/v2/hsa/[a-zA-Z]+/report"), body=init_response_brands, status=202
@@ -84,6 +90,11 @@ def setup_responses(init_response=None, init_response_products=None, init_respon
         responses.add(
             responses.GET,
             re.compile(r"https://advertising-api.amazon.com/v2/reports/[^/]+$"),
+            body=status_response,
+        )
+        responses.add(
+            responses.GET,
+            re.compile(r"https://advertising-api.amazon.com/reporting/reports"),
             body=status_response,
         )
     if metric_response:
@@ -147,7 +158,7 @@ def test_products_report_stream(config):
     profiles = make_profiles(profile_type="vendor")
 
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
-    stream_slice = {"profile": profiles[0], "reportDate": "20210725", "retry_count": 3}
+    stream_slice = {"profile": profiles[0], "reportDate": "2021-07-25", "retry_count": 3}
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
     assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)
 
@@ -353,9 +364,9 @@ def test_get_start_date(config):
 
     profile_id = str(profiles[0].profileId)
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
-    assert stream.get_start_date(profiles[0], {profile_id: {"reportDate": "20210810"}}) == Date(2021, 8, 10)
+    assert stream.get_start_date(profiles[0], {profile_id: {"reportDate": "2021-08-10"}}) == Date(2021, 8, 10)
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
-    assert stream.get_start_date(profiles[0], {profile_id: {"reportDate": "20210510"}}) == Date(2021, 6, 1)
+    assert stream.get_start_date(profiles[0], {profile_id: {"reportDate": "2021-05-10"}}) == Date(2021, 6, 1)
 
     config.pop("start_date")
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
@@ -368,7 +379,7 @@ def test_stream_slices_different_timezones(config):
     profile2 = Profile(profileId=2, timezone="UTC", accountInfo=AccountInfo(marketplaceStringId="", id="", type="seller"))
     stream = SponsoredProductsReportStream(config, [profile1, profile2], authenticator=mock.MagicMock())
     slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state={}))
-    assert slices == [{"profile": profile1, "reportDate": "20210731"}, {"profile": profile2, "reportDate": "20210801"}]
+    assert slices == [{"profile": profile1, "reportDate": "2021-07-31"}, {"profile": profile2, "reportDate": "2021-08-01"}]
 
 
 def test_stream_slices_lazy_evaluation(config):
@@ -386,19 +397,19 @@ def test_stream_slices_lazy_evaluation(config):
             frozen_datetime.tick(delta=timedelta(minutes=10))
 
         assert slices == [
-            {"profile": profile1, "reportDate": "20220527"},
-            {"profile": profile2, "reportDate": "20220528"},
-            {"profile": profile1, "reportDate": "20220528"},
-            {"profile": profile2, "reportDate": "20220529"},
-            {"profile": profile1, "reportDate": "20220529"},
-            {"profile": profile2, "reportDate": "20220530"},
-            {"profile": profile1, "reportDate": "20220530"},
-            {"profile": profile2, "reportDate": "20220531"},
-            {"profile": profile1, "reportDate": "20220531"},
-            {"profile": profile2, "reportDate": "20220601"},
-            {"profile": profile1, "reportDate": "20220601"},
-            {"profile": profile2, "reportDate": "20220602"},
-            {"profile": profile1, "reportDate": "20220602"},
+            {"profile": profile1, "reportDate": "2022-05-27"},
+            {"profile": profile2, "reportDate": "2022-05-28"},
+            {"profile": profile1, "reportDate": "2022-05-28"},
+            {"profile": profile2, "reportDate": "2022-05-29"},
+            {"profile": profile1, "reportDate": "2022-05-29"},
+            {"profile": profile2, "reportDate": "2022-05-30"},
+            {"profile": profile1, "reportDate": "2022-05-30"},
+            {"profile": profile2, "reportDate": "2022-05-31"},
+            {"profile": profile1, "reportDate": "2022-05-31"},
+            {"profile": profile2, "reportDate": "2022-06-01"},
+            {"profile": profile1, "reportDate": "2022-06-01"},
+            {"profile": profile2, "reportDate": "2022-06-02"},
+            {"profile": profile1, "reportDate": "2022-06-02"},
         ]
 
 
@@ -407,10 +418,10 @@ def test_get_date_range_lazy_evaluation():
 
     with freeze_time("2022-06-01T12:00:00+00:00") as frozen_datetime:
         date_range = list(get_date_range(start_date=Date(2022, 5, 29), timezone="UTC"))
-        assert date_range == ["20220529", "20220530", "20220531", "20220601"]
+        assert date_range == ["2022-05-29", "2022-05-30", "2022-05-31", "2022-06-01"]
 
         date_range = list(get_date_range(start_date=Date(2022, 6, 1), timezone="UTC"))
-        assert date_range == ["20220601"]
+        assert date_range == ["2022-06-01"]
 
         date_range = list(get_date_range(start_date=Date(2022, 6, 2), timezone="UTC"))
         assert date_range == []
@@ -419,7 +430,7 @@ def test_get_date_range_lazy_evaluation():
         for date in get_date_range(start_date=Date(2022, 5, 29), timezone="UTC"):
             date_range.append(date)
             frozen_datetime.tick(delta=timedelta(hours=3))
-        assert date_range == ["20220529", "20220530", "20220531", "20220601", "20220602"]
+        assert date_range == ["2022-05-29", "2022-05-30", "2022-05-31", "2022-06-01", "2022-06-02"]
 
 
 @responses.activate
