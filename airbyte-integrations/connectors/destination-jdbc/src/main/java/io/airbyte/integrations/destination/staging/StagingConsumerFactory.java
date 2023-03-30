@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -20,8 +19,8 @@ import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStre
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
+import io.airbyte.integrations.destination.record_buffer.CreateBufferFunction;
 import io.airbyte.integrations.destination.record_buffer.FlushBufferFunction;
-import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
@@ -67,7 +66,7 @@ public class StagingConsumerFactory {
                                        final JdbcDatabase database,
                                        final StagingOperations stagingOperations,
                                        final NamingConventionTransformer namingResolver,
-                                       final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
+                                       final CreateBufferFunction onCreateBuffer,
                                        final JsonNode config,
                                        final ConfiguredAirbyteCatalog catalog,
                                        final boolean purgeStagingData) {
@@ -206,21 +205,21 @@ public class StagingConsumerFactory {
           conflictingStreams.stream().map(config -> config.getNamespace() + "." + config.getStreamName()).collect(joining(", ")));
       throw new ConfigErrorException(message);
     }
-    return (pair, writer) -> {
-      LOGGER.info("Flushing buffer for stream {} ({}) to staging", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
-      if (!pairToWriteConfig.containsKey(pair)) {
+    return (streamName, buffer) -> {
+      LOGGER.info("Flushing buffer for stream {} ({}) to staging", streamName.getName(), FileUtils.byteCountToDisplaySize(buffer.getByteCount()));
+      if (!pairToWriteConfig.containsKey(streamName)) {
         throw new IllegalArgumentException(
             String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s", Jsons.serialize(catalog)));
       }
 
-      final WriteConfig writeConfig = pairToWriteConfig.get(pair);
+      final WriteConfig writeConfig = pairToWriteConfig.get(streamName);
       final String schemaName = writeConfig.getOutputSchemaName();
       final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
       final String stagingPath =
           stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schemaName, writeConfig.getStreamName(), writeConfig.getWriteDatetime());
-      try (writer) {
-        writer.flush();
-        final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath);
+      try (buffer) {
+        buffer.flush();
+        final String stagedFile = stagingOperations.uploadRecordsToStage(database, buffer, schemaName, stageName, stagingPath);
         copyIntoTableFromStage(database, stageName, stagingPath, List.of(stagedFile), writeConfig.getOutputTableName(), schemaName,
             stagingOperations);
       } catch (final Exception e) {

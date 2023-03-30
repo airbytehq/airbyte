@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.record_buffer;
 
-import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DefaultDestStateLifecycleManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -16,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.function.Consumer;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -33,7 +33,7 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SerializedBufferingStrategy.class);
 
-  private final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer;
+  private final CreateBufferFunction onCreateBuffer;
   private final FlushBufferFunction onStreamFlush;
   private final DefaultDestStateLifecycleManager stateManager;
 
@@ -50,7 +50,7 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
    * @param catalog collection of {@link io.airbyte.protocol.models.ConfiguredAirbyteStream}
    * @param onStreamFlush buffer flush logic used throughout the streaming of messages
    */
-  public SerializedBufferingStrategy(final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
+  public SerializedBufferingStrategy(final CreateBufferFunction onCreateBuffer,
                                      final ConfiguredAirbyteCatalog catalog,
                                      final FlushBufferFunction onStreamFlush,
                                      final Consumer<AirbyteMessage> outputRecordCollector) {
@@ -78,21 +78,21 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
      * Creates a new buffer for each stream if buffers do not already exist, else return already
      * computed buffer
      */
-    final SerializableBuffer streamBuffer = getBufferForStream(stream);
-    if (streamBuffer == null) {
-      throw new RuntimeException(String.format("Failed to create/get streamBuffer for stream %s.%s", stream.getNamespace(), stream.getName()));
+    final SerializableBuffer buffer = getBufferForStream(stream);
+    if (buffer == null) {
+      throw new RuntimeException(String.format("Failed to create/get buffer for stream %s.%s", stream.getNamespace(), stream.getName()));
     }
 
-    final long actualMessageSizeInBytes = streamBuffer.accept(message.getRecord());
+    final long actualMessageSizeInBytes = buffer.accept(message.getRecord());
 
     totalBufferSizeInBytes += actualMessageSizeInBytes;
     // Flushes buffer when either the buffer was completely filled or only a single stream was filled
-    if (totalBufferSizeInBytes >= streamBuffer.getMaxTotalBufferSizeInBytes()
-        || allBuffers.size() >= streamBuffer.getMaxConcurrentStreamsInBuffer()) {
+    if (totalBufferSizeInBytes >= buffer.getMaxTotalBufferSizeInBytes()
+        || allBuffers.size() >= buffer.getMaxConcurrentStreamsInBuffer()) {
       flushAllStreams();
       flushed = Optional.of(BufferFlushType.FLUSH_ALL);
-    } else if (streamBuffer.getByteCount() >= streamBuffer.getMaxPerStreamBufferSizeInBytes()) {
-      flushSingleStream(stream, streamBuffer);
+    } else if (buffer.getByteCount() >= buffer.getMaxPerStreamBufferSizeInBytes()) {
+      flushSingleStream(stream, buffer);
       /*
        * Note: This branch is needed to indicate to the {@link DefaultDestStateLifeCycleManager} that an
        * individual stream was flushed, there is no guarantee that it will flush records in the same order
@@ -129,37 +129,57 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   }
 
   @Override
-  public void flushSingleStream(final AirbyteStreamNameNamespacePair stream, final SerializableBuffer writer) throws Exception {
-    LOGGER.info("Flushing buffer of stream {} ({})", stream.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
-    onStreamFlush.accept(stream, writer);
-    markStatesAsFlushedToDestination();
-    totalBufferSizeInBytes -= writer.getByteCount();
+  public void flushSingleStream(final AirbyteStreamNameNamespacePair stream, final SerializableBuffer buffer) throws Exception {
+    LOGGER.info("Flushing buffer of stream {} ({})", stream.getName(), FileUtils.byteCountToDisplaySize(buffer.getByteCount()));
+
     allBuffers.remove(stream);
+    final Queue<AirbyteMessage> statesToFlushToDestination = getStatesToFlushToDestination();
+    totalBufferSizeInBytes -= buffer.getByteCount();
+
+    // candidate async behavior
+    onStreamFlush.accept(stream, buffer);
+    reportStatesAsFlushed(statesToFlushToDestination);
     LOGGER.info("Flushing completed for {}", stream.getName());
   }
 
   @Override
   public void flushAllStreams() throws Exception {
     LOGGER.info("Flushing all {} current buffers ({} in total)", allBuffers.size(), FileUtils.byteCountToDisplaySize(totalBufferSizeInBytes));
+    final Queue<AirbyteMessage> statesToFlushToDestination = getStatesToFlushToDestination();
+
     for (final Entry<AirbyteStreamNameNamespacePair, SerializableBuffer> entry : allBuffers.entrySet()) {
       LOGGER.info("Flushing buffer of stream {} ({})", entry.getKey().getName(), FileUtils.byteCountToDisplaySize(entry.getValue().getByteCount()));
       onStreamFlush.accept(entry.getKey(), entry.getValue());
       LOGGER.info("Flushing completed for {}", entry.getKey().getName());
     }
-    markStatesAsFlushedToDestination();
+    reportStatesAsFlushed(statesToFlushToDestination);
+
     close();
     clear();
     totalBufferSizeInBytes = 0;
   }
 
   /**
-   * After marking states as committed, return the state message to platform then clear state messages to avoid resending the same state message to
-   * the platform.
+   * Get the states that will be flushed to the destination. Callers will pass this list to reportStatesAsFlushed() once completed.
+   *
+   * @return Queue of AirbyteMessage state messages
    */
-  private void markStatesAsFlushedToDestination() {
+  private Queue<AirbyteMessage> getStatesToFlushToDestination() {
     stateManager.markPendingAsCommitted();
-    stateManager.listCommitted().forEach(outputRecordCollector);
+    final Queue<AirbyteMessage> stateMessages = stateManager.listCommitted();
     stateManager.clearCommitted();
+    return stateMessages;
+  }
+
+  /**
+   * Report these states as flushed back to the destination.
+   *
+   * @param stateMessages the AirbyteMessage state messages that were successfully flushed.
+   */
+  private void reportStatesAsFlushed(final Queue<AirbyteMessage> stateMessages) {
+    if (stateMessages != null) {
+      stateMessages.forEach(outputRecordCollector);
+    }
   }
 
   @Override
