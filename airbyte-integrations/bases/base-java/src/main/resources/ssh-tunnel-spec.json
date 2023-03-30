@@ -59,7 +59,6 @@
           "type": "string",
           "airbyte_secret": true,
           "multiline": true,
-          "pattern": "-----BEGIN RSA PRIVATE KEY-----(.|\n)*-----END RSA PRIVATE KEY-----",
           "order": 4
         }
       }
