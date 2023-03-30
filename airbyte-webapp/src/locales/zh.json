@@ -812,6 +812,6 @@
   "billing.warning.banner.text1": "您已达到此计费周期的数据处理限制。",
   "billing.warning.banner.text2": "数据同步直到您升级方案或下一个计费周期开始前已暂停。",
 
-  "sync.success.message": "Sync for connection Amazon {message} was successful.",
-  "sync.fail.message": "Sync for connection Amazon {message} failed."
+  "sync.success.message": "Sync for connection {connectionName} was successful.",
+  "sync.fail.message": "Sync for connection {connectionName} failed."
 }
