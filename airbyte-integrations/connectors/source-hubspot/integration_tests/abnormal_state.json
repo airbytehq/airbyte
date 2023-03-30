@@ -159,5 +159,12 @@
       "stream_state": { "updatedAt": "4000179370" },
       "stream_descriptor": { "name": "workflows" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "4000179370" },
+      "stream_descriptor": { "name": "owners" }
+    }
   }
 ]
