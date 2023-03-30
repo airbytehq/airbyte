@@ -13,8 +13,6 @@ import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DefaultDestStateLifecycleManager;
-import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DestStateLifecycleManager;
 import io.airbyte.integrations.destination.record_buffer.BufferFlushType;
 import io.airbyte.integrations.destination.record_buffer.BufferingStrategy;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -28,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,9 +82,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final ConfiguredAirbyteCatalog catalog;
   private final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
   private final Map<AirbyteStreamNameNamespacePair, Long> streamToIgnoredRecordCount;
-  private final Consumer<AirbyteMessage> outputRecordCollector;
   private final BufferingStrategy bufferingStrategy;
-  private final DestStateLifecycleManager stateManager;
+
 
   private boolean hasStarted;
   private boolean hasClosed;
@@ -95,14 +91,12 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private Instant nextFlushDeadline;
   private final Duration bufferFlushFrequency;
 
-  public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
-                                final VoidCallable onStart,
+  public BufferedStreamConsumer(final VoidCallable onStart,
                                 final BufferingStrategy bufferingStrategy,
                                 final CheckedConsumer<Boolean, Exception> onClose,
                                 final ConfiguredAirbyteCatalog catalog,
                                 final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord) {
-    this(outputRecordCollector,
-        onStart,
+    this(onStart,
         bufferingStrategy,
         onClose,
         catalog,
@@ -115,14 +109,12 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
    * should take in an Instant parameter which would require refactoring all MessageConsumers
    */
   @VisibleForTesting
-  BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
-                         final VoidCallable onStart,
+  BufferedStreamConsumer(final VoidCallable onStart,
                          final BufferingStrategy bufferingStrategy,
                          final CheckedConsumer<Boolean, Exception> onClose,
                          final ConfiguredAirbyteCatalog catalog,
                          final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
                          final Duration flushFrequency) {
-    this.outputRecordCollector = outputRecordCollector;
     this.hasStarted = false;
     this.hasClosed = false;
     this.onStart = onStart;
@@ -132,7 +124,6 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.isValidRecord = isValidRecord;
     this.streamToIgnoredRecordCount = new HashMap<>();
     this.bufferingStrategy = bufferingStrategy;
-    this.stateManager = new DefaultDestStateLifecycleManager();
     this.bufferFlushFrequency = flushFrequency;
   }
 
@@ -141,7 +132,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     // todo (cgardens) - if we reuse this pattern, consider moving it into FailureTrackingConsumer.
     Preconditions.checkState(!hasStarted, "Consumer has already been started.");
     hasStarted = true;
-    nextFlushDeadline = Instant.now().plus(bufferFlushFrequency);
+    resetFlushDeadline();
     streamToIgnoredRecordCount.clear();
     LOGGER.info("{} started.", BufferedStreamConsumer.class);
     onStart.call();
@@ -174,22 +165,10 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       final Optional<BufferFlushType> flushType = bufferingStrategy.addRecord(stream, message);
       // if present means that a flush occurred
       if (flushType.isPresent()) {
-        if (BufferFlushType.FLUSH_ALL.equals(flushType.get())) {
-          markStatesAsFlushedToDestination();
-        } else if (BufferFlushType.FLUSH_SINGLE_STREAM.equals(flushType.get())) {
-          if (stateManager.supportsPerStreamFlush()) {
-            // per-stream instance can handle flush of just a single stream
-            markStatesAsFlushedToDestination();
-          }
-          /*
-           * We don't mark {@link AirbyteStateMessage} as committed in the case with GLOBAL/LEGACY because
-           * within a single stream being flushed it is not deterministic that all the AirbyteRecordMessages
-           * have been committed
-           */
-        }
+        resetFlushDeadline();
       }
     } else if (message.getType() == Type.STATE) {
-      stateManager.addState(message);
+      bufferingStrategy.addStateMessage(message);
     } else {
       LOGGER.warn("Unexpected message: " + message.getType());
     }
@@ -197,15 +176,10 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   /**
-   * After marking states as committed, return the state message to platform then clear state messages
-   * to avoid resending the same state message to the platform. Also updates the next time a buffer
-   * flush should occur since it is deterministic that when this method is called all data has been
-   * successfully committed to destination
+   * Updates the next time a buffer flush should occur since it is deterministic that when this method is called all data has been
+   * scheduled to flush to the destination
    */
-  private void markStatesAsFlushedToDestination() {
-    stateManager.markPendingAsCommitted();
-    stateManager.listCommitted().forEach(outputRecordCollector);
-    stateManager.clearCommitted();
+  private void resetFlushDeadline() {
     nextFlushDeadline = Instant.now().plus(bufferFlushFrequency);
   }
 
@@ -213,17 +187,16 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
    * Periodically flushes buffered data to destination storage when exceeding flush deadline. Also
    * resets the last time a flush occurred
    */
-  private void periodicBufferFlush() throws Exception {
+  private void periodicBufferFlush() {
     // When the last time the buffered has been flushed exceed the frequency, flush the current
     // buffer before receiving incoming AirbyteMessage
     if (Instant.now().isAfter(nextFlushDeadline)) {
       LOGGER.info("Periodic buffer flush started");
       try {
-        bufferingStrategy.flushAll();
-        markStatesAsFlushedToDestination();
+        bufferingStrategy.flushAllStreams();
+        resetFlushDeadline();
       } catch (final Exception e) {
         LOGGER.error("Periodic buffer flush failed", e);
-        throw e;
       }
     }
   }
@@ -257,32 +230,13 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       LOGGER.info("executing on success close procedure.");
       // When flushing the buffer, this will call the respective #flushBufferFunction which bundles
       // the flush and commit operation, so if successful then mark state as committed
-      bufferingStrategy.flushAll();
-      markStatesAsFlushedToDestination();
+      bufferingStrategy.flushAllStreams();
+      resetFlushDeadline();
     }
     bufferingStrategy.close();
 
     try {
-      /*
-       * TODO: (ryankfu) Remove usage of hasFailed with onClose after all destination connectors have been
-       * updated to support checkpointing
-       *
-       * flushed is empty in 2 cases: 1. either it is full refresh (no state is emitted necessarily) 2. it
-       * is stream but no states were flushed in both of these cases, if there was a failure, we should
-       * not bother committing. otherwise attempt to commit
-       */
-      if (stateManager.listFlushed().isEmpty()) {
-        onClose.accept(hasFailed);
-      } else {
-        /*
-         * if any state message was flushed that means we should try to commit what we have. if
-         * hasFailed=false, then it could be full success. if hasFailed=true, then going for partial
-         * success.
-         */
-        onClose.accept(false);
-      }
-
-      stateManager.listCommitted().forEach(outputRecordCollector);
+      onClose.accept(hasFailed);
     } catch (final Exception e) {
       LOGGER.error("Close failed.", e);
       throw e;

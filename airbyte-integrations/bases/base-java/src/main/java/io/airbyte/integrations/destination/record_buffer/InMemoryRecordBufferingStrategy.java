@@ -7,6 +7,8 @@ package io.airbyte.integrations.destination.record_buffer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.CheckAndRemoveRecordWriter;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordSizeEstimator;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
+import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DefaultDestStateLifecycleManager;
+import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DestStateLifecycleManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -15,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +32,7 @@ import org.slf4j.LoggerFactory;
 public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryRecordBufferingStrategy.class);
+  private final Consumer<AirbyteMessage> outputRecordCollector;
 
   private Map<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> streamBuffer = new HashMap<>();
   private final RecordWriter<AirbyteRecordMessage> recordWriter;
@@ -36,23 +40,28 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
   private String fileName;
 
   private final RecordSizeEstimator recordSizeEstimator;
+  private final DestStateLifecycleManager stateManager;
   private final long maxQueueSizeInBytes;
   private long bufferSizeInBytes;
 
   public InMemoryRecordBufferingStrategy(final RecordWriter<AirbyteRecordMessage> recordWriter,
-                                         final long maxQueueSizeInBytes) {
-    this(recordWriter, null, maxQueueSizeInBytes);
+                                         final long maxQueueSizeInBytes,
+                                         final Consumer<AirbyteMessage> outputRecordCollector) {
+    this(recordWriter, null, maxQueueSizeInBytes, outputRecordCollector);
   }
 
   public InMemoryRecordBufferingStrategy(final RecordWriter<AirbyteRecordMessage> recordWriter,
                                          final CheckAndRemoveRecordWriter checkAndRemoveRecordWriter,
-                                         final long maxQueueSizeInBytes) {
+                                         final long maxQueueSizeInBytes,
+                                         final Consumer<AirbyteMessage> outputRecordCollector) {
     this.recordWriter = recordWriter;
     this.checkAndRemoveRecordWriter = checkAndRemoveRecordWriter;
 
     this.maxQueueSizeInBytes = maxQueueSizeInBytes;
     this.bufferSizeInBytes = 0;
     this.recordSizeEstimator = new RecordSizeEstimator();
+    this.stateManager = new DefaultDestStateLifecycleManager();
+    this.outputRecordCollector = outputRecordCollector;
   }
 
   @Override
@@ -61,7 +70,7 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
 
     final long messageSizeInBytes = recordSizeEstimator.getEstimatedByteSize(message.getRecord());
     if (bufferSizeInBytes + messageSizeInBytes > maxQueueSizeInBytes) {
-      flushAll();
+      flushAllStreams();
       flushed = Optional.of(BufferFlushType.FLUSH_ALL);
     }
 
@@ -73,14 +82,15 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
   }
 
   @Override
-  public void flushWriter(final AirbyteStreamNameNamespacePair stream, final SerializableBuffer writer) throws Exception {
+  public void flushSingleStream(final AirbyteStreamNameNamespacePair stream, final SerializableBuffer writer) throws Exception {
     LOGGER.info("Flushing single stream {}: {} records", stream.getName(), streamBuffer.get(stream).size());
     recordWriter.accept(stream, streamBuffer.get(stream));
+    markStatesAsFlushedToDestination();
     LOGGER.info("Flushing completed for {}", stream.getName());
   }
 
   @Override
-  public void flushAll() throws Exception {
+  public void flushAllStreams() throws Exception {
     for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : streamBuffer.entrySet()) {
       LOGGER.info("Flushing {}: {} records ({})", entry.getKey().getName(), entry.getValue().size(),
           FileUtils.byteCountToDisplaySize(bufferSizeInBytes));
@@ -90,14 +100,29 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
       }
       LOGGER.info("Flushing completed for {}", entry.getKey().getName());
     }
-    close();
+    markStatesAsFlushedToDestination();
     clear();
     bufferSizeInBytes = 0;
+  }
+
+  /**
+   * After marking states as committed, return the state message to platform then clear state messages to avoid resending the same state message to
+   * the platform.
+   */
+  private void markStatesAsFlushedToDestination() {
+    stateManager.markPendingAsCommitted();
+    stateManager.listCommitted().forEach(outputRecordCollector);
+    stateManager.clearCommitted();
   }
 
   @Override
   public void clear() {
     streamBuffer = new HashMap<>();
+  }
+
+  @Override
+  public void addStateMessage(final AirbyteMessage message) {
+    stateManager.addState(message);
   }
 
   @Override

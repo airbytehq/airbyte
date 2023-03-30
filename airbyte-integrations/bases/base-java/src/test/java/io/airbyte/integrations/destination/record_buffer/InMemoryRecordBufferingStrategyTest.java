@@ -19,6 +19,7 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 
 public class InMemoryRecordBufferingStrategyTest {
@@ -31,9 +32,12 @@ public class InMemoryRecordBufferingStrategyTest {
   @SuppressWarnings("unchecked")
   private final RecordWriter<AirbyteRecordMessage> recordWriter = mock(RecordWriter.class);
 
+  @SuppressWarnings("unchecked")
+  private final Consumer<AirbyteMessage> outputRecordCollector = mock(Consumer.class);
+
   @Test
   public void testBuffering() throws Exception {
-    final InMemoryRecordBufferingStrategy buffering = new InMemoryRecordBufferingStrategy(recordWriter, MAX_QUEUE_SIZE_IN_BYTES);
+    final InMemoryRecordBufferingStrategy buffering = new InMemoryRecordBufferingStrategy(recordWriter, MAX_QUEUE_SIZE_IN_BYTES, outputRecordCollector);
     final AirbyteStreamNameNamespacePair stream1 = new AirbyteStreamNameNamespacePair("stream1", "namespace");
     final AirbyteStreamNameNamespacePair stream2 = new AirbyteStreamNameNamespacePair("stream2", null);
     final AirbyteMessage message1 = generateMessage(stream1);
@@ -56,7 +60,7 @@ public class InMemoryRecordBufferingStrategyTest {
     buffering.addRecord(stream2, message4);
 
     // force flush to terminate test
-    buffering.flushAll();
+    buffering.flushAllStreams();
     verify(recordWriter, times(1)).accept(stream2, List.of(message3.getRecord(), message4.getRecord()));
   }
 

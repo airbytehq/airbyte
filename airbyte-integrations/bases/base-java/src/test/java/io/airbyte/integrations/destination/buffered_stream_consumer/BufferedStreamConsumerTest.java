@@ -20,6 +20,7 @@ import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.record_buffer.BufferingStrategy;
 import io.airbyte.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -73,6 +74,7 @@ public class BufferedStreamConsumerTest {
   private CheckedConsumer<Boolean, Exception> onClose;
   private CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
   private Consumer<AirbyteMessage> outputRecordCollector;
+  private BufferingStrategy bufferingStrategy;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -82,10 +84,10 @@ public class BufferedStreamConsumerTest {
     onClose = mock(CheckedConsumer.class);
     isValidRecord = mock(CheckedFunction.class);
     outputRecordCollector = mock(Consumer.class);
+    bufferingStrategy = new InMemoryRecordBufferingStrategy(recordWriter, 1_000, outputRecordCollector);
     consumer = new BufferedStreamConsumer(
-        outputRecordCollector,
         onStart,
-        new InMemoryRecordBufferingStrategy(recordWriter, 1_000),
+        bufferingStrategy,
         onClose,
         CATALOG,
         isValidRecord);
@@ -165,9 +167,8 @@ public class BufferedStreamConsumerTest {
 
     // consumer with big enough buffered that we see both batches are flushed in one go.
     final BufferedStreamConsumer consumer = new BufferedStreamConsumer(
-        outputRecordCollector,
         onStart,
-        new InMemoryRecordBufferingStrategy(recordWriter, 10_000),
+        new InMemoryRecordBufferingStrategy(recordWriter, 10_000, outputRecordCollector),
         onClose,
         CATALOG,
         isValidRecord);
@@ -354,9 +355,8 @@ public class BufferedStreamConsumerTest {
 
   private BufferedStreamConsumer getConsumerWithFlushFrequency() {
     final BufferedStreamConsumer flushFrequencyConsumer = new BufferedStreamConsumer(
-        outputRecordCollector,
         onStart,
-        new InMemoryRecordBufferingStrategy(recordWriter, 10_000),
+        new InMemoryRecordBufferingStrategy(recordWriter, 10_000, outputRecordCollector),
         onClose,
         CATALOG,
         isValidRecord,
