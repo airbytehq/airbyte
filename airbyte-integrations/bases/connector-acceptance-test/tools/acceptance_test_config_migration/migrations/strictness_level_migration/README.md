@@ -2,6 +2,9 @@
 This migration sets connectors' `acceptance-test-config.yml` to `high` test strictness level.
 In doing so, it migrates the config files from a previous format into our new format.
 
+Before following this README, please reference the `acceptance_test_config_migraton` README for general
+usage information for the given scripts.
+
 ## Create migration issue for GA connectors (`create_issues.py`)
 Create one issue per GA connectors to migrate to `high` test strictness level.
 
