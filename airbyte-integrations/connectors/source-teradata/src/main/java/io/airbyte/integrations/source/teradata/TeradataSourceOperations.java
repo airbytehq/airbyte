@@ -14,11 +14,14 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 
+// Teradata only supports native java.sql types when creating prepared statements and returning from resultSet
 public class TeradataSourceOperations extends JdbcSourceOperations {
 
     @Override
@@ -79,4 +82,33 @@ public class TeradataSourceOperations extends JdbcSourceOperations {
         }
     }
 
+    @Override
+    protected void setTimestamp(PreparedStatement preparedStatement, int parameterIndex, String value)
+        throws SQLException {
+        try {
+            preparedStatement.setObject(parameterIndex, Timestamp.valueOf(LocalDateTime.parse(value)));
+        } catch (final DateTimeParseException e) {
+            preparedStatement.setObject(parameterIndex, Timestamp.valueOf(OffsetDateTime.parse(value).toLocalDateTime()));
+        }
+    }
+
+    @Override
+    protected void setTimeWithTimezone(PreparedStatement preparedStatement, int parameterIndex,
+                                       String value) throws SQLException {
+        try {
+            preparedStatement.setObject(parameterIndex, Time.valueOf(OffsetTime.parse(value).toLocalTime()));
+        } catch (final DateTimeParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    protected void setTimestampWithTimezone(PreparedStatement preparedStatement, int parameterIndex,
+                                            String value) throws SQLException {
+        try {
+            preparedStatement.setObject(parameterIndex, Timestamp.valueOf(OffsetDateTime.parse(value).toLocalDateTime()));
+        } catch (final DateTimeParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
