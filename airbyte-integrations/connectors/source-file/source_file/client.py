@@ -339,8 +339,10 @@ class Client:
             else:
                 yield reader(fp, **reader_options)
         except UnicodeDecodeError as err:
-            error_msg = (f"File {fp} can't be parsed with reader of chosen type ({self._reader_format}). "
-                         f"Please check provided Format and Reader Options. {repr(err)}.")
+            error_msg = (
+                f"File {fp} can't be parsed with reader of chosen type ({self._reader_format}). "
+                f"Please check provided Format and Reader Options. {repr(err)}."
+            )
             logger.error(f"{error_msg}\n{traceback.format_exc()}")
             raise ConfigurationError(error_msg) from err
 
