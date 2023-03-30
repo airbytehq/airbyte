@@ -8,9 +8,11 @@ import json
 import uuid
 from typing import List
 
+import anyio
 import asyncer
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.bases import Step, StepResult, StepStatus
+from ci_connector_ops.utils import ConnectorLanguage
 from dagger import CacheSharingMode
 
 
@@ -49,6 +51,27 @@ class QaChecks(Step):
 class AcceptanceTests(Step):
     title = "Acceptance tests"
 
+    def __init__(self, context) -> None:
+        super().__init__(context)
+        self.shared_tmp_volume = self.context.dagger_client.cache_volume("share-tmp")
+        self.dockerd = environments.with_dockerd_service(context, self.shared_tmp_volume)
+
+    async def _build_python_connector_image(self):
+        docker_cli = environments.with_docker_cli(self.context, self.dockerd)
+        inspect_output = await (
+            docker_cli.with_mounted_directory("/connector_to_build", self.context.get_connector_dir(exclude=[".venv"]))
+            .with_workdir("/connector_to_build")
+            .with_exec(["docker", "build", ".", "-t", f"airbyte/{self.context.connector.technical_name}:dev"])
+            .with_exec(["docker", "image", "inspect", f"airbyte/{self.context.connector.technical_name}:dev"])
+            .stdout()
+        )
+        image_id = json.loads(inspect_output)[0]["Id"]
+        return image_id
+
+    async def build_connector_image(self):
+        if self.context.connector.language in [ConnectorLanguage.LOW_CODE, ConnectorLanguage.PYTHON]:
+            return await self._build_python_connector_image()
+
     async def _run(self) -> StepResult:
         """Runs the acceptance test suite on a connector dev image.
         It's rebuilding the connector acceptance test image if the tag is :dev.
@@ -67,21 +90,15 @@ class AcceptanceTests(Step):
         else:
             cat_container = dagger_client.container().from_(self.context.connector_acceptance_test_image)
 
-        dockerd, docker_host, share_tmp_volume = environments.get_dind_container_and_host(dagger_client, "cat")
-
-        acceptance_test_cache_buster = str(uuid.uuid4())
         if self.context.connector.acceptance_test_config["connector_image"].endswith(":dev"):
-            docker_cli = environments.with_docker_cli(self.context, dockerd, await docker_host)
-            inspect_output = await (
-                docker_cli.with_mounted_directory("/connector_to_build", self.context.get_connector_dir(exclude=[".venv"]))
-                .with_workdir("/connector_to_build")
-                .with_exec(["docker", "build", ".", "-t", f"airbyte/{self.context.connector.technical_name}:dev"])
-                .with_exec(["docker", "image", "inspect", f"airbyte/{self.context.connector.technical_name}:dev"])
-                .stdout()
-            )
-            acceptance_test_cache_buster = json.loads(inspect_output)[0]["Id"]
+            await self.build_connector_image()
 
-        cat_container = environments.with_cat(self.context, dockerd, docker_host, share_tmp_volume, acceptance_test_cache_buster)
+        await anyio.sleep(11)
+        docker_cli = environments.with_docker_cli(self.context, self.dockerd)
+        o = await docker_cli.with_exec(["docker", "images"]).stdout()
+        breakpoint()
+
+        cat_container = environments.with_cat(self.context, self.dockerd, self.shared_tmp_volume)
         secret_dir = cat_container.directory("/test_input/secrets")
 
         async with asyncer.create_task_group() as task_group:
