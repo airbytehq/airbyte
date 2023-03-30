@@ -1,9 +1,11 @@
 import pandas as pd
+from typing import List
 from dagster import Output, asset
 
 from metadata_service.models.generated.ConnectorMetadataDefinitionV1 import ConnectorMetadataDefinitionV1
 from ..utils.object_helpers import are_values_equal, merge_values
 from ..utils.dagster_helpers import OutputDataFrame
+from ..models.metadata import PartialMetadataDefinition
 
 GROUP_NAME = "metadata"
 
@@ -91,14 +93,14 @@ def compute_catalog_overrides(merged_df):
 
     return catalogs
 
-
+# todo change this return value
 def merge_into_metadata_definitions(id_field, connector_type, oss_connector_df, cloud_connector_df) -> pd.Series:
     merged_connectors = pd.merge(
         oss_connector_df, cloud_connector_df, on=id_field, how="outer", suffixes=(OSS_SUFFIX, CLOUD_SUFFIX), indicator=True
     )
     sanitized_connectors = merged_connectors.where(pd.notnull(merged_connectors), None)
 
-    def build_metadata(merged_df):
+    def build_metadata(merged_df: dict) -> PartialMetadataDefinition:
         raw_data = {
             "name": get_field_with_fallback(merged_df, "name"),
             "definitionId": merged_df[id_field],
@@ -127,14 +129,14 @@ def merge_into_metadata_definitions(id_field, connector_type, oss_connector_df, 
         catalogs = compute_catalog_overrides(merged_df)
         metadata["data"]["catalogs"] = catalogs
 
-        return metadata
+        return PartialMetadataDefinition.construct(**metadata)
 
     metadata_list = [build_metadata(merged_df) for _, merged_df in sanitized_connectors.iterrows()]
 
     return metadata_list
 
 
-def validate_metadata(metadata: object) -> tuple[bool, str]:
+def validate_metadata(metadata: PartialMetadataDefinition) -> tuple[bool, str]:
     try:
         ConnectorMetadataDefinitionV1.parse_obj(metadata)
         return True, None
@@ -146,7 +148,7 @@ def validate_metadata(metadata: object) -> tuple[bool, str]:
 
 
 @asset(group_name=GROUP_NAME)
-def valid_metadata_list(overrode_metadata_definitions):
+def valid_metadata_list(overrode_metadata_definitions: List[PartialMetadataDefinition]):
     """
     Validates the metadata definitions and returns a dataframe with the results
     """
@@ -154,7 +156,7 @@ def valid_metadata_list(overrode_metadata_definitions):
     result = []
 
     for metadata in overrode_metadata_definitions:
-        valid, error_msg = validate_metadata(metadata)
+        valid, error_msg = metadata.is_valid
         result.append(
             {
                 "definitionId": metadata["data"]["definitionId"],
@@ -172,11 +174,13 @@ def valid_metadata_list(overrode_metadata_definitions):
 
 @asset(group_name=GROUP_NAME)
 def catalog_derived_metadata_definitions(
-    cloud_sources_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, oss_destinations_dataframe
+    context, cloud_sources_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, oss_destinations_dataframe
 ):
     sources_metadata_list = merge_into_metadata_definitions("sourceDefinitionId", "source", oss_sources_dataframe, cloud_sources_dataframe)
     destinations_metadata_list = merge_into_metadata_definitions(
         "destinationDefinitionId", "destination", oss_destinations_dataframe, cloud_destinations_dataframe
     )
     all_definitions = sources_metadata_list + destinations_metadata_list
+    # log all definitions
+    # context.log.info(f"all_definitions: {all_definitions}")
     return Output(all_definitions, metadata={"count": len(all_definitions)})

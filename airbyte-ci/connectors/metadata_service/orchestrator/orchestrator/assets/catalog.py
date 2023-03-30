@@ -6,6 +6,7 @@ from typing import List
 from dagster import asset, OpExecutionContext
 
 from ..utils.dagster_helpers import OutputDataFrame
+from ..models.metadata import PartialMetadataDefinition
 
 
 GROUP_NAME = "catalog"
@@ -99,7 +100,7 @@ def construct_catalog_from_metadata(catalog_derived_metadata_definitions: List[d
 
 
 @asset(group_name=GROUP_NAME)
-def cloud_catalog_from_metadata(catalog_derived_metadata_definitions: List[dict]) -> dict:
+def cloud_catalog_from_metadata(catalog_derived_metadata_definitions: List[PartialMetadataDefinition]) -> dict:
     """
     This asset is used to generate the cloud catalog from the metadata definitions.
 
@@ -109,7 +110,7 @@ def cloud_catalog_from_metadata(catalog_derived_metadata_definitions: List[dict]
 
 
 @asset(group_name=GROUP_NAME)
-def oss_catalog_from_metadata(catalog_derived_metadata_definitions: List[dict]) -> dict:
+def oss_catalog_from_metadata(catalog_derived_metadata_definitions: List[PartialMetadataDefinition]) -> dict:
     """
     This asset is used to generate the oss catalog from the metadata definitions.
 

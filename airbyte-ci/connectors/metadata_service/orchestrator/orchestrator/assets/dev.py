@@ -5,6 +5,7 @@ from deepdiff import DeepDiff
 from dagster import Output, asset
 from typing import List
 from ..utils.dagster_helpers import OutputDataFrame
+from ..models.metadata import PartialMetadataDefinition
 
 
 """
@@ -171,19 +172,21 @@ def diff_catalogs(catalog_dict_1: dict, catalog_dict_2: dict) -> DeepDiff:
 
 
 @asset(group_name=GROUP_NAME)
-def overrode_metadata_definitions(catalog_derived_metadata_definitions):
+def overrode_metadata_definitions(context, catalog_derived_metadata_definitions: List[PartialMetadataDefinition]) -> List[PartialMetadataDefinition]:
     """
     Overrides the metadata definitions with the values in the OVERRIDES dictionary.
     This is useful for ensuring all connectors are passing validation when we go live.
     """
-    overrode_definition = []
+    # log
+    # context.log.info(f"Overriding metadata definitions with {catalog_derived_metadata_definitions}")
+    overrode_definitions = []
     for metadata_definition in catalog_derived_metadata_definitions:
         definition_id = metadata_definition["data"]["definitionId"]
         if definition_id in OVERRIDES:
             metadata_definition["data"].update(OVERRIDES[definition_id])
-        overrode_definition.append(metadata_definition)
+        overrode_definitions.append(metadata_definition)
 
-    return overrode_definition
+    return overrode_definitions
 
 
 @asset(required_resource_keys={"metadata_file_directory"}, group_name=GROUP_NAME)
