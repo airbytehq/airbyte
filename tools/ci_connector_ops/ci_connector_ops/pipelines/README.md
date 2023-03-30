@@ -1,4 +1,4 @@
-# POC of CI connector pipelines in python
+# POC of Dagger pipelines
 
 This Python subpackage of `ci-connector-ops` gathers the POC code we're working on to:
 
@@ -6,11 +6,11 @@ This Python subpackage of `ci-connector-ops` gathers the POC code we're working 
 - Centralize the CI logic for connector testing
 - Try out Dagger.io as a promising tool that can provide parallelism and caching out of the box for CI
 
-## Install and use
+# Install and use
 
 From `airbyte` repo root:
 
-### Install
+## Install All pipelines
 
 ```bash
 cd tools/ci_connector_ops
@@ -21,7 +21,7 @@ pip install -e .\[pipelines\]
 cd ../..
 ```
 
-### Use
+## Running the Connector Test pipeline
 
 ### Use remote secrets
 
@@ -113,6 +113,28 @@ This is the DAG we expect for every connector for which the pipeline is triggere
 The Airbyte git repo will be the local one if you use `--is-local=True` command line option.
 The connector secrets won't be downloaded nor uploaded if you use the `--use-remote-secrets=False` command line option.
 
+
+
+
+### Performance benchmarks
+
+| Connector      | Run integration test GHA duration                                      | Dagger POC duration (CI no cache)                                      |
+| -------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| source-pokeapi | [7mn22s](https://github.com/airbytehq/airbyte/actions/runs/4395453220) | [5mn26s](https://github.com/airbytehq/airbyte/actions/runs/4403595746) |
+
+## Running the Metadata pipelines
+The new metadata service also uses dagger for its reproducible CI pipeline.
+
+To see all available commands run
+```bash
+airbyte-ci metadata-service --help
+```
+
+For example to run the unit tests for the metadata service library you can run
+```bash
+airbyte-ci metadata-service test-metadata-service-lib
+```
+
 ## Questions for the Dagger team
 
 ### Remaining questions:
@@ -127,10 +149,3 @@ This is a list of nice to have features that are not blocking because we found w
 3. Reorder log lines by pipeline number after execution?
 [A log grouping tool is under construction](https://www.youtube.com/watch&ab_channel=Dagger) but I'm not sure its meant to be used in a CI logging context.
 4. How to get access to visualizations: We'd love to have dynamic status checks on our GitHub PRs, with links to pipeline visualization [like](https://propeller.fly.dev/runs/da68273e-48d8-4354-8d8b-efaccf2792b9).
-
-
-### Performance benchmarks
-
-| Connector      | Run integration test GHA duration                                      | Dagger POC duration (CI no cache)                                      |
-| -------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| source-pokeapi | [7mn22s](https://github.com/airbytehq/airbyte/actions/runs/4395453220) | [5mn26s](https://github.com/airbytehq/airbyte/actions/runs/4403595746) |
