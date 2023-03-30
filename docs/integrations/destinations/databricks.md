@@ -17,6 +17,7 @@ Currently, this connector requires 30+MB of memory for each stream. When syncing
 
 > **_TIP:_** Alternatively use Databricks quickstart for new workspace
 > ![](../../.gitbook/assets/destination/databricks/databricks_workspace_quciksetup.png)
+
 ### 2. Create a metastore and attach it to workspace
 > **_IMPORTANT:_** The metastore should be in the same region as the workspaces you want to use to access the data. Make sure that this matches the region of the cloud storage bucket you created earlier.
 
@@ -25,9 +26,12 @@ Currently, this connector requires 30+MB of memory for each stream. When syncing
 
 #### Create metastore
 - Login into Databricks [account console](https://accounts.cloud.databricks.com/login) with admin permissions.
-- Go to Data tab and hit Create metastore button.
+- Go to Data tab and hit Create metastore button:
+
   ![](../../.gitbook/assets/destination/databricks/databricks_new_metastore.png)
+
 - Provide all necessary data and click Create:
+
     ![](../../.gitbook/assets/destination/databricks/databrikcs_metastore_fields.png)
   - `Name`
   - `Region` The metastore should be in same region as the workspace.
@@ -38,10 +42,13 @@ Currently, this connector requires 30+MB of memory for each stream. When syncing
 ### 3. Create Databricks SQL Warehouse
 > **_TIP:_** If you use Databricks cluster skip this step
 
-- Open the workspace tab and click on created workspace console 
+- Open the workspace tab and click on created workspace console:
+
   ![](../../.gitbook/assets/destination/databricks/databricks_open_worspace.png)
-- Create SQL warehouse
-  ![](../../.gitbook/assets/destination/databricks/databricks_new_warehouse.png)
+
+- Create SQL warehouse:
+  
+- ![](../../.gitbook/assets/destination/databricks/databricks_new_warehouse.png)
   - Switch to SQL tab
   - Click New button
   - Choose SQL Warehouse
@@ -52,18 +59,26 @@ Currently, this connector requires 30+MB of memory for each stream. When syncing
 
 - Open workspace console.
 - Go to SQL Warehouse section and open it
+
   ![](../../.gitbook/assets/destination/databricks/databricks_open_sql_warehouse.png)
-- Open Connection Details tab
+
+- Open Connection Details tab:
+
   ![](../../.gitbook/assets/destination/databricks/databricks_sql_warehouse_connection_details.png)
+
 > **_IMPORTANT:_** `Server hostname`, `Port`, `HTTP path` are used for Airbyte connection 
 
 ### 5. Create Databricks Cluster
 > **_TIP:_** If you use Databricks SQL Warehouse skip this step
 
-- Open the workspace tab and click on created workspace console
+- Open the workspace tab and click on created workspace console:
+
   ![](../../.gitbook/assets/destination/databricks/databricks_open_worspace.png)
-- Create Cluster
+
+- Create Cluster:
+
   ![](../../.gitbook/assets/destination/databricks/databrick_new_cluster.png)
+
     - Switch to Data science & Engineering
     - Click New button
     - Choose Cluster
@@ -72,28 +87,39 @@ Currently, this connector requires 30+MB of memory for each stream. When syncing
 > **_TIP:_** If you use Databricks SQL Warehouse skip this step
 
 - Open workspace console.
-- Go to Compute section under Data science & Engineering and click on cluster link
+- Go to Compute section under Data science & Engineering and click on cluster link:
+
   ![](../../.gitbook/assets/destination/databricks/databricks_cluster_details_open.png)
-- Open Advanced options under Configuration, choose JDBC/ODBC tab
+
+- Open Advanced options under Configuration, choose JDBC/ODBC tab:
+
   ![](../../.gitbook/assets/destination/databricks/databricks_cluster_connection_details2.png)
 > **_IMPORTANT:_** `Server hostname`, `Port`, `HTTP path` are used for Airbyte connection
 
 ### 7. Create Databricks Token
 - Open workspace console.
-- Open User Settings, go to Access tokens tab and click Generate new token
+- Open User Settings, go to Access tokens tab and click Generate new token:
+
   ![](../../.gitbook/assets/destination/databricks/dtabricks_token_user_new.png)
-- In the new window put a comment (Optional) and lifetime 
+
+- In the new window put a comment (Optional) and lifetime: 
+
   ![](../../.gitbook/assets/destination/databricks/databricks_generate_token.png)
+
 > **_TIP:_** `Lifetime` can be set to `0`
 
 ### 8. Adding External Locations (Optional)
 > **_TIP:_** Skip this step if no external data source is used.
 
 - Open workspace console.
-- Go to `Data` section, expand on `External Location` and click `Create Location` button
+- Go to `Data` section, expand on `External Location` and click `Create Location` button:
+
   ![](../../.gitbook/assets/destination/databricks/databricks_add_external_location.png)
-- Fill in the fields and click Create button
+
+- Fill in the fields and click Create button:
+
   ![](../../.gitbook/assets/destination/databricks/databricks_new_external_location.png)
+
 > **_TIP:_** The new `Storage credential` can be added in the `Storage Credentials` tab or use same as for Metastore. 
 
 ## Airbyte Setup
