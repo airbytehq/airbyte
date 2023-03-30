@@ -30,6 +30,7 @@ packaging==21.3
 pdbpp==0.10.3
 pendulum==2.1.2
 pluggy==1.0.0
+pre-commit==3.2.1
 pprintpp==0.4.0
 py==1.11.0
 pyaml==21.10.1
