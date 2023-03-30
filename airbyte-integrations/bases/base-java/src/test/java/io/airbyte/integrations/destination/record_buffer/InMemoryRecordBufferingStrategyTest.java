@@ -37,7 +37,8 @@ public class InMemoryRecordBufferingStrategyTest {
 
   @Test
   public void testBuffering() throws Exception {
-    final InMemoryRecordBufferingStrategy buffering = new InMemoryRecordBufferingStrategy(recordWriter, MAX_QUEUE_SIZE_IN_BYTES, outputRecordCollector);
+    final InMemoryRecordBufferingStrategy buffering =
+        new InMemoryRecordBufferingStrategy(recordWriter, MAX_QUEUE_SIZE_IN_BYTES, outputRecordCollector);
     final AirbyteStreamNameNamespacePair stream1 = new AirbyteStreamNameNamespacePair("stream1", "namespace");
     final AirbyteStreamNameNamespacePair stream2 = new AirbyteStreamNameNamespacePair("stream2", null);
     final AirbyteMessage message1 = generateMessage(stream1);
