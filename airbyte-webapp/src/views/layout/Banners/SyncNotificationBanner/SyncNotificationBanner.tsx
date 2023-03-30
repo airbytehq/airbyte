@@ -41,18 +41,28 @@ const CrossBtn = styled.button`
 
 export const SyncNotificationBanner: React.FC<IProps> = ({ usagePercentage, onBillingPage }) => {
   const [ignoreModal, setIgnoreModal] = useState<boolean>(false);
+  const [bannerVisibility, setBannerVisibility] = useState<boolean>(true);
 
-  return (
-    <>
-      <Banner className={styles.banner}>
-        <Text>
-          <FormattedMessage id="usage.notification.banner.usageText" values={{ percentage: usagePercentage }} />
-        </Text>
-        <CrossBtn onClick={() => setIgnoreModal(true)}>
-          <CrossIcon />
-        </CrossBtn>
-      </Banner>
-      {ignoreModal && <IgnoreNotificationModal onClose={() => setIgnoreModal(false)} onBillingPage={onBillingPage} />}
-    </>
-  );
+  if (bannerVisibility) {
+    return (
+      <>
+        <Banner className={styles.banner}>
+          <Text>
+            <FormattedMessage id="usage.notification.banner.usageText" values={{ percentage: usagePercentage }} />
+          </Text>
+          <CrossBtn onClick={() => setIgnoreModal(true)}>
+            <CrossIcon />
+          </CrossBtn>
+        </Banner>
+        {ignoreModal && (
+          <IgnoreNotificationModal
+            setBannerVisibility={setBannerVisibility}
+            onClose={() => setIgnoreModal(false)}
+            onBillingPage={onBillingPage}
+          />
+        )}
+      </>
+    );
+  }
+  return null;
 };
