@@ -34,6 +34,9 @@
     "column_url": {
       "type": ["null", "string"]
     },
+    "content_url": {
+      "type": ["null", "string"]
+    },
     "repository": {
       "type": "string"
     },
