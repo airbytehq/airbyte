@@ -1,6 +1,7 @@
 name: Metadata Service CI
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - "airbyte-ci/connectors/metadata_service/**"
