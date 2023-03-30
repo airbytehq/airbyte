@@ -26,7 +26,7 @@ properties:
   supportUrl:
     type: string
     format: uri
-  sourceType:
+  connectorSubtype:
     type: string
   allowedHosts:
     $ref: AllowedHosts.yaml
