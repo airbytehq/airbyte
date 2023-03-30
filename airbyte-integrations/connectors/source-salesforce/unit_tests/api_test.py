@@ -11,6 +11,8 @@ from unittest.mock import Mock
 
 import pytest
 import requests_mock
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
 from conftest import encoding_symbols_parameters, generate_stream
 from requests.exceptions import HTTPError
@@ -187,10 +189,10 @@ def test_stream_start_date(
 ):
     if start_date_provided:
         stream = generate_stream(stream_name, stream_config, stream_api)
+        assert stream.start_date == expected_start_date
     else:
         stream = generate_stream(stream_name, stream_config_without_start_date, stream_api)
-
-    assert stream.start_date == expected_start_date
+        assert datetime.strptime(stream.start_date, "%Y-%m-%dT%H:%M:%SZ").year == datetime.now().year - 2
 
 
 def test_stream_start_date_should_be_converted_to_datetime_format(stream_config_date_format, stream_api):
