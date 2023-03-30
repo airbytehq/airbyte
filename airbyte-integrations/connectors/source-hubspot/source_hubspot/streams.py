@@ -15,6 +15,8 @@ import pendulum as pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams import IncrementalMixin
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -22,8 +24,6 @@ from requests import codes
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
-from sources.streams import IncrementalMixin
-from sources.streams.core import StreamData
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
@@ -682,9 +682,11 @@ class SemiIncrementalStream(Stream, IncrementalMixin):
         self._cursor_value = value[self.cursor_field]
 
     def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> bool:
-        record_value = pendulum.parse(record.get(self.cursor_field)).int_timestamp if isinstance(
-            record.get(self.cursor_field), str) else record.get(self.cursor_field)
-        # start_date = (stream_state or {}).get(self.cursor_field, self._start_date)
+        record_value = (
+            pendulum.parse(record.get(self.cursor_field)).int_timestamp
+            if isinstance(record.get(self.cursor_field), str)
+            else record.get(self.cursor_field)
+        )
         start_date = pendulum.from_timestamp(int(stream_state.get(self.cursor_field))) if stream_state else self._start_date
         cursor_value = max(start_date.int_timestamp, record_value)
         max_state = max(int(self.state.get(self.cursor_field)), cursor_value)
@@ -692,11 +694,11 @@ class SemiIncrementalStream(Stream, IncrementalMixin):
         return not stream_state or int(stream_state.get(self.cursor_field, 0)) < record_value
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[StreamData]:
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
             if self.filter_by_state(stream_state=stream_state, record=record):
