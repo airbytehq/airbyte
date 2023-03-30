@@ -245,9 +245,9 @@ METRICS_TYPE_TO_ID_MAP = {
     "adGroups": "adGroupId",
     "keywords": "keywordId",
     "productAds": "adId",
-    "asins_keywords": "asin",
-    "asins_targets": "asin",
-    "targets": "targetId",
+    "asins_keywords": "advertisedAsin",
+    "asins_targets": "advertisedAsin",
+    "targets": "keywordId",
 }
 
 
