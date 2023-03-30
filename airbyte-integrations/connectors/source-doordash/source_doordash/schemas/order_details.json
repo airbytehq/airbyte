@@ -1,0 +1,79 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "business_id": {
+        "type": ["null", "number"]
+      },
+      "store_id": {
+        "type": ["null", "number"]
+      },
+      "active_date": {
+        "type": ["null", "string"],
+        "format": "date-time"
+      },
+      "active_date_utc": {
+        "type": ["null", "string"],
+        "format": "date-time"
+      },
+      "dd_order_nubmer": {
+        "type": ["null", "string"],
+        "format": "uuid"
+      },
+      "mx_order_nubmer": {
+        "type": ["null", "string"]
+      },
+      "external_order_id": {
+        "type": ["null", "string"]
+      },   
+      "business_name": {
+        "type": ["null", "string"]
+      },   
+      "store_name": {
+        "type": ["null", "string"]
+      },   
+      "merchant_store_id": {
+        "type": ["null", "string"]
+      },
+      "item_merchant_supplied_id": {
+        "type": ["null", "string"]
+      },
+      "order_item_id": {
+        "type": ["null", "string"]
+      },
+      "dd_item_id": {
+        "type": ["null", "number"]
+      },
+      "item_name": {
+        "type": ["null", "string"]
+      },
+      "category_name": {
+        "type": ["null", "string"]
+      },
+      "menu_name": {
+        "type": ["null", "string"]
+      },
+      "timezone": {
+        "type": ["null", "string"]
+      },
+      "is_consumer_pickup": {
+        "type": ["null", "boolean"]
+      },
+      "dashpass": {
+        "type": ["null", "boolean"]
+      },
+      "original_item_price": {
+        "type": ["null", "number"]
+      },
+      "unit_price": {
+        "type": ["null", "number"]
+      },
+      "order_item_quantity": {
+        "type": ["null", "number"]
+      },
+      "subtotal": {
+        "type": ["null", "number"]
+      }       
+    }
+  }
+  
