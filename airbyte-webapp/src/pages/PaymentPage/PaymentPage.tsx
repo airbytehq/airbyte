@@ -57,8 +57,6 @@ const PaymentPage: React.FC = () => {
   const packagesMap = usePackagesMap();
   const productOptions = useProductOptions();
 
-  // console.log(product);
-
   useEffect(() => {
     if (!selectedProduct && product === undefined) {
       setProduct(productOptions[1]);

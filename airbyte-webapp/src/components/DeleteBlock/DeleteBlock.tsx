@@ -29,7 +29,6 @@ const Text = styled.div`
 `;
 
 const DeleteButton = styled(Button)`
-  // width: 168px;
   height: 36px;
   background: #ff5454;
   border-radius: 6px;

@@ -21,7 +21,6 @@ const windowConfigProvider: ConfigProvider = async () => {
 
 const envConfigProvider: ConfigProvider = async () => {
   return {
-    // TODO: hard coding this just to check the deployment issue.
     apiUrl: process.env.REACT_APP_API_URL,
     integrationUrl: process.env.REACT_APP_INTEGRATION_DOCS_URLS,
     segment: {

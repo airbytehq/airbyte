@@ -176,7 +176,7 @@ export const SignupForm: React.FC = () => {
             setUser?.(response?.data);
           })
           .catch((error: any) => {
-            console.log(error);
+            console.error(error);
           });
       }}
       validateOnBlur

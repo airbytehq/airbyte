@@ -31,7 +31,7 @@ export const GoogleAuthBtn: React.FC<IProps> = ({ buttonText }) => {
               setUser?.(res);
             })
             .catch((err) => {
-              console.log(err);
+              console.error(err);
             });
         }}
         onError={() => {

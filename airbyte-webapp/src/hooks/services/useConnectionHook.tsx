@@ -15,7 +15,6 @@ import {
 } from "core/request/DaspireClient";
 import { useInitService } from "services/useInitService";
 
-// import { useConfig } from "../../config";
 import {
   ConnectionScheduleData,
   ConnectionScheduleType,
@@ -68,7 +67,6 @@ export interface ListConnection {
 }
 
 function useWebConnectionService() {
-  // const config = useConfig();
   const { removeUser } = useUser();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(
@@ -78,7 +76,6 @@ function useWebConnectionService() {
 }
 
 export function useConnectionService() {
-  // const config = useConfig();
   const { removeUser } = useUser();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(

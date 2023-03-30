@@ -72,7 +72,6 @@ const Popout: React.FC<PopoutProps> = ({ onChange, targetComponent, ...props }) 
         hideSelectedOptions={false}
         isClearable={false}
         menuIsOpen={isOpen}
-        // menuPosition={"fixed"}
         placeholder={null}
         tabSelectsValue={false}
         {...props}

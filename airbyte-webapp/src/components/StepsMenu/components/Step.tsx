@@ -22,16 +22,9 @@ const StepView = styled.div<{
   lightMode?: boolean;
   nonClickable?: boolean;
 }>`
-  // width: ${({ lightMode }) => (lightMode ? "auto" : "212px")};
-  // min-width: ${({ lightMode }) => (lightMode ? "200px" : "auto")};
-  // min-height: 28px;
   padding: 6px 14px;
   border-radius: 4px;
-  // pointer-events: ${({ isActive, nonClickable }) => (isActive || nonClickable ? "none" : "all")};
-  // cursor: ${({ nonClickable }) => (nonClickable ? "default" : "pointer")};
   text-align: center;
-  // background: ${({ theme, isActive }) => (isActive ? theme.primaryColor12 : "none")};
-  // color: ${({ theme, isActive }) => (isActive ? theme.primaryColor : theme.greyColor60)};
   font-weight: 500;
   font-size: 16px;
   line-height: 20px;
@@ -74,8 +67,6 @@ const StepBlock = styled.div<{
   pointer-events: ${({ isActive, nonClickable }) => (isActive || nonClickable ? "none" : "all")};
 `;
 
-// theme.primaryColor12
-
 const Step: React.FC<IProps> = ({ name, id, isActive, onClick, num, lightMode, status, isPartialSuccess }) => {
   const onItemClickItem = () => {
     if (onClick) {
@@ -89,13 +80,7 @@ const Step: React.FC<IProps> = ({ name, id, isActive, onClick, num, lightMode, s
   );
 
   return (
-    <StepView
-      data-id={`${id.toLowerCase()}-step`}
-      // nonClickable={!onClick}
-      onClick={onItemClickItem}
-      // isActive={isActive}
-      // lightMode={lightMode}
-    >
+    <StepView data-id={`${id.toLowerCase()}-step`} onClick={onItemClickItem}>
       <StepBlock nonClickable={!onClick} isActive={isActive} lightMode={lightMode}>
         {lightMode ? null : <Num isActive={isActive}>{num}</Num>}
         {status ? <StatusIcon status={statusIconStatus} /> : null}

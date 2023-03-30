@@ -7,7 +7,6 @@ import { DestinationService } from "core/domain/connector/DestinationService";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
-// import { useConfig } from "../../config";
 import {
   DestinationRead,
   WebBackendConnectionRead,
@@ -39,7 +38,6 @@ interface ConnectorProps {
 }
 
 function useDestinationService() {
-  // const { process.env.REACT_APP_API_URL as string } = useConfig();
   const { removeUser } = useUser();
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
   return useInitService(
@@ -137,23 +135,18 @@ const useCloneDestination = () => {
   const service = useDestinationService();
   const queryClient = useQueryClient();
   const analyticsService = useAnalyticsService();
-  // const removeConnectionsFromList = useRemoveConnectionsFromList();
 
   return useMutation((payload: { destination: DestinationCloneRequestBody }) => service.clone(payload.destination), {
     onSuccess: (data) => {
       analyticsService.track(Namespace.DESTINATION, Action.DELETE, {
         actionDescription: "Destination clone",
-        connector_destination: data.name, // ctx.destination.destinationName,
-        connector_destination_definition_id: data.destinationDefinitionId, // ctx.destination.destinationDefinitionId,
+        connector_destination: data.name,
+        connector_destination_definition_id: data.destinationDefinitionId,
       });
 
-      // queryClient.removeQueries(destinationsKeys.detail(ctx.destination.destinationId));
       queryClient.setQueryData(destinationsKeys.lists(), (lst: DestinationList | undefined) => ({
         destinations: [data, ...(lst?.destinations ?? [])],
       }));
-
-      // const connectionIds = ctx.connectionsWithDestination.map((item) => item.connectionId);
-      // removeConnectionsFromList(connectionIds);
     },
   });
 };

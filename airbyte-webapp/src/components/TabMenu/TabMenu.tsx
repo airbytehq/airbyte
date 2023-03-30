@@ -29,7 +29,6 @@ interface IProps {
 
 const Content = styled.div`
   width: 100%;
-  // background-color: red;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -67,7 +66,7 @@ export const TabMenu: React.FC<IProps> = ({ data, onSelect, size, lastOne }) => 
                   id={route.id}
                   key={route.path}
                   name={route.name}
-                  isActive={lastOne ? pathname.endsWith(route.path) : pathname.split("/")[2] === route.path} // ? true : false
+                  isActive={lastOne ? pathname.endsWith(route.path) : pathname.split("/")[2] === route.path}
                   onClick={() => onSelect(route.path)}
                   size={size}
                 />

@@ -15,14 +15,11 @@ interface Props {
 const MainComponent = styled.div`
   display: flex;
   padding: 10px;
-  // width: 220px;
   width: 100%;
   align-items: center;
 `;
 
 const Details = styled.div`
-  // width: 160px;
-  //  width: 100%;
   flex: 1;
   margin-left: 22px;
   display: flex;
@@ -46,7 +43,6 @@ const ConnectionName = styled.div`
   font-weight: 500;
   line-height: 30px;
   color: #27272a;
-  // flex: 1;
 `;
 
 const ConnectorDetails = styled.div`

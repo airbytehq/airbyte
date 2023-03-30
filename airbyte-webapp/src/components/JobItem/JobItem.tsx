@@ -9,7 +9,6 @@ import { AttemptRead, JobStatus, SynchronousJobRead } from "../../core/request/A
 import { useAttemptLink } from "./attemptLinkUtils";
 import ContentWrapper from "./components/ContentWrapper";
 import ErrorDetails from "./components/ErrorDetails";
-// import JobLogs from "./components/JobLogs";
 import MainInfo from "./components/MainInfo";
 import styles from "./JobItem.module.scss";
 
@@ -27,13 +26,9 @@ interface JobItemProps {
   job: SynchronousJobRead | JobsWithJobs;
 }
 
-// TODO: Jerry Lee told Akif to manage this condition on "status" basis rather than "succeeded"
-// "succeeded" in job ? job.succeeded : getJobStatus(job) !== "failed";
 const didJobSucceed = (job: SynchronousJobRead | JobsWithJobs): boolean =>
   "status" in job ? (job.status === JobStatus.succeeded ? true : false) : getJobStatus(job) !== "failed";
 
-// TODO: Jerry Lee told Akif to manage this condition on "status" basis rather than "succeeded"
-// "succeeded" in job ? (job.succeeded ? JobStatus.succeeded : JobStatus.failed) : job.job.status;
 export const getJobStatus: (job: SynchronousJobRead | JobsWithJobs) => JobStatus = (job) =>
   "status" in job ? (job.status === JobStatus.succeeded ? JobStatus.succeeded : JobStatus.failed) : job.job.status;
 

@@ -10,9 +10,6 @@ import useLoadingState from "../../hooks/useLoadingState";
 
 const Content = styled.div`
   width: 540px;
-  // font-size: 14px;
-  // line-height: 28px;
-  //padding: 30px;
 `;
 
 const ButtonContent = styled.div<{

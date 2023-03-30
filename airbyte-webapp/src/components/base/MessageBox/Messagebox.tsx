@@ -9,7 +9,7 @@ interface IProps {
   onClose?: () => void;
   type: "info" | "error";
   position?: "left" | "center" | "right";
-  isString?: boolean; // components/SingletonCard
+  isString?: boolean;
 }
 
 export const SlideUpAnimation = keyframes`

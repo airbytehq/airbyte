@@ -5,8 +5,6 @@ import { theme } from "theme";
 import { LoadingPage } from "components";
 import { CreateStepTypes } from "components/ConnectionStep";
 
-// import { useUser } from "core/AuthContext";
-// import { useAuthDetail } from "services/auth/AuthSpecificationService";
 import { useHealth } from "hooks/services/Health";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
@@ -45,24 +43,10 @@ const hasCurrentStep = (state: unknown): state is { currentStep: string } => {
 const MainView: React.FC = (props) => {
   const { healthData } = useHealth();
   const { usage } = healthData;
-  // const { status } = useAuthDetail();
-  // const { user, updateUserStatus } = useUser();
   const { pathname, location, push } = useRouter();
   const [usagePercentage, setUsagePercentage] = useState<number>(0);
   const [isSidebar, setIsSidebar] = useState<boolean>(true);
   const [backgroundColor, setBackgroundColor] = useState<string>(theme.backgroundColor);
-
-  // useEffect(() => {
-  //   console.log("TEST: 01 PASS");
-  //   if (status && user.status !== status) {
-  //     console.log("TEST: 02 PASS");
-  //     console.log("====> STATUS <====");
-  //     console.log(status);
-  //     console.log("====> USER.STATUS <====");
-  //     console.log(user.status);
-  //     updateUserStatus?.(status);
-  //   }
-  // }, [status, updateUserStatus, user.status]);
 
   useEffect(() => {
     if (usage) {
@@ -70,9 +54,6 @@ const MainView: React.FC = (props) => {
     }
   }, [usage]);
 
-  // TODO: not the proper solution but works for now
-  // const isSidebar =
-  //   !pathname.split("/").includes(RoutePaths.Payment) && !pathname.split("/").includes(RoutePaths.PaymentError);
   const hasSidebarRoutes: string[] = useMemo(
     () => [
       RoutePaths.Source,

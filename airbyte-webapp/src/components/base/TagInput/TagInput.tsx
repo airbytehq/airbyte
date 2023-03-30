@@ -108,13 +108,10 @@ export const TagInput: React.FC<TagInputProps> = ({
   const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     const { keyCode } = event;
 
-    // on ENTER click
     if (keyCode === 13) {
       event.stopPropagation();
       event.preventDefault();
       onAddValue();
-
-      // on DELETE or BACKSPACE click when input is empty (select or delete last tag in valuesList)
     } else if ((keyCode === 46 || keyCode === 8) && currentInputValue === "") {
       if (selectedElementId !== "") {
         const nextId = value.length - 1 > 0 ? value[value.length - 2].id : "";

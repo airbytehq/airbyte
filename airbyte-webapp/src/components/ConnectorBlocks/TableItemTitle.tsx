@@ -4,10 +4,8 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { Button, DropDownRow } from "components"; // H3, H5
+import { Button, DropDownRow } from "components";
 import { Popout } from "components/base/Popout/Popout";
-
-// import { ReleaseStageBadge } from "components/ReleaseStageBadge";
 
 import { ReleaseStage } from "core/request/AirbyteClient";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
@@ -30,25 +28,6 @@ const Content = styled.div`
   justify-content: space-between;
   margin: 0 0 20px 0;
 `;
-
-// const EntityType = styled(H5)`
-//   display: flex;
-//   gap: 6px;
-//   align-items: center;
-//   color: ${({ theme }) => theme.greyColor55};
-// `;
-
-// const EntityInfo = styled(Content)`
-//   justify-content: left;
-//   padding-top: 15px;
-//   padding-bottom: 39px;
-//   gap: 15px;
-// `;
-
-// const EntityIcon = styled.div`
-//   height: 40px;
-//   width: 40px;
-// `;
 
 const BtnInnerContainer = styled.div`
   width: 100%;
@@ -76,18 +55,7 @@ const BtnIcon = styled(FontAwesomeIcon)`
   margin-right: 10px;
 `;
 
-const TableItemTitle: React.FC<TableItemTitleProps> = ({
-  type,
-  dropDownData,
-  onSelect,
-  btnText,
-  // entity,
-  // entityName,
-  // entityIcon,
-  // releaseStage,
-  // onClick,
-  num,
-}) => {
+const TableItemTitle: React.FC<TableItemTitleProps> = ({ type, dropDownData, onSelect, btnText, num }) => {
   const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
   const { formatMessage } = useIntl();
   const options = [
@@ -123,7 +91,6 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
           options={options}
           isSearchable={false}
           styles={{
-            // TODO: hack to position select
             menuPortal: (base) => ({
               ...base,
               "margin-left": "-70px",
@@ -137,9 +104,6 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
                 <BtnText>{btnText}</BtnText>
               </BtnInnerContainer>
             </Button>
-            // <Button onClick={onOpen} disabled={!allowCreateConnection}>
-            //   <FormattedMessage id={`tables.${type}Add`} />
-            // </Button>
           )}
         />
       </Content>

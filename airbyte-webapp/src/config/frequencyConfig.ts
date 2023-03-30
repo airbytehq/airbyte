@@ -1,7 +1,7 @@
 import { ConnectionScheduleDataBasicSchedule } from "core/request/AirbyteClient";
 
 export const frequencyConfig: Array<ConnectionScheduleDataBasicSchedule | null> = [
-  null, // manual
+  null,
   {
     units: 1,
     timeUnit: "hours",

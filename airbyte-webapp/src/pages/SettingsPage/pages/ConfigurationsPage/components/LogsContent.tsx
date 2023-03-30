@@ -31,8 +31,6 @@ const LogsContent: React.FC = () => {
       const name = `${logType}-logs.txt`;
       downloadFile(file, name);
     } catch (e) {
-      console.error(e);
-
       registerNotification({
         id: "admin.logs.error",
         title: formatMessage({ id: "admin.logs.error" }),

@@ -11,11 +11,7 @@ import { TooltipProps } from "./types";
 const MOUSE_OUT_TIMEOUT_MS = 50;
 
 const FLOATING_OPTIONS: UseFloatingProps = {
-  middleware: [
-    offset(5), // $spacing-sm
-    flip(),
-    shift(),
-  ],
+  middleware: [offset(5), flip(), shift()],
   whileElementsMounted: autoUpdate,
 };
 

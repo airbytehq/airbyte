@@ -33,10 +33,8 @@ const TableView = styled(Card).attrs({ as: "table" })<{ light?: boolean }>`
 border-spacing: 0;
 width: 100%;
 max-width: 100%;
-// border-radius: 5px;
 border: 1px solid #E5E7EB;
 border-radius: 8px;
-// box-shadow: ${({ light, theme }) => (light ? "none" : `0 2px 4px ${theme.cardShadowColor}`)};
 };
 `;
 
@@ -47,7 +45,6 @@ const Tr = styled.tr<{
   background: ${({ theme, erroredRows }) => (erroredRows ? theme.dangerTransparentColor : theme.whiteColor)};
   cursor: ${({ hasClick }) => (hasClick ? "pointer" : "auto")};
   &:hover {
-    //  background-color: ${({ theme }) => `${theme.grey50}`};
   }
 
   &:nth-child(2n) {
@@ -68,7 +65,6 @@ const Td = styled.td<{
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  // border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
   width: ${({ collapse, customWidth }) => (customWidth ? `${customWidth}%` : collapse ? "0.0000000001%" : "auto")};
 
   tr:last-child > & {
@@ -94,7 +90,6 @@ const Th = styled.th<IThProps>`
   border-bottom: ${({ theme, light }) => (light ? "none" : ` 1px solid ${theme.borderTableColor}`)};
   width: ${({ collapse, customWidth }) => (customWidth ? `${customWidth}%` : collapse ? "0.0000000001%" : "auto")};
   font-weight: ${({ light }) => (light ? 400 : 600)};
-  // text-transform: ${({ light }) => (light ? "capitalize" : "uppercase")};
 
   &:first-child {
     padding-left: ${({ light }) => (light ? 13 : 32)}px;
