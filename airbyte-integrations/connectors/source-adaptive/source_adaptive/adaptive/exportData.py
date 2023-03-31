@@ -143,7 +143,8 @@ class AdaptiveExportData(Adaptive):
 
         # add an additional columns to keep the date, and the amount
         json_schema["properties"].update({"date": {"type": "string"}})
-        json_schema["properties"].update({"amount": {"type": "number"}})
+        json_schema["properties"].update({"amount": {"type": "string"}})
+        json_schema["properties"].update({"version": {"type": "string"}})
         return json_schema
 
     def generate_table_row(self) -> Generator[AirbyteMessage, None, None]:
@@ -158,6 +159,8 @@ class AdaptiveExportData(Adaptive):
 
             # get the date_selected as it will be saved for each row
             date_selected = str(self.get_csv_columns_from_response(response)[-1])
+
+            version = self.config["version"]
 
             # generate a record for each row that is read
             for row in self.get_csv_data_from_response(response):
@@ -179,6 +182,7 @@ class AdaptiveExportData(Adaptive):
 
                 # now add additional data in the record for the date,
                 data.update({"date": date_selected})
+                data.update({"version": version})
 
                 yield AirbyteMessage(
                     type=Type.RECORD,
