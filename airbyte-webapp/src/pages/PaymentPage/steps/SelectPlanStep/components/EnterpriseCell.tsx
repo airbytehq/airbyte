@@ -13,7 +13,7 @@ const Container = styled.div`
 `;
 
 const Heading = styled.div`
-  ont-style: normal;
+  font-style: normal;
   font-weight: 600;
   font-size: 24px;
   color: ${({ theme }) => theme.black300};
