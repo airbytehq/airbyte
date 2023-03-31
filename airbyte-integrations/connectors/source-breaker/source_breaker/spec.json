@@ -7,45 +7,6 @@
     "required": [],
     "additionalProperties": true,
     "properties": {
-      "count": {
-        "title": "Count",
-        "description": "How many users should be generated in total.  This setting does not apply to the purchases or products stream.",
-        "type": "integer",
-        "minimum": 1,
-        "default": 1000,
-        "order": 0
-      },
-      "seed": {
-        "title": "Seed",
-        "description": "Manually control the breaker random seed to return the same values on subsequent runs (leave -1 for random)",
-        "type": "integer",
-        "default": -1,
-        "order": 1
-      },
-      "records_per_sync": {
-        "title": "Records Per Sync",
-        "description": "How many fake records will be returned for each sync, for each stream?  By default, it will take 2 syncs to create the requested 1000 records.",
-        "type": "integer",
-        "minimum": 1,
-        "default": 500,
-        "order": 2
-      },
-      "records_per_slice": {
-        "title": "Records Per Stream Slice",
-        "description": "How many fake records will be in each page (stream slice), before a state message is emitted?",
-        "type": "integer",
-        "minimum": 1,
-        "default": 1000,
-        "order": 3
-      },
-      "parallelism": {
-        "title": "Parallelism",
-        "description": "How many parallel workers should we use to generate fake data?  Choose a value equal to the number of CPUs you will allocate to this source.",
-        "type": "integer",
-        "minimum": 1,
-        "default": 4,
-        "order": 4
-      },
       "check_outcome": {
         "title": "Outcome of check method",
         "description": "foobar",
