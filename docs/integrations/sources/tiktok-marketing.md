@@ -63,9 +63,9 @@ To access the Sandbox environment:
 | AdGroups                                | Prod,Sandbox | adgroup_id                   | Yes         |
 | Ads                                     | Prod,Sandbox | ad_id                        | Yes         |
 | Campaigns                               | Prod,Sandbox | campaign_id                  | Yes         |
-| AdsReportsHourly                        | Prod,Sandbox | aid_id                       | Yes         |
-| AdsReportsDaily                         | Prod,Sandbox | aid_id, stat_time_day        | Yes         |
-| AdsReportsLifetime                      | Prod,Sandbox | aid_id                       | No          |
+| AdsReportsHourly                        | Prod,Sandbox | ad_id                        | Yes         |
+| AdsReportsDaily                         | Prod,Sandbox | ad_id, stat_time_day         | Yes         |
+| AdsReportsLifetime                      | Prod,Sandbox | ad_id                        | No          |
 | AdvertisersReportsHourly                | Prod         | advertiser_id                | Yes         |
 | AdvertisersReportsDaily                 | Prod         | advertiser_id, stat_time_day | Yes         |
 | AdvertisersReportsLifetime              | Prod         | advertiser_id                | No          |
@@ -550,7 +550,7 @@ The connector is restricted by [requests limitation](https://ads.tiktok.com/mark
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------|
-| 3.0.1   | 2023-03-31 |                                                          | Add correct PK to daily reports streams                                                       |
+| 3.0.1   | 2023-03-31 | [24741](https://github.com/airbytehq/airbyte/pull/24741) | Add correct PK to daily reports streams                                                       |
 | 3.0.0   | 2023-03-29 | [24630](https://github.com/airbytehq/airbyte/pull/24630) | Migrate to v1.3 API                                                                           |
 | 2.0.5   | 2023-03-29 | [22863](https://github.com/airbytehq/airbyte/pull/22863) | Specified date formatting in specification                                                    |
 | 2.0.4   | 2023-02-23 | [22309](https://github.com/airbytehq/airbyte/pull/22309) | Add Advertiser ID to filter reports and streams                                               |
