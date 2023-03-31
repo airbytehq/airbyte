@@ -52,26 +52,26 @@ airbyte-ci connectors-ci --use-remote-secrets=False
 (source-pokeapi does not require GSM access)
 
 ```bash
-airbyte-ci connectors-ci test-connectors --name=source-pokeapi
+airbyte-ci connectors test --name=source-pokeapi
 ```
 
 ### **Run the pipeline for multiple connectors**
 
 ```bash
-airbyte-ci connectors-ci test-connectors --name=source-pokeapi --name=source-openweather
+airbyte-ci connectors test --name=source-pokeapi --name=source-openweather
 ```
 
 ### **Run the pipeline for generally available connectors**
 
 ```bash
-airbyte-ci connectors-ci test-connectors --release-stage=generally_available
+airbyte-ci connectors test --release-stage=generally_available
 ```
 
 ### **Run the pipeline for the connectors you changed on the branch**
 
 ```bash
 touch airbyte-integrations/connectors/source-pokeapi/random_file_addition.txt
-airbyte-ci connectors-ci test-connectors --modified #the source-pokeapi pipeline should run
+airbyte-ci connectors test --modified #the source-pokeapi pipeline should run
 ```
 
 ### Local VS. CI
@@ -130,7 +130,7 @@ airbyte-ci metadata-service --help
 
 For example to run the unit tests for the metadata service library you can run
 ```bash
-airbyte-ci metadata-service test-metadata-service-lib
+airbyte-ci metadata test lib
 ```
 
 ## Questions for the Dagger team

@@ -34,7 +34,6 @@ logger = logging.getLogger(__name__)
 
 # DAGGER PIPELINES
 
-
 async def run(context: ConnectorTestContext, semaphore: anyio.Semaphore) -> ConnectorTestReport:
     """Runs a CI pipeline for a single connector.
     A visual DAG can be found on the README.md file of the pipelines modules.
@@ -106,7 +105,7 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
 @click.group(help="Commands related to connectors and connector acceptance tests.")
 @click.option("--use-remote-secrets", default=True)  # specific to connectors
 @click.pass_context
-def connectors_ci(
+def connectors(
     ctx: click.Context,
     use_remote_secrets: str,
 ):
@@ -128,7 +127,7 @@ def connectors_ci(
     )
 
 
-@connectors_ci.command()
+@connectors.command()
 @click.option(
     "--name", "names", multiple=True, help="Only test a specific connector. Use its technical name. e.g source-pokeapi.", type=str
 )
@@ -143,7 +142,7 @@ def connectors_ci(
 @click.option("--modified/--not-modified", help="Only test modified connectors in the current branch.", default=False, type=bool)
 @click.option("--concurrency", help="Number of connector tests pipeline to run in parallel.", default=5, type=int)
 @click.pass_context
-def test_connectors(
+def test(
     ctx: click.Context, names: Tuple[str], languages: Tuple[ConnectorLanguage], release_stages: Tuple[str], modified: bool, concurrency: int
 ):
     """Runs a CI pipeline the connector passed as CLI argument.
@@ -214,4 +213,4 @@ def test_connectors(
 
 
 if __name__ == "__main__":
-    connectors_ci()
+    test()

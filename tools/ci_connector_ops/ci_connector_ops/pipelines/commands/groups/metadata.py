@@ -39,13 +39,18 @@ async def run_metadata_lib_test_pipeline(metadata_pipeline_context: PipelineCont
 
 @click.group(help="Commands related to the metadata service.")
 @click.pass_context
-def metadata_service(ctx: click.Context):
+def metadata(ctx: click.Context):
+    pass
+
+@metadata.group(help="Commands related to the metadata service.")
+@click.pass_context
+def test(ctx: click.Context):
     pass
 
 
-@metadata_service.command(help="Run unit tests for the metadata service library.")
+@test.command(help="Run unit tests for the metadata service library.")
 @click.pass_context
-def test_metadata_service_lib(ctx: click.Context):
+def lib(ctx: click.Context):
     logger.info("Running metadata service lib unit tests...")
     metadata_pipeline_context = PipelineContext(
         pipeline_name="Metadata Service Lib Unit Test Pipeline",
@@ -67,4 +72,4 @@ def test_metadata_service_lib(ctx: click.Context):
 
 
 if __name__ == "__main__":
-    metadata_service()
+    lib()

@@ -3,8 +3,8 @@
 #
 
 import click
-from .metadata_service import metadata_service
-from .connectors_ci import connectors_ci
+from .groups.metadata import metadata
+from .groups.connectors import connectors
 from ci_connector_ops.pipelines.contexts import CIContext
 from ci_connector_ops.pipelines.utils import (
     get_current_epoch_time,
@@ -50,8 +50,8 @@ def airbyte_ci(
     ctx.obj["modified_files"] = get_modified_files(git_branch, git_revision, diffed_branch, is_local)
 
 
-airbyte_ci.add_command(connectors_ci)
-airbyte_ci.add_command(metadata_service)
+airbyte_ci.add_command(connectors)
+airbyte_ci.add_command(metadata)
 
 if __name__ == "__main__":
     airbyte_ci()
