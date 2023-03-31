@@ -298,7 +298,7 @@
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift
-  dockerImageTag: 0.4.4
+  dockerImageTag: 0.4.5
   documentationUrl: https://docs.airbyte.com/integrations/destinations/redshift
   icon: redshift.svg
   normalizationConfig:
@@ -329,7 +329,7 @@
 - name: S3
   destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.3.22
+  dockerImageTag: 0.3.23
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3
   icon: s3.svg
   resourceRequirements:
@@ -356,7 +356,7 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.4.60
+  dockerImageTag: 0.4.61
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   icon: snowflake.svg
   normalizationConfig:
