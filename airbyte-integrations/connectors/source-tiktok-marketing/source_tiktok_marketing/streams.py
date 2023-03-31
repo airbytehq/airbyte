@@ -750,7 +750,7 @@ class AudienceReport(BasicReports):
         return params
 
 
-class CampaignAudienceReports(AudienceReport):
+class CampaignsAudienceReports(AudienceReport):
 
     primary_key = "campaign_id"
 

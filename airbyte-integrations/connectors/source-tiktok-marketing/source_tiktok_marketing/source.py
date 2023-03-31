@@ -31,7 +31,7 @@ from .streams import (
     AdvertisersReports,
     BasicReports,
     Campaigns,
-    CampaignAudienceReports,
+    CampaignsAudienceReports,
     CampaignsAudienceReportsByCountry,
     CampaignsAudienceReportsByPlatform,
     CampaignsReports,
@@ -189,7 +189,7 @@ class SourceTiktokMarketing(AbstractSource):
                 AdGroupAudienceReports,
                 AdGroupAudienceReportsByCountry,
                 AdGroupAudienceReportsByPlatform,
-                CampaignAudienceReports,
+                CampaignsAudienceReports,
                 CampaignsAudienceReportsByCountry,
                 CampaignsAudienceReportsByPlatform,
             ]
