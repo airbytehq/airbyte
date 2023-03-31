@@ -39,11 +39,11 @@ public class PostgresSourceStrictEncryptTest {
   @Test
   void testSSlModesDisableAllowPreferWithTunnelIfServerDoesNotSupportSSL() throws Exception {
 
-    try (final PostgreSQLContainer<?> db = postgreSQLContainerNoSSL.withNetwork(network)) {
+    try (PostgreSQLContainer<?> db = postgreSQLContainerNoSSL.withNetwork(network)) {
       bastion.initAndStartBastion(network);
       db.start();
 
-      for (final String sslmode : NON_STRICT_SSL_MODES) {
+      for (String sslmode : NON_STRICT_SSL_MODES) {
         final AirbyteConnectionStatus connectionStatus = checkWithTunnel(db, sslmode);
         assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, connectionStatus.getStatus());
       }
@@ -55,11 +55,11 @@ public class PostgresSourceStrictEncryptTest {
 
   @Test
   void testSSlModesDisableAllowPreferWithTunnelIfServerSupportSSL() throws Exception {
-    try (final PostgreSQLContainer<?> db = postgreSQLContainerWithSSL.withNetwork(network)) {
+    try (PostgreSQLContainer<?> db = postgreSQLContainerWithSSL.withNetwork(network)) {
 
       bastion.initAndStartBastion(network);
       db.start();
-      for (final String sslmode : NON_STRICT_SSL_MODES) {
+      for (String sslmode : NON_STRICT_SSL_MODES) {
 
         final AirbyteConnectionStatus connectionStatus = checkWithTunnel(db, sslmode);
         assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, connectionStatus.getStatus());
@@ -71,11 +71,11 @@ public class PostgresSourceStrictEncryptTest {
 
   @Test
   void testSSlModesDisableAllowPreferWithFailedTunnelIfServerSupportSSL() throws Exception {
-    try (final PostgreSQLContainer<?> db = postgreSQLContainerWithSSL) {
+    try (PostgreSQLContainer<?> db = postgreSQLContainerWithSSL) {
 
       bastion.initAndStartBastion(network);
       db.start();
-      for (final String sslmode : NON_STRICT_SSL_MODES) {
+      for (String sslmode : NON_STRICT_SSL_MODES) {
 
         final AirbyteConnectionStatus connectionStatus = checkWithTunnel(db, sslmode);
         assertEquals(AirbyteConnectionStatus.Status.FAILED, connectionStatus.getStatus());
@@ -90,7 +90,7 @@ public class PostgresSourceStrictEncryptTest {
   @Test
   void testSSlRequiredWithTunnelIfServerDoesNotSupportSSL() throws Exception {
 
-    try (final PostgreSQLContainer<?> db = postgreSQLContainerNoSSL.withNetwork(network)) {
+    try (PostgreSQLContainer<?> db = postgreSQLContainerNoSSL.withNetwork(network)) {
       bastion.initAndStartBastion(network);
       db.start();
       final AirbyteConnectionStatus connectionStatus = checkWithTunnel(db, SSL_MODE_REQUIRE);
@@ -105,10 +105,10 @@ public class PostgresSourceStrictEncryptTest {
   @Test
   void testSSlRequiredNoTunnelIfServerSupportSSL() throws Exception {
 
-    try (final PostgreSQLContainer<?> db = postgreSQLContainerWithSSL) {
+    try (PostgreSQLContainer<?> db = postgreSQLContainerWithSSL) {
       db.start();
 
-      final ImmutableMap<Object, Object> configBuilderWithSSLMode = getDatabaseConfigBuilderWithSSLMode(db, SSL_MODE_REQUIRE, false).build();
+      final ImmutableMap<Object, Object> configBuilderWithSSLMode = getDatabaseConfigBuilderWithSSLMode(db, SSL_MODE_REQUIRE).build();
       final JsonNode config = Jsons.jsonNode(configBuilderWithSSLMode);
       addNoTunnel((ObjectNode) config);
       final AirbyteConnectionStatus connectionStatus = source.check(config);
@@ -119,7 +119,7 @@ public class PostgresSourceStrictEncryptTest {
   @Test
   void testStrictSSLSecuredWithTunnel() throws Exception {
 
-    try (final PostgreSQLContainer<?> db = postgreSQLContainerWithSSL.withNetwork(network)) {
+    try (PostgreSQLContainer<?> db = postgreSQLContainerWithSSL.withNetwork(network)) {
 
       bastion.initAndStartBastion(network);
       db.start();
@@ -131,19 +131,15 @@ public class PostgresSourceStrictEncryptTest {
     }
   }
 
-  private ImmutableMap.Builder<Object, Object> getDatabaseConfigBuilderWithSSLMode(final PostgreSQLContainer<?> db, final String sslMode, final boolean internalHostPort) {
+  private ImmutableMap.Builder<Object, Object> getDatabaseConfigBuilderWithSSLMode(PostgreSQLContainer<?> db, String sslMode) {
     return ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, Objects.requireNonNull(
-            internalHostPort ?
-            db.getContainerInfo()
+        .put(JdbcUtils.HOST_KEY, Objects.requireNonNull(db.getContainerInfo()
             .getNetworkSettings()
             .getNetworks()
             .entrySet().stream()
             .findFirst()
-            .get().getValue().getIpAddress() : db.getHost()))
-        .put(JdbcUtils.PORT_KEY,
-            internalHostPort ?
-            db.getExposedPorts().get(0) : db.getFirstMappedPort())
+            .get().getValue().getIpAddress()))
+        .put(JdbcUtils.PORT_KEY, db.getExposedPorts().get(0))
         .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
         .put(JdbcUtils.SCHEMAS_KEY, List.of("public"))
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
@@ -151,7 +147,7 @@ public class PostgresSourceStrictEncryptTest {
         .put(JdbcUtils.SSL_MODE_KEY, Map.of(JdbcUtils.MODE_KEY, sslMode));
   }
 
-  private JsonNode getMockedSSLConfig(final String sslMode) {
+  private JsonNode getMockedSSLConfig(String sslMode) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, "test_host")
         .put(JdbcUtils.PORT_KEY, 777)
@@ -165,7 +161,7 @@ public class PostgresSourceStrictEncryptTest {
 
   @Test
   void testSslModesUnsecuredNoTunnel() throws Exception {
-    for (final String sslMode : NON_STRICT_SSL_MODES) {
+    for (String sslMode : NON_STRICT_SSL_MODES) {
       final JsonNode config = getMockedSSLConfig(sslMode);
       addNoTunnel((ObjectNode) config);
 
@@ -175,13 +171,13 @@ public class PostgresSourceStrictEncryptTest {
     }
   }
 
-  private AirbyteConnectionStatus checkWithTunnel(final PostgreSQLContainer<?> db, final String sslmode) throws Exception {
-    final ImmutableMap.Builder<Object, Object> configBuilderWithSSLMode = getDatabaseConfigBuilderWithSSLMode(db, sslmode, true);
+  private AirbyteConnectionStatus checkWithTunnel(PostgreSQLContainer<?> db, String sslmode) throws Exception {
+    final ImmutableMap.Builder<Object, Object> configBuilderWithSSLMode = getDatabaseConfigBuilderWithSSLMode(db, sslmode);
     final JsonNode configWithSSLModeDisable = bastion.getTunnelConfig(SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH, configBuilderWithSSLMode);
     return source.check(configWithSSLModeDisable);
   }
 
-  private static void addNoTunnel(final ObjectNode config) {
+  private static void addNoTunnel(ObjectNode config) {
     config.putIfAbsent("tunnel_method", Jsons.jsonNode(ImmutableMap.builder()
         .put("tunnel_method", "NO_TUNNEL")
         .build()));
