@@ -21,6 +21,11 @@ INAPPROPRIATE_FOR_CLOUD_USE_CONNECTORS = [
     "bb6071d9-6f34-4766-bec2-d1d4ed81a653",  # destination-exasol, no strict-encrypt variant
     "7b7d7a0d-954c-45a0-bcfc-39a634b97736",  # destination-weviate, no strict-encrypt variant
     "06ec60c7-7468-45c0-91ac-174f6e1a788b",  # destination-tidb, no strict-encrypt variant
+    "2af123bf-0aaf-4e0d-9784-cb497f23741a",  # source-appstore, originally ignored in the source connector masks
+    "9fa5862c-da7c-11eb-8d19-0242ac130003",  # source-cockroachdb, originally ignored in the source connector masks
+    "445831eb-78db-4b1f-8f1f-0d96ad8739e2",  # source-drift, originally ignored in the source connector masks
+    "d917a47b-8537-4d0d-8c10-36a9928d4265",  # source-kafka, originally ignored in the source connector masks
+    "9f760101-60ae-462f-9ee6-b7a9dafd454d",  # destination-kafka, originally ignored in the destination connector masks
 ]
 
 GCS_QA_REPORT_PATH = "gs://airbyte-data-connectors-qa-engine/"
