@@ -33,7 +33,7 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
-#### 2023.03.32
+#### 2023.03.31
 1. Readjust the Source/Destination/Connection TestConnection component to remove scrolling
 2. Copy Source/Destination flows add test endpoint(check_connection_for_update)
 #### 2023.03.29
