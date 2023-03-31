@@ -205,7 +205,7 @@ impl AirbyteSourceInterceptor {
                     stream.source_defined_primary_key
                         .unwrap_or(Vec::new())
                         .iter()
-                        .map(|key| format!("/{}", key.join("/")))
+                        .map(|key| doc::Pointer::from_iter(key.iter().map(|s| doc::ptr::Token::from_str(&s))).to_string())
                         .collect();
 
                 let recommended_name = stream_to_recommended_name(&stream.name);
