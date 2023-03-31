@@ -49,11 +49,23 @@ the example configs under `test_configs` to test out different behavior locally.
 
 ### Locally running the connector
 
+To run everything successfully:
 ```
 python main.py spec
 python main.py check --config test_configs/config.json
 python main.py discover --config test_configs/config.json
 python main.py read --config test_configs/config.json --catalog integration_tests/configured_catalog.json
+```
+
+To make `check` fail in one of 2 ways:
+```
+python main.py check --config test_configs/config_check_connection_fail.json
+python main.py check --config test_configs/config_check_job_fail.json
+```
+
+To make `discover` fail from an unexpected error:
+```
+python main.py discover --config test_configs/config_discover_fail.json
 ```
 
 ### Locally running the connector docker image
