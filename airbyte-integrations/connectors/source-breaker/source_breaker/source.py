@@ -43,22 +43,10 @@ class SourceBreaker(AbstractSource):
 
         return ConnectorSpecification.parse_obj(spec_obj)
 
-    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        """Implements the Check Connection operation from the Airbyte Specification.
-        See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#check.
-        """
-        check_outcome = config["check_outcome"]["check_outcome"]
-        if check_outcome == "check_job_failure_with_trace":
-            raise Exception("Test Check Exception - shout @ Ella if you see this")
-
-        check_succeeded, error = self.check_connection(logger, config)
-        if check_succeeded:
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-        if not check_succeeded:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=repr(error))
-
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         check_outcome = config["check_outcome"]["check_outcome"]
+        if check_outcome == "check_job_failure_with_trace":
+            raise Exception("Test Check Exception - shout @ Ella if you see this in prod")
         if check_outcome == "success":
             return True, None
         elif check_outcome == "check_job_success_check_connection_failure":
