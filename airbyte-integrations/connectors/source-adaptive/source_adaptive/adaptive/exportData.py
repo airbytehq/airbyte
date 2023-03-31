@@ -160,7 +160,7 @@ class AdaptiveExportData(Adaptive):
             # get the date_selected as it will be saved for each row
             date_selected = str(self.get_csv_columns_from_response(response)[-1])
 
-            version = self.config["version"]
+            version = self.config["method_obj"]["version"]
 
             # generate a record for each row that is read
             for row in self.get_csv_data_from_response(response):
