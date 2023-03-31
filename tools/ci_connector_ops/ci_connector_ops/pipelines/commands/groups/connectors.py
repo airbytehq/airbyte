@@ -1,27 +1,24 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import itertools
 import logging
 import os
 import sys
 from pathlib import Path
-from typing import List, Tuple
+from typing import Tuple
 
 import anyio
-import asyncer
 import click
 import dagger
-from ci_connector_ops.pipelines import checks, tests
-from ci_connector_ops.pipelines.bases import ConnectorTestReport
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext, CIContext
 from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.utils import (
-    DAGGER_CONFIG,
     get_modified_connectors,
 )
+from ci_connector_ops.pipelines.pipelines.connectors import run_connectors_test_pipelines
 from ci_connector_ops.utils import ConnectorLanguage, get_all_released_connectors
 from rich.logging import RichHandler
+
 
 # CONSTANTS
 
@@ -31,47 +28,6 @@ GITHUB_GLOBAL_DESCRIPTION = "Running connectors tests"
 logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
 
 logger = logging.getLogger(__name__)
-
-# DAGGER PIPELINES
-
-async def run(context: ConnectorTestContext, semaphore: anyio.Semaphore) -> ConnectorTestReport:
-    """Runs a CI pipeline for a single connector.
-    A visual DAG can be found on the README.md file of the pipelines modules.
-
-    Args:
-        context (ConnectorTestContext): The initialized connector test context.
-
-    Returns:
-        ConnectorTestReport: The test reports holding tests results.
-    """
-    async with semaphore:
-        async with context:
-            async with asyncer.create_task_group() as task_group:
-                tasks = [
-                    task_group.soonify(checks.QaChecks(context).run)(),
-                    task_group.soonify(checks.CodeFormatChecks(context).run)(),
-                    task_group.soonify(tests.run_all_tests)(context),
-                ]
-            results = list(itertools.chain(*(task.value for task in tasks)))
-
-            context.test_report = ConnectorTestReport(context, steps_results=results)
-
-        return context.test_report
-
-
-async def run_connectors_test_pipelines(contexts: List[ConnectorTestContext], concurrency: int = 5):
-    """Runs a CI pipeline for all the connectors passed.
-
-    Args:
-        contexts (List[ConnectorTestContext]): List of connector test contexts for which a CI pipeline needs to be run.
-        concurrency (int): Number of test pipeline that can run in parallel. Defaults to 5
-    """
-    semaphore = anyio.Semaphore(concurrency)
-    async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
-        async with anyio.create_task_group() as tg:
-            for context in contexts:
-                context.dagger_client = dagger_client.pipeline(f"{context.connector.technical_name} - Test Pipeline")
-                tg.start_soon(run, context, semaphore)
 
 
 # HELPERS
@@ -210,7 +166,6 @@ def test(
             should_send=ctx.obj.get("ci_context") == CIContext.PULL_REQUEST,
             logger=logger,
         )
-
 
 if __name__ == "__main__":
     test()

@@ -12,11 +12,6 @@ from ci_connector_ops.pipelines.pipelines.metadata import run_metadata_lib_test_
 logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
 logger = logging.getLogger(__name__)
 
-METADATA_LIB_MODULE_PATH = "airbyte-ci/connectors/metadata_service/lib"
-
-
-
-
 
 @click.group(help="Commands related to the metadata service.")
 @click.pass_context
