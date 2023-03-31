@@ -32,6 +32,8 @@ REPORT_MAPPING = {
     "click_view": "click_view",
     "geographic_report": "geographic_view",
     "keyword_report": "keyword_view",
+    "audience": "audience",
+    "user_interest": "user_interest",
 }
 API_VERSION = "v13"
 logger = logging.getLogger("airbyte")

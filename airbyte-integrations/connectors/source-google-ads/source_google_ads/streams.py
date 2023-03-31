@@ -288,6 +288,19 @@ class ServiceAccounts(GoogleAdsStream):
     CATCH_API_ERRORS = False
     primary_key = ["customer.id"]
 
+class Audience(GoogleAdsStream):
+    """
+    Audience stream: https://developers.google.com/google-ads/api/fields/v11/audience
+    """
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    primary_key = ["audience.id"]
+
+class UserInterest(GoogleAdsStream):
+    """
+    Audience stream: https://developers.google.com/google-ads/api/fields/v11/user_interest
+    """
+
+    primary_key = ["user_interest.user_interest_id"]
 
 class Campaigns(IncrementalGoogleAdsStream):
     """
