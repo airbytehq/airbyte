@@ -9,7 +9,7 @@ from typing import Any, List, Mapping, Tuple
 import yaml
 from airbyte_cdk.connector import load_optional_package_file
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, ConnectorSpecification, Status
+from airbyte_cdk.models import AirbyteCatalog, ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
