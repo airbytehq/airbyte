@@ -388,7 +388,7 @@ class Flows(ReverseIncrementalKlaviyoStreamV1):
         return "flows"
 
 
-class EmailTemplates(KlaviyoStream):
+class EmailTemplates(KlaviyoStreamV1):
     """
     Docs: https://developers.klaviyo.com/en/v1-2/reference/get-templates
     """
