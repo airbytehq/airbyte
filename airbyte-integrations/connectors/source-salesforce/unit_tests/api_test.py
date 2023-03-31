@@ -12,7 +12,6 @@ from unittest.mock import Mock
 import pytest
 import requests_mock
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
 from conftest import encoding_symbols_parameters, generate_stream
 from requests.exceptions import HTTPError
