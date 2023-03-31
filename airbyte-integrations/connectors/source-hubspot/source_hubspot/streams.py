@@ -336,8 +336,6 @@ class Stream(HttpStream, ABC):
 
         return post_processor.flat, response
 
-
-
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -1570,17 +1568,13 @@ class Tickets(CRMSearchStream):
     last_modified_field = "hs_lastmodifieddate"
 
 
-
 class EmailSubscriptions(Stream):
     """EMAIL SUBSCRIPTION, API v1
     Docs: https://legacydocs.hubspot.com/docs/methods/email/get_subscriptions
     """
+
     url = "/email/public/v1/subscriptions"
     data_field = "subscriptionDefinitions"
     primary_key = "id"
     scopes = {"content"}
-
-    def _filter_old_records(self, records: Iterable) -> Iterable:
-        """No updated_at or created_at field hence allow records to ignore and read them"""
-        for record in records:
-            yield record
+    filter_old_records = False
