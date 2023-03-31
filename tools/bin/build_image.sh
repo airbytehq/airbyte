@@ -14,7 +14,6 @@ export DOCKER_BUILDKIT=1
 
 cd "$ROOT_DIR"
 . tools/lib/lib.sh
-# TODO: understand why assert_root does not succeed in the dagger context
 assert_root
 
 cd "$PROJECT_DIR"
@@ -27,7 +26,6 @@ function validate_dockerignore() {
   fi
 }
 
-echo $TAGGED_IMAGE
 args=(
     -f "$DOCKERFILE"
     -t "$TAGGED_IMAGE"

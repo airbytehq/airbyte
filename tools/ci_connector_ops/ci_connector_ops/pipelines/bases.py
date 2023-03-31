@@ -11,7 +11,8 @@ from enum import Enum
 from typing import TYPE_CHECKING, ClassVar, List, Optional, Union
 
 import asyncer
-from ci_connector_ops.pipelines.utils import with_exit_code, with_stderr, with_stdout
+from ci_connector_ops.pipelines.actions import environments
+from ci_connector_ops.pipelines.utils import check_path_in_workdir, with_exit_code, with_stderr, with_stdout
 from ci_connector_ops.utils import console
 from dagger import Client, Container, QueryError
 from rich.console import Group
@@ -101,6 +102,8 @@ class Step(ABC):
             soon_stdout = task_group.soonify(with_stdout)(container)
         return StepResult(self, StepStatus.from_exit_code(soon_exit_code.value), stderr=soon_stderr.value, stdout=soon_stdout.value)
 
+
+class PytestStep(Step, ABC):
     def pytest_logs_to_step_result(self, logs: str) -> StepResult:
         last_log_line = logs.split("\n")[-2]
         if "failed" in last_log_line:
@@ -109,6 +112,38 @@ class Step(ABC):
             return StepResult(self, StepStatus.SKIPPED, stdout=logs)
         else:
             return StepResult(self, StepStatus.SUCCESS, stdout=logs)
+
+    async def _run_tests_in_directory(self, connector_under_test: Container, test_directory: str) -> StepResult:
+        """Runs the pytest tests in the test_directory that was passed.
+        A StepStatus.SKIPPED is returned if no tests were discovered.
+        Args:
+            connector_under_test (Container): The connector under test container.
+            test_directory (str): The directory in which the python test modules are declared
+
+        Returns:
+            Tuple[StepStatus, Optional[str], Optional[str]]: Tuple of StepStatus, stderr and stdout.
+        """
+        test_config = (
+            "pytest.ini" if await check_path_in_workdir(connector_under_test, "pytest.ini") else "/" + environments.PYPROJECT_TOML_FILE_PATH
+        )
+        if await check_path_in_workdir(connector_under_test, test_directory):
+            tester = connector_under_test.with_exec(
+                [
+                    "python",
+                    "-m",
+                    "pytest",
+                    "--suppress-tests-failed-exit-code",
+                    "--suppress-no-test-exit-code",
+                    "-s",
+                    test_directory,
+                    "-c",
+                    test_config,
+                ]
+            )
+            return self.pytest_logs_to_step_result(await tester.stdout())
+
+        else:
+            return StepResult(self, StepStatus.SKIPPED)
 
 
 @dataclass(frozen=True)

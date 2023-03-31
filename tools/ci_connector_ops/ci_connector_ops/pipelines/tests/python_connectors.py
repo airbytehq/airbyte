@@ -4,15 +4,13 @@
 
 """This module groups steps made to run tests for a specific Python connector given a test context."""
 
-from abc import ABC
 from typing import List, Tuple
 
 import asyncer
 from ci_connector_ops.pipelines.actions import environments, secrets
 from ci_connector_ops.pipelines.bases import Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
-from ci_connector_ops.pipelines.tests.common import AcceptanceTests
-from ci_connector_ops.pipelines.utils import check_path_in_workdir
+from ci_connector_ops.pipelines.tests.common import AcceptanceTests, PytestStep
 from dagger import Container
 
 
@@ -62,41 +60,7 @@ class ConnectorInstallTest(Step):
         return await self.get_step_result(connector_under_test), connector_under_test
 
 
-class PythonTests(Step, ABC):
-    async def _run_tests_in_directory(self, connector_under_test: Container, test_directory: str) -> StepResult:
-        """Runs the pytest tests in the test_directory that was passed.
-        A StepStatus.SKIPPED is returned if no tests were discovered.
-        Args:
-            connector_under_test (Container): The connector under test container.
-            test_directory (str): The directory in which the python test modules are declared
-
-        Returns:
-            Tuple[StepStatus, Optional[str], Optional[str]]: Tuple of StepStatus, stderr and stdout.
-        """
-        test_config = (
-            "pytest.ini" if await check_path_in_workdir(connector_under_test, "pytest.ini") else "/" + environments.PYPROJECT_TOML_FILE_PATH
-        )
-        if await check_path_in_workdir(connector_under_test, test_directory):
-            tester = connector_under_test.with_exec(
-                [
-                    "python",
-                    "-m",
-                    "pytest",
-                    "--suppress-tests-failed-exit-code",
-                    "--suppress-no-test-exit-code",
-                    "-s",
-                    test_directory,
-                    "-c",
-                    test_config,
-                ]
-            )
-            return self.pytest_logs_to_step_result(await tester.stdout())
-
-        else:
-            return StepResult(self, StepStatus.SKIPPED)
-
-
-class UnitTests(PythonTests):
+class UnitTests(PytestStep):
     title = "Unit tests"
 
     async def _run(self, connector_under_test: Container) -> StepResult:
@@ -112,7 +76,7 @@ class UnitTests(PythonTests):
         return await self._run_tests_in_directory(connector_under_test, "unit_tests")
 
 
-class IntegrationTests(PythonTests):
+class IntegrationTests(PytestStep):
     title = "Integration tests"
 
     async def _run(self, connector_under_test: Container) -> StepResult:

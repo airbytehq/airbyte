@@ -2,14 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-"""This module groups steps made to run tests agnostics to a connector language."""
+"""This module groups steps made to run tests agnostic to a connector language."""
 
 import json
 from typing import List
 
 import asyncer
 from ci_connector_ops.pipelines.actions import environments
-from ci_connector_ops.pipelines.bases import Step, StepResult, StepStatus
+from ci_connector_ops.pipelines.bases import PytestStep, Step, StepResult, StepStatus
 from ci_connector_ops.utils import ConnectorLanguage
 
 
@@ -45,7 +45,7 @@ class QaChecks(Step):
         return [await self.get_step_result(qa_checks)]
 
 
-class AcceptanceTests(Step):
+class AcceptanceTests(PytestStep):
     title = "Acceptance tests"
 
     async def _build_python_connector_image(self) -> str:

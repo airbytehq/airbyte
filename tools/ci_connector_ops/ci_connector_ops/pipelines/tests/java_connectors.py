@@ -11,7 +11,7 @@ from ci_connector_ops.pipelines.actions import environments, secrets
 from ci_connector_ops.pipelines.bases import Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.pipelines.tests.common import AcceptanceTests
-from dagger import Container, Directory
+from dagger import Directory
 
 
 class GradleTask(Step, ABC):
@@ -72,10 +72,6 @@ class GradleTask(Step, ABC):
             + [f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.task_name}"]
         )
 
-    async def run_gradle_command(self, connector_under_test: Container) -> StepResult:
-        connector_under_test = connector_under_test.with_exec(self.get_gradle_command())
-        return await self.get_step_result(connector_under_test)
-
     async def _run(self) -> StepResult:
         self.context.dagger_client = self.get_dagger_pipeline(self.context.dagger_client)
         connector_java_build_cache = self.context.dagger_client.cache_volume("connector_java_build_cache")
@@ -86,9 +82,10 @@ class GradleTask(Step, ABC):
             # Disable the Ryuk container because it needs privileged docker access that does not work:
             .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
             .with_directory(f"{self.context.connector.code_directory}/secrets", self.context.secrets_dir)
+            .with_exec(self.get_gradle_command())
         )
 
-        return await self.run_gradle_command(connector_under_test)
+        return await self.get_step_result(connector_under_test)
 
 
 class Test(GradleTask):
@@ -105,9 +102,10 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
     if test_results.status is StepStatus.FAILURE:
         return [test_results, IntegrationTestJava(context).skip(), AcceptanceTests(context).skip()]
 
-    # Not running task using Gradle in parallel
-    # because concurrent access to the gradle cache leads to:
+    # The tests are not running in parallel
+    # because concurrent access to the Gradle cache leads to:
     # "Timeout waiting to lock journal cache"
+    # TODO check if a LOCKED cache sharing mode on gradle cache volumes solves this
     integration_test_java_results = await IntegrationTestJava(context).run()
     acceptance_test_results = await AcceptanceTests(context).run()
     return [test_results, integration_test_java_results, acceptance_test_results]

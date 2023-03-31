@@ -205,8 +205,21 @@ async def with_ci_connector_ops(context: ConnectorTestContext) -> Container:
 
 
 def with_dockerd_service(
-    context, shared_volume: Optional(Tuple[str, CacheVolume]) = None, docker_cache_volume_name: Optional[str] = None
+    context: ConnectorTestContext, shared_volume: Optional(Tuple[str, CacheVolume]) = None, docker_cache_volume_name: Optional[str] = None
 ) -> Container:
+    """Create a container running dockerd, exposing its 2375 port.
+    This container can be used as the docker host for docker-in-docker use cases.
+    An optional shared_volume is mounted to the container to allow client and docker host to share the same files.
+    The /var/lib/docker is cached to provide persistent image storing throughout runs.
+
+    Args:
+        context (ConnectorTestContext): The current connector test context.
+        shared_volume (Optional, optional): A tuple in the form of (mounted path, cache volume) that will be mounted to the dockerd container. Defaults to None.
+        docker_cache_volume_name (Optional[str], optional): The name of the docker cache volume. Changing the volume name provides docker context isolation. Defaults to None.
+
+    Returns:
+        Container: The container running dockerd as a service.
+    """
     if docker_cache_volume_name is None:
         docker_cache_volume_name = "docker-lib"
     dind = (
@@ -227,6 +240,17 @@ def with_bound_docker_host(
     shared_volume: Optional(Tuple[str, CacheVolume]) = None,
     docker_cache_volume_name: Optional[str] = None,
 ) -> Container:
+    """Bind a container to a docker host. If the docker-cli is installed in this container it will use the dockerd service as a docker host.
+
+    Args:
+        context (ConnectorTestContext): The current connector test context.
+        container (Container): The container to bind to the docker host.
+        shared_volume (Optional, optional): A tuple in the form of (mounted path, cache volume) that will be both mounted to the container and the dockerd container. Defaults to None.
+        docker_cache_volume_name (Optional[str], optional): The name of the docker cache volume. Changing the volume name provides docker context isolation. Defaults to None.
+
+    Returns:
+        Container: The container bound to the docker host.
+    """
     dockerd = with_dockerd_service(context, shared_volume, docker_cache_volume_name)
     bound = container.with_env_variable("DOCKER_HOST", "tcp://docker:2375").with_service_binding("docker", dockerd)
     if shared_volume:
@@ -237,11 +261,29 @@ def with_bound_docker_host(
 def with_docker_cli(
     context: ConnectorTestContext, shared_volume: Optional(Tuple[str, CacheVolume]) = None, docker_cache_volume_name: Optional[str] = None
 ) -> Container:
+    """Create a container with the docker CLI installed and bound to a persistent docker host.
+
+    Args:
+        context (ConnectorTestContext): The current connector test context.
+        shared_volume (Optional, optional): A tuple in the form of (mounted path, cache volume) that will be both mounted to the container and the dockerd container. Defaults to None.
+        docker_cache_volume_name (Optional[str], optional): The name of the docker cache volume. Changing the volume name provides docker context isolation. Defaults to None.
+
+    Returns:
+        Container: A docker cli container bound to a docker host.
+    """
     docker_cli = context.dagger_client.container().from_("docker:23.0.1-cli")
     return with_bound_docker_host(context, docker_cli, shared_volume, docker_cache_volume_name)
 
 
 def with_connector_acceptance_test(context: ConnectorTestContext) -> Container:
+    """Create a container to run connector acceptance tests, bound to a persistent docker host.
+
+    Args:
+        context (ConnectorTestContext): The current connector test context.
+
+    Returns:
+        Container: A container with connector acceptance tests installed.
+    """
     if context.connector_acceptance_test_image.endswith(":dev"):
         cat_container = context.connector_acceptance_test_source_dir.docker_build()
     else:
@@ -259,13 +301,19 @@ def with_connector_acceptance_test(context: ConnectorTestContext) -> Container:
     )
 
 
-def with_java_base(context: ConnectorTestContext, jdk_version: str = "17.0.4") -> Container:
-    return context.dagger_client.container().from_(f"amazoncorretto:{jdk_version}")
-
-
 def with_gradle(
     context: ConnectorTestContext, sources_to_include: List[str] = None, docker_cache_volume_name: Optional[str] = None
 ) -> Container:
+    """Create a container with Gradle installed and bound to a persistent docker host.
+    Multiple Java projects are mounted to the container to enable connector builds.
+    Args:
+        context (ConnectorTestContext): The current connector test context.
+        sources_to_include (List[str], optional): List of additional source path to mount to the container. Defaults to None.
+        docker_cache_volume_name (Optional[str], optional): The name of the docker cache volume. Changing the volume name provides docker context isolation. Defaults to None.
+
+    Returns:
+        Container: A container with Gradle installed and Java sources from the repository.
+    """
     airbyte_gradle_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}_airbyte_gradle_cache")
     root_gradle_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}_root_gradle_cache")
 
@@ -300,7 +348,7 @@ def with_gradle(
         "tools/lib/lib.sh",
     ]
 
-    python3_install_deps = [
+    python_install_dependencies = [
         "build-essential",
         "zlib1g-dev",
         "libncurses5-dev",
@@ -313,6 +361,7 @@ def with_gradle(
         "wget",
         "libbz2-dev",
     ]
+
     if sources_to_include:
         include += sources_to_include
 
@@ -325,7 +374,7 @@ def with_gradle(
         .with_exec(["apt-get", "install", "-y", "curl"])
         .with_env_variable("VERSION", "23.0.1")
         .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
-        .with_exec(["apt-get", "install", "-y"] + python3_install_deps)
+        .with_exec(["apt-get", "install", "-y"] + python_install_dependencies)
         .with_exec(
             [
                 "apt-get",
@@ -335,6 +384,9 @@ def with_gradle(
                 "python3-pip",
             ]
         )
+        # TODO it seems that the Gradle Python plugin can't create virtualenv
+        # We need to understand why otherwise destination connector can't be built
+        # They rely on python because their build uses normalization which is using airbyte-python.gradle
         .with_exec(["python3", "--version"])
         .with_exec(["pip3", "--version"])
         .with_exec(["pip3", "install", "-U", "pip"])
@@ -345,6 +397,5 @@ def with_gradle(
         .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
         .with_mounted_cache("/airbyte/.gradle", airbyte_gradle_cache)
         .with_workdir("/airbyte")
-        # .with_exec(["virtualenv", "-p", "python3", ".venv"])
     )
     return with_bound_docker_host(context, openjdk_with_docker, shared_tmp_volume, docker_cache_volume_name)
