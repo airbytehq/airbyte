@@ -38,7 +38,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: |
           export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
-          DAGGER_CLI_COMMIT="67c7e7635cf4ea0e446e2fed522a3e314c960f6a"
+          DAGGER_CLI_COMMIT="a3d6fe7a265b0aabdf702cae8b8f529fc8d0b6ee"
           DAGGER_TMP_BINDIR="/tmp/dagger_${DAGGER_CLI_COMMIT}"
           export _EXPERIMENTAL_DAGGER_CLI_BIN="$DAGGER_TMP_BINDIR/dagger"
           if [ ! -f  "$_EXPERIMENTAL_DAGGER_CLI_BIN" ]; then
@@ -62,7 +62,7 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
-          DAGGER_CLI_COMMIT="67c7e7635cf4ea0e446e2fed522a3e314c960f6a"
+          DAGGER_CLI_COMMIT="a3d6fe7a265b0aabdf702cae8b8f529fc8d0b6ee"
           DAGGER_TMP_BINDIR="/tmp/dagger_${DAGGER_CLI_COMMIT}"
           export _EXPERIMENTAL_DAGGER_CLI_BIN="$DAGGER_TMP_BINDIR/dagger"
           if [ ! -f  "$_EXPERIMENTAL_DAGGER_CLI_BIN" ]; then
