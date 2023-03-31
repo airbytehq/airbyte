@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.base.ssh;
 
+import static io.airbyte.integrations.base.ssh.SshHelpers.getInnerContainerAddress;
+import static io.airbyte.integrations.base.ssh.SshHelpers.getOuterContainerAddress;
 import static io.airbyte.integrations.base.ssh.SshTunnel.TunnelMethod.SSH_KEY_AUTH;
 import static io.airbyte.integrations.base.ssh.SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH;
 
@@ -11,8 +13,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.Network;
@@ -33,19 +39,15 @@ public class SshBastionContainer {
     bastion.start();
   }
 
-  public JsonNode getTunnelConfig(final SshTunnel.TunnelMethod tunnelMethod, final ImmutableMap.Builder<Object, Object> builderWithSchema)
+  public JsonNode getTunnelConfig(final SshTunnel.TunnelMethod tunnelMethod, final ImmutableMap.Builder<Object, Object> builderWithSchema, final boolean innerAddress)
       throws IOException, InterruptedException {
-    final String tunnelHost = bastion.getHost();
-    final Integer firstMappedPort = bastion.getFirstMappedPort();
+    final var containerAddress = innerAddress ? getInnerContainerAddress(bastion) : getOuterContainerAddress(bastion);
     return Jsons.jsonNode(builderWithSchema
         .put("tunnel_method", Jsons.jsonNode(ImmutableMap.builder()
             .put("tunnel_host",
-                Objects.requireNonNull(tunnelHost/*
-                                                  * bastion.getContainerInfo().getNetworkSettings() .getNetworks()
-                                                  * .entrySet().stream().findFirst().get().getValue().getIpAddress()
-                                                  */))
+                Objects.requireNonNull(containerAddress.left))
             .put("tunnel_method", tunnelMethod)
-            .put("tunnel_port", /* bastion.getExposedPorts().get(0) */firstMappedPort)
+            .put("tunnel_port", containerAddress.right)
             .put("tunnel_user", SSH_USER)
             .put("tunnel_user_password", tunnelMethod.equals(SSH_PASSWORD_AUTH) ? SSH_PASSWORD : "")
             .put("ssh_key", tunnelMethod.equals(SSH_KEY_AUTH) ? bastion.execInContainer("cat", "var/bastion/id_rsa").getStdout() : "")
