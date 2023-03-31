@@ -175,7 +175,7 @@ async fn streaming_all(
     let response_stream_copy = async move {
         let mut writer = response_stream_writer.lock().await;
         copy(&mut response_stream_reader, writer.deref_mut()).await?;
-        response_finished_sender.send(true).expect("send write finished signal twice"g);
+        response_finished_sender.send(true).expect("send write finished signal twice");
         tracing::debug!("airbyte-to-flow: response_stream_copy done");
         Ok(())
     };
