@@ -14,7 +14,7 @@ import java.util.Optional;
 
 public class SshHelpers {
 
-  private static final String SSH_KEY_PATTERN = "-----BEGIN[ a-zA-Z0-9]+-----(.|\\n)*-----END[ a-zA-Z0-9]+-----";
+  private static final String SSH_KEY_PATTERN = "^-----BEGIN[ a-zA-Z0-9]+-----(.|\\n)*-----END[ a-zA-Z0-9]+-----$";
   private static final String SSH_KEY_PATTERN_DESCRIPTOR = "PEM format";
 
   public static ConnectorSpecification getSpecAndInjectSsh() throws IOException {

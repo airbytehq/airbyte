@@ -132,7 +132,7 @@
                 "description": "CA certificate",
                 "airbyte_secret": true,
                 "multiline": true,
-                "pattern": "-----BEGIN[ a-zA-Z0-9]+-----(.|\\n)*-----END[ a-zA-Z0-9]+-----",
+                "pattern": "^-----BEGIN[ a-zA-Z0-9]+-----(.|\\n)*-----END[ a-zA-Z0-9]+-----$",
                 "pattern_descriptor": "PEM format",
                 "order": 1
               },
@@ -142,7 +142,7 @@
                 "description": "Client certificate",
                 "airbyte_secret": true,
                 "multiline": true,
-                "pattern": "-----BEGIN[ a-zA-Z0-9]+-----(.|\\n)*-----END[ a-zA-Z0-9]+-----",
+                "pattern": "^-----BEGIN[ a-zA-Z0-9]+-----(.|\\n)*-----END[ a-zA-Z0-9]+-----$",
                 "pattern_descriptor": "PEM format",
                 "always_show": true,
                 "order": 2
@@ -153,7 +153,7 @@
                 "description": "Client key",
                 "airbyte_secret": true,
                 "multiline": true,
-                "pattern": "-----BEGIN[ a-zA-Z0-9]+-----(.|\\n)*-----END[ a-zA-Z0-9]+-----",
+                "pattern": "^-----BEGIN[ a-zA-Z0-9]+-----(.|\\n)*-----END[ a-zA-Z0-9]+-----$",
                 "pattern_descriptor": "PEM format",
                 "always_show": true,
                 "order": 3
@@ -184,7 +184,7 @@
                 "description": "CA certificate",
                 "airbyte_secret": true,
                 "multiline": true,
-                "pattern": "-----BEGIN[ a-zA-Z0-9]+-----(.|\\n)*-----END[ a-zA-Z0-9]+-----",
+                "pattern": "^-----BEGIN[ a-zA-Z0-9]+-----(.|\\n)*-----END[ a-zA-Z0-9]+-----$",
                 "pattern_descriptor": "PEM format",
                 "order": 1
               },
@@ -194,7 +194,7 @@
                 "description": "Client certificate",
                 "airbyte_secret": true,
                 "multiline": true,
-                "pattern": "-----BEGIN[ a-zA-Z0-9]+-----(.|\\n)*-----END[ a-zA-Z0-9]+-----",
+                "pattern": "^-----BEGIN[ a-zA-Z0-9]+-----(.|\\n)*-----END[ a-zA-Z0-9]+-----$",
                 "pattern_descriptor": "PEM format",
                 "always_show": true,
                 "order": 2
@@ -205,7 +205,7 @@
                 "description": "Client key",
                 "airbyte_secret": true,
                 "multiline": true,
-                "pattern": "-----BEGIN[ a-zA-Z0-9]+-----(.|\\n)*-----END[ a-zA-Z0-9]+-----",
+                "pattern": "^-----BEGIN[ a-zA-Z0-9]+-----(.|\\n)*-----END[ a-zA-Z0-9]+-----$",
                 "pattern_descriptor": "PEM format",
                 "always_show": true,
                 "order": 3
@@ -356,7 +356,7 @@
                 "type": "string",
                 "airbyte_secret": true,
                 "multiline": true,
-                "pattern": "-----BEGIN[ a-zA-Z0-9]+-----(.|\\n)*-----END[ a-zA-Z0-9]+-----",
+                "pattern": "^-----BEGIN[ a-zA-Z0-9]+-----(.|\\n)*-----END[ a-zA-Z0-9]+-----$",
                 "pattern_descriptor": "PEM format",
                 "order": 4
               }
