@@ -177,11 +177,11 @@
       "format": "date-time"
     },
     "created_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "updated_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "author_association": {
@@ -224,10 +224,12 @@
           "type": ["null", "string"]
         },
         "created_at": {
-          "type": ["null", "string"]
+          "type": "string",
+          "format": "date-time"
         },
         "updated_at": {
-          "type": ["null", "string"]
+          "type": "string",
+          "format": "date-time"
         },
         "permissions": {
           "type": ["null", "object"],

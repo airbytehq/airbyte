@@ -9,7 +9,7 @@
       "type": ["null", "integer"]
     },
     "starred_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "user": {
