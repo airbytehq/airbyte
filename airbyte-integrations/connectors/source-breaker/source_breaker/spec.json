@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Breaker Source Spec",
     "type": "object",
-    "required": ["count"],
+    "required": [],
     "additionalProperties": true,
     "properties": {
       "count": {
@@ -49,46 +49,10 @@
       "check_outcome": {
         "title": "Outcome of check method",
         "description": "foobar",
-        "type": "object",
+        "type": "string",
         "order": 5,
-        "oneOf": [
-          {
-            "title": "Success",
-            "required": ["check_outcome"],
-            "properties": {
-              "check_outcome": {
-                "description": "Check should succeed",
-                "type": "string",
-                "const": "success",
-                "order": 0
-              }
-            }
-          },
-          {
-            "title": "Check connection failure",
-            "required": ["check_outcome"],
-            "properties": {
-              "check_outcome": {
-                "description": "Check should fail",
-                "type": "string",
-                "const": "check_job_success_check_connection_failure",
-                "order": 1
-              }
-            }
-          },
-          {
-            "title": "Check job failure with trace",
-            "required": ["check_outcome"],
-            "properties": {
-              "check_outcome" : {
-                "description" : "Check should fail with trace",
-                "type" : "string",
-                "const" : "check_job_failure_with_trace",
-                "order" : 3
-              }
-            }
-          }
-        ]
+        "default": "Check should succeed",
+        "enum": ["Check should succeed", "Checking the connection should fail (user error)", "The check job should fail (unexpected connector error)"]
       },
       "discover_should_fail": {
         "title": "Fail Discover",

@@ -44,13 +44,8 @@ From the Airbyte repository root, run:
 
 #### Create credentials
 
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/breaker)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_breaker/spec.json` file.
-Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
-See `integration_tests/sample_config.json` for a sample config file.
-
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source breaker test creds`
-and place them into `secrets/config.json`.
+This connector doesn't require any secrets for credentials, since it generates fake data. Feel free to use
+the example configs under `test_configs` to test out different behavior locally.
 
 ### Locally running the connector
 
