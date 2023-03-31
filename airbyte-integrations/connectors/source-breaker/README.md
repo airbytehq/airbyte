@@ -51,9 +51,9 @@ the example configs under `test_configs` to test out different behavior locally.
 
 ```
 python main.py spec
-python main.py check --config secrets/config.json
-python main.py discover --config secrets/config.json
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+python main.py check --config test_configs/config.json
+python main.py discover --config test_configs/config.json
+python main.py read --config test_configs/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Locally running the connector docker image
@@ -81,9 +81,9 @@ Then run any of the connector commands as follows:
 
 ```
 docker run --rm airbyte/source-breaker:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-breaker:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-breaker:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-breaker:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm -v $(pwd)/test_configs:/secrets airbyte/source-breaker:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/test_configs:/secrets airbyte/source-breaker:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/test_configs:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-breaker:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
 ## Testing
