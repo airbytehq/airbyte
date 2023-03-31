@@ -11,14 +11,12 @@ import tempfile
 
 import definitions
 import utils
+from config_migration import set_high_test_strictness_level, update_configuration
 from git import Repo
 from jinja2 import Environment, FileSystemLoader
 
-from config_migration import update_configuration, set_high_test_strictness_level
-
 # Update this before running the script
 from migrations.strictness_level_migration import config
-
 
 REPO_ROOT = "../../../../../"
 AIRBYTE_REPO = Repo(REPO_ROOT)

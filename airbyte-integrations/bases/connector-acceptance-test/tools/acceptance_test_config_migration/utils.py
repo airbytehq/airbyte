@@ -1,11 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import argparse
 import logging
 from pathlib import Path
 
 import definitions
+
 CONNECTORS_DIRECTORY = "../../../../connectors"
 MIGRATIONS_FOLDER = "./migrations/"
 

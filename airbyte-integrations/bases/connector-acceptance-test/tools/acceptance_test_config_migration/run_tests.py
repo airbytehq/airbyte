@@ -10,7 +10,6 @@ from pathlib import Path
 
 import definitions
 import utils
-
 from migrations.fail_on_extra_columns import config
 
 parser = argparse.ArgumentParser(description="Run connector acceptance tests for a list of connectors.")

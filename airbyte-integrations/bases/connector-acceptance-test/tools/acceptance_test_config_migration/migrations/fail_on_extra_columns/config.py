@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Optional, List
+from typing import List, Optional
 
 # SET THESE BEFORE USING THE SCRIPT
 MODULE_NAME: str = "fail_on_extra_columns"

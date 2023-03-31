@@ -9,7 +9,7 @@ import logging
 import os
 import subprocess
 import tempfile
-from typing import Any, Text, Dict, Optional
+from typing import Any, Dict, Optional, Text
 
 import definitions
 import utils
