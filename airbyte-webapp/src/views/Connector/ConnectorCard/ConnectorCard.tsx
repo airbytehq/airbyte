@@ -25,19 +25,26 @@ interface ConnectorCardBaseProps extends ConnectorCardProvidedProps {
   jobInfo?: SynchronousJobRead | null;
   onShowLoading?: (isLoading: boolean, formValues: ServiceFormValues, error: JSX.Element | string | null) => void;
   onBack?: () => void;
-  isCopyMode?: boolean;
 }
 
 interface ConnectorCardCreateProps extends ConnectorCardBaseProps {
   isEditMode?: false;
+  isCopyMode?: false;
 }
 
 interface ConnectorCardEditProps extends ConnectorCardBaseProps {
   isEditMode: true;
+  isCopyMode?: false;
   connector: ConnectorT;
 }
 
-export const ConnectorCard: React.VFC<ConnectorCardCreateProps | ConnectorCardEditProps> = ({
+interface ConnectorCardCopyProps extends ConnectorCardBaseProps {
+  isCopyMode: true;
+  isEditMode?: false;
+  connector: ConnectorT;
+}
+
+export const ConnectorCard: React.VFC<ConnectorCardCreateProps | ConnectorCardEditProps | ConnectorCardCopyProps> = ({
   title,
   full,
   jobInfo,
@@ -87,6 +94,7 @@ export const ConnectorCard: React.VFC<ConnectorCardCreateProps | ConnectorCardEd
       trackAction(Action.TEST, "Test a connector");
       try {
         await testConnector(values);
+
         trackAction(Action.SUCCESS, "Tested connector - success");
       } catch (e) {
         trackAction(Action.FAILURE, "Tested connector - failure");
@@ -95,9 +103,9 @@ export const ConnectorCard: React.VFC<ConnectorCardCreateProps | ConnectorCardEd
     };
 
     try {
-      if (!props.isCopyMode) {
-        await testConnectorWithTracking();
-      }
+      //  if (!props.isCopyMode) {
+      await testConnectorWithTracking();
+      // }
       await onSubmit(values);
       setSaved(true);
     } catch (e) {
