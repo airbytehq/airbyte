@@ -39,6 +39,11 @@
                 "description": "Long-term Authorized Access Token.",
                 "airbyte_secret": true,
                 "type": "string"
+              },
+              "advertiser_id": {
+                "title": "Advertiser ID",
+                "description": "The Advertiser ID to filter reports and streams. Let this empty to retrieve all.",
+                "type": "string"
               }
             },
             "required": ["app_id", "secret", "access_token"]
@@ -75,14 +80,16 @@
         "default": "2016-09-01",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "order": 1,
-        "type": "string"
+        "type": "string",
+        "format": "date"
       },
       "end_date": {
         "title": "End Date",
         "description": "The date until which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DD. All data generated between start_date and this date will be replicated. Not setting this option will result in always syncing the data till the current date.",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "order": 2,
-        "type": "string"
+        "type": "string",
+        "format": "date"
       },
       "report_granularity": {
         "title": "Report Aggregation Granularity",
