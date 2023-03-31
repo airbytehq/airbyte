@@ -7,12 +7,12 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
-        "source_defined_primary_key": [["ad_id"]]
+        "source_defined_primary_key": [["ad_id"], ["stat_time_day"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [["ad_id"]]
+      "primary_key": [["ad_id"], ["stat_time_day"]]
     },
     {
       "stream": {
@@ -21,12 +21,12 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
-        "source_defined_primary_key": [["advertiser_id"]]
+        "source_defined_primary_key": [["advertiser_id"], ["stat_time_day"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [["advertiser_id"]]
+      "primary_key": [["advertiser_id"], ["stat_time_day"]]
     },
     {
       "stream": {
@@ -35,12 +35,12 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
-        "source_defined_primary_key": [["adgroup_id"]]
+        "source_defined_primary_key": [["adgroup_id"], ["stat_time_day"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [["adgroup_id"]]
+      "primary_key": [["adgroup_id"], ["stat_time_day"]]
     },
     {
       "stream": {
@@ -49,12 +49,12 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
-        "source_defined_primary_key": [["campaign_id"]]
+        "source_defined_primary_key": [["campaign_id"], ["stat_time_day"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [["campaign_id"]]
+      "primary_key": [["campaign_id"], ["stat_time_day"]]
     },
 
     {
@@ -64,12 +64,12 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
-        "source_defined_primary_key": [["campaign_id"]]
+        "source_defined_primary_key": [["campaign_id"], ["stat_time_day"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [["campaign_id"]]
+      "primary_key": [["campaign_id"], ["stat_time_day"]]
     },
     {
       "stream": {
@@ -78,12 +78,12 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
-        "source_defined_primary_key": [["adgroup_id"]]
+        "source_defined_primary_key": [["adgroup_id"], ["stat_time_day"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [["adgroup_id"]]
+      "primary_key": [["adgroup_id"], ["stat_time_day"]]
     },
     {
       "stream": {
@@ -92,12 +92,12 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
-        "source_defined_primary_key": [["ad_id"]]
+        "source_defined_primary_key": [["ad_id"], ["stat_time_day"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [["ad_id"]]
+      "primary_key": [["ad_id"], ["stat_time_day"]]
     },
     {
       "stream": {
@@ -106,12 +106,12 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
-        "source_defined_primary_key": [["advertiser_id"]]
+        "source_defined_primary_key": [["advertiser_id"], ["stat_time_day"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [["advertiser_id"]]
+      "primary_key": [["advertiser_id"], ["stat_time_day"]]
     }
   ]
 }
