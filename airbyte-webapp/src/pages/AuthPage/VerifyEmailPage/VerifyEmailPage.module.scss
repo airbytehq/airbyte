@@ -1,0 +1,89 @@
+@use "../../../scss/colors";
+
+.container {
+  background: #eff0f5;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  height: 100%;
+}
+
+.header {
+  height: 110px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 70px;
+
+  .rightPanel {
+    display: flex;
+    align-items: center;
+
+    .hasAccountText {
+      color: #6b6b6f;
+      font-size: 16px;
+    }
+
+    .button {
+      background-color: #fff;
+      padding: 5px 10px;
+      font-style: normal;
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 17px;
+      color: colors.$blue;
+      border-radius: 5px;
+      border: 1px solid colors.$blue;
+      margin-left: 14px;
+    }
+  }
+}
+
+.messageBox {
+  position: relative;
+}
+
+.bodyPanel {
+  width: 100%;
+  height: calc(100vh - 220px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardPanel {
+  max-width: 750px;
+
+  // height: 490px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 84px 60px;
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+
+  // margin-top: 136px;
+}
+
+.h3 {
+  font-size: 20px;
+  line-height: 27px;
+  color: #27272a;
+  font-weight: 700;
+  margin-bottom: 46px;
+}
+
+.text {
+  font-size: 16px;
+  line-height: 24px;
+  color: #27272a;
+  margin: 10px 0;
+  white-space: pre-line;
+}
+
+.links {
+  color: colors.$blue;
+  display: inline-block;
+  text-decoration: underline;
+}

@@ -19,8 +19,10 @@ import MainView from "views/layout/MainView";
 
 import { WorkspaceRead } from "../core/request/AirbyteClient";
 import { LoginPage } from "./AuthPage/LoginPage";
+import ResetPasswordPage from "./AuthPage/ResetPasswordPage";
 import SignupPage from "./AuthPage/SignupPage";
 import UserSignupPage from "./AuthPage/UserSignupPage";
+import VerifyEmailPage from "./AuthPage/VerifyEmailPage";
 import ConnectionPage from "./ConnectionPage";
 import DestinationPage from "./DestinationPage";
 // import OnboardingPage from "./OnboardingPage";
@@ -77,6 +79,8 @@ const AuthRoutes = () => (
     <Route path={`${RoutePaths.Signin}`} element={<LoginPage />} />
     <Route path={`${RoutePaths.Signup}`} element={<SignupPage />} />
     <Route path={`${RoutePaths.UserSignup}`} element={<UserSignupPage />} />
+    <Route path={`${RoutePaths.VerifyEmail}`} element={<VerifyEmailPage />} />
+    <Route path={`${RoutePaths.ResetPassword}`} element={<ResetPasswordPage />} />
     <Route path="*" element={<AutoMoveToAuth />} />
   </Routes>
 );

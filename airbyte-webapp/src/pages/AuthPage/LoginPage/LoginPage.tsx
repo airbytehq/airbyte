@@ -39,6 +39,10 @@ const SeperatorText = styled.div`
   margin: 0 37px;
 `;
 
+const ForgotPasswordContainer = styled.div`
+  text-align: right;
+`;
+
 const LoginPageValidationSchema = yup.object().shape({
   email: yup.string().email("login.email.error").required("email.empty.error"),
   password: yup.string().required("password.empty.error"),
@@ -136,6 +140,9 @@ const LoginPage: React.FC = () => {
                   )}
                 </Field>
               </FieldItem>
+              <ForgotPasswordContainer>
+                <FormattedMessage id="resetPassword.forgot.title" />
+              </ForgotPasswordContainer>
               <BottomBlock>
                 <LoadingButton
                   white
