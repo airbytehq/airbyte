@@ -9,16 +9,18 @@
 }
 
 .header {
-  height: 110px;
+  min-height: 110px;
   background: #fff;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 70px;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 20px;
 
   .rightPanel {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
+    margin-top: 10px;
 
     .hasAccountText {
       color: #6b6b6f;
@@ -46,24 +48,22 @@
 
 .bodyPanel {
   width: 100%;
-  height: calc(100vh - 220px);
+  height: calc(100% - 120px);
   display: flex;
-  align-items: center;
   justify-content: center;
+  margin-top: 10px;
 }
 
 .cardPanel {
-  max-width: 750px;
+  max-width: 640px;
 
   // height: 490px;
   background: #fff;
-  border-radius: 12px;
-  padding: 84px 60px;
+  border-radius: 0;
+  padding: 24px 20px;
   display: flex;
   align-items: flex-start;
   flex-direction: column;
-
-  // margin-top: 136px;
 }
 
 .h3 {
@@ -86,4 +86,30 @@
   color: colors.$blue;
   display: inline-block;
   text-decoration: underline;
+}
+
+@media screen and (min-width: 640px) {
+  .header {
+    padding: 0 70px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    .rightPanel {
+      margin-top: 0;
+    }
+  }
+
+  .bodyPanel {
+    margin-top: 0;
+    height: calc(100vh - 220px);
+    border-radius: 12px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cardPanel {
+    max-width: 750px;
+    padding: 84px 60px;
+  }
 }

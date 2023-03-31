@@ -34,6 +34,7 @@ const ResetPasswordPage: React.FC = () => {
   const onBack = () => {
     push(`/${RoutePaths.Signin}`);
   };
+
   return (
     <div className={styles.container}>
       <HeadTitle titles={[{ id: "resetPassword.pageTitle" }]} />
