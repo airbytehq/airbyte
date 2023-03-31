@@ -4,7 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { LabeledInput, LoadingButton } from "components";
+import { LabeledInput, LoadingButton, Link } from "components";
 import Alert from "components/Alert";
 import HeadTitle from "components/HeadTitle";
 import { Separator } from "components/Separator";
@@ -41,6 +41,7 @@ const SeperatorText = styled.div`
 
 const ForgotPasswordContainer = styled.div`
   text-align: right;
+  display: none;
 `;
 
 const LoginPageValidationSchema = yup.object().shape({
@@ -141,7 +142,9 @@ const LoginPage: React.FC = () => {
                 </Field>
               </FieldItem>
               <ForgotPasswordContainer>
-                <FormattedMessage id="resetPassword.forgot.title" />
+                <Link $clear medium to={`/${RoutePaths.ResetPassword}`}>
+                  <FormattedMessage id="resetPassword.forgot.title" />
+                </Link>
               </ForgotPasswordContainer>
               <BottomBlock>
                 <LoadingButton
