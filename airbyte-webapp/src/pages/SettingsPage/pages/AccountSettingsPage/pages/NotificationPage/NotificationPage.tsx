@@ -32,8 +32,8 @@ const NotificationPage: React.FC = () => {
     id: `${Math.random() * 1000 * Math.random()}${CharacterInID}`,
     type: "USAGE",
     value: 0.3,
-    emailFlag: false,
-    appsFlag: false,
+    emailFlag: true,
+    appsFlag: true,
   };
 
   useEffect(() => setUsageNotificationList(usageList), [usageList]);

@@ -39,13 +39,13 @@
 {%- endmacro -%}
 
 {%- macro default__get_col_ab_id() -%}
-    _airbyte_ab_id
+    _daspire_ab_id
 {%- endmacro -%}
 
 {%- macro oracle__get_col_ab_id() -%}
-    "_AIRBYTE_AB_ID"
+    "_DASPIRE_AB_ID"
 {%- endmacro -%}
 
 {%- macro snowflake__get_col_ab_id() -%}
-    _AIRBYTE_AB_ID
+    _DASPIRE_AB_ID
 {%- endmacro -%}

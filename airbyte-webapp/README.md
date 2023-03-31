@@ -35,9 +35,13 @@ Note: needs to be run from the root directory of the Airbyte project.
 ## Change log:
 #### 2023.03.31
 1. Email & verify screen UI
+2. Readjust the Source/Destination/Connection TestConnection component to remove scrolling
+3. Copy Source/Destination flows add test endpoint(check_connection_for_update)
 #### 2023.03.29
-1. Change the sign out icon
-2. Update translation
+1. BugFixed：plans run out modal error message
+2. Change BillingWarningBanner component style
+3. Change the sign out icon
+4. Update translation
 #### 2023.03.28
 1. Add Fullstory snippet to webapp
 #### 2023.03.27

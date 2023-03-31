@@ -10,12 +10,14 @@ import useRouter from "hooks/useRouter";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 import TestConnection from "views/Connector/TestConnection";
+// import { DefinitioDetails } from "components/ConnectorBlocks";
 
 import { RoutePaths } from "../../../routePaths";
 import SourceCopy from "./components/SourceCopy";
 
 const Container = styled.div`
   padding: 0px 0px 0px 70px;
+  height: 100%;
 `;
 
 const CopySourcePage: React.FC = () => {
@@ -30,8 +32,7 @@ const CopySourcePage: React.FC = () => {
   });
 
   const source = useGetSource(query.id);
-  //   const sourceDefinition = useSourceDefinition(source?.sourceDefinitionId);
-
+  // const sourceDefinition = useSourceDefinition(source?.sourceDefinitionId);
   const goBack = () => {
     push(`/${RoutePaths.Source}`);
   };
@@ -41,6 +42,7 @@ const CopySourcePage: React.FC = () => {
       <ConnectionStep lightMode type="source" activeStep={CreateStepTypes.CREATE_SOURCE} />
       <ConnectorDocumentationWrapper>
         <Container>
+          {/* <DefinitioDetails name={destinationDefinition.name} icon={destinationDefinition.icon} type="destination" /> */}
           {currentStep === CreateStepTypes.TEST_CONNECTION && (
             <TestConnection
               isLoading={loadingStatus}

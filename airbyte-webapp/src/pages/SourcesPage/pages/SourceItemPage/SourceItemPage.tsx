@@ -7,11 +7,11 @@ import { DropDownRow } from "components";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import Breadcrumbs from "components/Breadcrumbs";
 import { CreateStepTypes } from "components/ConnectionStep";
-import { TableItemTitle, DefinitioDetails } from "components/ConnectorBlocks";
+import { TableItemTitle } from "components/ConnectorBlocks";
 import { ConnectorIcon } from "components/ConnectorIcon";
 import DeleteBlock from "components/DeleteBlock";
 import LoadingPage from "components/LoadingPage";
-import { TabMenu, CategoryItem } from "components/TabMenu";
+import { CategoryItem } from "components/TabMenu";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConnectionList } from "hooks/services/useConnectionHook";
@@ -27,6 +27,7 @@ import TestConnection from "views/Connector/TestConnection";
 
 import { useDestinationList } from "../../../../hooks/services/useDestinationHook";
 import { RoutePaths } from "../../../routePaths";
+import HeaderSction from "./components/HeaderSection";
 import SourceConnectionTable from "./components/SourceConnectionTable";
 import SourceSettings from "./components/SourceSettings";
 
@@ -50,10 +51,6 @@ const Container = styled.div`
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-`;
-
-const TabContainer = styled.div`
-  margin: 20px 20px 40px 0;
 `;
 
 const TableContainer = styled.div`
@@ -246,11 +243,23 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   return (
     <Container>
       <Breadcrumbs data={breadcrumbsData} currentStep={0} />
+      {currentStep === StepsTypes.TEST_CONNECTION && (
+        <HeaderSction
+          sourceDefinition={sourceDefinition}
+          data={menuItems}
+          onSelect={onSelectMenuItem}
+          activeItem={pathname}
+        />
+      )}
       <ConnectorDocumentationWrapper>
-        <DefinitioDetails name={sourceDefinition.name} icon={sourceDefinition.icon} type="source" />
-        <TabContainer>
-          <TabMenu data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} size="16" lastOne />
-        </TabContainer>
+        {currentStep !== StepsTypes.TEST_CONNECTION && (
+          <HeaderSction
+            sourceDefinition={sourceDefinition}
+            data={menuItems}
+            onSelect={onSelectMenuItem}
+            activeItem={pathname}
+          />
+        )}
         <ApiErrorBoundary>
           <Suspense fallback={<LoadingPage />}>
             <Routes>

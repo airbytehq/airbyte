@@ -35,13 +35,19 @@ function useApiHealthPoll(): void {
           setHealthData(data);
         }
 
-        const { syncFail, syncSuccess } = data;
+        const { syncSuccess, syncFail } = data;
 
-        if (syncFail) {
-          setNotification({ message: syncFail[0], type: "error" });
-        }
         if (syncSuccess) {
-          setNotification({ message: syncSuccess[0], type: "info" });
+          setNotification({
+            message: formatMessage({ id: "sync.success.message" }, { message: syncSuccess[0] }),
+            type: "info",
+          });
+        }
+        if (syncFail) {
+          setNotification({
+            message: formatMessage({ id: "sync.fail.message" }, { message: syncFail[0] }),
+            type: "error",
+          });
         }
 
         if (count >= HEALTHCHECK_MAX_COUNT) {

@@ -17,14 +17,16 @@ interface Iprops {
 const Container = styled.div`
   display: flex;
   flex-direction: column;
+  height: 100%;
+  justify-content: space-around;
 `;
 const LoadingContainer = styled.div`
-  margin: 10% auto 200px auto;
+  // margin: 10% auto 200px auto;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  flex: 1;
+  // flex: 1;
 `;
 
 const TestConnection: React.FC<Iprops> = ({ isLoading, type, onBack, onFinish }) => {
