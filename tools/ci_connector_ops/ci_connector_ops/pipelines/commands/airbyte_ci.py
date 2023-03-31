@@ -13,9 +13,6 @@ from ci_connector_ops.pipelines.utils import (
     get_modified_files,
 )
 
-CI_CONTEXT_VALUES = [member.value for member in CIContext]
-
-
 @click.group(help="Airbyte CI top-level command group.")
 @click.option("--is-local/--is-ci", default=True)
 @click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
@@ -27,7 +24,7 @@ CI_CONTEXT_VALUES = [member.value for member in CIContext]
     type=str,
 )
 @click.option("--gha-workflow-run-id", help="[CI Only] The run id of the GitHub action workflow", default=None, type=str)
-@click.option("--ci-context", default="manual", envvar="CI_CONTEXT", type=click.Choice(CI_CONTEXT_VALUES))
+@click.option("--ci-context", default=CIContext.MANUAL, envvar="CI_CONTEXT", type=click.Choice(CIContext))
 @click.option("--pipeline-start-timestamp", default=get_current_epoch_time, envvar="CI_PIPELINE_START_TIMESTAMP", type=int)
 @click.pass_context
 def airbyte_ci(

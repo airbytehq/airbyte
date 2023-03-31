@@ -7,14 +7,13 @@ from datetime import datetime
 from enum import Enum
 from types import TracebackType
 from typing import Optional
-from abc import ABC
 
 from anyio import Path
 from asyncer import asyncify
 from dagger import Client, Directory
 
 from ci_connector_ops.pipelines.actions import remote_storage, secrets
-from ci_connector_ops.pipelines.bases import ConnectorTestReport
+from ci_connector_ops.pipelines.bases import ConnectorTestReport, TestReport
 from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL
 from ci_connector_ops.utils import Connector
@@ -22,7 +21,7 @@ from ci_connector_ops.utils import Connector
 
 # create an enum for ci context values which can be ["manual", "pull_request", "nightly_builds"]
 # and use it in the context class
-class CIContext(Enum):
+class CIContext(str, Enum):
     MANUAL = "manual"
     PULL_REQUEST = "pull_request"
     NIGHTLY_BUILDS = "nightly_builds"
@@ -36,7 +35,7 @@ class ContextState(Enum):
     FAILURE = {"github_state": "failure", "description": "Pipeline failed."}
 
 
-class PipelineContext(ABC):
+class PipelineContext:
     def __init__(
         self,
         pipeline_name: str,
@@ -59,6 +58,7 @@ class PipelineContext(ABC):
 
         self.logger = logging.getLogger(self.pipeline_name)
         self.dagger_client = None
+        self._test_report = None
 
         update_commit_status_check(**self.github_commit_status)
 
@@ -82,6 +82,15 @@ class PipelineContext(ABC):
     def repo(self):
         return self.dagger_client.git(AIRBYTE_REPO_URL, keep_git_dir=True)
 
+    @property
+    def test_report(self) -> TestReport:
+        return self._test_report
+
+    @test_report.setter
+    def test_report(self, test_report: TestReport):
+        self._test_report = test_report
+        self.state = ContextState.SUCCESSFUL if test_report.success else ContextState.FAILURE
+
     def get_repo_dir(self, subdir=".", exclude=None, include=None) -> Directory:
         if self.is_local:
             return self.dagger_client.host().directory(subdir, exclude=exclude, include=include)
@@ -100,9 +109,7 @@ class PipelineContext(ABC):
             "logger": self.logger,
         }
 
-    async def __aenter__(self, message: str = None):
-        if message:
-            self.logger.info(message)
+    async def __aenter__(self):
         if self.dagger_client is None:
             raise Exception("A Pipeline can't be entered with an undefined dagger_client")
         self.state = ContextState.RUNNING
@@ -113,12 +120,19 @@ class PipelineContext(ABC):
         if exception_value:
             self.logger.error("An error was handled by the Pipeline", exc_info=True)
             self.state = ContextState.ERROR
-        else:
-            self.state = ContextState.SUCCESSFUL
 
-        print(f"{self.state}!: exception_value: {exception_value}, exception_type: {exception_type}")
+        if self.test_report is None:
+            self.logger.error("No test report was provided. This is probably due to an upstream error")
+            self.state = ContextState.ERROR
+            self.test_report = TestReport(self, steps_results=[])
+
+        self.test_report.print()
+        self.logger.info(self.test_report.to_json())
+
         await asyncify(update_commit_status_check)(**self.github_commit_status)
-        return self.state == ContextState.SUCCESSFUL
+
+        # supress the exception if it was handled
+        return True
 
 
 class ConnectorTestContext(PipelineContext):
@@ -146,7 +160,6 @@ class ConnectorTestContext(PipelineContext):
 
         self._secrets_dir = None
         self._updated_secrets_dir = None
-        self._test_report = None
 
         super().__init__(
             pipeline_name=pipeline_name,
@@ -182,14 +195,7 @@ class ConnectorTestContext(PipelineContext):
     def should_save_updated_secrets(self):
         return self.use_remote_secrets and self.updated_secrets_dir is not None
 
-    @property
-    def test_report(self) -> ConnectorTestReport:
-        return self._test_report
 
-    @test_report.setter
-    def test_report(self, test_report: ConnectorTestReport):
-        self._test_report = test_report
-        self.state = ContextState.SUCCESSFUL if test_report.success else ContextState.FAILURE
 
     def get_connector_dir(self, exclude=None, include=None) -> Directory:
         return self.get_repo_dir(str(self.connector.code_directory), exclude=exclude, include=include)
@@ -221,8 +227,7 @@ class ConnectorTestContext(PipelineContext):
         self.dagger_client = self.dagger_client.pipeline(f"Teardown {self.connector.technical_name}")
         if self.should_save_updated_secrets:
             await secrets.upload(self)
-        self.test_report.print()
-        self.logger.info(self.test_report.to_json())
+
         local_test_reports_path_root = "tools/ci_connector_ops/test_reports/"
         connector_name = self.test_report.pipeline_context.connector.technical_name
         connector_version = self.test_report.pipeline_context.connector.version
@@ -241,4 +246,6 @@ class ConnectorTestContext(PipelineContext):
             if report_upload_exit_code != 0:
                 self.logger.error("Uploading the report to S3 failed.")
         await asyncify(update_commit_status_check)(**self.github_commit_status)
+
+        # Supress the exception if any
         return True

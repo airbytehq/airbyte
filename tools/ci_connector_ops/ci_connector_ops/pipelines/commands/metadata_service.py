@@ -9,7 +9,6 @@ from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.contexts import PipelineContext
 from ci_connector_ops.pipelines.utils import (
     DAGGER_CONFIG,
-    with_exit_code,
 )
 from rich.logging import RichHandler
 
@@ -28,19 +27,14 @@ class MetadataLibRunTest(Step):
         run_test = metadata_lib_module.with_exec(["poetry", "run", "pytest"])
         return await self.get_step_result(run_test)
 
-
-async def run_metadata_lib_test_pipeline(metadata_pipeline_context: PipelineContext):
+async def run_metadata_lib_test_pipeline(metadata_pipeline_context: PipelineContext) -> bool:
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
-
         async with metadata_pipeline_context:
             result = await MetadataLibRunTest(metadata_pipeline_context).run()
-            test_report = TestReport(pipeline_context=metadata_pipeline_context, steps_results=[result])
-            test_report.print()
-            if not test_report.success:
-                raise dagger.DaggerError(f"Metadata Service Lib Unit Test Pipeline failed with exit code {test_report.exit_code}")
+            metadata_pipeline_context.test_report = TestReport(pipeline_context=metadata_pipeline_context, steps_results=[result])
 
-            return test_report.success
+    return metadata_pipeline_context.test_report.success
 
 
 @click.group(help="Commands related to the metadata service.")
@@ -63,7 +57,10 @@ def test_metadata_service_lib(ctx: click.Context):
         ci_context=ctx.obj.get("ci_context"),
     )
     try:
-        anyio.run(run_metadata_lib_test_pipeline, metadata_pipeline_context)
+        pipeline_success = anyio.run(run_metadata_lib_test_pipeline, metadata_pipeline_context)
+        if not pipeline_success:
+            raise dagger.DaggerError("Metadata Service Lib Unit Test Pipeline failed.")
+
     except dagger.DaggerError as e:
         click.secho(str(e), err=True, fg="red")
         return sys.exit(1)
