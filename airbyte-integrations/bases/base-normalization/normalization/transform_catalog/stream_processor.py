@@ -123,10 +123,10 @@ class StreamProcessor(object):
         self.parent: Optional["StreamProcessor"] = None
         self.is_nested_array: bool = False
         self.default_schema: str = default_schema
-        self.airbyte_ab_id = "_airbyte_ab_id"
-        self.airbyte_emitted_at = "_airbyte_emitted_at"
-        self.airbyte_normalized_at = "_airbyte_normalized_at"
-        self.airbyte_unique_key = "_airbyte_unique_key"
+        self.airbyte_ab_id = "_daspire_ab_id"
+        self.airbyte_emitted_at = "_daspire_emitted_at"
+        self.airbyte_normalized_at = "_daspire_normalized_at"
+        self.airbyte_unique_key = "_daspire_unique_key"
         self.models_to_source: Dict[str, str] = {}
 
     @staticmethod
