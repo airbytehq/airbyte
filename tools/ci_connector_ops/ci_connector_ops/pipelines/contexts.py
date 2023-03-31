@@ -228,6 +228,9 @@ class ConnectorTestContext(PipelineContext):
         if self.should_save_updated_secrets:
             await secrets.upload(self)
 
+        self.test_report.print()
+        self.logger.info(self.test_report.to_json())
+
         local_test_reports_path_root = "tools/ci_connector_ops/test_reports/"
         connector_name = self.test_report.pipeline_context.connector.technical_name
         connector_version = self.test_report.pipeline_context.connector.version
