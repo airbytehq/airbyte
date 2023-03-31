@@ -141,6 +141,7 @@ jobs:
           - name: source-tiktok-marketing
           - name: source-google-search-console
           - name: source-surveymonkey
+          - name: source-slack
 
     steps:
       - uses: actions/checkout@v2

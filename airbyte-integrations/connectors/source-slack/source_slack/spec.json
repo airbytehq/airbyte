@@ -1,0 +1,144 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/slack",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Slack Spec",
+    "type": "object",
+    "required": ["start_date", "lookback_window", "join_channels"],
+    "additionalProperties": true,
+    "properties": {
+      "start_date": {
+        "type": "string",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
+        "examples": ["2017-01-25T00:00:00Z"],
+        "title": "Start Date"
+      },
+      "lookback_window": {
+        "type": "integer",
+        "title": "Threads Lookback window (Days)",
+        "description": "How far into the past to look for messages in threads.",
+        "examples": [7, 14]
+      },
+      "join_channels": {
+        "type": "boolean",
+        "default": true,
+        "title": "Join all channels",
+        "description": "Whether to join all channels or to sync data only from channels the bot is already in.  If false, you'll need to manually add the bot to all the channels from which you'd like to sync messages. "
+      },
+      "channel_filter": {
+        "type": "array",
+        "default": [],
+        "items": {
+          "type": "string",
+          "minLength": 0
+        },
+        "title": "Channel name filter",
+        "description": "A channel name list (without leading '#' char) which limit the channels from which you'd like to sync. Empty list means no filter.",
+        "examples": ["channel_one", "channel_two"]
+      },
+      "credentials": {
+        "title": "Authentication mechanism",
+        "description": "Choose how to authenticate into Slack",
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Sign in via Slack (OAuth)",
+            "required": [
+              "option_title",
+              "client_id",
+              "client_secret",
+              "access_token"
+            ],
+            "properties": {
+              "option_title": {
+                "type": "string",
+                "const": "Default OAuth2.0 authorization"
+              },
+              "client_id": {
+                "type": "string",
+                "title": "Client ID",
+                "description": "Slack client_id. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> if you need help finding this id."
+              },
+              "client_secret": {
+                "type": "string",
+                "title": "Client Secret",
+                "description": "Slack client_secret. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> if you need help finding this secret.",
+                "airbyte_secret": true
+              },
+              "access_token": {
+                "type": "string",
+                "title": "Access token",
+                "description": "Slack access_token. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> if you need help generating the token.",
+                "airbyte_secret": true
+              }
+            },
+            "order": 0
+          },
+          {
+            "type": "object",
+            "title": "API Token",
+            "required": ["option_title", "api_token"],
+            "properties": {
+              "option_title": {
+                "type": "string",
+                "const": "API Token Credentials"
+              },
+              "api_token": {
+                "type": "string",
+                "title": "API Token",
+                "description": "A Slack bot token. See the <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> for instructions on how to generate it.",
+                "airbyte_secret": true
+              }
+            },
+            "order": 1
+          }
+        ]
+      }
+    }
+  },
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["credentials", "option_title"],
+    "predicate_value": "Default OAuth2.0 authorization",
+    "oauth_config_specification": {
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "access_token"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_secret"]
+          }
+        }
+      }
+    }
+  }
+}

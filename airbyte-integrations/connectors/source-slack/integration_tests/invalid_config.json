@@ -1,0 +1,10 @@
+{
+  "credentials": {
+    "option_title": "API Token Credentials",
+    "api_token": "fake-api-token"
+  },
+  "start_date": "2022-07-22T20:00:00Z",
+  "lookback_window": 2,
+  "join_channels": true,
+  "channel_filter": []
+}

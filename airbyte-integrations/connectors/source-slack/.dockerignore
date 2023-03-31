@@ -1,0 +1,8 @@
+*
+!Dockerfile
+!source_slack
+!setup.py
+!main.py
+!secrets
+!spec.patch.json
+!oauth2.patch.json

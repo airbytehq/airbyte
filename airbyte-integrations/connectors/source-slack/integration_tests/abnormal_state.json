@@ -1,0 +1,16 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "float_ts": 7270247822 },
+      "stream_descriptor": { "name": "threads" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "float_ts": 7270247822 },
+      "stream_descriptor": { "name": "channel_messages" }
+    }
+  }
+]
