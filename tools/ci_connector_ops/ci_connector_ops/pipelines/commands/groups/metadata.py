@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 def metadata(ctx: click.Context):
     pass
 
+
 @metadata.group(help="Commands related to the metadata service.")
 @click.pass_context
 def test(ctx: click.Context):
@@ -36,7 +37,7 @@ def lib(ctx: click.Context):
             ctx.obj["git_revision"],
             ctx.obj.get("gha_workflow_run_url"),
             ctx.obj.get("pipeline_start_timestamp"),
-            ctx.obj.get("ci_context")
+            ctx.obj.get("ci_context"),
         )
         if not pipeline_success:
             raise dagger.DaggerError("Metadata Service Lib Unit Test Pipeline failed.")

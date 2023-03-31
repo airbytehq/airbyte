@@ -13,6 +13,7 @@ from ci_connector_ops.pipelines.utils import (
     get_modified_files,
 )
 
+
 @click.group(help="Airbyte CI top-level command group.")
 @click.option("--is-local/--is-ci", default=True)
 @click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")

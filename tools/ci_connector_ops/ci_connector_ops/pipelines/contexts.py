@@ -195,8 +195,6 @@ class ConnectorTestContext(PipelineContext):
     def should_save_updated_secrets(self):
         return self.use_remote_secrets and self.updated_secrets_dir is not None
 
-
-
     def get_connector_dir(self, exclude=None, include=None) -> Directory:
         return self.get_repo_dir(str(self.connector.code_directory), exclude=exclude, include=include)
 

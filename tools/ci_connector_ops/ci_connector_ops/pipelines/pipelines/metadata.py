@@ -10,6 +10,7 @@ from ci_connector_ops.pipelines.utils import (
 
 METADATA_LIB_MODULE_PATH = "airbyte-ci/connectors/metadata_service/lib"
 
+
 class MetadataLibRunTest(Step):
     title = "Run Metadata Service Lib Unit Tests"
 
@@ -18,13 +19,14 @@ class MetadataLibRunTest(Step):
         run_test = metadata_lib_module.with_exec(["poetry", "run", "pytest"])
         return await self.get_step_result(run_test)
 
+
 async def run_metadata_lib_test_pipeline(
-        is_local: bool,
-        git_branch: str,
-        git_revision: str,
-        gha_workflow_run_url: Optional[str],
-        pipeline_start_timestamp: Optional[int],
-        ci_context: Optional[str],
+    is_local: bool,
+    git_branch: str,
+    git_revision: str,
+    gha_workflow_run_url: Optional[str],
+    pipeline_start_timestamp: Optional[int],
+    ci_context: Optional[str],
 ) -> bool:
     metadata_pipeline_context = PipelineContext(
         pipeline_name="Metadata Service Lib Unit Test Pipeline",

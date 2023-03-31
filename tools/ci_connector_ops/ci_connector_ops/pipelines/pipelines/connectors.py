@@ -22,6 +22,7 @@ GITHUB_GLOBAL_DESCRIPTION = "Running connectors tests"
 
 # DAGGER PIPELINES
 
+
 async def run(context: ConnectorTestContext, semaphore: anyio.Semaphore) -> ConnectorTestReport:
     """Runs a CI pipeline for a single connector.
     A visual DAG can be found on the README.md file of the pipelines modules.
