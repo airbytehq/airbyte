@@ -10,13 +10,13 @@ import static io.airbyte.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED
 import static org.apache.logging.log4j.util.Strings.isNotBlank;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.CommitOnStateAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.iceberg.config.WriteConfig;
 import io.airbyte.integrations.destination.iceberg.config.catalog.IcebergCatalogConfig;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
@@ -55,17 +55,17 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
 
   private final StructType normalizationSchema;
 
-  public IcebergConsumer(SparkSession spark,
-                         Consumer<AirbyteMessage> outputRecordCollector,
-                         ConfiguredAirbyteCatalog catalog,
-                         IcebergCatalogConfig catalogConfig) {
+  public IcebergConsumer(final SparkSession spark,
+                         final Consumer<AirbyteMessage> outputRecordCollector,
+                         final ConfiguredAirbyteCatalog catalog,
+                         final IcebergCatalogConfig catalogConfig) {
     super(outputRecordCollector);
     this.spark = spark;
     this.catalog = catalog;
     this.catalogConfig = catalogConfig;
     this.normalizationSchema = new StructType().add(COLUMN_NAME_AB_ID, StringType$.MODULE$)
-        .add(COLUMN_NAME_EMITTED_AT, TimestampType$.MODULE$)
-        .add(COLUMN_NAME_DATA, StringType$.MODULE$);
+                                               .add(COLUMN_NAME_EMITTED_AT, TimestampType$.MODULE$)
+                                               .add(COLUMN_NAME_DATA, StringType$.MODULE$);
   }
 
   /**
@@ -74,17 +74,17 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
    */
   @Override
   protected void startTracked() throws Exception {
-    Map<AirbyteStreamNameNamespacePair, WriteConfig> configs = new HashMap<>();
-    Set<String> namespaceSet = new HashSet<>();
+    final Map<AirbyteStreamNameNamespacePair, WriteConfig> configs = new HashMap<>();
+    final Set<String> namespaceSet = new HashSet<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName().toLowerCase();
-      String namespace = (isNotBlank(stream.getStream().getNamespace()) ? stream.getStream().getNamespace()
-          : catalogConfig.defaultOutputDatabase()).toLowerCase();
+      final String namespace = (isNotBlank(stream.getStream().getNamespace()) ? stream.getStream().getNamespace()
+                                                                              : catalogConfig.defaultOutputDatabase()).toLowerCase();
       if (!namespaceSet.contains(namespace)) {
         namespaceSet.add(namespace);
         try {
           spark.sql("CREATE DATABASE IF NOT EXISTS " + namespace);
-        } catch (Exception e) {
+        } catch (final Exception e) {
           log.warn("Create non-existed database failed: {}", e.getMessage(), e);
         }
       }
@@ -93,13 +93,13 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
         throw new IllegalStateException("Undefined destination sync mode");
       }
       final boolean isAppendMode = syncMode != DestinationSyncMode.OVERWRITE;
-      AirbyteStreamNameNamespacePair nameNamespacePair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream.getStream());
-      Integer flushBatchSize = catalogConfig.getFormatConfig().getFlushBatchSize();
-      WriteConfig writeConfig = new WriteConfig(namespace, streamName, isAppendMode, flushBatchSize);
+      final AirbyteStreamNameNamespacePair nameNamespacePair = AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream());
+      final Integer flushBatchSize = catalogConfig.getFormatConfig().getFlushBatchSize();
+      final WriteConfig writeConfig = new WriteConfig(namespace, streamName, isAppendMode, flushBatchSize);
       configs.put(nameNamespacePair, writeConfig);
       try {
         spark.sql("DROP TABLE IF EXISTS " + writeConfig.getFullTempTableName());
-      } catch (Exception e) {
+      } catch (final Exception e) {
         log.warn("Drop existed temp table failed: {}", e.getMessage(), e);
       }
     }
@@ -111,16 +111,16 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
    * "https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#airbytemessage">AirbyteMessage</a>
    */
   @Override
-  protected void acceptTracked(AirbyteMessage msg) throws Exception {
+  protected void acceptTracked(final AirbyteMessage msg) throws Exception {
     if (msg.getType() != Type.RECORD) {
       return;
     }
     final AirbyteRecordMessage recordMessage = msg.getRecord();
 
     // ignore other message types.
-    AirbyteStreamNameNamespacePair nameNamespacePair = AirbyteStreamNameNamespacePair.fromRecordMessage(
+    final AirbyteStreamNameNamespacePair nameNamespacePair = AirbyteStreamNameNamespacePair.fromRecordMessage(
         recordMessage);
-    WriteConfig writeConfig = writeConfigs.get(nameNamespacePair);
+    final WriteConfig writeConfig = writeConfigs.get(nameNamespacePair);
     if (writeConfig == null) {
       throw new IllegalArgumentException(String.format(
           "Message contained record from a stream that was not in the catalog. namespace: %s , stream: %s",
@@ -129,25 +129,25 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
     }
 
     // write data
-    Row row = new GenericRow(new Object[] {UUID.randomUUID().toString(), new Timestamp(recordMessage.getEmittedAt()),
-      Jsons.serialize(recordMessage.getData())});
-    boolean needInsert = writeConfig.addData(row);
+    final Row row = new GenericRow(new Object[]{UUID.randomUUID().toString(), new Timestamp(recordMessage.getEmittedAt()),
+                                                Jsons.serialize(recordMessage.getData())});
+    final boolean needInsert = writeConfig.addData(row);
     if (needInsert) {
       appendToTempTable(writeConfig);
     }
   }
 
-  private void appendToTempTable(WriteConfig writeConfig) {
-    String tableName = writeConfig.getFullTempTableName();
-    List<Row> rows = writeConfig.fetchDataCache();
+  private void appendToTempTable(final WriteConfig writeConfig) {
+    final String tableName = writeConfig.getFullTempTableName();
+    final List<Row> rows = writeConfig.fetchDataCache();
     // saveAsTable even if rows is empty, to ensure table is created.
     // otherwise the table would be missing, and throws exception in close()
     log.info("=> Flushing {} rows into {}", rows.size(), tableName);
     spark.createDataFrame(rows, normalizationSchema).write()
-        // append data to temp table
-        .mode(SaveMode.Append)
-        // TODO compression config
-        .option("write-format", catalogConfig.getFormatConfig().getFormat().getFormatName()).saveAsTable(tableName);
+         // append data to temp table
+         .mode(SaveMode.Append)
+         // TODO compression config
+         .option("write-format", catalogConfig.getFormatConfig().getFormat().getFormatName()).saveAsTable(tableName);
   }
 
   /**
@@ -157,24 +157,24 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
   public void commit() throws Exception {}
 
   @Override
-  protected void close(boolean hasFailed) throws Exception {
+  protected void close(final boolean hasFailed) throws Exception {
     log.info("close {}, hasFailed={}", this.getClass().getSimpleName(), hasFailed);
-    Catalog icebergCatalog = catalogConfig.genCatalog();
+    final Catalog icebergCatalog = catalogConfig.genCatalog();
     try {
       if (!hasFailed) {
         log.info("==> Migration finished with no explicit errors. Copying data from temp tables to permanent");
-        for (WriteConfig writeConfig : writeConfigs.values()) {
+        for (final WriteConfig writeConfig : writeConfigs.values()) {
           appendToTempTable(writeConfig);
-          String tempTableName = writeConfig.getFullTempTableName();
-          String finalTableName = writeConfig.getFullTableName();
+          final String tempTableName = writeConfig.getFullTempTableName();
+          final String finalTableName = writeConfig.getFullTableName();
           log.info("=> Migration({}) data from {} to {}",
-              writeConfig.isAppendMode() ? "append" : "overwrite",
-              tempTableName,
-              finalTableName);
+                   writeConfig.isAppendMode() ? "append" : "overwrite",
+                   tempTableName,
+                   finalTableName);
           spark.sql("SELECT * FROM %s".formatted(tempTableName))
-              .write()
-              .mode(writeConfig.isAppendMode() ? SaveMode.Append : SaveMode.Overwrite)
-              .saveAsTable(finalTableName);
+               .write()
+               .mode(writeConfig.isAppendMode() ? SaveMode.Append : SaveMode.Overwrite)
+               .saveAsTable(finalTableName);
           if (catalogConfig.getFormatConfig().isAutoCompact()) {
             tryCompactTable(icebergCatalog, writeConfig);
           }
@@ -185,7 +185,7 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
       }
     } finally {
       log.info("Removing temp tables...");
-      for (Entry<AirbyteStreamNameNamespacePair, WriteConfig> entry : writeConfigs.entrySet()) {
+      for (final Entry<AirbyteStreamNameNamespacePair, WriteConfig> entry : writeConfigs.entrySet()) {
         tryDropTempTable(icebergCatalog, entry.getValue());
       }
       log.info("Closing Spark Session...");
@@ -194,31 +194,31 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
     }
   }
 
-  private void tryDropTempTable(Catalog icebergCatalog, WriteConfig writeConfig) {
+  private static void tryDropTempTable(final Catalog icebergCatalog, final WriteConfig writeConfig) {
     try {
       log.info("Trying to drop temp table: {}", writeConfig.getFullTempTableName());
-      TableIdentifier tempTableIdentifier = TableIdentifier.of(writeConfig.getNamespace(),
-          writeConfig.getTempTableName());
-      boolean dropSuccess = icebergCatalog.dropTable(tempTableIdentifier, true);
+      final TableIdentifier tempTableIdentifier = TableIdentifier.of(writeConfig.getNamespace(),
+                                                                     writeConfig.getTempTableName());
+      final boolean dropSuccess = icebergCatalog.dropTable(tempTableIdentifier, true);
       log.info("Drop temp table: {}", writeConfig.getFullTempTableName());
-    } catch (Exception e) {
-      String errMsg = e.getMessage();
+    } catch (final Exception e) {
+      final String errMsg = e.getMessage();
       log.error("Drop temp table caught exception:{}", errMsg, e);
     }
   }
 
-  private void tryCompactTable(Catalog icebergCatalog, WriteConfig writeConfig) {
+  private void tryCompactTable(final Catalog icebergCatalog, final WriteConfig writeConfig) {
     log.info("=> Auto-Compact is enabled, try compact Iceberg data files");
-    int compactTargetFileSizeBytes =
+    final int compactTargetFileSizeBytes =
         catalogConfig.getFormatConfig().getCompactTargetFileSizeInMb() * 1024 * 1024;
     try {
-      TableIdentifier tableIdentifier = TableIdentifier.of(writeConfig.getNamespace(),
-          writeConfig.getTableName());
+      final TableIdentifier tableIdentifier = TableIdentifier.of(writeConfig.getNamespace(),
+                                                                 writeConfig.getTableName());
       SparkActions.get()
-          .rewriteDataFiles(icebergCatalog.loadTable(tableIdentifier))
-          .option("target-file-size-bytes", String.valueOf(compactTargetFileSizeBytes))
-          .execute();
-    } catch (Exception e) {
+                  .rewriteDataFiles(icebergCatalog.loadTable(tableIdentifier))
+                  .option("target-file-size-bytes", String.valueOf(compactTargetFileSizeBytes))
+                  .execute();
+    } catch (final Exception e) {
       log.warn("Compact Iceberg data files failed: {}", e.getMessage(), e);
     }
   }
