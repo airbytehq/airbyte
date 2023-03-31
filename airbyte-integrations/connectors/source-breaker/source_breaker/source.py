@@ -64,11 +64,11 @@ class SourceBreaker(AbstractSource):
         return AirbyteCatalog(streams=streams)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        count: int = 1000
-        seed: int = None
-        records_per_sync: int = 500
+        count: int = 10
+        seed: int = 0
+        records_per_sync: int = 10
         records_per_slice: int = 100
-        parallelism: int = 4
+        parallelism: int = 1
 
         return [
             Products(count, seed, parallelism, records_per_sync, records_per_slice),

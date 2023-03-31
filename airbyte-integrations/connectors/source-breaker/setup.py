@@ -16,7 +16,7 @@ setup(
     name="source_breaker",
     description="Source implementation for fake but realistic looking data.",
     author="Airbyte",
-    author_email="evan@airbyte.io",
+    author_email="ella@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json"]},

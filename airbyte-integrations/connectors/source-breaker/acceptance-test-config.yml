@@ -11,7 +11,8 @@ acceptance_tests:
         status: exception
   spec:
     tests:
-      - spec_path: source_breaker/spec.json
+      - config_path: test_configs/config.json
+        spec_path: source_breaker/spec.json
   discovery:
     tests:
       - config_path: test_configs/config.json
@@ -28,10 +29,6 @@ acceptance_tests:
     tests:
       - config_path: test_configs/config.json
         configured_catalog_path: integration_tests/configured_catalog.json
-        ignored_fields:
-          users:
-            - created_at
-            - updated_at
   incremental:
     tests:
       - config_path: test_configs/config.json
