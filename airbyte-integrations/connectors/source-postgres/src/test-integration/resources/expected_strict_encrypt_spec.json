@@ -74,6 +74,7 @@
         "type": "object",
         "order": 8,
         "group": "security",
+        "default": "require",
         "oneOf": [
           {
             "title": "allow",

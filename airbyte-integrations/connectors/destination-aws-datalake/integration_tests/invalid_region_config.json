@@ -1,0 +1,10 @@
+{
+  "aws_account_id": "111111111111",
+  "region": "not_a_real_region",
+  "credentials": {
+    "credentials_title": "IAM User",
+    "aws_access_key_id": "dummy",
+    "aws_secret_access_key": "dummykey"
+  },
+  "partitioning": "NO PARTITIONING"
+}

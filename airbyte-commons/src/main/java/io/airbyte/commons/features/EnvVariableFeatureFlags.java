@@ -64,6 +64,16 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
     return getEnvOrDefault(FIELD_SELECTION_WORKSPACES, "", (arg) -> arg);
   }
 
+  @Override
+  public String strictComparisonNormalizationWorkspaces() {
+    return "";
+  }
+
+  @Override
+  public String strictComparisonNormalizationTag() {
+    return "";
+  }
+
   // TODO: refactor in order to use the same method than the ones in EnvConfigs.java
   public <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser) {
     final String value = System.getenv(key);
