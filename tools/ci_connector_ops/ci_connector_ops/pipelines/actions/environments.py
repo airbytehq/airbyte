@@ -335,7 +335,7 @@ def with_gradle(
                 "python3-pip",
             ]
         )
-        .with_exec(["python", "--version"])
+        .with_exec(["python3", "--version"])
         .with_exec(["pip3", "--version"])
         .with_exec(["pip3", "install", "-U", "pip"])
         .with_exec(["pip3", "install", "virtualenv", "--upgrade"])

@@ -17,6 +17,7 @@ from dagger import Container, Directory
 class GradleTask(Step, ABC):
     task_name: ClassVar
     JAVA_BUILD_INCLUDE = [
+        ".root",
         "airbyte-api",
         "airbyte-commons-cli",
         "airbyte-commons-protocol",
@@ -68,8 +69,7 @@ class GradleTask(Step, ABC):
         return (
             ["./gradlew"]
             + list(extra_options)
-            + [":airbyte-integrations:bases:base-normalization:checkPython"]
-            # + [f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.task_name}"]
+            + [f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.task_name}"]
         )
 
     async def run_gradle_command(self, connector_under_test: Container) -> StepResult:
