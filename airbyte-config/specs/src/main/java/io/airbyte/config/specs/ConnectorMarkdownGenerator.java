@@ -10,8 +10,6 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.yaml.Yamls;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -34,8 +32,6 @@ public class ConnectorMarkdownGenerator {
   private static final String githubIconBase =
       "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-config/init/src/main/resources/icons";
   private static final String iconSize = "30";
-
-  DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd @ HH:mm:ss");
 
   public static void main(final String[] args) throws Exception {
     final CommandLine parsed = Clis.parse(args, OPTIONS);
@@ -66,7 +62,6 @@ public class ConnectorMarkdownGenerator {
     final List<String> bodyParts = new ArrayList<>();
 
     bodyParts.add("# Airbyte Connectors");
-    bodyParts.add("__Generated: " + dtf.format(LocalDateTime.now()) + "__");
 
     bodyParts.add("");
     bodyParts.add("## Sources");
