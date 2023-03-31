@@ -15,14 +15,14 @@ import { useDocumentationPanelContext } from "./DocumentationPanelContext";
 const PageContainer = styled.div<{
   offsetTop: number;
 }>`
-  height: calc(100% - ${({ offsetTop }) => offsetTop}px);
+  height: calc(100vh - ${({ offsetTop }) => offsetTop}px);
   // flex:1;
 `;
 
 const PnelGrabber = styled.div<{
   offsetTop: number;
 }>`
-  height: calc(100% - ${({ offsetTop }) => offsetTop}px);
+  height: calc(100vh - ${({ offsetTop }) => offsetTop}px);
   padding: 6px;
   display: flex;
   align-items: center;
@@ -58,7 +58,7 @@ const LeftPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>>
           </h3>
         </div>
       )}
-      <div>{children}</div>
+      {children}
     </div>
   );
 };
@@ -89,9 +89,9 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
 
   const divRef = useRef(null);
   useEffect(() => {
-    const top: number = divRef.current ? divRef.current?.["offsetTop"] : 0;
+    const top: number = divRef.current ? divRef.current?.["offsetTop"] + 10 : 0;
     setOffsetTop(top);
-  }, []);
+  }, [documentationPanelOpen]);
 
   return (
     <PageContainer ref={divRef} offsetTop={offsetTop}>

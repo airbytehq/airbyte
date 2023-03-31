@@ -11,9 +11,11 @@ export const useTestConnector = (
   props: {
     formType: "source" | "destination";
   } & (
-    | { isEditMode: true; connector: ConnectorT }
+    | { isEditMode: true; isCopyMode?: false; connector: ConnectorT }
+    | { isCopyMode: true; isEditMode?: false; connector: ConnectorT }
     | {
         isEditMode?: false;
+        isCopyMode?: false;
       }
   )
 ): {
@@ -44,7 +46,7 @@ export const useTestConnector = (
 
       let payload: CheckConnectorParams | null = null;
 
-      if (props.isEditMode) {
+      if (props.isEditMode || props.isCopyMode) {
         // When we are editing current connector
         if (values) {
           payload = {
