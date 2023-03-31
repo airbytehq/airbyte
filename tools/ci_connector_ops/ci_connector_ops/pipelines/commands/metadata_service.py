@@ -4,6 +4,7 @@ import anyio
 import dagger
 import logging
 
+from ci_connector_ops.pipelines.bases import Step, StepStatus, TestReport
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.contexts import PipelineContext
 from ci_connector_ops.pipelines.utils import (
@@ -19,21 +20,32 @@ logger = logging.getLogger(__name__)
 METADATA_LIB_MODULE_PATH = "airbyte-ci/connectors/metadata_service/lib"
 
 
+class MetadataLibRunTest(Step):
+    title = "Run Metadata Service Lib Unit Tests"
+
+    async def _run(self) -> StepStatus:
+        metadata_lib_module = environments.with_poetry_module(self.context, METADATA_LIB_MODULE_PATH)
+        run_test = metadata_lib_module.with_exec(["poetry", "run", "pytest"])
+        return await self.get_step_result(run_test)
+
+
 async def run_metadata_lib_test_pipeline(metadata_pipeline_context: PipelineContext):
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
-        async with metadata_pipeline_context:
-            metadata_lib_module = environments.with_poetry_module(metadata_pipeline_context, METADATA_LIB_MODULE_PATH)
-            exit_code = await with_exit_code(metadata_lib_module.with_exec(["poetry", "run", "pytest"]))
 
-            # Raise an exception if the exit code is not 0
-            if exit_code != 0:
-                raise dagger.DaggerError(f"Metadata Service Lib Unit Test Pipeline failed with exit code {exit_code}")
+        async with metadata_pipeline_context:
+            result = await MetadataLibRunTest(metadata_pipeline_context).run()
+            test_report = TestReport(pipeline_context=metadata_pipeline_context, steps_results=[result])
+            test_report.print()
+            if not test_report.success:
+                raise dagger.DaggerError(f"Metadata Service Lib Unit Test Pipeline failed with exit code {test_report.exit_code}")
+
+            return test_report.success
 
 
 @click.group(help="Commands related to the metadata service.")
 @click.pass_context
-def metadata_service(ctx):
+def metadata_service(ctx: click.Context):
     pass
 
 

@@ -21,7 +21,7 @@ from rich.table import Table
 from rich.text import Text
 
 if TYPE_CHECKING:
-    from ci_connector_ops.pipelines.contexts import ConnectorTestContext
+    from ci_connector_ops.pipelines.contexts import ConnectorTestContext, PipelineContext
 
 
 class StepStatus(Enum):
@@ -115,8 +115,8 @@ class StepResult:
 
 
 @dataclass(frozen=True)
-class ConnectorTestReport:
-    connector_test_context: ConnectorTestContext
+class TestReport:
+    pipeline_context: PipelineContext
     steps_results: List[StepResult]
     created_at: datetime = field(default_factory=datetime.utcnow)
 
@@ -137,36 +137,91 @@ class ConnectorTestReport:
         return len(self.failed_steps) == 0 and len(self.steps_results) > 0
 
     @property
-    def should_be_saved(self) -> bool:
-        return self.connector_test_context.is_ci
-
-    @property
     def run_duration(self) -> int:
-        return (self.created_at - self.connector_test_context.created_at).total_seconds()
+        return (self.created_at - self.pipeline_context.created_at).total_seconds()
 
     def to_json(self) -> str:
         return json.dumps(
             {
-                "connector_technical_name": self.connector_test_context.connector.technical_name,
-                "connector_version": self.connector_test_context.connector.version,
+                "pipeline_name": self.pipeline_context.pipeline_name,
                 "run_timestamp": self.created_at.isoformat(),
                 "run_duration": self.run_duration,
                 "success": self.success,
                 "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],
                 "successful_steps": [s.step.__class__.__name__ for s in self.successful_steps],
                 "skipped_steps": [s.step.__class__.__name__ for s in self.skipped_steps],
-                "gha_workflow_run_url": self.connector_test_context.gha_workflow_run_url,
-                "pipeline_start_timestamp": self.connector_test_context.pipeline_start_timestamp,
+                "gha_workflow_run_url": self.pipeline_context.gha_workflow_run_url,
+                "pipeline_start_timestamp": self.pipeline_context.pipeline_start_timestamp,
                 "pipeline_end_timestamp": round(self.created_at.timestamp()),
-                "pipeline_duration": round(self.created_at.timestamp()) - self.connector_test_context.pipeline_start_timestamp,
-                "git_branch": self.connector_test_context.git_branch,
-                "git_revision": self.connector_test_context.git_revision,
-                "ci_context": self.connector_test_context.ci_context,
+                "pipeline_duration": round(self.created_at.timestamp()) - self.pipeline_context.pipeline_start_timestamp,
+                "git_branch": self.pipeline_context.git_branch,
+                "git_revision": self.pipeline_context.git_revision,
+                "ci_context": self.pipeline_context.ci_context,
             }
         )
 
     def print(self):
-        connector_name = self.connector_test_context.connector.technical_name
+        pipeline_name = self.pipeline_context.pipeline_name
+        main_panel_title = Text(f"{pipeline_name.upper()} - TEST RESULTS")
+        main_panel_title.stylize(Style(color="blue", bold=True))
+        duration_subtitle = Text(f"⏲️  Total pipeline duration for {pipeline_name}: {round(self.run_duration)} seconds")
+        step_results_table = Table(title="Steps results")
+        step_results_table.add_column("Step")
+        step_results_table.add_column("Result")
+        step_results_table.add_column("Finished after")
+
+        for step_result in self.steps_results:
+            step = Text(step_result.step.title)
+            step.stylize(step_result.status.get_rich_style())
+            result = Text(step_result.status.value)
+            result.stylize(step_result.status.get_rich_style())
+            step_results_table.add_row(step, result, f"{round((self.created_at - step_result.created_at).total_seconds())}s")
+
+        to_render = [step_results_table]
+        if self.failed_steps:
+            sub_panels = []
+            for failed_step in self.failed_steps:
+                errors = Text(failed_step.stderr)
+                panel_title = Text(f"{pipeline_name} {failed_step.step.title.lower()} failures")
+                panel_title.stylize(Style(color="red", bold=True))
+                sub_panel = Panel(errors, title=panel_title)
+                sub_panels.append(sub_panel)
+            failures_group = Group(*sub_panels)
+            to_render.append(failures_group)
+
+        main_panel = Panel(Group(*to_render), title=main_panel_title, subtitle=duration_subtitle)
+        console.print(main_panel)
+
+
+@dataclass(frozen=True)
+class ConnectorTestReport(TestReport):
+    @property
+    def should_be_saved(self) -> bool:
+        return self.pipeline_context.is_ci
+
+    def to_json(self) -> str:
+        return json.dumps(
+            {
+                "connector_technical_name": self.pipeline_context.connector.technical_name,
+                "connector_version": self.pipeline_context.connector.version,
+                "run_timestamp": self.created_at.isoformat(),
+                "run_duration": self.run_duration,
+                "success": self.success,
+                "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],
+                "successful_steps": [s.step.__class__.__name__ for s in self.successful_steps],
+                "skipped_steps": [s.step.__class__.__name__ for s in self.skipped_steps],
+                "gha_workflow_run_url": self.pipeline_context.gha_workflow_run_url,
+                "pipeline_start_timestamp": self.pipeline_context.pipeline_start_timestamp,
+                "pipeline_end_timestamp": round(self.created_at.timestamp()),
+                "pipeline_duration": round(self.created_at.timestamp()) - self.pipeline_context.pipeline_start_timestamp,
+                "git_branch": self.pipeline_context.git_branch,
+                "git_revision": self.pipeline_context.git_revision,
+                "ci_context": self.pipeline_context.ci_context,
+            }
+        )
+
+    def print(self):
+        connector_name = self.pipeline_context.connector.technical_name
         main_panel_title = Text(f"{connector_name.upper()} - TEST RESULTS")
         main_panel_title.stylize(Style(color="blue", bold=True))
         duration_subtitle = Text(f"⏲️  Total pipeline duration for {connector_name}: {round(self.run_duration)} seconds")
