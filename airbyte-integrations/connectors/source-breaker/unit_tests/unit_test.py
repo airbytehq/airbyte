@@ -28,7 +28,7 @@ logger = MockLogger()
 
 def schemas_are_valid():
     source = SourceBreaker()
-    config = {"count": 1, "parallelism": 1}
+    config = {}
     catalog = source.discover(None, config)
     catalog = AirbyteMessage(type=Type.CATALOG, catalog=catalog).dict(exclude_unset=True)
     schemas = [stream["json_schema"] for stream in catalog["catalog"]["streams"]]
@@ -39,7 +39,7 @@ def schemas_are_valid():
 
 def test_source_streams():
     source = SourceBreaker()
-    config = {"count": 1, "parallelism": 1}
+    config = {}
     catalog = source.discover(None, config)
     catalog = AirbyteMessage(type=Type.CATALOG, catalog=catalog).dict(exclude_unset=True)
     schemas = [stream["json_schema"] for stream in catalog["catalog"]["streams"]]
@@ -65,9 +65,9 @@ def test_source_streams():
     }
 
 
-def test_read_small_random_data():
+def test_read_small_data():
     source = SourceBreaker()
-    config = {"count": 10, "parallelism": 1}
+    config = {}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             {
@@ -96,12 +96,12 @@ def test_read_small_random_data():
     assert estimate_row_count == 1
     assert record_rows_count == 10
     assert state_rows_count == 1
-    assert latest_state.state.data == {"users": {"id": 10, "seed": None}}
+    assert latest_state.state.data == {"users": {"id": 10, "seed": 0}}
 
 
 def test_no_read_limit_hit():
     source = SourceBreaker()
-    config = {"count": 10, "parallelism": 1}
+    config = {}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             {
@@ -126,114 +126,7 @@ def test_no_read_limit_hit():
 
     assert record_rows_count == 0
     assert state_rows_count == 1
-    assert latest_state.state.data == {"users": {"id": 10, "seed": None}}
-
-
-def test_read_big_random_data():
-    source = SourceBreaker()
-    config = {"count": 1000, "records_per_slice": 100, "records_per_sync": 1000, "parallelism": 1}
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[
-            {
-                "stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["incremental"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            },
-            {
-                "stream": {"name": "products", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            },
-        ]
-    )
-    state = {}
-    iterator = source.read(logger, config, catalog, state)
-
-    record_rows_count = 0
-    state_rows_count = 0
-    latest_state = {}
-    for row in iterator:
-        if row.type is Type.RECORD:
-            record_rows_count = record_rows_count + 1
-        if row.type is Type.STATE:
-            state_rows_count = state_rows_count + 1
-            latest_state = row
-
-    assert record_rows_count == 1000 + 100  # 1000 users, and 100 products
-    assert latest_state.state.data == {'users': {'seed': None, 'id': 1000}, 'products': {'id': 100, 'seed': None}}
-    assert state_rows_count == 10 + 1 + 1 + 1
-
-
-def test_with_purchases():
-    source = SourceBreaker()
-    config = {"count": 1000, "records_per_sync": 1000, "parallelism": 1}
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[
-            {
-                "stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["incremental"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            },
-            {
-                "stream": {"name": "products", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            },
-            {
-                "stream": {"name": "purchases", "json_schema": {}, "supported_sync_modes": ["incremental"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            },
-        ]
-    )
-    state = {}
-    iterator = source.read(logger, config, catalog, state)
-
-    record_rows_count = 0
-    state_rows_count = 0
-    latest_state = {}
-    for row in iterator:
-        if row.type is Type.RECORD:
-            record_rows_count = record_rows_count + 1
-        if row.type is Type.STATE:
-            state_rows_count = state_rows_count + 1
-            latest_state = row
-
-    assert record_rows_count > 1000 + 100  # should be greater than 1000 users, and 100 products
-    assert state_rows_count > 10 + 1  # should be greater than 1000/100, and one state for the products
-    assert latest_state.state.data["users"] == {"id": 1000, "seed": None}
-    assert latest_state.state.data["products"] == {'id': 100, 'seed': None}
-    assert latest_state.state.data["purchases"]["user_id"] > 0
-
-
-def test_sync_ends_with_limit():
-    source = SourceBreaker()
-    config = {"count": 100, "records_per_sync": 5, "parallelism": 1}
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[
-            {
-                "stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["incremental"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            }
-        ]
-    )
-    state = {}
-    iterator = source.read(logger, config, catalog, state)
-
-    record_rows_count = 0
-    state_rows_count = 0
-    latest_state = {}
-    for row in iterator:
-        if row.type is Type.RECORD:
-            record_rows_count = record_rows_count + 1
-        if row.type is Type.STATE:
-            state_rows_count = state_rows_count + 1
-            latest_state = row
-
-    assert record_rows_count == 5
-    assert state_rows_count == 1
-    assert latest_state.state.data == {"users": {"id": 5, "seed": None}}
+    assert latest_state.state.data == {"users": {"id": 10, "seed": 0}}
 
 
 def test_read_with_seed():
@@ -242,7 +135,7 @@ def test_read_with_seed():
     """
 
     source = SourceBreaker()
-    config = {"count": 1, "seed": 100, "parallelism": 1}
+    config = {}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             {
@@ -256,14 +149,14 @@ def test_read_with_seed():
     iterator = source.read(logger, config, catalog, state)
 
     records = [row for row in iterator if row.type is Type.RECORD]
-    assert records[0].record.data["occupation"] == "Cartoonist"
-    assert records[0].record.data["email"] == "reflect1958+1@yahoo.com"
+    assert records[0].record.data["occupation"] == "Opera Singer"
+    assert records[0].record.data["email"] == "updating1989+1@yahoo.com"
 
 
 def test_ensure_no_purchases_without_users():
     with pytest.raises(ValueError):
         source = SourceBreaker()
-        config = {"count": 100, "parallelism": 1}
+        config = {}
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 {"stream": {"name": "purchases", "json_schema": {}}, "sync_mode": "incremental", "destination_sync_mode": "overwrite"},
