@@ -28,8 +28,8 @@
 - [ ] Secrets in the connector's spec are annotated with `airbyte_secret`
 - [ ] Unit & integration tests added and passing. Community members, please provide proof of success locally e.g: screenshot or copy-paste unit, integration, and acceptance test output. To run acceptance tests for a Python connector, follow instructions in the README. For java connectors run `./gradlew :airbyte-integrations:connectors:<name>:integrationTest`.
 - [ ] Code reviews completed
-- [ ] Connector version is set to `0.0.1`
-    - [ ] `Dockerfile` has version `0.0.1`
+- [ ] Connector version is set to `0.1.0`
+    - [ ] `Dockerfile` has version `0.1.0`
 - [ ] Documentation updated
     - [ ] Connector's `README.md`
     - [ ] Connector's `bootstrap.md`. See [description and examples](https://docs.google.com/document/d/1ypdgmwmEHWv-TrO4_YOQ7pAJGVrMp5BOkEVh831N260/edit?usp=sharing)
