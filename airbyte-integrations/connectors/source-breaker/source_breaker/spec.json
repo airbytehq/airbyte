@@ -9,7 +9,7 @@
     "properties": {
       "check_outcome": {
         "title": "Outcome of check method",
-        "description": "foobar",
+        "description": "Select what should happen when running `check`.",
         "type": "string",
         "order": 5,
         "default": "Check should succeed",
