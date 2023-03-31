@@ -89,11 +89,16 @@ pub async fn run_airbyte_source_connector(
 
     let response_write = flow_write_stream();
 
+    // Once the underlying connector has finished writing and has EOFd, then we don't need to wait anymore
+    // for any more writes before we check the status code and exit. This channel allows us to make sure the underlying
+    // connector has finished writing so we can exit gracefully and on time.
+    let (response_finished_sender, response_finished_receiver) = oneshot::channel::<bool>();
     let streaming_all_task = streaming_all(
         adapted_request_stream,
         child_stdin,
         Box::pin(adapted_response_stream),
         response_write.clone(),
+        response_finished_sender,
     );
 
     let cloned_op = op.clone();
@@ -127,10 +132,11 @@ pub async fn run_airbyte_source_connector(
         }
 
         if exit_status_result.is_ok() {
-            // We wait a few seconds to let any remaining writes to be done
-            // since the select below will not wait for `streaming_all` task to finish
-            // once exit_status has been received.
-            tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+            // We give a timeout of 5 seconds to let any remaining writes to be done
+            return tokio::select! {
+                Ok(true) = response_finished_receiver => exit_status_result,
+                _ = tokio::time::sleep(tokio::time::Duration::from_secs(5)) => exit_status_result
+            }
         }
 
         exit_status_result
@@ -155,6 +161,7 @@ async fn streaming_all(
     mut request_stream_writer: ChildStdin,
     response_stream: InterceptorStream,
     response_stream_writer: Arc<Mutex<Pin<Box<dyn AsyncWrite + Sync + Send>>>>,
+    response_finished_sender: oneshot::Sender<bool>,
 ) -> Result<(), Error> {
     let mut request_stream_reader = StreamReader::new(interceptor_stream_to_io_stream(request_stream));
     let mut response_stream_reader = StreamReader::new(interceptor_stream_to_io_stream(response_stream));
@@ -168,6 +175,7 @@ async fn streaming_all(
     let response_stream_copy = async move {
         let mut writer = response_stream_writer.lock().await;
         copy(&mut response_stream_reader, writer.deref_mut()).await?;
+        response_finished_sender.send(true).expect("send write finished signal twice"g);
         tracing::debug!("airbyte-to-flow: response_stream_copy done");
         Ok(())
     };

@@ -1,6 +1,6 @@
 use anyhow::Context;
-use clap::Parser;
-use flow_cli_common::{init_logging, LogArgs};
+use clap::{Parser, ValueEnum};
+use flow_cli_common::{init_logging, LogArgs, LogLevel};
 
 pub mod apis;
 pub mod connector_runner;
@@ -26,16 +26,21 @@ pub struct Args {
     /// The command used to run the underlying airbyte connector
     #[clap(long)]
     connector_entrypoint: String,
-
-    #[clap(flatten)]
-    log_args: LogArgs,
 }
 
 fn main() -> anyhow::Result<()> {
     let Args {
         connector_entrypoint,
-        log_args,
     } = Args::parse();
+
+    let log_level = std::env::var("LOG_LEVEL")
+        .ok()
+        .and_then(|s| LogLevel::from_str(&s, true).ok())
+        .unwrap_or(LogLevel::Info);
+    let log_args = LogArgs {
+        level: log_level,
+        format: None,
+    };
     init_logging(&log_args);
 
     let runtime = tokio::runtime::Builder::new_current_thread()
