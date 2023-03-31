@@ -41,6 +41,8 @@ dependencies {
     performanceTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }
 
+// Some tests using testcontainers are flaky. 
+// The test-retry plugin will retry failing tests 3 times
 test {
     retry {
         maxRetries.set(3)

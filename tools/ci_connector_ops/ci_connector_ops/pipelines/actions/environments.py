@@ -204,11 +204,15 @@ async def with_ci_connector_ops(context: ConnectorTestContext) -> Container:
     return await with_installed_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH, exclude=["pipelines"])
 
 
-def with_dockerd_service(context, shared_volume: Optional(Tuple[str, CacheVolume]) = None) -> Container:
+def with_dockerd_service(
+    context, shared_volume: Optional(Tuple[str, CacheVolume]) = None, docker_cache_volume_name: Optional[str] = None
+) -> Container:
+    if docker_cache_volume_name is None:
+        docker_cache_volume_name = "docker-lib"
     dind = (
         context.dagger_client.container()
         .from_("docker:23.0.1-dind")
-        .with_mounted_cache("/var/lib/docker", context.dagger_client.cache_volume("docker-lib"))
+        .with_mounted_cache("/var/lib/docker", context.dagger_client.cache_volume(docker_cache_volume_name))
     )
     if shared_volume is not None:
         dind = dind.with_mounted_cache(*shared_volume)
@@ -218,18 +222,23 @@ def with_dockerd_service(context, shared_volume: Optional(Tuple[str, CacheVolume
 
 
 def with_bound_docker_host(
-    context: ConnectorTestContext, container: Container, shared_volume: Optional(Tuple[str, CacheVolume]) = None
+    context: ConnectorTestContext,
+    container: Container,
+    shared_volume: Optional(Tuple[str, CacheVolume]) = None,
+    docker_cache_volume_name: Optional[str] = None,
 ) -> Container:
-    dockerd = with_dockerd_service(context, shared_volume)
+    dockerd = with_dockerd_service(context, shared_volume, docker_cache_volume_name)
     bound = container.with_env_variable("DOCKER_HOST", "tcp://docker:2375").with_service_binding("docker", dockerd)
     if shared_volume:
         bound = bound.with_mounted_cache(*shared_volume)
     return bound
 
 
-def with_docker_cli(context: ConnectorTestContext, shared_volume: Optional(Tuple[str, CacheVolume]) = None) -> Container:
+def with_docker_cli(
+    context: ConnectorTestContext, shared_volume: Optional(Tuple[str, CacheVolume]) = None, docker_cache_volume_name: Optional[str] = None
+) -> Container:
     docker_cli = context.dagger_client.container().from_("docker:23.0.1-cli")
-    return with_bound_docker_host(context, docker_cli, shared_volume)
+    return with_bound_docker_host(context, docker_cli, shared_volume, docker_cache_volume_name)
 
 
 def with_connector_acceptance_test(context: ConnectorTestContext) -> Container:
@@ -254,7 +263,9 @@ def with_java_base(context: ConnectorTestContext, jdk_version: str = "17.0.4") -
     return context.dagger_client.container().from_(f"amazoncorretto:{jdk_version}")
 
 
-def with_gradle(context: ConnectorTestContext, sources_to_include: List[str] = None) -> Container:
+def with_gradle(
+    context: ConnectorTestContext, sources_to_include: List[str] = None, docker_cache_volume_name: Optional[str] = None
+) -> Container:
     airbyte_gradle_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}_airbyte_gradle_cache")
     root_gradle_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}_root_gradle_cache")
 
@@ -289,30 +300,51 @@ def with_gradle(context: ConnectorTestContext, sources_to_include: List[str] = N
         "tools/lib/lib.sh",
     ]
 
+    python3_install_deps = [
+        "build-essential",
+        "zlib1g-dev",
+        "libncurses5-dev",
+        "libgdbm-dev",
+        "libnss3-dev",
+        "libssl-dev",
+        "libreadline-dev",
+        "libffi-dev",
+        "libsqlite3-dev",
+        "wget",
+        "libbz2-dev",
+    ]
     if sources_to_include:
         include += sources_to_include
 
     shared_tmp_volume = ("/tmp", context.dagger_client.cache_volume("share-tmp-gradle"))
-    centos_docker_cli = (
+    openjdk_with_docker = (
         context.dagger_client.container()
-        .from_("centos:centos7")
-        # .with_exec(["yum", "update", "-y"])
-        .with_exec(["yum", "install", "-y", "yum-utils"])
-        .with_exec(["yum-config-manager", "--add-repo", "https://download.docker.com/linux/centos/docker-ce.repo"])
-        .with_exec(["yum", "install", "-y", "java-17-openjdk", "bash", "jq", "python3", "docker-ce-cli"])
-    )
-
-    centos_docker_cli = with_bound_docker_host(context, centos_docker_cli, shared_tmp_volume)
-    return (
-        centos_docker_cli
-        # .with_exec(["ln", "-sf", "python3", "/usr/bin/python3"])
-        # .with_exec(["python3", "-m", "ensurepip"])
-        # .with_exec(["pip3", "install", "--no-cache", "--upgrade", "pip", "setuptools"])
-        .with_env_variable("JAVA_HOME", "/etc/alternatives/jre")
+        # Use openjdk image because it's based on Debian. Alpine with Gradle and Python causes filesystem crash.
+        .from_("openjdk:17.0.1-jdk-slim")
+        .with_exec(["apt-get", "update"])
+        .with_exec(["apt-get", "install", "-y", "curl"])
+        .with_env_variable("VERSION", "23.0.1")
+        .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
+        .with_exec(["apt-get", "install", "-y"] + python3_install_deps)
+        .with_exec(
+            [
+                "apt-get",
+                "install",
+                "-y",
+                "python3",
+                "python3-pip",
+            ]
+        )
+        .with_exec(["python", "--version"])
+        .with_exec(["pip3", "--version"])
+        .with_exec(["pip3", "install", "-U", "pip"])
+        .with_exec(["pip3", "install", "virtualenv", "--upgrade"])
         .with_exec(["mkdir", "/root/.gradle"])
         .with_mounted_cache("/root/.gradle", root_gradle_cache)
         .with_exec(["mkdir", "/airbyte"])
         .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
         .with_mounted_cache("/airbyte/.gradle", airbyte_gradle_cache)
         .with_workdir("/airbyte")
+        # .with_exec(["virtualenv", "-p", "python3", ".venv"])
     )
+    return with_bound_docker_host(context, openjdk_with_docker, shared_tmp_volume, docker_cache_volume_name)
