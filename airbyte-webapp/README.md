@@ -34,7 +34,7 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 ## Change log:
 #### 2023.03.31
-1. Change the sign out icon
+1. Email & verify screen UI
 #### 2023.03.29
 1. Change the sign out icon
 2. Update translation
