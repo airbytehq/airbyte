@@ -194,8 +194,8 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
   @ParameterizedTest
   @ArgumentsSource(DataTypeTestArgumentProvider.class)
   public void testDataTypeTestWithNormalization(final String messagesFilename,
-      final String catalogFilename,
-      final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
+                                                final String catalogFilename,
+                                                final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
       throws Exception {
 
     // arrays are not fully supported yet in jdbc driver
