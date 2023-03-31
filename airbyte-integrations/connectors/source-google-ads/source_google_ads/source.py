@@ -24,6 +24,7 @@ from .streams import (
     AdGroupAds,
     AdGroupLabels,
     AdGroups,
+    Audience,
     CampaignLabels,
     Campaigns,
     ClickView,
@@ -34,6 +35,7 @@ from .streams import (
     ServiceAccounts,
     ShoppingPerformanceReport,
     UserLocationReport,
+    UserInterest,
 )
 from .utils import GAQL
 
@@ -134,8 +136,10 @@ class SourceGoogleAds(AbstractSource):
             AdGroups(**incremental_config),
             AdGroupLabels(google_api, customers=customers),
             Accounts(**incremental_config),
+            Audience(google_api, customers=customers),
             CampaignLabels(google_api, customers=customers),
             ClickView(**incremental_config),
+            UserInterest(google_api, customers=customers),
         ]
         # Metrics streams cannot be requested for a manager account.
         if non_manager_accounts:
