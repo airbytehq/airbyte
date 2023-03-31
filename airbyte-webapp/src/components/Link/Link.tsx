@@ -8,13 +8,24 @@ export interface ILinkProps {
   bold?: boolean;
   $clear?: boolean;
   $light?: boolean;
+  medium?: boolean;
 }
+
+const getFontWeight = (props: ILinkProps) => {
+  if (props.bold) {
+    return "bold";
+  }
+  if (props.medium) {
+    return "500";
+  }
+  return "normal";
+};
 
 // TODO: fix typings
 const Link = styled(ReactLink)<ILinkProps /* & ReactLinkProps */>`
   color: ${({ theme, $light }) => ($light ? theme.darkGreyColor : theme.primaryColor)};
 
-  font-weight: ${({ bold }) => (bold ? "bold" : "normal")};
+  // font-weight: ${(props) => getFontWeight(props)};
   text-decoration: ${({ $clear }) => ($clear ? "none" : "underline")};
 
   &:hover {
