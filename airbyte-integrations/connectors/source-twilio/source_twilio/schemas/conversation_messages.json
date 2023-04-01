@@ -25,13 +25,7 @@
       "type": ["null", "string"]
     },
     "attributes": {
-      "type": ["null", "object"],
-      "additionalProperties": true,
-      "properties": {
-        "importance": {
-          "type": ["null", "string"]
-        }
-      }
+      "type": ["null", "string"]
     },
     "date_created": {
       "type": ["null", "string"]
