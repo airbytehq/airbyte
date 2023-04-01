@@ -1,11 +1,18 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": ["null", "string"]
     },
     "created_at": {
+      "type": ["null", "string"]
+    },
+    "dominant_color": {
+      "type": ["null", "string"]
+    },
+    "parent_pin_id": {
       "type": ["null", "string"]
     },
     "link": {
@@ -28,6 +35,7 @@
     },
     "board_owner": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "username": {
           "type": ["null", "string"]
@@ -36,6 +44,7 @@
     },
     "media": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "media_type": {
           "type": ["null", "string"]
