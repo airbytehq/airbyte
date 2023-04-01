@@ -1,0 +1,82 @@
+{
+  "type": "object",
+  "title": "Account",
+  "description": "Account object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "trackedSubscriptionId": {
+      "type": ["null", "string"]
+    },
+    "sfdcId": {
+      "type": ["null", "string"]
+    },
+    "lastSeenDate": {
+      "type": "integer",
+      "format": "int64"
+    },
+    "dunsNumber": {
+      "type": ["null", "string"]
+    },
+    "industry": {
+      "type": ["null", "string"]
+    },
+    "numberOfEmployees": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "sicCode": {
+      "type": ["null", "string"]
+    },
+    "website": {
+      "type": ["null", "string"]
+    },
+    "naicsCode": {
+      "type": ["null", "string"]
+    },
+    "plan": {
+      "type": ["null", "string"]
+    },
+    "location": {
+      "$ref": "#/definitions/Location"
+    },
+    "numberOfUsers": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Number of users"
+    },
+    "propertyKeys": {
+      "type": "array",
+      "description": "Aptrinsic Tag Key, at least one is required",
+      "items": {
+        "type": ["null", "string"]
+      },
+      "examples": [
+        [
+          "AP-XXXXXXXXXX-2"
+        ]
+      ]
+    },
+    "createDate": {
+      "type": "integer",
+      "format": "int64"
+    },
+    "lastModifiedDate": {
+      "type": "integer",
+      "format": "int64"
+    },
+    "customAttributes": {
+      "type": ["null", "object"],
+      "description": "Map of apiName to value"
+    },
+    "parentGroupId": {
+      "type": ["null", "string"],
+      "description": "Id to group Accounts together"
+    }
+  }
+}
