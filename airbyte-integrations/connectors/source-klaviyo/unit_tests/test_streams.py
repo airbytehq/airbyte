@@ -9,7 +9,7 @@ import pendulum
 import pytest
 import requests
 from pydantic import BaseModel
-from source_klaviyo.streams import Events, IncrementalKlaviyoStreamV1, KlaviyoStreamV1, ReverseIncrementalKlaviyoStreamV1
+from source_klaviyo.streams import EmailTemplates, Events, IncrementalKlaviyoStreamV1, KlaviyoStreamV1, ReverseIncrementalKlaviyoStreamV1
 
 START_DATE = pendulum.datetime(2020, 10, 10)
 
@@ -290,4 +290,19 @@ class TestEventsStream:
                 "flow_id": "advanced",
                 "flow_message_id": "nice to meet you",
             },
+        ]
+
+
+class TestEmailTemplatesStream:
+    def test_parse_response(self, mocker):
+        stream = EmailTemplates(api_key="some_key")
+        json = {
+            "data": [
+               {"object": "email-template", "id": "id", "name": "Newsletter #1", "html": "<!DOCTYPE html></html>", "is_writeable": "true", "created": "2023-02-18T11:18:22+00:00", "updated": "2023-02-18T12:01:12+00:00"},
+            ]
+        }
+        records = list(stream.parse_response(mocker.Mock(json=mocker.Mock(return_value=json))))
+
+        assert records == [
+            {"object": "email-template", "id": "id", "name": "Newsletter #1", "html": "<!DOCTYPE html></html>", "is_writeable": "true", "created": "2023-02-18T11:18:22+00:00", "updated": "2023-02-18T12:01:12+00:00"}
         ]
