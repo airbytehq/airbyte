@@ -10,7 +10,7 @@
       "azure_blob_storage_container_name",
       "format"
     ],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "azure_blob_storage_endpoint": {
         "title": "Endpoint Domain Name",
