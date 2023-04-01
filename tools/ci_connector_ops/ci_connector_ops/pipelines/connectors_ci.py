@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import asyncio
+import itertools
 import logging
 import os
 import sys
@@ -9,14 +9,16 @@ from pathlib import Path
 from typing import List, Tuple
 
 import anyio
+import asyncer
 import click
 import dagger
-from ci_connector_ops.pipelines.actions import environments, tests
+from ci_connector_ops.pipelines import checks, tests
+from ci_connector_ops.pipelines.bases import ConnectorTestReport
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.pipelines.github import update_commit_status_check
-from ci_connector_ops.pipelines.models import ConnectorTestReport, Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.utils import (
     DAGGER_CONFIG,
+    get_current_epoch_time,
     get_current_git_branch,
     get_current_git_revision,
     get_modified_connectors,
@@ -27,79 +29,51 @@ from rich.logging import RichHandler
 
 GITHUB_GLOBAL_CONTEXT = "[POC please ignore] Connectors CI"
 GITHUB_GLOBAL_DESCRIPTION = "Running connectors tests"
-REQUIRED_ENV_VARS_FOR_CI = [
-    "GCP_GSM_CREDENTIALS",
-    "AWS_ACCESS_KEY_ID",
-    "AWS_SECRET_ACCESS_KEY",
-    "AWS_DEFAULT_REGION",
-    "TEST_REPORTS_BUCKET_NAME",
-    "CI_GITHUB_ACCESS_TOKEN",
-]
+
 
 logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
 
 logger = logging.getLogger(__name__)
 
 
-async def run(test_context: ConnectorTestContext) -> ConnectorTestReport:
+async def run(context: ConnectorTestContext, semaphore: anyio.Semaphore) -> ConnectorTestReport:
     """Runs a CI pipeline for a single connector.
     A visual DAG can be found on the README.md file of the pipelines modules.
 
     Args:
-        test_context (ConnectorTestContext): The initialized test context.
+        context (ConnectorTestContext): The initialized connector test context.
 
     Returns:
         ConnectorTestReport: The test reports holding tests results.
     """
-    async with test_context:
-        qa_checks_results = await tests.run_qa_checks(test_context)
-        connector_source_code = await environments.with_airbyte_connector(test_context, install=False)
-        connector_under_test = await environments.with_airbyte_connector(test_context)
+    async with semaphore:
+        async with context:
+            async with asyncer.create_task_group() as task_group:
+                tasks = [
+                    task_group.soonify(checks.QaChecks(context).run)(),
+                    task_group.soonify(checks.CodeFormatChecks(context).run)(),
+                    task_group.soonify(tests.run_all_tests)(context),
+                ]
+            results = list(itertools.chain(*(task.value for task in tasks)))
 
-        code_format_checks_results_future = asyncio.create_task(tests.code_format_checks(connector_source_code))
-        unit_tests_results, connector_under_test_exit_code = await asyncio.gather(
-            tests.run_unit_tests(connector_under_test), connector_under_test.exit_code()
-        )
+            context.test_report = ConnectorTestReport(context, steps_results=results)
 
-        package_install_result = StepResult(Step.PACKAGE_INSTALL, StepStatus.from_exit_code(connector_under_test_exit_code))
-
-        if unit_tests_results.status is StepStatus.SUCCESS:
-            integration_test_future = asyncio.create_task(tests.run_integration_tests(connector_under_test))
-            acceptance_tests_results, test_context.updated_secrets_dir = await tests.run_acceptance_tests(
-                test_context,
-            )
-            integration_tests_result = await integration_test_future
-
-        else:
-            integration_tests_result = StepResult(Step.INTEGRATION_TESTS, StepStatus.SKIPPED, stdout="Skipped because unit tests failed")
-            acceptance_tests_results = StepResult(Step.ACCEPTANCE_TESTS, StepStatus.SKIPPED, stdout="Skipped because unit tests failed")
-
-        test_context.test_report = ConnectorTestReport(
-            test_context,
-            steps_results=[
-                package_install_result,
-                await code_format_checks_results_future,
-                unit_tests_results,
-                integration_tests_result,
-                acceptance_tests_results,
-                qa_checks_results,
-            ],
-        )
-
-    return test_context.test_report
+        return context.test_report
 
 
-async def run_connectors_test_pipelines(test_contexts: List[ConnectorTestContext]):
+async def run_connectors_test_pipelines(contexts: List[ConnectorTestContext], concurrency: int = 5):
     """Runs a CI pipeline for all the connectors passed.
 
     Args:
-        test_contexts (List[ConnectorTestContext]): List of connector test contexts for which a CI pipeline needs to be run.
+        contexts (List[ConnectorTestContext]): List of connector test contexts for which a CI pipeline needs to be run.
+        concurrency (int): Number of test pipeline that can run in parallel. Defaults to 5
     """
+    semaphore = anyio.Semaphore(concurrency)
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         async with anyio.create_task_group() as tg:
-            for test_context in test_contexts:
-                test_context.dagger_client = dagger_client.pipeline(f"{test_context.connector.technical_name} - Test Pipeline")
-                tg.start_soon(run, test_context)
+            for context in contexts:
+                context.dagger_client = dagger_client.pipeline(f"{context.connector.technical_name} - Test Pipeline")
+                tg.start_soon(run, context, semaphore)
 
 
 @click.group()
@@ -114,6 +88,8 @@ async def run_connectors_test_pipelines(test_contexts: List[ConnectorTestContext
     type=str,
 )
 @click.option("--gha-workflow-run-id", help="[CI Only] The run id of the GitHub action workflow", default=None, type=str)
+@click.option("--ci-context", default="manual", envvar="CI_CONTEXT", type=click.Choice(["manual", "pull_request", "nightly_builds"]))
+@click.option("--pipeline-start-timestamp", default=get_current_epoch_time, envvar="CI_PIPELINE_START_TIMESTAMP", type=int)
 @click.pass_context
 def connectors_ci(
     ctx: click.Context,
@@ -123,6 +99,8 @@ def connectors_ci(
     git_revision: str,
     diffed_branch: str,
     gha_workflow_run_id: str,
+    ci_context: str,
+    pipeline_start_timestamp: int,
 ):
     """A command group to gather all the connectors-ci command"""
 
@@ -137,14 +115,15 @@ def connectors_ci(
     ctx.obj["gha_workflow_run_url"] = (
         f"https://github.com/airbytehq/airbyte/actions/runs/{gha_workflow_run_id}" if gha_workflow_run_id else None
     )
-
+    ctx.obj["ci_context"] = ci_context
+    ctx.obj["pipeline_start_timestamp"] = pipeline_start_timestamp
     update_commit_status_check(
         ctx.obj["git_revision"],
         "pending",
         ctx.obj["gha_workflow_run_url"],
         GITHUB_GLOBAL_DESCRIPTION,
         GITHUB_GLOBAL_CONTEXT,
-        should_send=not ctx.obj["is_local"],
+        should_send=ctx.obj["ci_context"] == "pull_request",
         logger=logger,
     )
 
@@ -164,8 +143,11 @@ def connectors_ci(
     type=click.Choice(["alpha", "beta", "generally_available"]),
 )
 @click.option("--modified/--not-modified", help="Only test modified connectors in the current branch.", default=False, type=bool)
+@click.option("--concurrency", help="Number of connector tests pipeline to run in parallel.", default=5, type=int)
 @click.pass_context
-def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[ConnectorLanguage], release_stages: Tuple[str], modified: bool):
+def test_connectors(
+    ctx: click.Context, names: Tuple[str], languages: Tuple[ConnectorLanguage], release_stages: Tuple[str], modified: bool, concurrency: int
+):
     """Runs a CI pipeline the connector passed as CLI argument.
 
     Args:
@@ -202,20 +184,22 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
             ctx.obj["git_revision"],
             ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
+            pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
+            ci_context=ctx.obj.get("ci_context"),
         )
         for connector in connectors_under_test
         if connector.language
         in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]  # TODO: remove this once we implement pipelines for Java connector
     ]
     try:
-        anyio.run(run_connectors_test_pipelines, connectors_tests_contexts)
+        anyio.run(run_connectors_test_pipelines, connectors_tests_contexts, concurrency)
         update_commit_status_check(
             ctx.obj["git_revision"],
             "success",
             ctx.obj["gha_workflow_run_url"],
             GITHUB_GLOBAL_DESCRIPTION,
             GITHUB_GLOBAL_CONTEXT,
-            should_send=not ctx.obj["is_local"],
+            should_send=ctx.obj.get("ci_context") == "pull_request",
             logger=logger,
         )
     except dagger.DaggerError as e:
@@ -226,17 +210,26 @@ def test_connectors(ctx: click.Context, names: Tuple[str], languages: Tuple[Conn
             ctx.obj["gha_workflow_run_url"],
             GITHUB_GLOBAL_DESCRIPTION,
             GITHUB_GLOBAL_CONTEXT,
-            should_send=not ctx.obj["is_local"],
+            should_send=ctx.obj.get("ci_context") == "pull_request",
             logger=logger,
         )
 
 
 def validate_environment(is_local: bool, use_remote_secrets: bool):
+
     if is_local:
         if not (os.getcwd().endswith("/airbyte") and Path(".git").is_dir()):
             raise click.UsageError("You need to run this command from the airbyte repository root.")
     else:
-        for required_env_var in REQUIRED_ENV_VARS_FOR_CI:
+        required_env_vars_for_ci = [
+            "GCP_GSM_CREDENTIALS",
+            "AWS_ACCESS_KEY_ID",
+            "AWS_SECRET_ACCESS_KEY",
+            "AWS_DEFAULT_REGION",
+            "TEST_REPORTS_BUCKET_NAME",
+            "CI_GITHUB_ACCESS_TOKEN",
+        ]
+        for required_env_var in required_env_vars_for_ci:
             if os.getenv(required_env_var) is None:
                 raise click.UsageError(f"When running in a CI context a {required_env_var} environment variable must be set.")
     if use_remote_secrets and os.getenv("GCP_GSM_CREDENTIALS") is None:

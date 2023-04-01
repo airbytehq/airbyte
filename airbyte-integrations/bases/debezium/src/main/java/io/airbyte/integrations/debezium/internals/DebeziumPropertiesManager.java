@@ -55,7 +55,8 @@ public class DebeziumPropertiesManager {
     props.setProperty("max.queue.size", "8192");
 
     props.setProperty("errors.max.retries", "10");
-    props.setProperty("errors.retry.delay.initial.ms", "1000");
+    props.setProperty("errors.retry.delay.initial.ms", "300");
+    props.setProperty("errors.retry.delay.max.ms", "300");
 
     if (schemaHistoryManager.isPresent()) {
       // https://debezium.io/documentation/reference/2.1/operations/debezium-server.html#debezium-source-database-history-class
