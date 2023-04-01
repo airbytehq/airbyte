@@ -554,5 +554,4 @@ class ConversationMessages(TwilioNestedStream):
         return f"Conversations/{stream_slice['conversation_sid']}/Messages"
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        print("hello", record)
         return {"conversation_sid": record["sid"]}
