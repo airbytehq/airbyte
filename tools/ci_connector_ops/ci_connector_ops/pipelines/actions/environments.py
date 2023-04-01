@@ -24,7 +24,7 @@ CONNECTOR_TESTING_REQUIREMENTS = [
     "pytest-custom_exit_code",
 ]
 
-DEFAULT_PYTHON_EXCLUDE = [".venv"]
+DEFAULT_PYTHON_EXCLUDE = ["**/.venv"]
 CI_CREDENTIALS_SOURCE_PATH = "tools/ci_credentials"
 CI_CONNECTOR_OPS_SOURCE_PATH = "tools/ci_connector_ops"
 
@@ -235,7 +235,7 @@ def with_poetry(context: PipelineContext) -> Container:
     return poetry_with_cache
 
 
-def with_poetry_module(context: PipelineContext, src_path: str) -> Container:
+def with_poetry_module(context: PipelineContext, parent_dir_path: str, module_path: str) -> Container:
     """Sets up a Poetry module.
 
     Args:
@@ -243,10 +243,10 @@ def with_poetry_module(context: PipelineContext, src_path: str) -> Container:
     Returns:
         Container: A python environment with dependencies installed using poetry.
     """
-    poetry_exclude = ["__pycache__"] + DEFAULT_PYTHON_EXCLUDE
+    poetry_exclude = ["**/__pycache__"] + DEFAULT_PYTHON_EXCLUDE
     poetry_install_dependencies_cmd = ["poetry", "install"]
 
-    src = context.dagger_client.host().directory(src_path, exclude=poetry_exclude)
+    src = context.dagger_client.host().directory(parent_dir_path, exclude=poetry_exclude)
     python_with_poetry = with_poetry(context)
 
-    return python_with_poetry.with_mounted_directory("/src", src).with_workdir("/src").with_exec(poetry_install_dependencies_cmd)
+    return python_with_poetry.with_mounted_directory("/src", src).with_workdir(f"/src/{module_path}").with_exec(poetry_install_dependencies_cmd)
