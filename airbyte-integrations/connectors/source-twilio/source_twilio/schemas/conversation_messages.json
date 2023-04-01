@@ -25,7 +25,8 @@
       "type": ["null", "string"]
     },
     "attributes": {
-      "type": "object",
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "importance": {
           "type": ["null", "string"]
@@ -42,7 +43,8 @@
       "type": "integer"
     },
     "delivery": {
-      "type": "object",
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "total": {
           "type": "integer"
