@@ -759,7 +759,12 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_spec(model: SpecModel, config: Config, **kwargs) -> Spec:
-        return Spec(connection_specification=model.connection_specification, documentation_url=model.documentation_url, parameters={})
+        return Spec(
+            connection_specification=model.connection_specification,
+            documentation_url=model.documentation_url,
+            advanced_auth=model.advanced_auth,
+            parameters={},
+        )
 
     def create_substream_partition_router(self, model: SubstreamPartitionRouterModel, config: Config, **kwargs) -> SubstreamPartitionRouter:
         parent_stream_configs = []

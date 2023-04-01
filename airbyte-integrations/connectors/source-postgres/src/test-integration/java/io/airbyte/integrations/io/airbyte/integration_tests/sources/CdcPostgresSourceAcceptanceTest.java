@@ -23,7 +23,6 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -42,7 +41,7 @@ import org.testcontainers.utility.MountableFile;
 // todo (cgardens) - Sanity check that when configured for CDC that postgres performs like any other
 // incremental source. As we have more sources support CDC we will find a more reusable way of doing
 // this, but for now this is a solid sanity check.
-public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
+public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAcceptanceTest {
 
   protected static final String SLOT_NAME_BASE = "debezium_slot";
   protected static final String NAMESPACE = "public";
@@ -105,16 +104,6 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
-  }
-
-  @Override
-  protected String getImageName() {
-    return "airbyte/source-postgres:dev";
-  }
-
-  @Override
-  protected ConnectorSpecification getSpec() throws Exception {
-    return SshHelpers.getSpecAndInjectSsh();
   }
 
   @Override
