@@ -1,40 +1,43 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["null", "integer"]
     },
     "authors": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
+        "additionalProperties": true,
         "properties": {
           "name": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "email": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }
     },
     "commitCount": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "data": {
-      "type": "object"
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "dateCreated": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "dateReleased": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "deployCount": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "firstEvent": {
       "type": ["null", "string"]
@@ -43,27 +46,28 @@
       "type": ["null", "object"]
     },
     "lastDeploy": {
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "lastEvent": {
       "type": ["null", "string"]
     },
     "newGroups": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "owner": {
       "type": ["null", "string"]
     },
     "projects": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "name": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "slug": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }
@@ -72,13 +76,13 @@
       "type": ["null", "string"]
     },
     "shortVersion": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "url": {
       "type": ["null", "string"]
     },
     "version": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }
