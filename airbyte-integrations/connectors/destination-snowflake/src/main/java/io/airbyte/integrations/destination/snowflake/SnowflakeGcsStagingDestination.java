@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
+import static io.airbyte.integrations.destination.snowflake.SnowflakeDestinationResolver.getNumberOfFileBuffers;
 import static io.airbyte.integrations.destination.snowflake.SnowflakeS3StagingDestination.isPurgeStagingData;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -142,7 +143,7 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
         getDatabase(getDataSource(config)),
         new SnowflakeGcsStagingSqlOperations(getNamingResolver(), gcsConfig),
         getNamingResolver(),
-        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX)),
+        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),
         config,
         catalog,
         isPurgeStagingData(config));
