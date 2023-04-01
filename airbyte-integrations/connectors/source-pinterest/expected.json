@@ -1,7 +1,0 @@
-{"type": "LOG", "log": {"level": "INFO", "message": "Starting syncing SourcePinterest"}}
-{"type": "LOG", "log": {"level": "INFO", "message": "Syncing stream: ad_accounts "}}
-{"type": "RECORD", "record": {"stream": "ad_accounts", "data": {"id": "549761668032", "name": "Airbyte", "owner": {"username": "integrationtest0375"}, "country": "US", "currency": "USD", "permissions": ["OWNER"], "created_time": 1603772920, "updated_time": 1623173784}, "emitted_at": 1680356913507}}
-{"type": "LOG", "log": {"level": "INFO", "message": "Read 1 records from ad_accounts stream"}}
-{"type": "LOG", "log": {"level": "INFO", "message": "Finished syncing ad_accounts"}}
-{"type": "LOG", "log": {"level": "INFO", "message": "SourcePinterest runtimes:\nSyncing stream ad_accounts 0:00:00.658273"}}
-{"type": "LOG", "log": {"level": "INFO", "message": "Finished syncing SourcePinterest"}}
