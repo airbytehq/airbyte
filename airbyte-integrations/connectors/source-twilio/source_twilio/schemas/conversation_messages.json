@@ -71,7 +71,7 @@
       "type": ["null", "string"]
     },
     "links": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "delivery_receipts": {
           "type": ["null", "string"]
