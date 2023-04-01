@@ -254,3 +254,7 @@ class CsvParser(AbstractFileParser):
                 for record_values in zip(*columnwise_record_values):
                     # create our record of {col: value, col: value} by dict comprehension, iterating through all cols in batch_columns
                     yield {batch_columns[i]: record_values[i] for i in range(len(batch_columns))}
+
+    @classmethod
+    def set_minimal_block_size(cls, format: Mapping[str, Any]):
+        format["block_size"] = 1024
