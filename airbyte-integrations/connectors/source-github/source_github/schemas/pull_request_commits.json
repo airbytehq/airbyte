@@ -21,7 +21,8 @@
               "type": ["null", "string"]
             },
             "date": {
-              "type": ["null", "string"]
+              "type": "string",
+              "format": "date-time"
             }
           }
         },
@@ -35,7 +36,8 @@
               "type": ["null", "string"]
             },
             "date": {
-              "type": ["null", "string"]
+              "type": "string",
+              "format": "date-time"
             }
           }
         },
