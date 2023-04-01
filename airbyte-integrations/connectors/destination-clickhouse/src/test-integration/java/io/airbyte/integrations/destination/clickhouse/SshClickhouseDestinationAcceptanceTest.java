@@ -84,7 +84,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   @Override
   protected JsonNode getConfig() throws Exception {
     return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, DB_NAME)
-        .put("schema", DB_NAME));
+        .put("schema", DB_NAME), false);
   }
 
   @Override

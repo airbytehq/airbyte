@@ -47,7 +47,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
     if (db == null) {
-      db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
+      db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2022-RTM-CU2-ubuntu-20.04").acceptLicense();
       db.start();
     }
     final var containerAddress = SshHelpers.getOuterContainerAddress(db);

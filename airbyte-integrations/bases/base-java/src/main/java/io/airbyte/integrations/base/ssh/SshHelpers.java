@@ -41,19 +41,22 @@ public class SshHelpers {
   }
 
   /**
-   * Returns the inner docker network ip address and port of a container.
-   * This can be used to reach a container from another container running on the same network
+   * Returns the inner docker network ip address and port of a container. This can be used to reach a
+   * container from another container running on the same network
+   *
    * @param container container
    * @return a pair of host and port
    */
   public static ImmutablePair<String, Integer> getInnerContainerAddress(final Container container) {
-    return ImmutablePair.of(container.getContainerInfo().getNetworkSettings().getNetworks().entrySet().stream().findFirst().get().getValue().getIpAddress(),
+    return ImmutablePair.of(
+        container.getContainerInfo().getNetworkSettings().getNetworks().entrySet().stream().findFirst().get().getValue().getIpAddress(),
         (Integer) container.getExposedPorts().stream().findFirst().get());
   }
 
   /**
-   * Returns the outer docker network ip address and port of a container.
-   * This can be used to reach a container from the host machine
+   * Returns the outer docker network ip address and port of a container. This can be used to reach a
+   * container from the host machine
+   *
    * @param container container
    * @return a pair of host and port
    */

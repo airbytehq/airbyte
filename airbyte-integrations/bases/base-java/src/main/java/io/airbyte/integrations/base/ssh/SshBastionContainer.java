@@ -13,12 +13,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.Network;
@@ -39,7 +35,9 @@ public class SshBastionContainer {
     bastion.start();
   }
 
-  public JsonNode getTunnelConfig(final SshTunnel.TunnelMethod tunnelMethod, final ImmutableMap.Builder<Object, Object> builderWithSchema, final boolean innerAddress)
+  public JsonNode getTunnelConfig(final SshTunnel.TunnelMethod tunnelMethod,
+                                  final ImmutableMap.Builder<Object, Object> builderWithSchema,
+                                  final boolean innerAddress)
       throws IOException, InterruptedException {
     final var containerAddress = innerAddress ? getInnerContainerAddress(bastion) : getOuterContainerAddress(bastion);
     return Jsons.jsonNode(builderWithSchema
