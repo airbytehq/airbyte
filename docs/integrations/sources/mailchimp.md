@@ -311,8 +311,8 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 | ------- | ---------- | -------------------------------------------------------- | -------------------------------------------------------------------------- |
-| 0.5.4   | 2023-03-18 | [23290](https://github.com/airbytehq/airbyte/pull/23290) | Add Automations stream                                                     |
-| 0.4.4   | 2023-02-28 | [23464](https://github.com/airbytehq/airbyte/pull/23464) | Add Reports stream                                                         |
+| 0.5.0   | 2023-04-03 | [23290](https://github.com/airbytehq/airbyte/pull/23290) | Add Automations stream                                                     |
+| 0.4.0   | 2023-02-28 | [23464](https://github.com/airbytehq/airbyte/pull/23464) | Add Reports stream                                                         |
 | 0.3.4   | 2023-02-06 | [22405](https://github.com/airbytehq/airbyte/pull/22405) | Revert extra logging                                                       |
 | 0.3.3   | 2023-02-01 | [22228](https://github.com/airbytehq/airbyte/pull/22228) | Add extra logging                                                          |
 | 0.3.2   | 2023-01-27 | [22014](https://github.com/airbytehq/airbyte/pull/22014) | Set `AvailabilityStrategy` for streams explicitly to `None`                |
