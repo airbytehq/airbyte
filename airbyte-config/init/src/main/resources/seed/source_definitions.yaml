@@ -167,6 +167,14 @@
   icon: azureblobstorage.svg
   sourceType: database
   releaseStage: alpha
+- name: Azure Blob Storage
+  sourceDefinitionId: fdaaba68-4875-4ed9-8fcd-4ae1e0a25093
+  dockerRepository: airbyte/source-azure-blob-storage
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/azure-blob-storage
+  icon: azureblobstorage.svg
+  sourceType: file
+  releaseStage: alpha
 - name: Babelforce
   sourceDefinitionId: 971c3e1e-78a5-411e-ad56-c4052b50876b
   dockerRepository: airbyte/source-babelforce
