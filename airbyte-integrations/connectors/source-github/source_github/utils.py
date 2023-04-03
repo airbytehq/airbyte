@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -7,11 +7,14 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 
 
-def getter(D: dict, key_or_keys):
+def getter(D: dict, key_or_keys, strict=True):
     if not isinstance(key_or_keys, list):
         key_or_keys = [key_or_keys]
     for k in key_or_keys:
-        D = D[k]
+        if strict:
+            D = D[k]
+        else:
+            D = D.get(k, {})
     return D
 
 

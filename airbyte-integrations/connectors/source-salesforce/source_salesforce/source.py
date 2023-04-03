@@ -1,8 +1,9 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
+from datetime import datetime
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
@@ -14,10 +15,11 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from dateutil.relativedelta import relativedelta
 from requests import codes, exceptions  # type: ignore[import]
 
 from .api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
-from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, Describe, IncrementalSalesforceStream, SalesforceStream
+from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, Describe, IncrementalRestSalesforceStream, RestSalesforceStream
 
 
 class AirbyteStopSync(AirbyteTracedException):
@@ -25,6 +27,9 @@ class AirbyteStopSync(AirbyteTracedException):
 
 
 class SourceSalesforce(AbstractSource):
+    DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+    START_DATE_OFFSET_IN_YEARS = 2
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.catalog = None
@@ -59,17 +64,10 @@ class SourceSalesforce(AbstractSource):
         properties_not_supported_by_bulk = {
             key: value for key, value in properties.items() if value.get("format") == "base64" or "object" in value["type"]
         }
-        properties_length = len(",".join(p for p in properties))
-
         rest_required = stream_name in UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS or properties_not_supported_by_bulk
-        # If we have a lot of properties we can overcome REST API URL length and get an error: "reason: URI Too Long".
-        # For such cases connector tries to use BULK API because it uses POST request and passes properties in the request body.
-        bulk_required = properties_length + 2000 > Salesforce.REQUEST_SIZE_LIMITS
-
-        if rest_required and not bulk_required:
+        if rest_required:
             return "rest"
-        if not rest_required:
-            return "bulk"
+        return "bulk"
 
     @classmethod
     def generate_streams(
@@ -79,6 +77,7 @@ class SourceSalesforce(AbstractSource):
         sf_object: Salesforce,
     ) -> List[Stream]:
         """ "Generates a list of stream by their names. It can be used for different tests too"""
+        logger = logging.getLogger()
         authenticator = TokenAuthenticator(sf_object.access_token)
         stream_properties = sf_object.generate_schemas(stream_objects)
         streams = []
@@ -88,7 +87,7 @@ class SourceSalesforce(AbstractSource):
 
             api_type = cls._get_api_type(stream_name, selected_properties)
             if api_type == "rest":
-                full_refresh, incremental = SalesforceStream, IncrementalSalesforceStream
+                full_refresh, incremental = RestSalesforceStream, IncrementalRestSalesforceStream
             elif api_type == "bulk":
                 full_refresh, incremental = BulkSalesforceStream, BulkIncrementalSalesforceStream
             else:
@@ -98,10 +97,20 @@ class SourceSalesforce(AbstractSource):
             pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
             streams_kwargs.update(dict(sf_api=sf_object, pk=pk, stream_name=stream_name, schema=json_schema, authenticator=authenticator))
             if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:
-                streams.append(incremental(**streams_kwargs, replication_key=replication_key, start_date=config.get("start_date")))
+                start_date = config.get(
+                    "start_date", (datetime.now() - relativedelta(years=cls.START_DATE_OFFSET_IN_YEARS)).strftime(cls.DATETIME_FORMAT)
+                )
+                stream = incremental(**streams_kwargs, replication_key=replication_key, start_date=start_date)
             else:
-                streams.append(full_refresh(**streams_kwargs))
-
+                stream = full_refresh(**streams_kwargs)
+            if api_type == "rest" and not stream.primary_key and stream.too_many_properties:
+                logger.warning(
+                    f"Can not instantiate stream {stream_name}. "
+                    f"It is not supported by the BULK API and can not be implemented via REST because the number of its properties "
+                    f"exceeds the limit and it lacks a primary key."
+                )
+                continue
+            streams.append(stream)
         return streams
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.features;
@@ -62,6 +62,16 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   @Override
   public String fieldSelectionWorkspaces() {
     return getEnvOrDefault(FIELD_SELECTION_WORKSPACES, "", (arg) -> arg);
+  }
+
+  @Override
+  public String strictComparisonNormalizationWorkspaces() {
+    return "";
+  }
+
+  @Override
+  public String strictComparisonNormalizationTag() {
+    return "";
   }
 
   // TODO: refactor in order to use the same method than the ones in EnvConfigs.java

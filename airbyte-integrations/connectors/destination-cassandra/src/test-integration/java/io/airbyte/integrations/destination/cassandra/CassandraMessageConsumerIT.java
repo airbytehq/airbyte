@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.cassandra;
@@ -13,6 +13,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.function.Function;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
@@ -30,65 +31,72 @@ class CassandraMessageConsumerIT {
   private static final String AIRBYTE_STREAM_1 = "airbyte_stream_1";
   private static final String AIRBYTE_STREAM_2 = "airbyte_stream_2";
 
-  private CassandraMessageConsumer cassandraMessageConsumer;
+  private CassandraContainerInitializr.ConfiguredCassandraContainer cassandraContainer;
 
-  private CassandraCqlProvider cassandraCqlProvider;
+  private CassandraConfig cassandraConfig;
+
+  private CassandraMessageConsumer cassandraMessageConsumer;
 
   private CassandraNameTransformer nameTransformer;
 
   @BeforeAll
   void setup() {
-    var cassandraContainer = CassandraContainerInitializr.initContainer();
-    var cassandraConfig = TestDataFactory.createCassandraConfig(
+    cassandraContainer = CassandraContainerInitializr.initContainer();
+    cassandraConfig = TestDataFactory.createCassandraConfig(
         cassandraContainer.getUsername(),
         cassandraContainer.getPassword(),
         cassandraContainer.getHost(),
         cassandraContainer.getFirstMappedPort());
 
-    var stream1 = TestDataFactory.createAirbyteStream(AIRBYTE_STREAM_1, AIRBYTE_NAMESPACE_1);
-    var stream2 = TestDataFactory.createAirbyteStream(AIRBYTE_STREAM_2, AIRBYTE_NAMESPACE_2);
+    final var stream1 = TestDataFactory.createAirbyteStream(AIRBYTE_STREAM_1, AIRBYTE_NAMESPACE_1);
+    final var stream2 = TestDataFactory.createAirbyteStream(AIRBYTE_STREAM_2, AIRBYTE_NAMESPACE_2);
 
-    var cStream1 = TestDataFactory.createConfiguredAirbyteStream(DestinationSyncMode.APPEND, stream1);
-    var cStream2 = TestDataFactory.createConfiguredAirbyteStream(DestinationSyncMode.OVERWRITE, stream2);
+    final var cStream1 = TestDataFactory.createConfiguredAirbyteStream(DestinationSyncMode.APPEND, stream1);
+    final var cStream2 = TestDataFactory.createConfiguredAirbyteStream(DestinationSyncMode.OVERWRITE, stream2);
 
-    var catalog = TestDataFactory.createConfiguredAirbyteCatalog(cStream1, cStream2);
+    final var catalog = TestDataFactory.createConfiguredAirbyteCatalog(cStream1, cStream2);
 
-    cassandraCqlProvider = new CassandraCqlProvider(cassandraConfig);
-    cassandraMessageConsumer = new CassandraMessageConsumer(cassandraConfig, catalog, cassandraCqlProvider, message -> {});
+    final CassandraCqlProvider cassandraCqlProvider = new CassandraCqlProvider(cassandraConfig);
+    cassandraMessageConsumer = new CassandraMessageConsumer(cassandraConfig, catalog, cassandraCqlProvider, message -> {
+    });
     nameTransformer = new CassandraNameTransformer(cassandraConfig);
   }
+
+  @AfterAll
+  void close() {
+    cassandraContainer.close();
+  }
+
 
   @Test
   @Order(1)
   void testStartTracked() {
-
     assertDoesNotThrow(() -> cassandraMessageConsumer.startTracked());
-
   }
 
   @Test
   @Order(2)
   void testAcceptTracked() {
 
-    Function<String, JsonNode> function =
+    final Function<String, JsonNode> function =
         data -> Jsons.jsonNode(ImmutableMap.builder().put("property", data).build());
 
     assertDoesNotThrow(() -> {
       cassandraMessageConsumer.acceptTracked(
           TestDataFactory.createAirbyteMessage(AirbyteMessage.Type.RECORD, AIRBYTE_STREAM_1, AIRBYTE_NAMESPACE_1,
-              function.apply("data1")));
+                                               function.apply("data1")));
       cassandraMessageConsumer.acceptTracked(
           TestDataFactory.createAirbyteMessage(AirbyteMessage.Type.RECORD, AIRBYTE_STREAM_1, AIRBYTE_NAMESPACE_1,
-              function.apply("data2")));
+                                               function.apply("data2")));
       cassandraMessageConsumer.acceptTracked(
           TestDataFactory.createAirbyteMessage(AirbyteMessage.Type.RECORD, AIRBYTE_STREAM_2, AIRBYTE_NAMESPACE_2,
-              function.apply("data3")));
+                                               function.apply("data3")));
       cassandraMessageConsumer.acceptTracked(
           TestDataFactory.createAirbyteMessage(AirbyteMessage.Type.RECORD, AIRBYTE_STREAM_2, AIRBYTE_NAMESPACE_2,
-              function.apply("data4")));
+                                               function.apply("data4")));
       cassandraMessageConsumer.acceptTracked(
           TestDataFactory.createAirbyteMessage(AirbyteMessage.Type.STATE, AIRBYTE_STREAM_2, AIRBYTE_NAMESPACE_2,
-              function.apply("data5")));
+                                               function.apply("data5")));
     });
 
   }
@@ -104,27 +112,25 @@ class CassandraMessageConsumerIT {
   @Test
   @Order(4)
   void testFinalState() {
+    final var keyspace1 = nameTransformer.outputKeyspace(AIRBYTE_NAMESPACE_1);
+    final var keyspace2 = nameTransformer.outputKeyspace(AIRBYTE_NAMESPACE_2);
+    final var table1 = nameTransformer.outputTable(AIRBYTE_STREAM_1);
+    final var table2 = nameTransformer.outputTable(AIRBYTE_STREAM_2);
+    try (final var cassandraCqlProvider = new CassandraCqlProvider(cassandraConfig)) {
+      final var resultSet1 = cassandraCqlProvider.select(keyspace1, table1);
+      final var resultSet2 = cassandraCqlProvider.select(keyspace2, table2);
+      assertThat(resultSet1)
+          .isNotNull()
+          .hasSize(2)
+          .anyMatch(r -> r.getData().equals("{\"property\":\"data1\"}"))
+          .anyMatch(r -> r.getData().equals("{\"property\":\"data2\"}"));
 
-    var keyspace1 = nameTransformer.outputKeyspace(AIRBYTE_NAMESPACE_1);
-    var keyspace2 = nameTransformer.outputKeyspace(AIRBYTE_NAMESPACE_2);
-    var table1 = nameTransformer.outputTable(AIRBYTE_STREAM_1);
-    var table2 = nameTransformer.outputTable(AIRBYTE_STREAM_2);
-
-    var resultSet1 = cassandraCqlProvider.select(keyspace1, table1);
-    var resultSet2 = cassandraCqlProvider.select(keyspace2, table2);
-
-    assertThat(resultSet1)
-        .isNotNull()
-        .hasSize(2)
-        .anyMatch(r -> r.getData().equals("{\"property\":\"data1\"}"))
-        .anyMatch(r -> r.getData().equals("{\"property\":\"data2\"}"));
-
-    assertThat(resultSet2)
-        .isNotNull()
-        .hasSize(2)
-        .anyMatch(r -> r.getData().equals("{\"property\":\"data3\"}"))
-        .anyMatch(r -> r.getData().equals("{\"property\":\"data4\"}"));
-
+      assertThat(resultSet2)
+          .isNotNull()
+          .hasSize(2)
+          .anyMatch(r -> r.getData().equals("{\"property\":\"data3\"}"))
+          .anyMatch(r -> r.getData().equals("{\"property\":\"data4\"}"));
+    }
   }
 
 }

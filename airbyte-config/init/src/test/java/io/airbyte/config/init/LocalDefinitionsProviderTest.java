@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.init;
@@ -14,7 +14,6 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
@@ -30,7 +29,7 @@ class LocalDefinitionsProviderTest {
 
   @BeforeAll
   static void setup() throws IOException {
-    localDefinitionsProvider = new LocalDefinitionsProvider(SeedType.class);
+    localDefinitionsProvider = new LocalDefinitionsProvider();
   }
 
   @Test

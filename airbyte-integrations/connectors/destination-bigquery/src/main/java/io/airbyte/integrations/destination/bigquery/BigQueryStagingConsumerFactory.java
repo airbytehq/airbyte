@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
@@ -32,8 +32,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class mimics the same functionality as {@link io.airbyte.integrations.destination.staging.StagingConsumerFactory}
- * which likely should be placed into a commons package to be utilized across all ConsumerFactories
+ * This class mimics the same functionality as
+ * {@link io.airbyte.integrations.destination.staging.StagingConsumerFactory} which likely should be
+ * placed into a commons package to be utilized across all ConsumerFactories
  */
 public class BigQueryStagingConsumerFactory {
 
@@ -156,9 +157,9 @@ public class BigQueryStagingConsumerFactory {
         writer.flush();
         final String stagedFile = bigQueryGcsOperations.uploadRecordsToStage(datasetId, stream, writer);
         /*
-         * The primary reason for still adding staged files despite immediately uploading the staged
-         * file to the destination's raw table is because the cleanup for the staged files will occur
-         * at the end of the sync
+         * The primary reason for still adding staged files despite immediately uploading the staged file to
+         * the destination's raw table is because the cleanup for the staged files will occur at the end of
+         * the sync
          */
         writeConfig.addStagedFile(stagedFile);
         bigQueryGcsOperations.copyIntoTableFromStage(datasetId, stream, writeConfig.targetTableId(), writeConfig.tableSchema(),

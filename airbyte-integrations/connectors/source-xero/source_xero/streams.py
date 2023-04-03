@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import decimal
@@ -68,6 +68,10 @@ class XeroStream(HttpStream, ABC):
     current_page = 1
     pagination = False
 
+    def __init__(self, tenant_id: str, **kwargs):
+        super().__init__(**kwargs)
+        self.tenant_id = tenant_id
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         records = response.json().get(self.data_field) or []
         if not self.pagination:
@@ -88,7 +92,10 @@ class XeroStream(HttpStream, ABC):
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-        headers = {"Accept": "application/json"}
+        headers = {
+            "Accept": "application/json",
+            "Xero-Tenant-Id": self.tenant_id,
+        }
         return headers
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -125,7 +132,7 @@ class IncrementalXeroStream(XeroStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         request_headers = super().request_headers(stream_state, stream_slice, next_page_token)
-        stream_date = stream_state.get("date") or self.start_date
+        stream_date = stream_state.get(self.cursor_field) or self.start_date
         if isinstance(stream_date, str):
             stream_date = pendulum.parse(stream_date)
         request_headers["If-Modified-Since"] = stream_date.strftime("%Y-%m-%dT%H:%M:%S")
@@ -133,11 +140,12 @@ class IncrementalXeroStream(XeroStream, ABC):
         return request_headers
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_state = latest_record.get(self.cursor_field)
-        current_state = current_stream_state.get(self.cursor_field) or latest_state
-        if current_state:
-            return {"date": max(latest_state, current_state)}
-        return {}
+        record_cursor_value = latest_record[self.cursor_field]
+        state_cursor_value = current_stream_state.get(self.cursor_field)
+        if state_cursor_value:
+            record_cursor_value = max(record_cursor_value, state_cursor_value)
+        current_stream_state[self.cursor_field] = record_cursor_value
+        return current_stream_state
 
 
 class BankTransactions(IncrementalXeroStream):

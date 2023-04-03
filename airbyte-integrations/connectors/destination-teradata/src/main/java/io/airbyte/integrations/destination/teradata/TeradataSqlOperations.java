@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.teradata;
@@ -10,7 +10,7 @@ import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import java.sql.*;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -59,32 +59,32 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
         pstmt.executeBatch();
 
       } catch (final SQLException se) {
-    	  for (SQLException ex = se ; ex != null ; ex = ex.getNextException()) {
-    		  LOGGER.info(ex.getMessage());
-    	  }
+        for (SQLException ex = se; ex != null; ex = ex.getNextException()) {
+          LOGGER.info(ex.getMessage());
+        }
         AirbyteTraceMessageUtility.emitSystemErrorTrace(se,
             "Connector failed while inserting records to staging table");
         throw new RuntimeException(se);
       } catch (Exception e) {
-    	  AirbyteTraceMessageUtility.emitSystemErrorTrace(e,
-    	            "Connector failed while inserting records to staging table");
-    	        throw new RuntimeException(e);
+        AirbyteTraceMessageUtility.emitSystemErrorTrace(e,
+            "Connector failed while inserting records to staging table");
+        throw new RuntimeException(e);
       }
-      
+
     });
   }
 
   @Override
   public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
     try {
-      database.execute(String.format("CREATE DATABASE \"%s\" AS PERM = 20e9;", schemaName));
+      database.execute(String.format("CREATE DATABASE \"%s\" AS PERMANENT = 120e6, SPOOL = 120e6;", schemaName));
     } catch (SQLException e) {
       if (e.getMessage().contains("already exists")) {
         LOGGER.warn("Database " + schemaName + " already exists.");
-	} else {
-		AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Connector failed while creating schema ");
-		throw new RuntimeException(e);
-	}
+      } else {
+        AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Connector failed while creating schema ");
+        throw new RuntimeException(e);
+      }
     }
 
   }
@@ -97,10 +97,10 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
     } catch (SQLException e) {
       if (e.getMessage().contains("already exists")) {
         LOGGER.warn("Table " + schemaName + "." + tableName + " already exists.");
-	} else {
-		AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Connector failed while creating table ");
-		throw new RuntimeException(e);
-	}
+      } else {
+        AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Connector failed while creating table ");
+        throw new RuntimeException(e);
+      }
     }
   }
 

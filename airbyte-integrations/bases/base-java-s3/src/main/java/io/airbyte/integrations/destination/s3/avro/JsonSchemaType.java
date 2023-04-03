@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.avro;
@@ -16,7 +16,7 @@ import org.apache.avro.Schema;
 public enum JsonSchemaType {
 
   STRING_V1("WellKnownTypes.json#/definitions/String", Schema.Type.STRING),
-  INTEGER_V1("WellKnownTypes.json#/definitions/Integer", Schema.Type.INT),
+  INTEGER_V1("WellKnownTypes.json#/definitions/Integer", Schema.Type.LONG),
   NUMBER_V1("WellKnownTypes.json#/definitions/Number", Schema.Type.DOUBLE),
   BOOLEAN_V1("WellKnownTypes.json#/definitions/Boolean", Schema.Type.BOOLEAN),
   BINARY_DATA_V1("WellKnownTypes.json#/definitions/BinaryData", Schema.Type.BYTES),
@@ -39,7 +39,7 @@ public enum JsonSchemaType {
   @Deprecated
   NUMBER_V0("number", null, Schema.Type.DOUBLE),
   @Deprecated
-  INTEGER_V0("integer", null, Schema.Type.INT),
+  INTEGER_V0("integer", null, Schema.Type.LONG),
   @Deprecated
   BOOLEAN_V0("boolean", null, Schema.Type.BOOLEAN),
   @Deprecated

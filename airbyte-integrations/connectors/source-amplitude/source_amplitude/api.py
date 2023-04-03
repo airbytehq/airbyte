@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -24,8 +24,11 @@ from .errors import HTTP_ERROR_CODES, error_msg_from_status
 class AmplitudeStream(HttpStream, ABC):
     api_version = 2
 
-    def __init__(self, data_region: str, **kwargs):
+    def __init__(self, data_region: str, event_time_interval: dict = None, **kwargs):
+        if event_time_interval is None:
+            event_time_interval = {"size_unit": "days", "size": 1}
         self.data_region = data_region
+        self.event_time_interval = event_time_interval
         super().__init__(**kwargs)
 
     @property
@@ -138,18 +141,26 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
         if next_page_token:
             params.update(next_page_token)
         else:
-            start_datetime = self._start_date
-            if stream_state.get(self.cursor_field):
-                start_datetime = pendulum.parse(stream_state[self.cursor_field])
+            params.update({"start": stream_slice.get("start"), "end": stream_slice.get("end")})
+        return params
 
-            params.update(
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        slices = []
+        start = pendulum.parse(stream_state.get(self.cursor_field)) if stream_state else self._start_date
+        end = pendulum.now()
+        if start > end:
+            self.logger.info("The data cannot be requested in the future. Skipping stream.")
+            return []
+
+        while start <= end:
+            slices.append(
                 {
-                    "start": start_datetime.strftime(self.date_template),
-                    "end": self._get_end_date(start_datetime).strftime(self.date_template),
+                    "start": start.strftime(self.date_template),
+                    "end": self._get_end_date(start).strftime(self.date_template),
                 }
             )
-
-        return params
+            start = start.add(**self.time_interval)
+        return slices
 
 
 class Events(IncrementalAmplitudeStream):
@@ -158,7 +169,10 @@ class Events(IncrementalAmplitudeStream):
     compare_date_template = "%Y-%m-%d %H:%M:%S.%f"
     primary_key = "uuid"
     state_checkpoint_interval = 1000
-    time_interval = {"days": 1}
+
+    @property
+    def time_interval(self) -> dict:
+        return {self.event_time_interval.get("size_unit"): self.event_time_interval.get("size")}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         state_value = stream_state[self.cursor_field] if stream_state else self._start_date.strftime(self.compare_date_template)
@@ -187,6 +201,10 @@ class Events(IncrementalAmplitudeStream):
         slices = []
         start = pendulum.parse(stream_state.get(self.cursor_field)) if stream_state else self._start_date
         end = pendulum.now()
+        if start > end:
+            self.logger.info("The data cannot be requested in the future. Skipping stream.")
+            return []
+
         while start <= end:
             slices.append(
                 {

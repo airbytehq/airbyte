@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import base64
 import json
@@ -81,8 +81,8 @@ class SecretsManager:
             if next_token:
                 params["pageToken"] = next_token
 
-            data = self.api.get(url, params=params)
-            for secret_info in data.get("secrets") or []:
+            all_secrets_data = self.api.get(url, params=params)
+            for secret_info in all_secrets_data.get("secrets") or []:
                 secret_name = secret_info["name"]
                 connector_name = secret_info.get("labels", {}).get("connector")
                 if not connector_name:
@@ -103,14 +103,14 @@ class SecretsManager:
                 self.logger.info(f"found GSM secret: {log_name} = > {filename}")
 
                 versions_url = f"https://secretmanager.googleapis.com/v1/{secret_name}/versions"
-                data = self.api.get(versions_url)
-                enabled_versions = [version["name"] for version in data["versions"] if version["state"] == "ENABLED"]
+                versions_data = self.api.get(versions_url)
+                enabled_versions = [version["name"] for version in versions_data["versions"] if version["state"] == "ENABLED"]
                 if len(enabled_versions) > 1:
                     self.logger.critical(f"{log_name} should have one enabled version at the same time!!!")
                 enabled_version = enabled_versions[0]
                 secret_url = f"https://secretmanager.googleapis.com/v1/{enabled_version}:access"
-                data = self.api.get(secret_url)
-                secret_value = data.get("payload", {}).get("data")
+                secret_data = self.api.get(secret_url)
+                secret_value = secret_data.get("payload", {}).get("data")
                 if not secret_value:
                     self.logger.warning(f"{log_name} has empty value")
                     continue
@@ -126,7 +126,7 @@ class SecretsManager:
                 remote_secret = RemoteSecret(connector_name, filename, secret_value, enabled_version)
                 secrets.append(remote_secret)
 
-            next_token = data.get("nextPageToken")
+            next_token = all_secrets_data.get("nextPageToken")
             if not next_token:
                 break
 

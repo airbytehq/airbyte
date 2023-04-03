@@ -8,14 +8,6 @@
     string
 {% endmacro %}
 
-{%- macro type_binary() -%}
-  {{ adapter.dispatch('type_binary')() }}
-{%- endmacro -%}
-
-{%- macro default__type_binary() -%}
-    binary
-{%- endmacro -%}
-
 {%- macro redshift__type_json() -%}
   {%- if redshift_super_type() -%}
     super
@@ -52,6 +44,9 @@
     json
 {%- endmacro -%}
 
+{%- macro duckdb__type_json() -%}
+    json
+{%- endmacro -%}
 
 {# string ------------------------------------------------- #}
 
@@ -80,26 +75,8 @@
     char(1000)
 {%- endmacro -%}
 
-{# binary data ------------------------------------------------- #}
-
-{%- macro postgres__type_binary() -%}
-    bytea
-{%- endmacro -%}
-
-{%- macro bigquery__type_binary() -%}
-    bytes
-{%- endmacro -%}
-
-{%- macro mssql__type_binary() -%}
-    VARBINARY(MAX)
-{%- endmacro -%}
-
-{%- macro snowflake__type_binary() -%}
-    VARBINARY
-{%- endmacro -%}
-
-{%- macro clickhouse__type_binary() -%}
-    VARBINARY
+{%- macro duckdb__type_string() -%}
+    VARCHAR
 {%- endmacro -%}
 
 {# float ------------------------------------------------- #}
@@ -117,6 +94,10 @@
 
 {% macro tidb__type_float() %}
     float
+{% endmacro %}
+
+{% macro duckdb__type_float() %}
+    DOUBLE
 {% endmacro %}
 
 {# int  ------------------------------------------------- #}
@@ -140,6 +121,10 @@
     signed
 {% endmacro %}
 
+{% macro duckdb__type_int() %}
+    INTEGER
+{% endmacro %}
+
 {# bigint ------------------------------------------------- #}
 {% macro mysql__type_bigint() %}
     signed
@@ -157,6 +142,10 @@
     signed
 {% endmacro %}
 
+{% macro duckdb__type_bigint() %}
+    BIGINT
+{% endmacro %}
+
 {# numeric ------------------------------------------------- --#}
 {% macro mysql__type_numeric() %}
     float
@@ -168,6 +157,10 @@
 
 {% macro tidb__type_numeric() %}
     float
+{% endmacro %}
+
+{% macro duckdb__type_numeric() %}
+    DOUBLE
 {% endmacro %}
 
 {# very_large_integer --------------------------------------- --#}
@@ -200,6 +193,10 @@ so this macro needs to be called very_large_integer.
     decimal(38, 0)
 {% endmacro %}
 
+{% macro duckdb__type_very_large_integer() %}
+    DECIMAL(38, 0)
+{% endmacro %}
+
 {# timestamp ------------------------------------------------- --#}
 {% macro mysql__type_timestamp() %}
     time
@@ -217,6 +214,10 @@ so this macro needs to be called very_large_integer.
 
 {% macro tidb__type_timestamp() %}
     time
+{% endmacro %}
+
+{% macro duckdb__type_timestamp() %}
+    TIMESTAMP
 {% endmacro %}
 
 {# timestamp with time zone  -------------------------------------------------     #}
@@ -259,6 +260,10 @@ so this macro needs to be called very_large_integer.
     char(1000)
 {%- endmacro -%}
 
+{%- macro duckdb__type_timestamp_with_timezone() -%}
+    TIMESTAMPTZ
+{%- endmacro -%}
+
 {# timestamp without time zone  -------------------------------------------------     #}
 
 {%- macro type_timestamp_without_timezone() -%}
@@ -291,6 +296,10 @@ so this macro needs to be called very_large_integer.
     datetime
 {% endmacro %}
 
+{% macro duckdb__type_timestamp_without_timezone() %}
+    TIMESTAMP
+{% endmacro %}
+
 {# time without time zone  -------------------------------------------------     #}
 
 {%- macro type_time_without_timezone() -%}
@@ -317,6 +326,9 @@ so this macro needs to be called very_large_integer.
     time
 {% endmacro %}
 
+{% macro duckdb__type_time_without_timezone() %}
+    TIMESTAMP 
+{% endmacro %}
 
 {# time with time zone  -------------------------------------------------     #}
 
@@ -360,6 +372,9 @@ so this macro needs to be called very_large_integer.
     char(1000)
 {%- endmacro -%}
 
+{%- macro duckdb__type_time_with_timezone() -%}
+    TIMESTAMPTZ
+{%- endmacro -%}
 {# date  -------------------------------------------------     #}
 
 {%- macro type_date() -%}
