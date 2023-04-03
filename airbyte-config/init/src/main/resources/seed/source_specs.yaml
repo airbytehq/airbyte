@@ -17274,7 +17274,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.26"
+- dockerImage: "airbyte/source-zendesk-support:0.2.27"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-support"
     connectionSpecification:
@@ -17295,6 +17295,7 @@
           examples:
           - "2020-10-15T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          format: "date-time"
         subdomain:
           type: "string"
           title: "Subdomain"
