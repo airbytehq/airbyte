@@ -478,7 +478,7 @@ class BulkSalesforceStream(SalesforceStream):
 
     def next_page_token(self, last_record: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            return {"next_token": f"WHERE {self.primary_key} >= '{last_record[self.primary_key]}' "}  # type: ignore[index]
+            return {"next_token": f"WHERE {self.primary_key} > '{last_record[self.primary_key]}' "}  # type: ignore[index]
         return None
 
     def request_params(
