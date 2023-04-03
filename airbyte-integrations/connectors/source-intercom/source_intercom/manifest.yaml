@@ -106,9 +106,8 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        request_options_provider:
-          request_parameters:
-            model: "{{ parameters.get('model') }}"
+        request_parameters:
+          model: "{{ parameters.get('model') }}"
   company_attributes:
     description: "https://developers.intercom.com/intercom-api-reference/reference#list-data-attributes"
     $ref: "#/definitions/stream_data_attributes"
