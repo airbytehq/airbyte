@@ -7195,7 +7195,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-intercom:0.1.32"
+- dockerImage: "airbyte/source-intercom:0.1.33"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/intercom"
     connectionSpecification:
@@ -7215,6 +7215,7 @@
           examples:
           - "2020-11-16T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          format: "date-time"
         access_token:
           title: "Access token"
           type: "string"
@@ -13643,7 +13644,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:2.0.7"
+- dockerImage: "airbyte/source-salesforce:2.0.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -13691,7 +13692,7 @@
           title: "Start Date"
           description: "Enter the date in the YYYY-MM-DD format. Airbyte will replicate\
             \ the data added on and after this date. If this field is blank, Airbyte\
-            \ will replicate all data."
+            \ will replicate the data for last two years."
           type: "string"
           pattern: "^([0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?)$"
           examples:
@@ -14808,7 +14809,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-square:0.2.1"
+- dockerImage: "airbyte/source-square:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/square"
     connectionSpecification:
@@ -14881,7 +14882,8 @@
           title: "Start Date"
           default: "2021-01-01"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
-          order: 2
+          order: "2,"
+          format: "date"
         include_deleted_objects:
           type: "boolean"
           description: "In some streams there is an option to include deleted objects\
