@@ -20,12 +20,10 @@
       "maxLength": 500
     },
     "pricing_model": {
-      "type": ["string", "null"],
-      "enum": ["flat_fee", "per_unit", "tiered", "volume", "stairstep"]
+      "type": ["string", "null"]
     },
     "charge_type": {
-      "type": ["string", "null"],
-      "enum": ["recurring", "non_recurring"]
+      "type": ["string", "null"]
     },
     "price": {
       "type": ["integer", "null"],
@@ -40,16 +38,14 @@
       "minimum": 1
     },
     "period_unit": {
-      "type": ["string", "null"],
-      "enum": ["day", "week", "month", "year", "not_applicable"]
+      "type": ["string", "null"]
     },
     "unit": {
       "type": ["string", "null"],
       "maxLength": 30
     },
     "status": {
-      "type": ["string", "null"],
-      "enum": ["active", "archive"]
+      "type": ["string", "null"]
     },
     "archived_at": {
       "type": ["integer", "null"]
@@ -66,8 +62,7 @@
       "maxLength": 50
     },
     "avalara_sale_type": {
-      "type": ["string", "null"],
-      "enum": ["wholesale", "retail", "consumed", "vendor_use"]
+      "type": ["string", "null"]
     },
     "avalara_transaction_type": {
       "type": ["integer", "null"]
@@ -107,8 +102,7 @@
       "minimum": 1
     },
     "shipping_frequency_period_unit": {
-      "type": ["string", "null"],
-      "enum": ["year", "month", "week", "day"]
+      "type": ["string", "null"]
     },
     "resource_version": {
       "type": ["integer", "null"]

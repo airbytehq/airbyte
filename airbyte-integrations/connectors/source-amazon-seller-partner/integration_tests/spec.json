@@ -114,6 +114,7 @@
         "enum": [
           "AE",
           "AU",
+          "BE",
           "BR",
           "CA",
           "DE",
@@ -138,12 +139,10 @@
       }
     },
     "required": [
+      "app_id",
       "lwa_app_id",
       "lwa_client_secret",
       "refresh_token",
-      "aws_access_key",
-      "aws_secret_key",
-      "role_arn",
       "replication_start_date",
       "aws_environment",
       "region"
@@ -162,6 +161,7 @@
         "enum": [
           "AE",
           "AU",
+          "BE",
           "BR",
           "CA",
           "DE",

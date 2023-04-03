@@ -1,4 +1,4 @@
-version: "0.1.0"
+version: "0.29.0"
 
 definitions:
   schema_loader:
@@ -109,6 +109,8 @@ streams:
       requester:
         $ref: "#/definitions/requester"
         path: "list/{{ config['list_id'] }}/task"
+        request_parameters:
+          include_closed: "{{ config['include_closed_tasks']|lower }}"
       record_selector:
         $ref: "#/definitions/arraySelector"
       paginator:

@@ -19,6 +19,7 @@ from source_twilio.streams import (
     Calls,
     ConferenceParticipants,
     Conferences,
+    Conversations,
     DependentPhoneNumbers,
     IncomingPhoneNumbers,
     Keys,
@@ -96,6 +97,7 @@ def test_check_connection_handles_exceptions(mocker, config, exception, expected
         (Transcriptions),
         (UsageRecords),
         (UsageTriggers),
+        (Conversations),
     ],
 )
 def test_streams(stream_cls, config):
