@@ -225,6 +225,7 @@ class Releases(SentryIncremental):
     """
     Docs: https://docs.sentry.io/api/releases/list-an-organizations-releases/
     """
+
     primary_key = "id"
     cursor_field = "dateCreated"
 
@@ -233,9 +234,9 @@ class Releases(SentryIncremental):
         self._organization = organization
 
     def path(
-            self,
-            stream_state: Optional[Mapping[str, Any]] = None,
-            stream_slice: Optional[Mapping[str, Any]] = None,
-            next_page_token: Optional[Mapping[str, Any]] = None,
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return f"organizations/{self._organization}/releases/"
