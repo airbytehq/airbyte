@@ -114,6 +114,7 @@
         "enum": [
           "AE",
           "AU",
+          "BE",
           "BR",
           "CA",
           "DE",
@@ -138,6 +139,7 @@
       }
     },
     "required": [
+      "app_id",
       "lwa_app_id",
       "lwa_client_secret",
       "refresh_token",
@@ -159,6 +161,7 @@
         "enum": [
           "AE",
           "AU",
+          "BE",
           "BR",
           "CA",
           "DE",
