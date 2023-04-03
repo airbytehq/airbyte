@@ -10,10 +10,15 @@
 2. `y.python`
 
 ## 🚨 User Impact 🚨
-Are there any breaking changes? What is the end result perceived by the user? If yes, please merge this PR with the 🚨🚨 emoji so changelog authors can further highlight this if needed.
+*Are there any breaking changes? What is the end result perceived by the user?*
+
+*For connector PRs, use this section to explain which type of semantic versioning bump occurs as a result of the changes. Refer to our [Semantic Versioning for Connectors](https://docs.airbyte.com/contributing-to-airbyte/#semantic-versioning-for-connectors) guidelines for more information. **Breaking changes to connectors must be documented by an Airbyte engineer (PR author, or reviewer for community PRs) by using the [Breaking Change Release Playbook](https://docs.google.com/document/d/1VYQggHbL_PN0dDDu7rCyzBLGRtX-R3cpwXaY8QxEgzw/edit).***
+
+*If there are breaking changes, please merge this PR with the 🚨🚨 emoji so changelog authors can further highlight this if needed.*
+
 
 ## Pre-merge Checklist
-Expand the relevant checklist and delete the others.
+*Expand the relevant checklist and delete the others.*
 
 <details><summary><strong>New Connector</strong></summary>
 
@@ -23,10 +28,12 @@ Expand the relevant checklist and delete the others.
 - [ ] Secrets in the connector's spec are annotated with `airbyte_secret`
 - [ ] Unit & integration tests added and passing. Community members, please provide proof of success locally e.g: screenshot or copy-paste unit, integration, and acceptance test output. To run acceptance tests for a Python connector, follow instructions in the README. For java connectors run `./gradlew :airbyte-integrations:connectors:<name>:integrationTest`.
 - [ ] Code reviews completed
+- [ ] Connector version is set to `0.0.1`
+    - [ ] `Dockerfile` has version `0.0.1`
 - [ ] Documentation updated
     - [ ] Connector's `README.md`
     - [ ] Connector's `bootstrap.md`. See [description and examples](https://docs.google.com/document/d/1ypdgmwmEHWv-TrO4_YOQ7pAJGVrMp5BOkEVh831N260/edit?usp=sharing)
-    - [ ] `docs/integrations/<source or destination>/<name>.md` including changelog. See changelog [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
+    - [ ] `docs/integrations/<source or destination>/<name>.md` including changelog with an entry for the initial version. See changelog [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
     - [ ] `docs/integrations/README.md`
     - [ ] `airbyte-integrations/builds.md`
 - [ ] PR name follows [PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/issues-and-pull-requests)
@@ -53,10 +60,14 @@ If this is a community PR, the Airbyte engineer reviewing this PR is responsible
 - [ ] Secrets in the connector's spec are annotated with `airbyte_secret`
 - [ ] Unit & integration tests added and passing. Community members, please provide proof of success locally e.g: screenshot or copy-paste unit, integration, and acceptance test output. To run acceptance tests for a Python connector, follow instructions in the README. For java connectors run `./gradlew :airbyte-integrations:connectors:<name>:integrationTest`.
 - [ ] Code reviews completed
+- [ ] Connector version has been incremented
+    - [ ] Version has been bumped according to our [Semantic Versioning for Connectors](https://docs.airbyte.com/contributing-to-airbyte/#semantic-versioning-for-connectors) guidelines
+    - [ ] `Dockerfile` has updated version
 - [ ] Documentation updated
     - [ ] Connector's `README.md`
     - [ ] Connector's `bootstrap.md`. See [description and examples](https://docs.google.com/document/d/1ypdgmwmEHWv-TrO4_YOQ7pAJGVrMp5BOkEVh831N260/edit?usp=sharing)
-    - [ ] Changelog updated in `docs/integrations/<source or destination>/<name>.md` including changelog. See changelog [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
+    - [ ] Changelog updated in `docs/integrations/<source or destination>/<name>.md` with an entry for the new version. See changelog [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
+
 - [ ] PR name follows [PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/issues-and-pull-requests)
 
 ### Airbyter

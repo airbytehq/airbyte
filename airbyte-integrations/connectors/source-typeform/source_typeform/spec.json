@@ -20,7 +20,8 @@
         "title": "Start Date",
         "examples": ["2020-01-01T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        "order": 1
+        "order": 1,
+        "format": "date-time"
       },
       "form_ids": {
         "title": "Form IDs to replicate",
