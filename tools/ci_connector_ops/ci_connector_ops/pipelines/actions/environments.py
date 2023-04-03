@@ -208,7 +208,7 @@ def with_packages(base_container: Container, packages_to_install) -> Container:
         Container: A container with the packages installed.
 
     """
-    package_install_command = ["apk", "add"]
+    package_install_command = ["apt-get", "install"]
     return base_container.with_exec(package_install_command + packages_to_install)
 
 
@@ -237,8 +237,8 @@ def with_poetry(context: PipelineContext) -> Container:
     """
     install_poetry_package_cmd = ["python", "-m", "pip", "install", "poetry"]
 
-    python_base_environment: Container = context.dagger_client.container().from_("python:3-alpine")
-    python_with_git = with_git(python_base_environment)
+    python_base_environment: Container = context.dagger_client.container().from_("python:3.9")
+    python_with_git = with_packages(python_base_environment, ["git"])
     python_with_poetry = python_with_git.with_exec(install_poetry_package_cmd)
 
     poetry_cache: CacheVolume = context.dagger_client.cache_volume("poetry_cache")
@@ -260,6 +260,5 @@ def with_poetry_module(context: PipelineContext, parent_dir_path: str, module_pa
 
     src = context.dagger_client.host().directory(parent_dir_path, exclude=poetry_exclude)
     python_with_poetry = with_poetry(context)
-    python_with_cplus = with_packages(python_with_poetry, ["build-base", "linux-headers"])
 
-    return python_with_cplus.with_mounted_directory("/src", src).with_workdir(f"/src/{module_path}").with_exec(poetry_install_dependencies_cmd)
+    return python_with_poetry.with_mounted_directory("/src", src).with_workdir(f"/src/{module_path}").with_exec(poetry_install_dependencies_cmd)
