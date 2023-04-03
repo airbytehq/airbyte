@@ -456,7 +456,7 @@ class Stream(HttpStream, ABC):
 
         if target_type_name == "number":
             # do not cast numeric IDs into float, use integer instead
-            target_type = int if field_name.endswith("_id") else target_type
+            target_type = int if field_value.isnumeric() else target_type
             field_value = field_value.replace(",", "")
 
         if target_type_name != "string" and field_value == "":
@@ -467,7 +467,7 @@ class Stream(HttpStream, ABC):
         try:
             casted_value = target_type(field_value)
         except ValueError:
-            logger.exception(f"Could not cast `{field_value}` to `{target_type}`")
+            logger.exception(f"Could not cast in stream `{cls.__name__}` `{field_name}` {field_value=} to `{target_type}`")
             return field_value
 
         return casted_value
@@ -586,10 +586,13 @@ class Stream(HttpStream, ABC):
                 if "next" in response["paging"]:
                     return {"after": response["paging"]["next"]["after"]}
             else:
-                if not response.get(self.more_key, False):
-                    return
-                if self.page_field in response:
-                    return {self.page_filter: response[self.page_field]}
+                if self.more_key:
+                    if not response.get(self.more_key, False):
+                        return
+                    if self.page_field in response:
+                        return {self.page_filter: response[self.page_field]}
+                if self.page_field in response and response[self.page_filter] + self.limit < response.get("total"):
+                    return {self.page_filter: response[self.page_filter] + self.limit}
         else:
             if len(response) >= self.limit:
                 self.offset += self.limit
@@ -1384,6 +1387,7 @@ class MarketingEmails(Stream):
     url = "/marketing-emails/v1/emails/with-statistics"
     data_field = "objects"
     limit = 250
+    page_field = "limit"
     updated_at_field = "updated"
     created_at_field = "created"
     primary_key = "id"
@@ -1562,3 +1566,15 @@ class Tickets(CRMSearchStream):
     primary_key = "id"
     scopes = {"tickets"}
     last_modified_field = "hs_lastmodifieddate"
+
+
+class EmailSubscriptions(Stream):
+    """EMAIL SUBSCRIPTION, API v1
+    Docs: https://legacydocs.hubspot.com/docs/methods/email/get_subscriptions
+    """
+
+    url = "/email/public/v1/subscriptions"
+    data_field = "subscriptionDefinitions"
+    primary_key = "id"
+    scopes = {"content"}
+    filter_old_records = False

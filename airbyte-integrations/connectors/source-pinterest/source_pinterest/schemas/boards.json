@@ -1,9 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "owner": {
-      "type": "object",
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "username": {
           "type": ["null", "string"]
@@ -21,6 +23,32 @@
     },
     "privacy": {
       "type": ["null", "string"]
+    },
+    "follower_count": {
+      "type": ["null", "integer"]
+    },
+    "collaborator_count": {
+      "type": ["null", "integer"]
+    },
+    "pin_count": {
+      "type": ["null", "integer"]
+    },
+    "media": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "media_type": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "datetime"
+    },
+    "board_pins_modified_at": {
+      "type": ["null", "string"],
+      "format": "datetime"
     }
   }
 }
