@@ -3,9 +3,8 @@
 #
 
 import logging
-from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
+from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
 from airbyte_cdk import AirbyteLogger
@@ -16,6 +15,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from dateutil.relativedelta import relativedelta
 from requests import codes, exceptions  # type: ignore[import]
 
 from .api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
@@ -98,8 +98,7 @@ class SourceSalesforce(AbstractSource):
             streams_kwargs.update(dict(sf_api=sf_object, pk=pk, stream_name=stream_name, schema=json_schema, authenticator=authenticator))
             if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:
                 start_date = config.get(
-                    "start_date",
-                    (datetime.now() - relativedelta(years=cls.START_DATE_OFFSET_IN_YEARS)).strftime(cls.DATETIME_FORMAT)
+                    "start_date", (datetime.now() - relativedelta(years=cls.START_DATE_OFFSET_IN_YEARS)).strftime(cls.DATETIME_FORMAT)
                 )
                 stream = incremental(**streams_kwargs, replication_key=replication_key, start_date=start_date)
             else:
