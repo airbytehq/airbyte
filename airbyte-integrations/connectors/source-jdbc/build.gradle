@@ -25,6 +25,7 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:source-relational-db')
 
     implementation 'org.apache.commons:commons-lang3:3.11'
+    implementation libs.bundles.datadog
 
     testImplementation project(':airbyte-test-utils')
 
