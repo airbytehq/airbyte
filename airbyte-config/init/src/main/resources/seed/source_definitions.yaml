@@ -167,6 +167,14 @@
   icon: azureblobstorage.svg
   sourceType: database
   releaseStage: alpha
+- name: Azure Blob Storage
+  sourceDefinitionId: fdaaba68-4875-4ed9-8fcd-4ae1e0a25093
+  dockerRepository: airbyte/source-azure-blob-storage
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/azure-blob-storage
+  icon: azureblobstorage.svg
+  sourceType: file
+  releaseStage: alpha
 - name: Babelforce
   sourceDefinitionId: 971c3e1e-78a5-411e-ad56-c4052b50876b
   dockerRepository: airbyte/source-babelforce
@@ -2360,7 +2368,7 @@
 - name: Zendesk Support
   sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.2.26
+  dockerImageTag: 0.2.27
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   icon: zendesk-support.svg
   sourceType: api
@@ -2372,7 +2380,7 @@
 - name: Zendesk Talk
   sourceDefinitionId: c8630570-086d-4a40-99ae-ea5b18673071
   dockerRepository: airbyte/source-zendesk-talk
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-talk
   icon: zendesk-talk.svg
   sourceType: api
