@@ -62,4 +62,4 @@ acceptance_tests:
           disable_for_version: 0.1.2
         spec_path: source_pinterest/spec.json
 connector_image: airbyte/source-pinterest:dev
-test_strictness_level: low
+test_strictness_level: high
