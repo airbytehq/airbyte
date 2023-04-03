@@ -65,15 +65,17 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "Standard")
         .build());
+    final var containerOuterAddress = SshHelpers.getOuterContainerAddress(container);
+    final var containerInnerAddress = SshHelpers.getInnerContainerAddress(container);
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, container.getHost())
-        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.HOST_KEY, containerInnerAddress.left)
+        .put(JdbcUtils.PORT_KEY, containerInnerAddress.right)
         .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("replication_method", replicationMethod)
         .put("ssl_mode", ImmutableMap.builder()
-            .put("mode", "verify-full")
+            .put("mode", "verify-ca")
             .put("ca_certificate", certs.getCaCertificate())
             .put("client_certificate", certs.getClientCertificate())
             .put("client_key", certs.getClientKey())
@@ -86,8 +88,8 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asInt(),
+            containerOuterAddress.left,
+            containerOuterAddress.right,
             config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES)) {
       final Database database = new Database(dslContext);
