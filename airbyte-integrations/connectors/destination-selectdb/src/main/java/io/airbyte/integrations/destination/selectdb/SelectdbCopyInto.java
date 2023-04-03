@@ -31,8 +31,8 @@ public class SelectdbCopyInto {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SelectdbCopyInto.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final String UPLOAD_URL_PATTERN = "http://%s/copy/upload";
-    private static final String COPY_URL_PATTERN = "http://%s/copy/query";
+    private static final String UPLOAD_URL_PATTERN = "https://%s/copy/upload";
+    private static final String COPY_URL_PATTERN = "https://%s/copy/query";
     public static final Character CSV_COLUMN_SEPARATOR = '\t';
 
     private final String tableName;
