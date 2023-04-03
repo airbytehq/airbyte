@@ -102,7 +102,7 @@ Only certain Airbyte staff can access Airbyte infrastructure and technical logs 
 
 ### Network security
 
-Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud#choose-your-default-data-residency) location, you may need to allowlist the following IP addresses to enable access to Airbyte:
+Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-data-residency) location, you may need to allowlist the following IP addresses to enable access to Airbyte:
 
 #### United States and Airbyte Default
 
