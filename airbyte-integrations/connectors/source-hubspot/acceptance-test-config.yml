@@ -18,7 +18,7 @@ acceptance_tests:
     tests:
     - config_path: secrets/config_oauth.json
       backward_compatibility_tests_config:
-        disable_for_version: 0.3.3
+        disable_for_version: 0.3.4
   basic_read:
     tests:
     - config_path: secrets/config_oauth.json
