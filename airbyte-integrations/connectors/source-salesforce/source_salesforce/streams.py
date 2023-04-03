@@ -347,6 +347,11 @@ class BulkSalesforceStream(SalesforceStream):
                         f"The stream '{self.name}' is not queryable, "
                         f"sobject options: {self.sobject_options}, error message: '{error_message}'"
                     )
+                elif error.response.status_code == codes.BAD_REQUEST and error_code == "LIMIT_EXCEEDED":
+                    self.logger.error(
+                        f"Cannot receive data for stream '{self.name}' ,"
+                        f"sobject options: {self.sobject_options}, error message: '{error_message}'"
+                    )
                 else:
                     raise error
             else:
