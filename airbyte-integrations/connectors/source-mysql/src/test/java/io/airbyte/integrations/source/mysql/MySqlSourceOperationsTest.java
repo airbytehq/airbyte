@@ -219,7 +219,7 @@ public class MySqlSourceOperationsTest {
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.DATETIME, "2019-01-20T03:00:00.000000Z");
+      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.DATETIME, "2019-01-20T03:00:00.000000");
 
       try (final ResultSet resultSet = preparedStatement.executeQuery()) {
         while (resultSet.next()) {

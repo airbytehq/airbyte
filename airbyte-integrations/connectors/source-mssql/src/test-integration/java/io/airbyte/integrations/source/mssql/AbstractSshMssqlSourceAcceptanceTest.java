@@ -48,7 +48,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     startTestContainers();
-    config = bastion.getTunnelConfig(getTunnelMethod(), getMSSQLDbConfigBuilder(db));
+    config = bastion.getTunnelConfig(getTunnelMethod(), getMSSQLDbConfigBuilder(db), false);
     populateDatabaseTestData();
   }
 
