@@ -11,7 +11,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
-        status: "failed"
+        status: "exception"
   discovery:
     tests:
       - config_path: "secrets/config.json"
@@ -19,7 +19,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         expect_records:
-          path: "integration_tests/expected_records.txt"
+          path: "integration_tests/expected_records.jsonl"
         timeout_seconds: 600
         empty_streams:
           - name: "accounts"
