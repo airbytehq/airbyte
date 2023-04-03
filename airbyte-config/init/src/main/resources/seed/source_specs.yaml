@@ -11564,7 +11564,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-pinterest:0.2.3"
+- dockerImage: "airbyte/source-pinterest:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pinterest"
     connectionSpecification:
@@ -15064,7 +15064,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-stripe:3.0.4"
+- dockerImage: "airbyte/source-stripe:3.0.5"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
     connectionSpecification:
@@ -15097,6 +15097,7 @@
             \ data generated after this date will be replicated."
           examples:
           - "2017-01-25T00:00:00Z"
+          format: "date-time"
           order: 2
         lookback_window_days:
           type: "integer"
@@ -16376,7 +16377,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-typeform:0.1.11"
+- dockerImage: "airbyte/source-typeform:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/typeform"
     connectionSpecification:
@@ -16403,6 +16404,7 @@
           - "2020-01-01T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           order: 1
+          format: "date-time"
         form_ids:
           title: "Form IDs to replicate"
           description: "When this parameter is set, the connector will replicate data\

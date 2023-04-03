@@ -1514,7 +1514,7 @@
 - name: Pinterest
   sourceDefinitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-pinterest
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/pinterest
   icon: pinterest.svg
   sourceType: api
@@ -1999,7 +1999,7 @@
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 3.0.4
+  dockerImageTag: 3.0.5
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api
@@ -2193,7 +2193,7 @@
 - name: Typeform
   sourceDefinitionId: e7eff203-90bf-43e5-a240-19ea3056c474
   dockerRepository: airbyte/source-typeform
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.12
   documentationUrl: https://docs.airbyte.com/integrations/sources/typeform
   icon: typeform.svg
   sourceType: api
@@ -2377,7 +2377,7 @@
     hosts:
       - "${subdomain}.zendesk.com"
       - zendesk.com
-  maxSecondsBetweenMessages: 7200
+  maxSecondsBetweenMessages: 10800
 - name: Zendesk Talk
   sourceDefinitionId: c8630570-086d-4a40-99ae-ea5b18673071
   dockerRepository: airbyte/source-zendesk-talk
