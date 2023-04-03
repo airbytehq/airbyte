@@ -35,6 +35,7 @@ def clean_string(string: str) -> str:
     "updated_at" -> "updated_at"
     " updated_at " -> "updated_at"
     "updatedat" -> "updatedat"
+    "updated at" -> "updated_at"
     """
 
     fix = {
@@ -47,7 +48,16 @@ def clean_string(string: str) -> str:
     abbreviations = ("URL", "GUID", "IP", "ID", "IDs", "API", "SFDC", "CRM", "SLA")
     if any(map(lambda w: w in string.split(), abbreviations)):
         return string.lower().replace(" ", "_")
-    return "".join("_" + c.lower() if c.isupper() else c for c in string if c != " ").strip("_")
+
+    formatted_string = []
+    string = string.replace(" ", "_")
+
+    for i, c in enumerate(string):
+        if c.isupper() and string[i-1] != "_":
+            c = "_" + c.lower()
+        formatted_string.append(c.lower())
+
+    return "".join(formatted_string).strip("_")
 
 
 def format_value(value, schema):
