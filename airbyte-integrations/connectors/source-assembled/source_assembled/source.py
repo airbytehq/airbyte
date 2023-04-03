@@ -31,6 +31,15 @@ class AssembledStream(HttpStream, ABC):
 
     url_base = BASE_URL
 
+    def request_headers(
+        self, **kwargs
+    ) -> Mapping[str, Any]:
+        # required headers for Assembled API
+        # as of 4/28/2023
+        return {
+            "Content-Type": "application/json",
+        }
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         data = response.json()
         total = data.get("total", 0)
