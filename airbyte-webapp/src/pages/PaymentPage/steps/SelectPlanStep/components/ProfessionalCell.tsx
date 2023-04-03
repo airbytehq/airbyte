@@ -34,6 +34,13 @@ const Price = styled.div`
   color: ${({ theme }) => theme.black300};
 `;
 
+const CustomPricing = styled.div`
+  font-style: normal;
+  font-weight: 600;
+  font-size: 24px;
+  color: ${({ theme }) => theme.black300};
+`;
+
 const PerMonthText = styled.div`
   font-style: normal;
   font-weight: 500;
@@ -57,9 +64,9 @@ const ProfessionalCell: React.FC<IProps> = ({ price = 0, selectPlanBtnDisability
     <Container>
       <PricingContainer>
         {price === "custom" ? (
-          <Price>
+          <CustomPricing>
             <FormattedMessage id="feature.cell.professional.custom.pricing" />
-          </Price>
+          </CustomPricing>
         ) : (
           <>
             <Price>${price}</Price>&nbsp;

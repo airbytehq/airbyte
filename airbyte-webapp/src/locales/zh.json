@@ -789,5 +789,7 @@
   "resetPassword.reset.form.password": "密码（8个字符及以上）",
   "resetPassword.reset.form.password.error": "密码必须至少为8个字符。",
   "resetPassword.reset.form.confirmPassword": "确认密码",
-  "resetPassword.reset.form.confirmPassword.error": "确认密码必须至少为8个字符。"
+  "resetPassword.reset.form.confirmPassword.error": "确认密码必须至少为8个字符。",
+  "sync.success.message": "数据接口：{connectionName}刚刚同步成功。",
+  "sync.fail.message": "数据接口：{connectionName}刚刚同步失败了。"
 }

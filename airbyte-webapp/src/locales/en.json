@@ -792,5 +792,7 @@
   "resetPassword.reset.form.confirmPassword": "Confirm password",
   "resetPassword.reset.form.confirmPassword.error": "Confirm password must be at least 8 characters.",
   "sync.success.message": "Sync for connection Amazon {message} was successful.",
-  "sync.fail.message": "Sync for connection Amazon {message} failed."
+  "sync.fail.message": "Sync for connection Amazon {message} failed.",
+  "sync.success.message": "Sync for connection {connectionName} was successful.",
+  "sync.fail.message": "Sync for connection {connectionName} failed."
 }
