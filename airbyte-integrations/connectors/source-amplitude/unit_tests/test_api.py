@@ -234,8 +234,8 @@ class TestEventsStream:
             data_region="Standard Server",
             event_time_interval={"size_unit": "days", "size": 1}
         )
-        current_state = {"event_time": ""}
-        latest_record = {"event_time": "2021-05-27 11:59:53.710000"}
+        current_state = {"server_upload_time": ""}
+        latest_record = {"server_upload_time": "2021-05-27 11:59:53.710000"}
         result = stream.get_updated_state(current_state, latest_record)
         assert result == latest_record
 

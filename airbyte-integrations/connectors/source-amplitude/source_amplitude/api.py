@@ -164,7 +164,7 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
 
 
 class Events(IncrementalAmplitudeStream):
-    cursor_field = "event_time"
+    cursor_field = "server_upload_time"
     date_template = "%Y%m%dT%H"
     compare_date_template = "%Y-%m-%d %H:%M:%S.%f"
     primary_key = "uuid"
@@ -175,7 +175,7 @@ class Events(IncrementalAmplitudeStream):
         return {self.event_time_interval.get("size_unit"): self.event_time_interval.get("size")}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        state_value = stream_state[self.cursor_field] if stream_state else self._start_date.strftime(self.compare_date_template)
+        state_value = stream_state.get(self.cursor_field, stream_state.get("event_time")) if stream_state else self._start_date.strftime(self.compare_date_template)
         try:
             zip_file = zipfile.ZipFile(io.BytesIO(response.content))
         except zipfile.BadZipFile as e:
@@ -189,7 +189,7 @@ class Events(IncrementalAmplitudeStream):
         for gzip_filename in zip_file.namelist():
             with zip_file.open(gzip_filename) as file:
                 for record in self._parse_zip_file(file):
-                    if record[self.cursor_field] >= state_value:
+                    if record.get(self.cursor_field, record.get("event_time")) >= state_value:
                         yield self._date_time_to_rfc3339(record)  # transform all `date-time` to RFC3339
 
     def _parse_zip_file(self, zip_file: IO[bytes]) -> Iterable[MutableMapping]:
@@ -199,7 +199,7 @@ class Events(IncrementalAmplitudeStream):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
-        start = pendulum.parse(stream_state.get(self.cursor_field)) if stream_state else self._start_date
+        start = pendulum.parse(stream_state.get(self.cursor_field, stream_state.get("event_time"))) if stream_state else self._start_date
         end = pendulum.now()
         if start > end:
             self.logger.info("The data cannot be requested in the future. Skipping stream.")
