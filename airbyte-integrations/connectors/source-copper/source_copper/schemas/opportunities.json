@@ -1,0 +1,65 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer"
+      },
+      "name": {
+        "type": "string"
+      },
+      "assignee_id": {
+        "type": "number"
+      },
+      "close_date": {
+        "type": "string"
+      },
+      "company_id" : {
+        "type" : "string"
+      },      
+      "company_name" : {
+        "type" : "string"
+      },      
+      "customer_source_id" : {
+        "type" : "string"
+      },      
+      "details" : {
+        "type" : "string"
+      },      
+      "loss_reason_id" : {
+        "type" : "string"
+      },      
+      "monetary_value" : {
+        "type" : "integer"
+      },      
+      "pipeline_id" : {
+        "type" : "string"
+      },      
+      "primary_contact_id" : {
+        "type" : "string"
+      },      
+      "priority" : {
+        "type" : "string"
+      },      
+      "pipeline_stage_id" : {
+        "type" : "string"
+      },      
+      "status" : {
+        "type" : "string"
+      },
+      "tags": {
+        "type": "array",
+        "items": {}
+      },
+      "win_probability" : {
+        "type" : "number"
+      },
+      "date_created": {
+        "type": "integer"
+      },
+      "date_modified": {
+        "type": "integer"
+      }
+    }
+  }
+    
