@@ -19,6 +19,7 @@ import DestinationCopy from "./components/DestinationCopy";
 
 const ContainerPadding = styled.div`
   padding: 0px 0px 0px 70px;
+  height: 100%;
 `;
 
 const CopyDestinationPage: React.FC = () => {

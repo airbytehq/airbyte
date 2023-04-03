@@ -28,6 +28,8 @@ export enum RoutePaths {
   UserSignup = "user_signup",
   Signup = "signup",
   Signin = "signin",
+  VerifyEmail = "verify-email",
+  ResetPassword = "reset-password",
 
   UserManagement = "user-management",
   AccountSettings = "account-settings",
