@@ -167,6 +167,14 @@
   icon: azureblobstorage.svg
   sourceType: database
   releaseStage: alpha
+- name: Azure Blob Storage
+  sourceDefinitionId: fdaaba68-4875-4ed9-8fcd-4ae1e0a25093
+  dockerRepository: airbyte/source-azure-blob-storage
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/azure-blob-storage
+  icon: azureblobstorage.svg
+  sourceType: file
+  releaseStage: alpha
 - name: Babelforce
   sourceDefinitionId: 971c3e1e-78a5-411e-ad56-c4052b50876b
   dockerRepository: airbyte/source-babelforce
@@ -1048,7 +1056,7 @@
 - name: Klaviyo
   sourceDefinitionId: 95e8cffd-b8c4-4039-968e-d32fb4a69bde
   dockerRepository: airbyte/source-klaviyo
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.3.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/klaviyo
   icon: klaviyo.svg
   sourceType: api
@@ -1479,6 +1487,14 @@
   allowedHosts:
     hosts:
       - "api.paystack.co"
+- name: Pendo
+  sourceDefinitionId: b1ccb590-e84f-46c0-83a0-2048ccfffdae
+  dockerRepository: airbyte/source-pendo
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pendo
+  icon: pendo.svg
+  sourceType: api
+  releaseStage: alpha
 - name: PersistIq
   sourceDefinitionId: 3052c77e-8b91-47e2-97a0-a29a22794b4b
   dockerRepository: airbyte/source-persistiq
