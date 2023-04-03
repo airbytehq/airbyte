@@ -93,7 +93,7 @@ public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAc
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     startTestContainers();
-    config = bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, "default"));
+    config = bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, "default"), false);
     populateDatabaseTestData();
 
   }
