@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.dynamodb;
 
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,10 +22,10 @@ public class DynamodbOutputTableHelper {
       paths.add(tableNamePrefix);
     }
     if (namespace != null) {
-      paths.add(new ExtendedNameTransformer().convertStreamName(namespace));
+      paths.add(new StandardNameTransformer().convertStreamName(namespace));
     }
     if (streamName != null) {
-      paths.add(new ExtendedNameTransformer().convertStreamName(streamName));
+      paths.add(new StandardNameTransformer().convertStreamName(streamName));
     }
 
     return String.join("_", paths);

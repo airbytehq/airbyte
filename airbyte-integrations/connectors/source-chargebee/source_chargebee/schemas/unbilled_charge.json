@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "Unbilled Charge",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["string", "null"]
+    },
+    "customer_id": {
+      "type": ["string", "null"]
+    },
+    "subscription_id": {
+      "type": ["string", "null"]
+    },
+    "date_from": {
+      "type": ["integer", "null"]
+    },
+    "date_to": {
+      "type": ["integer", "null"]
+    },
+    "unit_amount": {
+      "type": ["integer", "null"]
+    },
+    "pricing_model": {
+      "type": ["string", "null"],
+      "enum": ["flat_fee", "per_unit", "tiered", "volume", "stairstep"]
+    },
+    "quantity": {
+      "type": ["integer", "null"]
+    },
+    "amount": {
+      "type": ["integer", "null"]
+    },
+    "currency_code": {
+      "type": ["string", "null"]
+    },
+    "discount_amount": {
+      "type": ["integer", "null"]
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "entity_type": {
+      "type": ["string", "null"],
+      "enum": ["adhoc", "plan_item_price", "addon_item_price", "charge_item_price"]
+    },
+    "entity_id": {
+      "type": ["string", "null"]
+    },
+    "is_voided": {
+      "type": ["boolean", "null"]
+    },
+    "voided_at": {
+      "type": ["integer", "null"]
+    },
+    "unit_amount_in_decimal": {
+      "type": ["string", "null"]
+    },
+    "quantity_in_decimal": {
+      "type": ["string", "null"]
+    },
+    "amount_in_decimal": {
+      "type": ["string", "null"]
+    },
+    "updated_at": {
+      "type": ["integer", "null"]
+    },
+    "is_advance_charge": {
+      "type": ["boolean", "null"]
+    },
+    "deleted": {
+      "type": ["boolean", "null"]
+    },
+    "tiers": {
+      "type": ["object", "null"],
+      "properties": {
+        "starting_unit": {
+          "type": ["integer", "null"]
+        },
+        "ending_unit": {
+          "type": ["integer", "null"]
+        },
+        "quantity_used": {
+          "type": ["integer", "null"]
+        },
+        "unit_amount": {
+          "type": ["integer", "null"]
+        },
+        "starting_unit_in_decimal": {
+          "type": ["string", "null"]
+        },
+        "ending_unit_in_decimal": {
+          "type": ["string", "null"]
+        },
+        "quantity_used_in_decimal": {
+          "type": ["string", "null"]
+        },
+        "unit_amount_in_decimal": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}
