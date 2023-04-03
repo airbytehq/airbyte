@@ -44,7 +44,7 @@ jobs:
       - name: Test connectors
         run: |
           export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
-          DAGGER_CLI_COMMIT="2ecd496bc97805bb0c018e2ca333dc0648950eb1"
+          DAGGER_CLI_COMMIT="f0119bcde82e06731558a8baf70d6e7d271b21d1"
           DAGGER_TMP_BINDIR="/tmp/dagger_${DAGGER_CLI_COMMIT}"
           export _EXPERIMENTAL_DAGGER_CLI_BIN="$DAGGER_TMP_BINDIR/dagger"
           if [ ! -f  "$_EXPERIMENTAL_DAGGER_CLI_BIN" ]; then

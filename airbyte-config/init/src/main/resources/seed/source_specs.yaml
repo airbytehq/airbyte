@@ -822,7 +822,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-ads:1.0.1"
+- dockerImage: "airbyte/source-amazon-ads:1.0.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-ads"
     connectionSpecification:
@@ -1314,7 +1314,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.1.23"
+- dockerImage: "airbyte/source-amplitude:0.1.24"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amplitude"
     connectionSpecification:
@@ -1355,7 +1355,29 @@
             \ data before this date will not be replicated."
           examples:
           - "2021-01-25T00:00:00Z"
-          format: "date-time"
+        event_time_interval:
+          type: "object"
+          title: "Event Stream Time Interval"
+          description: "Amplitude event stream time interval"
+          required:
+          - "size_unit"
+          - "size"
+          properties:
+            size_unit:
+              type: "string"
+              title: "Events Time Interval Size Unit"
+              description: "Amplitude event stream's interval size unit"
+              enum:
+              - "days"
+              - "hours"
+              - "weeks"
+              - "months"
+              default: "days"
+            size:
+              type: "integer"
+              title: "Events Time Interval Size"
+              description: "Amplitude event stream's interval size unit"
+              default: 1
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -1727,6 +1749,76 @@
           - "core.windows.net"
           - "core.chinacloudapi.cn"
           airbyte_secret: false
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-azure-blob-storage:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/azureblobstorage"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "AzureBlobStorage Source Spec"
+      type: "object"
+      required:
+      - "azure_blob_storage_account_name"
+      - "azure_blob_storage_account_key"
+      - "azure_blob_storage_container_name"
+      - "format"
+      additionalProperties: true
+      properties:
+        azure_blob_storage_endpoint:
+          title: "Endpoint Domain Name"
+          type: "string"
+          default: "blob.core.windows.net"
+          description: "This is Azure Blob Storage endpoint domain name. Leave default\
+            \ value (or leave it empty if run container from command line) to use\
+            \ Microsoft native from example."
+          examples:
+          - "blob.core.windows.net"
+        azure_blob_storage_container_name:
+          title: "Azure blob storage container (Bucket) Name"
+          type: "string"
+          description: "The name of the Azure blob storage container."
+          examples:
+          - "airbytetescontainername"
+        azure_blob_storage_account_name:
+          title: "Azure Blob Storage account name"
+          type: "string"
+          description: "The account's name of the Azure Blob Storage."
+          examples:
+          - "airbyte5storage"
+        azure_blob_storage_account_key:
+          title: "Azure Blob Storage account key"
+          description: "The Azure blob storage account key."
+          airbyte_secret: true
+          type: "string"
+          examples:
+          - "Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd=="
+        azure_blob_storage_blobs_prefix:
+          title: "Azure Blob Storage blobs prefix"
+          description: "The Azure blob storage prefix to be applied"
+          type: "string"
+          examples:
+          - "FolderA/FolderB/"
+        azure_blob_storage_schema_inference_limit:
+          title: "Azure Blob Storage schema inference limit"
+          description: "The Azure blob storage blobs to scan for inferring the schema,\
+            \ useful on large amounts of data with consistent structure"
+          type: "integer"
+          examples:
+          - "500"
+        format:
+          title: "Input Format"
+          type: "object"
+          description: "Input data format"
+          oneOf:
+          - title: "JSON Lines: newline-delimited JSON"
+            required:
+            - "format_type"
+            properties:
+              format_type:
+                type: "string"
+                const: "JSONL"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -4398,7 +4490,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.35"
+- dockerImage: "airbyte/source-file:0.2.36"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/file"
     connectionSpecification:
@@ -4978,7 +5070,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.4.6"
+- dockerImage: "airbyte/source-github:0.4.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -6799,7 +6891,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.3.2"
+- dockerImage: "airbyte/source-hubspot:0.3.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/hubspot"
     connectionSpecification:
@@ -7044,7 +7136,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-instagram:1.0.4"
+- dockerImage: "airbyte/source-instagram:1.0.5"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/instagram"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/instagram"
@@ -7103,7 +7195,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-intercom:0.1.32"
+- dockerImage: "airbyte/source-intercom:0.1.33"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/intercom"
     connectionSpecification:
@@ -7123,6 +7215,7 @@
           examples:
           - "2020-11-16T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          format: "date-time"
         access_token:
           title: "Access token"
           type: "string"
@@ -7655,7 +7748,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-klaviyo:0.2.0"
+- dockerImage: "airbyte/source-klaviyo:0.3.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/klaviyo"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/klaviyo"
@@ -11369,6 +11462,23 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-pendo:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/pendo"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      type: "object"
+      required:
+      - "api_key"
+      properties:
+        api_key:
+          type: "string"
+          title: "API Key"
+          airbyte_secret: true
+      additionalProperties: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-persistiq:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/persistiq"
@@ -13534,7 +13644,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:2.0.7"
+- dockerImage: "airbyte/source-salesforce:2.0.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -13582,7 +13692,7 @@
           title: "Start Date"
           description: "Enter the date in the YYYY-MM-DD format. Airbyte will replicate\
             \ the data added on and after this date. If this field is blank, Airbyte\
-            \ will replicate all data."
+            \ will replicate the data for last two years."
           type: "string"
           pattern: "^([0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?)$"
           examples:
@@ -14448,7 +14558,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.32"
+- dockerImage: "airbyte/source-snowflake:0.1.34"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snowflake"
     connectionSpecification:
@@ -14699,7 +14809,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-square:0.2.1"
+- dockerImage: "airbyte/source-square:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/square"
     connectionSpecification:
@@ -14772,7 +14882,8 @@
           title: "Start Date"
           default: "2021-01-01"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
-          order: 2
+          order: "2,"
+          format: "date"
         include_deleted_objects:
           type: "boolean"
           description: "In some streams there is an option to include deleted objects\
@@ -15466,7 +15577,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:2.0.4"
+- dockerImage: "airbyte/source-tiktok-marketing:2.0.5"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
@@ -15543,6 +15654,7 @@
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           order: 1
           type: "string"
+          format: "date"
         end_date:
           title: "End Date"
           description: "The date until which you'd like to replicate data for all\
@@ -15552,6 +15664,7 @@
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           order: 2
           type: "string"
+          format: "date"
         report_granularity:
           title: "Report Aggregation Granularity"
           description: "The granularity used for aggregating performance data in reports.\
@@ -17163,7 +17276,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.26"
+- dockerImage: "airbyte/source-zendesk-support:0.2.27"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-support"
     connectionSpecification:
@@ -17184,6 +17297,7 @@
           examples:
           - "2020-10-15T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          format: "date-time"
         subdomain:
           type: "string"
           title: "Subdomain"
@@ -17290,7 +17404,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-talk:0.1.6"
+- dockerImage: "airbyte/source-zendesk-talk:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-talk"
     connectionSpecification:
@@ -17363,6 +17477,7 @@
           examples:
           - "2020-10-15T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          format: "date-time"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
