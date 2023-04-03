@@ -6,6 +6,9 @@
       "type": ["null", "string"],
       "format": "date"
     },
+    "ADVERTISER_ID": {
+      "type": ["string"]
+    },
     "AD_ACCOUNT_ID": {
       "type": ["string"]
     },
@@ -13,7 +16,7 @@
       "type": ["null", "string"]
     },
     "AD_GROUP_ENTITY_STATUS": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "AD_GROUP_ID": {
       "type": ["null", "string"]
@@ -34,6 +37,15 @@
       "type": ["null", "string"]
     },
     "CHECKOUT_ROAS": {
+      "type": ["null", "number"]
+    },
+    "CLICKTHROUGH_1": {
+      "type": ["null", "number"]
+    },
+    "CLICKTHROUGH_1_GROSS": {
+      "type": ["null", "number"]
+    },
+    "CLICKTHROUGH_2": {
       "type": ["null", "number"]
     },
     "CPC_IN_MICRO_DOLLAR": {
@@ -78,6 +90,12 @@
     "EENGAGEMENT_RATE": {
       "type": ["null", "number"]
     },
+    "ENGAGEMENT_1": {
+      "type": ["null", "number"]
+    },
+    "ENGAGEMENT_2": {
+      "type": ["null", "number"]
+    },
     "ENGAGEMENT_RATE": {
       "type": ["null", "number"]
     },
@@ -114,6 +132,18 @@
     "PAID_IMPRESSION": {
       "type": ["null", "number"]
     },
+    "PIN_ID": {
+      "type": ["null", "number"]
+    },
+    "PIN_PROMOTION_ID": {
+      "type": ["null", "number"]
+    },
+    "REPIN_1": {
+      "type": ["null", "number"]
+    },
+    "REPIN_2": {
+      "type": ["null", "number"]
+    },
     "REPIN_RATE": {
       "type": ["null", "number"]
     },
@@ -132,10 +162,16 @@
     "TOTAL_CLICKTHROUGH": {
       "type": ["null", "number"]
     },
+    "TOTAL_CLICK_ADD_TO_CART": {
+      "type": ["null", "number"]
+    },
     "TOTAL_CLICK_CHECKOUT": {
       "type": ["null", "number"]
     },
     "TOTAL_CLICK_CHECKOUT_VALUE_IN_MICRO_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_CLICK_LEAD": {
       "type": ["null", "number"]
     },
     "TOTAL_CLICK_SIGNUP": {
@@ -147,10 +183,19 @@
     "TOTAL_CONVERSIONS": {
       "type": ["null", "number"]
     },
+    "TOTAL_CUSTOM": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_ENGAGEMENT": {
+      "type": ["null", "number"]
+    },
     "TOTAL_ENGAGEMENT_CHECKOUT": {
       "type": ["null", "number"]
     },
     "TOTAL_ENGAGEMENT_CHECKOUT_VALUE_IN_MICRO_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_ENGAGEMENT_LEAD": {
       "type": ["null", "number"]
     },
     "TOTAL_ENGAGEMENT_SIGNUP": {
@@ -166,6 +211,12 @@
       "type": ["null", "number"]
     },
     "TOTAL_IMPRESSION_USER": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_LEAD": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_OFFLINE_CHECKOUT": {
       "type": ["null", "number"]
     },
     "TOTAL_PAGE_VISIT": {
@@ -207,10 +258,16 @@
     "TOTAL_VIDEO_P95_COMBINED": {
       "type": ["null", "number"]
     },
+    "TOTAL_VIEW_ADD_TO_CART": {
+      "type": ["null", "number"]
+    },
     "TOTAL_VIEW_CHECKOUT": {
       "type": ["null", "number"]
     },
     "TOTAL_VIEW_CHECKOUT_VALUE_IN_MICRO_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIEW_LEAD": {
       "type": ["null", "number"]
     },
     "TOTAL_VIEW_SIGNUP": {
@@ -237,6 +294,9 @@
     "TOTAL_WEB_ENGAGEMENT_CHECKOUT_VALUE_IN_MICRO_DOLLAR": {
       "type": ["null", "number"]
     },
+    "TOTAL_WEB_SESSIONS": {
+      "type": ["null", "number"]
+    },
     "TOTAL_WEB_VIEW_CHECKOUT": {
       "type": ["null", "number"]
     },
@@ -244,6 +304,9 @@
       "type": ["null", "number"]
     },
     "VIDEO_3SEC_VIEWS_2": {
+      "type": ["null", "number"]
+    },
+    "VIDEO_LENGTH": {
       "type": ["null", "number"]
     },
     "VIDEO_MRC_VIEWS_2": {
@@ -271,6 +334,12 @@
       "type": ["null", "number"]
     },
     "WEB_CHECKOUT_ROAS": {
+      "type": ["null", "number"]
+    },
+    "WEB_SESSIONS_1": {
+      "type": ["null", "number"]
+    },
+    "WEB_SESSIONS_2": {
       "type": ["null", "number"]
     }
   }
