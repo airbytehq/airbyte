@@ -79,7 +79,8 @@ class SourceFile(Source):
 
         return client
 
-    def _validate_and_transform(self, config: Mapping[str, Any]):
+    @staticmethod
+    def _validate_and_transform(config: Mapping[str, Any]):
         if "reader_options" in config:
             try:
                 config["reader_options"] = json.loads(config["reader_options"])
@@ -108,12 +109,11 @@ class SourceFile(Source):
         client = self._get_client(config)
         source_url = client.reader.full_url
         try:
-            with client.reader.open():
-                list(client.streams)
-                return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+            list(client.streams(empty_schema=True))
+            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except (TypeError, ValueError, ConfigurationError) as err:
-            reason = f"Failed to load {source_url}\n Please check File Format and Reader Options are set correctly. \n{repr(err)}"
-            logger.error(reason)
+            reason = f"Failed to load {source_url}. Please check File Format and Reader Options are set correctly."
+            logger.error(f"{reason}\n{repr(err)}")
             return AirbyteConnectionStatus(status=Status.FAILED, message=reason)
         except Exception as err:
             reason = f"Failed to load {source_url}. You could have provided an invalid URL, please verify it: {repr(err)}."
@@ -127,13 +127,13 @@ class SourceFile(Source):
         """
         config = self._validate_and_transform(config)
         client = self._get_client(config)
-        name = client.stream_name
+        name, full_url = client.stream_name, client.reader.full_url
 
-        logger.info(f"Discovering schema of {name} at {client.reader.full_url}...")
+        logger.info(f"Discovering schema of {name} at {full_url}...")
         try:
-            streams = list(client.streams)
+            streams = list(client.streams())
         except Exception as err:
-            reason = f"Failed to discover schemas of {name} at {client.reader.full_url}: {repr(err)}\n{traceback.format_exc()}"
+            reason = f"Failed to discover schemas of {name} at {full_url}: {repr(err)}\n{traceback.format_exc()}"
             logger.error(reason)
             raise err
         return AirbyteCatalog(streams=streams)

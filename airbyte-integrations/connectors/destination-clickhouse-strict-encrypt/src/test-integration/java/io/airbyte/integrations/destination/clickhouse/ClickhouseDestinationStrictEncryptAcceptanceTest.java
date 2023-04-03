@@ -61,6 +61,7 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
         jdbcStr), new ClickhouseTestSourceOperations());
   }
 
+
   @Override
   protected String getImageName() {
     return "airbyte/destination-clickhouse-strict-encrypt:dev";
@@ -89,6 +90,11 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
   @Override
   protected boolean supportObjectDataTypeTest() {
     return true;
+  }
+
+  @Override
+  protected String getDestinationDefinitionKey() {
+    return "airbyte/destination-clickhouse";
   }
 
   @Override
@@ -184,6 +190,7 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
     db.close();
   }
 
+  @Override
   @ParameterizedTest
   @ArgumentsSource(DataTypeTestArgumentProvider.class)
   public void testDataTypeTestWithNormalization(final String messagesFilename,
