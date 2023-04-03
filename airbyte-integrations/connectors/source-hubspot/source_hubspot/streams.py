@@ -683,15 +683,15 @@ class SemiIncrementalStream(Stream, IncrementalMixin):
 
     def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> bool:
         record_value = (
-            pendulum.parse(record.get(self.cursor_field)).int_timestamp
+            pendulum.parse(record.get(self.cursor_field))
             if isinstance(record.get(self.cursor_field), str)
-            else record.get(self.cursor_field) // 1000
+            else pendulum.from_format(str(record.get(self.cursor_field)), "x")
         )
-        start_date = pendulum.from_timestamp(int(stream_state.get(self.cursor_field))) if stream_state else self._start_date
-        cursor_value = max(start_date.int_timestamp, record_value)
-        max_state = max(int(self.state.get(self.cursor_field)), cursor_value)
+        start_date = pendulum.from_format(stream_state.get(self.cursor_field), "x") if stream_state else self._start_date
+        cursor_value = max(start_date, record_value)
+        max_state = max(self.state.get(self.cursor_field), cursor_value.format("x"))
         self.state = {self.cursor_field: max_state}
-        return not stream_state or int(stream_state.get(self.cursor_field, 0)) < record_value
+        return not stream_state or pendulum.from_format(stream_state.get(self.cursor_field, 0), "x") < record_value
 
     def read_records(
         self,
