@@ -218,7 +218,6 @@ jobs:
       matrix:
         connector: ${{ fromJSON(needs.preprocess-matrix.outputs.connectorjson) }}
     runs-on: runner-pool-${{ github.run_id }}
-    environment: more-secrets
     steps:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v0

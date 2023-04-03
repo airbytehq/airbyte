@@ -89,7 +89,7 @@
     },
     "phone_client": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]
@@ -101,7 +101,7 @@
     },
     "phone_number_assignment": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]
@@ -113,7 +113,7 @@
     },
     "group": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]
@@ -125,7 +125,7 @@
     },
     "team": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]
@@ -137,7 +137,7 @@
     },
     "role": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]
