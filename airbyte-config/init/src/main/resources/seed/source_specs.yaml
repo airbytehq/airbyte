@@ -7195,7 +7195,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-intercom:0.1.33"
+- dockerImage: "airbyte/source-intercom:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/intercom"
     connectionSpecification:
@@ -14175,7 +14175,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-slack:0.1.24"
+- dockerImage: "airbyte/source-slack:0.1.25"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/slack"
     connectionSpecification:
@@ -14196,6 +14196,7 @@
           examples:
           - "2017-01-25T00:00:00Z"
           title: "Start Date"
+          format: "date-time"
         lookback_window:
           type: "integer"
           title: "Threads Lookback window (Days)"
