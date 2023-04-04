@@ -64,7 +64,7 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
   }
 
   @Override
-  public boolean isSnapshotEvent(final ChangeEvent<String, String> event){
+  public boolean isSnapshotEvent(final ChangeEvent<String, String> event) {
     JsonNode isSnapshotEvent = Jsons.deserialize(event.value()).get("source").get("snapshot");
     return isSnapshotEvent != null && isSnapshotEvent.asBoolean();
   }
@@ -86,10 +86,10 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
 
   @Override
   public boolean isSameOffset(final Map<String, String> offsetA, final Map<String, String> offsetB) {
-    if (offsetA == null || offsetA.size() != 1){
+    if (offsetA == null || offsetA.size() != 1) {
       return false;
     }
-    if (offsetB == null || offsetB.size() != 1){
+    if (offsetB == null || offsetB.size() != 1) {
       return false;
     }
     final JsonNode offsetJsonA = Jsons.deserialize((String) offsetA.values().toArray()[0]);
@@ -103,10 +103,5 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
         String.valueOf(offsetJsonB.get("lsn"));
 
     return Integer.parseInt(lsnA) == Integer.parseInt(lsnB);
-  }
-
-  @Override
-  public boolean isCdcCheckpointEnabled() {
-    return true;
   }
 }
