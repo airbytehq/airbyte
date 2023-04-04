@@ -52,4 +52,14 @@ public interface CdcStateHandler {
     return true;
   }
 
+  /**
+   * This function is used as feature flag for sending state messages as checkpoints in CDC syncs.
+   *
+   * @return Returns `true` if checkpoint state messages are enabled for CDC syncs. Otherwise, it
+   *         returns `false`
+   */
+  default boolean isCdcCheckpointEnabled() {
+    return false;
+  }
+
 }

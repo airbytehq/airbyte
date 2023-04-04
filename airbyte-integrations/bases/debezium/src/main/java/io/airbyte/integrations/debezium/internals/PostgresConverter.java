@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.debezium.internals;
 
-import static io.airbyte.db.DataTypeUtils.TIMETZ_FORMATTER;
 import static io.airbyte.db.jdbc.DateTimeConverter.convertToDate;
 import static io.airbyte.db.jdbc.DateTimeConverter.convertToTime;
 import static io.airbyte.db.jdbc.DateTimeConverter.convertToTimestamp;
@@ -186,7 +185,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
             timetzArr.add(null);
           } else {
             final OffsetTime parsed = OffsetTime.parse(s, format);
-            timetzArr.add(parsed.format(TIMETZ_FORMATTER));
+            timetzArr.add(DateTimeConverter.convertToTimeWithTimezone(parsed));
           }
         });
         return timetzArr;

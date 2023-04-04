@@ -50,7 +50,8 @@ async def upload(context: ConnectorTestContext, gcp_gsm_env_variable_name: str =
     Returns:
         int: The exit code of the ci-credentials update-secrets command.
     """
-    gsm_secret = context.dagger_client.host().env_variable(gcp_gsm_env_variable_name).secret()
+    dagger_client = context.dagger_client.pipeline(f"Upload secrets for {context.connector.technical_name}")
+    gsm_secret = dagger_client.host().env_variable(gcp_gsm_env_variable_name).secret()
     secrets_path = f"/{context.connector.code_directory}/secrets"
 
     ci_credentials = await environments.with_ci_credentials(context, gsm_secret)
