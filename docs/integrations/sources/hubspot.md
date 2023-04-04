@@ -16,6 +16,7 @@ You can use OAuth, API key, or Private App to authenticate your HubSpot account.
 | `deal_pipelines`            | either the `crm.objects.contacts.read` scope \(to fetch deals pipelines\) or the `tickets` scope. |
 | `deals`                     | `crm.objects.deals.read`, `crm.schemas.deals.read`                               |
 | `email_events`              | `content`                                                                        |
+| `email_subscriptions`       | `content`                                                                        |
 | `engagements`               | `crm.objects.companies.read`, `crm.objects.contacts.read`, `crm.objects.deals.read`, `tickets`, `e-commerce`|
 | `engagements_emails`        | `sales-email-read`                                                               |
 | `forms`                     | `forms`                                                                          |
@@ -63,6 +64,7 @@ The HubSpot source connector supports the following streams:
 * [Deal Pipelines](https://developers.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type)
 * [Deals](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
 * [Email Events](https://developers.hubspot.com/docs/methods/email/get_events) \(Incremental\)
+* [Email Subscriptions](https://developers.hubspot.com/docs/methods/email/get_subscriptions)
 * [Engagements](https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements) \(Incremental\)
 * [Engagements Calls](https://developers.hubspot.com/docs/api/crm/calls) \(Incremental\)
 * [Engagements Emails](https://developers.hubspot.com/docs/api/crm/email) \(Incremental\)
@@ -126,6 +128,7 @@ Now that you have set up the Hubspot source connector, check out the following H
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.0   | 2023-03-31 | [22910](https://github.com/airbytehq/airbyte/pull/22910) | Add `email_subscriptions` stream  |
 | 0.3.4   | 2023-03-28 | [24641](https://github.com/airbytehq/airbyte/pull/24641) | Convert to int only numeric values                                                                                                             |
 | 0.3.3   | 2023-03-27 | [24591](https://github.com/airbytehq/airbyte/pull/24591) | Fix pagination for `marketing emails` stream                                                                                                   |
 | 0.3.2   | 2023-02-07 | [22479](https://github.com/airbytehq/airbyte/pull/22479) | Turn on default HttpAvailabilityStrategy                                                                                                       |
