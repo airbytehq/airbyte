@@ -52,7 +52,7 @@ acceptance_tests:
           bypass_reason: Hubspot time depend on current time
         - name: properties/hs_predictivescoringtier
           bypass_reason: Hubspot prediction changes
-        - name: properties/hs_lastmodifieddate
+        - name: properties/lastmodifieddate
           bypass_reason: Hubspot time depend on current time
         - name: updatedAt
           bypass_reason: Hubspot time depend on current time
