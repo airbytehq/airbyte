@@ -9,7 +9,6 @@ def metadata_service():
 @metadata_service.command(help="Validate a given metadata YAML file.")
 @click.argument("file_path")
 def validate(file_path):
-    # if the path is a directory append metadata.yml to the end
     if os.path.isdir(file_path):
         file_path = os.path.join(file_path, "metadata.yml")
 

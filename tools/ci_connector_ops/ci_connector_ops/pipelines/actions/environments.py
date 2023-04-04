@@ -280,7 +280,7 @@ def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_p
     )
 
 def with_pipx_module(context: PipelineContext, parent_dir_path: str, module_path: str, include: List[str]) -> Container:
-    """Sets up a pipx module.
+    """Installs a pipx module
 
     Args:
         context (PipelineContext): The current test context, providing the repository directory from which the ci_credentials sources will be pulled.
@@ -290,7 +290,6 @@ def with_pipx_module(context: PipelineContext, parent_dir_path: str, module_path
     pipx_exclude = ["**/__pycache__"] + DEFAULT_PYTHON_EXCLUDE
     pipx_include = [module_path] + include
     pipx_install_dependencies_cmd = ["pipx", "install", module_path]
-    ensure_pipx_package_cmd = ["pipx", "ensurepath"]
 
     src = context.dagger_client.host().directory(parent_dir_path, exclude=pipx_exclude, include=pipx_include)
     python_with_pipx = with_pipx(context)
@@ -300,6 +299,4 @@ def with_pipx_module(context: PipelineContext, parent_dir_path: str, module_path
         .with_mounted_directory("/src", src)
         .with_workdir(f"/src")
         .with_exec(pipx_install_dependencies_cmd)
-        # .with_exec(ensure_pipx_package_cmd)
-        # .with_exec(["PATH=$(printenv PATH):/root/.local/bin"])
     )

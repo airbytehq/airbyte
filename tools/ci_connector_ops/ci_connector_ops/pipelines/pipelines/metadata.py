@@ -28,19 +28,57 @@ class TestPoetryModule(Step):
         return await self.get_step_result(run_test)
 
 class ExecutePipxStep(Step):
-    def __init__(self, context: PipelineContext, title: str, parent_dir: str, module_path: str, metadata_file_path: str):
+    def __init__(self, context: PipelineContext, title: str, parent_dir: str, module_path: str):
         self.title = title
         self.parent_dir = parent_dir
         self.module_path = module_path
-        self.metadata_file_path = metadata_file_path
         super().__init__(context)
 
-    async def _run(self) -> StepStatus:
-        metadata_lib_module = with_pipx_module(self.context, self.parent_dir, self.module_path, include=[str(self.metadata_file_path)])
+    async def _run(self, args) -> StepStatus:
+        metadata_lib_module = with_pipx_module(
+            self.context,
+            ".",
+            "airbyte-ci/connectors/metadata_service/lib",
+            include=["airbyte-integrations/connectors/*"])
         print("HI!!!")
-        print(self.metadata_file_path)
-        run_test = metadata_lib_module.with_exec(["which", "validate_metadata_file"])
+        print(args)
+        run_test = metadata_lib_module.with_exec(args)
         return await self.get_step_result(run_test)
+
+async def run_metadata_validation_pipeline(
+    is_local: bool,
+    git_branch: str,
+    git_revision: str,
+    gha_workflow_run_url: Optional[str],
+    pipeline_start_timestamp: Optional[int],
+    ci_context: Optional[str],
+    metadata_source_paths: Set[str] # TODO actually a Path
+) -> bool:
+    metadata_pipeline_context = PipelineContext(
+        pipeline_name="Metadata Service Validation Pipeline",
+        is_local=is_local,
+        git_branch=git_branch,
+        git_revision=git_revision,
+        gha_workflow_run_url=gha_workflow_run_url,
+        pipeline_start_timestamp=pipeline_start_timestamp,
+        ci_context=ci_context,
+    )
+
+    async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
+        metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
+        metadata_path = str(list(metadata_source_paths)[0])
+
+        async with metadata_pipeline_context:
+            test_lib_step = ExecutePipxStep(
+                context=metadata_pipeline_context,
+                title=f"Validate Connector Metadata Manifest: {metadata_path}",
+                parent_dir=".",
+                module_path=METADATA_LIB_MODULE_PATH,
+            )
+            result = await test_lib_step.run(["metadata_service", "validate", str(metadata_path)])
+            metadata_pipeline_context.test_report = TestReport(pipeline_context=metadata_pipeline_context, steps_results=[result])
+
+    return metadata_pipeline_context.test_report.success
 
 
 async def run_metadata_lib_test_pipeline(
@@ -107,65 +145,3 @@ async def run_metadata_orchestrator_test_pipeline(
             metadata_pipeline_context.test_report = TestReport(pipeline_context=metadata_pipeline_context, steps_results=[result])
 
     return metadata_pipeline_context.test_report.success
-
-async def run_metadata_validation_pipeline(
-    is_local: bool,
-    git_branch: str,
-    git_revision: str,
-    gha_workflow_run_url: Optional[str],
-    pipeline_start_timestamp: Optional[int],
-    ci_context: Optional[str],
-    metadata_source_paths: Set[str] # TODO actually a Path
-) -> bool:
-    metadata_pipeline_context = PipelineContext(
-        pipeline_name="Metadata Service Validation Pipeline",
-        is_local=is_local,
-        git_branch=git_branch,
-        git_revision=git_revision,
-        gha_workflow_run_url=gha_workflow_run_url,
-        pipeline_start_timestamp=pipeline_start_timestamp,
-        ci_context=ci_context,
-    )
-
-    async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
-        metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
-        # async with metadata_pipeline_context:
-        metadata_path = str(list(metadata_source_paths)[0])
-
-            # validate_file = ExecutePipxStep(
-            #     context=metadata_pipeline_context,
-            #     title=f"Validate Connector Metadata Manifest: {metadata_path}",
-            #     parent_dir=".",
-            #     module_path="airbyte-ci/connectors/metadata_service/lib",
-            #     metadata_file_path=metadata_path,
-            # )
-
-        metadata_lib_module = with_pipx_module(
-            metadata_pipeline_context,
-            ".",
-            "airbyte-ci/connectors/metadata_service/lib",
-            include=["airbyte-integrations/connectors/*"])
-        print("HI!!!")
-        print(str(metadata_path))
-        try:
-            # run_test = metadata_lib_module.with_exec(["pipx", "run", "--spec", "airbyte-ci/connectors/metadata_service/lib", "validate_metadata_file"])
-
-            # run_test = metadata_lib_module.with_exec(["source", "/root/.local/bin/validate_metadata_file", f"/src/{str(metadata_path)}"])
-            run_test = metadata_lib_module.with_exec(["metadata_service", "validate", str(metadata_path)])
-            # run_test = metadata_lib_module.with_exec(["ls", f"airbyte-integrations/connectors/source-sentry"])
-            # run_test = metadata_lib_module.with_exec(["printenv", "PATH"])
-            result = await run_test.stdout()
-            print("result!!!!")
-            print(result)
-            return result
-        except Exception as e:
-            print("exception!!!!")
-            print(e)
-            return False
-
-            # result = await validate_file.run()
-            # print("result!!!!")
-            # print(result)
-            # metadata_pipeline_context.test_report = TestReport(pipeline_context=metadata_pipeline_context, steps_results=[result])
-
-    # return metadata_pipeline_context.test_report.success
