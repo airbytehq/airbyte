@@ -41,6 +41,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.SyncMode;
+import io.debezium.connector.sqlserver.Lsn;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.JDBCType;
@@ -260,6 +261,9 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         .executeQuery(descQuery),
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet))
         .stream()
+        .peek(x -> LOGGER.info("MsSQL Table Structure {}, {}, {}", x.toString(), schema, tableName))
+        .filter(x -> x.get("TABLE_OWNER") != null)
+        .filter(x -> x.get("COLUMN_NAME") != null)
         .filter(x -> x.get("TABLE_OWNER").asText().equals(schema))
         .filter(x -> x.get("COLUMN_NAME").asText().equalsIgnoreCase(columnName))
         .findFirst();
@@ -276,12 +280,13 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
               resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
           Preconditions.checkState(jsonNodes.size() == 1);
           nullValExist = jsonNodes.get(0).get(resultColName).booleanValue();
-          LOGGER.info("null cursor value for MsSQL source : {}, shema {} , tableName {}, columnName {} ", nullValExist, schema, tableName, columnName);
+          LOGGER.info("null cursor value for MsSQL source : {}, shema {} , tableName {}, columnName {} ", nullValExist, schema, tableName,
+              columnName);
         }
       }
     }
-//    return !nullValExist;
-//    will enable after we have sent comms to users this affects
+    // return !nullValExist;
+    // will enable after we have sent comms to users this affects
     return true;
   }
 
@@ -425,8 +430,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     if (MssqlCdcHelper.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);
       final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
-      final AirbyteDebeziumHandler handler =
-          new AirbyteDebeziumHandler(sourceConfig,
+      final AirbyteDebeziumHandler<Lsn> handler =
+          new AirbyteDebeziumHandler<>(sourceConfig,
               MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText()), true, firstRecordWaitTime);
 
       final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,

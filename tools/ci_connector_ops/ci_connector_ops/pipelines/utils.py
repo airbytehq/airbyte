@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import datetime
 import re
 import sys
 from pathlib import Path
@@ -101,6 +102,10 @@ def get_current_git_branch() -> str:
 
 def get_current_git_revision() -> str:
     return git.Repo().head.object.hexsha
+
+
+def get_current_epoch_time() -> int:
+    return round(datetime.datetime.utcnow().timestamp())
 
 
 async def get_modified_files_remote(current_git_branch: str, current_git_revision: str, diffed_branch: str = "origin/master") -> Set[str]:

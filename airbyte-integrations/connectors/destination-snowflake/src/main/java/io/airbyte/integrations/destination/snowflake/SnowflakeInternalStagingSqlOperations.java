@@ -20,7 +20,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperations implements StagingOperations {
+public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOperations {
 
   public static final int UPLOAD_RETRY_LIMIT = 3;
 
