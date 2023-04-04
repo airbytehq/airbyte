@@ -22,7 +22,9 @@ def merge_values(old_value: T, new_value: T) -> T:
     else:
         return new_value
 
+
 def deep_copy_params(to_call):
     def f(*args, **kwargs):
         return to_call(*copy.deepcopy(args), **copy.deepcopy(kwargs))
+
     return f

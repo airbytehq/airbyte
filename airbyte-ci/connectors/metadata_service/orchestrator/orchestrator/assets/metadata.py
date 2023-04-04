@@ -95,7 +95,9 @@ def compute_catalog_overrides(merged_df):
     return catalogs
 
 
-def merge_into_metadata_definitions(id_field: str, connector_type: str, oss_connector_df: pd.DataFrame, cloud_connector_df: pd.DataFrame) -> List[PartialMetadataDefinition]:
+def merge_into_metadata_definitions(
+    id_field: str, connector_type: str, oss_connector_df: pd.DataFrame, cloud_connector_df: pd.DataFrame
+) -> List[PartialMetadataDefinition]:
     """Merges the OSS and Cloud connector metadata into a single metadata definition.
 
     Args:

@@ -216,7 +216,7 @@ def persist_metadata_definitions(context, overrode_metadata_definitions):
 
         key = f"{connector_dir_name}-{definitionId}"
 
-        yaml_string = yaml.dump(metadata)
+        yaml_string = yaml.dump(metadata.to_dict())
 
         file = context.resources.metadata_file_directory.write_data(yaml_string.encode(), ext="yaml", key=key)
         files.append(file)

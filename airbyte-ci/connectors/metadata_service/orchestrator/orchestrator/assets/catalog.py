@@ -13,6 +13,7 @@ GROUP_NAME = "catalog"
 
 # HELPERS
 
+
 @deep_copy_params
 def apply_overrides_from_catalog(metadata_data: dict, override_catalog_key: str) -> dict:
     """Apply the overrides from the catalog to the metadata data.

@@ -31,7 +31,11 @@ def augment_and_normalize_connector_dataframes(
     total_catalog[["is_cloud", "is_oss"]] = total_catalog[["is_cloud", "is_oss"]].fillna(False)
 
     catalog_with_metadata = pd.merge(
-        total_catalog, valid_metadata_report_dataframe[["definitionId", "is_metadata_valid"]], left_on=primaryKey, right_on="definitionId", how="left"
+        total_catalog,
+        valid_metadata_report_dataframe[["definitionId", "is_metadata_valid"]],
+        left_on=primaryKey,
+        right_on="definitionId",
+        how="left",
     )
 
     # merge with cached_specs on dockerRepository and dockerImageTag
