@@ -45,7 +45,8 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
   public String getStageName(final String namespace, final String streamName) {
     return nameTransformer.applyDefaultCase(String.join("_",
         nameTransformer.convertStreamName(namespace),
-        nameTransformer.convertStreamName(streamName)));
+        nameTransformer.convertStreamName(streamName),
+        UUID.randomUUID().toString()));
   }
 
   @Override
