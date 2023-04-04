@@ -41,10 +41,10 @@ acceptance_tests:
   discovery:
     tests:
       - backward_compatibility_tests_config:
-          disable_for_version: 0.1.2
+          disable_for_version: 0.2.3
         config_path: secrets/config.json
       - backward_compatibility_tests_config:
-          disable_for_version: 0.1.2
+          disable_for_version: 0.2.3
         config_path: secrets/config_oauth.json
   full_refresh:
     tests:
