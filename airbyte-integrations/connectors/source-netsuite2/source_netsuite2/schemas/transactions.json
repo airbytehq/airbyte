@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["string"]
+    },
+    "tranid": {
+      "type": ["string"]
+    },
+    "type": {
+      "type": ["string"]
+    },
+    "lastmodified": {
+      "type": ["string"],
+      "format": "date-time"
+    }
+  }
+}
