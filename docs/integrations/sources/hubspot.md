@@ -21,6 +21,7 @@ You can use OAuth, API key, or Private App to authenticate your HubSpot account.
 | `engagements_emails`        | `sales-email-read`                                                               |
 | `forms`                     | `forms`                                                                          |
 | `form_submissions`          | `forms`                                                                          |
+| `goals`                     | `crm.objects.goal_targets.read`                                                                     |
 | `line_items`                | `e-commerce`                                                                     |
 | `owners`                    | `crm.objects.owners.read`                                                        |
 | `products`                  | `e-commerce`                                                                     |
@@ -73,6 +74,7 @@ The HubSpot source connector supports the following streams:
 * [Engagements Tasks](https://developers.hubspot.com/docs/api/crm/tasks) \(Incremental\)
 * [Forms](https://developers.hubspot.com/docs/api/marketing/forms)
 * [Form Submissions](https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form)
+* [Goals](https://developers.hubspot.com/docs/api/crm/goals) \(Incremental\)
 * [Line Items](https://developers.hubspot.com/docs/api/crm/line-items) \(Incremental\)
 * [Marketing Emails](https://legacydocs.hubspot.com/docs/methods/cms_email/get-all-marketing-email-statistics)
 * [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners)
