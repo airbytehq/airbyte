@@ -1,5 +1,5 @@
 import dagger
-from typing import Optional, Set
+from typing import Optional, Set, List
 
 from ci_connector_ops.pipelines.bases import Step, StepStatus, TestReport
 from ci_connector_ops.pipelines.actions.environments import with_poetry_module,with_pipx_module, DEFAULT_PYTHON_EXCLUDE
@@ -27,23 +27,24 @@ class TestPoetryModule(Step):
         run_test = metadata_lib_module.with_exec(["poetry", "run", "pytest"])
         return await self.get_step_result(run_test)
 
-class ExecutePipxStep(Step):
-    def __init__(self, context: PipelineContext, title: str, parent_dir: str, module_path: str):
+class SimpleExecStep(Step):
+    def __init__(self, context: PipelineContext, title: str, args: List[str]):
         self.title = title
-        self.parent_dir = parent_dir
-        self.module_path = module_path
+        self.args = args
         super().__init__(context)
 
-    async def _run(self, args) -> StepStatus:
-        # metadata_lib_module = with_pipx_module(
-        #     self.context,
-        #     ".",
-        #     "airbyte-ci/connectors/metadata_service/lib",
-        #     include=["airbyte-integrations/connectors/*"])
+    async def _run(self) -> StepStatus:
         print("HI!!!")
-        print(args)
-        run_test = self.context.dagger_client.with_exec(args)
+        print(self.args)
+        run_test = self.context.dagger_client.with_exec(self.args)
         return await self.get_step_result(run_test)
+
+def path_to_metadata_validation_step(metadata_pipeline_context: PipelineContext, metadata_path: str) -> Step:
+    return SimpleExecStep(
+                context=metadata_pipeline_context,
+                title=f"Validate Connector Metadata Manifest: {metadata_path}",
+                args=["metadata_service", "validate", str(metadata_path)]
+            )
 
 async def run_metadata_validation_pipeline(
     is_local: bool,
@@ -65,25 +66,28 @@ async def run_metadata_validation_pipeline(
     )
 
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
+
+        # TODO refactor the environemnts to use containers not contexts
         metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
-        metadata_path = str(list(metadata_source_paths)[0])
         updated_client = with_pipx_module(
             metadata_pipeline_context,
             ".",
-            "airbyte-ci/connectors/metadata_service/lib",
+            f"{METADATA_DIR}/{METADATA_LIB_MODULE_PATH}",
             include=["airbyte-integrations/connectors/*"])
 
         metadata_pipeline_context.dagger_client = updated_client
 
         async with metadata_pipeline_context:
-            test_lib_step = ExecutePipxStep(
-                context=metadata_pipeline_context,
-                title=f"Validate Connector Metadata Manifest: {metadata_path}",
-                parent_dir=".",
-                module_path=METADATA_LIB_MODULE_PATH,
-            )
-            result = await test_lib_step.run(["metadata_service", "validate", str(metadata_path)])
-            metadata_pipeline_context.test_report = TestReport(pipeline_context=metadata_pipeline_context, steps_results=[result])
+            validation_steps = [
+                path_to_metadata_validation_step(metadata_pipeline_context, metadata_path)
+                for metadata_path in metadata_source_paths
+            ]
+            results = []
+            for validation_step in validation_steps:
+                result = await validation_step.run()
+                results.append(result)
+
+            metadata_pipeline_context.test_report = TestReport(pipeline_context=metadata_pipeline_context, steps_results=results)
 
     return metadata_pipeline_context.test_report.success
 
