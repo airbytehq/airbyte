@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.io.airbyte.integration_tests.sources;
+package io.airbyte.integrations.source.postgres_strict_encrypt;
 
 import static io.airbyte.db.PostgresUtils.getCertificate;
 
@@ -40,12 +40,8 @@ import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-/**
- * This class is copied from source-postgres-strict-encrypt. The original file can be deleted
- * completely once the migration of multi-variant connector is done.
- */
 @ExtendWith(SystemStubsExtension.class)
-public class PostgresSourceStrictEncryptAcceptanceTest extends AbstractPostgresSourceAcceptanceTest {
+public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
@@ -111,6 +107,11 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends AbstractPostgresS
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
+  }
+
+  @Override
+  protected String getImageName() {
+    return "airbyte/source-postgres-strict-encrypt:dev";
   }
 
   @Override
