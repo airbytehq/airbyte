@@ -1,4 +1,4 @@
-rror() {
+error() {
   echo -e "$@"
   exit 1
 }
