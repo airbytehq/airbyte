@@ -1,6 +1,7 @@
 import mergedeep
 from deepdiff import DeepDiff
 from typing import TypeVar
+import copy
 
 T = TypeVar("T")
 
@@ -20,3 +21,8 @@ def merge_values(old_value: T, new_value: T) -> T:
         return merged
     else:
         return new_value
+
+def deep_copy_params(to_call):
+    def f(*args, **kwargs):
+        return to_call(*copy.deepcopy(args), **copy.deepcopy(kwargs))
+    return f

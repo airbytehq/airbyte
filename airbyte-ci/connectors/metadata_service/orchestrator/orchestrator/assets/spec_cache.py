@@ -1,7 +1,7 @@
 from dagster import asset
 import pandas as pd
 from metadata_service.spec_cache import list_cached_specs
-from ..utils.dagster_helpers import OutputDataFrame, output_dataframe
+from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 
 
 GROUP_NAME = "spec_cache"

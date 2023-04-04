@@ -1,45 +1,53 @@
 import pandas as pd
 import json
-import copy
 from typing import List
 
 from dagster import asset, OpExecutionContext
 
-from ..utils.dagster_helpers import OutputDataFrame, output_dataframe
-from ..models.metadata import PartialMetadataDefinition
+from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
+from orchestrator.utils.object_helpers import deep_copy_params
+from orchestrator.models.metadata import PartialMetadataDefinition
 
 
 GROUP_NAME = "catalog"
 
 # HELPERS
 
-
+@deep_copy_params
 def apply_overrides_from_catalog(metadata_data: dict, override_catalog_key: str) -> dict:
-    # Make a deep copy of the input dictionary to avoid side effects
-    metadata_data_copy = copy.deepcopy(metadata_data)
+    """Apply the overrides from the catalog to the metadata data.
 
-    # Extract the override_catalog dictionary
-    override_catalog = metadata_data_copy["catalogs"][override_catalog_key]
+    Args:
+        metadata_data (dict): The metadata data field.
+        override_catalog_key (str): The key of the catalog to override the metadata with.
 
-    # Remove the "enabled" key from the override_catalog dictionary
+    Returns:
+        dict: The metadata data field with the overrides applied.
+    """
+    override_catalog = metadata_data["catalogs"][override_catalog_key]
     del override_catalog["enabled"]
+    metadata_data.update(override_catalog)
 
-    # Update the metadata_data_copy dictionary with the values from the override_catalog dictionary
-    metadata_data_copy.update(override_catalog)
-
-    return metadata_data_copy
+    return metadata_data
 
 
+@deep_copy_params
 def metadata_to_catalog_entry(metadata_definition: dict, connector_type: str, override_catalog_key: str) -> dict:
-    # Make a deep copy of the input dictionary to avoid side effects
-    metadata_definition_copy = copy.deepcopy(metadata_definition)
-    metadata_data = metadata_definition_copy["data"]
+    """Convert the metadata definition to a catalog entry.
 
-    # remove the metadata fields that were added
+    Args:
+        metadata_definition (dict): The metadata definition.
+        connector_type (str): One of "source" or "destination".
+        override_catalog_key (str): The key of the catalog to override the metadata with.
+
+    Returns:
+        dict: The catalog equivalent of the metadata definition.
+    """
+    metadata_data = metadata_definition["data"]
+
     overrode_metadata_data = apply_overrides_from_catalog(metadata_data, override_catalog_key)
     del overrode_metadata_data["catalogs"]
 
-    # remove connectorType field
     del overrode_metadata_data["connectorType"]
 
     # rename field connectorSubtype to sourceType
@@ -81,7 +89,16 @@ def is_metadata_connector_type(metadata_definition: dict, connector_type: str) -
     return metadata_definition["data"]["connectorType"] == connector_type
 
 
-def construct_catalog_from_metadata(catalog_derived_metadata_definitions: List[dict], catalog_name: str) -> dict:
+def construct_catalog_from_metadata(catalog_derived_metadata_definitions: List[PartialMetadataDefinition], catalog_name: str) -> dict:
+    """Construct the catalog from the metadata definitions.
+
+    Args:
+        catalog_derived_metadata_definitions (List[dict]): Metadata definitions that have been derived from the existing catalog.
+        catalog_name (str): The name of the catalog to construct. One of "cloud" or "oss".
+
+    Returns:
+        dict: The catalog.
+    """
     catalog_sources = [
         metadata_to_catalog_entry(metadata, "source", catalog_name)
         for metadata in catalog_derived_metadata_definitions

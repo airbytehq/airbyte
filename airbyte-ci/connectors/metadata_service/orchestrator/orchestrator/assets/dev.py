@@ -4,8 +4,8 @@ from pydash.collections import key_by
 from deepdiff import DeepDiff
 from dagster import Output, asset
 from typing import List
-from ..utils.dagster_helpers import OutputDataFrame, output_dataframe
-from ..models.metadata import PartialMetadataDefinition
+from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
+from orchestrator.models.metadata import PartialMetadataDefinition
 
 
 """
@@ -140,6 +140,14 @@ OVERRIDES = {
 
 
 def key_catalog_entries(catalog: List[dict]) -> dict:
+    """Transforms a List of connectors into a dictionary keyed by the connector id.
+
+    Args:
+        catalog (List[dict]): List of connectors
+
+    Returns:
+        dict: Dictionary of connectors keyed by the connector id
+    """
     catalog_keyed = catalog.copy()
     for connector_type, id_field in [("sources", "sourceDefinitionId"), ("destinations", "destinationDefinitionId")]:
         catalog_keyed[connector_type] = key_by(catalog_keyed[connector_type], id_field)
@@ -147,6 +155,15 @@ def key_catalog_entries(catalog: List[dict]) -> dict:
 
 
 def diff_catalogs(catalog_dict_1: dict, catalog_dict_2: dict) -> DeepDiff:
+    """Compares two catalogs and returns a DeepDiff object.
+
+    Args:
+        catalog_dict_1 (dict)
+        catalog_dict_2 (dict)
+
+    Returns:
+        DeepDiff
+    """
     new_metadata_fields = [
         r"githubIssueLabel",
         r"license",

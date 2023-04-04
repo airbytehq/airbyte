@@ -1,11 +1,12 @@
 import pandas as pd
+import numpy as np
 from typing import List
 from dagster import Output, asset
 
 from metadata_service.models.generated.ConnectorMetadataDefinitionV1 import ConnectorMetadataDefinitionV1
-from ..utils.object_helpers import are_values_equal, merge_values
-from ..utils.dagster_helpers import OutputDataFrame, output_dataframe
-from ..models.metadata import PartialMetadataDefinition
+from orchestrator.utils.object_helpers import are_values_equal, merge_values
+from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
+from orchestrator.models.metadata import PartialMetadataDefinition
 
 GROUP_NAME = "metadata"
 
@@ -94,32 +95,52 @@ def compute_catalog_overrides(merged_df):
     return catalogs
 
 
-# todo change this return value
-def merge_into_metadata_definitions(id_field, connector_type, oss_connector_df, cloud_connector_df) -> pd.Series:
+def merge_into_metadata_definitions(id_field: str, connector_type: str, oss_connector_df: pd.DataFrame, cloud_connector_df: pd.DataFrame) -> List[PartialMetadataDefinition]:
+    """Merges the OSS and Cloud connector metadata into a single metadata definition.
+
+    Args:
+        id_field (str): The field that uniquely identifies a connector.
+        connector_type (str): The type of connector (source or destination).
+        oss_connector_df (pd.DataFrame): The dataframe containing the related OSS connector in the catalog.
+        cloud_connector_df (pd.DataFrame): The dataframe containing the related Cloud connector in the catalog.
+
+    Returns:
+        pd.Series: The merged metadata definition.
+    """
     merged_connectors = pd.merge(
         oss_connector_df, cloud_connector_df, on=id_field, how="outer", suffixes=(OSS_SUFFIX, CLOUD_SUFFIX), indicator=True
     )
-    sanitized_connectors = merged_connectors.where(pd.notnull(merged_connectors), None)
 
-    def build_metadata(merged_df: dict) -> PartialMetadataDefinition:
+    # Replace numpy nan values with None
+    sanitized_connectors = merged_connectors.replace([np.nan], [None])
+
+    def build_metadata(connector_catalog_entry: dict) -> PartialMetadataDefinition:
+        """Builds the metadata definition for a single connector.
+
+        Args:
+            connector_catalog_entry (dict): The merged connector metadata from the existing json catalogs.
+
+        Returns:
+            PartialMetadataDefinition: The final metadata definition.
+        """
         raw_data = {
-            "name": get_field_with_fallback(merged_df, "name"),
-            "definitionId": merged_df[id_field],
+            "name": get_field_with_fallback(connector_catalog_entry, "name"),
+            "definitionId": connector_catalog_entry[id_field],
             "connectorType": connector_type,
-            "dockerRepository": get_field_with_fallback(merged_df, "dockerRepository"),
-            "githubIssueLabel": get_field_with_fallback(merged_df, "dockerRepository").replace("airbyte/", ""),
-            "dockerImageTag": get_field_with_fallback(merged_df, "dockerImageTag"),
-            "icon": get_field_with_fallback(merged_df, "icon"),
-            "supportUrl": get_field_with_fallback(merged_df, "documentationUrl"),
-            "connectorSubtype": get_field_with_fallback(merged_df, "sourceType"),
-            "releaseStage": get_field_with_fallback(merged_df, "releaseStage"),
+            "dockerRepository": get_field_with_fallback(connector_catalog_entry, "dockerRepository"),
+            "githubIssueLabel": get_field_with_fallback(connector_catalog_entry, "dockerRepository").replace("airbyte/", ""),
+            "dockerImageTag": get_field_with_fallback(connector_catalog_entry, "dockerImageTag"),
+            "icon": get_field_with_fallback(connector_catalog_entry, "icon"),
+            "supportUrl": get_field_with_fallback(connector_catalog_entry, "documentationUrl"),
+            "connectorSubtype": get_field_with_fallback(connector_catalog_entry, "sourceType"),
+            "releaseStage": get_field_with_fallback(connector_catalog_entry, "releaseStage"),
             "license": "MIT",
-            "supportsDbt": get_field_with_fallback(merged_df, "supportsDbt"),
-            "supportsNormalization": get_field_with_fallback(merged_df, "supportsNormalization"),
-            "allowedHosts": get_field_with_fallback(merged_df, "allowedHosts"),
-            "normalizationConfig": get_field_with_fallback(merged_df, "normalizationConfig"),
-            "suggestedStreams": get_field_with_fallback(merged_df, "suggestedStreams"),
-            "resourceRequirements": get_field_with_fallback(merged_df, "resourceRequirements"),
+            "supportsDbt": get_field_with_fallback(connector_catalog_entry, "supportsDbt"),
+            "supportsNormalization": get_field_with_fallback(connector_catalog_entry, "supportsNormalization"),
+            "allowedHosts": get_field_with_fallback(connector_catalog_entry, "allowedHosts"),
+            "normalizationConfig": get_field_with_fallback(connector_catalog_entry, "normalizationConfig"),
+            "suggestedStreams": get_field_with_fallback(connector_catalog_entry, "suggestedStreams"),
+            "resourceRequirements": get_field_with_fallback(connector_catalog_entry, "resourceRequirements"),
         }
 
         # remove none values
@@ -127,12 +148,12 @@ def merge_into_metadata_definitions(id_field, connector_type, oss_connector_df, 
 
         metadata = {"metadataSpecVersion": "1.0", "data": data}
 
-        catalogs = compute_catalog_overrides(merged_df)
+        catalogs = compute_catalog_overrides(connector_catalog_entry)
         metadata["data"]["catalogs"] = catalogs
 
         return PartialMetadataDefinition.construct(**metadata)
 
-    metadata_list = [build_metadata(merged_df) for _, merged_df in sanitized_connectors.iterrows()]
+    metadata_list = [build_metadata(connector_catalog_entry) for _, connector_catalog_entry in sanitized_connectors.iterrows()]
 
     return metadata_list
 
@@ -149,7 +170,7 @@ def validate_metadata(metadata: PartialMetadataDefinition) -> tuple[bool, str]:
 
 
 @asset(group_name=GROUP_NAME)
-def valid_metadata_list(overrode_metadata_definitions: List[PartialMetadataDefinition]) -> OutputDataFrame:
+def valid_metadata_report_dataframe(overrode_metadata_definitions: List[PartialMetadataDefinition]) -> OutputDataFrame:
     """
     Validates the metadata definitions and returns a dataframe with the results
     """

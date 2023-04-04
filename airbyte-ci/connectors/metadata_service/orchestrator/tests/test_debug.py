@@ -56,9 +56,9 @@ def debug_catalog_projection():
     # github_connector_folders_list = github_connector_folders(context).value
 
     catalog_derived_metadata_definitions(context, cloud_sources_df, cloud_destinations_df, oss_sources_df, oss_destinations_df).value
-    # valid_metadata_list_df = valid_metadata_list(metadata_definitions_df).value
+    # valid_metadata_report_dataframe_df = valid_metadata_report_dataframe(metadata_definitions_df).value
 
-    # all_sources_df = all_sources_dataframe(cloud_sources_df, oss_sources_df, github_connector_folders_list, valid_metadata_list_df)
+    # all_sources_df = all_sources_dataframe(cloud_sources_df, oss_sources_df, github_connector_folders_list, valid_metadata_report_dataframe_df)
     # all_destinations_df = all_destinations_dataframe(cloud_destinations_df, oss_destinations_df)
 
     # connector_catalog_location_html(context, all_sources_df, all_destinations_df)

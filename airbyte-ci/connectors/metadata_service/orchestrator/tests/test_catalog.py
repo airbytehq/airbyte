@@ -16,7 +16,7 @@ from orchestrator.assets.catalog import (
 
 def test_merged_catalog_dataframes(oss_catalog_dict, cloud_catalog_dict):
     github_connector_folders = []
-    valid_metadata_list = pd.DataFrame([{"definitionId": "test", "is_metadata_valid": True}])
+    valid_metadata_report_dataframe = pd.DataFrame([{"definitionId": "test", "is_metadata_valid": True}])
     cached_specs = pd.DataFrame(
         [
             CachedSpec(
@@ -44,9 +44,9 @@ def test_merged_catalog_dataframes(oss_catalog_dict, cloud_catalog_dict):
     oss_sources_df = oss_sources_dataframe(oss_catalog_dict).value
     assert len(oss_sources_df) == num_oss_sources
 
-    all_sources_df = all_sources_dataframe(cloud_sources_df, oss_sources_df, github_connector_folders, valid_metadata_list, cached_specs)
+    all_sources_df = all_sources_dataframe(cloud_sources_df, oss_sources_df, github_connector_folders, valid_metadata_report_dataframe, cached_specs)
     all_destinations_df = all_destinations_dataframe(
-        cloud_destinations_df, oss_destinations_df, github_connector_folders, valid_metadata_list, cached_specs
+        cloud_destinations_df, oss_destinations_df, github_connector_folders, valid_metadata_report_dataframe, cached_specs
     )
 
     # assert that all_sources_df has a entry for each sourceDefinitionId in the cloud catalog and oss catalog
