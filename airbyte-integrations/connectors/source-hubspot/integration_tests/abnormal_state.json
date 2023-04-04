@@ -6,7 +6,7 @@
         "name": "campaigns"
       },
       "stream_state": {
-        "lastUpdatedTime": 1675121674226
+        "lastUpdatedTime": 7945393076000
       }
     }
   }, {
@@ -26,7 +26,7 @@
       "name": "contact_lists"
     },
     "stream_state": {
-      "updatedAt": 1680559000747
+      "updatedAt": 7945393076000
     }
   }
 }, {
@@ -46,7 +46,7 @@
       "name": "deal_pipelines"
     },
     "stream_state": {
-      "updatedAt": 1673308800000
+      "updatedAt": 7945393076000
     }
   }
 }, {
@@ -66,7 +66,7 @@
       "name": "email_events"
     },
     "stream_state": {
-      "created": 1680559000748
+      "created": 7945393076000
     }
   }
 }, {
@@ -76,7 +76,7 @@
       "name": "engagements"
     },
     "stream_state": {
-      "lastUpdated": 1680559000748
+      "lastUpdated": 7945393076000
     }
   }
 }, {
@@ -144,7 +144,7 @@
   "type": "STREAM",
   "stream": {
     "stream_descriptor": { "name": "subscription_changes" },
-    "stream_state": { "timestamp": 1680559000748 }
+    "stream_state": { "timestamp": 7945393076000 }
   }
 }, {
   "type": "STREAM",
@@ -156,7 +156,7 @@
   "type": "STREAM",
   "stream": {
     "stream_descriptor": { "name": "workflows" },
-    "stream_state": { "updatedAt": 1675124308226 }
+    "stream_state": { "updatedAt": 7945393076000 }
   }
 }
 ]
