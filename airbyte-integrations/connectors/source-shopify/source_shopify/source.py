@@ -8,6 +8,7 @@ from functools import cached_property
 import sys
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import parse_qsl, urlparse
+from urllib3 import exceptions
 
 import requests
 from airbyte_cdk import AirbyteLogger
@@ -866,6 +867,11 @@ class SourceShopify(AbstractSource):
         return [stream_instance for stream_instance in stream_instances if self.format_name(stream_instance.name) in permitted_streams]
 
     @staticmethod
+    @backoff.on_exception(
+        backoff.expo,
+        exceptions.NewConnectionError,
+        max_tries=3,
+    )
     def get_user_scopes(config):
         session = requests.Session()
         headers = config["authenticator"].get_auth_header()
