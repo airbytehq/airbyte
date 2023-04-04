@@ -129,18 +129,38 @@ async def run_metadata_validation_pipeline(
 
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
-        async with metadata_pipeline_context:
-            metadata_manifest_path = str(list(metadata_manifest_paths)[0])
-            validate_file = ExecutePipxStep(
-                context=metadata_pipeline_context,
-                title=f"Validate Connector Metadata Manifest: {metadata_manifest_path}",
-                parent_dir=".",
-                module_path="airbyte-ci/connectors/metadata_service/lib",
-                metadata_file_path=metadata_manifest_path,
-            )
-            result = await validate_file.run()
+        # async with metadata_pipeline_context:
+        metadata_manifest_path = str(list(metadata_manifest_paths)[0])
+
+            # validate_file = ExecutePipxStep(
+            #     context=metadata_pipeline_context,
+            #     title=f"Validate Connector Metadata Manifest: {metadata_manifest_path}",
+            #     parent_dir=".",
+            #     module_path="airbyte-ci/connectors/metadata_service/lib",
+            #     metadata_file_path=metadata_manifest_path,
+            # )
+
+        metadata_lib_module = with_pipx_module(
+            metadata_pipeline_context,
+            ".",
+            "airbyte-ci/connectors/metadata_service/lib",
+            include=[str(metadata_manifest_path), "tools/", "airbyte-integrations/connectors/source-sentry"])
+        print("HI!!!")
+        print(str(metadata_manifest_path))
+        try:
+            run_test = metadata_lib_module.with_exec(["pipx", "run", "--spec", "airbyte-ci/connectors/metadata_service/lib", "validate_metadata_file"])
+            result = await run_test.stdout()
             print("result!!!!")
             print(result)
-            metadata_pipeline_context.test_report = TestReport(pipeline_context=metadata_pipeline_context, steps_results=[result])
+            return result
+        except Exception as e:
+            print("exception!!!!")
+            print(e)
+            return False
 
-    return metadata_pipeline_context.test_report.success
+            # result = await validate_file.run()
+            # print("result!!!!")
+            # print(result)
+            # metadata_pipeline_context.test_report = TestReport(pipeline_context=metadata_pipeline_context, steps_results=[result])
+
+    # return metadata_pipeline_context.test_report.success
