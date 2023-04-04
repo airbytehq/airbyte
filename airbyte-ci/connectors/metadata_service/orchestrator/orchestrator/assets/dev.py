@@ -2,7 +2,7 @@ import pandas as pd
 import yaml
 from pydash.collections import key_by
 from deepdiff import DeepDiff
-from dagster import Output, asset
+from dagster import Output, asset, OpExecutionContext
 from typing import List
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 from orchestrator.models.metadata import PartialMetadataDefinition
@@ -205,7 +205,7 @@ def overrode_metadata_definitions(catalog_derived_metadata_definitions: List[Par
 
 
 @asset(required_resource_keys={"metadata_file_directory"}, group_name=GROUP_NAME)
-def persist_metadata_definitions(context, overrode_metadata_definitions):
+def persist_metadata_definitions(context: OpExecutionContext, overrode_metadata_definitions: List[PartialMetadataDefinition]):
     """
     Persist the metadata definitions to the local metadata file directory.
     """
@@ -216,7 +216,7 @@ def persist_metadata_definitions(context, overrode_metadata_definitions):
 
         key = f"{connector_dir_name}-{definitionId}"
 
-        yaml_string = yaml.dump(metadata.to_dict())
+        yaml_string = yaml.dump(metadata.dict())
 
         file = context.resources.metadata_file_directory.write_data(yaml_string.encode(), ext="yaml", key=key)
         files.append(file)
