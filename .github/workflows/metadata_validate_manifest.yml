@@ -6,7 +6,7 @@ on:
 jobs:
   metadata_service_ci:
     name: Validate Metadata Manifest for Connectors
-    timeout-minutes: 10 # 4 hours
+    timeout-minutes: 10 # 10 minutes
     runs-on: medium-runner
     steps:
       - name: Checkout Airbyte
