@@ -29,6 +29,7 @@ class TestPoetryModule(Step):
         run_test = metadata_lib_module.with_exec(["poetry", "run", "pytest"])
         return await self.get_step_result(run_test)
 
+
 class SimpleExecStep(Step):
     def __init__(self, context: PipelineContext, title: str, args: List[str]):
         self.title = title
@@ -39,12 +40,14 @@ class SimpleExecStep(Step):
         run_test = self.context.dagger_client.with_exec(self.args)
         return await self.get_step_result(run_test)
 
+
 def path_to_metadata_validation_step(metadata_pipeline_context: PipelineContext, metadata_path: Path) -> Step:
     return SimpleExecStep(
-                context=metadata_pipeline_context,
-                title=f"Validate Connector Metadata Manifest: {metadata_path}",
-                args=["metadata_service", "validate", str(metadata_path)]
-            )
+        context=metadata_pipeline_context,
+        title=f"Validate Connector Metadata Manifest: {metadata_path}",
+        args=["metadata_service", "validate", str(metadata_path)],
+    )
+
 
 async def run_metadata_validation_pipeline(
     is_local: bool,
@@ -53,7 +56,7 @@ async def run_metadata_validation_pipeline(
     gha_workflow_run_url: Optional[str],
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
-    metadata_source_paths: Set[Path]
+    metadata_source_paths: Set[Path],
 ) -> bool:
     metadata_pipeline_context = PipelineContext(
         pipeline_name="Metadata Service Validation Pipeline",
@@ -69,16 +72,13 @@ async def run_metadata_validation_pipeline(
         # TODO refactor the environemnts to use containers not contexts
         metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
         updated_client = with_pipx_module(
-            metadata_pipeline_context,
-            ".",
-            f"{METADATA_DIR}/{METADATA_LIB_MODULE_PATH}",
-            include=["airbyte-integrations/connectors/*"])
+            metadata_pipeline_context, ".", f"{METADATA_DIR}/{METADATA_LIB_MODULE_PATH}", include=["airbyte-integrations/connectors/*"]
+        )
 
         metadata_pipeline_context.dagger_client = updated_client
 
         validation_steps = [
-            path_to_metadata_validation_step(metadata_pipeline_context, metadata_path).run
-            for metadata_path in metadata_source_paths
+            path_to_metadata_validation_step(metadata_pipeline_context, metadata_path).run for metadata_path in metadata_source_paths
         ]
 
         async with metadata_pipeline_context:

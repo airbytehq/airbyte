@@ -4,14 +4,21 @@ import logging
 
 from rich.logging import RichHandler
 
-from ci_connector_ops.pipelines.pipelines.metadata import run_metadata_lib_test_pipeline, run_metadata_orchestrator_test_pipeline, run_metadata_validation_pipeline
-from ci_connector_ops.pipelines.utils import DaggerPipelineCommand, get_modified_connectors
-
+from ci_connector_ops.pipelines.pipelines.metadata import (
+    run_metadata_lib_test_pipeline,
+    run_metadata_orchestrator_test_pipeline,
+    run_metadata_validation_pipeline,
+)
+from ci_connector_ops.pipelines.utils import (
+    DaggerPipelineCommand,
+    get_modified_connectors,
+)
 
 logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
 logger = logging.getLogger(__name__)
 
 # MAIN GROUP
+
 
 @click.group(help="Commands related to the metadata service.")
 @click.pass_context
@@ -20,6 +27,7 @@ def metadata(ctx: click.Context):
 
 
 # VALIDATE COMMAND
+
 
 @metadata.command(help="Commands related to validating the metadata files.")
 @click.pass_context
@@ -54,6 +62,7 @@ def validate(ctx: click.Context):
 
 
 # TEST GROUP
+
 
 @metadata.group(help="Commands related to testing the metadata service.")
 @click.pass_context

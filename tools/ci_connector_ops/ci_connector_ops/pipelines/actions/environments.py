@@ -245,6 +245,7 @@ def with_poetry(context: PipelineContext) -> Container:
 
     return poetry_with_cache
 
+
 def with_pipx(context: PipelineContext) -> Container:
     """Installs pipx in a python environment.
 
@@ -294,9 +295,4 @@ def with_pipx_module(context: PipelineContext, parent_dir_path: str, module_path
     src = context.dagger_client.host().directory(parent_dir_path, exclude=pipx_exclude, include=pipx_include)
     python_with_pipx = with_pipx(context)
 
-    return (
-        python_with_pipx
-        .with_mounted_directory("/src", src)
-        .with_workdir(f"/src")
-        .with_exec(pipx_install_dependencies_cmd)
-    )
+    return python_with_pipx.with_mounted_directory("/src", src).with_workdir("/src").with_exec(pipx_install_dependencies_cmd)
