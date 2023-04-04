@@ -119,6 +119,9 @@ class PipelineContext:
     async def __aexit__(self, exception_type, exception_value, traceback) -> bool:
         if exception_value:
             self.logger.error("An error was handled by the Pipeline", exc_info=True)
+            self.logger.error(f"Error type: {exception_type}")
+            self.logger.error(f"Error value: {exception_value}")
+            self.logger.error(f"Error traceback: {traceback}")
             self.state = ContextState.ERROR
 
         if self.test_report is None:

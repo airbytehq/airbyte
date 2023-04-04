@@ -36,10 +36,10 @@ class ExecutePipxStep(Step):
         super().__init__(context)
 
     async def _run(self) -> StepStatus:
-        metadata_lib_module = with_pipx_module(self.context, self.parent_dir, self.module_path)
+        metadata_lib_module = with_pipx_module(self.context, self.parent_dir, self.module_path, include=[str(self.metadata_file_path)])
         print("HI!!!")
         print(self.metadata_file_path)
-        run_test = metadata_lib_module.with_exec(["ls"])
+        run_test = metadata_lib_module.with_exec(["which", "validate_metadata_file"])
         return await self.get_step_result(run_test)
 
 
@@ -115,7 +115,7 @@ async def run_metadata_validation_pipeline(
     gha_workflow_run_url: Optional[str],
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
-    metadata_manifest_paths: Set[str]
+    metadata_manifest_paths: Set[str] # TODO actually a Path
 ) -> bool:
     metadata_pipeline_context = PipelineContext(
         pipeline_name="Metadata Service Validation Pipeline",
@@ -130,7 +130,7 @@ async def run_metadata_validation_pipeline(
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
         async with metadata_pipeline_context:
-            metadata_manifest_path = list(metadata_manifest_paths)[0]
+            metadata_manifest_path = str(list(metadata_manifest_paths)[0])
             validate_file = ExecutePipxStep(
                 context=metadata_pipeline_context,
                 title=f"Validate Connector Metadata Manifest: {metadata_manifest_path}",
@@ -139,6 +139,8 @@ async def run_metadata_validation_pipeline(
                 metadata_file_path=metadata_manifest_path,
             )
             result = await validate_file.run()
+            print("result!!!!")
+            print(result)
             metadata_pipeline_context.test_report = TestReport(pipeline_context=metadata_pipeline_context, steps_results=[result])
 
     return metadata_pipeline_context.test_report.success

@@ -234,7 +234,7 @@ def with_poetry(context: PipelineContext) -> Container:
     Returns:
         Container: A python environment with poetry installed.
     """
-    install_poetry_package_cmd = ["python", "-m", "pip", "install", "poetry", "pipx"]
+    install_poetry_package_cmd = ["python", "-m", "pip", "install", "poetry"]
 
     python_base_environment: Container = context.dagger_client.container().from_("python:3.9")
     python_with_git = with_debian_packages(python_base_environment, ["git"])
@@ -244,6 +244,22 @@ def with_poetry(context: PipelineContext) -> Container:
     poetry_with_cache = python_with_poetry.with_mounted_cache("/root/.cache/pypoetry", poetry_cache, sharing=CacheSharingMode.PRIVATE)
 
     return poetry_with_cache
+
+def with_pipx(context: PipelineContext) -> Container:
+    """Installs pipx in a python environment.
+
+    Args:
+        context (PipelineContext): The current test context, providing the repository directory from which the ci_credentials sources will be pulled.
+
+    Returns:
+        Container: A python environment with pipx installed.
+    """
+    install_pipx_package_cmd = ["python", "-m", "pip", "install", "pipx"]
+
+    python_with_poetry: Container = with_poetry(context)
+    python_with_pipx = python_with_poetry.with_exec(install_pipx_package_cmd)
+
+    return python_with_pipx
 
 
 def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_path: str) -> Container:
@@ -263,7 +279,7 @@ def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_p
         .with_exec(poetry_install_dependencies_cmd)
     )
 
-def with_pipx_module(context: PipelineContext, parent_dir_path: str, module_path: str) -> Container:
+def with_pipx_module(context: PipelineContext, parent_dir_path: str, module_path: str, include: List[str]) -> Container:
     """Sets up a pipx module.
 
     Args:
@@ -272,9 +288,11 @@ def with_pipx_module(context: PipelineContext, parent_dir_path: str, module_path
         Container: A python environment with dependencies installed using pipx.
     """
     pipx_exclude = ["**/__pycache__"] + DEFAULT_PYTHON_EXCLUDE
-    pipx_install_dependencies_cmd = ["pipx", "install", module_path]
+    pipx_include = [module_path] + include
+    pipx_install_dependencies_cmd = ["pipx", "install", module_path, "--force", "-e"]
+    ensure_pipx_package_cmd = ["pipx", "ensurepath"]
 
-    src = context.dagger_client.host().directory(parent_dir_path, exclude=pipx_exclude)
-    python_with_poetry = with_poetry(context)
+    src = context.dagger_client.host().directory(parent_dir_path, exclude=pipx_exclude, include=pipx_include)
+    python_with_pipx = with_pipx(context)
 
-    return python_with_poetry.with_mounted_directory("/src", src).with_workdir(f"/src").with_exec(pipx_install_dependencies_cmd)
+    return python_with_pipx.with_mounted_directory("/src", src).with_workdir(f"/src").with_exec(pipx_install_dependencies_cmd).with_exec(ensure_pipx_package_cmd)
