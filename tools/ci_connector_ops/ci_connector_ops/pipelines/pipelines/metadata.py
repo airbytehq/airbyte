@@ -148,7 +148,9 @@ async def run_metadata_validation_pipeline(
         print("HI!!!")
         print(str(metadata_manifest_path))
         try:
-            run_test = metadata_lib_module.with_exec(["pipx", "run", "--spec", "airbyte-ci/connectors/metadata_service/lib", "validate_metadata_file"])
+            # run_test = metadata_lib_module.with_exec(["pipx", "run", "--spec", "airbyte-ci/connectors/metadata_service/lib", "validate_metadata_file"])
+
+            run_test = metadata_lib_module.with_exec(["validate_metadata_file"])
             result = await run_test.stdout()
             print("result!!!!")
             print(result)

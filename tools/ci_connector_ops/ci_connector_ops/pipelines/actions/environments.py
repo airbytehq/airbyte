@@ -295,4 +295,11 @@ def with_pipx_module(context: PipelineContext, parent_dir_path: str, module_path
     src = context.dagger_client.host().directory(parent_dir_path, exclude=pipx_exclude, include=pipx_include)
     python_with_pipx = with_pipx(context)
 
-    return python_with_pipx.with_mounted_directory("/src", src).with_workdir(f"/src").with_exec(pipx_install_dependencies_cmd).with_exec(ensure_pipx_package_cmd)
+    return (
+        python_with_pipx
+        .with_mounted_directory("/src", src)
+        .with_workdir(f"/src")
+        .with_exec(pipx_install_dependencies_cmd)
+        .with_exec(ensure_pipx_package_cmd)
+        .with_env_variable("PATH", "$PATH:/root/.local/bin")
+    )
