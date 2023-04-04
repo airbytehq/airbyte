@@ -131,10 +131,6 @@ class Connector:
         return Path(f"./airbyte-integrations/connectors/{self.technical_name}")
 
     @property
-    def metadata_manifest_file_path(self) -> Path:
-        return Path(f"./airbyte-integrations/connectors/{self.technical_name}/metadata.yml")
-
-    @property
     def language(self) -> ConnectorLanguage:
         if Path(self.code_directory / self.technical_name.replace("-", "_") / "manifest.yaml").is_file():
             return ConnectorLanguage.LOW_CODE

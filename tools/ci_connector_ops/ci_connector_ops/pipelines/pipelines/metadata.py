@@ -115,7 +115,7 @@ async def run_metadata_validation_pipeline(
     gha_workflow_run_url: Optional[str],
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
-    metadata_manifest_paths: Set[str] # TODO actually a Path
+    metadata_source_paths: Set[str] # TODO actually a Path
 ) -> bool:
     metadata_pipeline_context = PipelineContext(
         pipeline_name="Metadata Service Validation Pipeline",
@@ -130,14 +130,14 @@ async def run_metadata_validation_pipeline(
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
         # async with metadata_pipeline_context:
-        metadata_manifest_path = str(list(metadata_manifest_paths)[0])
+        metadata_path = str(list(metadata_source_paths)[0])
 
             # validate_file = ExecutePipxStep(
             #     context=metadata_pipeline_context,
-            #     title=f"Validate Connector Metadata Manifest: {metadata_manifest_path}",
+            #     title=f"Validate Connector Metadata Manifest: {metadata_path}",
             #     parent_dir=".",
             #     module_path="airbyte-ci/connectors/metadata_service/lib",
-            #     metadata_file_path=metadata_manifest_path,
+            #     metadata_file_path=metadata_path,
             # )
 
         metadata_lib_module = with_pipx_module(
@@ -146,12 +146,12 @@ async def run_metadata_validation_pipeline(
             "airbyte-ci/connectors/metadata_service/lib",
             include=["airbyte-integrations/connectors/*"])
         print("HI!!!")
-        print(str(metadata_manifest_path))
+        print(str(metadata_path))
         try:
             # run_test = metadata_lib_module.with_exec(["pipx", "run", "--spec", "airbyte-ci/connectors/metadata_service/lib", "validate_metadata_file"])
 
-            # run_test = metadata_lib_module.with_exec(["source", "/root/.local/bin/validate_metadata_file", f"/src/{str(metadata_manifest_path)}"])
-            run_test = metadata_lib_module.with_exec(["validate_metadata_file", str(metadata_manifest_path)])
+            # run_test = metadata_lib_module.with_exec(["source", "/root/.local/bin/validate_metadata_file", f"/src/{str(metadata_path)}"])
+            run_test = metadata_lib_module.with_exec(["metadata_service", "validate", str(metadata_path)])
             # run_test = metadata_lib_module.with_exec(["ls", f"airbyte-integrations/connectors/source-sentry"])
             # run_test = metadata_lib_module.with_exec(["printenv", "PATH"])
             result = await run_test.stdout()

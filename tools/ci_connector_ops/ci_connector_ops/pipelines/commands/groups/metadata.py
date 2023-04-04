@@ -30,10 +30,10 @@ def validate(ctx: click.Context):
         click.secho("No modified connectors found. Skipping metadata validation.")
         return
 
-    metadata_manifest_connectors = [connector.technical_name for connector in modified_connectors]
-    metadata_manifest_paths = [connector.metadata_manifest_file_path for connector in modified_connectors]
+    metadata_connectors = [connector.technical_name for connector in modified_connectors]
+    metadata_source_paths = [connector.code_directory for connector in modified_connectors]
 
-    click.secho(f"Validating metadata for the following connectors: {', '.join(metadata_manifest_connectors)}")
+    click.secho(f"Validating metadata for the following connectors: {', '.join(metadata_connectors)}")
     try:
         pipeline_success = anyio.run(
             run_metadata_validation_pipeline,
@@ -43,7 +43,7 @@ def validate(ctx: click.Context):
             ctx.obj.get("gha_workflow_run_url"),
             ctx.obj.get("pipeline_start_timestamp"),
             ctx.obj.get("ci_context"),
-            metadata_manifest_paths,
+            metadata_source_paths,
         )
         if not pipeline_success:
             raise dagger.DaggerError("Metadata Validation Pipeline failed.")
