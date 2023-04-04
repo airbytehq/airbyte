@@ -283,7 +283,7 @@ def with_pipx_module(context: PipelineContext, parent_dir_path: str, module_path
     """Installs a pipx module
 
     Args:
-        context (PipelineContext): The current test context, providing the repository directory from which the ci_credentials sources will be pulled.
+        context (PipelineContext): The current pipeline context
     Returns:
         Container: A python environment with dependencies installed using pipx.
     """

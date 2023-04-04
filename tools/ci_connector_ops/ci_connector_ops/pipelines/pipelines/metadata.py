@@ -35,14 +35,14 @@ class ExecutePipxStep(Step):
         super().__init__(context)
 
     async def _run(self, args) -> StepStatus:
-        metadata_lib_module = with_pipx_module(
-            self.context,
-            ".",
-            "airbyte-ci/connectors/metadata_service/lib",
-            include=["airbyte-integrations/connectors/*"])
+        # metadata_lib_module = with_pipx_module(
+        #     self.context,
+        #     ".",
+        #     "airbyte-ci/connectors/metadata_service/lib",
+        #     include=["airbyte-integrations/connectors/*"])
         print("HI!!!")
         print(args)
-        run_test = metadata_lib_module.with_exec(args)
+        run_test = self.context.dagger_client.with_exec(args)
         return await self.get_step_result(run_test)
 
 async def run_metadata_validation_pipeline(
@@ -67,6 +67,13 @@ async def run_metadata_validation_pipeline(
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
         metadata_path = str(list(metadata_source_paths)[0])
+        updated_client = with_pipx_module(
+            metadata_pipeline_context,
+            ".",
+            "airbyte-ci/connectors/metadata_service/lib",
+            include=["airbyte-integrations/connectors/*"])
+
+        metadata_pipeline_context.dagger_client = updated_client
 
         async with metadata_pipeline_context:
             test_lib_step = ExecutePipxStep(
