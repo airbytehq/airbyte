@@ -16,7 +16,7 @@
       "name": "companies"
     },
     "stream_state": {
-      "updatedAt": "2023-04-03T21:56:40.747704Z"
+      "updatedAt": "2221-10-12T13:37:56.412000+00:00"
     }
   }
 }, {
@@ -36,7 +36,7 @@
       "name": "contacts"
     },
     "stream_state": {
-      "updatedAt": "2023-04-03T21:56:40.747798Z"
+      "updatedAt": "2221-10-12T13:37:56.412000+00:00"
     }
   }
 }, {
@@ -56,7 +56,7 @@
       "name": "deals"
     },
     "stream_state": {
-      "updatedAt": "2023-04-03T21:56:40.747944Z"
+      "updatedAt": "2221-10-12T13:37:56.412000+00:00"
     }
   }
 }, {
@@ -82,21 +82,15 @@
 }, {
   "type": "STREAM",
   "stream": {
-    "stream_descriptor": {
-      "name": "engagements_calls"
-    },
-    "stream_state": {
-      "updatedAt": "2023-04-03T21:56:40.748114Z"
-    }
+    "stream_descriptor": { "name": "engagements_calls" },
+    "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
   }
 }, {
   "type": "STREAM",
   "stream": {
-    "stream_descriptor": {
-      "name": "engagements_emails"
-    },
+    "stream_descriptor": { "name": "engagements_emails" },
     "stream_state": {
-      "updatedAt": "2023-04-03T21:56:40.748157Z"
+      "updatedAt": "2221-10-12T13:37:56.412000+00:00"
     }
   }
 }, {
@@ -105,53 +99,46 @@
     "stream_descriptor": {
       "name": "engagements_meetings"
     },
-    "stream_state": {
-      "updatedAt": "2023-04-03T21:56:40.748197Z"
-    }
+    "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
   }
 }, {
   "type": "STREAM",
   "stream": {
-    "stream_descriptor": {
-      "name": "engagements_notes"
-    },
-    "stream_state": {
-      "updatedAt": "2023-04-03T21:56:40.748239Z"
-    }
+    "stream_descriptor": { "name": "engagements_notes" },
+    "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
   }
 }, {
   "type": "STREAM",
   "stream": {
-    "stream_descriptor": {
-      "name": "engagements_tasks"
-    },
-    "stream_state": {
-      "updatedAt": "2023-04-03T21:56:40.748280Z"
-    }
+    "stream_descriptor": { "name": "engagements_tasks" },
+    "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
   }
-}, {
+},
+  {
   "type": "STREAM",
   "stream": {
     "stream_descriptor": { "name": "forms" },
-    "stream_state": { "updatedAt": "2023-02-13T16:57:16.378000+00:00" }
+    "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
   }
-}, {
-  "type": "STREAM",
-  "stream": {
-    "stream_descriptor": { "name": "line_items" },
-    "stream_state": { "updatedAt": "2023-04-03T21:56:40.748430Z" }
-  }
-}, {
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" },
+      "stream_descriptor": { "name": "line_items" }
+    }
+  },
+  {
   "type": "STREAM",
   "stream": {
     "stream_descriptor": { "name": "owners" },
-    "stream_state": { "updatedAt": "2023-01-31T00:25:34.448000+00:00" }
+    "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
   }
 }, {
   "type": "STREAM",
   "stream": {
     "stream_descriptor": { "name": "products" },
-    "stream_state": { "updatedAt": "2023-04-03T21:56:40.748574Z" }
+    "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
   }
 }, {
   "type": "STREAM",
@@ -163,7 +150,7 @@
   "type": "STREAM",
   "stream": {
     "stream_descriptor": { "name": "tickets" },
-    "stream_state": { "updatedAt": "2023-04-03T21:56:40.748695Z" }
+    "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
   }
 }, {
   "type": "STREAM",
