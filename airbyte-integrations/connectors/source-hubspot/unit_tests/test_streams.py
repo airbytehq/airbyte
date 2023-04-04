@@ -13,6 +13,7 @@ from source_hubspot.streams import (
     DealPipelines,
     Deals,
     EmailEvents,
+    EmailSubscriptions,
     EngagementsCalls,
     EngagementsEmails,
     EngagementsMeetings,
@@ -83,6 +84,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         (Deals, "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (DealPipelines, "deal", {"updatedAt": 1675121674226}),
         (EmailEvents, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (EmailSubscriptions, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (EngagementsCalls, "calls", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (EngagementsEmails, "emails", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (EngagementsMeetings, "meetings", {"updatedAt": "2022-02-25T16:43:11Z"}),
@@ -108,8 +110,6 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
                     {
                         "id": "test_id",
                         "created": "2022-02-25T16:43:11Z",
-                        # "updatedAt": "2022-02-25T16:43:11Z",
-                        # "lastUpdatedTime": 1675121674226,
                     } | cursor_value
                 ],
             }
