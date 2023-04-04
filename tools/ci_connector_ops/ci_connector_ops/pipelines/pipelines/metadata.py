@@ -41,7 +41,7 @@ class SimpleExecStep(Step):
         return await self.get_step_result(run_test)
 
 
-def path_to_metadata_validation_step(metadata_pipeline_context: PipelineContext, metadata_path: Path) -> Step:
+def metadata_validation_step(metadata_pipeline_context: PipelineContext, metadata_path: Path) -> Step:
     return SimpleExecStep(
         context=metadata_pipeline_context,
         title=f"Validate Connector Metadata Manifest: {metadata_path}",
@@ -78,7 +78,7 @@ async def run_metadata_validation_pipeline(
         metadata_pipeline_context.dagger_client = updated_client
 
         validation_steps = [
-            path_to_metadata_validation_step(metadata_pipeline_context, metadata_path).run for metadata_path in metadata_source_paths
+            metadata_validation_step(metadata_pipeline_context, metadata_path).run for metadata_path in metadata_source_paths
         ]
 
         async with metadata_pipeline_context:
