@@ -144,7 +144,7 @@ async def run_metadata_validation_pipeline(
             metadata_pipeline_context,
             ".",
             "airbyte-ci/connectors/metadata_service/lib",
-            include=[str(metadata_manifest_path), "airbyte-integrations/connectors/source-sentry"])
+            include=["airbyte-integrations/connectors/*"])
         print("HI!!!")
         print(str(metadata_manifest_path))
         try:
