@@ -8,6 +8,8 @@ import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getError
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import datadog.trace.api.Trace;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
@@ -31,6 +33,7 @@ import io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.integrations.util.ConnectorExceptionUtil;
+import io.airbyte.integrations.util.ApmTraceUtils;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -62,6 +65,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import io.opencensus.trace.Span;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,11 +77,16 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractDbSource<DataType, Database extends AbstractDatabase> extends
     BaseConnector implements Source, AutoCloseable {
 
+  public static final String CHECK_TRACE_OPERATION_NAME = "check-operation";
+  public static final String DISCOVER_TRACE_OPERATION_NAME = "discover-operation";
+  public static final String READ_TRACE_OPERATION_NAME = "read-operation";
+
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDbSource.class);
   // TODO: Remove when the flag is not use anymore
   private final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
   @Override
+  @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     try {
       final Database database = createDatabase(config);
@@ -86,6 +96,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
+      ApmTraceUtils.addExceptionToTrace(ex);
       final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(),
           ex.getExceptionMessage(), ex);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, message);
@@ -93,6 +104,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           .withStatus(Status.FAILED)
           .withMessage(message);
     } catch (final Exception e) {
+      ApmTraceUtils.addExceptionToTrace(e);
       LOGGER.info("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
@@ -103,6 +115,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   @Override
+  @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
     try {
       final Database database = createDatabase(config);
@@ -525,6 +538,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @param config database implementation-specific configuration.
    * @return database spec config
    */
+  @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
   public abstract JsonNode toDatabaseConfig(JsonNode config);
 
   /**
@@ -534,6 +548,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return database instance
    * @throws Exception might throw an error during connection to database
    */
+  @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
   protected abstract Database createDatabase(JsonNode config) throws Exception;
 
   /**
@@ -575,6 +590,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return list of the source tables
    * @throws Exception access to the database might lead to an exceptions.
    */
+  @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
   protected abstract List<TableInfo<CommonField<DataType>>> discoverInternal(
                                                                              final Database database)
       throws Exception;
