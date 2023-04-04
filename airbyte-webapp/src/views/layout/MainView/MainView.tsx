@@ -88,6 +88,9 @@ const MainView: React.FC = (props) => {
       RoutePaths.Notifications,
       RoutePaths.Configurations,
       RoutePaths.Language,
+      RoutePaths.Password,
+      RoutePaths.Account,
+      RoutePaths.Support,
     ],
     []
   );

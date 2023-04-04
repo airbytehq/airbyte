@@ -1,0 +1,23 @@
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 50px;
+}
+
+.formItemLabel {
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 30px;
+  display: flex;
+  align-items: center;
+  color: #27272a;
+  margin-bottom: 20px;
+}
+
+.textarea {
+  resize: vertical;
+  background: #f8f8fe;
+  border-radius: 8px;
+  min-height: 300px;
+  padding: 10px;
+}

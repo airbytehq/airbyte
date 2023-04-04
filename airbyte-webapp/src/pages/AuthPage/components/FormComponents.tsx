@@ -1,8 +1,10 @@
 import { Form as FormikForm } from "formik";
 import styled from "styled-components";
 
-export const Form = styled(FormikForm)`
-  margin-top: 40px;
+export const Form = styled(FormikForm)<{
+  top?: string;
+}>`
+  margin-top: ${({ top }) => (top ? top : 40)}px;
 `;
 
 export const FieldItem = styled.div<{
