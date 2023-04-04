@@ -257,7 +257,7 @@ def with_pipx(context: PipelineContext) -> Container:
     install_pipx_package_cmd = ["python", "-m", "pip", "install", "pipx"]
 
     python_with_poetry: Container = with_poetry(context)
-    python_with_pipx = python_with_poetry.with_exec(install_pipx_package_cmd)
+    python_with_pipx = python_with_poetry.with_exec(install_pipx_package_cmd).with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
 
     return python_with_pipx
 
@@ -289,7 +289,7 @@ def with_pipx_module(context: PipelineContext, parent_dir_path: str, module_path
     """
     pipx_exclude = ["**/__pycache__"] + DEFAULT_PYTHON_EXCLUDE
     pipx_include = [module_path] + include
-    pipx_install_dependencies_cmd = ["pipx", "install", module_path, "--force", "-e"]
+    pipx_install_dependencies_cmd = ["pipx", "install", module_path]
     ensure_pipx_package_cmd = ["pipx", "ensurepath"]
 
     src = context.dagger_client.host().directory(parent_dir_path, exclude=pipx_exclude, include=pipx_include)
@@ -300,6 +300,6 @@ def with_pipx_module(context: PipelineContext, parent_dir_path: str, module_path
         .with_mounted_directory("/src", src)
         .with_workdir(f"/src")
         .with_exec(pipx_install_dependencies_cmd)
-        .with_exec(ensure_pipx_package_cmd)
-        .with_env_variable("PATH", "$PATH:/root/.local/bin")
+        # .with_exec(ensure_pipx_package_cmd)
+        # .with_exec(["PATH=$(printenv PATH):/root/.local/bin"])
     )

@@ -144,13 +144,16 @@ async def run_metadata_validation_pipeline(
             metadata_pipeline_context,
             ".",
             "airbyte-ci/connectors/metadata_service/lib",
-            include=[str(metadata_manifest_path), "tools/", "airbyte-integrations/connectors/source-sentry"])
+            include=[str(metadata_manifest_path), "airbyte-integrations/connectors/source-sentry"])
         print("HI!!!")
         print(str(metadata_manifest_path))
         try:
             # run_test = metadata_lib_module.with_exec(["pipx", "run", "--spec", "airbyte-ci/connectors/metadata_service/lib", "validate_metadata_file"])
 
-            run_test = metadata_lib_module.with_exec(["validate_metadata_file"])
+            # run_test = metadata_lib_module.with_exec(["source", "/root/.local/bin/validate_metadata_file", f"/src/{str(metadata_manifest_path)}"])
+            run_test = metadata_lib_module.with_exec(["validate_metadata_file", str(metadata_manifest_path)])
+            # run_test = metadata_lib_module.with_exec(["ls", f"airbyte-integrations/connectors/source-sentry"])
+            # run_test = metadata_lib_module.with_exec(["printenv", "PATH"])
             result = await run_test.stdout()
             print("result!!!!")
             print(result)

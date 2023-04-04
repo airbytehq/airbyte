@@ -132,7 +132,7 @@ class Connector:
 
     @property
     def metadata_manifest_file_path(self) -> Path:
-        return Path(f"./airbyte-integrations/connectors/{self.technical_name}/metadata.yaml")
+        return Path(f"./airbyte-integrations/connectors/{self.technical_name}/metadata.yml")
 
     @property
     def language(self) -> ConnectorLanguage:
