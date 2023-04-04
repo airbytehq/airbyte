@@ -74,32 +74,32 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
 
 
 @pytest.mark.parametrize(
-    "stream, endpoint",
+    "stream, endpoint, cursor_value",
     [
-        (Campaigns, "campaigns"),
-        (Companies, "company"),
-        (ContactLists, "contact"),
-        (Contacts, "contact"),
-        (Deals, "deal"),
-        (DealPipelines, "deal"),
-        (EmailEvents, ""),
-        (EngagementsCalls, "calls"),
-        (EngagementsEmails, "emails"),
-        (EngagementsMeetings, "meetings"),
-        (EngagementsNotes, "notes"),
-        (EngagementsTasks, "tasks"),
-        (Forms, "form"),
-        (FormSubmissions, "form"),
-        (LineItems, "line_item"),
-        (MarketingEmails, ""),
-        (Owners, ""),
-        (Products, "product"),
-        (TicketPipelines, ""),
-        (Tickets, "ticket"),
-        (Workflows, ""),
+        (Campaigns, "campaigns", {"lastUpdatedTime": 1675121674226}),
+        (Companies, "company", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (ContactLists, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (Contacts, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (Deals, "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (DealPipelines, "deal", {"updatedAt": 1675121674226}),
+        (EmailEvents, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (EngagementsCalls, "calls", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (EngagementsEmails, "emails", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (EngagementsMeetings, "meetings", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (EngagementsNotes, "notes", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (EngagementsTasks, "tasks", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (Forms, "form", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (FormSubmissions, "form", {"updatedAt": 1675121674226}),
+        (LineItems, "line_item", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (MarketingEmails, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (Owners, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (Products, "product", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (TicketPipelines, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (Tickets, "ticket", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (Workflows, "", {"updatedAt": 0}),
     ],
 )
-def test_streams_read(stream, endpoint, requests_mock, common_params, fake_properties_list):
+def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_params, fake_properties_list):
     stream = stream(**common_params)
     responses = [
         {
@@ -108,9 +108,9 @@ def test_streams_read(stream, endpoint, requests_mock, common_params, fake_prope
                     {
                         "id": "test_id",
                         "created": "2022-02-25T16:43:11Z",
-                        "updatedAt": "2022-02-25T16:43:11Z",
-                        "lastUpdatedTime": "2022-02-25T16:43:11Z",
-                    }
+                        # "updatedAt": "2022-02-25T16:43:11Z",
+                        # "lastUpdatedTime": 1675121674226,
+                    } | cursor_value
                 ],
             }
         }

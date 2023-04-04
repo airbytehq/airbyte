@@ -675,23 +675,24 @@ class SemiIncrementalStream(Stream, IncrementalMixin):
 
     @property
     def state(self) -> Mapping[str, Any]:
-        return {self.cursor_field: str(self._cursor_value)}
+        return {self.cursor_field: self._cursor_value}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
         self._cursor_value = value[self.cursor_field]
 
     def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> bool:
-        record_value = (
-            pendulum.parse(record.get(self.cursor_field))
+        int_field_type = "integer" in self.get_json_schema().get("properties").get(self.cursor_field).get("type")
+        record_value, datetime_format = (
+            (pendulum.parse(record.get(self.cursor_field)), "YYYY-MM-DDTHH:mm:ss.SSSSSSZ")
             if isinstance(record.get(self.cursor_field), str)
-            else pendulum.from_format(str(record.get(self.cursor_field)), "x")
+            else (pendulum.from_format(str(record.get(self.cursor_field)), "x"), "x")
         )
-        start_date = pendulum.from_format(stream_state.get(self.cursor_field), "x") if stream_state else self._start_date
+        start_date = pendulum.from_format(str(stream_state.get(self.cursor_field)), datetime_format) if stream_state else self._start_date
         cursor_value = max(start_date, record_value)
-        max_state = max(self.state.get(self.cursor_field), cursor_value.format("x"))
-        self.state = {self.cursor_field: max_state}
-        return not stream_state or pendulum.from_format(stream_state.get(self.cursor_field, 0), "x") < record_value
+        max_state = max(str(self.state.get(self.cursor_field)), cursor_value.format(datetime_format))
+        self.state = {self.cursor_field: int(max_state) if int_field_type else max_state}
+        return not stream_state or pendulum.from_format(str(stream_state.get(self.cursor_field)), datetime_format) < record_value
 
     def read_records(
         self,

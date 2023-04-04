@@ -57,7 +57,7 @@
         "default_cursor_field": ["updatedAt"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["lastUpdatedTime"],
+      "cursor_field": ["updatedAt"],
       "destination_sync_mode": "append"
     },
     {
@@ -165,7 +165,7 @@
         "default_cursor_field": ["updatedAt"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["lastUpdatedTime"],
+      "cursor_field": ["updatedAt"],
       "destination_sync_mode": "append"
     },
     {
