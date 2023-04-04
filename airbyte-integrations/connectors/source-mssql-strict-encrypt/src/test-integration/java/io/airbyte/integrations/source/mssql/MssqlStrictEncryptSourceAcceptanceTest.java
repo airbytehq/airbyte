@@ -51,7 +51,7 @@ public class MssqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
       db = new MSSQLServerContainer<>(DockerImageName
           .parse("airbyte/mssql_ssltest:dev")
           .asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
-          .acceptLicense();
+              .acceptLicense();
       db.start();
     }
 
@@ -95,8 +95,7 @@ public class MssqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-  }
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {}
 
   @Override
   protected String getImageName() {

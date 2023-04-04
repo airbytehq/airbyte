@@ -35,12 +35,13 @@ public class ExasolSQLNameTransformer extends StandardNameTransformer {
 
   private static String unquote(final String input) {
     String result = input;
-    if(result.startsWith("\"")) {
+    if (result.startsWith("\"")) {
       result = result.substring(1);
     }
-    if(result.endsWith("\"")) {
-      result = result.substring(0, result.length()-1);
+    if (result.endsWith("\"")) {
+      result = result.substring(0, result.length() - 1);
     }
     return result;
   }
+
 }

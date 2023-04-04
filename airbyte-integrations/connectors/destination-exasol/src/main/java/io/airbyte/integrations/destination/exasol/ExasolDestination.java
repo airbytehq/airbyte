@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.exasol;
@@ -30,7 +30,7 @@ public class ExasolDestination extends AbstractJdbcDestination implements Destin
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
     final String jdbcUrl = String.format(DatabaseDriver.EXASOL.getUrlFormatString(),
-            config.get(JdbcUtils.HOST_KEY).asText(), config.get(JdbcUtils.PORT_KEY).asInt());
+        config.get(JdbcUtils.HOST_KEY).asText(), config.get(JdbcUtils.PORT_KEY).asInt());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
@@ -57,4 +57,5 @@ public class ExasolDestination extends AbstractJdbcDestination implements Destin
     }
     return properties;
   }
+
 }

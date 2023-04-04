@@ -6,14 +6,10 @@
       "format": "date-time"
     },
     "CurrencyRate": {
-      "type": ["null", "number"],
-      "minimum": -1e33,
-      "maximum": 1e33
+      "type": ["null", "number"]
     },
     "Amount": {
-      "type": ["null", "number"],
-      "minimum": -1e33,
-      "maximum": 1e33
+      "type": ["null", "number"]
     },
     "Reference": {
       "type": ["null", "string"]
@@ -71,9 +67,7 @@
       }
     },
     "BankAmount": {
-      "type": ["null", "number"],
-      "minimum": -1e33,
-      "maximum": 1e33
+      "type": ["null", "number"]
     },
     "HasValidationErrors": {
       "type": ["null", "boolean"]

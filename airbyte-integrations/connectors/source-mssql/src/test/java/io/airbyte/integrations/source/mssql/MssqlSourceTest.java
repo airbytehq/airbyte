@@ -4,14 +4,18 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
@@ -21,15 +25,16 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.jooq.DSLContext;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.testcontainers.containers.MSSQLServerContainer;
 
 class MssqlSourceTest {
@@ -104,6 +109,44 @@ class MssqlSourceTest {
 
     final AirbyteCatalog actual = new MssqlSource().discover(config);
     assertEquals(CATALOG, actual);
+  }
+
+  @Test
+  @Disabled("See https://github.com/airbytehq/airbyte/pull/23908#issuecomment-1463753684, enable once communication is out")
+  public void testTableWithNullCursorValueShouldThrowException() throws Exception {
+    try (final DSLContext dslContext = getDslContext(configWithoutDbName)) {
+      final Database database = getDatabase(dslContext);
+      database.query(ctx -> {
+        ctx.fetch(String.format("USE %s;", config.get(JdbcUtils.DATABASE_KEY)));
+        ctx.execute("ALTER TABLE id_and_name ALTER COLUMN id INTEGER NULL");
+        ctx.execute("INSERT INTO id_and_name(id) VALUES (7), (8), (NULL)");
+        return null;
+      });
+
+      ConfiguredAirbyteStream configuredAirbyteStream = new ConfiguredAirbyteStream().withSyncMode(
+              SyncMode.INCREMENTAL)
+          .withCursorField(Lists.newArrayList("id"))
+          .withDestinationSyncMode(DestinationSyncMode.APPEND)
+          .withSyncMode(SyncMode.INCREMENTAL)
+          .withStream(CatalogHelpers.createAirbyteStream(
+                  STREAM_NAME,
+                  DB_NAME,
+                  Field.of("id", JsonSchemaType.INTEGER),
+                  Field.of("name", JsonSchemaType.STRING),
+                  Field.of("born", JsonSchemaType.STRING))
+              .withSupportedSyncModes(
+                  Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+              .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
+
+      final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(
+          Collections.singletonList(configuredAirbyteStream));
+
+      final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(
+          new MssqlSource().read(config, catalog, null)));
+      assertThat(throwable).isInstanceOf(ConfigErrorException.class)
+          .hasMessageContaining(
+              "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='dbo.id_and_name', cursorColumnName='id', cursorSqlType=INTEGER, cause=Cursor column contains NULL value}");
+    }
   }
 
   private JsonNode getConfig(final MSSQLServerContainer<?> db) {

@@ -20,7 +20,6 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +44,8 @@ public class S3GlueDestination extends BaseS3Destination {
     }
     final GlueDestinationConfig glueConfig = GlueDestinationConfig.getInstance(config);
     MetastoreOperations metastoreOperations = null;
-    // If there are multiple syncs started at the same time a stataic test table name causes a resource collision and a failure to sync.
+    // If there are multiple syncs started at the same time a stataic test table name causes a resource
+    // collision and a failure to sync.
     String tableSuffix = RandomStringUtils.randomAlphabetic(9);
     String tableName = "test_table_" + tableSuffix;
     try {

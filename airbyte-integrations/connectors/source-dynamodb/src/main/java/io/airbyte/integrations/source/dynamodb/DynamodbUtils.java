@@ -86,9 +86,9 @@ public class DynamodbUtils {
 
   record StreamState(
 
-      AirbyteStateMessage.AirbyteStateType airbyteStateType,
+                     AirbyteStateMessage.AirbyteStateType airbyteStateType,
 
-      List<AirbyteStateMessage> airbyteStateMessages) {
+                     List<AirbyteStateMessage> airbyteStateMessages) {
 
   }
 

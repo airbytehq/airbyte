@@ -22,7 +22,7 @@ To set up the Chargebee source connector, you'll need the [Chargebee API key](ht
 
 The Chargebee source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 * [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 * [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 
@@ -74,6 +74,7 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 0.2.3   | 2023-03-22 | [24370](https://github.com/airbytehq/airbyte/pull/24370) | Ignore 404 errors for `Contact` stream                                                              |
 | 0.2.2   | 2023-02-17 | [21688](https://github.com/airbytehq/airbyte/pull/21688) | Migrate to CDK beta 0.29; fix schemas                                                               |
 | 0.2.1   | 2023-02-17 | [23207](https://github.com/airbytehq/airbyte/pull/23207) | Edited stream schemas to get rid of unnecessary `enum`                                              |
 | 0.2.0   | 2023-01-21 | [21688](https://github.com/airbytehq/airbyte/pull/21688) | Migrate to YAML; add new streams                                                                    |

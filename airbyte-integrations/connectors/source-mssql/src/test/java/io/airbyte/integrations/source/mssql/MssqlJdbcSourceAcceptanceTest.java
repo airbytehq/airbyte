@@ -57,8 +57,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         getDriverClass(),
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        connectionProperties
-    );
+        connectionProperties);
   }
 
   @BeforeEach
