@@ -3,26 +3,13 @@ import anyio
 import logging
 
 from rich.logging import RichHandler
-from typing import Set
 
-from ci_connector_ops.pipelines.pipelines.metadata import run_metadata_lib_test_pipeline, run_metadata_orchestrator_test_pipeline
+from ci_connector_ops.pipelines.pipelines.metadata import run_metadata_lib_test_pipeline, run_metadata_orchestrator_test_pipeline, run_metadata_validation_pipeline
 from ci_connector_ops.pipelines.utils import DaggerPipelineCommand, get_modified_connectors
-
 
 
 logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
 logger = logging.getLogger(__name__)
-
-# HELPERS
-
-
-
-def get_modified_metadata_files(modified_files: Set[str]) -> Set[str]:
-    modified_connectors = []
-    for file_path in modified_files:
-        if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) or file_path.startswith(DESTINATION_CONNECTOR_PATH_PREFIX):
-            modified_connectors.append(Connector(get_connector_name_from_path(file_path)))
-    return set(modified_connectors)
 
 # MAIN GROUP
 
@@ -47,6 +34,23 @@ def validate(ctx: click.Context):
     metadata_manifest_paths = [connector.metadata_manifest_file_path for connector in modified_connectors]
 
     click.secho(f"Validating metadata for the following connectors: {', '.join(metadata_manifest_connectors)}")
+    try:
+        pipeline_success = anyio.run(
+            run_metadata_validation_pipeline,
+            ctx.obj["is_local"],
+            ctx.obj["git_branch"],
+            ctx.obj["git_revision"],
+            ctx.obj.get("gha_workflow_run_url"),
+            ctx.obj.get("pipeline_start_timestamp"),
+            ctx.obj.get("ci_context"),
+            metadata_manifest_paths,
+        )
+        if not pipeline_success:
+            raise dagger.DaggerError("Metadata Validation Pipeline failed.")
+
+    except dagger.DaggerError as e:
+        click.secho(str(e), err=True, fg="red")
+        return sys.exit(1)
 
 
 # TEST GROUP

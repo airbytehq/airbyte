@@ -234,7 +234,7 @@ def with_poetry(context: PipelineContext) -> Container:
     Returns:
         Container: A python environment with poetry installed.
     """
-    install_poetry_package_cmd = ["python", "-m", "pip", "install", "poetry"]
+    install_poetry_package_cmd = ["python", "-m", "pip", "install", "poetry", "pipx"]
 
     python_base_environment: Container = context.dagger_client.container().from_("python:3.9")
     python_with_git = with_debian_packages(python_base_environment, ["git"])
@@ -262,3 +262,19 @@ def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_p
         .with_workdir(f"/src/{module_path}")
         .with_exec(poetry_install_dependencies_cmd)
     )
+
+def with_pipx_module(context: PipelineContext, parent_dir_path: str, module_path: str) -> Container:
+    """Sets up a pipx module.
+
+    Args:
+        context (PipelineContext): The current test context, providing the repository directory from which the ci_credentials sources will be pulled.
+    Returns:
+        Container: A python environment with dependencies installed using pipx.
+    """
+    pipx_exclude = ["**/__pycache__"] + DEFAULT_PYTHON_EXCLUDE
+    pipx_install_dependencies_cmd = ["pipx", "install", module_path]
+
+    src = context.dagger_client.host().directory(parent_dir_path, exclude=pipx_exclude)
+    python_with_poetry = with_poetry(context)
+
+    return python_with_poetry.with_mounted_directory("/src", src).with_workdir(f"/src").with_exec(pipx_install_dependencies_cmd)
