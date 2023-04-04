@@ -18,6 +18,12 @@
             },
             "year_month": {
               "type": "string"
+            },
+            "google_project_id": {
+              "type": "string"
+            },
+            "google_secret_aws_credstash_credentials": {
+              "type": "string"
             }
           }
         },

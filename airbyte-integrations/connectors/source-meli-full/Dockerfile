@@ -9,6 +9,11 @@ COPY main.py ./
 COPY setup.py ./
 RUN pip install .
 RUN pip install xmltodict
+RUN pip install credstash
+# RUN pip install --indexer-url=https://pipy.merama.link
+RUN pip install google-cloud-secret-manager
+
+RUN ./bash/configure_aws_credentials.sh.sh
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
