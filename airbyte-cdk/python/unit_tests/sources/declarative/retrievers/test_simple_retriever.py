@@ -666,12 +666,9 @@ def test_limit_stream_slices():
 
     assert truncated_slices == _generate_slices(maximum_number_of_slices)
 
+
 @pytest.mark.parametrize(
-    "test_name, last_records, records, expected_stream_slicer_update_count",
-    [("test_two_records", [{"id": -1}], records, 2),
-    ("test_no_records", [{"id": -1}], [], 1),
-    ("test_no_records_no_previous_records", [], [], 0)
-     ]
+    "test_name, last_records, records, expected_stream_slicer_update_count", [("test_two_records", [{"id": -1}], records, 2), ("test_no_records", [{"id": -1}], [], 1), ("test_no_records_no_previous_records", [], [], 0) ]
 )
 def test_read_records_updates_stream_slicer_once_if_no_records(test_name, last_records, records, expected_stream_slicer_update_count):
     with patch.object(HttpStream, "_read_pages", return_value=iter(records)):

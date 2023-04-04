@@ -2,8 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
 import itertools
+import json
 import logging
 from dataclasses import InitVar, dataclass, field
 from itertools import islice
@@ -332,9 +332,9 @@ class SimpleRetriever(Retriever, HttpStream):
 
         # Warning: use self.state instead of the stream_state passed as argument!
         self._last_response = response
-        records = [r for r in self.record_selector.select_records(
+        records = self.record_selector.select_records(
             response=response, stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token
-        )]
+        )
         self._last_records = records
         return records
 
@@ -378,7 +378,6 @@ class SimpleRetriever(Retriever, HttpStream):
             for record in records_generator:
                 # Only record messages should be parsed to update the cursor which is indicated by the Mapping type
                 if isinstance(record, Mapping):
-                    read_records = True
                     self.stream_slicer.update_cursor(stream_slice, last_record=record)
                 yield record
         else:
@@ -424,6 +423,7 @@ class SimpleRetriever(Retriever, HttpStream):
             first = next(iterable)
         except StopIteration:
             return None, iterable
+        # return the stream as it was before calling next
         return first, itertools.chain([first], iterable)
 
 
