@@ -31,8 +31,25 @@ public class SnowflakeDestinationTest {
 
   private static Stream<Arguments> urlsDataProvider() {
     return Stream.of(
-        arguments("ab12345.us-east-2.aws.snowflakecomputing.com", true),
+        // See https://docs.snowflake.com/en/user-guide/admin-account-identifier for specific requirements
+        // "Account name in organization" style
+        arguments("https://acme-marketing-test-account.snowflakecomputing.com", true),
+        arguments("https://acme-marketing_test_account.snowflakecomputing.com", true),
+        arguments("https://acme-marketing.test-account.snowflakecomputing.com", true),
 
+        // Legacy style (account locator in a region)
+        // Some examples taken from https://docs.snowflake.com/en/user-guide/admin-account-identifier#non-vps-account-locator-formats-by-cloud-platform-and-region
+        arguments("xy12345.snowflakecomputing.com", true),
+        arguments("xy12345.us-gov-west-1.aws.snowflakecomputing.com", true),
+        arguments("xy12345.us-east-1.aws.snowflakecomputing.com", true),
+        // And some other formats which are, de facto, valid
+        arguments("xy12345.foo.us-west-2.aws.snowflakecomputing.com", true),
+        arguments("https://xy12345.snowflakecomputing.com", true),
+        arguments("https://xy12345.us-east-1.snowflakecomputing.com", true),
+        arguments("https://xy12345.us-east-1.aws.snowflakecomputing.com", true),
+        arguments("https://xy12345.foo.us-west-2.aws.snowflakecomputing.com", true),
+
+        // Invalid formats
         arguments("example.snowflakecomputing.com/path/to/resource", false),
         arguments("example.snowflakecomputing.com:8080", false),
         arguments("example.snowflakecomputing.com:12345", false),
@@ -40,10 +57,7 @@ public class SnowflakeDestinationTest {
         arguments("example.snowflakecomputing.com/path?query=string", false),
         arguments("example.snowflakecomputing.com/#fragment", false),
         arguments("ab12345.us-east-2.aws.snowflakecomputing. com", false),
-        arguments("ab12345.us-east-2.aws.snowflakecomputing..com", false),
-        arguments("www.ab12345.us-east-2.aws.snowflakecomputing.com", false),
-        arguments("http://ab12345.us-east-2.aws.snowflakecomputing.com", false),
-        arguments("https://ab12345.us-east-2.aws.snowflakecomputing.com", false));
+        arguments("ab12345.us-east-2.aws.snowflakecomputing..com", false));
   }
 
   @ParameterizedTest

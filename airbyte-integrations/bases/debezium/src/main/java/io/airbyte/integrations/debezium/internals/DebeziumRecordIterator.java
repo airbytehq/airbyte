@@ -7,7 +7,6 @@ package io.airbyte.integrations.debezium.internals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.AbstractIterator;
-import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -48,24 +47,25 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEvent<Stri
   private final LinkedBlockingQueue<ChangeEvent<String, String>> queue;
   private final CdcTargetPosition<T> targetPosition;
   private final Supplier<Boolean> publisherStatusSupplier;
-  private final VoidCallable requestClose;
   private final Duration firstRecordWaitTime;
+  private final DebeziumShutdownProcedure<ChangeEvent<String, String>> debeziumShutdownProcedure;
 
   private boolean receivedFirstRecord;
   private boolean hasSnapshotFinished;
   private LocalDateTime tsLastHeartbeat;
   private T lastHeartbeatPosition;
   private int maxInstanceOfNoRecordsFound;
+  private boolean signalledDebeziumEngineShutdown;
 
   public DebeziumRecordIterator(final LinkedBlockingQueue<ChangeEvent<String, String>> queue,
                                 final CdcTargetPosition<T> targetPosition,
                                 final Supplier<Boolean> publisherStatusSupplier,
-                                final VoidCallable requestClose,
+                                final DebeziumShutdownProcedure<ChangeEvent<String, String>> debeziumShutdownProcedure,
                                 final Duration firstRecordWaitTime) {
     this.queue = queue;
     this.targetPosition = targetPosition;
     this.publisherStatusSupplier = publisherStatusSupplier;
-    this.requestClose = requestClose;
+    this.debeziumShutdownProcedure = debeziumShutdownProcedure;
     this.firstRecordWaitTime = firstRecordWaitTime;
     this.heartbeatEventSourceField = new HashMap<>(1);
 
@@ -74,6 +74,7 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEvent<Stri
     this.tsLastHeartbeat = null;
     this.lastHeartbeatPosition = null;
     this.maxInstanceOfNoRecordsFound = 0;
+    this.signalledDebeziumEngineShutdown = false;
   }
 
   // The following logic incorporates heartbeat (CDC postgres only for now):
@@ -102,8 +103,8 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEvent<Stri
       // shutdown.
       if (next == null) {
         if (!receivedFirstRecord || hasSnapshotFinished || maxInstanceOfNoRecordsFound >= 10) {
-          LOGGER.info("No records were returned by Debezium in the timeout seconds {}, closing the engine and iterator", waitTime.getSeconds());
-          requestClose();
+          requestClose(String.format("No records were returned by Debezium in the timeout seconds %s, closing the engine and iterator",
+              waitTime.getSeconds()));
         }
         LOGGER.info("no record found. polling again.");
         maxInstanceOfNoRecordsFound++;
@@ -119,8 +120,7 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEvent<Stri
         // wrap up sync if heartbeat position crossed the target OR heartbeat position hasn't changed for
         // too long
         if (hasSyncFinished(heartbeatPos)) {
-          LOGGER.info("Closing: Heartbeat indicates sync is done");
-          requestClose();
+          requestClose("Closing: Heartbeat indicates sync is done");
         }
         if (!heartbeatPos.equals(lastHeartbeatPosition)) {
           this.tsLastHeartbeat = LocalDateTime.now();
@@ -134,8 +134,7 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEvent<Stri
 
       // if the last record matches the target file position, it is time to tell the producer to shutdown.
       if (targetPosition.reachedTargetPosition(eventAsJson)) {
-        LOGGER.info("Closing: Change event reached target position");
-        requestClose();
+        requestClose("Closing: Change event reached target position");
       }
       this.tsLastHeartbeat = null;
       this.lastHeartbeatPosition = null;
@@ -143,6 +142,26 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEvent<Stri
       this.maxInstanceOfNoRecordsFound = 0;
       return next;
     }
+
+    if (!signalledDebeziumEngineShutdown) {
+      LOGGER.warn("Debezium engine has not been signalled to shutdown, this is unexpected");
+    }
+
+    // Read the records that Debezium might have fetched right at the time we called shutdown
+    while (!debeziumShutdownProcedure.getRecordsRemainingAfterShutdown().isEmpty()) {
+      final ChangeEvent<String, String> event;
+      try {
+        event = debeziumShutdownProcedure.getRecordsRemainingAfterShutdown().poll(10, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+      if (event == null || isHeartbeatEvent(event)) {
+        continue;
+      }
+      hasSnapshotFinished = hasSnapshotFinished(Jsons.deserialize(event.value()));
+      return event;
+    }
+    throwExceptionIfSnapshotNotFinished();
     return endOfData();
   }
 
@@ -169,8 +188,7 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEvent<Stri
    */
   @Override
   public void close() throws Exception {
-    LOGGER.info("Closing: Iterator closing");
-    requestClose();
+    requestClose("Closing: Iterator closing");
   }
 
   private boolean isHeartbeatEvent(final ChangeEvent<String, String> event) {
@@ -189,13 +207,13 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEvent<Stri
     return !SnapshotMetadata.isSnapshotEventMetadata(snapshotMetadata);
   }
 
-  private void requestClose() {
-    try {
-      requestClose.call();
-    } catch (final Exception e) {
-      throw new RuntimeException(e);
+  private void requestClose(final String closeLogMessage) {
+    if (signalledDebeziumEngineShutdown) {
+      return;
     }
-    throwExceptionIfSnapshotNotFinished();
+    LOGGER.info(closeLogMessage);
+    debeziumShutdownProcedure.initiateShutdownProcedure();
+    signalledDebeziumEngineShutdown = true;
   }
 
   private void throwExceptionIfSnapshotNotFinished() {

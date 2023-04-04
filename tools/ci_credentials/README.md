@@ -38,7 +38,6 @@ After making a change, you have to reinstall it to run the bash command: `pip in
 
 The `VERSION=dev` will make it so it knows to use your local current working directory and not the Github Action one.
 
-
 ### Help
 ```bash
 ci_credentials --help
@@ -55,7 +54,6 @@ To download GSM secrets to for all available connectors into their respective `s
 ```bash
 ci_credentials all write-to-storage
 ```
-
 
 ### Update secrets
 To upload to GSM newly updated configurations from `airbyte-integrations/connectors/source-bings-ads/secrets/updated_configurations`:

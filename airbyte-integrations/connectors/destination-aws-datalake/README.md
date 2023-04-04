@@ -140,23 +140,28 @@ To run acceptance and custom integration tests:
 ./gradlew :airbyte-integrations:connectors:destination-aws-datalake:integrationTest
 ```
 
-#### Running the Destination Acceptance Tests
+#### Running the Destination Integration Tests
 
 To successfully run the Destination Acceptance Tests, you need a `secrets/config.json` file with appropriate information. For example:
 
 ```json
 {
-    "bucket_name": "your-bucket-name",
-    "bucket_prefix": "your-prefix",
-    "region": "your-region",
-    "aws_account_id": "111111111111",
-    "lakeformation_database_name": "an_lf_database",
-    "credentials": {
-      "credentials_title": "IAM User",
-      "aws_access_key_id": ".....",
-      "aws_secret_access_key": "....."
-    }
+  "aws_account_id": "111111111111",
+  "credentials": {
+    "credentials_title": "IAM User",
+    "aws_access_key_id": "aws_key_id",
+    "aws_secret_access_key": "aws_secret_key"
+  },
+  "region": "us-east-1",
+  "bucket_name": "datalake-bucket",
+  "lakeformation_database_name": "test",
+  "format": {
+    "format_type": "Parquet",
+    "compression_codec": "SNAPPY"
+  },
+  "partitioning": "NO PARTITIONING"
 }
+
 ```
 
 In the AWS account, you need to have the following elements in place:
@@ -165,7 +170,6 @@ In the AWS account, you need to have the following elements in place:
 * A Lake Formation database pointing to the configured S3 location (See: [Creating a database](https://docs.aws.amazon.com/lake-formation/latest/dg/creating-database.html))
 * An Athena workspace named `AmazonAthenaLakeFormation` where the IAM user has proper authorizations
 * The user must have appropriate permissions to the Lake Formation database to perform the tests (For example see: [Granting Database Permissions Using the Lake Formation Console and the Named Resource Method](https://docs.aws.amazon.com/lake-formation/latest/dg/granting-database-permissions.html))
-
 
 
 ## Dependency Management

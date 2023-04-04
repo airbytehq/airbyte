@@ -126,11 +126,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   @Override
-  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
-    return Collections.emptyMap();
-  }
-
-  @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final List<String> additionalParameters = new ArrayList<>();
 

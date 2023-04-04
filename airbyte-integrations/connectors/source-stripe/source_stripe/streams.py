@@ -546,7 +546,7 @@ class CheckoutSessions(IncrementalStripeStream):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        yield from [None]
+        yield from [{}]
 
     def path(self, **kwargs):
         return "checkout/sessions"
@@ -646,7 +646,7 @@ class ExternalAccount(StripeStream, ABC):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        yield from [None]
+        yield from [{}]
 
     def request_params(self, **kwargs):
         params = super().request_params(**kwargs)

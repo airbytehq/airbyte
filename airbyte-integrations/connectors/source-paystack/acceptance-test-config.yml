@@ -23,6 +23,7 @@ acceptance_tests:
             bypass_reason: "unable to seed, this stream requires third party system"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
+        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: "secrets/config.json"

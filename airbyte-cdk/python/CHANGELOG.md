@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.33.1
+Low-Code CDK: make RecordFilter.filter_records as generator
+
+## 0.33.0
+Enable oauth flow for low-code connectors
+
+## 0.32.0
+Remove unexpected error swallowing on abstract source's check method
+
 ## 0.31.1
 connector builder: send stacktrace when error on read
 
