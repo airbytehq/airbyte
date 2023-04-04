@@ -666,6 +666,99 @@ def test_limit_stream_slices():
 
     assert truncated_slices == _generate_slices(maximum_number_of_slices)
 
+def test_read_records():
+    stream_slicer = MagicMock()
+    requester = MagicMock()
+    requester.get_path.return_value = "/test"
+    requester.get_url_base.return_value = "https://airbyte.io"
+    paginator = MagicMock()
+    paginator.path.return_value = None
+    retriever = SimpleRetriever(
+        name="stream_name",
+        primary_key=primary_key,
+        requester=requester,
+        paginator=paginator,
+        record_selector=MagicMock(),
+        stream_slicer=stream_slicer,
+        parameters={},
+        config={},
+    )
+
+    retriever.read_pages = lambda _: [{"id": 0}, {"id": 1}]
+
+    records = list(retriever.read_records(sync_mode=SyncMode.incremental, stream_slice={"repository": "airbyte"}))
+
+    assert stream_slicer.call_count == 1
+
+@patch.object(HttpStream, "_read_pages", return_value=iter([*request_response_logs, *records]))
+def test_read_records(mock_http_stream):
+    requester = MagicMock()
+    paginator = MagicMock()
+    record_selector = MagicMock()
+    stream_slicer = MagicMock()
+
+    retriever = SimpleRetriever(
+        name="stream_name",
+        primary_key=primary_key,
+        requester=requester,
+        paginator=paginator,
+        record_selector=record_selector,
+        stream_slicer=stream_slicer,
+        parameters={},
+        config={},
+    )
+
+    records = list(retriever.read_records(sync_mode=SyncMode.incremental, stream_slice={"repository": "airbyte"}))
+
+    assert stream_slicer.update_cursor.call_count == 2
+
+@patch.object(HttpStream, "_read_pages", return_value=iter([]))
+def test_read_records_updates_stream_slicer_once_if_no_records(mock_http_stream):
+    requester = MagicMock()
+    paginator = MagicMock()
+    record_selector = MagicMock()
+    stream_slicer = MagicMock()
+
+    retriever = SimpleRetriever(
+        name="stream_name",
+        primary_key=primary_key,
+        requester=requester,
+        paginator=paginator,
+        record_selector=record_selector,
+        stream_slicer=stream_slicer,
+        parameters={},
+        config={},
+    )
+    retriever._last_records = [{"id": -1}]
+
+    records = list(retriever.read_records(sync_mode=SyncMode.incremental, stream_slice={"repository": "airbyte"}))
+
+    assert stream_slicer.update_cursor.call_count == 1
+
+@patch.object(HttpStream, "_read_pages", return_value=iter([]))
+def test_read_records_does_not_update_stream_slicer_if_no_records_were_ever_read(mock_http_stream):
+    requester = MagicMock()
+    paginator = MagicMock()
+    record_selector = MagicMock()
+    stream_slicer = MagicMock()
+
+    retriever = SimpleRetriever(
+        name="stream_name",
+        primary_key=primary_key,
+        requester=requester,
+        paginator=paginator,
+        record_selector=record_selector,
+        stream_slicer=stream_slicer,
+        parameters={},
+        config={},
+    )
+    retriever._last_records = None
+
+    records = list(retriever.read_records(sync_mode=SyncMode.incremental, stream_slice={"repository": "airbyte"}))
+
+    assert stream_slicer.update_cursor.call_count == 0
+
+
 
 def _generate_slices(number_of_slices):
     return [{"date": f"2022-01-0{day + 1}"} for day in range(number_of_slices)]

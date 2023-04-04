@@ -3,6 +3,7 @@
 #
 
 import json
+import itertools
 import logging
 from dataclasses import InitVar, dataclass, field
 from itertools import islice
@@ -331,9 +332,9 @@ class SimpleRetriever(Retriever, HttpStream):
 
         # Warning: use self.state instead of the stream_state passed as argument!
         self._last_response = response
-        records = self.record_selector.select_records(
+        records = [r for r in self.record_selector.select_records(
             response=response, stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token
-        )
+        )]
         self._last_records = records
         return records
 
@@ -372,11 +373,14 @@ class SimpleRetriever(Retriever, HttpStream):
             stream_slice,
             stream_state,
         )
-        for record in records_generator:
-            # Only record messages should be parsed to update the cursor which is indicated by the Mapping type
-            if isinstance(record, Mapping):
-                self.stream_slicer.update_cursor(stream_slice, last_record=record)
-            yield record
+        first, records_generator = self._peek(records_generator)
+        if first:
+            for record in records_generator:
+                # Only record messages should be parsed to update the cursor which is indicated by the Mapping type
+                if isinstance(record, Mapping):
+                    read_records = True
+                    self.stream_slicer.update_cursor(stream_slice, last_record=record)
+                yield record
         else:
             last_record = self._last_records[-1] if self._last_records else None
             if last_record and isinstance(last_record, Mapping):
@@ -414,6 +418,16 @@ class SimpleRetriever(Retriever, HttpStream):
         # Not great to need to call _read_pages which is a private method
         # A better approach would be to extract the HTTP client from the HttpStream and call it directly from the HttpRequester
         yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
+
+    def _peek(self, iterable):
+        # If the iterable is not an iterator, turn it into an iterator
+        if not hasattr(iterable, '__next__'):
+            iterable = iter(iterable)
+        try:
+            first = next(iterable)
+        except StopIteration:
+            return None, iterable
+        return first, itertools.chain([first], iterable)
 
 
 @dataclass
