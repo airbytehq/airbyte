@@ -768,7 +768,7 @@
               "type": ["null", "number"]
             },
             "recipients": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "list_id": {
                   "type": ["null", "string"]
@@ -780,7 +780,7 @@
                   "type": ["null", "string"]
                 },
                 "segment_opts": {
-                  "type": "object",
+                  "type": ["null", "object"],
                   "properties": {
                     "saved_segment_id": {
                       "type": ["null", "number"]
@@ -800,7 +800,7 @@
               }
             },
             "settings": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "title": {
                   "type": ["null", "string"]
@@ -829,7 +829,7 @@
               }
             },
             "tracking": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "opens": {
                   "type": ["null", "boolean"]
@@ -853,7 +853,7 @@
                   "type": ["null", "string"]
                 },
                 "salesforce": {
-                  "type": "object",
+                  "type": ["null", "object"],
                   "properties": {
                     "campaign": {
                       "type": ["null", "boolean"]
@@ -864,7 +864,7 @@
                   }
                 },
                 "capsule": {
-                  "type": "object",
+                  "type": ["null", "object"],
                   "properties": {
                     "notes": {
                       "type": ["null", "boolean"]
@@ -874,7 +874,7 @@
               }
             },
             "trigger_settings": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "workflow_type": {
                   "type": ["null", "string"]
@@ -883,7 +883,7 @@
                   "type": ["null", "string"]
                 },
                 "runtime": {
-                  "type": "object",
+                  "type": ["null", "object"],
                   "properties": {
                     "days": {
                       "type": ["null", "array"],
@@ -892,7 +892,7 @@
                       }
                     },
                     "hours": {
-                      "type": "object",
+                      "type": ["null", "object"],
                       "properties": {
                         "type": {
                           "type": ["null", "string"]
@@ -907,7 +907,7 @@
               }
             },
             "report_summary": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "opens": {
                   "type": ["null", "number"]
@@ -932,7 +932,7 @@
             "_links": {
               "type": ["null", "array"],
               "items": {
-                "type": "object",
+                "type": ["null", "object"],
                 "properties": {
                   "rel": {
                     "type": ["null", "string"]
