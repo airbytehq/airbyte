@@ -48,6 +48,8 @@ services:
       - DATABASE_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_USER=${DATABASE_USER}
+    ports:
+      - 18064:5432
     volumes:
       - db:/var/lib/postgresql/data
     networks:
@@ -231,9 +233,9 @@ services:
     container_name: airbyte-proxy
     restart: unless-stopped
     ports:
-      - 8000:8000
-      - 8001:8001
-      - 8003:8003
+      - 18060:8000
+      - 18061:8001
+      - 18063:8003
     environment:
       - BASIC_AUTH_USERNAME=${BASIC_AUTH_USERNAME}
       - BASIC_AUTH_PASSWORD=${BASIC_AUTH_PASSWORD}
