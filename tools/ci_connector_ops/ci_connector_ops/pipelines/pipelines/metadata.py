@@ -1,11 +1,13 @@
 import dagger
 from typing import Optional, Set, List
+from pathlib import Path
 
 from ci_connector_ops.pipelines.bases import Step, StepStatus, TestReport
 from ci_connector_ops.pipelines.actions.environments import with_poetry_module,with_pipx_module, DEFAULT_PYTHON_EXCLUDE
 from ci_connector_ops.pipelines.contexts import PipelineContext
 from ci_connector_ops.pipelines.utils import (
     DAGGER_CONFIG,
+    execute_steps_concurrently,
 )
 
 METADATA_DIR = "airbyte-ci/connectors/metadata_service"
@@ -34,12 +36,10 @@ class SimpleExecStep(Step):
         super().__init__(context)
 
     async def _run(self) -> StepStatus:
-        print("HI!!!")
-        print(self.args)
         run_test = self.context.dagger_client.with_exec(self.args)
         return await self.get_step_result(run_test)
 
-def path_to_metadata_validation_step(metadata_pipeline_context: PipelineContext, metadata_path: str) -> Step:
+def path_to_metadata_validation_step(metadata_pipeline_context: PipelineContext, metadata_path: Path) -> Step:
     return SimpleExecStep(
                 context=metadata_pipeline_context,
                 title=f"Validate Connector Metadata Manifest: {metadata_path}",
@@ -53,7 +53,7 @@ async def run_metadata_validation_pipeline(
     gha_workflow_run_url: Optional[str],
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
-    metadata_source_paths: Set[str] # TODO actually a Path
+    metadata_source_paths: Set[Path]
 ) -> bool:
     metadata_pipeline_context = PipelineContext(
         pipeline_name="Metadata Service Validation Pipeline",
@@ -66,7 +66,6 @@ async def run_metadata_validation_pipeline(
     )
 
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
-
         # TODO refactor the environemnts to use containers not contexts
         metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
         updated_client = with_pipx_module(
@@ -77,19 +76,16 @@ async def run_metadata_validation_pipeline(
 
         metadata_pipeline_context.dagger_client = updated_client
 
-        async with metadata_pipeline_context:
-            validation_steps = [
-                path_to_metadata_validation_step(metadata_pipeline_context, metadata_path)
-                for metadata_path in metadata_source_paths
-            ]
-            results = []
-            for validation_step in validation_steps:
-                result = await validation_step.run()
-                results.append(result)
+        validation_steps = [
+            path_to_metadata_validation_step(metadata_pipeline_context, metadata_path).run
+            for metadata_path in metadata_source_paths
+        ]
 
+        async with metadata_pipeline_context:
+            results = await execute_steps_concurrently(validation_steps)
             metadata_pipeline_context.test_report = TestReport(pipeline_context=metadata_pipeline_context, steps_results=results)
 
-    return metadata_pipeline_context.test_report.success
+        return metadata_pipeline_context.test_report.success
 
 
 async def run_metadata_lib_test_pipeline(
