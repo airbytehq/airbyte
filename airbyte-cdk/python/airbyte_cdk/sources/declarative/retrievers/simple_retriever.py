@@ -26,7 +26,6 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
-from airbyte_cdk.utils.utils import peek
 
 
 @dataclass
@@ -373,14 +372,14 @@ class SimpleRetriever(Retriever, HttpStream):
             stream_slice,
             stream_state,
         )
-        first, records_generator = peek(records_generator)
-        if first:
-            for record in records_generator:
-                # Only record messages should be parsed to update the cursor which is indicated by the Mapping type
-                if isinstance(record, Mapping):
-                    self.stream_slicer.update_cursor(stream_slice, last_record=record)
-                yield record
-        else:
+        cursor_updated = False
+        for record in records_generator:
+            # Only record messages should be parsed to update the cursor which is indicated by the Mapping type
+            if isinstance(record, Mapping):
+                self.stream_slicer.update_cursor(stream_slice, last_record=record)
+                cursor_updated = True
+            yield record
+        if not cursor_updated:
             last_record = self._last_records[-1] if self._last_records else None
             if last_record and isinstance(last_record, Mapping):
                 self.stream_slicer.update_cursor(stream_slice, last_record=last_record)
