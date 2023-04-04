@@ -420,9 +420,6 @@ class SimpleRetriever(Retriever, HttpStream):
         yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
 
     def _peek(self, iterable):
-        # If the iterable is not an iterator, turn it into an iterator
-        if not hasattr(iterable, '__next__'):
-            iterable = iter(iterable)
         try:
             first = next(iterable)
         except StopIteration:

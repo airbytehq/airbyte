@@ -32,7 +32,7 @@ request_response_logs = [
 config = {}
 
 
-@patch.object(HttpStream, "_read_pages", return_value=[])
+@patch.object(HttpStream, "_read_pages", return_value=iter([]))
 def test_simple_retriever_full(mock_http_stream):
     requester = MagicMock()
     request_params = {"param": "value"}
@@ -117,7 +117,7 @@ def test_simple_retriever_full(mock_http_stream):
     paginator.reset.assert_called()
 
 
-@patch.object(HttpStream, "_read_pages", return_value=[*request_response_logs, *records])
+@patch.object(HttpStream, "_read_pages", return_value=iter([*request_response_logs, *records]))
 def test_simple_retriever_with_request_response_logs(mock_http_stream):
     requester = MagicMock()
     paginator = MagicMock()
@@ -153,7 +153,7 @@ def test_simple_retriever_with_request_response_logs(mock_http_stream):
     assert actual_messages[3] == records[1]
 
 
-@patch.object(HttpStream, "_read_pages", return_value=[])
+@patch.object(HttpStream, "_read_pages", return_value=iter([]))
 def test_simple_retriever_with_request_response_log_last_records(mock_http_stream):
     requester = MagicMock()
     paginator = MagicMock()
