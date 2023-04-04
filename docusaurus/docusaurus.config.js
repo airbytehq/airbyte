@@ -64,7 +64,11 @@ const config = {
                         },
                         {
                             from: '/cloud/managing-airbyte-cloud',
-                            to: '/category/managing-airbyte-cloud',
+                            to: '/category/using-airbyte-cloud',
+                        },
+                        {
+                            from: '/category/managing-airbyte-cloud',
+                            to: '/category/using-airbyte-cloud'
                         },
                         {
                             from: '/cloud/dbt-cloud-integration',
