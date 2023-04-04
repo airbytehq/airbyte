@@ -93,6 +93,22 @@ acceptance_tests:
         bypass_reason: "This stream is tested on the new style config."
       - name: campaigns
         bypass_reason: "This stream is tested on the new style config."
+      - name: ad_group_audience_reports_by_country
+        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
+      - name: campaigns_audience_reports
+        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
+      - name: ads_audience_reports_by_country
+        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
+      - name: advertisers_audience_reports_by_country
+        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
+      - name: advertisers_audience_reports_by_platform
+        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
+      - name: ads_audience_reports_by_platform
+        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
+      - name: campaigns_audience_reports_by_platform
+        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
+      - name: ad_group_audience_reports_by_platform
+        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
       fail_on_extra_columns: false
   full_refresh:
     tests:
