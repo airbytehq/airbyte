@@ -130,6 +130,7 @@ class Campaigns(IncrementalMailChimpStream):
 
 
 class Automations(IncrementalMailChimpStream):
+    """Doc Link: https://mailchimp.com/developer/marketing/api/automation/get-automation-info/"""
     cursor_field = "create_time"
     data_field = "automations"
 
