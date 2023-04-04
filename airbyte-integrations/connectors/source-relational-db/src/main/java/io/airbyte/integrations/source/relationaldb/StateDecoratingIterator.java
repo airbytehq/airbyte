@@ -146,7 +146,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
           } else if (cursorComparison == 0) {
             currentMaxCursorRecordCount++;
           } else if (cursorComparison > 0 && stateEmissionFrequency > 0) {
-            LOGGER.error("Intermediate state emission feature requires records to be processed in order according to the cursor value. Otherwise, "
+            LOGGER.warn("Intermediate state emission feature requires records to be processed in order according to the cursor value. Otherwise, "
                 + "data loss can occur.");
           }
         }
