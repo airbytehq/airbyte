@@ -57,14 +57,14 @@ class AdsInsights(FBMarketingIncrementalStream):
     breakdowns = []
 
     def __init__(
-        self,
-        name: str = None,
-        fields: List[str] = None,
-        breakdowns: List[str] = None,
-        action_breakdowns: List[str] = None,
-        time_increment: Optional[int] = None,
-        insights_lookback_window: int = None,
-        **kwargs,
+            self,
+            name: str = None,
+            fields: List[str] = None,
+            breakdowns: List[str] = None,
+            action_breakdowns: List[str] = None,
+            time_increment: Optional[int] = None,
+            insights_lookback_window: int = None,
+            **kwargs,
     ):
         super().__init__(**kwargs)
         self._start_date = self._start_date.date()
@@ -106,11 +106,11 @@ class AdsInsights(FBMarketingIncrementalStream):
         """Because insights has very different read_records we don't need this method anymore"""
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
         job = stream_slice["insight_job"]
@@ -124,7 +124,6 @@ class AdsInsights(FBMarketingIncrementalStream):
                         f"Please try again later",
                 failure_type=FailureType.system_error,
             ) from e
-
 
         # job = InsightAsyncJob(api=job._api, interval=job.interval, edge_object=job.edge_object, params=job._params)
         # job = ParentAsyncJob(jobs=[], api=job._api, interval=job.interval)
@@ -165,7 +164,7 @@ class AdsInsights(FBMarketingIncrementalStream):
                     "slices": [d.isoformat() for d in list(self._completed_slices.get(k, set()))],
                     "time_increment": self.time_increment,
                 }
-                for k,v in {**self._next_cursor_value, **self._cursor_value}.items() if k
+                for k, v in {**self._next_cursor_value, **self._cursor_value}.items() if k
             }
 
         if len(self._completed_slices):
@@ -174,7 +173,7 @@ class AdsInsights(FBMarketingIncrementalStream):
                     "slices": [d.isoformat() for d in v],
                     "time_increment": self.time_increment,
                 }
-                for k,v in self._completed_slices.items()
+                for k, v in self._completed_slices.items()
             }
 
         return {}
@@ -186,24 +185,30 @@ class AdsInsights(FBMarketingIncrementalStream):
         # then the previous state object is invalid and we should start replicating data from scratch
         # to achieve this, we skip setting the state
 
-        for k,v in value.items():
+        for k, v in value.items():
             if v.get("time_increment", 1) != self.time_increment:
                 logger.info(f"Ignoring bookmark for {self.name} account[{k}] because of different `time_increment` option.")
                 continue
 
-            self._cursor_value = {**self._cursor_value, k: pendulum.parse(v[self.cursor_field]).date() if v.get(self.cursor_field) else None}
+            self._cursor_value = {**self._cursor_value,
+                                  k: pendulum.parse(v[self.cursor_field]).date() if v.get(self.cursor_field) else None}
             self._completed_slices = {**self._completed_slices, k: set(pendulum.parse(_v).date() for _v in v.get("slices", []))}
             self._next_cursor_value = {**self._next_cursor_value, **self._get_start_date(k)}
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def get_updated_state(self,
+                          current_stream_state: MutableMapping[str, Any],
+                          latest_record: Mapping[str, Any],
+                          account_id: str):
         """Update stream state from latest record
 
         :param current_stream_state: latest state returned
         :param latest_record: latest record that we read
+        :param account_id
+
         """
         return self.state
 
-    def _date_intervals(self, account_id:str=None) -> Iterator[pendulum.Date]:
+    def _date_intervals(self, account_id: str = None) -> Iterator[pendulum.Date]:
         """Get date period to sync"""
         next_cursor_value = self._next_cursor_value.get(account_id, self._next_cursor_value.get(None))
         if self._end_date < next_cursor_value:
@@ -211,7 +216,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         date_range = self._end_date - next_cursor_value
         yield from date_range.range("days", self.time_increment)
 
-    def _advance_cursor(self, account_id:str=None):
+    def _advance_cursor(self, account_id: str = None):
         """Iterate over state, find continuing sequence of slices. Get last value, advance cursor there and remove slices from state"""
         for ts_start in self._date_intervals(account_id=account_id):
             if ts_start not in self._completed_slices.get(account_id, set()):
@@ -235,7 +240,7 @@ class AdsInsights(FBMarketingIncrementalStream):
                 yield InsightAsyncJob(api=self._api.api, edge_object=account, interval=interval, params=params)
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         """Slice by date periods and schedule async job for each period, run at most MAX_ASYNC_JOBS jobs at the same time.
@@ -257,7 +262,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         for job in manager.completed_jobs():
             yield {"insight_job": job}
 
-    def _get_start_date(self, account_id:str=None) -> pendulum.Date:
+    def _get_start_date(self, account_id: str = None) -> pendulum.Date:
         """Get start date to begin sync with. It is not that trivial as it might seem.
         There are few rules:
             - don't read data older than start_date

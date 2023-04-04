@@ -11,6 +11,9 @@
     "promoted_object": {
       "type": ["null", "object"],
       "properties": {
+        "custom_event_str": {
+          "type": ["null", "string"]
+        },
         "custom_event_type": {
           "type": ["null", "string"]
         },
@@ -52,6 +55,9 @@
     },
     "budget_remaining": {
       "type": ["null", "number"]
+    },
+    "optimization_goal": {
+      "type": ["null", "string"]
     },
     "effective_status": {
       "type": ["null", "string"]
