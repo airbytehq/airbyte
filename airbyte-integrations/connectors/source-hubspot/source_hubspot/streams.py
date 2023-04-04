@@ -667,11 +667,16 @@ class Stream(HttpStream, ABC):
 
 
 class SemiIncrementalStream(Stream, IncrementalMixin):
-    _cursor_value = 1
+    _cursor_value = ""
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
         return self.updated_at_field
+
+    @property
+    @abstractmethod
+    def updated_at_field(self):
+        """Name of the field associated with the state"""
 
     @property
     def state(self) -> Mapping[str, Any]:
@@ -682,6 +687,12 @@ class SemiIncrementalStream(Stream, IncrementalMixin):
         self._cursor_value = value[self.cursor_field]
 
     def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> bool:
+        """
+        Filter out old records that come from source in unsorted order.
+        Hubspot API uses 2 date-time formats for different endpoints:
+        1. "YYYY-MM-DDTHH:mm:ss.SSSSSSZ" - date-time in ISO format
+        2. "x" - date-time in timestamp in milliseconds
+        """
         int_field_type = "integer" in self.get_json_schema().get("properties").get(self.cursor_field).get("type")
         record_value, datetime_format = (
             (pendulum.parse(record.get(self.cursor_field)), "YYYY-MM-DDTHH:mm:ss.SSSSSSZ")
