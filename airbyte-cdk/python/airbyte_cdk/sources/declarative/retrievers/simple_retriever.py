@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import itertools
 import json
 import logging
 from dataclasses import InitVar, dataclass, field
@@ -27,6 +26,7 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
+from airbyte_cdk.utils.utils import peek
 
 
 @dataclass
@@ -373,7 +373,7 @@ class SimpleRetriever(Retriever, HttpStream):
             stream_slice,
             stream_state,
         )
-        first, records_generator = self._peek(records_generator)
+        first, records_generator = peek(records_generator)
         if first:
             for record in records_generator:
                 # Only record messages should be parsed to update the cursor which is indicated by the Mapping type
@@ -417,14 +417,6 @@ class SimpleRetriever(Retriever, HttpStream):
         # Not great to need to call _read_pages which is a private method
         # A better approach would be to extract the HTTP client from the HttpStream and call it directly from the HttpRequester
         yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
-
-    def _peek(self, iterable):
-        try:
-            first = next(iterable)
-        except StopIteration:
-            return None, iterable
-        # return the stream as it was before calling next
-        return first, itertools.chain([first], iterable)
 
 
 @dataclass
