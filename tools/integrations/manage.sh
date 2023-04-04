@@ -25,7 +25,7 @@ Available commands:
   scaffold
   test <integration_root_path>
   build  <integration_root_path> [<run_tests>]
-  publish  <integration_root_path> [<run_tests>] [--publish_spec_to_cache] [--publish_spec_to_cache_with_key_file <path to keyfile>]
+  publish  <integration_root_path> [<run_tests>] [--publish_spec_to_cache] [--publish_spec_to_cache_with_key_file <path to keyfile>] [--pre_release]
   publish_external  <image_name> <image_version>
 "
 
@@ -195,12 +195,17 @@ cmd_publish() {
 
   local run_tests=$1; shift || run_tests=true
   local publish_spec_to_cache
+  local pre_release
   local spec_cache_writer_sa_key_file
 
   while [ $# -ne 0 ]; do
     case "$1" in
     --publish_spec_to_cache)
       publish_spec_to_cache=true
+      shift 1
+      ;;
+    --pre_release)
+      pre_release=true
       shift 1
       ;;
     --publish_spec_to_cache_with_key_file)
@@ -222,7 +227,7 @@ cmd_publish() {
 
   # setting local variables for docker image versioning
   local image_name; image_name=$(_get_docker_image_name "$path"/Dockerfile)
-  local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile)
+  local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile "$pre_release")
   local versioned_image=$image_name:$image_version
   local latest_image="$image_name" # don't include ":latest", that's assumed here
   local build_arch="linux/amd64,linux/arm64"
