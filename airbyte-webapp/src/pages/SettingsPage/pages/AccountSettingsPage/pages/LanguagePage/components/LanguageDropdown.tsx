@@ -15,9 +15,10 @@ interface IProps {
 const DDLabel = styled.div`
   font-style: normal;
   font-weight: 500;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 20px;
   color: #374151;
+  margin-bottom: 10px;
 `;
 
 export const LanguageDropdown: React.FC<IProps> = ({ labelId, value, onChange }) => {

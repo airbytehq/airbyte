@@ -18,7 +18,7 @@ const PageContainer = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
-  padding: 30px 16px;
+  padding: 30px 70px;
 `;
 
 export const CharacterInID = "__";

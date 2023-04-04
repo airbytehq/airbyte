@@ -33,6 +33,10 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2023.04.04
+1. Settings/Change password UI
+2. Settings/Account UI
+3. Settings/Support UI
 #### 2023.03.31
 1. Email & verify screen UI
 2. Readjust the Source/Destination/Connection TestConnection component to remove scrolling

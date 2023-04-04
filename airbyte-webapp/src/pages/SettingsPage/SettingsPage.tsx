@@ -17,6 +17,7 @@ import AccountSettingsPage from "./pages/AccountSettingsPage";
 // import NotificationPage from "./pages/NotificationPage";
 import PlansBillingPage from "./pages/PlansBillingPage";
 import UserManagementPage from "./pages/UserManagementPage";
+// import SupportPage from "./pages/SupportPage";
 
 export interface PageConfig {
   menuConfig: CategoryItem[];
@@ -81,6 +82,7 @@ export const SettingsRoute = {
   UserManagement: "user-management",
   AccountSettings: "account-settings",
   PlanAndBilling: "plan-and-billing",
+  Support: "support",
 } as const;
 
 export const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
@@ -117,9 +119,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
               : false,
         },
         // {
-        //   path: `${SettingsRoute.Notifications}`,
-        //   name: <FormattedMessage id="settings.notificationSettings" />,
-        //   component: <NotificationPage />,
+        //   path: `${SettingsRoute.Support}`,
+        //   name: <FormattedMessage id="settings.support" />,
+        //   component: <SupportPage />,
         //   show: true,
         // },
       ],
