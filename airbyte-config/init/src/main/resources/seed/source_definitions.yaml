@@ -1684,6 +1684,11 @@
   icon: qb.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "oauth.platform.intuit.com"
+      - "sandbox-quickbooks.api.intuit.com"
+      - "quickbooks.api.intuit.com"
 - name: Railz
   sourceDefinitionId: 9b6cc0c0-da81-4103-bbfd-5279e18a849a
   dockerRepository: airbyte/source-railz

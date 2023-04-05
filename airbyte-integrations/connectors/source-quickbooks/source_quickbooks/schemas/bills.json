@@ -25,12 +25,6 @@
         "object"
       ]
     },
-    "LinkedTxn": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
     "DocNumber": {
       "type": [
         "null",
@@ -387,24 +381,16 @@
         }
       }
     },
-    "SalesTermRef": {
-      "properties": {
-        "value": {
-          "type": [
-            "null",
-            "string"
-          ]
-        }
-      },
-      "type": [
-        "null",
-        "object"
-      ]
-    },
     "PrivateNote": {
       "type": [
         "null",
         "string"
+      ]
+    },
+    "sparse": {
+      "type":  [
+        "null",
+        "boolean"
       ]
     },
     "airbyte_cursor": {

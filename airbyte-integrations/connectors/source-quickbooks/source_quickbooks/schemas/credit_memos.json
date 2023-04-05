@@ -458,12 +458,17 @@
         "object"
       ]
     },
+    "sparse": {
+      "type":  [
+        "null",
+        "boolean"
+      ]
+    },
     "airbyte_cursor": {
       "type": [
         "null",
         "string"
       ]
-    },
-    "patternProperties": {".+": {}}
+    }
   }
 }

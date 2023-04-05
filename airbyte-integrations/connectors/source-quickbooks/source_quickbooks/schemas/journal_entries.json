@@ -148,6 +148,124 @@
         "string"
       ]
     },
+    "TxnTaxDetail": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {
+        "TotalTax": {
+          "type": [
+            "null",
+            "number"
+          ]
+        },
+        "TxnTaxCodeRef": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "name": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          }
+        },
+        "TaxLine": {
+          "type": [
+            "null",
+            "array"
+          ],
+          "items": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "properties": {
+              "DetailType": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "Amount": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "TaxLineDetail": {
+                "type": [
+                  "null",
+                  "object"
+                ],
+                "properties": {
+                  "TaxPercent": {
+                    "type": [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "OverrideDeltaAmount": {
+                    "type": [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "TaxInclusiveAmount": {
+                    "type": [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "PercentBased": {
+                    "type": [
+                      "null",
+                      "boolean"
+                    ]
+                  },
+                  "NetAmountTaxable": {
+                    "type": [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "TaxRateRef": {
+                    "type": [
+                      "null",
+                      "object"
+                    ],
+                    "properties": {
+                      "name": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "value": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "PrivateNote": {
       "type": [
         "null",
@@ -184,6 +302,12 @@
     },
     "Adjustment": {
       "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "sparse": {
+      "type":  [
         "null",
         "boolean"
       ]

@@ -179,6 +179,12 @@
         "boolean"
       ]
     },
+    "sparse": {
+      "type":  [
+        "null",
+        "boolean"
+      ]
+    },
     "airbyte_cursor": {
       "type": [
         "null",

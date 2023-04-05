@@ -283,7 +283,6 @@
         "string"
       ]
     },
-    "patternProperties": {".+": {}},
     "airbyte_cursor": {
       "type": [
         "null",
