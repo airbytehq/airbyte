@@ -41,7 +41,7 @@ class SimpleExecStep(Step):
         run_command = self.parent_container.with_exec(self.args)
         return await self.get_step_result(run_command)
 
-# TODO make class
+
 def metadata_validation_step(metadata_pipeline_context: PipelineContext, metadata_path: Path, parent_container: dagger.Container) -> Step:
     return SimpleExecStep(
         context=metadata_pipeline_context,
@@ -82,11 +82,7 @@ async def run_metadata_validation_pipeline(
             )
 
             validation_steps = [
-                metadata_validation_step(
-                    metadata_pipeline_context,
-                    metadata_path,
-                    parent_container
-                ).run
+                metadata_validation_step(metadata_pipeline_context, metadata_path, parent_container).run
                 for metadata_path in metadata_source_paths
             ]
 

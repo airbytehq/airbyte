@@ -54,7 +54,7 @@ def with_python_base(context: PipelineContext, python_image_name: str = "python:
         .with_exec(["pip", "install", "--upgrade", "pip"])
     )
 
-    return with_debian_packages(base_container, ["tree"])
+    return base_container
 
 
 def with_testing_dependencies(context: PipelineContext) -> Container:
@@ -228,8 +228,6 @@ def with_pip_packages(base_container: Container, packages_to_install: List[str])
     return base_container.with_exec(package_install_command + packages_to_install)
 
 
-
-
 async def with_ci_connector_ops(context: PipelineContext) -> Container:
     """Installs the ci_connector_ops package in a Container running Python > 3.10 with git..
 
@@ -263,17 +261,16 @@ def with_poetry(context: PipelineContext) -> Container:
     return poetry_with_cache
 
 
-def with_pipx(context: PipelineContext) -> Container:
-    """Installs pipx in a python environment.
+def with_pipx(base_python_container: Container) -> Container:
+    """Installs pipx in a python container.
 
     Args:
-       context (PipelineContext): The current pipeline context.
+       base_python_container (Container): The container to install pipx on.
 
     Returns:
         Container: A python environment with pipx installed.
     """
-    python_base_environment: Container = with_python_base(context, "python:3.9")
-    python_with_pipx = with_pip_packages(python_base_environment, ["pipx"]).with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
+    python_with_pipx = with_pip_packages(base_python_container, ["pipx"]).with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
 
     return python_with_pipx
 
@@ -295,6 +292,7 @@ def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_p
         .with_exec(poetry_install_dependencies_cmd)
     )
 
+
 def with_pipx_module(context: PipelineContext, parent_dir_path: str, module_path: str, include: List[str]) -> Container:
     """Installs a pipx module
 
@@ -304,10 +302,14 @@ def with_pipx_module(context: PipelineContext, parent_dir_path: str, module_path
         Container: A python environment with dependencies installed using pipx.
     """
     pipx_include = [module_path] + include
-    # import pdb; pdb.set_trace()
     pipx_install_dependencies_cmd = ["pipx", "install", module_path]
-
     src = context.get_repo_dir(parent_dir_path, exclude=DEFAULT_PYTHON_EXCLUDE, include=pipx_include)
-    python_with_pipx = with_pipx(context)
 
-    return python_with_pipx.with_mounted_directory("/src", src).with_workdir("/src").with_exec(["tree"]).with_exec(pipx_install_dependencies_cmd)
+    python_base_environment = with_python_base(context, "python:3.9")
+    python_with_pipx = with_pipx(python_base_environment)
+
+    return (
+        python_with_pipx.with_mounted_directory("/src", src)
+        .with_workdir("/src")
+        .with_exec(pipx_install_dependencies_cmd)
+    )

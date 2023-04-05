@@ -19,10 +19,10 @@ def test_invalid_metadata_yaml_files(invalid_metadata_yaml_files):
 
     for file_path in invalid_metadata_yaml_files:
         result = runner.invoke(validate, [file_path])
-        assert result.exit_code == 1, f"Validation succeeded (when it shouldve failed) for {file_path}"
+        assert result.exit_code != 0, f"Validation succeeded (when it shouldve failed) for {file_path}"
 
 
 def test_file_not_found_fails():
     runner = CliRunner()
     result = runner.invoke(validate, ["non_existent_file.yaml"])
-    assert result.exit_code == 1, "Validation succeeded (when it shouldve failed) for non_existent_file.yaml"
+    assert result.exit_code != 0, "Validation succeeded (when it shouldve failed) for non_existent_file.yaml"
