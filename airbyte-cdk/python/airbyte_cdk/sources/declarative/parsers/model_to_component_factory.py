@@ -9,7 +9,7 @@ import inspect
 import re
 from typing import Any, Callable, List, Literal, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
 
-from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, DeclarativeSingleUseRefreshTokenOauth2Authenticator
+from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.auth.token import (
     ApiKeyAuthenticator,
@@ -101,6 +101,7 @@ from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStrea
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 from pydantic import BaseModel
 
 ComponentDefinition: Union[Literal, Mapping, List]
@@ -665,11 +666,10 @@ class ModelToComponentFactory:
     @staticmethod
     def create_single_use_refresh_token_oauth_authenticator(
         model: SingleUseRefreshTokenOAuthAuthenticatorModel, config: Config, **kwargs
-    ) -> DeclarativeSingleUseRefreshTokenOauth2Authenticator:
-        return DeclarativeSingleUseRefreshTokenOauth2Authenticator(
-            config=config,
-            token_refresh_endpoint=model.token_refresh_endpoint,
-            parameters=model.parameters,
+    ) -> SingleUseRefreshTokenOauth2Authenticator:
+        return SingleUseRefreshTokenOauth2Authenticator(
+            config,
+            model.token_refresh_endpoint,
             access_token_name=model.access_token_name,
             refresh_token_name=model.refresh_token_name,
             expires_in_name=model.expires_in_name,

@@ -5,7 +5,7 @@
 from typing import Mapping, Type
 
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
-from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeOauth2Authenticator, DeclarativeSingleUseRefreshTokenOauth2Authenticator
+from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import (
     ApiKeyAuthenticator,
     BasicHttpAuthenticator,
@@ -51,6 +51,7 @@ from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition, AddFields
+from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 
 """
 CLASS_TYPES_REGISTRY contains a mapping of developer-friendly string -> class to abstract the specific class referred to
@@ -84,7 +85,7 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "NoAuth": NoAuth,
     "NoPagination": NoPagination,
     "OAuthAuthenticator": DeclarativeOauth2Authenticator,
-    "SingleUseRefreshTokenOAuthAuthenticator": DeclarativeSingleUseRefreshTokenOauth2Authenticator,
+    "SingleUseRefreshTokenOAuthAuthenticator": SingleUseRefreshTokenOauth2Authenticator,
     "OffsetIncrement": OffsetIncrement,
     "PageIncrement": PageIncrement,
     "ParentStreamConfig": ParentStreamConfig,
