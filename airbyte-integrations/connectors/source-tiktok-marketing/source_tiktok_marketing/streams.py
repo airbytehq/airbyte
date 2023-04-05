@@ -476,13 +476,16 @@ class BasicReports(IncrementalTiktokStream, ABC):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1738864915188737"""
 
     schema_name = "basic_reports"
+    ref_pk = "ad_id"
     report_granularity = None
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         if self.report_granularity == ReportGranularity.DAY:
-            return ["ad_id", "stat_time_day"]
-        return "ad_id"
+            return [self.ref_pk, "stat_time_day"]
+        elif self.report_granularity == ReportGranularity.HOUR:
+            return [self.ref_pk, "stat_time_hour"]
+        return self.ref_pk
 
     def __init__(self, **kwargs):
         report_granularity = kwargs.pop("report_granularity", None)
@@ -713,37 +716,22 @@ class AdsReports(BasicReports):
 class AdvertisersReports(BasicReports):
     """Custom reports for advertiser"""
 
+    ref_pk = "advertiser_id"
     report_level = ReportLevel.ADVERTISER
-
-    @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        if self.report_granularity == ReportGranularity.DAY:
-            return ["advertiser_id", "stat_time_day"]
-        return "advertiser_id"
 
 
 class CampaignsReports(BasicReports):
     """Custom reports for campaigns"""
 
+    ref_pk = "campaign_id"
     report_level = ReportLevel.CAMPAIGN
-
-    @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        if self.report_granularity == ReportGranularity.DAY:
-            return ["campaign_id", "stat_time_day"]
-        return "campaign_id"
 
 
 class AdGroupsReports(BasicReports):
     """Custom reports for adgroups"""
 
+    ref_pk = "adgroup_id"
     report_level = ReportLevel.ADGROUP
-
-    @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        if self.report_granularity == ReportGranularity.DAY:
-            return ["adgroup_id", "stat_time_day"]
-        return "adgroup_id"
 
 
 class AudienceReport(BasicReports):
@@ -772,13 +760,8 @@ class AudienceReport(BasicReports):
 
 class AdGroupAudienceReports(AudienceReport):
 
+    ref_pk = "adgroup_id"
     report_level = ReportLevel.ADGROUP
-
-    @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        if self.report_granularity == ReportGranularity.DAY:
-            return ["adgroup_id", "stat_time_day"]
-        return "adgroup_id"
 
 
 class AdsAudienceReports(AudienceReport):
@@ -788,23 +771,13 @@ class AdsAudienceReports(AudienceReport):
 
 class AdvertisersAudienceReports(AudienceReport):
 
+    ref_pk = "advertiser_id"
     report_level = ReportLevel.ADVERTISER
-
-    @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        if self.report_granularity == ReportGranularity.DAY:
-            return ["advertiser_id", "stat_time_day"]
-        return "advertiser_id"
 
 
 class CampaignsAudienceReportsByCountry(AudienceReport):
     """Custom reports for campaigns by country"""
 
+    ref_pk = "campaign_id"
     report_level = ReportLevel.CAMPAIGN
     audience_dimensions = ["country_code"]
-
-    @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        if self.report_granularity == ReportGranularity.DAY:
-            return ["campaign_id", "stat_time_day"]
-        return "campaign_id"

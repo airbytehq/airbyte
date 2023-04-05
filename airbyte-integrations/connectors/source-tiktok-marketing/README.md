@@ -49,7 +49,7 @@ and place them into `secrets/config.json`.
 python main.py spec
 python main.py check --config secrets/config.json
 python main.py discover --config secrets/config.json
-python main.py read --config secrets/config.json --catalog integration_tests/streams_basic.json
+python main.py read --config secrets/config.json --catalog integration_tests/configured_catalogs/streams_basic.json
 ```
 
 ### Locally running the connector docker image
