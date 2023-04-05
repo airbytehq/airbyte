@@ -33,7 +33,7 @@ COPY spec.patch.json ./
 COPY spec.map.json ./
 COPY oauth2.patch.json ./
 
-COPY --from=ghcr.io/estuary/airbyte-to-flow:0e75f5a /airbyte-to-flow ./
+COPY --from=ghcr.io/estuary/airbyte-to-flow:dev /airbyte-to-flow ./
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["/airbyte/integration_code/airbyte-to-flow", "--connector-entrypoint", "python /airbyte/integration_code/main.py"]
 
