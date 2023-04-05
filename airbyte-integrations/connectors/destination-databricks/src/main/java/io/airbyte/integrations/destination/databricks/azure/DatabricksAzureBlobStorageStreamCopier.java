@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.databricks;
+package io.airbyte.integrations.destination.databricks.azure;
 
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.specialized.AppendBlobClient;
@@ -12,11 +12,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDestinationConfig;
 import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageFormatConfig;
 import io.airbyte.integrations.destination.azure_blob_storage.csv.AzureBlobStorageCsvFormatConfig;
 import io.airbyte.integrations.destination.azure_blob_storage.csv.AzureBlobStorageCsvWriter;
+import io.airbyte.integrations.destination.databricks.DatabricksDestinationConfig;
+import io.airbyte.integrations.destination.databricks.DatabricksStreamCopier;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -59,7 +61,7 @@ public class DatabricksAzureBlobStorageStreamCopier extends DatabricksStreamCopi
                                                 final ConfiguredAirbyteStream configuredStream,
                                                 final JdbcDatabase database,
                                                 final DatabricksDestinationConfig databricksConfig,
-                                                final ExtendedNameTransformer nameTransformer,
+                                                final StandardNameTransformer nameTransformer,
                                                 final SqlOperations sqlOperations,
                                                 final SpecializedBlobClientBuilder specializedBlobClientBuilder,
                                                 final AzureBlobStorageConfig azureConfig) {
