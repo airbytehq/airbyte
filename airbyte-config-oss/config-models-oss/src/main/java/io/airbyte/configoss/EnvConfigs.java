@@ -2,8 +2,8 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-
 package io.airbyte.configoss;
+
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
