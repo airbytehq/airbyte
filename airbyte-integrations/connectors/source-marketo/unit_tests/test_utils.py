@@ -46,7 +46,6 @@ test_data = [
     ("updated_at", "updated_at"),
     (" updated_at ", "updated_at"),
     ("updatedat", "updatedat"),
-    ("updated at", "updated_at"),
     ("", ""),
 ]
 

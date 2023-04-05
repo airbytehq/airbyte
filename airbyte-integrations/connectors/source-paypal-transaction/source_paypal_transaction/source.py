@@ -212,6 +212,7 @@ class PaypalTransactionStream(HttpStream, ABC):
     @staticmethod
     def max_records_in_response_reached(exception: Exception, **kwargs):
         message = exception.error_message()
+        print(message)
         return message.get("name") == "RESULTSET_TOO_LARGE"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
