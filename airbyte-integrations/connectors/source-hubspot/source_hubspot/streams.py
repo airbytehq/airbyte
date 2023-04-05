@@ -660,7 +660,7 @@ class Stream(HttpStream, ABC):
             if "associations" in record:
                 associations = record.pop("associations")
                 for name, association in associations.items():
-                    record[name] = [row["id"] for row in association.get("results", [])]
+                    record[name.replace(" ", "_")] = [row["id"] for row in association.get("results", [])]
             yield record
 
 
