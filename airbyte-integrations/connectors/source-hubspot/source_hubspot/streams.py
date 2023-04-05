@@ -1566,3 +1566,15 @@ class Tickets(CRMSearchStream):
     primary_key = "id"
     scopes = {"tickets"}
     last_modified_field = "hs_lastmodifieddate"
+
+
+class EmailSubscriptions(Stream):
+    """EMAIL SUBSCRIPTION, API v1
+    Docs: https://legacydocs.hubspot.com/docs/methods/email/get_subscriptions
+    """
+
+    url = "/email/public/v1/subscriptions"
+    data_field = "subscriptionDefinitions"
+    primary_key = "id"
+    scopes = {"content"}
+    filter_old_records = False
