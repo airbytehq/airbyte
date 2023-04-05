@@ -321,6 +321,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                   |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.15  | 2022-04-04 | [24833](https://github.com/airbytehq/airbyte/pull/24833)   | Disallow the "disable" SSL Modes; fix Debezium retry policy configuration                                                                 |
 | 2.0.13  | 2022-03-28 | [24166](https://github.com/airbytehq/airbyte/pull/24166)   | Fix InterruptedException bug during Debezium shutdown                                                                                     |
 | 2.0.11  | 2022-03-27 | [24529](https://github.com/airbytehq/airbyte/pull/24373)   | Preparing the connector for CDC checkpointing                                                                                             |
 | 2.0.10  | 2022-03-24 | [24529](https://github.com/airbytehq/airbyte/pull/24529)   | Set SSL Mode to required on strict-encrypt variant                                                                                        |
@@ -335,7 +336,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | 1.0.48  | 2023-02-24 | [23383](https://github.com/airbytehq/airbyte/pull/23383)   | Fixed bug with non readable double-quoted values within a database name or column name                                                    |
 | 1.0.47  | 2023-02-22 | [22221](https://github.com/airbytehq/airbyte/pull/23138)   | Fix previous versions which doesn't verify privileges correctly, preventing CDC syncs to run.                                             |
 | 1.0.46  | 2023-02-21 | [23105](https://github.com/airbytehq/airbyte/pull/23105)   | Include log levels and location information (class, method and line number) with source connector logs published to Airbyte Platform.     |
-| 1.0.45  | 2023-02-09 | [22221](https://github.com/airbytehq/airbyte/pull/22371)   | Ensures that user has required privileges for CDC syncs.                                                                                  |  
+| 1.0.45  | 2023-02-09 | [22221](https://github.com/airbytehq/airbyte/pull/22371)   | Ensures that user has required privileges for CDC syncs.                                                                                  |
 |         | 2023-02-15 | [23028](https://github.com/airbytehq/airbyte/pull/23028)   |                                                                                                                                           |
 | 1.0.44  | 2023-02-06 | [22221](https://github.com/airbytehq/airbyte/pull/22221)   | Exclude new set of system tables when using `pg_stat_statements` extension.                                                               |
 | 1.0.43  | 2023-02-06 | [21634](https://github.com/airbytehq/airbyte/pull/21634)   | Improve Standard sync performance by caching objects.                                                                                     |
