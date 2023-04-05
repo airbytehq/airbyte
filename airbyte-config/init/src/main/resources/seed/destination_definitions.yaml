@@ -346,6 +346,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3-glue
   icon: s3-glue.svg
   releaseStage: alpha
+- name: SelectDB
+  destinationDefinitionId: 50a559a7-6323-4e33-8aa0-51dfd9dfadac
+  dockerRepository: airbyte/destination-selectdb
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/selectdb
+  icon: select.db
+  releaseStage: alpha
 - name: SFTP-JSON
   destinationDefinitionId: e9810f61-4bab-46d2-bb22-edfc902e0644
   dockerRepository: airbyte/destination-sftp-json
