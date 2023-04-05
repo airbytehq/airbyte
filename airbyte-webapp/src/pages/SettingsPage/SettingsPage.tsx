@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React, { Suspense, lazy } from "react";
 import { FormattedMessage } from "react-intl";
 import { Navigate, Route, Routes } from "react-router-dom";
 import styled from "styled-components";
@@ -13,9 +13,9 @@ import { useUser } from "core/AuthContext";
 import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
 import useRouter from "hooks/useRouter";
 
-import AccountSettingsPage from "./pages/AccountSettingsPage";
-import PlansBillingPage from "./pages/PlansBillingPage";
-import UserManagementPage from "./pages/UserManagementPage";
+const AccountSettingsPage = lazy(() => import("./pages/AccountSettingsPage"));
+const PlansBillingPage = lazy(() => import("./pages/PlansBillingPage"));
+const UserManagementPage = lazy(() => import("./pages/UserManagementPage"));
 
 export interface PageConfig {
   menuConfig: CategoryItem[];

@@ -6,6 +6,7 @@ const defaultConfig: Config = {
   segment: { enabled: false, token: "" },
   healthCheckInterval: 5000,
   userDetailInterval: 5000,
+  notificationInterval: 3000,
   version: "dev",
   apiUrl: `http://143.198.204.26:8888/daspire`,
   integrationUrl: "/docs",

@@ -86,4 +86,4 @@ function DropDownInner<T = unknown>(
 
 export const defaultDataItemSort = naturalComparatorBy<IDataItem>((dataItem) => dataItem.label || "");
 
-export const DropDown = React.forwardRef(DropDownInner);
+export const DropDown = React.memo(React.forwardRef(DropDownInner));

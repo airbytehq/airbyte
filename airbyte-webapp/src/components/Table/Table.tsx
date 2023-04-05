@@ -127,7 +127,7 @@ interface IProps {
   sortBy?: Array<SortingRule<any>>;
 }
 
-const Table: React.FC<IProps> = ({ columns, data, onClickRow, erroredRows, sortBy, light }) => {
+const Table: React.FC<IProps> = React.memo(({ columns, data, onClickRow, erroredRows, sortBy, light }) => {
   const [plugins, config] = useMemo(() => {
     const pl = [];
     const plConfig: Record<string, unknown> = {};
@@ -208,6 +208,6 @@ const Table: React.FC<IProps> = ({ columns, data, onClickRow, erroredRows, sortB
       </tbody>
     </TableView>
   );
-};
+});
 
 export default memo(Table);

@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React, { Suspense, lazy } from "react";
 import { FormattedMessage } from "react-intl";
 import { Navigate, Route, Routes } from "react-router-dom";
 import styled from "styled-components";
@@ -9,8 +9,8 @@ import { SideMenuItem } from "components/TabMenu";
 import useRouter from "hooks/useRouter";
 
 import { Sidebar } from "./components";
-import LanguagePage from "./pages/LanguagePage";
-import NotificationPage from "./pages/NotificationPage";
+const LanguagePage = lazy(() => import("./pages/LanguagePage"));
+const NotificationPage = lazy(() => import("./pages/NotificationPage"));
 
 const Container = styled.div`
   width: 100%;

@@ -52,7 +52,7 @@ const ActionBtn = styled.button`
   background-color: transparent;
 `;
 
-const UserTableBody: React.FC<IProps> = ({ users, roles, onDelete, onChangeRole, onResendInvite }) => {
+const UserTableBody: React.FC<IProps> = React.memo(({ users, roles, onDelete, onChangeRole, onResendInvite }) => {
   return (
     <>
       {users.map((user, index) => (
@@ -106,6 +106,6 @@ const UserTableBody: React.FC<IProps> = ({ users, roles, onDelete, onChangeRole,
       ))}
     </>
   );
-};
+});
 
 export default UserTableBody;

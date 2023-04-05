@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -43,59 +43,65 @@ const ButtonContainer = styled.div`
   margin: 70px 0 50px 0;
 `;
 
-export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = ({ resourceType, onCreateClick }) => {
-  const {} = useMemo(() => {
-    const singularResourceType = resourceType.substring(0, resourceType.length - 1);
-    const baseMessageId = resourceType === "connections" ? singularResourceType : resourceType;
+export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = React.memo(
+  ({ resourceType, onCreateClick }) => {
+    const {} = useMemo(() => {
+      const singularResourceType = resourceType.substring(0, resourceType.length - 1);
+      const baseMessageId = resourceType === "connections" ? singularResourceType : resourceType;
 
-    const headingMessageId = `${baseMessageId}.description`;
-    const buttonMessageId = `${baseMessageId}.new${
-      singularResourceType.substring(0, 1).toUpperCase() + singularResourceType.substring(1)
-    }`;
+      const headingMessageId = `${baseMessageId}.description`;
+      const buttonMessageId = `${baseMessageId}.new${
+        singularResourceType.substring(0, 1).toUpperCase() + singularResourceType.substring(1)
+      }`;
 
-    return { headingMessageId, buttonMessageId, singularResourceType };
-  }, [resourceType]);
+      return { headingMessageId, buttonMessageId, singularResourceType };
+    }, [resourceType]);
 
-  const getPageTitle = (resourceType: "connections" | "destinations" | "sources"): string => {
-    switch (resourceType) {
-      case "connections":
-        return "admin.dashboard";
+    const getPageTitle = (resourceType: "connections" | "destinations" | "sources"): string => {
+      switch (resourceType) {
+        case "connections":
+          return "admin.dashboard";
 
-      case "sources":
-        return "admin.sources";
+        case "sources":
+          return "admin.sources";
 
-      case "destinations":
-        return "admin.destinations";
+        case "destinations":
+          return "admin.destinations";
 
-      default:
-        return "admin.dashboard";
-    }
-  };
+        default:
+          return "admin.dashboard";
+      }
+    };
 
-  return (
-    <Container>
-      <HeadTitle titles={[{ id: getPageTitle(resourceType) }]} />
-      <TitlesBlock testId="onboarding.welcome" title={<FormattedMessage id="onboarding.welcome" />}>
-        <FormattedMessage
-          id="onboarding.welcomeUser.text"
-          values={{
-            b: (b: React.ReactNode) => (
-              <>
-                <b>{b}</b>
-                <br />
-              </>
-            ),
-          }}
-        />
-      </TitlesBlock>
-      <IllustrationContainer>
-        <img src="/daspireDashboard.png" alt="logo" style={{ maxWidth: "100%", height: "auto", objectFit: "cover" }} />
-      </IllustrationContainer>
-      <ButtonContainer>
-        <BigButton shadow onClick={onCreateClick}>
-          <FormattedMessage id="onboarding.firstConnection" />
-        </BigButton>
-      </ButtonContainer>
-    </Container>
-  );
-};
+    return (
+      <Container>
+        <HeadTitle titles={[{ id: getPageTitle(resourceType) }]} />
+        <TitlesBlock testId="onboarding.welcome" title={<FormattedMessage id="onboarding.welcome" />}>
+          <FormattedMessage
+            id="onboarding.welcomeUser.text"
+            values={{
+              b: (b: React.ReactNode) => (
+                <>
+                  <b>{b}</b>
+                  <br />
+                </>
+              ),
+            }}
+          />
+        </TitlesBlock>
+        <IllustrationContainer>
+          <img
+            src="/daspireDashboard.png"
+            alt="logo"
+            style={{ maxWidth: "100%", height: "auto", objectFit: "cover" }}
+          />
+        </IllustrationContainer>
+        <ButtonContainer>
+          <BigButton shadow onClick={onCreateClick}>
+            <FormattedMessage id="onboarding.firstConnection" />
+          </BigButton>
+        </ButtonContainer>
+      </Container>
+    );
+  }
+);

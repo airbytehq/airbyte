@@ -209,10 +209,10 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
         ),
       },
       serviceType: {
-        component: () => <></>,
+        component: () => <div />,
       },
     }),
-    [formType, props.onServiceSelect, props.availableServices, props.isEditMode, toggleOpenRequestModal]
+    [formType]
   );
 
   const { uiWidgetsInfo, setUiWidgetsInfo, resetUiWidgetsInfo } = useBuildUiWidgetsContext(

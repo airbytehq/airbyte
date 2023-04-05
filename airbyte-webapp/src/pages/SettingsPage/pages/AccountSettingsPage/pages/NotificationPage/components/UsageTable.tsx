@@ -44,67 +44,69 @@ const AddButtonText = styled.div`
   margin-left: 11px;
 `;
 
-export const UsageTable: React.FC<IProps> = ({
-  usageList,
-  usageNotificationList,
-  createNotificationSetting,
-  saveNotificationSetting,
-  updateLoading,
-  updateNotificationSetting,
-  deleteNotificationSetting,
-}) => {
-  return (
-    <>
-      <Row>
-        <Cell flex={FirstCellFlexValue}>
-          <FirstHeaderText>
-            <FormattedMessage id="usageTable.cell.usage" />
-          </FirstHeaderText>
-        </Cell>
-        <BodyCell>
-          <HeaderText>
-            <FormattedMessage id="usageTable.cell.email" />
-          </HeaderText>
-        </BodyCell>
-        <BodyCell>
-          <HeaderText>
-            <FormattedMessage id="usageTable.cell.inApp" />
-          </HeaderText>
-        </BodyCell>
-      </Row>
-      {usageNotificationList
-        .slice(0)
-        .reverse()
-        .sort((x, y) => Number(y.defaultFlag) - Number(x.defaultFlag))
-        .map((usageItem) => (
+export const UsageTable: React.FC<IProps> = React.memo(
+  ({
+    usageList,
+    usageNotificationList,
+    createNotificationSetting,
+    saveNotificationSetting,
+    updateLoading,
+    updateNotificationSetting,
+    deleteNotificationSetting,
+  }) => {
+    return (
+      <>
+        <Row>
+          <Cell flex={FirstCellFlexValue}>
+            <FirstHeaderText>
+              <FormattedMessage id="usageTable.cell.usage" />
+            </FirstHeaderText>
+          </Cell>
+          <BodyCell>
+            <HeaderText>
+              <FormattedMessage id="usageTable.cell.email" />
+            </HeaderText>
+          </BodyCell>
+          <BodyCell>
+            <HeaderText>
+              <FormattedMessage id="usageTable.cell.inApp" />
+            </HeaderText>
+          </BodyCell>
+        </Row>
+        {usageNotificationList
+          .slice(0)
+          .reverse()
+          .sort((x, y) => Number(y.defaultFlag) - Number(x.defaultFlag))
+          .map((usageItem) => (
+            <>
+              <Separator key={usageItem.id} />
+              <UsageTableRow
+                usageItem={usageItem}
+                saveNotificationSetting={saveNotificationSetting}
+                updateLoading={updateLoading}
+                updateNotificationSetting={updateNotificationSetting}
+                deleteNotificationSetting={deleteNotificationSetting}
+              />
+            </>
+          ))}
+        {usageNotificationList.length === usageList.length && (
           <>
             <Separator />
-            <UsageTableRow
-              usageItem={usageItem}
-              saveNotificationSetting={saveNotificationSetting}
-              updateLoading={updateLoading}
-              updateNotificationSetting={updateNotificationSetting}
-              deleteNotificationSetting={deleteNotificationSetting}
-            />
+            <Row>
+              <Cell>
+                <AddButton onClick={createNotificationSetting}>
+                  <ButtonContentContainer>
+                    <AddIcon />
+                    <AddButtonText>
+                      <FormattedMessage id="usageTable.cell.addBtn.text" />
+                    </AddButtonText>
+                  </ButtonContentContainer>
+                </AddButton>
+              </Cell>
+            </Row>
           </>
-        ))}
-      {usageNotificationList.length === usageList.length && (
-        <>
-          <Separator />
-          <Row>
-            <Cell>
-              <AddButton onClick={createNotificationSetting}>
-                <ButtonContentContainer>
-                  <AddIcon />
-                  <AddButtonText>
-                    <FormattedMessage id="usageTable.cell.addBtn.text" />
-                  </AddButtonText>
-                </ButtonContentContainer>
-              </AddButton>
-            </Cell>
-          </Row>
-        </>
-      )}
-    </>
-  );
-};
+        )}
+      </>
+    );
+  }
+);

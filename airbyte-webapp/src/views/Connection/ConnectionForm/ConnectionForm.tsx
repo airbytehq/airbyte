@@ -198,7 +198,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
         setSubmitError(e);
       }
     },
-    [connection.operations, workspace.workspaceId, onSubmit, clearFormChange, formId]
+    [connection.operations, workspace.workspaceId, onSubmit, clearFormChange, formId, onListenAfterSubmit]
   );
 
   const errorMessage = submitError ? generateMessageFromError(submitError) : null;

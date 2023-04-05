@@ -108,7 +108,7 @@ const ButtonText = styled.div`
   margin-left: 6px;
 `;
 
-const AddUserModal: React.FC<IProps> = ({ onClose, roles }) => {
+const AddUserModal: React.FC<IProps> = React.memo(({ onClose, roles }) => {
   const { setNotification } = useAppNotification();
   const [loading, setLoading] = useState(false);
 
@@ -259,6 +259,6 @@ const AddUserModal: React.FC<IProps> = ({ onClose, roles }) => {
       </Formik>
     </Modal>
   );
-};
+});
 
 export default AddUserModal;
