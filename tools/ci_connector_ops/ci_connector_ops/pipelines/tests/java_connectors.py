@@ -14,42 +14,44 @@ from ci_connector_ops.pipelines.tests.common import AcceptanceTests
 from ci_connector_ops.utils import Connector
 from dagger import CacheSharingMode, Directory, File, QueryError
 
-DOCKER_CACHE_VOLUME_NAME = "docker-lib-java-connectors"
 
-DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING = {
-    Connector("destination-clickhouse"): "clickhouse.Dockerfile",
-    Connector("destination-duckdb"): "duckdb.Dockerfile",
-    Connector("destination-mssql"): "mssql.Dockerfile",
-    Connector("destination-mysql"): "mysql.Dockerfile",
-    Connector("destination-oracle"): "oracle.Dockerfile",
-    Connector("destination-redshift"): "redshift.Dockerfile",
-    Connector("destination-snowflake"): "snowflake.Dockerfile",
-    Connector("destination-tidb"): "tidb.Dockerfile",
-}
+class BuildNormalization(Step):
 
+    DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING = {
+        Connector("destination-clickhouse"): "clickhouse.Dockerfile",
+        Connector("destination-duckdb"): "duckdb.Dockerfile",
+        Connector("destination-mssql"): "mssql.Dockerfile",
+        Connector("destination-mysql"): "mysql.Dockerfile",
+        Connector("destination-oracle"): "oracle.Dockerfile",
+        Connector("destination-redshift"): "redshift.Dockerfile",
+        Connector("destination-snowflake"): "snowflake.Dockerfile",
+        Connector("destination-tidb"): "tidb.Dockerfile",
+    }
 
-def get_normalization_dockerfile(connector: Connector) -> Optional[str]:
-    if connector.supports_normalization:
-        return DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING.get(connector, "Dockerfile")
+    def __init__(self, context: ConnectorTestContext) -> None:
+        super().__init__(context)
+        self.normalization_image_name = f"{context.connector.normalization_repository}:dev"
+        self.normalization_dockerfile = self.DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING.get(context.connector, "Dockerfile")
+        self.title = f"Build {self.normalization_image_name}"
 
+    async def _run(self) -> Tuple[StepResult, File]:
+        normalization_directory = self.context.get_repo_dir("airbyte-integrations/bases/base-normalization")
 
-def get_normalization_image_name(connector: Connector) -> Optional[str]:
-    return f"{connector.normalization_repository}:dev"
-
-
-async def build_and_export_normalization_image(
-    context: ConnectorTestContext, normalization_dockerfile: str, normalization_image_name: str
-) -> Optional[File]:
-    normalization_directory = context.get_repo_dir("airbyte-integrations/bases/base-normalization")
-
-    normalization_local_tar_path = f"{normalization_image_name.replace(':dev', '').replace('/', '_')}.tar"
-    build_normalization_container = normalization_directory.docker_build(normalization_dockerfile)
-    export_success = await build_normalization_container.export(f"/tmp/{normalization_local_tar_path}")
-    if export_success:
-        exported_file = (
-            context.dagger_client.host().directory("/tmp", include=[normalization_local_tar_path]).file(normalization_local_tar_path)
-        )
-        return exported_file
+        normalization_local_tar_path = f"{self.normalization_image_name.replace(':dev', '').replace('/', '_')}.tar"
+        build_normalization_container = normalization_directory.docker_build(self.normalization_dockerfile)
+        try:
+            export_success = await build_normalization_container.export(f"/tmp/{normalization_local_tar_path}")
+            if export_success:
+                exported_file = (
+                    self.context.dagger_client.host()
+                    .directory("/tmp", include=[normalization_local_tar_path])
+                    .file(normalization_local_tar_path)
+                )
+                return StepResult(self, StepStatus.SUCCESS), exported_file
+            else:
+                return StepResult(self, StepStatus.FAILURE, stderr="The normalization container could not be exported"), None
+        except QueryError as e:
+            return StepResult(self, StepStatus.FAILURE, stderr=str(e))
 
 
 class GradleTask(Step):
@@ -124,7 +126,7 @@ class GradleTask(Step):
         connector_java_build_cache = self.context.dagger_client.cache_volume("connector_java_build_cache")
 
         connector_under_test = (
-            environments.with_gradle(self.context, self.build_include, docker_cache_volume_name=DOCKER_CACHE_VOLUME_NAME)
+            environments.with_gradle(self.context, self.build_include)
             .with_mounted_cache(
                 f"{self.context.connector.code_directory}/build", connector_java_build_cache, sharing=CacheSharingMode.SHARED
             )
@@ -143,9 +145,7 @@ class IntegrationTestJava(GradleTask):
         super().__init__(context, "integrationTestJava")
 
     async def load_normalization_image(self, normalization_tar_file: File):
-        docker_cli = environments.with_docker_cli(self.context, docker_cache_volume_name=DOCKER_CACHE_VOLUME_NAME).with_mounted_file(
-            "normalization.tar", normalization_tar_file
-        )
+        docker_cli = environments.with_docker_cli(self.context).with_mounted_file("normalization.tar", normalization_tar_file)
         image_load_output = await docker_cli.with_exec(["docker", "load", "--input", "normalization.tar"]).stdout()
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
         image_id = image_load_output.replace("\n", "").replace("Loaded image ID: sha256:", "")
@@ -155,7 +155,7 @@ class IntegrationTestJava(GradleTask):
         tar_name = f"airbyte_{self.context.connector.technical_name}_dev.tar"
         image_name = f"airbyte/{self.context.connector.technical_name}:dev"
         export_success = await (
-            environments.with_gradle(self.context, docker_cache_volume_name=DOCKER_CACHE_VOLUME_NAME)
+            environments.with_gradle(self.context)
             .with_exec(["docker", "save", "--output", tar_name, image_name])
             .file(tar_name)
             .export(f"/tmp/{tar_name}")
@@ -180,7 +180,7 @@ class BuildConnectorImage(GradleTask):
         tar_name = f"airbyte_{self.context.connector.technical_name}_dev.tar"
         image_name = f"airbyte/{self.context.connector.technical_name}:dev"
         export_success = await (
-            environments.with_gradle(self.context, docker_cache_volume_name=DOCKER_CACHE_VOLUME_NAME)
+            environments.with_gradle(self.context)
             .with_exec(["docker", "save", "--output", tar_name, image_name])
             .file(tar_name)
             .export(f"/tmp/{tar_name}")
@@ -194,7 +194,7 @@ class BuildConnectorImage(GradleTask):
         self.context.dagger_client = self.get_dagger_pipeline(self.context.dagger_client)
         connector_java_build_cache = self.context.dagger_client.cache_volume("connector_java_build_cache")
         built_container = (
-            environments.with_gradle(self.context, self.build_include, docker_cache_volume_name=DOCKER_CACHE_VOLUME_NAME)
+            environments.with_gradle(self.context, self.build_include)
             .with_mounted_cache(
                 f"{self.context.connector.code_directory}/build", connector_java_build_cache, sharing=CacheSharingMode.SHARED
             )
@@ -218,6 +218,7 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
     step_results = []
     test_step = GradleTask(context, "test")
     build_connector_step = BuildConnectorImage(context)
+    build_normalization_step = BuildNormalization(context) if context.connector.supports_normalization else None
     integration_test_java_step = IntegrationTestJava(context)
     acceptance_test_step = AcceptanceTests(context)
 
@@ -228,10 +229,11 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
     step_results.append(test_results)
 
     normalization_tar_file = None
-    if context.connector.supports_normalization:
-        normalization_dockerfile = get_normalization_dockerfile(context.connector)
-        normalization_image_name = get_normalization_image_name(context.connector)
-        normalization_tar_file = await build_and_export_normalization_image(context, normalization_dockerfile, normalization_image_name)
+    if build_normalization_step:
+        build_normalization_results, normalization_tar_file = await build_normalization_step.run()
+        if build_normalization_results.status is StepStatus.FAILURE:
+            return step_results + [build_normalization_results, integration_test_java_step.skip(), acceptance_test_step.skip()]
+        step_results.append(build_normalization_results)
 
     connector_image_tar_file = None
     if context.connector.acceptance_test_config is not None:
@@ -243,6 +245,42 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
     async with asyncer.create_task_group() as task_group:
         tasks = [
             task_group.soonify(integration_test_java_step.run)(normalization_tar_file),
+            task_group.soonify(acceptance_test_step.run)(connector_image_tar_file),
+        ]
+    return step_results + [task.value for task in tasks]
+
+
+async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
+    step_results = []
+    # test_step = GradleTask(context, "test")
+    build_connector_step = BuildConnectorImage(context)
+    build_normalization_step = BuildNormalization(context) if context.connector.supports_normalization else None
+    integration_test_java_step = IntegrationTestJava(context)
+    acceptance_test_step = AcceptanceTests(context)
+
+    # context.secrets_dir = await secrets.get_connector_secret_dir(context)
+    # test_results = await test_step.run()
+    # if test_results.status is StepStatus.FAILURE:
+    #     return step_results + [test_results, integration_test_java_step.skip(), acceptance_test_step.skip()]
+    # step_results.append(test_results)
+
+    normalization_tar_file = None
+    if build_normalization_step:
+        build_normalization_results, normalization_tar_file = await build_normalization_step.run()
+        if build_normalization_results.status is StepStatus.FAILURE:
+            return step_results + [build_normalization_results, integration_test_java_step.skip(), acceptance_test_step.skip()]
+        step_results.append(build_normalization_results)
+
+    connector_image_tar_file = None
+    if context.connector.acceptance_test_config is not None:
+        build_connector_results, connector_image_tar_file = await build_connector_step.run()
+        if build_connector_results.status is StepStatus.FAILURE:
+            return step_results + [integration_test_java_step.skip(), acceptance_test_step.skip()]
+        step_results.append(build_connector_results)
+
+    async with asyncer.create_task_group() as task_group:
+        tasks = [
+            # task_group.soonify(integration_test_java_step.run)(normalization_tar_file),
             task_group.soonify(acceptance_test_step.run)(connector_image_tar_file),
         ]
     return step_results + [task.value for task in tasks]

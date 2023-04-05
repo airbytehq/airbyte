@@ -220,8 +220,7 @@ def with_dockerd_service(
     Returns:
         Container: The container running dockerd as a service.
     """
-    if docker_cache_volume_name is None:
-        docker_cache_volume_name = "docker-lib"
+    docker_cache_volume_name = f"{context.connector.technical_name}-docker-lib"
     dind = (
         context.dagger_client.container()
         .from_("docker:23.0.1-dind")
@@ -254,7 +253,8 @@ def with_bound_docker_host(
         Container: The container bound to the docker host.
     """
     dockerd = with_dockerd_service(context, shared_volume, docker_cache_volume_name)
-    bound = container.with_env_variable("DOCKER_HOST", "tcp://docker:2375").with_service_binding("docker", dockerd)
+    docker_hostname = f"dockerhost-{context.connector.technical_name}"
+    bound = container.with_env_variable("DOCKER_HOST", f"tcp://{docker_hostname}:2375").with_service_binding(docker_hostname, dockerd)
     if shared_volume:
         bound = bound.with_mounted_cache(*shared_volume)
     return bound
