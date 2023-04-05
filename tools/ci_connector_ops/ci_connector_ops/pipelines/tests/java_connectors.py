@@ -4,6 +4,7 @@
 
 """This module groups steps made to run tests for a specific Java connector given a test context."""
 
+import uuid
 from typing import List, Optional, Tuple
 
 import asyncer
@@ -183,8 +184,10 @@ class IntegrationTestJava(GradleTask):
         super().__init__(context, "integrationTestJava", step_title="Integration tests")
 
     async def load_normalization_image(self, normalization_tar_file: File):
-        docker_cli = environments.with_docker_cli(self.context).with_mounted_file("normalization.tar", normalization_tar_file)
-        image_load_output = await docker_cli.with_exec(["docker", "load", "--input", "normalization.tar"]).stdout()
+        # Hacky way to make sure the image is always loaded
+        normalization_tar_name = f"{str(uuid.uuid4())}.tar"
+        docker_cli = environments.with_docker_cli(self.context).with_mounted_file(normalization_tar_name, normalization_tar_file)
+        image_load_output = await docker_cli.with_exec(["docker", "load", "--input", normalization_tar_name]).stdout()
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
         image_id = image_load_output.replace("\n", "").replace("Loaded image ID: sha256:", "")
         await docker_cli.with_exec(["docker", "tag", image_id, normalization_image_tag]).exit_code()
@@ -219,23 +222,26 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
     acceptance_test_step = AcceptanceTests(context)
 
     context.secrets_dir = await secrets.get_connector_secret_dir(context)
-    test_results = await test_step.run()
-    if test_results.status is StepStatus.FAILURE:
-        return step_results + [test_results, integration_test_java_step.skip(), acceptance_test_step.skip()]
-    step_results.append(test_results)
 
     normalization_tar_file = None
     if build_normalization_step:
         build_normalization_results, normalization_tar_file = await build_normalization_step.run()
         if build_normalization_results.status is StepStatus.FAILURE:
             return step_results + [build_normalization_results, integration_test_java_step.skip(), acceptance_test_step.skip()]
+        context.logger.info(f"Normalization image ({build_normalization_step.normalization_image_name}) was build")
         step_results.append(build_normalization_results)
+
+    test_results = await test_step.run()
+    if test_results.status is StepStatus.FAILURE:
+        return step_results + [test_results, integration_test_java_step.skip(), acceptance_test_step.skip()]
+    step_results.append(test_results)
 
     connector_image_tar_file = None
     if context.connector.acceptance_test_config is not None:
         build_connector_results, connector_image_tar_file = await build_connector_step.run()
         if build_connector_results.status is StepStatus.FAILURE:
             return step_results + [integration_test_java_step.skip(), acceptance_test_step.skip()]
+        context.logger.info("The connector image was build")
         step_results.append(build_connector_results)
 
     async with asyncer.create_task_group() as task_group:
