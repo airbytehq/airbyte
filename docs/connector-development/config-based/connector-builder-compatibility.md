@@ -208,4 +208,3 @@ Examples:
 - No: [Congress API](https://api.congress.gov/)
 
 If the integration requires query params that are not key-value pairs, use the Python CDK.
-
