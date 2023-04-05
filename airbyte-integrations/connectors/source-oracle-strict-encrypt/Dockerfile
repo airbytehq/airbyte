@@ -17,5 +17,5 @@ ENV TZ UTC
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.3.22
+LABEL io.airbyte.version=0.3.24
 LABEL io.airbyte.name=airbyte/source-oracle-strict-encrypt

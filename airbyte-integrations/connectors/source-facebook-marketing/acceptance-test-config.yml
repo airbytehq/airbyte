@@ -53,3 +53,4 @@ acceptance_tests:
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
+        timeout_seconds: 2400

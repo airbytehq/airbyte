@@ -16,12 +16,17 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from connector_acceptance_test.config import ConnectionTestConfig
+from connector_acceptance_test.config import ConnectionTestConfig, IgnoredFieldsConfiguration
 from connector_acceptance_test.tests.test_full_refresh import TestFullRefresh as _TestFullRefresh
 
 
 class ReadTestConfigWithIgnoreFields(ConnectionTestConfig):
-    ignored_fields: Dict[str, List[str]] = {"test_stream": ["ignore_me", "ignore_me_too"]}
+    ignored_fields: Dict[str, List[IgnoredFieldsConfiguration]] = {
+        "test_stream": [
+            IgnoredFieldsConfiguration(name="ignore_me", bypass_reason="test"),
+            IgnoredFieldsConfiguration(name="ignore_me_too", bypass_reason="test")
+        ]
+    }
 
 
 def record_message_from_record(records: List[Dict], emitted_at: int) -> List[AirbyteMessage]:
@@ -120,7 +125,7 @@ def test_read_with_ignore_fields(mocker, schema, record, expected_record, fail_c
         t = _TestFullRefresh()
         with fail_context:
             t.test_sequential_reads(
-                inputs=input_config,
+                ignored_fields=input_config.ignored_fields,
                 connector_config=mocker.MagicMock(),
                 configured_catalog=catalog,
                 docker_runner=docker_runner_mock,
@@ -215,7 +220,7 @@ def test_recordset_comparison(mocker, primary_key, first_read_records, second_re
     t = _TestFullRefresh()
     with fail_context:
         t.test_sequential_reads(
-            inputs=input_config,
+            ignored_fields=input_config.ignored_fields,
             connector_config=mocker.MagicMock(),
             configured_catalog=catalog,
             docker_runner=docker_runner_mock,
@@ -281,7 +286,7 @@ def test_emitted_at_increase_on_subsequent_runs(mocker, schema, records_1, recor
     t = _TestFullRefresh()
     with expectation:
         t.test_sequential_reads(
-            inputs=input_config,
+            ignored_fields=input_config.ignored_fields,
             connector_config=mocker.MagicMock(),
             configured_catalog=configured_catalog,
             docker_runner=docker_runner_mock,

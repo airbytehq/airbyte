@@ -32,6 +32,32 @@
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "description": "UTC date and time in the format 2021-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "examples": ["2021-01-25T00:00:00Z"]
+      },
+      "event_time_interval": {
+        "type": "object",
+        "title": "Event Stream Time Interval",
+        "description": "Amplitude event stream time interval",
+        "required": ["size_unit", "size"],
+        "properties": {
+          "size_unit" : {
+            "type" : "string",
+            "title" : "Events Time Interval Size Unit",
+            "description" : "Amplitude event stream's interval size unit",
+            "enum" : [
+              "days",
+              "hours",
+              "weeks",
+              "months"
+            ],
+            "default" : "days"
+          },
+          "size" : {
+            "type" : "integer",
+            "title" : "Events Time Interval Size",
+            "description" : "Amplitude event stream's interval size unit",
+            "default" : 1
+          }
+        }
       }
     }
   }

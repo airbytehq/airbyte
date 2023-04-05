@@ -6,21 +6,21 @@ To build a new connector in Java or Python, we provide templates so you don't ne
 
 **Note: you are not required to maintain the connectors you create.** The goal is that the Airbyte core team and the community help maintain the connector.
 
-## Low-code Connector-Development Framework
+Airbyte provides some Connector Development Kits (CDKs) to help you build connectors.
+
+### Low-code Connector-Development Framework
 
 You can use the [low-code framework](config-based/low-code-cdk-overview.md) to build source connectors for REST APIs via a [connector builder UI](config-based/connector-builder-ui.md) or by modifying boilerplate YAML files.
 
-## Python Connector-Development Kit \(CDK\)
+### Python Connector-Development Kit \(CDK\)
 
 You can build a connector very quickly in Python with the [Airbyte CDK](cdk-python/), which generates 75% of the code required for you.
 
-## C#/.NET Connector-Development Kit \(CDK\)
+### Community maintained CDKs
+The Airbyte community also maintains some CDKs:
 
-You can build a connector very quickly in C# .NET with the [Airbyte Dotnet CDK](cdk-dotnet/), which generates 75% of the code required for you.
-
-## TS/JS Connector-Development Kit \(Faros AI Airbyte CDK\)
-
-You can build a connector in TypeScript/JavaScript with the [Faros AI CDK](https://github.com/airbytehq/airbyte/tree/01b905a38385ca514c2d9c07cc44a8f9a48ce762/docs/connector-development/cdk-faros-js/README.md), which generates and boostraps most of the code required for HTTP Airbyte sources.
+* The [Typescript CDK](https://github.com/faros-ai/airbyte-connectors) is actively maintained by Faros.ai for use in their product.
+* The [Airbyte Dotnet CDK](cdk-dotnet/) comes with C# templates which can be used to generate 75% of the code required for you
 
 ## The Airbyte specification
 
@@ -160,9 +160,22 @@ Once you've finished iterating on the changes to a connector as specified in its
         * `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml` if it is a destination.
    
    * Then run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/a534bb2a8f29b20e3cc7c52fef1bc3c34783695d/airbyte-config/specs) for more information.
-   
-5. If the `README.md` file of the connector contains a `Changelog` section, add the new version and relevant release information to the table in the section.
-6. The new version of the connector is now available for everyone who uses it. Thank you!
+
+5. The new version of the connector is now available for everyone who uses it. Thank you!
+
+
+### Updating Connector Metadata
+
+When a new (or updated version) of a connector is ready to be published, our automations will check your branch for a few things:
+* Does the connector have an icon?
+* Does the connector have documentation and is it in the proper format?
+* Does the connector have a changelog entry for this version?
+
+If any of the above are failing, you won't be able to merge your PR or publish your connector.
+
+Connector icons should be square SVGs and be located in [this directory](https://github.com/airbytehq/airbyte/tree/master/airbyte-config/init/src/main/resources/icons).
+
+Connector documentation and changelogs are markdown files which live either [here for sources](https://github.com/airbytehq/airbyte/tree/master/docs/integrations/sources), or [here for destinations](https://github.com/airbytehq/airbyte/tree/master/docs/integrations/destinations).
 
 ### The /publish command
 

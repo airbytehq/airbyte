@@ -8,7 +8,6 @@ dependencies {
 
     implementation 'commons-cli:commons-cli:1.4'
     implementation project(':airbyte-config:config-models')
-    implementation project(':airbyte-config:config-persistence')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-json-validation')
     implementation libs.lombok
@@ -16,17 +15,6 @@ dependencies {
 
     testImplementation project(':airbyte-test-utils')
     testImplementation 'com.squareup.okhttp3:mockwebserver:4.9.1'
-}
-
-task copyScripts(type: Copy) {
-    dependsOn copyDocker
-
-    from('scripts')
-    into 'build/docker/bin/scripts'
-}
-
-tasks.named("buildDockerImage") {
-    dependsOn copyScripts
 }
 
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

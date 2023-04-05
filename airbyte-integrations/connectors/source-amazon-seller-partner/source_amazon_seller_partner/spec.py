@@ -13,7 +13,6 @@ class AmazonSellerPartnerConfig(BaseModel):
         schema_extra = {"additionalProperties": True}
 
     app_id: str = Field(
-        None,
         description="Your Amazon App ID",
         title="App Id",
         airbyte_secret=True,
