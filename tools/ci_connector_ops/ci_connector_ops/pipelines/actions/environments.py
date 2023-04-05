@@ -6,14 +6,14 @@
 
 from __future__ import annotations
 
+import uuid
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from ci_connector_ops.pipelines.utils import get_file_contents
-from dagger import CacheSharingMode, CacheVolume, Container, Directory, Secret
+from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Secret
 
 if TYPE_CHECKING:
     from ci_connector_ops.pipelines.contexts import ConnectorTestContext
-
 
 PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
 
@@ -225,7 +225,9 @@ def with_dockerd_service(
     dind = (
         context.dagger_client.container()
         .from_("docker:23.0.1-dind")
-        .with_mounted_cache("/var/lib/docker", context.dagger_client.cache_volume(docker_cache_volume_name))
+        .with_mounted_cache(
+            "/var/lib/docker", context.dagger_client.cache_volume(docker_cache_volume_name), sharing=CacheSharingMode.SHARED
+        )
     )
     if shared_volume is not None:
         dind = dind.with_mounted_cache(*shared_volume)
@@ -275,20 +277,35 @@ def with_docker_cli(
     return with_bound_docker_host(context, docker_cli, shared_volume, docker_cache_volume_name)
 
 
-def with_connector_acceptance_test(context: ConnectorTestContext) -> Container:
+async def with_connector_acceptance_test(context: ConnectorTestContext, connector_under_test_image_tar: File) -> Container:
     """Create a container to run connector acceptance tests, bound to a persistent docker host.
 
     Args:
         context (ConnectorTestContext): The current connector test context.
-
+        connector_under_test_image_tar (File): The file containing the tar archive the image of the connector under test.
     Returns:
         Container: A container with connector acceptance tests installed.
     """
+
+    # Hacky way to make sure the image is always loaded
+    connector_image_tar_name = f"{str(uuid.uuid4())}.tar"
+    docker_cli = with_docker_cli(context).with_mounted_file(connector_image_tar_name, connector_under_test_image_tar)
+
+    # TODO create a function to load and tag images
+    image_load_output = await (
+        docker_cli.with_exec(["echo", "Load tar_name"]).with_exec(["docker", "load", "--input", connector_image_tar_name]).stdout()
+    )
+    if "Loaded image ID: sha256:" in image_load_output:
+        connector_under_test_image_name = context.connector.acceptance_test_config["connector_image"]
+        image_id = image_load_output.replace("\n", "").replace("Loaded image ID: sha256:", "")
+        await docker_cli.with_exec(["docker", "tag", image_id, connector_under_test_image_name]).exit_code()
+
     if context.connector_acceptance_test_image.endswith(":dev"):
         cat_container = context.connector_acceptance_test_source_dir.docker_build()
     else:
         cat_container = context.dagger_client.container().from_(context.connector_acceptance_test_image)
     shared_tmp_volume = ("/tmp", context.dagger_client.cache_volume("share-tmp-cat"))
+
     return (
         with_bound_docker_host(context, cat_container, shared_tmp_volume)
         .with_entrypoint(["pip"])
@@ -360,18 +377,21 @@ def with_gradle(
         "libsqlite3-dev",
         "wget",
         "libbz2-dev",
+        "libpython3-dev",
     ]
 
     if sources_to_include:
         include += sources_to_include
 
     shared_tmp_volume = ("/tmp", context.dagger_client.cache_volume("share-tmp-gradle"))
+    pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
+
     openjdk_with_docker = (
         context.dagger_client.container()
         # Use openjdk image because it's based on Debian. Alpine with Gradle and Python causes filesystem crash.
         .from_("openjdk:17.0.1-jdk-slim")
         .with_exec(["apt-get", "update"])
-        .with_exec(["apt-get", "install", "-y", "curl"])
+        .with_exec(["apt-get", "install", "-y", "curl", "jq"])
         .with_env_variable("VERSION", "23.0.1")
         .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
         .with_exec(["apt-get", "install", "-y"] + python_install_dependencies)
@@ -384,18 +404,14 @@ def with_gradle(
                 "python3-pip",
             ]
         )
-        # TODO it seems that the Gradle Python plugin can't create virtualenv
-        # We need to understand why otherwise destination connector can't be built
-        # They rely on python because their build uses normalization which is using airbyte-python.gradle
-        .with_exec(["python3", "--version"])
-        .with_exec(["pip3", "--version"])
+        .with_mounted_cache("/root/.cache/pip", pip_cache, sharing=CacheSharingMode.SHARED)
         .with_exec(["pip3", "install", "-U", "pip"])
         .with_exec(["pip3", "install", "virtualenv", "--upgrade"])
         .with_exec(["mkdir", "/root/.gradle"])
-        .with_mounted_cache("/root/.gradle", root_gradle_cache)
+        .with_mounted_cache("/root/.gradle", root_gradle_cache, sharing=CacheSharingMode.LOCKED)
         .with_exec(["mkdir", "/airbyte"])
         .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
-        .with_mounted_cache("/airbyte/.gradle", airbyte_gradle_cache)
+        .with_mounted_cache("/airbyte/.gradle", airbyte_gradle_cache, sharing=CacheSharingMode.LOCKED)
         .with_workdir("/airbyte")
     )
     return with_bound_docker_host(context, openjdk_with_docker, shared_tmp_volume, docker_cache_volume_name)

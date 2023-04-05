@@ -11,7 +11,7 @@ from ci_connector_ops.pipelines.actions import environments, secrets
 from ci_connector_ops.pipelines.bases import Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.pipelines.tests.common import AcceptanceTests, PytestStep
-from dagger import Container
+from dagger import Container, File
 
 
 class CodeFormatChecks(Step):
@@ -96,21 +96,54 @@ class IntegrationTests(PytestStep):
         return await self._run_tests_in_directory(connector_under_test_with_secrets, "integration_tests")
 
 
+class BuildConnectorImage(Step):
+    title = "Build connector image"
+
+    async def _run(self) -> Tuple[StepResult, File]:
+        connector_dir = self.context.get_connector_dir()
+        connector_local_tar_name = f"{self.context.connector.technical_name}.tar"
+        export_success = await connector_dir.docker_build().export(f"/tmp/{connector_local_tar_name}")
+        if export_success:
+            connector_image_tar_path = (
+                self.context.dagger_client.host().directory("/tmp", include=[connector_local_tar_name]).file(connector_local_tar_name)
+            )
+            return StepResult(self, StepStatus.SUCCESS), connector_image_tar_path
+        else:
+            return StepResult(self, StepStatus.FAILURE, stderr="The connector image could not be exported."), None
+
+
 async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
-    package_install_results, connector_under_test = await ConnectorInstallTest(context).run()
-    unit_tests_results = await UnitTests(context).run(connector_under_test)
+    connector_install_step = ConnectorInstallTest(context)
+    unit_tests_step = UnitTests(context)
+    build_connector_image_step = BuildConnectorImage(context)
+    integration_tests_step = IntegrationTests(context)
+    acceptance_test_step = AcceptanceTests(context)
+
+    package_install_results, connector_under_test = await connector_install_step.run()
+    unit_tests_results = await unit_tests_step.run(connector_under_test)
+
     results = [
         package_install_results,
         unit_tests_results,
     ]
+
     if unit_tests_results.status is StepStatus.FAILURE:
-        return results + [IntegrationTests(context).skip(), AcceptanceTests(context).skip()]
+        return results + [build_connector_image_step.skip(), integration_tests_step.skip(), acceptance_test_step.skip()]
+
+    if context.connector.acceptance_test_config["connector_image"].endswith(":dev"):
+        build_connector_image_results, connector_image_tar_file = await build_connector_image_step.run()
+        results.append(build_connector_image_results)
+        if build_connector_image_results.status is StepStatus.FAILURE:
+            return results + [integration_tests_step.skip(), acceptance_test_step.skip()]
+    else:
+        context.logger.info("Not building the connector image as CAT is run with a non dev version")
+        connector_image_tar_file = None
 
     context.secrets_dir = await secrets.get_connector_secret_dir(context)
     async with asyncer.create_task_group() as task_group:
         tasks = [
             task_group.soonify(IntegrationTests(context).run)(connector_under_test),
-            task_group.soonify(AcceptanceTests(context).run)(),
+            task_group.soonify(AcceptanceTests(context).run)(connector_image_tar_file),
         ]
 
     return results + [task.value for task in tasks]

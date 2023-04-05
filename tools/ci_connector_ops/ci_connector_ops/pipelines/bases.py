@@ -84,7 +84,7 @@ class Step(ABC):
         return StepResult(self, StepStatus.SKIPPED, stdout=reason)
 
     def get_dagger_pipeline(self, dagger_client_or_container: Union[Client, Container]) -> Union[Client, Container]:
-        return dagger_client_or_container.pipeline(self.title)
+        return dagger_client_or_container.pipeline(f"{self.context.connector.technical_name} - {self.title}")
 
     async def get_step_result(self, container: Container) -> StepResult:
         """Concurrent retrieval of exit code, stdout and stdout of a container.

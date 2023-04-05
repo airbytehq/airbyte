@@ -4,13 +4,12 @@
 
 """This module groups steps made to run tests agnostic to a connector language."""
 
-import json
-from typing import List
+from typing import List, Optional
 
 import asyncer
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.bases import PytestStep, Step, StepResult, StepStatus
-from ci_connector_ops.utils import ConnectorLanguage
+from dagger import File
 
 
 class QaChecks(Step):
@@ -48,38 +47,8 @@ class QaChecks(Step):
 class AcceptanceTests(PytestStep):
     title = "Acceptance tests"
 
-    async def _build_python_connector_image(self) -> str:
-        docker_cli = environments.with_docker_cli(self.context)
-        inspect_output = await (
-            docker_cli.with_mounted_directory("/connector_to_build", self.context.get_connector_dir(exclude=[".venv"]))
-            .with_workdir("/connector_to_build")
-            .with_exec(["docker", "build", ".", "-t", f"airbyte/{self.context.connector.technical_name}:dev"])
-            .with_exec(["docker", "image", "inspect", f"airbyte/{self.context.connector.technical_name}:dev"])
-            .stdout()
-        )
-        image_id = json.loads(inspect_output)[0]["Id"]
-        return image_id
-
-    async def _build_java_connector_image(self) -> str:
-        build_output = await (
-            environments.with_gradle(self.context)
-            .with_mounted_directory(
-                str(self.context.connector.code_directory), self.context.get_connector_dir(exclude=["build", "secrets"])
-            )
-            .with_exec(
-                ["./gradlew", "--no-daemon", f":airbyte-integrations:connectors:{self.context.connector.technical_name}:airbyteDocker"]
-            )
-            .stdout()
-        )
-        return build_output
-
-    async def build_connector_image(self) -> str:
-        if self.context.connector.language in [ConnectorLanguage.LOW_CODE, ConnectorLanguage.PYTHON]:
-            return await self._build_python_connector_image()
-        if self.context.connector.language is ConnectorLanguage.JAVA:
-            return await self._build_java_connector_image()
-
-    async def _run(self) -> StepResult:
+    # TODO update docstring
+    async def _run(self, connector_under_test_image_tar: Optional[File]) -> StepResult:
         """Runs the acceptance test suite on a connector dev image.
         It's rebuilding the connector acceptance test image if the tag is :dev.
         It's building the connector under test dev image if the connector image is :dev in the acceptance test config.
@@ -87,20 +56,12 @@ class AcceptanceTests(PytestStep):
         Returns:
             StepResult: Failure or success of the acceptances tests with stdout and stdout.
         """
+        self.context.dagger_client = self.get_dagger_pipeline(self.context.dagger_client)
+
         if not self.context.connector.acceptance_test_config:
             return StepResult(self, StepStatus.SKIPPED)
 
-        dagger_client = self.get_dagger_pipeline(self.context.dagger_client)
-
-        if self.context.connector_acceptance_test_image.endswith(":dev"):
-            cat_container = self.context.connector_acceptance_test_source_dir.docker_build()
-        else:
-            cat_container = dagger_client.container().from_(self.context.connector_acceptance_test_image)
-
-        if self.context.connector.acceptance_test_config["connector_image"].endswith(":dev"):
-            await self.build_connector_image()
-
-        cat_container = environments.with_connector_acceptance_test(self.context)
+        cat_container = await environments.with_connector_acceptance_test(self.context, connector_under_test_image_tar)
         secret_dir = cat_container.directory("/test_input/secrets")
 
         async with asyncer.create_task_group() as task_group:
