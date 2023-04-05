@@ -1,0 +1,206 @@
+# Connector Builder Compatibility Guide
+Answer the following questions to determine whether the Connector Builder is the right tool to build the connector you need:
+- [ ] [Is it a REST API returning a collection of records synchronously?](#is-the-integration-a-rest-api-returning-a-collection-of-records-synchronously)
+- [ ] [Is the API using one of the following authentication mechanism?](#what-type-of-authentication-is-required)
+    - [Basic HTTP](#basic-http)
+    - [API key injected in request header or query parameter](#api-key)
+    - [OAuth2.0 with long-lived refresh token](#is-the-oauth-refresh-token-long-lived)
+    - [Session authentication](#session)
+- [ ] [Is the data returned as JSON format?](#is-the-data-returned-as-json-format)
+- [ ] [If records are paginated, are they using one of the following mechanism?](#how-are-records-paginated)
+    - [Limit-offset](#limit-offset--offsetincrement-)
+    - [Page count](#page-count)
+    - [Link to the next page](#link-to-next-page--cursorpagination-)
+- [ ] [Do endpoints only require query parameters that are key-value pairs?](#does-the-integration-require-query-params-that-are-not-key-value-pairs)
+
+You can follow [this chart](https://whimsical.com/how-should-i-build-my-connector-YNXaNQhRuPuWy68Xg8Akhy) to guide you through the process.
+
+## Is the integration a REST API returning a collection of records synchronously?
+
+Is the integration a REST API? In doubt, look for the word “REST” in the documentation.
+Also look at the shape of the resource path.
+Taking the [Congress API](https://api.congress.gov/#/bill) as an example,
+
+`GET /bill`
+
+Indicates the records can be retrieved by submitting a GET request to the /bill path.The sample response shows that the response returns a collection of records, so the Congress API is REST API returning a collection of records.
+
+Sample response:
+```
+{
+  "bills":[
+    {
+      "congress":117,
+      "latestAction":{
+        "actionDate":"2022-04-06",
+        "text":"Became Public Law No: 117-108."
+      },
+      "number":"3076",
+      "originChamber":"House",
+      "originChamberCode":"H",
+      "title":"Postal Service Reform Act of 2022",
+      "type":"HR",
+      "updateDate":"2022-09-29",
+      "updateDateIncludingText":"2022-09-29T03:27:05Z",
+      "url":"https://api.congress.gov/v3/bill/117/hr/3076?format=json"
+    },
+    {
+      "congress":117,
+      "latestAction":{
+        "actionDate":"2022-04-06",
+        "text":"Read twice. Placed on Senate Legislative Calendar under General Orders. Calendar No. 343."
+      },
+      "number":"3599",
+      "originChamber":"House",
+      "originChamberCode":"H",
+      "title":"Federal Rotational Cyber Workforce Program Act of 2021",
+      "type":"HR",
+      "updateDate":"2022-09-29",
+      "updateDateIncludingText":"2022-09-29T03:41:50Z",
+      "url":"https://api.congress.gov/v3/bill/117/hr/3599?format=json"
+    }
+  ]
+}
+```
+
+Some endpoints are parameterized. An example of such endpoint is the [Congress API’s bill by congress endpoint](https://api.congress.gov/#/bill/bill_list_by_congress).
+`GET /bill/:congress`
+
+These endpoints are also valid synchronous REST endpoints.
+
+This differs from the Amazon Ads reports endpoint, which returns a report ID, which will be generated asynchronously by the source. Because the reports need to be downloaded separately, this is not a synchronous REST API.
+
+Examples:
+- Yes: [Congress API](https://api.congress.gov/#/)
+- No: [Amazon Ads](https://advertising.amazon.com/API/docs/en-us/info/api-overview)
+
+If the integration is not a synchronous REST API, use the Python CDK.
+
+## What type of authentication is required?
+Look up the authentication mechanism in the API documentation, and identify which type it is.
+### Basic HTTP
+Are requests authenticated using the Basic HTTP authentication method? You can search the documentation page for either
+- "Basic Auth"
+- "Basic HTTP"
+- "Authorization: Basic"
+- "Base64"
+
+Example: [Greenhouse](https://developers.greenhouse.io/harvest.html#introduction)
+
+### API Key
+Are requests authenticated using an API key injected either as a query parameter or as a request header?
+
+Examples: [Congress API](https://api.congress.gov/), [Sendgrid](https://docs.sendgrid.com/for-developers/sending-email/authentication)
+
+### OAuth
+Are requests authenticated using an OAuth2.0 flow?
+
+Examples: [Square](https://developer.squareup.com/docs/oauth-api/overview), [Woocommerce](https://woocommerce.github.io/woocommerce-rest-api-docs/#introduction)
+
+#### Is the OAuth refresh token long-lived?
+Using [Gitlab](https://docs.gitlab.com/ee/api/oauth2.html) as an example, you can tell it uses an ephemeral refresh token because the authorization request returns a new refresh token in addition to the access token. This indicates a new refresh token should be used next time.
+
+Example response:
+```
+{
+"access_token": "de6780bc506a0446309bd9362820ba8aed28aa506c71eedbe1c5c4f9dd350e54",
+"token_type": "bearer",
+"expires_in": 7200,
+"refresh_token": "8257e65c97202ed1726cf9571600918f3bffb2544b26e00a61df9897668c33a1",
+"created_at": 1607635748
+}
+```
+
+Example:
+- Yes: [Gitlab](https://docs.gitlab.com/ee/api/oauth2.html)
+- No: [Square](https://developer.squareup.com/docs/oauth-api/overview), [Woocommerce](https://woocommerce.github.io/woocommerce-rest-api-docs/#introduction)
+
+If the OAuth flow requires a single-use refresh token, use the [Python CDK](https://github.com/airbytehq/airbyte/issues/18035). Otherwise, check if the refresh request needs to be authenticated.
+
+If the refresh request requires custom query parameters or request headers, use the Python CDK.
+
+### Session
+Requests are authenticated using a session token.
+To get a session token, a request must first be submitted to the endpoint, generally with a username+password pair.
+
+Using [Metabase](https://www.metabase.com/learn/administration/metabase-api#authenticate-your-requests-with-a-session-token) as an example,
+Get a session token:
+
+```
+curl -X POST  -H "Content-Type: application/json"  -d '{"username": "person@metabase.com", "password": "fakepassword"}'    http://localhost:3000/api/session
+```
+
+Use the session token to fetch the data
+
+```
+curl -X GET \
+-H "Content-Type: application/json" \
+-H "X-Metabase-Session: 38f4939c-ad7f-4cbe-ae54-30946daf8593" \
+http://localhost:3000/api/user/current
+```
+
+
+Example: [Metabase](https://www.metabase.com/learn/administration/metabase-api#authenticate-your-requests-with-a-session-token)
+
+### Other
+AWS endpoints are examples of APIs requiring a non-standard authentication mechanism. You can tell from [the documentation](https://docs.aws.amazon.com/pdfs/awscloudtrail/latest/APIReference/awscloudtrail-api.pdf#Welcome) that requests need to be signed with a hash.
+
+Example: [AWS Cloudtrail](https://docs.aws.amazon.com/pdfs/awscloudtrail/latest/APIReference/awscloudtrail-api.pdf#Welcome)
+
+If the integration requires a non-standard authentication mechanism, use Python CDK or low-code with custom components. If the integration uses OAuth2.0, verify if it uses single-use refresh tokens.
+
+## Is the data returned as JSON format?
+Is the data returned by the API formatted as JSON, or is it formatted as another format such as XML, CSV, gRPC, or PDF?
+
+Examples:
+- Yes: [Congress API](https://api.congress.gov/)
+- No: [Federal Railroad Administration (FRA) Safety Data APIs](https://safetydata.fra.dot.gov/MasterWebService/FRASafetyDataAPIs.aspx)
+
+If the data is not formatted as JSON, use the Python CDK.
+
+## How are records paginated?
+Look up the pagination mechanism in the API documentation, and identify which type it is.
+
+Here are the standard pagination mechanisms:
+
+### Page count
+Endpoints using page count pagination accept two pagination parameters
+1. The number of records to be returned (typically called “page_size”)
+2. The page to request (typically called “page”)
+
+Example: [newsapi.ai](https://newsapi.ai/documentation)
+
+![Page-count-example](./assets/connector_builder_compatibility/page_count_example.png)
+
+### Limit-Offset (OffsetIncrement)
+Endpoints using limit-offset pagination accept two pagination parameters
+1. The number of records to be returned (typically called “limit”)
+2. The ID of the first record to return (typically called “offset”)
+
+![Offset-limit-example](./assets/connector_builder_compatibility/offset_limit_example.png)
+
+Example: [Congress API](https://api.congress.gov/)
+
+### Link to next page (CursorPagination)
+Endpoints paginated with a link to the next page of records typically include either a “Link” field in the response header, or in the response body.
+
+You can search the documentation and the sample response for the “next” keyword.
+
+Example: [Greenhouse](https://developers.greenhouse.io/harvest.html#pagination)
+
+### Does the integration require query params that are not key-value pairs?
+Do requests require complex query parameters? Does it support GraphQL querying?
+
+An example of an endpoint that would be tricky to implement with the Connector Builder is [SproutSocial’s Analytics endpoint](https://api.sproutsocial.com/docs/#analytics-endpoints).
+
+The endpoint requires a list of filters and metrics.
+![Filters-example](./assets/connector_builder_compatibility/filters_example.png)
+
+This endpoint is not supported by the connector builder because the “filters” and “metrics” fields are lists.
+
+Examples:
+- Yes: [Shopify GraphQL Admin API](https://shopify.dev/docs/api/admin-graphql#endpoints), [SproutSocial](https://api.sproutsocial.com/docs/#analytics-endpoints)
+- No: [Congress API](https://api.congress.gov/)
+
+If the integration requires query params that are not key-value pairs, use the Python CDK.
+
