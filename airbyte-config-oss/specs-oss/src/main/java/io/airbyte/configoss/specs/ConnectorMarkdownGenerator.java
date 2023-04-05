@@ -30,7 +30,7 @@ public class ConnectorMarkdownGenerator {
 
   private static final String githubCodeBase = "https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors";
   private static final String githubIconBase =
-      "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-config/init/src/main/resources/icons";
+      "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-config-oss/init-oss/src/main/resources/icons";
   private static final String iconSize = "30";
 
   public static void main(final String[] args) throws Exception {

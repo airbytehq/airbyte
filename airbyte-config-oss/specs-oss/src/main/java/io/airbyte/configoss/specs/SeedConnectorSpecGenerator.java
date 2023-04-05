@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * This script is responsible for ensuring that up-to-date {@link ConnectorSpecification}s for every
  * connector definition in the seed are stored in a corresponding resource file, for the purpose of
  * seeding the specs into the config database on server startup. See
- * ./airbyte-config/specs/readme.md for more details on how this class is run and how it fits into
+ * ./airbyte-config-oss/specs-oss/readme.md for more details on how this class is run and how it fits into
  * the project.
  * <p>
  * Specs are stored in a separate file from the definitions in an effort to keep the definitions
