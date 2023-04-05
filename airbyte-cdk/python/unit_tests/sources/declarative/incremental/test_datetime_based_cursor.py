@@ -394,15 +394,16 @@ def test_stream_slices(
 
 
 @pytest.mark.parametrize(
-    "test_name, previous_cursor, stream_slice, last_record, expected_state",
+    "test_name, previous_cursor, stream_slice, last_record, expected_state, cursor_datetime_format",
     [
-        ("test_update_cursor_no_state_no_record", None, {}, None, {}),
+        ("test_update_cursor_no_state_no_record", None, {}, None, {}, None),
         (
             "test_update_cursor_with_state_no_record",
             None,
             {cursor_field: "2021-01-02T00:00:00.000000+0000"},
             None,
             {cursor_field: "2021-01-02T00:00:00.000000+0000"},
+            None
         ),
         (
             "test_update_cursor_with_state_equals_record",
@@ -410,6 +411,7 @@ def test_stream_slices(
             {cursor_field: "2021-01-02T00:00:00.000000+0000"},
             {cursor_field: "2021-01-02T00:00:00.000000+0000"},
             {cursor_field: "2021-01-02T00:00:00.000000+0000"},
+            None
         ),
         (
             "test_update_cursor_with_state_greater_than_record",
@@ -417,6 +419,7 @@ def test_stream_slices(
             {cursor_field: "2021-01-03T00:00:00.000000+0000"},
             {cursor_field: "2021-01-02T00:00:00.000000+0000"},
             {cursor_field: "2021-01-03T00:00:00.000000+0000"},
+            None
         ),
         (
             "test_update_cursor_with_state_less_than_record",
@@ -424,6 +427,7 @@ def test_stream_slices(
             {cursor_field: "2021-01-02T00:00:00.000000+0000"},
             {cursor_field: "2021-01-03T00:00:00.000000+0000"},
             {cursor_field: "2021-01-03T00:00:00.000000+0000"},
+            None
         ),
         (
             "test_update_cursor_with_state_less_than_previous_cursor",
@@ -431,16 +435,26 @@ def test_stream_slices(
             {cursor_field: "2021-01-02T00:00:00.000000+0000"},
             {},
             {cursor_field: "2021-01-03T00:00:00.000000+0000"},
+            None
+        ),
+        (
+            "test_update_cursor_last_record_different_format",
+            "2021-01-03T00:00:00.000000+0000",
+            {},
+            {cursor_field: "Wed, 06 Jan 2021 00:00:00 +0000"},
+            {cursor_field: "2021-01-06T00:00:00.000000+0000"},
+            "%a, %d %b %Y %H:%M:%S %z"
         ),
     ],
 )
-def test_update_cursor(test_name, previous_cursor, stream_slice, last_record, expected_state):
+def test_update_cursor(test_name, previous_cursor, stream_slice, last_record, expected_state, cursor_datetime_format):
     slicer = DatetimeBasedCursor(
         start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
         end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
         step="P1D",
         cursor_field=InterpolatedString(string=cursor_field, parameters={}),
         datetime_format=datetime_format,
+        cursor_datetime_format=cursor_datetime_format,
         cursor_granularity=cursor_granularity,
         lookback_window=InterpolatedString(string="0d", parameters={}),
         config=config,

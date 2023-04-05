@@ -1,4 +1,5 @@
 {
+  "type": "object",
   "properties": {
     "category": {
       "type": ["null", "string"]
@@ -62,19 +63,19 @@
       "type": ["null", "number"]
     },
     "start_date": {
-      "format": "date-time",
+      "format": "date",
       "type": ["null", "string"]
     },
     "count_unit": {
       "type": ["null", "string"]
     },
     "as_of": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "api_version": {
       "type": ["null", "string"]
     }
   },
-  "type": "object",
   "additionalProperties": true
 }

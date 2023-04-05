@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 import json
 import logging
 from dataclasses import InitVar, dataclass, field
@@ -334,7 +335,7 @@ class SimpleRetriever(Retriever, HttpStream):
         records = self.record_selector.select_records(
             response=response, stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token
         )
-        self._last_records = records
+        self._last_records = copy.deepcopy(records)
         return records
 
     @property
