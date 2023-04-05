@@ -5,6 +5,7 @@
 import csv
 import json
 import urllib.parse as urlparse
+import time
 from abc import ABC, abstractmethod
 from io import StringIO
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
@@ -339,6 +340,10 @@ class ListUsers(IterableStream):
             yield {"list_id": list_record["id"]}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        # The endpoint is limited to 5 requests per minute
+        self.logger.info(f"Sleeping...")
+        time.sleep(12)
+        self.logger.info(f"Wake up")
         if not self.check_unauthorized_key(response):
             return []
         list_id = self._get_list_id(response.url)
