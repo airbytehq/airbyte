@@ -6,9 +6,9 @@ package io.airbyte.configoss.init;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
-import io.airbyte.config.CombinedConnectorCatalog;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.configoss.CombinedConnectorCatalog;
+import io.airbyte.configoss.StandardDestinationDefinition;
+import io.airbyte.configoss.StandardSourceDefinition;
 import io.micronaut.cache.annotation.CacheConfig;
 import io.micronaut.cache.annotation.Cacheable;
 import io.micronaut.context.annotation.Primary;

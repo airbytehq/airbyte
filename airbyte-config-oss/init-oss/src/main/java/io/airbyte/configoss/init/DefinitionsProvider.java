@@ -4,8 +4,8 @@
 
 package io.airbyte.configoss.init;
 
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.configoss.StandardDestinationDefinition;
+import io.airbyte.configoss.StandardSourceDefinition;
 import java.util.List;
 import java.util.UUID;
 

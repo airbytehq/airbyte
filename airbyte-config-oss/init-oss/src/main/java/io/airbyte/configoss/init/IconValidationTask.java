@@ -5,7 +5,7 @@
 package io.airbyte.configoss.init;
 
 import com.google.common.io.Resources;
-import io.airbyte.config.CatalogDefinitionsConfig;
+import io.airbyte.configoss.CatalogDefinitionsConfig;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;

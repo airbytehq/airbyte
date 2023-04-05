@@ -15,7 +15,7 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Storage;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.Configs.DeploymentMode;
+import io.airbyte.configoss.Configs.DeploymentMode;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;

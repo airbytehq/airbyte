@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.cli.Clis;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.yaml.Yamls;
-import io.airbyte.config.DockerImageSpec;
+import io.airbyte.configoss.DockerImageSpec;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;

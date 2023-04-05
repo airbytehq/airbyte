@@ -10,7 +10,7 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Storage;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.Configs.DeploymentMode;
+import io.airbyte.configoss.Configs.DeploymentMode;
 import io.airbyte.protocol.models.AirbyteProtocolSchema;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
