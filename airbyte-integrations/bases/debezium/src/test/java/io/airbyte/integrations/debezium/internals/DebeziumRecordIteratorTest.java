@@ -36,7 +36,7 @@ public class DebeziumRecordIteratorTest {
 
         },
         () -> false,
-        () -> {},
+        mock(DebeziumShutdownProcedure.class),
         Duration.ZERO);
     final Long lsn = debeziumRecordIterator.getHeartbeatPosition(new ChangeEvent<String, String>() {
 

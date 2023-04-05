@@ -34,13 +34,14 @@
 - name: AWS Datalake
   destinationDefinitionId: 99878c90-0fbd-46d3-9d98-ffde879d17fc
   dockerRepository: airbyte/destination-aws-datalake
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/destinations/aws-datalake
+  icon: awsdatalake.svg
   releaseStage: alpha
 - name: BigQuery
   destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   dockerRepository: airbyte/destination-bigquery
-  dockerImageTag: 1.2.17
+  dockerImageTag: 1.2.19
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   icon: bigquery.svg
   normalizationConfig:
@@ -58,7 +59,7 @@
 - name: BigQuery (denormalized typed struct)
   destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-bigquery-denormalized
-  dockerImageTag: 1.2.17
+  dockerImageTag: 1.2.19
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   icon: bigquery.svg
   resourceRequirements:
@@ -297,7 +298,7 @@
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift
-  dockerImageTag: 0.4.3
+  dockerImageTag: 0.4.5
   documentationUrl: https://docs.airbyte.com/integrations/destinations/redshift
   icon: redshift.svg
   normalizationConfig:
@@ -328,7 +329,7 @@
 - name: S3
   destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.3.22
+  dockerImageTag: 0.3.23
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3
   icon: s3.svg
   resourceRequirements:
@@ -341,7 +342,7 @@
 - name: S3 Glue
   destinationDefinitionId: 471e5cab-8ed1-49f3-ba11-79c687784737
   dockerRepository: airbyte/destination-s3-glue
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3-glue
   icon: s3-glue.svg
   releaseStage: alpha
@@ -355,7 +356,7 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.4.57
+  dockerImageTag: 0.4.61
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   icon: snowflake.svg
   normalizationConfig:
@@ -434,7 +435,7 @@
 - name: Databend
   destinationDefinitionId: 302e4d8e-08d3-4098-acd4-ac67ca365b88
   dockerRepository: airbyte/destination-databend
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   icon: databend.svg
   documentationUrl: https://docs.airbyte.com/integrations/destinations/databend
   releaseStage: alpha
