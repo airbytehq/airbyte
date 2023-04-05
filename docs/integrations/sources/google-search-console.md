@@ -5,6 +5,8 @@ This page contains the setup guide and reference information for the google sear
 
 ## Prerequisites
 
+* A verified property in Google Search Console
+* Enable Google Search Console API for GCP project at [GCP console](https://console.cloud.google.com/apis/library/searchconsole.googleapis.com)
 * Credentials to a Google Service Account \(or Google Service Account with delegated Domain Wide Authority\) or Google User Account
 
 :::note
@@ -133,6 +135,7 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 
 | Version  | Date       | Pull Request                                                                                                  | Subject                                                     |
 |:---------| :--------- |:--------------------------------------------------------------------------------------------------------------| :---------------------------------------------------------- |
+| `0.1.22` | 2023-03-20 | [22295](https://github.com/airbytehq/airbyte/pull/22295)                                                      | Update specification examples |
 | `0.1.21` | 2023-02-14 | [22984](https://github.com/airbytehq/airbyte/pull/22984)                                                      | Specified date formatting in specification                    |
 | `0.1.20` | 2023-02-02 | [22334](https://github.com/airbytehq/airbyte/pull/22334)                                                      | Turn on default HttpAvailabilityStrategy                    |
 | `0.1.19` | 2023-01-27 | [22007](https://github.com/airbytehq/airbyte/pull/22007)                                                      | Set `AvailabilityStrategy` for streams explicitly to `None` |

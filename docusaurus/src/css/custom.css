@@ -4,7 +4,7 @@
  * work well for content-centric websites.
  */
 
- @import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+ @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;700&display=swap');
 
 /* You can override the default Infima variables here. */
 :root {
@@ -73,6 +73,13 @@ html[data-theme='dark'] .docusaurus-highlight-code-line {
     text-decoration: none;
 }
 
+.navbar__category {
+  font-weight: 200;
+  font-size: 0.8em;
+  opacity: 0.8;
+  padding: 1em var(--ifm-menu-link-padding-horizontal) 0;
+}
+
 .codeBlockContainer_I0IT {
     box-shadow: none !important;
 }
@@ -88,8 +95,62 @@ img {
 }
 
 .menu__link--sublist-caret:after {
-    background: var(--ifm-menu-link-sublist-icon) 50%/1.5rem 1.5rem;
+    background: var(--ifm-menu-link-sublist-icon) 50%/2rem 2rem;
     min-width: 1.25rem;
 }
 
+
+/* Relevance AI button styles */
+.relevance_button {
+  border-radius: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  background: #ffffff;
+  color: var(--ifm-color-primary-darkest);
+  font-weight: 700;
+  font-family: Inter, sans-serif;
+  font-size: 0.9rem;
+  transition: color 0.2s ease-in-out, background 0.2s ease-in-out;
+  cursor: pointer;
+
+  /* Border animation effect */
+  border-color: transparent;
+  outline: none;
+  box-shadow: none;
+  --relevance-button-bg: white;
+  background-image: linear-gradient(var(--relevance-button-bg), var(--relevance-button-bg)),
+      linear-gradient(
+          315deg,
+          var(--ifm-color-primary-lightest),
+          rgb(132, 255, 232),
+          rgb(227, 105, 203),
+          rgb(98, 33, 210),
+          rgb(255, 204, 160)
+      );
+  background-size: 200% auto;
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  animation: bg-hue 4s linear infinite;
+}
+
+html[data-theme='dark'] .relevance_button {
+  --relevance-button-bg: var(--ifm-background-surface-color);
+  color: white;
+}
+
+.relevance_button:hover {
+  color: var(--ifm-color-primary);
+}
+
+/* @keyframes for the gradient animation */
+@keyframes bg-hue {
+  0% {
+      background-position: 100% 0;
+  }
+  50% {
+      background-position: 0 0;
+  }
+  100% {
+      background-position: 100% 0;
+  }
+}
 

@@ -19,11 +19,6 @@ public class FeatureFlagHelper {
         || featureFlags.applyFieldSelection();
   }
 
-  public static boolean isStrictComparisonNormalizationEnabledForWorkspace(final FeatureFlags featureFlags, final UUID workspaceId) {
-    return isWorkspaceIncludedInFlag(featureFlags, FeatureFlags::strictComparisonNormalizationWorkspaces, workspaceId,
-        "strict comparison in normalization");
-  }
-
   @VisibleForTesting
   static boolean isWorkspaceIncludedInFlag(final FeatureFlags featureFlags,
                                            final Function<FeatureFlags, String> flagRetriever,
