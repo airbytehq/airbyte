@@ -301,7 +301,7 @@ dependencies = [
 [[package]]
 name = "doc"
 version = "0.0.0"
-source = "git+https://github.com/estuary/flow?branch=johnny/more-sql#727a543247c5604b760e5f118c6d5ac0f5466bc7"
+source = "git+https://github.com/estuary/flow#43db16b1b0cb1ebcdd69b1339fa4452e66da1326"
 dependencies = [
  "base64",
  "bumpalo",
@@ -388,7 +388,7 @@ checksum = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"
 [[package]]
 name = "flow_cli_common"
 version = "0.0.0"
-source = "git+https://github.com/estuary/flow?branch=johnny/more-sql#727a543247c5604b760e5f118c6d5ac0f5466bc7"
+source = "git+https://github.com/estuary/flow#43db16b1b0cb1ebcdd69b1339fa4452e66da1326"
 dependencies = [
  "anyhow",
  "atty",
@@ -667,7 +667,7 @@ checksum = "453ad9f582a441959e5f0d088b02ce04cfe8d51a8eaf077f12ac6d3e94164ca6"
 [[package]]
 name = "json"
 version = "0.0.0"
-source = "git+https://github.com/estuary/flow?branch=johnny/more-sql#727a543247c5604b760e5f118c6d5ac0f5466bc7"
+source = "git+https://github.com/estuary/flow#43db16b1b0cb1ebcdd69b1339fa4452e66da1326"
 dependencies = [
  "addr",
  "bigdecimal",
@@ -1058,7 +1058,7 @@ dependencies = [
 [[package]]
 name = "proto-flow"
 version = "0.0.0"
-source = "git+https://github.com/estuary/flow?branch=johnny/more-sql#727a543247c5604b760e5f118c6d5ac0f5466bc7"
+source = "git+https://github.com/estuary/flow#43db16b1b0cb1ebcdd69b1339fa4452e66da1326"
 dependencies = [
  "bytes",
  "pbjson",
@@ -1072,7 +1072,7 @@ dependencies = [
 [[package]]
 name = "proto-gazette"
 version = "0.0.0"
-source = "git+https://github.com/estuary/flow?branch=johnny/more-sql#727a543247c5604b760e5f118c6d5ac0f5466bc7"
+source = "git+https://github.com/estuary/flow#43db16b1b0cb1ebcdd69b1339fa4452e66da1326"
 dependencies = [
  "bytes",
  "pbjson",
@@ -1676,7 +1676,7 @@ dependencies = [
 [[package]]
 name = "tuple"
 version = "0.0.0"
-source = "git+https://github.com/estuary/flow?branch=johnny/more-sql#727a543247c5604b760e5f118c6d5ac0f5466bc7"
+source = "git+https://github.com/estuary/flow#43db16b1b0cb1ebcdd69b1339fa4452e66da1326"
 dependencies = [
  "memchr",
  "serde_json",
