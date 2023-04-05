@@ -70,7 +70,7 @@ Some endpoints are parameterized. An example of such endpoint is the [Congress A
 
 These endpoints are also valid synchronous REST endpoints.
 
-This differs from the Amazon Ads reports endpoint, which returns a report ID, which will be generated asynchronously by the source. Because the reports need to be downloaded separately, this is not a synchronous REST API.
+This differs from the [Amazon Ads reports endpoint](https://advertising.amazon.com/API/docs/en-us/info/api-overview)), which returns a report ID, which will be generated asynchronously by the source. Because the reports need to be downloaded separately, this is not a synchronous REST API.
 
 Examples:
 - Yes: [Congress API](https://api.congress.gov/#/)
@@ -80,6 +80,7 @@ If the integration is not a synchronous REST API, use the Python CDK.
 
 ## What type of authentication is required?
 Look up the authentication mechanism in the API documentation, and identify which type it is.
+
 ### Basic HTTP
 Are requests authenticated using the Basic HTTP authentication method? You can search the documentation page for either
 - "Basic Auth"
@@ -105,11 +106,11 @@ Using [Gitlab](https://docs.gitlab.com/ee/api/oauth2.html) as an example, you ca
 Example response:
 ```
 {
-"access_token": "de6780bc506a0446309bd9362820ba8aed28aa506c71eedbe1c5c4f9dd350e54",
-"token_type": "bearer",
-"expires_in": 7200,
-"refresh_token": "8257e65c97202ed1726cf9571600918f3bffb2544b26e00a61df9897668c33a1",
-"created_at": 1607635748
+    "access_token": "de6780bc506a0446309bd9362820ba8aed28aa506c71eedbe1c5c4f9dd350e54",
+    "token_type": "bearer",
+    "expires_in": 7200,
+    "refresh_token": "8257e65c97202ed1726cf9571600918f3bffb2544b26e00a61df9897668c33a1",
+    "created_at": 1607635748
 }
 ```
 
