@@ -6,28 +6,28 @@ This page guides you through setting up the HubSpot source connector.
 
 You can use OAuth, API key, or Private App to authenticate your HubSpot account. If you choose to use OAuth or Private App, you need to configure the appropriate [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for the following streams:
 
-| Stream                      | Required Scope                                                                   |
-| :-------------------------- | :------------------------------------------------------------------------------- |
-| `campaigns`                 | `content`                                                                        |
-| `companies`                 | `crm.objects.companies.read`, `crm.schemas.companies.read`                       |
-| `contact_lists`             | `crm.objects.lists.read`                                                         |
-| `contacts`                  | `crm.objects.contacts.read`                                                      |
-| `contacts_list_memberships` | `crm.objects.contacts.read`                                                      |
-| `deal_pipelines`            | either the `crm.objects.contacts.read` scope \(to fetch deals pipelines\) or the `tickets` scope. |
-| `deals`                     | `crm.objects.deals.read`, `crm.schemas.deals.read`                               |
-| `email_events`              | `content`                                                                        |
-| `email_subscriptions`       | `content`                                                                        |
-| `engagements`               | `crm.objects.companies.read`, `crm.objects.contacts.read`, `crm.objects.deals.read`, `tickets`, `e-commerce`|
-| `engagements_emails`        | `sales-email-read`                                                               |
-| `forms`                     | `forms`                                                                          |
-| `form_submissions`          | `forms`                                                                          |
-| `line_items`                | `e-commerce`                                                                     |
-| `owners`                    | `crm.objects.owners.read`                                                        |
-| `products`                  | `e-commerce`                                                                     |
-| `property_history`          | `crm.objects.contacts.read`                                                      |
-| `subscription_changes`      | `content`                                                                        |
-| `tickets`                   | `tickets`                                                                        |
-| `workflows`                 | `automation`                                                                     |
+| Stream                      | Required Scope                                                                                               |
+|:----------------------------|:-------------------------------------------------------------------------------------------------------------|
+| `campaigns`                 | `content`                                                                                                    |
+| `companies`                 | `crm.objects.companies.read`, `crm.schemas.companies.read`                                                   |
+| `contact_lists`             | `crm.objects.lists.read`                                                                                     |
+| `contacts`                  | `crm.objects.contacts.read`                                                                                  |
+| `contacts_list_memberships` | `crm.objects.contacts.read`                                                                                  |
+| `deal_pipelines`            | either the `crm.objects.contacts.read` scope \(to fetch deals pipelines\) or the `tickets` scope.            |
+| `deals`                     | `crm.objects.deals.read`, `crm.schemas.deals.read`                                                           |
+| `email_events`              | `content`                                                                                                    |
+| `email_subscriptions`       | `content`                                                                                                    |
+| `engagements`               | `crm.objects.companies.read`, `crm.objects.contacts.read`, `crm.objects.deals.read`, `tickets`, `e-commerce` |
+| `engagements_emails`        | `sales-email-read`                                                                                           |
+| `forms`                     | `forms`                                                                                                      |
+| `form_submissions`          | `forms`                                                                                                      |
+| `line_items`                | `e-commerce`                                                                                                 |
+| `owners`                    | `crm.objects.owners.read`                                                                                    |
+| `products`                  | `e-commerce`                                                                                                 |
+| `property_history`          | `crm.objects.contacts.read`                                                                                  |
+| `subscription_changes`      | `content`                                                                                                    |
+| `tickets`                   | `tickets`                                                                                                    |
+| `workflows`                 | `automation`                                                                                                 |
 
 
 ## Set up the HubSpot source connector
@@ -54,14 +54,20 @@ The HubSpot source connector supports the following [sync modes](https://docs.ai
 
 ## Supported Streams
 
+:::note
+There are two types of incremental sync:
+1. Incremental (standard server-side, where API returns only the data updated or generated since the last sync)
+2. Client-Side Incremental (API returns all available data and connector filters out only new records)
+:::
+
 The HubSpot source connector supports the following streams:
 
-* [Campaigns](https://developers.hubspot.com/docs/methods/email/get_campaign_data)
+* [Campaigns](https://developers.hubspot.com/docs/methods/email/get_campaign_data) \(Client-Side Incremental\)
 * [Companies](https://developers.hubspot.com/docs/api/crm/companies) \(Incremental\)
 * [Contact Lists](http://developers.hubspot.com/docs/methods/lists/get_lists) \(Incremental\)
 * [Contacts](https://developers.hubspot.com/docs/methods/contacts/get_contacts) \(Incremental\)
 * [Contacts List Memberships](https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts)
-* [Deal Pipelines](https://developers.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type)
+* [Deal Pipelines](https://developers.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type) \(Client-Side Incremental\)
 * [Deals](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
 * [Email Events](https://developers.hubspot.com/docs/methods/email/get_events) \(Incremental\)
 * [Email Subscriptions](https://developers.hubspot.com/docs/methods/email/get_subscriptions)
@@ -71,17 +77,17 @@ The HubSpot source connector supports the following streams:
 * [Engagements Meetings](https://developers.hubspot.com/docs/api/crm/meetings) \(Incremental\)
 * [Engagements Notes](https://developers.hubspot.com/docs/api/crm/notes) \(Incremental\)
 * [Engagements Tasks](https://developers.hubspot.com/docs/api/crm/tasks) \(Incremental\)
-* [Forms](https://developers.hubspot.com/docs/api/marketing/forms)
-* [Form Submissions](https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form)
+* [Forms](https://developers.hubspot.com/docs/api/marketing/forms) \(Client-Side Incremental\)
+* [Form Submissions](https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form) \(Client-Side Incremental\)
 * [Line Items](https://developers.hubspot.com/docs/api/crm/line-items) \(Incremental\)
 * [Marketing Emails](https://legacydocs.hubspot.com/docs/methods/cms_email/get-all-marketing-email-statistics)
-* [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners)
+* [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental\)
 * [Products](https://developers.hubspot.com/docs/api/crm/products) \(Incremental\)
 * [Property History](https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts) \(Incremental\)
 * [Subscription Changes](https://developers.hubspot.com/docs/methods/email/get_subscriptions_timeline) \(Incremental\)
 * [Tickets](https://developers.hubspot.com/docs/api/crm/tickets) \(Incremental\)
-* [Ticket Pipelines](https://developers.hubspot.com/docs/api/crm/pipelines)
-* [Workflows](https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows)
+* [Ticket Pipelines](https://developers.hubspot.com/docs/api/crm/pipelines) \(Client-Side Incremental\)
+* [Workflows](https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows) \(Client-Side Incremental\)
 
 ### A note on the `engagements` stream
 

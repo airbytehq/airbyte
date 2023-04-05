@@ -666,7 +666,7 @@ class Stream(HttpStream, ABC):
             yield record
 
 
-class SemiIncrementalStream(Stream, IncrementalMixin):
+class ClientSideIncrementalStream(Stream, IncrementalMixin):
     _cursor_value = ""
 
     @property
@@ -1121,7 +1121,7 @@ class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):
         yield from self._flat_associations(records)
 
 
-class Campaigns(SemiIncrementalStream):
+class Campaigns(ClientSideIncrementalStream):
     """Email campaigns, API v1
     There is some confusion between emails and campaigns in docs, this endpoint returns actual emails
     Docs: https://legacydocs.hubspot.com/docs/methods/email/get_campaign_data
@@ -1217,7 +1217,7 @@ class Deals(CRMSearchStream):
     scopes = {"contacts", "crm.objects.deals.read"}
 
 
-class DealPipelines(SemiIncrementalStream):
+class DealPipelines(ClientSideIncrementalStream):
     """Deal pipelines, API v1,
     This endpoint requires the contacts scope the tickets scope.
     Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
@@ -1230,7 +1230,7 @@ class DealPipelines(SemiIncrementalStream):
     scopes = {"contacts", "tickets"}
 
 
-class TicketPipelines(SemiIncrementalStream):
+class TicketPipelines(ClientSideIncrementalStream):
     """Ticket pipelines, API v1
     This endpoint requires the tickets scope.
     Docs: https://developers.hubspot.com/docs/api/crm/pipelines
@@ -1359,7 +1359,7 @@ class Engagements(IncrementalStream):
         self._update_state(latest_cursor=latest_cursor, is_last_record=True)
 
 
-class Forms(SemiIncrementalStream):
+class Forms(ClientSideIncrementalStream):
     """Marketing Forms, API v3
     by default non-marketing forms are filtered out of this endpoint
     Docs: https://developers.hubspot.com/docs/api/marketing/forms
@@ -1373,7 +1373,7 @@ class Forms(SemiIncrementalStream):
     scopes = {"forms"}
 
 
-class FormSubmissions(SemiIncrementalStream):
+class FormSubmissions(ClientSideIncrementalStream):
     """Marketing Forms, API v1
     This endpoint requires the forms scope.
     Docs: https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form
@@ -1449,7 +1449,7 @@ class MarketingEmails(Stream):
     scopes = {"content"}
 
 
-class Owners(SemiIncrementalStream):
+class Owners(ClientSideIncrementalStream):
     """Owners, API v3
     Docs: https://legacydocs.hubspot.com/docs/methods/owners/get_owners
     """
@@ -1526,7 +1526,7 @@ class SubscriptionChanges(IncrementalStream):
     scopes = {"content"}
 
 
-class Workflows(SemiIncrementalStream):
+class Workflows(ClientSideIncrementalStream):
     """Workflows, API v3
     Docs: https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows
     """
