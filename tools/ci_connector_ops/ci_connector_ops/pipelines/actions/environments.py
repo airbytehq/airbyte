@@ -45,13 +45,16 @@ def with_python_base(context: PipelineContext, python_image_name: str = "python:
     if not python_image_name.startswith("python:3"):
         raise ValueError("You have to use a python image to build the python base environment")
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
-    return (
+
+    base_container = (
         context.dagger_client.container()
         .from_(python_image_name)
         .with_mounted_cache("/root/.cache/pip", pip_cache, sharing=CacheSharingMode.LOCKED)
         .with_mounted_directory("/tools", context.get_repo_dir("tools", include=["ci_credentials", "ci_common_utils"], exclude=[".venv"]))
         .with_exec(["pip", "install", "--upgrade", "pip"])
     )
+
+    return with_debian_packages(base_container, ["tree"])
 
 
 def with_testing_dependencies(context: PipelineContext) -> Container:
@@ -99,7 +102,7 @@ def with_python_package(
     return container
 
 
-async def with_installed_python_package(
+async def with_installed_local_python_package(
     context: ConnectorTestContext,
     python_environment: Container,
     package_source_code_path: str,
@@ -164,7 +167,7 @@ async def with_installed_airbyte_connector(context: ConnectorTestContext) -> Con
     """
     connector_source_path = str(context.connector.code_directory)
     testing_environment: Container = with_testing_dependencies(context)
-    return await with_installed_python_package(
+    return await with_installed_local_python_package(
         context, testing_environment, connector_source_path, additional_dependency_groups=["dev", "tests", "main"], exclude=["secrets"]
     )
 
@@ -180,7 +183,7 @@ async def with_ci_credentials(context: PipelineContext, gsm_secret: Secret) -> C
         Container: A python environment with the ci_credentials package installed.
     """
     python_base_environment: Container = with_python_base(context)
-    ci_credentials = await with_installed_python_package(context, python_base_environment, CI_CREDENTIALS_SOURCE_PATH)
+    ci_credentials = await with_installed_local_python_package(context, python_base_environment, CI_CREDENTIALS_SOURCE_PATH)
 
     return ci_credentials.with_env_variable("VERSION", "dev").with_secret_variable("GCP_GSM_CREDENTIALS", gsm_secret).with_workdir("/")
 
@@ -207,8 +210,9 @@ def with_debian_packages(base_container: Container, packages_to_install: List[st
         Container: A container with the packages installed.
 
     """
+    update_packages_command = ["apt-get", "update"]
     package_install_command = ["apt-get", "install", "-y"]
-    return base_container.with_exec(package_install_command + packages_to_install)
+    return base_container.with_exec(update_packages_command).with_exec(package_install_command + packages_to_install)
 
 
 def with_pip_packages(base_container: Container, packages_to_install: List[str]) -> Container:
@@ -237,7 +241,7 @@ async def with_ci_connector_ops(context: PipelineContext) -> Container:
     """
     python_base_environment: Container = with_python_base(context, "python:3-alpine")
     python_with_git = with_alpine_packages(python_base_environment, ["gcc", "libffi-dev", "musl-dev", "git"])
-    return await with_installed_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH, exclude=["pipelines"])
+    return await with_installed_local_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH, exclude=["pipelines"])
 
 
 def with_poetry(context: PipelineContext) -> Container:
@@ -249,7 +253,7 @@ def with_poetry(context: PipelineContext) -> Container:
     Returns:
         Container: A python environment with poetry installed.
     """
-    python_base_environment = context.dagger_client.container().from_("python:3.9")
+    python_base_environment: Container = with_python_base(context, "python:3.9")
     python_with_git = with_debian_packages(python_base_environment, ["git"])
     python_with_poetry = with_pip_packages(python_with_git, ["poetry"])
 
@@ -268,7 +272,7 @@ def with_pipx(context: PipelineContext) -> Container:
     Returns:
         Container: A python environment with pipx installed.
     """
-    python_base_environment = context.dagger_client.container().from_("python:3.9")
+    python_base_environment: Container = with_python_base(context, "python:3.9")
     python_with_pipx = with_pip_packages(python_base_environment, ["pipx"]).with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
 
     return python_with_pipx
@@ -300,9 +304,10 @@ def with_pipx_module(context: PipelineContext, parent_dir_path: str, module_path
         Container: A python environment with dependencies installed using pipx.
     """
     pipx_include = [module_path] + include
+    # import pdb; pdb.set_trace()
     pipx_install_dependencies_cmd = ["pipx", "install", module_path]
 
     src = context.get_repo_dir(parent_dir_path, exclude=DEFAULT_PYTHON_EXCLUDE, include=pipx_include)
     python_with_pipx = with_pipx(context)
 
-    return python_with_pipx.with_mounted_directory("/src", src).with_workdir("/src").with_exec(pipx_install_dependencies_cmd)
+    return python_with_pipx.with_mounted_directory("/src", src).with_workdir("/src").with_exec(["tree"]).with_exec(pipx_install_dependencies_cmd)

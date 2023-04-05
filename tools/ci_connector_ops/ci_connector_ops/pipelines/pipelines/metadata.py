@@ -42,11 +42,12 @@ class SimpleExecStep(Step):
         return await self.get_step_result(run_command)
 
 # TODO make class
-def metadata_validation_step(metadata_pipeline_context: PipelineContext, metadata_path: Path) -> Step:
+def metadata_validation_step(metadata_pipeline_context: PipelineContext, metadata_path: Path, parent_container: dagger.Container) -> Step:
     return SimpleExecStep(
         context=metadata_pipeline_context,
         title=f"Validate Connector Metadata Manifest: {metadata_path}",
         args=["metadata_service", "validate", str(metadata_path)],
+        parent_container=parent_container,
     )
 
 
@@ -76,7 +77,7 @@ async def run_metadata_validation_pipeline(
             parent_container = with_pipx_module(
                 metadata_pipeline_context,
                 ".",
-                f"{METADATA_DIR}/{METADATA_ORCHESTRATOR_MODULE_PATH}",
+                f"{METADATA_DIR}/{METADATA_LIB_MODULE_PATH}",
                 include=["airbyte-integrations/connectors/*"],
             )
 

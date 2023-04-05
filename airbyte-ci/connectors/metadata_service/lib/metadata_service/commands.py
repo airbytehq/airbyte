@@ -10,10 +10,9 @@ def metadata_service():
 
 
 @metadata_service.command(help="Validate a given metadata YAML file.")
-@click.argument("file_path", type=click.Path(exists=True), path_type=pathlib.Path)
+@click.argument("file_path", type=click.Path(exists=True, path_type=pathlib.Path))
 def validate(file_path: pathlib.Path):
-
-    file_path = file_path if not file_path.isdir() else file_path / "metadata.yml"
+    file_path = file_path if not file_path.is_dir() else file_path / "metadata.yml"
 
     click.echo(f"Validating {file_path}...")
 

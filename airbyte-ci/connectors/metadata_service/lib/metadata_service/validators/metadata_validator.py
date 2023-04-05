@@ -8,9 +8,10 @@ def validate_metadata_file(file_path: pathlib.Path):
     """
     Validates a metadata YAML file against a metadata Pydantic model.
     """
-    try:
-        metadata = yaml.safe_load(file_path)
-        ConnectorMetadataDefinitionV1.parse_obj(metadata)
-        return True, None
-    except ValidationError as e:
-        return False, e
+    with open(file_path, "r") as f:
+        try:
+            metadata = yaml.safe_load(f)
+            ConnectorMetadataDefinitionV1.parse_obj(metadata)
+            return True, None
+        except ValidationError as e:
+            return False, e

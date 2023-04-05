@@ -180,10 +180,10 @@ class DaggerPipelineCommand(click.Command):
             return sys.exit(1)
 
 
-async def execute_concurrently(steps: List[Callable], concurrency: int = 5, *args, **kwargs):
+async def execute_concurrently(steps: List[Callable], concurrency: int = 5):
     semaphore = anyio.Semaphore(concurrency)
     async with semaphore:
         async with asyncer.create_task_group() as task_group:
-            tasks = [task_group.soonify(step)(*args, **kwargs) for step in steps]
+            tasks = [task_group.soonify(step)() for step in steps]
 
         return [task.value for task in tasks]
