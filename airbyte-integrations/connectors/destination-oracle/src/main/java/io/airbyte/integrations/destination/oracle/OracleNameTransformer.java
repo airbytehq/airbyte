@@ -5,11 +5,11 @@
 package io.airbyte.integrations.destination.oracle;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import java.util.UUID;
 
 @VisibleForTesting
-public class OracleNameTransformer extends ExtendedNameTransformer {
+public class OracleNameTransformer extends StandardNameTransformer {
 
   @Override
   public String applyDefaultCase(final String input) {

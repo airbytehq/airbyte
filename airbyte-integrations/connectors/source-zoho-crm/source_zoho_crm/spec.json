@@ -12,7 +12,7 @@
       "dc_region",
       "edition"
     ],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "client_id": {
         "type": "string",
@@ -46,7 +46,7 @@
       },
       "start_datetime": {
         "title": "Start Date",
-        "type": ["null", "string"],
+        "type": ["string", "null"],
         "examples": [
           "2000-01-01",
           "2000-01-01 13:00",

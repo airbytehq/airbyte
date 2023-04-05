@@ -34,5 +34,5 @@ COPY source_airtable ./source_airtable
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=2.0.3
+LABEL io.airbyte.version=3.0.0
 LABEL io.airbyte.name=airbyte/source-airtable
