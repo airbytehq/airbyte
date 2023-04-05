@@ -679,6 +679,11 @@ class ClientSideIncrementalStream(Stream, IncrementalMixin):
         """Name of the field associated with the state"""
 
     @property
+    @abstractmethod
+    def cursor_field_datetime_format(self):
+        """Date-time expressed in pendulum formats, see: https://pendulum.eustace.io/docs/#formatter"""
+
+    @property
     def state(self) -> Mapping[str, Any]:
         return {self.cursor_field: self._cursor_value}
 
@@ -694,16 +699,23 @@ class ClientSideIncrementalStream(Stream, IncrementalMixin):
         2. "x" - date-time in timestamp in milliseconds
         """
         int_field_type = "integer" in self.get_json_schema().get("properties").get(self.cursor_field).get("type")
-        record_value, datetime_format = (
-            (pendulum.parse(record.get(self.cursor_field)), "YYYY-MM-DDTHH:mm:ss.SSSSSSZ")
+        record_value = (
+            pendulum.parse(record.get(self.cursor_field))
             if isinstance(record.get(self.cursor_field), str)
-            else (pendulum.from_format(str(record.get(self.cursor_field)), "x"), "x")
+            else pendulum.from_format(str(record.get(self.cursor_field)), self.cursor_field_datetime_format)
         )
-        start_date = pendulum.from_format(str(stream_state.get(self.cursor_field)), datetime_format) if stream_state else self._start_date
+        start_date = (
+            pendulum.from_format(str(stream_state.get(self.cursor_field)), self.cursor_field_datetime_format)
+            if stream_state
+            else self._start_date
+        )
         cursor_value = max(start_date, record_value)
-        max_state = max(str(self.state.get(self.cursor_field)), cursor_value.format(datetime_format))
+        max_state = max(str(self.state.get(self.cursor_field)), cursor_value.format(self.cursor_field_datetime_format))
         self.state = {self.cursor_field: int(max_state) if int_field_type else max_state}
-        return not stream_state or pendulum.from_format(str(stream_state.get(self.cursor_field)), datetime_format) < record_value
+        return (
+            not stream_state
+            or pendulum.from_format(str(stream_state.get(self.cursor_field)), self.cursor_field_datetime_format) < record_value
+        )
 
     def read_records(
         self,
@@ -1132,6 +1144,7 @@ class Campaigns(ClientSideIncrementalStream):
     data_field = "campaigns"
     limit = 500
     updated_at_field = "lastUpdatedTime"
+    cursor_field_datetime_format = "x"
     primary_key = "id"
     scopes = {"crm.lists.read"}
 
@@ -1226,6 +1239,7 @@ class DealPipelines(ClientSideIncrementalStream):
     url = "/crm-pipelines/v1/pipelines/deals"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+    cursor_field_datetime_format = "x"
     primary_key = "pipelineId"
     scopes = {"contacts", "tickets"}
 
@@ -1239,6 +1253,7 @@ class TicketPipelines(ClientSideIncrementalStream):
     url = "/crm/v3/pipelines/tickets"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
     primary_key = "id"
     scopes = {
         "media_bridge.read",
@@ -1369,6 +1384,7 @@ class Forms(ClientSideIncrementalStream):
     url = "/marketing/v3/forms"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
     primary_key = "id"
     scopes = {"forms"}
 
@@ -1382,6 +1398,7 @@ class FormSubmissions(ClientSideIncrementalStream):
     url = "/form-integrations/v1/submissions/forms"
     limit = 50
     updated_at_field = "updatedAt"
+    cursor_field_datetime_format = "x"
     scopes = {"forms"}
 
     def path(
@@ -1457,6 +1474,7 @@ class Owners(ClientSideIncrementalStream):
     url = "/crm/v3/owners"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
     primary_key = "id"
     scopes = {"crm.objects.owners.read"}
 
@@ -1535,6 +1553,7 @@ class Workflows(ClientSideIncrementalStream):
     data_field = "workflows"
     updated_at_field = "updatedAt"
     created_at_field = "insertedAt"
+    cursor_field_datetime_format = "x"
     primary_key = "id"
     scopes = {"automation"}
 
