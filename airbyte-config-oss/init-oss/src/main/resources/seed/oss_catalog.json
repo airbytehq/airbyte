@@ -1141,7 +1141,7 @@
     "destinationDefinitionId": "ce0d828e-1dc4-496c-b122-2da42e637e48",
     "name": "Clickhouse",
     "dockerRepository": "airbyte/destination-clickhouse",
-    "dockerImageTag": "0.2.2",
+    "dockerImageTag": "0.2.3",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/clickhouse",
     "icon": "clickhouse.svg",
     "spec": {
@@ -3411,7 +3411,7 @@
     "destinationDefinitionId": "d4353156-9217-4cad-8dd7-c108fd4f74cf",
     "name": "MS SQL Server",
     "dockerRepository": "airbyte/destination-mssql",
-    "dockerImageTag": "0.1.22",
+    "dockerImageTag": "0.1.23",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/mssql",
     "icon": "mssql.svg",
     "spec": {
@@ -4348,7 +4348,7 @@
     "destinationDefinitionId": "25c5221d-dce2-4163-ade9-739ef790f503",
     "name": "Postgres",
     "dockerRepository": "airbyte/destination-postgres",
-    "dockerImageTag": "0.3.26",
+    "dockerImageTag": "0.3.27",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/postgres",
     "icon": "postgresql.svg",
     "spec": {
@@ -6041,6 +6041,69 @@
     "custom": false,
     "releaseStage": "alpha"
   }, {
+    "destinationDefinitionId": "50a559a7-6323-4e33-8aa0-51dfd9dfadac",
+    "name": "SelectDB",
+    "dockerRepository": "airbyte/destination-selectdb",
+    "dockerImageTag": "0.1.0",
+    "documentationUrl": "https://docs.airbyte.com/integrations/destinations/selectdb",
+    "icon": "select.db",
+    "spec": {
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/selectdb",
+      "connectionSpecification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "SelectDB Destination Spec",
+        "type": "object",
+        "required": [ "load_url", "jdbc_url", "cluster_name", "user_name", "password", "database" ],
+        "properties": {
+          "load_url": {
+            "title": "loadURL",
+            "description": "load host and port: xxx.privatelink.aliyun.com:47057",
+            "type": "string",
+            "order": 0
+          },
+          "jdbc_url": {
+            "title": "jdbcURL",
+            "description": "jdbc host and port: xxx.privatelink.aliyun.com:30523",
+            "type": "string",
+            "order": 1
+          },
+          "cluster_name": {
+            "title": "ClusterName",
+            "description": "clusterName of SelectDB",
+            "type": "string",
+            "order": 2
+          },
+          "user_name": {
+            "title": "UserName",
+            "description": "Username to use to access the database.",
+            "type": "string",
+            "order": 3
+          },
+          "password": {
+            "title": "Password",
+            "description": "Password associated with the username.",
+            "type": "string",
+            "airbyte_secret": true,
+            "order": 4
+          },
+          "database": {
+            "title": "DataBase Name",
+            "description": "Name of the database.",
+            "type": "string",
+            "order": 5
+          }
+        }
+      },
+      "supportsIncremental": false,
+      "supportsNormalization": false,
+      "supportsDBT": false,
+      "supported_destination_sync_modes": [ "append", "overwrite" ]
+    },
+    "tombstone": false,
+    "public": true,
+    "custom": false,
+    "releaseStage": "alpha"
+  }, {
     "destinationDefinitionId": "e9810f61-4bab-46d2-bb22-edfc902e0644",
     "name": "SFTP-JSON",
     "dockerRepository": "airbyte/destination-sftp-json",
@@ -6937,7 +7000,7 @@
     "destinationDefinitionId": "06ec60c7-7468-45c0-91ac-174f6e1a788b",
     "name": "TiDB",
     "dockerRepository": "airbyte/destination-tidb",
-    "dockerImageTag": "0.1.0",
+    "dockerImageTag": "0.1.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/tidb",
     "icon": "tidb.svg",
     "spec": {
@@ -7944,7 +8007,7 @@
     "sourceDefinitionId": "1fa90628-2b9e-11ed-a261-0242ac120002",
     "name": "AlloyDB for PostgreSQL",
     "dockerRepository": "airbyte/source-alloydb",
-    "dockerImageTag": "2.0.13",
+    "dockerImageTag": "2.0.15",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/alloydb",
     "icon": "alloydb.svg",
     "sourceType": "database",
@@ -15440,7 +15503,7 @@
     "sourceDefinitionId": "d8313939-3782-41b0-be29-b3ca20d8dd3a",
     "name": "Intercom",
     "dockerRepository": "airbyte/source-intercom",
-    "dockerImageTag": "0.1.33",
+    "dockerImageTag": "0.2.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/intercom",
     "icon": "intercom.svg",
     "sourceType": "api",
@@ -16484,7 +16547,8 @@
     "releaseStage": "generally_available",
     "allowedHosts": {
       "hosts": [ "api.linkedin.com" ]
-    }
+    },
+    "maxSecondsBetweenMessages": 21600
   }, {
     "sourceDefinitionId": "af54297c-e8f8-4d63-a00d-a94695acc9d3",
     "name": "LinkedIn Pages",
@@ -17155,7 +17219,7 @@
     "sourceDefinitionId": "b5ea17b1-f170-46dc-bc31-cc744ca984c1",
     "name": "Microsoft SQL Server (MSSQL)",
     "dockerRepository": "airbyte/source-mssql",
-    "dockerImageTag": "1.0.8",
+    "dockerImageTag": "1.0.9",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mssql",
     "icon": "mssql.svg",
     "sourceType": "database",
@@ -18121,7 +18185,7 @@
     "sourceDefinitionId": "435bb9a5-7887-4809-aa58-28c27df0d7ad",
     "name": "MySQL",
     "dockerRepository": "airbyte/source-mysql",
-    "dockerImageTag": "2.0.11",
+    "dockerImageTag": "2.0.12",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mysql",
     "icon": "mysql.svg",
     "sourceType": "database",
@@ -19609,7 +19673,7 @@
     "sourceDefinitionId": "7f0455fb-4518-4ec0-b7a3-d808bf8081cc",
     "name": "Orb",
     "dockerRepository": "airbyte/source-orb",
-    "dockerImageTag": "1.0.0",
+    "dockerImageTag": "1.1.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/orb",
     "icon": "orb.svg",
     "sourceType": "api",
@@ -20843,7 +20907,7 @@
     "sourceDefinitionId": "decd338e-5647-4c0b-adf4-da0e75f5a750",
     "name": "Postgres",
     "dockerRepository": "airbyte/source-postgres",
-    "dockerImageTag": "2.0.13",
+    "dockerImageTag": "2.0.16",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/postgres",
     "icon": "postgresql.svg",
     "sourceType": "database",
@@ -23294,7 +23358,7 @@
     "sourceDefinitionId": "c2281cee-86f9-4a86-bb48-d23286b4c7bd",
     "name": "Slack",
     "dockerRepository": "airbyte/source-slack",
-    "dockerImageTag": "0.1.24",
+    "dockerImageTag": "0.1.25",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/slack",
     "icon": "slack.svg",
     "sourceType": "api",
@@ -23312,7 +23376,8 @@
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
             "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
             "examples": [ "2017-01-25T00:00:00Z" ],
-            "title": "Start Date"
+            "title": "Start Date",
+            "format": "date-time"
           },
           "lookback_window": {
             "type": "integer",
@@ -24976,7 +25041,7 @@
     "sourceDefinitionId": "4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35",
     "name": "TikTok Marketing",
     "dockerRepository": "airbyte/source-tiktok-marketing",
-    "dockerImageTag": "2.0.5",
+    "dockerImageTag": "2.0.6",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/tiktok-marketing",
     "icon": "tiktok.svg",
     "sourceType": "api",
@@ -26778,7 +26843,7 @@
     "sourceDefinitionId": "40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4",
     "name": "Zendesk Chat",
     "dockerRepository": "airbyte/source-zendesk-chat",
-    "dockerImageTag": "0.1.13",
+    "dockerImageTag": "0.1.14",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/zendesk-chat",
     "icon": "zendesk-chat.svg",
     "sourceType": "api",
