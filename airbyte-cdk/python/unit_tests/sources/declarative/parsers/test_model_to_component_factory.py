@@ -1323,4 +1323,3 @@ def test_simple_retriever_emit_log_messages():
     )
 
     assert isinstance(retriever, SimpleRetrieverTestReadDecorator)
-    assert retriever.emit_connector_builder_messages

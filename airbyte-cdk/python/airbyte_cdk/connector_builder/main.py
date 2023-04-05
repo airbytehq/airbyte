@@ -18,7 +18,7 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 def create_source(config: Mapping[str, Any]) -> ManifestDeclarativeSource:
     manifest = config.get("__injected_declarative_manifest")
     return ManifestDeclarativeSource(
-        source_config=manifest, debug=False, component_factory=ModelToComponentFactory(emit_connector_builder_messages=True)
+        source_config=manifest, component_factory=ModelToComponentFactory(emit_connector_builder_messages=True)
     )
 
 

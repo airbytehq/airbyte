@@ -424,7 +424,6 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
     """
 
     maximum_number_of_slices: int = 5
-    emit_connector_builder_messages: bool = False
 
     def __post_init__(self, options: Mapping[str, Any]):
         super().__post_init__(options)
@@ -445,10 +444,9 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any],
     ) -> Iterable[StreamData]:
-        if self.emit_connector_builder_messages:
-            yield _prepared_request_to_airbyte_message(request)
-            yield _response_to_airbyte_message(response)
-        yield from super().parse_records(request, response, stream_slice, stream_state)
+        yield _prepared_request_to_airbyte_message(request)
+        yield _response_to_airbyte_message(response)
+        yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
 
 
 def _prepared_request_to_airbyte_message(request: requests.PreparedRequest) -> AirbyteMessage:

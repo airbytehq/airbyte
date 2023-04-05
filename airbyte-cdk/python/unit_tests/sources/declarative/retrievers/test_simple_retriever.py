@@ -693,7 +693,6 @@ def test_emit_log_request_response_messages():
         stream_slicer=SinglePartitionRouter(parameters={}),
         parameters={},
         config={},
-        emit_connector_builder_messages=True,
     )
 
     request_log_message, response_log_message, record_1, record_2 = [

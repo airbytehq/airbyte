@@ -748,7 +748,6 @@ class ModelToComponentFactory:
                 config=config,
                 maximum_number_of_slices=self._limit_slices_fetched,
                 parameters=model.parameters,
-                emit_connector_builder_messages=self._emit_connector_builder_messages,
             )
         return SimpleRetriever(
             name=name,
