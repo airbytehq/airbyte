@@ -58,7 +58,6 @@ class GradleTask(Step):
         return f"Gradle {self.task_name} task"
 
     JAVA_BUILD_INCLUDE = [
-        ".root",
         "airbyte-api",
         "airbyte-commons-cli",
         "airbyte-commons-protocol",
@@ -70,9 +69,6 @@ class GradleTask(Step):
         "airbyte-json-validation",
         "airbyte-protocol",
         "airbyte-test-utils",
-        "buildSrc",
-        "tools/bin/build_image.sh",
-        "tools/lib/lib.sh",
     ]
 
     SOURCE_BUILD_INCLUDE = [
@@ -81,7 +77,8 @@ class GradleTask(Step):
     ]
 
     DESTINATION_BUILD_INCLUDE = [
-        "airbyte-integrations/connectors/destination-gcs",  # destination-bigquery uses utils from destination gcs
+        # destination-bigquery uses utils from destination gcs
+        "airbyte-integrations/connectors/destination-gcs",
     ]
 
     # These are the lines we remove from the connector gradle file to not run acceptance test and not build normalization.

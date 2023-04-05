@@ -335,6 +335,7 @@ def with_gradle(
     root_gradle_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}_root_gradle_cache")
 
     include = [
+        ".root",
         ".env",
         "build.gradle",
         "deps.toml",
@@ -347,44 +348,15 @@ def with_gradle(
         "build.gradle",
         "tools/gradle",
         "spotbugs-exclude-filter-file.xml",
-        "airbyte-api",
-        "airbyte-commons-cli",
-        "airbyte-commons-protocol",
-        "airbyte-commons",
-        "airbyte-config",
-        "airbyte-connector-test-harnesses",
-        "airbyte-db",
-        "airbyte-integrations/bases",
-        "airbyte-integrations/connectors/source-jdbc",
-        "airbyte-integrations/connectors/source-relational-db",
-        "airbyte-json-validation",
-        "airbyte-protocol",
-        "airbyte-test-utils",
         "buildSrc",
         "tools/bin/build_image.sh",
         "tools/lib/lib.sh",
-    ]
-
-    python_install_dependencies = [
-        "build-essential",
-        "zlib1g-dev",
-        "libncurses5-dev",
-        "libgdbm-dev",
-        "libnss3-dev",
-        "libssl-dev",
-        "libreadline-dev",
-        "libffi-dev",
-        "libsqlite3-dev",
-        "wget",
-        "libbz2-dev",
-        "libpython3-dev",
     ]
 
     if sources_to_include:
         include += sources_to_include
 
     shared_tmp_volume = ("/tmp", context.dagger_client.cache_volume("share-tmp-gradle"))
-    pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
 
     openjdk_with_docker = (
         context.dagger_client.container()
@@ -394,19 +366,6 @@ def with_gradle(
         .with_exec(["apt-get", "install", "-y", "curl", "jq"])
         .with_env_variable("VERSION", "23.0.1")
         .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
-        .with_exec(["apt-get", "install", "-y"] + python_install_dependencies)
-        .with_exec(
-            [
-                "apt-get",
-                "install",
-                "-y",
-                "python3",
-                "python3-pip",
-            ]
-        )
-        .with_mounted_cache("/root/.cache/pip", pip_cache, sharing=CacheSharingMode.SHARED)
-        .with_exec(["pip3", "install", "-U", "pip"])
-        .with_exec(["pip3", "install", "virtualenv", "--upgrade"])
         .with_exec(["mkdir", "/root/.gradle"])
         .with_mounted_cache("/root/.gradle", root_gradle_cache, sharing=CacheSharingMode.LOCKED)
         .with_exec(["mkdir", "/airbyte"])
