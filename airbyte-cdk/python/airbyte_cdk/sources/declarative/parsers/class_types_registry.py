@@ -5,7 +5,7 @@
 from typing import Mapping, Type
 
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
-from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeOauth2Authenticator
+from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeOauth2Authenticator, DeclarativeSingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import (
     ApiKeyAuthenticator,
     BasicHttpAuthenticator,
@@ -84,6 +84,7 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "NoAuth": NoAuth,
     "NoPagination": NoPagination,
     "OAuthAuthenticator": DeclarativeOauth2Authenticator,
+    "SingleUseRefreshTokenOAuthAuthenticator": DeclarativeSingleUseRefreshTokenOauth2Authenticator,
     "OffsetIncrement": OffsetIncrement,
     "PageIncrement": PageIncrement,
     "ParentStreamConfig": ParentStreamConfig,

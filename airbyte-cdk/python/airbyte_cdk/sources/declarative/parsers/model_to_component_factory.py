@@ -9,7 +9,7 @@ import inspect
 import re
 from typing import Any, Callable, List, Literal, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
 
-from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
+from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, DeclarativeSingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.auth.token import (
     ApiKeyAuthenticator,
@@ -71,6 +71,9 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestPath as RequestPathModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SessionTokenAuthenticator as SessionTokenAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
+    SingleUseRefreshTokenOAuthAuthenticator as SingleUseRefreshTokenOAuthAuthenticatorModel,
+)
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamPartitionRouter as SubstreamPartitionRouterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitTimeFromHeader as WaitTimeFromHeaderModel
@@ -149,6 +152,7 @@ class ModelToComponentFactory:
             NoAuthModel: self.create_no_auth,
             NoPaginationModel: self.create_no_pagination,
             OAuthAuthenticatorModel: self.create_oauth_authenticator,
+            SingleUseRefreshTokenOAuthAuthenticatorModel: self.create_single_use_refresh_token_oauth_authenticator,
             OffsetIncrementModel: self.create_offset_increment,
             PageIncrementModel: self.create_page_increment,
             ParentStreamConfigModel: self.create_parent_stream_config,
@@ -656,6 +660,27 @@ class ModelToComponentFactory:
             token_refresh_endpoint=model.token_refresh_endpoint,
             config=config,
             parameters=model.parameters,
+        )
+
+    @staticmethod
+    def create_single_use_refresh_token_oauth_authenticator(
+        model: SingleUseRefreshTokenOAuthAuthenticatorModel, config: Config, **kwargs
+    ) -> DeclarativeSingleUseRefreshTokenOauth2Authenticator:
+        return DeclarativeSingleUseRefreshTokenOauth2Authenticator(
+            config=config,
+            token_refresh_endpoint=model.token_refresh_endpoint,
+            parameters=model.parameters,
+            access_token_name=model.access_token_name,
+            refresh_token_name=model.refresh_token_name,
+            expires_in_name=model.expires_in_name,
+            client_id_config_path=model.client_id_config_path,
+            client_secret_config_path=model.client_secret_config_path,
+            access_token_config_path=model.access_token_config_path,
+            refresh_token_config_path=model.refresh_token_config_path,
+            token_expiry_date_config_path=model.token_expiry_date_config_path,
+            grant_type=model.grant_type,
+            refresh_request_body=model.refresh_request_body,
+            scopes=model.scopes,
         )
 
     @staticmethod
