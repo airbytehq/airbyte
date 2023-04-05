@@ -58,7 +58,6 @@ class Step(ABC):
     def __init__(self, context: ConnectorTestContext) -> None:
         self.context = context
 
-    # TODO use these args and kwards
     async def run(self, *args, **kwargs) -> StepResult:
         """Public method to run the step. It output a step result.
         If an unexpected dagger error happens it outputs a failed step result with the exception payload.

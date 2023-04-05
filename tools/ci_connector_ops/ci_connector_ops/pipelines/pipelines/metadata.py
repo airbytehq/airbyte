@@ -7,7 +7,7 @@ from ci_connector_ops.pipelines.actions.environments import with_poetry_module,w
 from ci_connector_ops.pipelines.contexts import PipelineContext
 from ci_connector_ops.pipelines.utils import (
     DAGGER_CONFIG,
-    execute_steps_concurrently,
+    execute_concurrently,
 )
 
 METADATA_DIR = "airbyte-ci/connectors/metadata_service"
@@ -31,16 +31,17 @@ class TestPoetryModule(Step):
 
 
 class SimpleExecStep(Step):
-    def __init__(self, context: PipelineContext, title: str, args: List[str]):
+    def __init__(self, context: PipelineContext, title: str, args: List[str], parent_container: dagger.Container):
         self.title = title
         self.args = args
+        self.parent_container = parent_container
         super().__init__(context)
 
     async def _run(self) -> StepStatus:
-        run_test = self.context.dagger_client.with_exec(self.args)
-        return await self.get_step_result(run_test)
+        run_command = self.parent_container.with_exec(self.args)
+        return await self.get_step_result(run_command)
 
-
+# TODO make class
 def metadata_validation_step(metadata_pipeline_context: PipelineContext, metadata_path: Path) -> Step:
     return SimpleExecStep(
         context=metadata_pipeline_context,
@@ -69,20 +70,26 @@ async def run_metadata_validation_pipeline(
     )
 
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
-        # TODO refactor the environemnts to use containers not contexts
         metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
-        updated_client = with_pipx_module(
-            metadata_pipeline_context, ".", f"{METADATA_DIR}/{METADATA_LIB_MODULE_PATH}", include=["airbyte-integrations/connectors/*"]
-        )
-
-        metadata_pipeline_context.dagger_client = updated_client
-
-        validation_steps = [
-            metadata_validation_step(metadata_pipeline_context, metadata_path).run for metadata_path in metadata_source_paths
-        ]
 
         async with metadata_pipeline_context:
-            results = await execute_steps_concurrently(validation_steps)
+            parent_container = with_pipx_module(
+                metadata_pipeline_context,
+                ".",
+                f"{METADATA_DIR}/{METADATA_ORCHESTRATOR_MODULE_PATH}",
+                include=["airbyte-integrations/connectors/*"],
+            )
+
+            validation_steps = [
+                metadata_validation_step(
+                    metadata_pipeline_context,
+                    metadata_path,
+                    parent_container
+                ).run
+                for metadata_path in metadata_source_paths
+            ]
+
+            results = await execute_concurrently(validation_steps)
             metadata_pipeline_context.test_report = TestReport(pipeline_context=metadata_pipeline_context, steps_results=results)
 
         return metadata_pipeline_context.test_report.success

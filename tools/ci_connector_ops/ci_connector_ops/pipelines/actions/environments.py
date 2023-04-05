@@ -211,6 +211,21 @@ def with_debian_packages(base_container: Container, packages_to_install: List[st
     return base_container.with_exec(package_install_command + packages_to_install)
 
 
+def with_pip_packages(base_container: Container, packages_to_install: List[str]) -> Container:
+    """Installs packages using pip
+    Args:
+        context (Container): A container with python installed
+
+    Returns:
+        Container: A container with the pip packages installed.
+
+    """
+    package_install_command = ["python", "-m", "pip", "install"]
+    return base_container.with_exec(package_install_command + packages_to_install)
+
+
+
+
 async def with_ci_connector_ops(context: PipelineContext) -> Container:
     """Installs the ci_connector_ops package in a Container running Python > 3.10 with git..
 
@@ -234,11 +249,9 @@ def with_poetry(context: PipelineContext) -> Container:
     Returns:
         Container: A python environment with poetry installed.
     """
-    install_poetry_package_cmd = ["python", "-m", "pip", "install", "poetry"]
-
-    python_base_environment: Container = context.dagger_client.container().from_("python:3.9")
+    python_base_environment = context.dagger_client.container().from_("python:3.9")
     python_with_git = with_debian_packages(python_base_environment, ["git"])
-    python_with_poetry = python_with_git.with_exec(install_poetry_package_cmd)
+    python_with_poetry = with_pip_packages(python_with_git, ["poetry"])
 
     poetry_cache: CacheVolume = context.dagger_client.cache_volume("poetry_cache")
     poetry_with_cache = python_with_poetry.with_mounted_cache("/root/.cache/pypoetry", poetry_cache, sharing=CacheSharingMode.PRIVATE)
@@ -250,15 +263,13 @@ def with_pipx(context: PipelineContext) -> Container:
     """Installs pipx in a python environment.
 
     Args:
-        context (PipelineContext): The current test context, providing the repository directory from which the ci_credentials sources will be pulled.
+       context (PipelineContext): The current pipeline context.
 
     Returns:
         Container: A python environment with pipx installed.
     """
-    install_pipx_package_cmd = ["python", "-m", "pip", "install", "pipx"]
-
-    python_with_poetry: Container = with_poetry(context)
-    python_with_pipx = python_with_poetry.with_exec(install_pipx_package_cmd).with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
+    python_base_environment = context.dagger_client.container().from_("python:3.9")
+    python_with_pipx = with_pip_packages(python_base_environment, ["pipx"]).with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
 
     return python_with_pipx
 
@@ -288,11 +299,10 @@ def with_pipx_module(context: PipelineContext, parent_dir_path: str, module_path
     Returns:
         Container: A python environment with dependencies installed using pipx.
     """
-    pipx_exclude = ["**/__pycache__"] + DEFAULT_PYTHON_EXCLUDE
     pipx_include = [module_path] + include
     pipx_install_dependencies_cmd = ["pipx", "install", module_path]
 
-    src = context.dagger_client.host().directory(parent_dir_path, exclude=pipx_exclude, include=pipx_include)
+    src = context.get_repo_dir(parent_dir_path, exclude=DEFAULT_PYTHON_EXCLUDE, include=pipx_include)
     python_with_pipx = with_pipx(context)
 
     return python_with_pipx.with_mounted_directory("/src", src).with_workdir("/src").with_exec(pipx_install_dependencies_cmd)
