@@ -8,6 +8,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+import pendulum
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
@@ -66,12 +67,15 @@ def update_note(stream, note_id, headers):
 
 
 def get_stream_state():
-    state_date = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-    return {"LastModifiedDate": state_date}
+    return {"LastModifiedDate": "2020-10-22T00:00:00.000+0000"}
 
 
 def test_update_for_deleted_record(stream):
     headers = stream.authenticator.get_auth_header()
+    stream_slice = {
+        "start_date": "2020-10-22T00:00:00.000+0000",
+        "end_date": pendulum.now(tz="UTC").isoformat(timespec="milliseconds")
+    }
     stream_state = get_stream_state()
     time.sleep(1)
     response = create_note(stream, headers)
@@ -79,7 +83,7 @@ def test_update_for_deleted_record(stream):
 
     created_note_id = response.json()["id"]
 
-    notes = set(record["Id"] for record in stream.read_records(sync_mode=None))
+    notes = set(record["Id"] for record in stream.read_records(sync_mode=None, stream_slice=stream_slice))
     assert created_note_id in notes, "The stream didn't return the note we created"
 
     response = delete_note(stream, created_note_id, headers)
@@ -87,7 +91,11 @@ def test_update_for_deleted_record(stream):
 
     is_note_updated = False
     is_deleted = False
-    for record in stream.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state):
+    stream_slice = {
+        "start_date": "2020-10-22T00:00:00.000+0000",
+        "end_date": pendulum.now(tz="UTC").isoformat(timespec="milliseconds")
+    }
+    for record in stream.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state, stream_slice=stream_slice):
         if created_note_id == record["Id"]:
             is_note_updated = True
             is_deleted = record["IsDeleted"]
