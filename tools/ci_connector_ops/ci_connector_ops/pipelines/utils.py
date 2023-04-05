@@ -4,13 +4,15 @@
 import datetime
 import re
 import sys
+import click
 from pathlib import Path
 from typing import Optional, Set
+import functools
 
 import anyio
 import git
 from ci_connector_ops.utils import DESTINATION_CONNECTOR_PATH_PREFIX, SOURCE_CONNECTOR_PATH_PREFIX, Connector, get_connector_name_from_path
-from dagger import Config, Connection, Container, QueryError
+from dagger import Config, Connection, Container, QueryError, DaggerError
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
@@ -155,3 +157,18 @@ def get_modified_connectors(modified_files: Set[str]) -> Set[Connector]:
         if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) or file_path.startswith(DESTINATION_CONNECTOR_PATH_PREFIX):
             modified_connectors.append(Connector(get_connector_name_from_path(file_path)))
     return set(modified_connectors)
+
+
+def pipeline_command(func):
+    @functools.wraps(func)
+    def wrapper(ctx: click.Context, *args, **kwargs):
+        click.secho(f"Running {func.__name__}...")
+        try:
+            pipeline_success = func(ctx, *args, **kwargs)
+            if not pipeline_success:
+                raise DaggerError(f"{func.__name__} failed.")
+        except DaggerError as e:
+            click.secho(str(e), err=True, fg="red")
+            return sys.exit(1)
+
+    return wrapper
