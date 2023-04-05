@@ -1,7 +1,7 @@
 import pandas as pd
 from dagster import MetadataValue, Output, asset
 
-from ..templates.render import render_connector_catalog_locations_html, render_connector_catalog_locations_markdown
+from orchestrator.templates.render import render_connector_catalog_locations_html, render_connector_catalog_locations_markdown
 
 GROUP_NAME = "catalog_reports"
 
@@ -9,7 +9,7 @@ GROUP_NAME = "catalog_reports"
 
 
 def augment_and_normalize_connector_dataframes(
-    cloud_df, oss_df, primaryKey, connector_type, valid_metadata_list, github_connector_folders, cached_specs
+    cloud_df, oss_df, primaryKey, connector_type, valid_metadata_report_dataframe, github_connector_folders, cached_specs
 ):
     """
     Normalize the cloud and oss connector dataframes and merge them into a single dataframe.
@@ -31,7 +31,11 @@ def augment_and_normalize_connector_dataframes(
     total_catalog[["is_cloud", "is_oss"]] = total_catalog[["is_cloud", "is_oss"]].fillna(False)
 
     catalog_with_metadata = pd.merge(
-        total_catalog, valid_metadata_list[["definitionId", "is_metadata_valid"]], left_on=primaryKey, right_on="definitionId", how="left"
+        total_catalog,
+        valid_metadata_report_dataframe[["definitionId", "is_metadata_valid"]],
+        left_on=primaryKey,
+        right_on="definitionId",
+        how="left",
     )
 
     # merge with cached_specs on dockerRepository and dockerImageTag
@@ -129,7 +133,7 @@ def connector_catalog_location_markdown(context, all_destinations_dataframe, all
 
 @asset(group_name=GROUP_NAME)
 def all_destinations_dataframe(
-    cloud_destinations_dataframe, oss_destinations_dataframe, github_connector_folders, valid_metadata_list, cached_specs
+    cloud_destinations_dataframe, oss_destinations_dataframe, github_connector_folders, valid_metadata_report_dataframe, cached_specs
 ) -> pd.DataFrame:
     """
     Merge the cloud and oss destinations catalogs into a single dataframe.
@@ -140,7 +144,7 @@ def all_destinations_dataframe(
         oss_df=oss_destinations_dataframe,
         primaryKey="destinationDefinitionId",
         connector_type="destination",
-        valid_metadata_list=valid_metadata_list,
+        valid_metadata_report_dataframe=valid_metadata_report_dataframe,
         github_connector_folders=github_connector_folders,
         cached_specs=cached_specs,
     )
@@ -148,7 +152,7 @@ def all_destinations_dataframe(
 
 @asset(group_name=GROUP_NAME)
 def all_sources_dataframe(
-    cloud_sources_dataframe, oss_sources_dataframe, github_connector_folders, valid_metadata_list, cached_specs
+    cloud_sources_dataframe, oss_sources_dataframe, github_connector_folders, valid_metadata_report_dataframe, cached_specs
 ) -> pd.DataFrame:
     """
     Merge the cloud and oss source catalogs into a single dataframe.
@@ -158,7 +162,7 @@ def all_sources_dataframe(
         oss_df=oss_sources_dataframe,
         primaryKey="sourceDefinitionId",
         connector_type="source",
-        valid_metadata_list=valid_metadata_list,
+        valid_metadata_report_dataframe=valid_metadata_report_dataframe,
         github_connector_folders=github_connector_folders,
         cached_specs=cached_specs,
     )
