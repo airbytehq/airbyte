@@ -34,8 +34,7 @@ class CommcareStream(HttpStream, ABC):
     forms = set()
     last_form_date = None
     schemas = {}
-    unwantedfields = re.compile(r"^(case_|update_|meta|create_|commcare_).*$")
-  
+   
     @property
     def dateformat(self):
         return "%Y-%m-%dT%H:%M:%S.%f"
