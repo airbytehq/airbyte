@@ -15,6 +15,8 @@ Answer the following questions to determine whether the Connector Builder is the
 
 You can follow [this chart](https://whimsical.com/how-should-i-build-my-connector-YNXaNQhRuPuWy68Xg8Akhy) to guide you through the process.
 
+The sections below provide more details to help you answer the questions.
+
 ## Is the integration a REST API returning a collection of records synchronously?
 
 Is the integration a REST API? In doubt, look for the word “REST” in the documentation.
