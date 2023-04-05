@@ -135,6 +135,16 @@ class NotasFiscais(TinyBase):
 
         return start_ingestion_date
     
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+
+        if self.page == self.max_pages:
+            self.page = 1
+            return None
+
+        self.page += 1
+
+        return self.page
+    
     def path(
         self, 
         stream_state: Mapping[str, Any] = None, 
