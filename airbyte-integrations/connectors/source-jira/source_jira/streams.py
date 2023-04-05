@@ -500,7 +500,7 @@ class IssuePropertyKeys(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-properties/#api-rest-api-3-issue-issueidorkey-properties-get
     """
 
-    extract_field = "key"
+    extract_field = "keys"
     use_cache = True
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
