@@ -20,7 +20,9 @@ The sections below provide more details to help you answer the questions.
 ## Is the integration a REST API returning a collection of records synchronously?
 
 Is the integration a REST API? In doubt, look for the word “REST” in the documentation.
-Also look at the shape of the resource path.
+
+Rook at the shape of the resource path.
+
 Taking the [Congress API](https://api.congress.gov/#/bill) as an example,
 
 `GET /bill`
@@ -82,7 +84,7 @@ If the integration is not a synchronous REST API, use the Python CDK.
 Look up the authentication mechanism in the API documentation, and identify which type it is.
 
 ### Basic HTTP
-Are requests authenticated using the Basic HTTP authentication method? You can search the documentation page for either
+Are requests authenticated using the Basic HTTP authentication method? You can search the documentation page for one of the following keywords
 - "Basic Auth"
 - "Basic HTTP"
 - "Authorization: Basic"
