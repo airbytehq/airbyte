@@ -46,7 +46,6 @@ class EMilleniumBase(HttpStream):
 
         return  base64.b64encode(authorization_bytes).decode("utf-8") 
 
-    
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
@@ -62,16 +61,7 @@ class EMilleniumBase(HttpStream):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
 
-        current_date_datetime = datetime.strptime(self.current_date, '%Y-%m-%d')
-
-        if current_date_datetime.date() > datetime.now().date():
-            return None 
-        
-        current_date_datetime = current_date_datetime + timedelta(days = 1)
-
-        self.current_date = datetime.strftime(current_date_datetime, '%Y-%m-%d')
-
-        return self.current_date
+        return None
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         latest_record_date = datetime.fromtimestamp(int(latest_record['data'][self.record_date_field].split('(')[1].split('-')[0])/1000)
@@ -93,6 +83,9 @@ class EMilleniumBase(HttpStream):
         if response.status_code != 200:
             logger.info('Handling error %s:', response.status_code)
             response_json = self.handle_request(response).json()
+
+        if self.end_of_records == True:
+            return []
 
         item_list = []
 
@@ -161,7 +154,7 @@ class Listafaturamentos(EMilleniumBase):
 
         self._cursor_value = None
 
-        self.first_run = True
+        self.end_of_records = False
 
     def path(
         self, 
@@ -169,23 +162,15 @@ class Listafaturamentos(EMilleniumBase):
         stream_slice: Mapping[str, Any] = None, 
         next_page_token: Mapping[str, Any] = None
     ) -> str:
-        
-        if self.first_run == True:
-            self.current_date = self.set_initial_date(stream_state)
-            self.first_run = False
 
-        path = f"{self.endpoint_name}?data_atualizacao={self.current_date}&$format=json"
+        path = f"{self.endpoint_name}?data_atualizacao={stream_slice['ingestion_date']}&$format=json"
+
+        if datetime.strptime(stream_slice['ingestion_date'], '%Y-%m-%d') >= datetime.now():
+            self.end_of_records = True
         
         logger.info(path)
         
         return path
-
-    def set_initial_date(self, stream_state):
-        inital_date = self.start_date 
-        if self.cursor_field in stream_state.keys():
-            inital_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S')
-        
-        return datetime.strftime(inital_date, '%Y-%m-%d')
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
 
@@ -194,6 +179,9 @@ class Listafaturamentos(EMilleniumBase):
         if response.status_code != 200:
             logger.info('Handling error %s:', response.status_code)
             response_json = self.handle_request(response).json()
+
+        if self.end_of_records == True:
+            return []
 
         item_list = []
 
@@ -215,6 +203,24 @@ class Listafaturamentos(EMilleniumBase):
             item_list.append(item_json)
             
         return item_list
+    
+    def generate_stream_slices(self, start_date):
+        
+        date_diff = datetime.now() - start_date
+        timedelta_list = list(range(date_diff.days + 1))
+        timedelta_list.reverse()
+        date_list = [{'ingestion_date': datetime.strftime(datetime.now() - timedelta(days=x), '%Y-%m-%d')} for x in timedelta_list]
+    
+        date_list.append({'ingestion_date': datetime.strftime(datetime.now() + timedelta(days=1), '%Y-%m-%d')})
+
+        logger.info(date_list)
+
+        return date_list
+
+    def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        start_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S') if stream_state and self.cursor_field in stream_state else self.start_date
+        return self.generate_stream_slices(start_date)
+
 
 class Listapedidos(EMilleniumBase):
 
@@ -239,8 +245,6 @@ class Listapedidos(EMilleniumBase):
 
         self._cursor_value = None
 
-        self.first_run = True
-
     def path(
         self, 
         stream_state: Mapping[str, Any] = None, 
@@ -248,22 +252,31 @@ class Listapedidos(EMilleniumBase):
         next_page_token: Mapping[str, Any] = None
     ) -> str:
         
-        if self.first_run == True:
-            self.current_date = self.set_initial_date(stream_state)
-            self.first_run = False
-
-        path = f"{self.endpoint_name}?aprovado=true&data_emissao={self.current_date}&efetuado=true&$format=json"
+        path = f"{self.endpoint_name}?aprovado=true&data_emissao={stream_slice['ingestion_date']}&efetuado=true&$format=json"
         
+        if datetime.strptime(stream_slice['ingestion_date'], '%Y-%m-%d') >= datetime.now():
+            self.end_of_records = True
+
         logger.info(path)
         
         return path
 
-    def set_initial_date(self, stream_state):
-        inital_date = self.start_date 
-        if self.cursor_field in stream_state.keys():
-            inital_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S') - timedelta(days = 7)
+    def generate_stream_slices(self, start_date):
         
-        return datetime.strftime(inital_date, '%Y-%m-%d')
+        date_diff = datetime.now() - start_date
+        timedelta_list = list(range(date_diff.days + 1))
+        timedelta_list.reverse()
+        date_list = [{'ingestion_date': datetime.strftime(datetime.now() - timedelta(days=x), '%Y-%m-%d')} for x in timedelta_list]
+    
+        date_list.append({'ingestion_date': datetime.strftime(datetime.now() + timedelta(days=1), '%Y-%m-%d')})
+
+        logger.info(date_list)
+
+        return date_list
+
+    def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        start_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S') if stream_state and self.cursor_field in stream_state else self.start_date - timedelta(days=7)
+        return self.generate_stream_slices(start_date)
     
 class SourceEMillenium(AbstractSource):
 
