@@ -8,7 +8,9 @@ import json
 import zipfile
 import requests
 import xmltodict
+import subprocess
 import xml.etree.ElementTree as ET
+from google.cloud import secretmanager
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -24,20 +26,60 @@ class MeliInvoices(HttpStream):
 
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__()
-        self.refresh_token = config["refresh_token"]
+        self.credstash_key = config["credstash_key"]
         self.client_id = config["client_id"]
         self.client_secret = config["client_secret"]
         self.year_month = config["year_month"]
+        self.google_project_id = config["google_project_id"]
+        self.google_secret_aws_credstash_credentials = config["google_secret_aws_credstash_credentials"]
         self.access_token = self.get_access_token()
     
     def get_access_token(self):
+        # Meli URL to get the access_token
         url = "https://api.mercadolibre.com/oauth/token"
+        # Build the parent name from the project.
+        # parent = f"projects/{project_id}"
+        # Create the Secret Manager client.
+        client = secretmanager.SecretManagerServiceClient()
+
+        # # Create the parent secret.
+        # secret = client.create_secret(
+        #     request={
+        #         "parent": parent,
+        #         "secret_id": secret_id,
+        #         "secret": {"replication": {"automatic": {}}},
+        #     }
+        # )
+        # # Add the secret version.
+        # version = client.add_secret_version(
+        #     request={"parent": secret.name, "payload": {"data": b"hello world!"}}
+        # )
+
+        # Getting ACCESS_KEY_ID
+        resource_name_access_key_id = f"projects/{self.google_project_id}/secrets/{self.google_secret_aws_credstash_credentials}/versions/latest"
+        response_access_key_id = client.access_secret_version(resource_name_access_key_id)
+        access_key_id = response_access_key_id.payload.data.decode('UTF-8')
+        print(access_key_id)
+        logger.info(access_key_id)
+
+        # Getting SECRET_ACCESS_KEY
+        # resource_name_secret_access_key = f"projects/{self.google_project_id}/secrets/{self.google_secret_access_key}/versions/latest"
+        # response_secret_access_key = client.access_secret_version(resource_name_secret_access_key)
+        # secret_access_key = response_secret_access_key.payload.data.decode('UTF-8')
+
+        # Setting Variables as ENV Variables
+
+
+        bash_command = f"credstash get {self.credstash_key}"
+        process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE)
+        output, error = process.communicate()
+        refresh_token = output.decode('utf-8')
 
         payload = json.dumps({
             "grant_type":"refresh_token",
             "client_id": self.client_id,
             "client_secret": self.client_secret,
-            "refresh_token": self.refresh_token
+            "refresh_token": refresh_token
         })
         headers = {
             'Content-Type': 'application/json'
@@ -46,9 +88,35 @@ class MeliInvoices(HttpStream):
         response = requests.request("POST", url, headers=headers, data=payload)
 
         access_token = response.json()["access_token"] 
-        refresh_token = response.json()["refresh_token"]
+        new_refresh_token = response.json()["refresh_token"]
+
+        if new_refresh_token != refresh_token
+            # Updating Credstash
+            # Example: credstash -r us-east-1 put -k {self.refresh_token} 'devpass_updated' role=dev -a
+            bash_command = f"credstash put {self.credstash_key} {new_refresh_token}"
+            process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE)
+
+        # Response 403, token not valid anymore 
+        
+        # check se o que recebemos é igual ao do response
+        # retry to generate the access_token
+        # Credstash (Policy on AWS)
+        # KMS
+        # Dynamo tem o secret e o public
+        # KMS tem o private e o public
+        # Salvar no container criptografada e descriptografar com o secret manager
+        # Ninguém pode ler lá
+        # Public key, como usar o Secret Manager
+        # Install merama core
+
+        # Pegar com o secret manager
+        # Colocar na env variables
+        # Instalar merama Core (CredentialStorage)
+        # 
+
+
         logger.info(f"Access Token: {access_token}")
-        logger.info(f"Access Token: {refresh_token}")
+        logger.info(f"Access Token: {new_refresh_token}")
         return access_token
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
