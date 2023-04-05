@@ -15,7 +15,7 @@ dependencies {
 task generateSeedConnectorSpecs(type: JavaExec, dependsOn: compileJava) {
     classpath = sourceSets.main.runtimeClasspath
 
-    mainClass = 'io.airbyte.config.specs.SeedConnectorSpecGenerator'
+    mainClass = 'io.airbyte.configoss.specs.SeedConnectorSpecGenerator'
 
     args '--seed-root'
     args new File(project(":airbyte-config-oss:init-oss").projectDir, '/src/main/resources/seed')
@@ -25,7 +25,7 @@ task generateSeedConnectorSpecs(type: JavaExec, dependsOn: compileJava) {
 task generateConnectorSpecsMask(type: JavaExec, dependsOn: generateSeedConnectorSpecs) {
     classpath = sourceSets.main.runtimeClasspath
 
-    mainClass = 'io.airbyte.config.specs.ConnectorSpecMaskGenerator'
+    mainClass = 'io.airbyte.configoss.specs.ConnectorSpecMaskGenerator'
 
     args '--specs-root'
     args new File(project(":airbyte-config-oss:init-oss").projectDir, '/src/main/resources/seed')
@@ -36,7 +36,7 @@ project(":airbyte-config-oss:init-oss").tasks.processResources.dependsOn(generat
 task generateOssConnectorCatalog(type: JavaExec, dependsOn: generateSeedConnectorSpecs) {
     classpath = sourceSets.main.runtimeClasspath
 
-    mainClass = 'io.airbyte.config.specs.CombinedConnectorCatalogGenerator'
+    mainClass = 'io.airbyte.configoss.specs.CombinedConnectorCatalogGenerator'
 
     args '--seed-root'
     args new File(project(":airbyte-config-oss:init-oss").projectDir, '/src/main/resources/seed')
@@ -50,7 +50,7 @@ project(":airbyte-config-oss:init-oss").tasks.processResources.dependsOn(generat
 task generateConnectorMarkdown(type: JavaExec, dependsOn: generateSeedConnectorSpecs) {
     classpath = sourceSets.main.runtimeClasspath
 
-    mainClass = 'io.airbyte.config.specs.ConnectorMarkdownGenerator'
+    mainClass = 'io.airbyte.configoss.specs.ConnectorMarkdownGenerator'
 
     args '--project-root'
     args new File(project(":").projectDir, "")

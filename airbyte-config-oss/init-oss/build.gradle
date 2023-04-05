@@ -21,7 +21,7 @@ Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", 
 
 task validateIcons(type: JavaExec, dependsOn: [compileJava]) {
     classpath = sourceSets.main.runtimeClasspath
-    mainClass = 'io.airbyte.config.init.IconValidationTask'
+    mainClass = 'io.airbyte.configoss.init.IconValidationTask'
 }
 
 validateIcons.shouldRunAfter processResources

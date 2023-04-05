@@ -4,8 +4,8 @@
 
 package io.airbyte.configoss.specs;
 
-import static io.airbyte.config.specs.GcsBucketSpecFetcher.CLOUD_SPEC_FILE;
-import static io.airbyte.config.specs.GcsBucketSpecFetcher.DEFAULT_SPEC_FILE;
+import static io.airbyte.configoss.specs.GcsBucketSpecFetcher.CLOUD_SPEC_FILE;
+import static io.airbyte.configoss.specs.GcsBucketSpecFetcher.DEFAULT_SPEC_FILE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;

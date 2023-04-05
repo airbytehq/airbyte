@@ -4,7 +4,7 @@
 
 package io.airbyte.configoss.specs;
 
-import static io.airbyte.config.specs.ConnectorSpecMaskGenerator.MASK_FILE;
+import static io.airbyte.configoss.specs.ConnectorSpecMaskGenerator.MASK_FILE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
