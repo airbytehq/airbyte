@@ -33,7 +33,7 @@ If you use custom connectors, this upgrade requires all of your connector specs 
 
 :::note
 
-Airbyte version 0.43.0 or later requires [Docker Compose V2](https://docs.docker.com/compose/compose-v2/) to be [installed](https://docs.docker.com/compose/install/) before upgrading.
+Airbyte version 0.40.27 or later requires [Docker Compose V2](https://docs.docker.com/compose/compose-v2/) to be [installed](https://docs.docker.com/compose/install/) before upgrading.
 
 :::
 
