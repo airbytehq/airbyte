@@ -189,7 +189,6 @@ class ConnectorTestContext:
             self.state = ContextState.ERROR
             self.test_report = ConnectorTestReport(self, [])
 
-        self.dagger_client = self.dagger_client.pipeline(f"Teardown {self.connector.technical_name}")
         if self.should_save_updated_secrets:
             await secrets.upload(self)
         self.test_report.print()

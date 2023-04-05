@@ -220,13 +220,10 @@ def with_dockerd_service(
     Returns:
         Container: The container running dockerd as a service.
     """
-    docker_cache_volume_name = f"{context.connector.technical_name}-docker-lib"
     dind = (
         context.dagger_client.container()
         .from_("docker:23.0.1-dind")
-        .with_mounted_cache(
-            "/var/lib/docker", context.dagger_client.cache_volume(docker_cache_volume_name), sharing=CacheSharingMode.SHARED
-        )
+        .with_mounted_cache("/var/lib/docker", context.dagger_client.cache_volume("docker-lib"), sharing=CacheSharingMode.PRIVATE)
     )
     if shared_volume is not None:
         dind = dind.with_mounted_cache(*shared_volume)
@@ -293,7 +290,9 @@ async def with_connector_acceptance_test(context: ConnectorTestContext, connecto
 
     # TODO create a function to load and tag images
     image_load_output = await (
-        docker_cli.with_exec(["echo", "Load tar_name"]).with_exec(["docker", "load", "--input", connector_image_tar_name]).stdout()
+        docker_cli.with_exec(["echo", f"Load {connector_image_tar_name}"])
+        .with_exec(["docker", "load", "--input", connector_image_tar_name])
+        .stdout()
     )
     if "Loaded image ID: sha256:" in image_load_output:
         connector_under_test_image_name = context.connector.acceptance_test_config["connector_image"]

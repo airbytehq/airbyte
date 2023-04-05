@@ -35,7 +35,6 @@ class CodeFormatChecks(Step):
         """
 
         connector_under_test = environments.with_airbyte_connector(self.context)
-        connector_under_test = self.get_dagger_pipeline(connector_under_test)
         formatter = (
             connector_under_test.with_exec(["echo", "Running black"])
             .with_exec(self.RUN_BLACK_CMD)
@@ -72,7 +71,6 @@ class UnitTests(PytestStep):
         Returns:
             StepResult: Failure or success of the unit tests with stdout and stdout.
         """
-        connector_under_test = self.get_dagger_pipeline(connector_under_test)
         return await self._run_tests_in_directory(connector_under_test, "unit_tests")
 
 
@@ -88,7 +86,6 @@ class IntegrationTests(PytestStep):
         Returns:
             StepResult: Failure or success of the integration tests with stdout and stdout.
         """
-        connector_under_test = self.get_dagger_pipeline(connector_under_test)
         connector_under_test_with_secrets = connector_under_test.with_directory(
             f"{self.context.connector.code_directory}/secrets", self.context.secrets_dir
         )

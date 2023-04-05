@@ -26,7 +26,6 @@ class QaChecks(Step):
             List[StepResult]: Failure or success of the QA checks with stdout and stdout in a list.
         """
         ci_connector_ops = await environments.with_ci_connector_ops(self.context)
-        ci_connector_ops = self.get_dagger_pipeline(ci_connector_ops)
         filtered_repo = self.context.get_repo_dir(
             include=[
                 str(self.context.connector.code_directory),
@@ -56,7 +55,6 @@ class AcceptanceTests(PytestStep):
         Returns:
             StepResult: Failure or success of the acceptances tests with stdout and stdout.
         """
-        self.context.dagger_client = self.get_dagger_pipeline(self.context.dagger_client)
 
         if not self.context.connector.acceptance_test_config:
             return StepResult(self, StepStatus.SKIPPED)
