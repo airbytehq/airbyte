@@ -125,7 +125,8 @@ definitions:
         type: object
         additionalProperties: true
   BearerAuthenticator:
-    description: Authenticator for requests authenticated with a Bearer token
+    title: Bearer Token Authenticator
+    description: "Authenticator for requests authenticated with a bearer token injected as a request header of the form `Authorization: Bearer <token>`"
     type: object
     required:
       - type
@@ -135,7 +136,12 @@ definitions:
         type: string
         enum: [BearerAuthenticator]
       api_token:
+        title: Bearer Token
+        description: Token to inject as request header for authenticating with the API
         type: string
+        examples:
+          - "{{ config['api_key'] }}"
+          - "{{ config['token'] }}"
       $parameters:
         type: object
         additionalProperties: true
