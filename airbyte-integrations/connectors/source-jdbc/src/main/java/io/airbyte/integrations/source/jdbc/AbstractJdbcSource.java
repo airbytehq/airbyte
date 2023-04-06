@@ -18,7 +18,11 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_INDEX_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_INDEX_NON_UNIQUE;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_TABLE;
+import static io.airbyte.db.jdbc.JdbcUtils.DATABASE_KEY;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
@@ -151,7 +155,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
   }
 
   private String getCatalog(final SqlDatabase database) {
-    return (database.getSourceConfig().has(JdbcUtils.DATABASE_KEY) ? database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText() : null);
+    return (database.getSourceConfig().has(DATABASE_KEY) ? database.getSourceConfig().get(DATABASE_KEY).asText() : null);
   }
 
   @Override
@@ -179,6 +183,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
                 .map(f -> {
                   final Datatype datatype = sourceOperations.getDatabaseFieldType(f);
                   final JsonSchemaType jsonType = getAirbyteType(datatype);
+
                   LOGGER.info("Table {} column {} (type {}[{}], nullable {}) -> {}",
                       fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
                       f.get(INTERNAL_COLUMN_NAME).asText(),
@@ -423,6 +428,29 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
     database.setSourceConfig(sourceConfig);
     database.setDatabaseConfig(jdbcConfig);
+    LOGGER.info("Data source product recognized as {}:{}",
+        database.getMetaData().getDatabaseProductName(),
+        database.getMetaData().getDatabaseProductVersion());
+    final ResultSet tables = database.getMetaData().getTables(null,
+        null,
+        "%",
+        new String[] {JDBC_TABLE});
+    while (tables.next()) {
+      final String tableName = tables.getString(JDBC_COLUMN_TABLE_NAME);
+      final ResultSet indexInfo = database.getMetaData().getIndexInfo(null,
+          null,
+          tableName,
+          false,
+          false);
+      LOGGER.info("Discovering indexes for table \"{}\"", tableName);
+      while (indexInfo.next()) {
+        LOGGER.info("Index name: {}, Column: {}, Unique: {}",
+            indexInfo.getString(JDBC_INDEX_NAME),
+            indexInfo.getString(JDBC_COLUMN_COLUMN_NAME),
+            !indexInfo.getBoolean(JDBC_INDEX_NON_UNIQUE));
+      }
+    }
+
     return database;
   }
 
