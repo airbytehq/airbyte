@@ -172,7 +172,6 @@ acceptance_tests:
         bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
       - name: ads_audience_reports_by_platform_hourly
         bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      fail_on_extra_columns: false
   full_refresh:
     tests:
     - config_path: "secrets/prod_config_with_day_granularity.json"
