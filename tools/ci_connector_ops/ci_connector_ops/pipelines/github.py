@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from ci_connector_ops.utils import console
 
@@ -17,6 +17,15 @@ if TYPE_CHECKING:
 from github import Github
 
 AIRBYTE_GITHUB_REPO = "airbytehq/airbyte"
+
+
+def safe_log(logger: Optional[Logger], message: str, level: str = "info") -> None:
+    """Log a message to a logger if one is available, otherwise print to the console."""
+    if logger:
+        log_method = getattr(logger, level.lower())
+        log_method(message)
+    else:
+        console.print(message)
 
 
 def update_commit_status_check(
@@ -33,6 +42,8 @@ def update_commit_status_check(
         should_send (bool, optional): Whether the commit check should actually be sent to GitHub API. Defaults to True.
         logger (Logger, optional): A logger to log info about updates. Defaults to None.
     """
+    safe_log(logger, f"Attempting to create {state} status for commit {sha} on Github in {context} context.")
+
     if not should_send:
         return
 
@@ -52,4 +63,4 @@ def update_commit_status_check(
         description=description,
         context=context,
     )
-    logger.info(f"Created {state} status for commit {sha} on Github in {context} context.")
+    safe_log(logger, f"Created {state} status for commit {sha} on Github in {context} context.")

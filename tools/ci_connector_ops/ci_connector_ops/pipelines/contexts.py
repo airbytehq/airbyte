@@ -15,27 +15,32 @@ from typing import List, Optional
 from anyio import Path
 from asyncer import asyncify
 from ci_connector_ops.pipelines.actions import remote_storage, secrets
-from ci_connector_ops.pipelines.bases import ConnectorTestReport
+from ci_connector_ops.pipelines.bases import ConnectorTestReport, TestReport
 from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL
 from ci_connector_ops.utils import Connector
 from dagger import Client, Directory
 
 
+class CIContext(str, Enum):
+    """An enum for Ci context values which can be ["manual", "pull_request", "nightly_builds"]"""
+
+    MANUAL = "manual"
+    PULL_REQUEST = "pull_request"
+    NIGHTLY_BUILDS = "nightly_builds"
+
+
 class ContextState(Enum):
     """Enum to characterize the current context state, values are used for external representation on GitHub commit checks."""
 
-    INITIALIZED = {"github_state": "pending", "description": "Tests are being initialized..."}
-    RUNNING = {"github_state": "pending", "description": "Tests are running..."}
-    ERROR = {"github_state": "error", "description": "Something went wrong while running the tests."}
-    SUCCESSFUL = {"github_state": "success", "description": "All tests ran successfully."}
-    FAILURE = {"github_state": "failure", "description": "Test failed."}
+    INITIALIZED = {"github_state": "pending", "description": "Pipelines are being initialized..."}
+    RUNNING = {"github_state": "pending", "description": "Pipelines are running..."}
+    ERROR = {"github_state": "error", "description": "Something went wrong while running the Pipelines."}
+    SUCCESSFUL = {"github_state": "success", "description": "All Pipelines ran successfully."}
+    FAILURE = {"github_state": "failure", "description": "Pipeline failed."}
 
 
-class ConnectorTestContext:
-    """The connector test context is used to store configuration for a specific connector pipeline run."""
-
-    DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE = "airbyte/connector-acceptance-test:latest"
+class PipelineContext:
     DEFAULT_EXCLUDED_FILES = (
         [".git"]
         + glob("**/build", recursive=True)
@@ -52,63 +57,28 @@ class ConnectorTestContext:
 
     def __init__(
         self,
-        connector: Connector,
+        pipeline_name: str,
         is_local: bool,
         git_branch: str,
         git_revision: str,
-        use_remote_secrets: bool = True,
-        connector_acceptance_test_image: Optional[str] = DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE,
         gha_workflow_run_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
     ):
-        """Initialize a connector test context.
-
-        Args:
-            connector (Connector): The connector under test.
-            is_local (bool): Whether the context is for a local run or a CI run.
-            git_branch (str): The current git branch name.
-            git_revision (str): The current git revision, commit hash.
-            use_remote_secrets (bool, optional): Whether to download secrets for GSM or use the local secrets. Defaults to True.
-            connector_acceptance_test_image (Optional[str], optional): The image to use to run connector acceptance tests. Defaults to DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE.
-            gha_workflow_run_url (Optional[str], optional): URL to the github action workflow run. Only valid for CI run. Defaults to None.
-            pipeline_start_timestamp (Optional[int], optional): Timestamp at which the pipeline started. Defaults to None.
-            ci_context (Optional[str], optional): Pull requests, workflow dispatch or nightly build. Defaults to None.
-        """
-        self.connector = connector
+        self.pipeline_name = pipeline_name
         self.is_local = is_local
         self.git_branch = git_branch
         self.git_revision = git_revision
-        self.use_remote_secrets = use_remote_secrets
-        self.connector_acceptance_test_image = connector_acceptance_test_image
         self.gha_workflow_run_url = gha_workflow_run_url
         self.pipeline_start_timestamp = pipeline_start_timestamp
         self.created_at = datetime.utcnow()
         self.ci_context = ci_context
-
         self.state = ContextState.INITIALIZED
-        self.logger = logging.getLogger(self.main_pipeline_name)
+
+        self.logger = logging.getLogger(self.pipeline_name)
         self.dagger_client = None
-        self._secrets_dir = None
-        self._updated_secrets_dir = None
         self._test_report = None
         update_commit_status_check(**self.github_commit_status)
-
-    @property
-    def secrets_dir(self) -> Directory:  # noqa D102
-        return self._secrets_dir
-
-    @secrets_dir.setter
-    def secrets_dir(self, secrets_dir: Directory):  # noqa D102
-        self._secrets_dir = secrets_dir
-
-    @property
-    def updated_secrets_dir(self) -> Directory:  # noqa D102
-        return self._updated_secrets_dir
-
-    @updated_secrets_dir.setter
-    def updated_secrets_dir(self, updated_secrets_dir: Directory):  # noqa D102
-        self._updated_secrets_dir = updated_secrets_dir
 
     @property
     def dagger_client(self) -> Client:  # noqa D102
@@ -124,30 +94,18 @@ class ConnectorTestContext:
 
     @property
     def is_pr(self):  # noqa D102
-        return self.ci_context == "pull_request"
+        return self.ci_context == CIContext.PULL_REQUEST
 
     @property
     def repo(self):  # noqa D102
         return self.dagger_client.git(AIRBYTE_REPO_URL, keep_git_dir=True)
 
     @property
-    def connector_acceptance_test_source_dir(self) -> Directory:  # noqa D102
-        return self.get_repo_dir("airbyte-integrations/bases/connector-acceptance-test")
-
-    @property
-    def should_save_updated_secrets(self):  # noqa D102
-        return self.use_remote_secrets and self.updated_secrets_dir is not None
-
-    @property
-    def main_pipeline_name(self):  # noqa D102
-        return f"CI test for {self.connector.technical_name}"
-
-    @property
-    def test_report(self) -> ConnectorTestReport:  # noqa D102
+    def test_report(self) -> TestReport:  # noqa D102
         return self._test_report
 
     @test_report.setter
-    def test_report(self, test_report: ConnectorTestReport):
+    def test_report(self, test_report: TestReport):
         self._test_report = test_report
         self.state = ContextState.SUCCESSFUL if test_report.success else ContextState.FAILURE
 
@@ -159,7 +117,7 @@ class ConnectorTestContext:
             "state": self.state.value["github_state"],
             "target_url": self.gha_workflow_run_url,
             "description": self.state.value["description"],
-            "context": f"[POC please ignore] Connector tests: {self.connector.technical_name}",
+            "context": self.pipeline_name,
             "should_send": self.is_pr,
             "logger": self.logger,
         }
@@ -195,7 +153,106 @@ class ConnectorTestContext:
         else:
             return self.repo.branch(self.git_branch).tree().directory(subdir)
 
-    def get_connector_dir(self, exclude: Optional[List[str]] = None, include: Optional[List[str]] = None) -> Directory:
+    async def __aenter__(self):
+        if self.dagger_client is None:
+            raise Exception("A Pipeline can't be entered with an undefined dagger_client")
+        self.state = ContextState.RUNNING
+        await asyncify(update_commit_status_check)(**self.github_commit_status)
+        return self
+
+    async def __aexit__(self, exception_type, exception_value, traceback) -> bool:
+        if exception_value:
+            self.logger.error("An error was handled by the Pipeline", exc_info=True)
+            self.state = ContextState.ERROR
+
+        if self.test_report is None:
+            self.logger.error("No test report was provided. This is probably due to an upstream error")
+            self.state = ContextState.ERROR
+            self.test_report = TestReport(self, steps_results=[])
+
+        self.test_report.print()
+        self.logger.info(self.test_report.to_json())
+
+        await asyncify(update_commit_status_check)(**self.github_commit_status)
+
+        # supress the exception if it was handled
+        return True
+
+
+class ConnectorTestContext(PipelineContext):
+    """The connector test context is used to store configuration for a specific connector pipeline run."""
+
+    DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE = "airbyte/connector-acceptance-test:latest"
+
+    def __init__(
+        self,
+        connector: Connector,
+        is_local: bool,
+        git_branch: bool,
+        git_revision: bool,
+        use_remote_secrets: bool = True,
+        connector_acceptance_test_image: Optional[str] = DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE,
+        gha_workflow_run_url: Optional[str] = None,
+        pipeline_start_timestamp: Optional[int] = None,
+        ci_context: Optional[str] = None,
+    ):
+        """Initialize a connector test context.
+
+        Args:
+            connector (Connector): The connector under test.
+            is_local (bool): Whether the context is for a local run or a CI run.
+            git_branch (str): The current git branch name.
+            git_revision (str): The current git revision, commit hash.
+            use_remote_secrets (bool, optional): Whether to download secrets for GSM or use the local secrets. Defaults to True.
+            connector_acceptance_test_image (Optional[str], optional): The image to use to run connector acceptance tests. Defaults to DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE.
+            gha_workflow_run_url (Optional[str], optional): URL to the github action workflow run. Only valid for CI run. Defaults to None.
+            pipeline_start_timestamp (Optional[int], optional): Timestamp at which the pipeline started. Defaults to None.
+            ci_context (Optional[str], optional): Pull requests, workflow dispatch or nightly build. Defaults to None.
+        """
+        pipeline_name = f"CI test for {connector.technical_name}"
+
+        self.connector = connector
+        self.use_remote_secrets = use_remote_secrets
+        self.connector_acceptance_test_image = connector_acceptance_test_image
+
+        self._secrets_dir = None
+        self._updated_secrets_dir = None
+
+        super().__init__(
+            pipeline_name=pipeline_name,
+            is_local=is_local,
+            git_branch=git_branch,
+            git_revision=git_revision,
+            gha_workflow_run_url=gha_workflow_run_url,
+            pipeline_start_timestamp=pipeline_start_timestamp,
+            ci_context=ci_context,
+        )
+
+    @property
+    def secrets_dir(self) -> Directory:  # noqa D102
+        return self._secrets_dir
+
+    @secrets_dir.setter
+    def secrets_dir(self, secrets_dir: Directory):  # noqa D102
+        self._secrets_dir = secrets_dir
+
+    @property
+    def updated_secrets_dir(self) -> Directory:  # noqa D102
+        return self._updated_secrets_dir
+
+    @updated_secrets_dir.setter
+    def updated_secrets_dir(self, updated_secrets_dir: Directory):  # noqa D102
+        self._updated_secrets_dir = updated_secrets_dir
+
+    @property
+    def connector_acceptance_test_source_dir(self) -> Directory:
+        return self.get_repo_dir("airbyte-integrations/bases/connector-acceptance-test")
+
+    @property
+    def should_save_updated_secrets(self):
+        return self.use_remote_secrets and self.updated_secrets_dir is not None
+
+    def get_connector_dir(self, exclude=None, include=None) -> Directory:
         """Get the connector under test source code directory.
 
         Args:
@@ -207,23 +264,6 @@ class ConnectorTestContext:
         """
         return self.get_repo_dir(str(self.connector.code_directory), exclude=exclude, include=include)
 
-    async def __aenter__(self):
-        """Perform setup operation for the ConnectorTestContext.
-
-        Updates the current commit status on Github.
-
-        Raises:
-            Exception: An error is raised when the context was not initialized with a Dagger client
-
-        Returns:
-            ConnectorTestContext: A running instance of the ConnectorTestContext.
-        """
-        if self.dagger_client is None:
-            raise Exception("A ConnectorTestContext can't be entered with an undefined dagger_client")
-        self.state = ContextState.RUNNING
-        await asyncify(update_commit_status_check)(**self.github_commit_status)
-        return self
-
     async def __aexit__(
         self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType]
     ) -> bool:
@@ -233,14 +273,11 @@ class ConnectorTestContext:
             - Upload updated connector secrets back to Google Secret Manager
             - Write a test report in JSON format locally and to S3 if running in a CI environment
             - Update the commit status check on GitHub if running in a CI environment.
-
         It should gracefully handle the execution error that happens and always upload a test report and update commit status check.
-
         Args:
             exception_type (Optional[type[BaseException]]): The exception type if an exception was raised in the context execution, None otherwise.
             exception_value (Optional[BaseException]): The exception value if an exception was raised in the context execution, None otherwise.
             traceback (Optional[TracebackType]): The traceback if an exception was raised in the context execution, None otherwise.
-
         Returns:
             bool: Wether the teardown operation ran successfully.
         """
@@ -254,13 +291,15 @@ class ConnectorTestContext:
 
         if self.should_save_updated_secrets:
             await secrets.upload(self)
+
         self.test_report.print()
         self.logger.info(self.test_report.to_json())
+
         local_test_reports_path_root = "tools/ci_connector_ops/test_reports/"
-        connector_name = self.test_report.connector_test_context.connector.technical_name
-        connector_version = self.test_report.connector_test_context.connector.version
-        git_revision = self.test_report.connector_test_context.git_revision
-        git_branch = self.test_report.connector_test_context.git_branch.replace("/", "_")
+        connector_name = self.test_report.pipeline_context.connector.technical_name
+        connector_version = self.test_report.pipeline_context.connector.version
+        git_revision = self.test_report.pipeline_context.git_revision
+        git_branch = self.test_report.pipeline_context.git_branch.replace("/", "_")
         suffix = f"{connector_name}/{git_branch}/{connector_version}/{git_revision}.json"
         local_report_path = Path(local_test_reports_path_root + suffix)
         await local_report_path.parents[0].mkdir(parents=True, exist_ok=True)
@@ -274,4 +313,6 @@ class ConnectorTestContext:
             if report_upload_exit_code != 0:
                 self.logger.error("Uploading the report to S3 failed.")
         await asyncify(update_commit_status_check)(**self.github_commit_status)
+
+        # Supress the exception if any
         return True

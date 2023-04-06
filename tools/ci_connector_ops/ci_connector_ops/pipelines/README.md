@@ -1,4 +1,4 @@
-# POC of CI connector pipelines in python
+# POC of Dagger pipelines
 
 This Python subpackage of `ci-connector-ops` gathers the POC code we're working on to:
 
@@ -6,22 +6,22 @@ This Python subpackage of `ci-connector-ops` gathers the POC code we're working 
 - Centralize the CI logic for connector testing
 - Try out Dagger.io as a promising tool that can provide parallelism and caching out of the box for CI
 
-## Install and use
+# Install and use
 
 From `airbyte` repo root:
 
-### Install
+## Install All pipelines
 
 ```bash
 cd tools/ci_connector_ops
 python -m venv .venv (please use at least Python 3.10)
 source .venv/bin/activate
 pip install --upgrade pip
-pip install -e .
+pip install -e .\[pipelines\]
 cd ../..
 ```
 
-### Use
+## Running the Connector Test pipeline
 
 ### Use remote secrets
 
@@ -33,10 +33,10 @@ More details [here](https://github.com/airbytehq/airbyte/blob/master/tools/ci_cr
 export GCP_GSM_CREDENTIALS=`cat <path to service account json file>`
 ```
 
-If you don't want to use the remote secrets please call connectors-ci with the following flag:
+If you don't want to use the remote secrets please call airbyte-ci connectors-ci with the following flag:
 
 ```bash
-connectors-ci --use-remote-secrets=False
+airbyte-ci connectors-ci --use-remote-secrets=False
 ```
 
 ### Environment variables required for CI run:
@@ -52,26 +52,26 @@ connectors-ci --use-remote-secrets=False
 (source-pokeapi does not require GSM access)
 
 ```bash
-connectors-ci test-connectors --name=source-pokeapi
+airbyte-ci connectors test --name=source-pokeapi
 ```
 
 ### **Run the pipeline for multiple connectors**
 
 ```bash
-connectors-ci test-connectors --name=source-pokeapi --name=source-openweather
+airbyte-ci connectors test --name=source-pokeapi --name=source-openweather
 ```
 
 ### **Run the pipeline for generally available connectors**
 
 ```bash
-connectors-ci test-connectors --release-stage=generally_available
+airbyte-ci connectors test --release-stage=generally_available
 ```
 
 ### **Run the pipeline for the connectors you changed on the branch**
 
 ```bash
 touch airbyte-integrations/connectors/source-pokeapi/random_file_addition.txt
-connectors-ci test-connectors --modified #the source-pokeapi pipeline should run
+airbyte-ci connectors test --modified #the source-pokeapi pipeline should run
 ```
 
 ### Local VS. CI
@@ -80,7 +80,7 @@ The default behavior of the CLI is to run in a local context.
 You can tell the CLI that it is running in a CI context with the following flag:
 
 ```bash
-connectors-ci --is-ci
+airbyte-ci --is-ci connectors-ci
 ```
 
 The main differences are that:
@@ -113,11 +113,31 @@ This is the DAG we expect for every connector for which the pipeline is triggere
 The Airbyte git repo will be the local one if you use `--is-local=True` command line option.
 The connector secrets won't be downloaded nor uploaded if you use the `--use-remote-secrets=False` command line option.
 
-## Questions for the Dagger team 
+
+### Performance benchmarks
+
+| Connector      | Run integration test GHA duration                                      | Dagger POC duration (CI no cache)                                      |
+| -------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| source-pokeapi | [7mn22s](https://github.com/airbytehq/airbyte/actions/runs/4395453220) | [5mn26s](https://github.com/airbytehq/airbyte/actions/runs/4403595746) |
+
+## Running the Metadata pipelines
+The new metadata service also uses dagger for its reproducible CI pipeline.
+
+To see all available commands run
+```bash
+airbyte-ci metadata-service --help
+```
+
+For example to run the unit tests for the metadata service library you can run
+```bash
+airbyte-ci metadata test lib
+```
+
+## Questions for the Dagger team
 
 ### Remaining questions:
 TLDR; how can I benefit from caching in [this function](https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/pipelines/tests.py#L79). I've the impression no cache is used on each execution.
-After using the "proxy docker host" to build and tag images + run acceptance tests ([here](https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/pipelines/tests.py#L79)) I have the impression the docker build I'm running is never cached. Is it possible to have this step cached? The acceptance tests are also never cached, possibly because the secret directory is filled with fresh files on a each execution. Does the Python SDK has a feature to set file timestamps on a Directory or should I use a `touch` command `with_exec` after writing these file to the directory (happening [here](https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/pipelines/actions/secrets.py#L38))? 
+After using the "proxy docker host" to build and tag images + run acceptance tests ([here](https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/pipelines/tests.py#L79)) I have the impression the docker build I'm running is never cached. Is it possible to have this step cached? The acceptance tests are also never cached, possibly because the secret directory is filled with fresh files on a each execution. Does the Python SDK has a feature to set file timestamps on a Directory or should I use a `touch` command `with_exec` after writing these file to the directory (happening [here](https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/pipelines/actions/secrets.py#L38))?
 
 ### Dagger feature requests
 This is a list of nice to have features that are not blocking because we found workarounds or are not an immediate need:
@@ -127,10 +147,3 @@ This is a list of nice to have features that are not blocking because we found w
 3. Reorder log lines by pipeline number after execution?
 [A log grouping tool is under construction](https://www.youtube.com/watch&ab_channel=Dagger) but I'm not sure its meant to be used in a CI logging context.
 4. How to get access to visualizations: We'd love to have dynamic status checks on our GitHub PRs, with links to pipeline visualization [like](https://propeller.fly.dev/runs/da68273e-48d8-4354-8d8b-efaccf2792b9).
-
-
-### Performance benchmarks
-
-| Connector      | Run integration test GHA duration                                      | Dagger POC duration (CI no cache)                                      |
-| -------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| source-pokeapi | [7mn22s](https://github.com/airbytehq/airbyte/actions/runs/4395453220) | [5mn26s](https://github.com/airbytehq/airbyte/actions/runs/4403595746) |
