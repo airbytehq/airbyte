@@ -38,11 +38,18 @@ class BuildOrPullNormalization(Step):
         self.title = f"Build {self.normalization_image}" if self.use_dev_normalization else f"Pull {self.normalization_image}"
 
     async def _run(self) -> Tuple[StepResult, File]:
-        normalization_directory = self.context.get_repo_dir("airbyte-integrations/bases/base-normalization")
 
         normalization_local_tar_path = f"{slugify(self.normalization_image)}.tar"
         if self.use_dev_normalization:
-            build_normalization_container = normalization_directory.docker_build(self.normalization_dockerfile)
+            normalization_directory = self.context.get_repo_dir("airbyte-integrations/bases/base-normalization")
+            sshtunneling_file = self.context.get_repo_dir(
+                "airbyte-connector-test-harnesses/acceptance-test-harness/src/main/resources", include="sshtunneling.sh"
+            ).file("sshtunneling.sh")
+            normalization_directory_with_build = normalization_directory.with_new_directory("build")
+            normalization_directory_with_sshtunneling = normalization_directory_with_build.with_file(
+                "build/sshtunneling.sh", sshtunneling_file
+            )
+            build_normalization_container = normalization_directory_with_sshtunneling.docker_build(self.normalization_dockerfile)
         else:
             build_normalization_container = self.context.dagger_client.container().from_(self.normalization_image)
         try:
