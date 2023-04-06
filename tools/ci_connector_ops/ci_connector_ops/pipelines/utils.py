@@ -6,12 +6,14 @@ import re
 import sys
 import click
 from pathlib import Path
-from typing import Optional, Set, Any
+from typing import Optional, Set, Any, List, Callable
 
+import asyncer
 import anyio
 import git
 from ci_connector_ops.utils import DESTINATION_CONNECTOR_PATH_PREFIX, SOURCE_CONNECTOR_PATH_PREFIX, Connector, get_connector_name_from_path
 from dagger import Config, Connection, Container, QueryError, DaggerError
+
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
@@ -177,3 +179,12 @@ class DaggerPipelineCommand(click.Command):
         except DaggerError as e:
             click.secho(str(e), err=True, fg="red")
             return sys.exit(1)
+
+
+async def execute_concurrently(steps: List[Callable], concurrency: int = 5):
+    semaphore = anyio.Semaphore(concurrency)
+    async with semaphore:
+        async with asyncer.create_task_group() as task_group:
+            tasks = [task_group.soonify(step)() for step in steps]
+
+        return [task.value for task in tasks]
