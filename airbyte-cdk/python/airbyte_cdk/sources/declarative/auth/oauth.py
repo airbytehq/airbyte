@@ -24,7 +24,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
         client_id (Union[InterpolatedString, str]): The client id
         client_secret (Union[InterpolatedString, str]): Client secret
         refresh_token (Union[InterpolatedString, str]): The token used to refresh the access token
-        access_token_name (Union[InterpolatedString, str]): THe field to extract access token from in the response
+        access_token_name (Union[InterpolatedString, str]): The field to extract access token from in the response
         expires_in_name (Union[InterpolatedString, str]): The field to extract expires_in from in the response
         config (Mapping[str, Any]): The user-provided configuration as specified by the source's spec
         scopes (Optional[List[str]]): The scopes to request
