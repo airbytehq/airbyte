@@ -527,7 +527,7 @@ definitions:
           -
       token_expiry_date_format:
         title: Token Expiry Date Format
-        description: The format of the expires_in datetime; provide it if expires_in is returned in datetime instead of seconds
+        description: The format of the time to expiration datetime; provide it if the time is returned in date-time string instead of seconds
         type: string
       $parameters:
         type: object
