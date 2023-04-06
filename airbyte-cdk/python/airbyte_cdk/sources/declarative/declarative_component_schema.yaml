@@ -518,17 +518,20 @@ definitions:
         items:
           type: string
         examples:
-          -
+          - ["crm.list.read", "crm.objects.contacts.read", "crm.schema.contacts.read"]
       token_expiry_date:
         title: Token Expiry Date
         description:
         type: string
         examples:
-          -
+          - 2023-04-06T07:12:10.421833+00:00
+          - 1680842386
       token_expiry_date_format:
         title: Token Expiry Date Format
         description: The format of the time to expiration datetime; provide it if the time is returned in date-time string instead of seconds
         type: string
+        examples:
+          - %Y-%m-%d %H:%M:%S.%f+00:00
       $parameters:
         type: object
         additionalProperties: true
