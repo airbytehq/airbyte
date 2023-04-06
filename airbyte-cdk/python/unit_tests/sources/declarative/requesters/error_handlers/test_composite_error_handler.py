@@ -117,10 +117,10 @@ def test_error_handler_compatibility_simple():
     expected_action = ResponseAction.IGNORE
     response_mock = create_response(status_code)
     default_error_handler = DefaultErrorHandler(config={}, parameters={}, response_filters=[
-        HttpResponseFilter(action=ResponseAction.IGNORE, http_codes=set([403]), config={}, parameters={})])
+        HttpResponseFilter(action=ResponseAction.IGNORE, http_codes={403}, config={}, parameters={})])
     composite_error_handler = CompositeErrorHandler(error_handlers=[
         DefaultErrorHandler(
-            response_filters=[HttpResponseFilter(action=ResponseAction.IGNORE, http_codes=set([403]), parameters={}, config={})],
+            response_filters=[HttpResponseFilter(action=ResponseAction.IGNORE, http_codes={403}, parameters={}, config={})],
             parameters={}, config={})
     ], parameters={})
     assert default_error_handler.interpret_response(response_mock).action == expected_action
@@ -135,17 +135,17 @@ def test_error_handler_compatibility_multiple_filters(test_name, status_code, ex
     response_mock = create_response(status_code)
     error_handler_with_multiple_filters = CompositeErrorHandler(error_handlers=[
         DefaultErrorHandler(
-            response_filters=[HttpResponseFilter(action=ResponseAction.IGNORE, http_codes=set([403]), parameters={}, config={}),
-                              HttpResponseFilter(action=ResponseAction.FAIL, http_codes=set([404]), parameters={}, config={})
+            response_filters=[HttpResponseFilter(action=ResponseAction.IGNORE, http_codes={403}, parameters={}, config={}),
+                              HttpResponseFilter(action=ResponseAction.FAIL, http_codes={404}, parameters={}, config={})
                               ], parameters={}, config={}),
     ], parameters={})
     composite_error_handler_with_single_filters = CompositeErrorHandler(error_handlers=[
         DefaultErrorHandler(
-            response_filters=[HttpResponseFilter(action=ResponseAction.IGNORE, http_codes=set([403]), parameters={}, config={})],
+            response_filters=[HttpResponseFilter(action=ResponseAction.IGNORE, http_codes={403}, parameters={}, config={})],
             parameters={}, config={}),
         DefaultErrorHandler(
             response_filters=[
-                HttpResponseFilter(action=ResponseAction.FAIL, http_codes=set([404]), parameters={}, config={})
+                HttpResponseFilter(action=ResponseAction.FAIL, http_codes={404}, parameters={}, config={})
             ],
             parameters={}, config={}),
     ], parameters={})
