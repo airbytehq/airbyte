@@ -32,7 +32,14 @@ class ConnectorTestContext:
 
     DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE = "airbyte/connector-acceptance-test:latest"
     DEFAULT_EXCLUDED_FILES = (
-        glob("**/build", recursive=True) + glob("**/.venv", recursive=True) + glob("**/secrets", recursive=True) + [".git"]
+        [".git"]
+        + glob("**/build", recursive=True)
+        + glob("**/.venv", recursive=True)
+        + glob("**/secrets", recursive=True)
+        + glob("**/__pycache__", recursive=True)
+        + glob("**/*.egg-info", recursive=True)
+        + glob("**/.vscode", recursive=True)
+        + glob("**/.pytest_cache", recursive=True)
     )
 
     def __init__(
