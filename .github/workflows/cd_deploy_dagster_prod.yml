@@ -1,19 +1,9 @@
 name: CD - Deploy Dagster to Prod
 on:
   workflow_dispatch:
-
-  # TODO (ben): Once successfully deployed update to only on merge to master
-  pull_request:
-    types: [opened, synchronize, reopened, closed]
-    paths:
-      - 'airbyte-ci/connectors/metadata_service/**'
-
   push:
     branches:
       - "master"
-      - "dagster-prod-deploy/**"
-    paths:
-      - 'airbyte-ci/connectors/metadata_service/**'
 
 concurrency:
   # Cancel in-progress deploys to main branch
@@ -53,22 +43,12 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Authenticate with Google Cloud
-        id: auth
-        uses: google-github-actions/auth@v0
-        with:
-          token_format: access_token
-          # TODO change to use our own service account
-          workload_identity_provider: projects/488169836509/locations/global/workloadIdentityPools/gh-artifactregistry-pool/providers/gh-artifactregistry-provider
-          service_account: gha-artifactregistry@ab-analytics-dagster.iam.gserviceaccount.com
-          access_token_lifetime: 300s
-
       - name: Login to Artifact Registry
         uses: docker/login-action@v2
         with:
           registry: us-central1-docker.pkg.dev
-          username: oauth2accesstoken
-          password: ${{ steps.auth.outputs.access_token }}
+          username: _json_key
+          password: ${{ secrets.DAGSTER_ANALYTICS_GCS_SERVICE_ACCOUNT_JSON }}
 
       - name: Build and deploy to Dagster Cloud
         uses: dagster-io/dagster-cloud-action/actions/hybrid_prod_deploy@v0.1
