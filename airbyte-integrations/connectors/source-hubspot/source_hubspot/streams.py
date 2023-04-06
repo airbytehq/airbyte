@@ -1163,6 +1163,11 @@ class Deals(CRMSearchStream):
     scopes = {"contacts", "crm.objects.deals.read"}
 
 
+class DealsArchived(Deals):
+    """Archived Deals, API v3"""
+    last_modified_field = "archivedAt"
+
+
 class DealPipelines(Stream):
     """Deal pipelines, API v1,
     This endpoint requires the contacts scope the tickets scope.
