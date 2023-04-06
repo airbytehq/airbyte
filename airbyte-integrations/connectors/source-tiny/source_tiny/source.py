@@ -124,6 +124,27 @@ class NotasFiscais(TinyBase):
 
         self._cursor_value = None
 
+        self.first_run = True
+
+    def set_start_ingestion_date(self, stream_state):
+        start_date = self.start_date
+        if self.cursor_field in stream_state.keys():
+            start_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S')
+        
+        start_ingestion_date = datetime.strftime(start_date, '%d/%m/%Y')
+
+        return start_ingestion_date
+    
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+
+        if self.page == self.max_pages:
+            self.page = 1
+            return None
+
+        self.page += 1
+
+        return self.page
+    
     def path(
         self, 
         stream_state: Mapping[str, Any] = None, 
@@ -131,16 +152,23 @@ class NotasFiscais(TinyBase):
         next_page_token: Mapping[str, Any] = None
     ) -> str:
         
-        start_date = self.start_date
-        if self.cursor_field in stream_state.keys():
-            start_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S')
+        if self.first_run:
+            self.start_ingestion_date = self.set_start_ingestion_date(stream_state)
+            self.first_run = False
+
+        path = f"{self.endpoint_name}?token={self.api_token}&formato=json&pagina={self.page}&dataInicial={self.start_ingestion_date}&situacao={stream_slice['situacao']}"
+
+        logger.info(path)
         
-        start_ingestion_date = datetime.strftime(start_date, '%d/%m/%Y')
-        
-        return f"{self.endpoint_name}?token={self.api_token}&formato=json&pagina={self.page}&dataInicial={start_ingestion_date}"
+        return path
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-
+        
+        if 'codigo_erro' in response.json()['retorno'].keys():
+            if str(response.json()['retorno']['codigo_erro']) in ('20', '23'):
+                self.max_pages =  int(response.url.split('&')[2].split('=')[-1])
+                return []
+            
         response_json = self.handle_json_error(response.url, response.json())
         
         self.max_pages = int(response_json['retorno']['numero_paginas'])
@@ -216,6 +244,9 @@ class NotasFiscais(TinyBase):
             return {self.cursor_field: max(latest_record_date, current_stream_state_date)}
 
         return {self.cursor_field: latest_record_date}
+
+    def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        return [{'situacao': i} for i in range(1,11)]
     
 
 class SourceTiny(AbstractSource):
