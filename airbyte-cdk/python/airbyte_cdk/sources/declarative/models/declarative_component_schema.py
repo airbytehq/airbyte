@@ -180,6 +180,26 @@ class OAuthAuthenticator(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
+class SingleUseRefreshTokenOAuthAuthenticator(BaseModel):
+    type: Literal["SingleUseRefreshTokenOAuthAuthenticator"]
+    token_refresh_endpoint: str
+    client_id_config_path: Optional[List[str]] = ["credentials", "client_id"]
+    client_secret_config_path: Optional[List[str]] = ["credentials", "client_secret"]
+    access_token_config_path: Optional[List[str]] = ["credentials", "access_token"]
+    refresh_token_config_path: Optional[List[str]] = ["credentials", "refresh_token"]
+    token_expiry_date_config_path: Optional[List[str]] = [
+        "credentials",
+        "token_expiry_date",
+    ]
+    access_token_name: Optional[str] = "access_token"
+    refresh_token_name: Optional[str] = "refresh_token"
+    expires_in_name: Optional[str] = "expires_in"
+    grant_type: Optional[str] = "refresh_token"
+    refresh_request_body: Optional[Dict[str, Any]] = None
+    scopes: Optional[List[str]] = None
+    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+
+
 class ExponentialBackoffStrategy(BaseModel):
     type: Literal["ExponentialBackoffStrategy"]
     factor: Optional[Union[float, str]] = 5
@@ -508,6 +528,7 @@ class HttpRequester(BaseModel):
             BearerAuthenticator,
             CustomAuthenticator,
             OAuthAuthenticator,
+            SingleUseRefreshTokenOAuthAuthenticator,
             NoAuth,
             SessionTokenAuthenticator,
         ]
