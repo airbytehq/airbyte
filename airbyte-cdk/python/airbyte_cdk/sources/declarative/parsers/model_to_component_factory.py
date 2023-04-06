@@ -111,10 +111,13 @@ DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy
 
 
 class ModelToComponentFactory:
-    def __init__(self, limit_pages_fetched_per_slice: int = None, limit_slices_fetched: int = None):
+    def __init__(
+        self, limit_pages_fetched_per_slice: int = None, limit_slices_fetched: int = None, emit_connector_builder_messages: bool = False
+    ):
         self._init_mappings()
         self._limit_pages_fetched_per_slice = limit_pages_fetched_per_slice
         self._limit_slices_fetched = limit_slices_fetched
+        self._emit_connector_builder_messages = emit_connector_builder_messages
 
     def _init_mappings(self):
         self.PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
@@ -759,7 +762,7 @@ class ModelToComponentFactory:
             else NoPagination(parameters={})
         )
 
-        if self._limit_slices_fetched:
+        if self._limit_slices_fetched or self._emit_connector_builder_messages:
             return SimpleRetrieverTestReadDecorator(
                 name=name,
                 paginator=paginator,

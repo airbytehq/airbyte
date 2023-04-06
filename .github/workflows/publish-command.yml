@@ -334,7 +334,7 @@ jobs:
         if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
           connector="airbyte/${{ env.IMAGE_NAME }}"
-          definitionpath=./airbyte-config/init/src/main/resources/seed/
+          definitionpath=./airbyte-config-oss/init-oss/src/main/resources/seed/
           sourcecheck=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\")" "$definitionpath"source_definitions.yaml)
           destcheck=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\")" "$definitionpath"destination_definitions.yaml)
           if [[ (-z "$sourcecheck" && -z "$destcheck") ]]
@@ -344,7 +344,7 @@ jobs:
         if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
           connector="airbyte/${{ env.IMAGE_NAME }}"
-          definitionpath=./airbyte-config/init/src/main/resources/seed/
+          definitionpath=./airbyte-config-oss/init-oss/src/main/resources/seed/
           sourcename=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\") | .name" "$definitionpath"source_definitions.yaml)
           destname=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\") | .name" "$definitionpath"destination_definitions.yaml)
           if [ -z "$sourcename" ]
@@ -355,7 +355,7 @@ jobs:
         if: github.event.inputs.auto-bump-version == 'true' && success()
         uses: Wandalen/wretry.action@master
         with:
-          command: ./gradlew :airbyte-config:init:processResources
+          command: ./gradlew :airbyte-config-oss:init-oss:processResources
           attempt_limit: 3
           attempt_delay: 5000 # in ms
       - name: git config
