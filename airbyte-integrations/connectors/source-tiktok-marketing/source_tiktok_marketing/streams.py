@@ -483,13 +483,21 @@ class BasicReports(IncrementalTiktokStream, ABC):
     schema_name = "basic_reports"
     report_granularity = None
 
+    spec_id_dimensions = {
+        ReportLevel.ADVERTISER: "advertiser_id",
+        ReportLevel.CAMPAIGN: "campaign_id",
+        ReportLevel.ADGROUP: "adgroup_id",
+        ReportLevel.AD: "ad_id",
+    }
+
+    spec_time_dimensions = {
+        ReportGranularity.DAY: "stat_time_day",
+        ReportGranularity.HOUR: "stat_time_hour",
+    }
+
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        if self.report_granularity == ReportGranularity.DAY:
-            return [self.ref_pk, "stat_time_day"]
-        elif self.report_granularity == ReportGranularity.HOUR:
-            return [self.ref_pk, "stat_time_hour"]
-        return self.ref_pk
+        return self._get_reporting_dimensions()
 
     def __init__(self, **kwargs):
         report_granularity = kwargs.pop("report_granularity", None)
@@ -519,11 +527,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
     @property
     def cursor_field(self):
-        if self.report_granularity == ReportGranularity.DAY:
-            return "stat_time_day"
-        if self.report_granularity == ReportGranularity.HOUR:
-            return "stat_time_hour"
-        return []
+        return self.spec_time_dimensions.get(self.report_granularity, [])
 
     @staticmethod
     def _get_time_interval(
@@ -565,23 +569,9 @@ class BasicReports(IncrementalTiktokStream, ABC):
             yield chunk_start, chunk_end
 
     def _get_reporting_dimensions(self):
-        result = []
-        spec_id_dimensions = {
-            ReportLevel.ADVERTISER: "advertiser_id",
-            ReportLevel.CAMPAIGN: "campaign_id",
-            ReportLevel.ADGROUP: "adgroup_id",
-            ReportLevel.AD: "ad_id",
-        }
-        if self.report_level and self.report_level in spec_id_dimensions:
-            result.append(spec_id_dimensions[self.report_level])
-
-        spec_time_dimensions = {
-            ReportGranularity.DAY: "stat_time_day",
-            ReportGranularity.HOUR: "stat_time_hour",
-        }
-        if self.report_granularity and self.report_granularity in spec_time_dimensions:
-            result.append(spec_time_dimensions[self.report_granularity])
-
+        result = [self.spec_id_dimensions[self.report_level]]
+        if self.report_granularity in self.spec_time_dimensions:
+            result.append(self.spec_time_dimensions[self.report_granularity])
         return result
 
     def _get_metrics(self):
@@ -749,16 +739,16 @@ class AudienceReport(BasicReports, ABC):
         result = [e for e in result if e not in NOT_AUDIENCE_METRICS]
         return result
 
+    def _get_reporting_dimensions(self):
+        result = super()._get_reporting_dimensions()
+        result += self.audience_dimensions
+        return result
+
     def request_params(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-
-        dimensions = self._get_reporting_dimensions()
-        dimensions += self.audience_dimensions
-        params["dimensions"] = json.dumps(dimensions)
         params["report_type"] = "AUDIENCE"
-
         return params
 
 
