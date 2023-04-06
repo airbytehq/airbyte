@@ -59,7 +59,7 @@ class MeliInvoices(HttpStream):
         # )
 
         # Getting ACCESS_KEY_ID
-        resource_name = f"projects/{self.google_project_id}/secrets/{self.google_secret_aws_credstash_credentials}/versions/latest"
+        resource_name = f"projects/{self.google_project_id}/secrets/{self.google_secret_aws_credstash_credentials}"
         response = client.access_secret_version(name=resource_name)
         aws_credentials = response.payload.data.decode('UTF-8')
         print(aws_credentials)
