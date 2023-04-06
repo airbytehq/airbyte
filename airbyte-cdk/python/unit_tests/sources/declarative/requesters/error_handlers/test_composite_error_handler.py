@@ -123,9 +123,8 @@ def test_error_handler_compatibility_simple():
             response_filters=[HttpResponseFilter(action=ResponseAction.IGNORE, http_codes=set([403]), parameters={}, config={})],
             parameters={}, config={})
     ], parameters={})
-    actual_action = default_error_handler.interpret_response(response_mock).action
-    assert actual_action == expected_action
-    assert actual_action == composite_error_handler.interpret_response(response_mock).action
+    assert default_error_handler.interpret_response(response_mock).action == expected_action
+    assert composite_error_handler.interpret_response(response_mock).action == expected_action
 
 
 @pytest.mark.parametrize("test_name, status_code, expected_action", [
@@ -145,7 +144,9 @@ def test_error_handler_compatibility_multiple_filters(test_name, status_code, ex
             response_filters=[HttpResponseFilter(action=ResponseAction.IGNORE, http_codes=set([403]), parameters={}, config={})],
             parameters={}, config={}),
         DefaultErrorHandler(
-            response_filters=[HttpResponseFilter(action=ResponseAction.FAIL, http_codes=set([404]), parameters={}, config={})],
+            response_filters=[
+                HttpResponseFilter(action=ResponseAction.FAIL, http_codes=set([404]), parameters={}, config={})
+            ],
             parameters={}, config={}),
     ], parameters={})
     actual_action_multiple_filters = error_handler_with_multiple_filters.interpret_response(response_mock).action
