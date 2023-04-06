@@ -217,7 +217,7 @@ public class BigQueryStagingConsumerFactory {
         String finalTableName = new BigQuerySQLNameTransformer().convertStreamName(streamIdentifier.getName());
 
         // TODO this doesn't compile yet. Need to pass jsonschema into writeConfig
-        Schema finalSchema = ops.getTableSchema(writeConfig);
+        Schema finalSchema = ops.getTableSchema(writeConfig.configuredAirbyteStream());
 
         if (writeConfig.syncMode() == DestinationSyncMode.OVERWRITE) {
           bigQueryGcsOperations.dropTableIfExists(writeConfig.datasetId(), TableId.of(writeConfig.datasetId(), finalTableName));

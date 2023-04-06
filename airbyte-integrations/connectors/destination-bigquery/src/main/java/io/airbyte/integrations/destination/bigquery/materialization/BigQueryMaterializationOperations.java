@@ -11,7 +11,8 @@ import com.google.cloud.bigquery.Table;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 
 // name is debatable :P but "BigQueryTypingAndDedupingOperations" is a really sad name
-public class BigQueryMaterializationOperations {
+// `Schema` here is a com.google.cloud.bigquery.Schema
+public class BigQueryMaterializationOperations implements MaterializationOperations<Schema> {
 
   private final BigQuery bigquery;
 
@@ -54,7 +55,7 @@ public class BigQueryMaterializationOperations {
    *
    * The DELETE thing is new, and an improvement over normalization (where we need a separate DELETE call)
    */
-  public void mergeFromRawTable(String dataset, String rawTable, String finalTable, Schema schema) {
+  public void mergeFromRawTable(String dataset, String rawTable, String finalTable, ConfiguredAirbyteStream stream) {
     // TODO generate a SQL query >.>
     // TODO handle non dedup sync modes (i.e. no PK) - probably needs to be an INSERT instead of MERGE
     // TODO handle CDC (multiple new raw records for a single PK)
