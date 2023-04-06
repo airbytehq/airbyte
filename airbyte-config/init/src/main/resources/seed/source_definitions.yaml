@@ -955,7 +955,7 @@
 - name: Insightly
   sourceDefinitionId: 38f84314-fe6a-4257-97be-a8dcd942d693
   dockerRepository: airbyte/source-insightly
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/insightly
   icon: insightly.svg
   sourceType: api
