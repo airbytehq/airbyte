@@ -175,7 +175,7 @@ const PlansBillingPage: React.FC = () => {
             <div className={styles.planDetailRowContainer}>
               <div className={styles.rowContainer}>
                 {userPlanDetail.planDetail.map((item) => (
-                  <PlanClause planItem={item} clause={manipulatePlanDetail(item)} />
+                  <PlanClause planItem={item} clause={manipulatePlanDetail(item)} key={item.planItemid} />
                 ))}
               </div>
             </div>

@@ -62,7 +62,7 @@ const RangeCard: React.FC<IProps> = ({ productOptions, product, setProduct }) =>
         <Slider
           aria-label="Restricted values"
           valueLabelFormat={(value) => valueLabelFormat(value)}
-          value={typeof Number(product?.value) === "number" ? Number(product?.value) : 100}
+          value={typeof product?.value === "number" ? Number(product?.value) : 0}
           step={null}
           valueLabelDisplay="off"
           marks={productOptions}

@@ -122,9 +122,11 @@ export const Sidebar: React.FC<IProps> = ({ menuItems, onSelectItem }) => {
   return (
     <SidebarContainer>
       {menuItems.map(({ name, path }) => (
-        <SidebarItem onClick={() => onSelectItem(path)}>
+        <SidebarItem onClick={() => onSelectItem(path)} key={path}>
           {SidebarItemIcon(path, pathname.split("/").at(-1) === path ? theme.blue400 : "#6B6B6F")}
-          <ItemText isSelected={pathname.split("/").at(-1) === path}>{name}</ItemText>
+          <ItemText key={path} isSelected={pathname.split("/").at(-1) === path}>
+            {name}
+          </ItemText>
         </SidebarItem>
       ))}
       <LogOut onClick={toggleSignOutConfirmModal}>

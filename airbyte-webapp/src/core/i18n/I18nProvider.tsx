@@ -23,6 +23,14 @@ interface I18nProviderProps {
   locale?: string;
 }
 
+const Bold: React.FC = ({ children }) => {
+  return (
+    <div>
+      <strong>{children}</strong>
+    </div>
+  );
+};
+
 export const I18nProvider: React.FC<I18nProviderProps> = ({ children }) => {
   const { lang } = useUser().user;
 
@@ -49,10 +57,11 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({ children }) => {
   return (
     <i18nContext.Provider value={i18nOverwriteContext}>
       <IntlProvider
+        defaultLocale={LOCALES.ENGLISH}
         locale={lang}
         messages={mergedMessages}
         defaultRichTextElements={{
-          b: (chunk) => <strong>{chunk}</strong>,
+          bold: (chunks) => <Bold>{chunks}</Bold>,
         }}
       >
         {children}

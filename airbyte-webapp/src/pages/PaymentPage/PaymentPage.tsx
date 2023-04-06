@@ -8,7 +8,7 @@ import MainPageWithScroll from "components/MainPageWithScroll";
 
 import { useUser } from "core/AuthContext";
 import { getPaymentStatus, PAYMENT_STATUS } from "core/Constants/statuses";
-import { GetUpgradeSubscriptionDetail } from "core/domain/payment";
+import { CreateSunscriptionUrl, GetUpgradeSubscriptionDetail, UpgradeSubscription } from "core/domain/payment";
 import { ProductOptionItem } from "core/domain/product";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
@@ -77,8 +77,8 @@ const PaymentPage: React.FC = () => {
       getPaymentStatus(user.status) === PAYMENT_STATUS.Pause_Subscription
     ) {
       onGetUpgradeSubscription({ productItemId: product?.id as string })
-        .then((response: any) => {
-          const detail: GetUpgradeSubscriptionDetail = response?.data;
+        .then((res: UpgradeSubscription) => {
+          const detail = res?.data;
           setPlanDetail(detail);
           setPaymentLoading(false);
           setCurrentStep(PaymentSteps.BILLING_PAYMENT);
@@ -88,9 +88,9 @@ const PaymentPage: React.FC = () => {
         });
     } else {
       onCreateSubscriptionURL(product?.id as string)
-        .then((response: any) => {
+        .then((res: CreateSunscriptionUrl) => {
           setPaymentLoading(false);
-          window.open(response.data, "_self");
+          window.open(res.data, "_self");
         })
         .catch(() => {
           setPaymentLoading(false);

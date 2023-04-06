@@ -6,6 +6,7 @@ import { Row, Cell } from "components";
 import { Separator } from "components/Separator";
 
 import { NotificationItem } from "core/request/DaspireClient";
+import { getKeyProp } from "utils/common";
 
 import { AddIcon } from "../icons";
 import { FirstHeaderText, HeaderText, FirstCellFlexValue, BodyCell } from "./StyledTable";
@@ -78,8 +79,8 @@ export const UsageTable: React.FC<IProps> = React.memo(
           .reverse()
           .sort((x, y) => Number(y.defaultFlag) - Number(x.defaultFlag))
           .map((usageItem) => (
-            <>
-              <Separator key={usageItem.id} />
+            <React.Fragment key={getKeyProp(usageItem.id)}>
+              <Separator />
               <UsageTableRow
                 usageItem={usageItem}
                 saveNotificationSetting={saveNotificationSetting}
@@ -87,7 +88,7 @@ export const UsageTable: React.FC<IProps> = React.memo(
                 updateNotificationSetting={updateNotificationSetting}
                 deleteNotificationSetting={deleteNotificationSetting}
               />
-            </>
+            </React.Fragment>
           ))}
         {usageNotificationList.length === usageList.length && (
           <>

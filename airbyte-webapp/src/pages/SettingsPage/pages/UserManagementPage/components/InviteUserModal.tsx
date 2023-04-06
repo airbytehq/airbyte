@@ -144,7 +144,7 @@ const AddUserModal: React.FC<IProps> = React.memo(({ onClose, roles }) => {
               setLoading(false);
               onClose?.();
             })
-            .catch((error: any) => {
+            .catch((error: Error) => {
               setLoading(false);
               setNotification({ message: error.message, type: "error" });
             });

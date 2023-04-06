@@ -11,6 +11,7 @@ import { Separator } from "components/Separator";
 
 import { useConfig } from "config";
 import { useUser } from "core/AuthContext";
+import { IAuthUser } from "core/AuthContext/authenticatedUser";
 import { LOCALES } from "locales";
 import { useAuthenticationService } from "services/auth/AuthSpecificationService";
 
@@ -242,10 +243,10 @@ export const SignupForm: React.FC = () => {
         onSubmit={async (values) => {
           signUp
             .create(values, user?.lang)
-            .then((res: any) => {
+            .then((res: IAuthUser) => {
               setUser?.(res);
             })
-            .catch((err: any) => {
+            .catch((err: Error) => {
               setErrorMessage(err.message);
             });
         }}
