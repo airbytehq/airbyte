@@ -32,6 +32,8 @@ class MeliInvoices(HttpStream):
         self.year_month = config["year_month"]
         self.google_project_id = config["google_project_id"]
         self.google_secret_aws_credstash_credentials = config["google_secret_aws_credstash_credentials"]
+        self.aws_access_key_id = config["aws_access_key_id"]
+        self.aws_secret_access_key = config["aws_secret_access_key"]
         self.access_token = self.get_access_token()
     
     def get_access_token(self):
@@ -39,6 +41,7 @@ class MeliInvoices(HttpStream):
         url = "https://api.mercadolibre.com/oauth/token"
         # Build the parent name from the project.
         # parent = f"projects/{project_id}"
+
         # Create the Secret Manager client.
         client = secretmanager.SecretManagerServiceClient()
 
@@ -56,30 +59,33 @@ class MeliInvoices(HttpStream):
         # )
 
         # Getting ACCESS_KEY_ID
-        resource_name_access_key_id = f"projects/{self.google_project_id}/secrets/{self.google_secret_aws_credstash_credentials}/versions/latest"
-        response_access_key_id = client.access_secret_version(resource_name_access_key_id)
-        access_key_id = response_access_key_id.payload.data.decode('UTF-8')
-        print(access_key_id)
-        logger.info(access_key_id)
+        resource_name = f"projects/{self.google_project_id}/secrets/{self.google_secret_aws_credstash_credentials}/versions/latest"
+        response = client.access_secret_version(resource_name)
+        aws_credentials = response.payload.data.decode('UTF-8')
+        print(aws_credentials)
+        logger.info(aws_credentials)
 
-        # Getting SECRET_ACCESS_KEY
-        # resource_name_secret_access_key = f"projects/{self.google_project_id}/secrets/{self.google_secret_access_key}/versions/latest"
-        # response_secret_access_key = client.access_secret_version(resource_name_secret_access_key)
-        # secret_access_key = response_secret_access_key.payload.data.decode('UTF-8')
-
-        # Setting Variables as ENV Variables
-
+        # Getting the credentials from Secrets Manager
+        aws_access_key_id = self.aws_access_key_id
+        aws_secret_access_key = self.aws_secret_access_key
+        
+        bash_command = "chmod 777 -R ./bash"
+        process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE)
+        bash_command = f"./bash/configure_aws_credentials.sh {aws_access_key_id} {aws_secret_access_key}"
+        process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE)
 
         bash_command = f"credstash get {self.credstash_key}"
         process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE)
         output, error = process.communicate()
-        refresh_token = output.decode('utf-8')
+        refresh_token = output.decode('utf-8').strip()
+        print(type(refresh_token))
+        print(refresh_token)
 
         payload = json.dumps({
             "grant_type":"refresh_token",
             "client_id": self.client_id,
-            "client_secret": self.client_secret,
-            "refresh_token": refresh_token
+            "refresh_token": refresh_token,
+            "client_secret": self.client_secret
         })
         headers = {
             'Content-Type': 'application/json'
@@ -90,7 +96,7 @@ class MeliInvoices(HttpStream):
         access_token = response.json()["access_token"] 
         new_refresh_token = response.json()["refresh_token"]
 
-        if new_refresh_token != refresh_token
+        if new_refresh_token != refresh_token:
             # Updating Credstash
             # Example: credstash -r us-east-1 put -k {self.refresh_token} 'devpass_updated' role=dev -a
             bash_command = f"credstash put {self.credstash_key} {new_refresh_token}"

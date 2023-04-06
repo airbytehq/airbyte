@@ -4,13 +4,13 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Mercado Libre Spec",
     "type": "object",
-    "required": ["refresh_token","client_id","client_secret","year_month"],
+    "required": ["credstash_key","client_id","client_secret","year_month"],
     "additionalProperties": false,
     "properties": {
-      "refresh_token": {
-        "title": "refresh_token",
+      "credstash_key": {
+        "title": "credstash_key",
         "type": "string",
-        "description": "refresh_token"
+        "description": "credstash_key"
       },
       "client_id": {
         "title": "client_id",
@@ -26,6 +26,26 @@
         "title": "year_month",
         "type": "string",
         "description": "year_month date in format YYYYMM"
+      },
+      "google_project_id": {
+        "title": "google_project_id",
+        "type": "string",
+        "description": "google_project_id date in format YYYYMM"
+      },
+      "google_secret_aws_credstash_credentials": {
+        "title": "google_secret_aws_credstash_credentials",
+        "type": "string",
+        "description": "google_secret_aws_credstash_credentials date in format YYYYMM"
+      },
+      "aws_access_key_id": {
+        "title": "aws_access_key_id",
+        "type": "string",
+        "description": "aws_access_key_id date in format YYYYMM"
+      },
+      "aws_secret_access_key": {
+        "title": "aws_secret_access_key",
+        "type": "string",
+        "description": "aws_secret_access_key date in format YYYYMM"
       }
     }
   }

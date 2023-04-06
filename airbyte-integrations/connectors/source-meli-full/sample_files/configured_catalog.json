@@ -7,7 +7,7 @@
           "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
           "properties": {
-            "refresh_token": {
+            "credstash_key": {
               "type": "string"
             },
             "client_id": {
@@ -23,6 +23,12 @@
               "type": "string"
             },
             "google_secret_aws_credstash_credentials": {
+              "type": "string"
+            },
+            "aws_access_key_id": {
+              "type": "string"
+            },
+            "aws_secret_access_key": {
               "type": "string"
             }
           }
