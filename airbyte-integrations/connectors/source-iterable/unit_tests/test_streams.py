@@ -218,11 +218,17 @@ def test_stream_stops_on_401(mock_lists_resp):
 
 
 @responses.activate
-def test_listuser_stream_keep_working_on_500(mock_lists_resp):
+def test_listuser_stream_keep_working_on_500():
     users_stream = ListUsers(authenticator=NoAuth())
     responses.add(
         responses.GET,
-        "https://api.iterable.com/api/lists/getUsers?listId=1",
+        "https://api.iterable.com/api/lists",
+        json={"lists": [{"id": 1000}, {"id": 2000}]},
+        status=200
+    )
+    responses.add(
+        responses.GET,
+        "https://api.iterable.com/api/lists/getUsers?listId=1000",
         json={
             "msg": "An error occurred. Please try again later. If problem persists, please contact your CSM",
             "code": "GenericError",
@@ -232,34 +238,14 @@ def test_listuser_stream_keep_working_on_500(mock_lists_resp):
     )
     responses.add(
         responses.GET,
-        "https://api.iterable.com/api/lists/getUsers?listId=1",
-        json={
-            "msg": "An error occurred. Please try again later. If problem persists, please contact your CSM",
-            "code": "GenericError",
-            "params": None
-        },
-        status=500
-    )
-    responses.add(
-        responses.GET,
-        "https://api.iterable.com/api/lists/getUsers?listId=1",
-        json={
-            "msg": "An error occurred. Please try again later. If problem persists, please contact your CSM",
-            "code": "GenericError",
-            "params": None
-        },
-        status=500
-    )
-    responses.add(
-        responses.GET,
-        "https://api.iterable.com/api/lists/getUsers?listId=2",
+        "https://api.iterable.com/api/lists/getUsers?listId=2000",
         body="one@example.com\ntwo@example.com\nthree@example.com",
         status=200
     )
     expected_records = [
-        {'email': 'one@example.com', 'listId': 2},
-        {'email': 'two@example.com', 'listId': 2},
-        {'email': 'three@example.com', 'listId': 2}
+        {'email': 'one@example.com', 'listId': 2000},
+        {'email': 'two@example.com', 'listId': 2000},
+        {'email': 'three@example.com', 'listId': 2000}
     ]
 
     records = []
