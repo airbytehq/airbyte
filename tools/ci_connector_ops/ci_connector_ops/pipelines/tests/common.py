@@ -14,10 +14,13 @@ from dagger import File
 
 
 class QaChecks(Step):
+    """A step to run QA checks for a connector."""
+
     title = "QA checks"
 
     async def _run(self) -> StepResult:
-        """Runs our QA checks on a connector.
+        """Run QA checks on a connector.
+
         The QA checks are defined in this module:
         https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/qa_checks.py
 
@@ -45,6 +48,8 @@ class QaChecks(Step):
 
 
 class AcceptanceTests(PytestStep):
+    """A step to run acceptance tests for a connector if it has an acceptance test config file."""
+
     title = "Acceptance tests"
 
     async def _run(self, connector_under_test_image_tar: Optional[File]) -> StepResult:
@@ -56,7 +61,6 @@ class AcceptanceTests(PytestStep):
         Returns:
             StepResult: Failure or success of the acceptances tests with stdout and stderr.
         """
-
         if not self.context.connector.acceptance_test_config:
             return StepResult(self, StepStatus.SKIPPED)
 

@@ -1,6 +1,9 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
+"""Module declaring context related classes."""
+
 import logging
 import os
 from datetime import datetime
@@ -20,6 +23,8 @@ from dagger import Client, Directory
 
 
 class ContextState(Enum):
+    """Enum to characterize the current context state, values are used for external representation on GitHub commit checks."""
+
     INITIALIZED = {"github_state": "pending", "description": "Tests are being initialized..."}
     RUNNING = {"github_state": "pending", "description": "Tests are running..."}
     ERROR = {"github_state": "error", "description": "Something went wrong while running the tests."}
@@ -49,14 +54,27 @@ class ConnectorTestContext:
         self,
         connector: Connector,
         is_local: bool,
-        git_branch: bool,
-        git_revision: bool,
+        git_branch: str,
+        git_revision: str,
         use_remote_secrets: bool = True,
         connector_acceptance_test_image: Optional[str] = DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE,
         gha_workflow_run_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
     ):
+        """Initialize a connector test context.
+
+        Args:
+            connector (Connector): The connector under test.
+            is_local (bool): Whether the context is for a local run or a CI run.
+            git_branch (str): The current git branch name.
+            git_revision (str): The current git revision, commit hash.
+            use_remote_secrets (bool, optional): Whether to download secrets for GSM or use the local secrets. Defaults to True.
+            connector_acceptance_test_image (Optional[str], optional): The image to use to run connector acceptance tests. Defaults to DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE.
+            gha_workflow_run_url (Optional[str], optional): URL to the github action workflow run. Only valid for CI run. Defaults to None.
+            pipeline_start_timestamp (Optional[int], optional): Timestamp at which the pipeline started. Defaults to None.
+            ci_context (Optional[str], optional): Pull requests, workflow dispatch or nightly build. Defaults to None.
+        """
         self.connector = connector
         self.is_local = is_local
         self.git_branch = git_branch
@@ -77,55 +95,55 @@ class ConnectorTestContext:
         update_commit_status_check(**self.github_commit_status)
 
     @property
-    def secrets_dir(self) -> Directory:
+    def secrets_dir(self) -> Directory:  # noqa D102
         return self._secrets_dir
 
     @secrets_dir.setter
-    def secrets_dir(self, secrets_dir: Directory):
+    def secrets_dir(self, secrets_dir: Directory):  # noqa D102
         self._secrets_dir = secrets_dir
 
     @property
-    def updated_secrets_dir(self) -> Directory:
+    def updated_secrets_dir(self) -> Directory:  # noqa D102
         return self._updated_secrets_dir
 
     @updated_secrets_dir.setter
-    def updated_secrets_dir(self, updated_secrets_dir: Directory):
+    def updated_secrets_dir(self, updated_secrets_dir: Directory):  # noqa D102
         self._updated_secrets_dir = updated_secrets_dir
 
     @property
-    def dagger_client(self) -> Client:
+    def dagger_client(self) -> Client:  # noqa D102
         return self._dagger_client
 
     @dagger_client.setter
-    def dagger_client(self, dagger_client: Client):
+    def dagger_client(self, dagger_client: Client):  # noqa D102
         self._dagger_client = dagger_client
 
     @property
-    def is_ci(self):
+    def is_ci(self):  # noqa D102
         return self.is_local is False
 
     @property
-    def is_pr(self):
+    def is_pr(self):  # noqa D102
         return self.ci_context == "pull_request"
 
     @property
-    def repo(self):
+    def repo(self):  # noqa D102
         return self.dagger_client.git(AIRBYTE_REPO_URL, keep_git_dir=True)
 
     @property
-    def connector_acceptance_test_source_dir(self) -> Directory:
+    def connector_acceptance_test_source_dir(self) -> Directory:  # noqa D102
         return self.get_repo_dir("airbyte-integrations/bases/connector-acceptance-test")
 
     @property
-    def should_save_updated_secrets(self):
+    def should_save_updated_secrets(self):  # noqa D102
         return self.use_remote_secrets and self.updated_secrets_dir is not None
 
     @property
-    def main_pipeline_name(self):
+    def main_pipeline_name(self):  # noqa D102
         return f"CI test for {self.connector.technical_name}"
 
     @property
-    def test_report(self) -> ConnectorTestReport:
+    def test_report(self) -> ConnectorTestReport:  # noqa D102
         return self._test_report
 
     @test_report.setter
@@ -135,6 +153,7 @@ class ConnectorTestContext:
 
     @property
     def github_commit_status(self) -> dict:
+        """Build a dictionary used as kwargs to the update_commit_status_check function."""
         return {
             "sha": self.git_revision,
             "state": self.state.value["github_state"],
@@ -146,25 +165,53 @@ class ConnectorTestContext:
         }
 
     def get_repo_dir(self, subdir: str = ".", exclude: Optional[List[str]] = None, include: Optional[List[str]] = None) -> Directory:
-        if exclude is None:
-            exclude = self.DEFAULT_EXCLUDED_FILES
-        else:
-            exclude += self.DEFAULT_EXCLUDED_FILES
-            exclude = list(set(exclude))
-        if subdir != ".":
-            subdir = f"{subdir}/" if not subdir.endswith("/") else subdir
-            exclude = [f.replace(subdir, "") for f in exclude if subdir in f]
+        """Get a directory from the current repository.
+
+        If running in the CI:
+        The directory is extracted from the git branch.
+
+        If running locally:
+        The directory is extracted from your host file system.
+        A couple of files or directories that could corrupt builds are exclude by default (check DEFAULT_EXCLUDED_FILES).
+
+        Args:
+            subdir (str, optional): Path to the subdirectory to get. Defaults to "." to get the full repository.
+            exclude ([List[str], optional): List of files or directories to exclude from the directory. Defaults to None.
+            include ([List[str], optional): List of files or directories to include in the directory. Defaults to None.
+
+        Returns:
+            Directory: The selected repo directory.
+        """
         if self.is_local:
+            if exclude is None:
+                exclude = self.DEFAULT_EXCLUDED_FILES
+            else:
+                exclude += self.DEFAULT_EXCLUDED_FILES
+                exclude = list(set(exclude))
+            if subdir != ".":
+                subdir = f"{subdir}/" if not subdir.endswith("/") else subdir
+                exclude = [f.replace(subdir, "") for f in exclude if subdir in f]
             return self.dagger_client.host().directory(subdir, exclude=exclude, include=include)
         else:
             return self.repo.branch(self.git_branch).tree().directory(subdir)
 
-    def get_connector_dir(self, exclude=None, include=None) -> Directory:
+    def get_connector_dir(self, exclude: Optional[List[str]] = None, include: Optional[List[str]] = None) -> Directory:
+        """Get the connector under test source code directory.
+
+        Args:
+            exclude ([List[str], optional): List of files or directories to exclude from the directory. Defaults to None.
+            include ([List[str], optional): List of files or directories to include in the directory. Defaults to None.
+
+        Returns:
+            Directory: The connector under test source code directory.
+        """
         return self.get_repo_dir(str(self.connector.code_directory), exclude=exclude, include=include)
 
     async def __aenter__(self):
-        """Performs setup operation for the ConnectorTestContext.
+        """Perform setup operation for the ConnectorTestContext.
+
         Updates the current commit status on Github.
+
         Raises:
             Exception: An error is raised when the context was not initialized with a Dagger client
 
@@ -180,7 +227,8 @@ class ConnectorTestContext:
     async def __aexit__(
         self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType]
     ) -> bool:
-        """Performs teardown operation for the ConnectorTestContext.
+        """Perform teardown operation for the ConnectorTestContext.
+
         On the context exit the following operations will happen:
             - Upload updated connector secrets back to Google Secret Manager
             - Write a test report in JSON format locally and to S3 if running in a CI environment

@@ -15,6 +15,8 @@ from dagger import Container, File
 
 
 class CodeFormatChecks(Step):
+    """A step to run the code format checks on a Python connector using Black, Isort and Flake."""
+
     title = "Code format checks"
 
     RUN_BLACK_CMD = ["python", "-m", "black", f"--config=/{environments.PYPROJECT_TOML_FILE_PATH}", "--check", "."]
@@ -23,17 +25,18 @@ class CodeFormatChecks(Step):
 
     async def _run(self) -> StepResult:
         """Run a code format check on the container source code.
+
         We call black, isort and flake commands:
         - Black formats the code: fails if the code is not formatted.
         - Isort checks the import orders: fails if the import are not properly ordered.
         - Flake enforces style-guides: fails if the style-guide is not followed.
+
         Args:
             context (ConnectorTestContext): The current test context, providing a connector object, a dagger client and a repository directory.
             step (Step): The step in which the code format checks are run. Defaults to Step.CODE_FORMAT_CHECKS
         Returns:
             StepResult: Failure or success of the code format checks with stdout and stderr.
         """
-
         connector_under_test = environments.with_airbyte_connector(self.context)
         formatter = (
             connector_under_test.with_exec(["echo", "Running black"])
@@ -47,6 +50,8 @@ class CodeFormatChecks(Step):
 
 
 class ConnectorPackageInstall(Step):
+    """A step to install the Python connector package in a container."""
+
     title = "Connector package install"
 
     async def _run(self) -> Tuple[StepResult, Container]:
@@ -60,6 +65,8 @@ class ConnectorPackageInstall(Step):
 
 
 class UnitTests(PytestStep):
+    """A step to run the connector unit tests with Pytest."""
+
     title = "Unit tests"
 
     async def _run(self, connector_under_test: Container) -> StepResult:
@@ -75,6 +82,8 @@ class UnitTests(PytestStep):
 
 
 class IntegrationTests(PytestStep):
+    """A step to run the connector integration tests with Pytest."""
+
     title = "Integration tests"
 
     async def _run(self, connector_under_test: Container) -> StepResult:
@@ -94,6 +103,12 @@ class IntegrationTests(PytestStep):
 
 
 class BuildConnectorImage(Step):
+    """
+    A step to build a Python connector image using its Dockerfile.
+
+    Export the image as a tar archive on the host /tmp folder.
+    """
+
     title = "Build connector image"
 
     async def _run(self) -> Tuple[StepResult, File]:

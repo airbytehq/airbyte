@@ -18,6 +18,7 @@ from dagger import CacheSharingMode, Directory, File, QueryError
 
 
 class BuildOrPullNormalization(Step):
+    """A step to build or pull the normalization image for a connector according to the image name."""
 
     DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING = {
         Connector("destination-clickhouse"): "clickhouse.Dockerfile",
@@ -31,6 +32,12 @@ class BuildOrPullNormalization(Step):
     }
 
     def __init__(self, context: ConnectorTestContext, normalization_image: str) -> None:
+        """Initialize the step to build or pull the normalization image.
+
+        Args:
+            context (ConnectorTestContext): The current connector test context.
+            normalization_image (str): The normalization image to build (if :dev) or pull.
+        """
         super().__init__(context)
         self.use_dev_normalization = normalization_image.endswith(":dev")
         self.normalization_image = normalization_image
@@ -38,7 +45,6 @@ class BuildOrPullNormalization(Step):
         self.title = f"Build {self.normalization_image}" if self.use_dev_normalization else f"Pull {self.normalization_image}"
 
     async def _run(self) -> Tuple[StepResult, File]:
-
         normalization_local_tar_path = f"{slugify(self.normalization_image)}.tar"
         if self.use_dev_normalization:
             normalization_directory = self.context.get_repo_dir("airbyte-integrations/bases/base-normalization")
@@ -68,6 +74,13 @@ class BuildOrPullNormalization(Step):
 
 
 class GradleTask(Step):
+    """
+    A step to run a Gradle task.
+
+    Attributes:
+        task_name (str): The Gradle task name to run.
+        title (str): The step title.
+    """
 
     RUN_AIRBYTE_DOCKER = False
 
@@ -103,22 +116,39 @@ class GradleTask(Step):
     ]
 
     def __init__(self, context: ConnectorTestContext, gradle_task_name: str, step_title: Optional[str] = None) -> None:
+        """Initialize a step to run a Gradle task.
+
+        Args:
+            context (ConnectorTestContext): The current connector test context.
+            gradle_task_name (str): The name of the gradle task to run.
+            step_title (Optional[str], optional): Custom title for the step. Defaults to None.
+        """
         super().__init__(context)
         self.task_name = gradle_task_name
         self.title = step_title if step_title else f"Gradle {self.task_name} task"
 
     @property
     def build_include(self) -> List[str]:
+        """Retrieve the list of source code directory required to run a Java connector Gradle task.
+
+        The list is different according to the connector type.
+
+        Returns:
+            List[str]: List of directories or files to be mounted to the container to run a Java connector Gradle task.
+        """
         if self.context.connector.connector_type == "source":
             return self.JAVA_BUILD_INCLUDE + self.SOURCE_BUILD_INCLUDE
-        else:
+        elif self.context.connector.connector_type == "destination":
             return self.JAVA_BUILD_INCLUDE + self.DESTINATION_BUILD_INCLUDE
+        else:
+            raise ValueError(f"{self.context.connector.connector_type} is not supported")
 
     async def _get_patched_connector_dir(self) -> Directory:
-        """Patch the build.gradle file of the connector under test:
-        - Removes the airbyte-connector-acceptance-test plugin import from build.gradle to not run CAT with Gradle.
-        - Do not depend on normalization build to run
-        - Do not run airbyteDocker task if RUN_AIRBYTE_DOCKER is false
+        """Patch the build.gradle file of the connector under test.
+
+        - Remove the airbyte-connector-acceptance-test plugin import from build.gradle to not run CAT with Gradle.
+        - Do not depend on normalization build to run.
+        - Do not run airbyteDocker task if RUN_AIRBYTE_DOCKER is false.
 
         Returns:
             Directory: The patched connector directory
@@ -161,10 +191,20 @@ class GradleTask(Step):
 
 
 class BuildConnectorImage(GradleTask):
+    """
+    A step to build a Java connector image using the airbyteDocker Gradle task.
+
+    Export the image as a tar archive on the host /tmp folder.
+    """
 
     RUN_AIRBYTE_DOCKER = True
 
     def __init__(self, context: ConnectorTestContext) -> None:
+        """Initialize the step to build a connector image with the airbyteDock Gradle task.
+
+        Args:
+            context (ConnectorTestContext): The current connector test context.
+        """
         super().__init__(context, "airbyteDocker", "Build connector image")
 
     async def _export_connector_image(self) -> Optional[File]:
@@ -212,7 +252,14 @@ class BuildConnectorImage(GradleTask):
 
 
 class IntegrationTestJava(GradleTask):
+    """A step to run integrations tests for Java connectors using the integrationTestJava Gradle task."""
+
     def __init__(self, context: ConnectorTestContext) -> None:
+        """Initialize the step to run :integrationTestJava Gradle task.
+
+        Args:
+            context (ConnectorTestContext): The current connector test context.
+        """
         super().__init__(context, "integrationTestJava", step_title="Integration tests")
 
     async def _load_normalization_image(self, normalization_tar_file: File):
@@ -239,6 +286,19 @@ class IntegrationTestJava(GradleTask):
 
 
 async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
+    """Run all tests for a Java connectors.
+
+    - Build the normalization image if the connector supports it.
+    - Run unit tests with Gradle.
+    - Build connector image with Gradle.
+    - Run integration and acceptance test in parallel using the built connector and normalization images.
+
+    Args:
+        context (ConnectorTestContext): The current connector test context.
+
+    Returns:
+        List[StepResult]: The results of all the tests steps.
+    """
     step_results = []
     unit_test_step = GradleTask(context, "test", step_title="Unit tests")
     build_connector_step = BuildConnectorImage(context)

@@ -1,6 +1,9 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
+"""This module declares the CLI commands to run the connectors CI pipelines."""
+
 import itertools
 import logging
 import os
@@ -37,7 +40,8 @@ logger = logging.getLogger(__name__)
 
 
 async def run(context: ConnectorTestContext, semaphore: anyio.Semaphore) -> ConnectorTestReport:
-    """Runs a CI pipeline for a single connector.
+    """Run a CI pipeline for a single connector.
+
     A visual DAG can be found on the README.md file of the pipelines modules.
 
     Args:
@@ -62,7 +66,7 @@ async def run(context: ConnectorTestContext, semaphore: anyio.Semaphore) -> Conn
 
 
 async def run_connectors_test_pipelines(contexts: List[ConnectorTestContext], concurrency: int = 5):
-    """Runs a CI pipeline for all the connectors passed.
+    """Run a CI pipeline for all the connectors passed.
 
     Args:
         contexts (List[ConnectorTestContext]): List of connector test contexts for which a CI pipeline needs to be run.
@@ -102,8 +106,7 @@ def connectors_ci(
     ci_context: str,
     pipeline_start_timestamp: int,
 ):
-    """A command group to gather all the connectors-ci command"""
-
+    """Group all the connectors-ci commands."""
     validate_environment(is_local, use_remote_secrets)
 
     ctx.ensure_object(dict)
@@ -214,7 +217,7 @@ def test_connectors(
 
 
 def validate_environment(is_local: bool, use_remote_secrets: bool):
-
+    """Check if the required environment variables exist."""
     if is_local:
         if not (os.getcwd().endswith("/airbyte") and Path(".git").is_dir()):
             raise click.UsageError("You need to run this command from the airbyte repository root.")

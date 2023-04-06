@@ -1,6 +1,9 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
+"""Module grouping functions interacting with the GitHub API."""
+
 from __future__ import annotations
 
 import os
@@ -19,6 +22,17 @@ AIRBYTE_GITHUB_REPO = "airbytehq/airbyte"
 def update_commit_status_check(
     sha: str, state: str, target_url: str, description: str, context: str, should_send=True, logger: Logger = None
 ):
+    """Call the GitHub API to create commit status check.
+
+    Args:
+        sha (str): Hash of the commit for which you want to create a status check.
+        state (str): The check state (success, failure, pendint)
+        target_url (str): The URL to attach to the commit check for details.
+        description (str): Description of the check that is run.
+        context (str): Name of the Check context e.g: source-pokeapi tests
+        should_send (bool, optional): Whether the commit check should actually be sent to GitHub API. Defaults to True.
+        logger (Logger, optional): A logger to log info about updates. Defaults to None.
+    """
     if not should_send:
         return
 
