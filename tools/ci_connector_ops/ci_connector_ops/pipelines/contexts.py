@@ -192,7 +192,7 @@ class PipelineContext:
             - Log the test report.
             - Update the commit status check on GitHub if running in a CI environment.
 
-        It should gracefully handle all the execution errors that happens and always upload a test report and update commit status check.
+        It should gracefully handle all the execution errors that happened and always upload a test report and update commit status check.
 
         Args:
             exception_type (Optional[type[BaseException]]): The exception type if an exception was raised in the context execution, None otherwise.
