@@ -8007,7 +8007,7 @@
     "sourceDefinitionId": "1fa90628-2b9e-11ed-a261-0242ac120002",
     "name": "AlloyDB for PostgreSQL",
     "dockerRepository": "airbyte/source-alloydb",
-    "dockerImageTag": "2.0.15",
+    "dockerImageTag": "2.0.17",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/alloydb",
     "icon": "alloydb.svg",
     "sourceType": "database",
@@ -14903,7 +14903,7 @@
     "sourceDefinitionId": "fe2b4084-3386-4d3b-9ad6-308f61a6f1e6",
     "name": "Harvest",
     "dockerRepository": "airbyte/source-harvest",
-    "dockerImageTag": "0.1.16",
+    "dockerImageTag": "0.1.17",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/harvest",
     "icon": "harvest.svg",
     "sourceType": "api",
@@ -14929,7 +14929,8 @@
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
             "examples": [ "2017-01-25T00:00:00Z" ],
             "type": "string",
-            "order": 1
+            "order": 1,
+            "format": "date-time"
           },
           "replication_end_date": {
             "title": "End Date",
@@ -14938,7 +14939,8 @@
             "examples": [ "2017-01-25T00:00:00Z" ],
             "type": "string",
             "airbyte_hidden": true,
-            "order": 2
+            "order": 2,
+            "format": "date-time"
           },
           "credentials": {
             "title": "Authentication mechanism",
@@ -17717,7 +17719,7 @@
     "sourceDefinitionId": "12928b32-bf0a-4f1e-964f-07e12e37153a",
     "name": "Mixpanel",
     "dockerRepository": "airbyte/source-mixpanel",
-    "dockerImageTag": "0.1.30",
+    "dockerImageTag": "0.1.31",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mixpanel",
     "icon": "mixpanel.svg",
     "sourceType": "api",
@@ -17811,7 +17813,8 @@
             "type": "string",
             "description": "The date in the format YYYY-MM-DD. Any data before this date will not be replicated. If this option is not set, the connector will replicate data from up to one year ago by default.",
             "examples": [ "2021-11-16" ],
-            "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
+            "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$",
+            "format": "date-time"
           },
           "end_date": {
             "order": 6,
@@ -17819,7 +17822,8 @@
             "type": "string",
             "description": "The date in the format YYYY-MM-DD. Any data after this date will not be replicated. Left empty to always sync to most recent date",
             "examples": [ "2021-11-16" ],
-            "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
+            "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$",
+            "format": "date-time"
           },
           "region": {
             "order": 7,
@@ -20907,7 +20911,7 @@
     "sourceDefinitionId": "decd338e-5647-4c0b-adf4-da0e75f5a750",
     "name": "Postgres",
     "dockerRepository": "airbyte/source-postgres",
-    "dockerImageTag": "2.0.16",
+    "dockerImageTag": "2.0.17",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/postgres",
     "icon": "postgresql.svg",
     "sourceType": "database",
