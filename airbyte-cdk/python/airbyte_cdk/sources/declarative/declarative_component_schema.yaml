@@ -68,7 +68,7 @@ definitions:
         additionalProperties: true
   ApiKeyAuthenticator:
     title: API Key Authenticator
-    description: Authenticator for requests requiring an API token injected as a request header.
+    description: Authenticator for requests authenticated with an API token injected as a request header.
     type: object
     required:
       - type
