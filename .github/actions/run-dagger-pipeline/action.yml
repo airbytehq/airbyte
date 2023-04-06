@@ -33,7 +33,10 @@ runs:
         python-version: "3.10"
     - name: Install ci-connector-ops package
       shell: bash
-      run: pip install ./tools/ci_connector_ops\[pipelines]\
+      run: |
+        pip install --upgrade pip
+        pip install ./tools/ci_connector_ops[pipelines]
+        echo $PATH
     - name: Run airbyte-ci
       shell: bash
       run: |
