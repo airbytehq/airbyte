@@ -576,9 +576,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     assertEquals(1, recordsFromFourthBatch.size());
   }
 
-  /** This test verify that multiple states are sent during the CDC process based on number of records.
-   * We can ensure that more than one `STATE` type of message is sent, but we are not able to assert the
-   * exact number of messages sent as depends on Debezium.
+  /**
+   * This test verify that multiple states are sent during the CDC process based on number of records.
+   * We can ensure that more than one `STATE` type of message is sent, but we are not able to assert
+   * the exact number of messages sent as depends on Debezium.
    *
    * @throws Exception Exception happening in the test.
    */
@@ -587,7 +588,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     // We require a huge amount of records, otherwise Debezium will notify directly the last offset.
     final int recordsToCreate = 20000;
 
-    ((ObjectNode)config).put("sync_checkpoint_records", 100);
+    ((ObjectNode) config).put("sync_checkpoint_records", 100);
 
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
         .read(config, CONFIGURED_CATALOG, null);
@@ -595,7 +596,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
         .toListAndClose(firstBatchIterator);
     final List<AirbyteStateMessage> stateMessages = extractStateMessages(dataFromFirstBatch);
 
-    // As first `read` operation is from snapshot, it would generate only one state message at the end of the process.
+    // As first `read` operation is from snapshot, it would generate only one state message at the end
+    // of the process.
     assertEquals(1, stateMessages.size());
 
     for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
@@ -617,9 +619,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
   }
 
-  /** This test verify that multiple states are sent during the CDC process based on time ranges. We can
-   * ensure that more than one `STATE` type of message is sent, but we are not able to assert the exact
-   * number of messages sent as depends on Debezium.
+  /**
+   * This test verify that multiple states are sent during the CDC process based on time ranges. We
+   * can ensure that more than one `STATE` type of message is sent, but we are not able to assert the
+   * exact number of messages sent as depends on Debezium.
    *
    * @throws Exception Exception happening in the test.
    */
@@ -628,7 +631,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     // We require a huge amount of records, otherwise Debezium will notify directly the last offset.
     final int recordsToCreate = 20000;
 
-    ((ObjectNode)config).put("sync_checkpoint_seconds", 1);
+    ((ObjectNode) config).put("sync_checkpoint_seconds", 1);
 
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
         .read(config, CONFIGURED_CATALOG, null);
@@ -636,7 +639,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
         .toListAndClose(firstBatchIterator);
     final List<AirbyteStateMessage> stateMessages = extractStateMessages(dataFromFirstBatch);
 
-    // As first `read` operation is from snapshot, it would generate only one state message at the end of the process.
+    // As first `read` operation is from snapshot, it would generate only one state message at the end
+    // of the process.
     assertEquals(1, stateMessages.size());
 
     for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
@@ -658,4 +662,5 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
   }
+
 }

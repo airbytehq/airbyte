@@ -33,6 +33,7 @@ import com.google.common.collect.Sets;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
@@ -311,6 +312,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
                                                                final CursorInfo cursorInfo,
                                                                final Datatype cursorFieldType) {
     LOGGER.info("Queueing query for table: {}", tableName);
+    final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair airbyteStream =
+        AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<JsonNode> stream = database.unsafeQuery(
@@ -351,11 +354,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
               return preparedStatement;
             },
             sourceOperations::rowToJson);
-        return AutoCloseableIterators.fromStream(stream);
+        return AutoCloseableIterators.fromStream(stream, airbyteStream);
       } catch (final SQLException e) {
         throw new RuntimeException(e);
       }
-    });
+    }, airbyteStream);
   }
 
   /**

@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.base;
 
+import io.airbyte.commons.stream.AirbyteStreamStatus;
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage.FailureType;
 import io.airbyte.protocol.models.v0.AirbyteEstimateTraceMessage;
@@ -42,6 +43,11 @@ public final class AirbyteTraceMessageUtility {
 
   public static void emitErrorTrace(final Throwable e, final String displayMessage, final FailureType failureType) {
     emitMessage(makeErrorTraceAirbyteMessage(e, displayMessage, failureType));
+  }
+
+  public static void emitStreamStatusTrace(final AirbyteStreamStatus airbyteStreamStatus) {
+    // TODO This is where the actual stream status trace message will be created and emitted from the
+    // provided data
   }
 
   // todo: handle the other types of trace message we'll expect in the future, see
