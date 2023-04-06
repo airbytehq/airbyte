@@ -153,7 +153,6 @@ class ModelToComponentFactory:
             JsonFileSchemaLoaderModel: self.create_json_file_schema_loader,
             ListPartitionRouterModel: self.create_list_partition_router,
             MinMaxDatetimeModel: self.create_min_max_datetime,
-            NoAuthModel: self.create_no_auth,
             NoPaginationModel: self.create_no_pagination,
             OAuthAuthenticatorModel: self.create_oauth_authenticator,
             SingleUseRefreshTokenOAuthAuthenticatorModel: self.create_single_use_refresh_token_oauth_authenticator,
@@ -639,10 +638,6 @@ class ModelToComponentFactory:
             min_datetime=model.min_datetime,
             parameters=model.parameters,
         )
-
-    @staticmethod
-    def create_no_auth(model: NoAuthModel, config: Config, **kwargs) -> NoAuth:
-        return NoAuth(parameters=model.parameters)
 
     @staticmethod
     def create_no_pagination(model: NoPaginationModel, config: Config, **kwargs) -> NoPagination:

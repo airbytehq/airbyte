@@ -678,7 +678,6 @@ definitions:
           - "$ref": "#/definitions/CustomAuthenticator"
           - "$ref": "#/definitions/OAuthAuthenticator"
           - "$ref": "#/definitions/SingleUseRefreshTokenOAuthAuthenticator"
-          - "$ref": "#/definitions/NoAuth"
           - "$ref": "#/definitions/SessionTokenAuthenticator"
       error_handler:
         description: Error handler component that defines how to handle errors.
@@ -833,18 +832,6 @@ definitions:
         type: string
       min_datetime:
         type: string
-      $parameters:
-        type: object
-        additionalProperties: true
-  NoAuth:
-    description: Authenticator for requests requiring no authentication
-    type: object
-    required:
-      - type
-    properties:
-      type:
-        type: string
-        enum: [NoAuth]
       $parameters:
         type: object
         additionalProperties: true
