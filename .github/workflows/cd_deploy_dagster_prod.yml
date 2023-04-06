@@ -2,6 +2,12 @@ name: CD - Deploy Dagster to Prod
 on:
   workflow_dispatch:
 
+  # TODO (ben): Once successfully deployed update to only on merge to master
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    paths:
+      - 'airbyte-ci/connectors/metadata_service/**'
+
   push:
     branches:
       - "master"
