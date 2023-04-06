@@ -7,7 +7,7 @@ from datetime import datetime
 from enum import Enum
 from glob import glob
 from types import TracebackType
-from typing import Optional
+from typing import List, Optional
 
 from anyio import Path
 from asyncer import asyncify
@@ -40,6 +40,9 @@ class ConnectorTestContext:
         + glob("**/*.egg-info", recursive=True)
         + glob("**/.vscode", recursive=True)
         + glob("**/.pytest_cache", recursive=True)
+        + glob("**/.eggs", recursive=True)
+        + glob("**/.mypy_cache", recursive=True)
+        + glob("**/.DS_Store", recursive=True)
     )
 
     def __init__(
@@ -142,8 +145,15 @@ class ConnectorTestContext:
             "logger": self.logger,
         }
 
-    def get_repo_dir(self, subdir=".", exclude=None, include=None) -> Directory:
-        exclude = self.DEFAULT_EXCLUDED_FILES if exclude is None else exclude
+    def get_repo_dir(self, subdir: str = ".", exclude: Optional[List[str]] = None, include: Optional[List[str]] = None) -> Directory:
+        if exclude is None:
+            exclude = self.DEFAULT_EXCLUDED_FILES
+        else:
+            exclude += self.DEFAULT_EXCLUDED_FILES
+            exclude = list(set(exclude))
+        if subdir != ".":
+            subdir = f"{subdir}/" if not subdir.endswith("/") else subdir
+            exclude = [f.replace(subdir, "") for f in exclude if subdir in f]
         if self.is_local:
             return self.dagger_client.host().directory(subdir, exclude=exclude, include=include)
         else:
