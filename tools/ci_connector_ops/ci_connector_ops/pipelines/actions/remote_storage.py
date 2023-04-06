@@ -1,6 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+"""This module groups functions to interact with remote storage services like S3 or GCS."""
+
 from pathlib import Path
 
 from ci_connector_ops.pipelines.utils import with_exit_code

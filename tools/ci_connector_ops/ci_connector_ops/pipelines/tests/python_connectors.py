@@ -110,6 +110,14 @@ class BuildConnectorImage(Step):
 
 
 async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
+    """Run all tests for a Python connnector.
+
+    Args:
+        context (ConnectorTestContext): The current connector test context.
+
+    Returns:
+        List[StepResult]: _description_
+    """
     connector_package_install_step = ConnectorPackageInstall(context)
     unit_tests_step = UnitTests(context)
     build_connector_image_step = BuildConnectorImage(context)
@@ -156,4 +164,12 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
 
 
 async def run_code_format_checks(context: ConnectorTestContext) -> List[StepResult]:
+    """Run the code format check steps for Python connectors.
+
+    Args:
+        context (ConnectorTestContext): The current connector test context.
+
+    Returns:
+        List[StepResult]: Results of the code format checks.
+    """
     return [await CodeFormatChecks(context).run()]

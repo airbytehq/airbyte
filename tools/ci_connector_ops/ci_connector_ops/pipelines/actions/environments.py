@@ -37,7 +37,7 @@ CI_CONNECTOR_OPS_SOURCE_PATH = "tools/ci_connector_ops"
 
 
 def with_python_base(context: ConnectorTestContext, python_image_name: str = "python:3.9-slim") -> Container:
-    """Builds a Python container with a cache volume for pip cache.
+    """Build a Python container with a cache volume for pip cache.
 
     Args:
         context (ConnectorTestContext): The current test context, providing a dagger client and a repository directory.
@@ -62,7 +62,7 @@ def with_python_base(context: ConnectorTestContext, python_image_name: str = "py
 
 
 def with_testing_dependencies(context: ConnectorTestContext) -> Container:
-    """Builds a testing environment by installing testing dependencies on top of a python base environment.
+    """Build a testing environment by installing testing dependencies on top of a python base environment.
 
     Args:
         context (ConnectorTestContext): The current test context, providing a dagger client and a repository directory.
@@ -113,7 +113,7 @@ async def with_installed_python_package(
     additional_dependency_groups: Optional[List] = None,
     exclude: Optional[List] = None,
 ) -> Container:
-    """Installs a python package in a python environment container.
+    """Install a python package in a python environment container.
 
     Args:
         context (ConnectorTestContext): The current test context, providing the repository directory from which the python sources will be pulled.
@@ -125,7 +125,6 @@ async def with_installed_python_package(
     Returns:
         Container: A python environment container with the python package installed.
     """
-
     container = with_python_package(context, python_environment, package_source_code_path, exclude=exclude)
     if requirements_txt := await get_file_contents(container, "requirements.txt"):
         for line in requirements_txt.split("\n"):
@@ -160,7 +159,7 @@ def with_airbyte_connector(context: ConnectorTestContext) -> Container:
 
 
 async def with_installed_airbyte_connector(context: ConnectorTestContext) -> Container:
-    """Installs an airbyte connector python package in a testing environment.
+    """Install an airbyte connector python package in a testing environment.
 
     Args:
         context (ConnectorTestContext): The current test context, providing the repository directory from which the connector sources will be pulled.
@@ -175,7 +174,7 @@ async def with_installed_airbyte_connector(context: ConnectorTestContext) -> Con
 
 
 async def with_ci_credentials(context: ConnectorTestContext, gsm_secret: Secret) -> Container:
-    """Installs the ci_credentials package in a python environment.
+    """Install the ci_credentials package in a python environment.
 
     Args:
         context (ConnectorTestContext): The current test context, providing the repository directory from which the ci_credentials sources will be pulled.
@@ -191,7 +190,7 @@ async def with_ci_credentials(context: ConnectorTestContext, gsm_secret: Secret)
 
 
 async def with_ci_connector_ops(context: ConnectorTestContext) -> Container:
-    """Installs the ci_connector_ops package in a Container running Python > 3.10 with git..
+    """Install the ci_connector_ops package in a Container running Python > 3.10 with git.
 
     Args:
         context (ConnectorTestContext): The current test context, providing the repository directory from which the ci_connector_sources sources will be pulled.
@@ -207,10 +206,7 @@ async def with_ci_connector_ops(context: ConnectorTestContext) -> Container:
 def with_dockerd_service(
     context: ConnectorTestContext, shared_volume: Optional(Tuple[str, CacheVolume]) = None, docker_cache_volume_name: Optional[str] = None
 ) -> Container:
-    """Create a container running dockerd, exposing its 2375 port.
-    This container can be used as the docker host for docker-in-docker use cases.
-    An optional shared_volume is mounted to the container to allow client and docker host to share the same files.
-    The /var/lib/docker is cached to provide persistent image storing throughout runs.
+    """Create a container running dockerd, exposing its 2375 port, can be used as the docker host for docker-in-docker use cases.
 
     Args:
         context (ConnectorTestContext): The current connector test context.
@@ -242,7 +238,7 @@ def with_bound_docker_host(
     shared_volume: Optional(Tuple[str, CacheVolume]) = None,
     docker_cache_volume_name: Optional[str] = None,
 ) -> Container:
-    """Bind a container to a docker host. If the docker-cli is installed in this container it will use the dockerd service as a docker host.
+    """Bind a container to a docker host. It will use the dockerd service as a docker host.
 
     Args:
         context (ConnectorTestContext): The current connector test context.
@@ -287,7 +283,6 @@ async def with_connector_acceptance_test(context: ConnectorTestContext, connecto
     Returns:
         Container: A container with connector acceptance tests installed.
     """
-
     connector_under_test_image_name = context.connector.acceptance_test_config["connector_image"]
     await load_image_to_docker_host(context, connector_under_test_image_tar, connector_under_test_image_name)
 
@@ -313,7 +308,7 @@ def with_gradle(
     context: ConnectorTestContext, sources_to_include: List[str] = None, docker_cache_volume_name: Optional[str] = None
 ) -> Container:
     """Create a container with Gradle installed and bound to a persistent docker host.
-    Multiple Java projects are mounted to the container to enable connector builds.
+
     Args:
         context (ConnectorTestContext): The current connector test context.
         sources_to_include (List[str], optional): List of additional source path to mount to the container. Defaults to None.
