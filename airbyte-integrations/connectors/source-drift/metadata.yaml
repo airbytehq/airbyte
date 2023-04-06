@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - driftapi.com
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 445831eb-78db-4b1f-8f1f-0d96ad8739e2
+  dockerImageTag: 0.2.6
+  dockerRepository: airbyte/source-drift
+  githubIssueLabel: source-drift
+  icon: drift.svg
+  license: MIT
+  name: Drift
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/drift
+metadataSpecVersion: "1.0"

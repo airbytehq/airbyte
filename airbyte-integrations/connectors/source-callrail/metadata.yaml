@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: dc98a6ad-2dd1-47b6-9529-2ec35820f9c6
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-callrail
+  githubIssueLabel: source-callrail
+  icon: callrail.svg
+  license: MIT
+  name: CallRail
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/callrail
+metadataSpecVersion: "1.0"
