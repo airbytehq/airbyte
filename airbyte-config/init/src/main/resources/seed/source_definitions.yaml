@@ -45,7 +45,7 @@
 - name: AlloyDB for PostgreSQL
   sourceDefinitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
   dockerRepository: airbyte/source-alloydb
-  dockerImageTag: 2.0.13
+  dockerImageTag: 2.0.17
   documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
   icon: alloydb.svg
   sourceType: database
@@ -898,7 +898,7 @@
 - name: Harvest
   sourceDefinitionId: fe2b4084-3386-4d3b-9ad6-308f61a6f1e6
   dockerRepository: airbyte/source-harvest
-  dockerImageTag: 0.1.16
+  dockerImageTag: 0.1.17
   documentationUrl: https://docs.airbyte.com/integrations/sources/harvest
   icon: harvest.svg
   sourceType: api
@@ -925,7 +925,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.3.4
+  dockerImageTag: 0.4.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -982,7 +982,7 @@
 - name: Intercom
   sourceDefinitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
   dockerRepository: airbyte/source-intercom
-  dockerImageTag: 0.1.33
+  dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/intercom
   icon: intercom.svg
   sourceType: api
@@ -1107,6 +1107,7 @@
   allowedHosts:
     hosts:
       - api.linkedin.com
+  maxSecondsBetweenMessages: 21600
 - name: LinkedIn Pages
   sourceDefinitionId: af54297c-e8f8-4d63-a00d-a94695acc9d3
   dockerRepository: airbyte/source-linkedin-pages
@@ -1212,7 +1213,7 @@
 - name: Microsoft SQL Server (MSSQL)
   sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   dockerRepository: airbyte/source-mssql
-  dockerImageTag: 1.0.8
+  dockerImageTag: 1.0.9
   documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
   icon: mssql.svg
   sourceType: database
@@ -1240,7 +1241,7 @@
 - name: Mixpanel
   sourceDefinitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
   dockerRepository: airbyte/source-mixpanel
-  dockerImageTag: 0.1.30
+  dockerImageTag: 0.1.31
   documentationUrl: https://docs.airbyte.com/integrations/sources/mixpanel
   icon: mixpanel.svg
   sourceType: api
@@ -1279,7 +1280,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 2.0.11
+  dockerImageTag: 2.0.12
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -1411,7 +1412,7 @@
 - name: Orb
   sourceDefinitionId: 7f0455fb-4518-4ec0-b7a3-d808bf8081cc
   dockerRepository: airbyte/source-orb
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/orb
   icon: orb.svg
   sourceType: api
@@ -1514,7 +1515,7 @@
 - name: Pinterest
   sourceDefinitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-pinterest
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/pinterest
   icon: pinterest.svg
   sourceType: api
@@ -1587,7 +1588,7 @@
 - name: PostHog
   sourceDefinitionId: af6d50ee-dddf-4126-a8ee-7faee990774f
   dockerRepository: airbyte/source-posthog
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.com/integrations/sources/posthog
   icon: posthog.svg
   sourceType: api
@@ -1599,7 +1600,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 2.0.13
+  dockerImageTag: 2.0.17
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -1887,7 +1888,7 @@
 - name: Slack
   sourceDefinitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
   dockerRepository: airbyte/source-slack
-  dockerImageTag: 0.1.24
+  dockerImageTag: 0.1.25
   documentationUrl: https://docs.airbyte.com/integrations/sources/slack
   icon: slack.svg
   sourceType: api
@@ -1999,7 +2000,7 @@
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 3.0.4
+  dockerImageTag: 3.0.5
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api
@@ -2068,7 +2069,7 @@
 - name: TikTok Marketing
   sourceDefinitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
   dockerRepository: airbyte/source-tiktok-marketing
-  dockerImageTag: 2.0.5
+  dockerImageTag: 2.0.6
   documentationUrl: https://docs.airbyte.com/integrations/sources/tiktok-marketing
   icon: tiktok.svg
   sourceType: api
@@ -2193,7 +2194,7 @@
 - name: Typeform
   sourceDefinitionId: e7eff203-90bf-43e5-a240-19ea3056c474
   dockerRepository: airbyte/source-typeform
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.12
   documentationUrl: https://docs.airbyte.com/integrations/sources/typeform
   icon: typeform.svg
   sourceType: api
@@ -2341,7 +2342,7 @@
 - name: Zendesk Chat
   sourceDefinitionId: 40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4
   dockerRepository: airbyte/source-zendesk-chat
-  dockerImageTag: 0.1.13
+  dockerImageTag: 0.1.14
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-chat
   icon: zendesk-chat.svg
   sourceType: api
@@ -2377,6 +2378,7 @@
     hosts:
       - "${subdomain}.zendesk.com"
       - zendesk.com
+  maxSecondsBetweenMessages: 10800
 - name: Zendesk Talk
   sourceDefinitionId: c8630570-086d-4a40-99ae-ea5b18673071
   dockerRepository: airbyte/source-zendesk-talk
@@ -2411,7 +2413,7 @@
 - sourceDefinitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
   name: Sentry
   dockerRepository: airbyte/source-sentry
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/sentry
   icon: sentry.svg
   sourceType: api
