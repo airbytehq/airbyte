@@ -11,6 +11,12 @@ acceptance_tests:
         bypass_reason: "no data from stream"
       - name: onetimes
         bypass_reason: "no data from stream"
+      ignored_fields:
+        shop:
+          - name: shop/updated_at
+            bypass_reason: "updated after login"
+          - name: store/updated_at
+            bypass_reason: "updated after login"
       timeout_seconds: 1200
       expect_records:
         path: "integration_tests/expected_records.jsonl"

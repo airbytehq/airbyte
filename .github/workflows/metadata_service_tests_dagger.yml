@@ -14,7 +14,7 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
       - name: Run Metadata unit test pipeline
-        id: pipelinerun
+        id: metadata-lib-unit-test-pipeline
         uses: ./.github/actions/run-dagger-pipeline
         with:
           subcommand: "metadata test lib"
