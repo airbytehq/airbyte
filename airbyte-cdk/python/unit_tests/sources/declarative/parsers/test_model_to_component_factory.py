@@ -25,6 +25,7 @@ from airbyte_cdk.sources.declarative.models import HttpRequester as HttpRequeste
 from airbyte_cdk.sources.declarative.models import ListPartitionRouter as ListPartitionRouterModel
 from airbyte_cdk.sources.declarative.models import OAuthAuthenticator as OAuthAuthenticatorModel
 from airbyte_cdk.sources.declarative.models import RecordSelector as RecordSelectorModel
+from airbyte_cdk.sources.declarative.models import SimpleRetriever as SimpleRetrieverModel
 from airbyte_cdk.sources.declarative.models import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models import SubstreamPartitionRouter as SubstreamPartitionRouterModel
 from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
@@ -46,7 +47,7 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
-from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
+from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
@@ -1296,3 +1297,29 @@ def test_merge_incremental_and_partition_router(incremental, partition_router, e
     if expected_slicer_count > 1:
         assert isinstance(stream.retriever.stream_slicer, CartesianProductStreamSlicer)
         assert len(stream.retriever.stream_slicer.stream_slicers) == expected_slicer_count
+
+
+def test_simple_retriever_emit_log_messages():
+    simple_retriever_model = {
+        "type": "SimpleRetriever",
+        "record_selector": {
+            "type": "RecordSelector",
+            "extractor": {
+                "type": "DpathExtractor",
+                "field_path": [],
+            },
+        },
+        "requester": {"type": "HttpRequester", "name": "list", "url_base": "orange.com", "path": "/v1/api"},
+    }
+
+    connector_builder_factory = ModelToComponentFactory(emit_connector_builder_messages=True)
+    retriever = connector_builder_factory.create_component(
+        model_type=SimpleRetrieverModel,
+        component_definition=simple_retriever_model,
+        config={},
+        name="Test",
+        primary_key="id",
+        stream_slicer=None,
+    )
+
+    assert isinstance(retriever, SimpleRetrieverTestReadDecorator)
