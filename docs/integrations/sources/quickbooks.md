@@ -103,6 +103,15 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 - [VendorCredits](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/vendorcredit)
 - [Vendors](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/vendor)
 
+## Data type map
+
+| Integration Type | Airbyte Type | Notes |
+|:-----------------|:-------------|:------|
+| `string`         | `string`     |       |
+| `number`         | `number`     |       |
+| `array`          | `array`      |       |
+| `object`         | `object`     |       |
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                  |
