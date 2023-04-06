@@ -29,9 +29,8 @@ def metadata(ctx: click.Context):
 # VALIDATE COMMAND
 
 
-@metadata.command(help="Commands related to validating the metadata files.")
+@metadata.command(cls=DaggerPipelineCommand, help="Commands related to validating the metadata files.")
 @click.pass_context
-@pipeline_command
 def validate(ctx: click.Context):
     modified_files = ctx.obj["modified_files"]
     modified_connectors = get_modified_connectors(modified_files)

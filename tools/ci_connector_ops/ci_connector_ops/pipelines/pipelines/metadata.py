@@ -3,7 +3,7 @@ from typing import Optional, Set, List
 from pathlib import Path
 
 from ci_connector_ops.pipelines.bases import Step, StepStatus, TestReport
-from ci_connector_ops.pipelines.actions.environments import with_poetry_module,with_pipx_module, DEFAULT_PYTHON_EXCLUDE
+from ci_connector_ops.pipelines.actions.environments import with_poetry_module, with_pipx_module, DEFAULT_PYTHON_EXCLUDE
 from ci_connector_ops.pipelines.contexts import PipelineContext
 from ci_connector_ops.pipelines.utils import (
     DAGGER_CONFIG,

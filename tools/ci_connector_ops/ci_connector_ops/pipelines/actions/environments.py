@@ -308,8 +308,4 @@ def with_pipx_module(context: PipelineContext, parent_dir_path: str, module_path
     python_base_environment = with_python_base(context, "python:3.9")
     python_with_pipx = with_pipx(python_base_environment)
 
-    return (
-        python_with_pipx.with_mounted_directory("/src", src)
-        .with_workdir("/src")
-        .with_exec(pipx_install_dependencies_cmd)
-    )
+    return python_with_pipx.with_mounted_directory("/src", src).with_workdir("/src").with_exec(pipx_install_dependencies_cmd)
