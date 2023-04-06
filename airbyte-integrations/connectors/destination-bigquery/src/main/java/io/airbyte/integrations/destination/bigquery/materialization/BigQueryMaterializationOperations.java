@@ -34,12 +34,15 @@ public class BigQueryMaterializationOperations {
     // TODO we probably should only do the getDataset().list() once per dataset
     // TODO maybe we put the raw table in a different dataset from the final table
     final Page<Table> page = bigquery.getDataset(datasetId).list();
+    boolean tableExists = false;
     for (Table table : page.getValues()) {
       if (tableName.equals(table.getFriendlyName())) {
         // TODO table exists - check existing table schema + alter table to match schema (maybe also alter partitoining/clustering)
-      } else {
-        // TODO table doesn't exist - create it with schema + partitoining + clustering
+        tableExists = true;
       }
+    }
+    if (!tableExists) {
+      // TODO table doesn't exist - create it with schema + partitoining + clustering
     }
   }
 
