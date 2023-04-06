@@ -21,7 +21,7 @@ class CodeFormatChecks(Step):
     RUN_ISORT_CMD = ["python", "-m", "isort", f"--settings-file=/{environments.PYPROJECT_TOML_FILE_PATH}", "--check-only", "--diff", "."]
     RUN_FLAKE_CMD = ["python", "-m", "pflake8", f"--config=/{environments.PYPROJECT_TOML_FILE_PATH}", "."]
 
-    async def _run(self) -> List[StepResult]:
+    async def _run(self) -> StepResult:
         """Run a code format check on the container source code.
         We call black, isort and flake commands:
         - Black formats the code: fails if the code is not formatted.
@@ -31,7 +31,7 @@ class CodeFormatChecks(Step):
             context (ConnectorTestContext): The current test context, providing a connector object, a dagger client and a repository directory.
             step (Step): The step in which the code format checks are run. Defaults to Step.CODE_FORMAT_CHECKS
         Returns:
-            List[StepResult]: Failure or success of the code format checks with stdout and stdout in a list.
+            StepResult: Failure or success of the code format checks with stdout and stderr.
         """
 
         connector_under_test = environments.with_airbyte_connector(self.context)
@@ -43,10 +43,10 @@ class CodeFormatChecks(Step):
             .with_exec(["echo", "Running Flake"])
             .with_exec(self.RUN_FLAKE_CMD)
         )
-        return [await self.get_step_result(formatter)]
+        return await self.get_step_result(formatter)
 
 
-class ConnectorInstallTest(Step):
+class ConnectorPackageInstall(Step):
     title = "Connector package install"
 
     async def _run(self) -> Tuple[StepResult, Container]:
@@ -110,13 +110,17 @@ class BuildConnectorImage(Step):
 
 
 async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
-    connector_install_step = ConnectorInstallTest(context)
+    connector_package_install_step = ConnectorPackageInstall(context)
     unit_tests_step = UnitTests(context)
     build_connector_image_step = BuildConnectorImage(context)
     integration_tests_step = IntegrationTests(context)
     acceptance_test_step = AcceptanceTests(context)
 
-    package_install_results, connector_under_test = await connector_install_step.run()
+    context.logger.info("Run the connector package install step.")
+    package_install_results, connector_under_test = await connector_package_install_step.run()
+    context.logger.info("Successfully ran the connector package install step.")
+
+    context.logger.info("Run the unit tests step.")
     unit_tests_results = await unit_tests_step.run(connector_under_test)
 
     results = [
@@ -126,17 +130,22 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
 
     if unit_tests_results.status is StepStatus.FAILURE:
         return results + [build_connector_image_step.skip(), integration_tests_step.skip(), acceptance_test_step.skip()]
+    context.logger.info("Successfully ran the unit tests step.")
 
     if context.connector.acceptance_test_config["connector_image"].endswith(":dev"):
+        context.logger.info("Run the build connector image step.")
         build_connector_image_results, connector_image_tar_file = await build_connector_image_step.run()
         results.append(build_connector_image_results)
         if build_connector_image_results.status is StepStatus.FAILURE:
             return results + [integration_tests_step.skip(), acceptance_test_step.skip()]
+        context.logger.info("Successfully ran the build connector image step.")
     else:
-        context.logger.info("Not building the connector image as CAT is run with a non dev version")
+        context.logger.info("Not building the connector image as CAT is run with a non dev version of the connector.")
         connector_image_tar_file = None
 
+    context.logger.info("Retrieve the connector secrets.")
     context.secrets_dir = await secrets.get_connector_secret_dir(context)
+    context.logger.info("Run integration tests and acceptance tests in parallel.")
     async with asyncer.create_task_group() as task_group:
         tasks = [
             task_group.soonify(IntegrationTests(context).run)(connector_under_test),
@@ -147,4 +156,4 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
 
 
 async def run_code_format_checks(context: ConnectorTestContext) -> List[StepResult]:
-    return await CodeFormatChecks(context).run()
+    return [await CodeFormatChecks(context).run()]

@@ -61,6 +61,7 @@ class BuildOrPullNormalization(Step):
 
 
 class GradleTask(Step):
+
     RUN_AIRBYTE_DOCKER = False
 
     JAVA_BUILD_INCLUDE = [
@@ -83,6 +84,7 @@ class GradleTask(Step):
     ]
 
     DESTINATION_BUILD_INCLUDE = [
+        "airbyte-integrations/connectors/destination-jdbc",
         # destination-bigquery uses utils from destination gcs
         "airbyte-integrations/connectors/destination-gcs",
     ]
@@ -105,11 +107,12 @@ class GradleTask(Step):
         else:
             return self.JAVA_BUILD_INCLUDE + self.DESTINATION_BUILD_INCLUDE
 
-    async def get_patched_connector_dir(self) -> Directory:
+    async def _get_patched_connector_dir(self) -> Directory:
         """Patch the build.gradle file of the connector under test:
         - Removes the airbyte-connector-acceptance-test plugin import from build.gradle to not run CAT with Gradle.
         - Do not depend on normalization build to run
         - Do not run airbyteDocker task if RUN_AIRBYTE_DOCKER is false
+
         Returns:
             Directory: The patched connector directory
         """
@@ -125,7 +128,7 @@ class GradleTask(Step):
                 patched_file_content += line + "\n"
         return self.context.get_connector_dir(exclude=["build", "secrets"]).with_new_file("build.gradle", patched_file_content)
 
-    def get_gradle_command(self, extra_options: Tuple[str] = ("--no-daemon",)) -> List:
+    def _get_gradle_command(self, extra_options: Tuple[str] = ("--no-daemon",)) -> List:
         return (
             ["./gradlew"]
             + list(extra_options)
@@ -140,17 +143,18 @@ class GradleTask(Step):
             .with_mounted_cache(
                 f"{self.context.connector.code_directory}/build", connector_java_build_cache, sharing=CacheSharingMode.SHARED
             )
-            .with_mounted_directory(str(self.context.connector.code_directory), await self.get_patched_connector_dir())
+            .with_mounted_directory(str(self.context.connector.code_directory), await self._get_patched_connector_dir())
             # Disable the Ryuk container because it needs privileged docker access that does not work:
             .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
             .with_directory(f"{self.context.connector.code_directory}/secrets", self.context.secrets_dir)
-            .with_exec(self.get_gradle_command())
+            .with_exec(self._get_gradle_command())
         )
 
         return await self.get_step_result(connector_under_test)
 
 
 class BuildConnectorImage(GradleTask):
+
     RUN_AIRBYTE_DOCKER = True
 
     def __init__(self, context: ConnectorTestContext) -> None:
@@ -184,8 +188,8 @@ class BuildConnectorImage(GradleTask):
                 .with_mounted_cache(
                     f"{self.context.connector.code_directory}/build", connector_java_build_cache, sharing=CacheSharingMode.SHARED
                 )
-                .with_mounted_directory(str(self.context.connector.code_directory), await self.get_patched_connector_dir())
-                .with_exec(self.get_gradle_command())
+                .with_mounted_directory(str(self.context.connector.code_directory), await self._get_patched_connector_dir())
+                .with_exec(self._get_gradle_command())
             )
 
             step_result = await self.get_step_result(built_container)
@@ -204,13 +208,13 @@ class IntegrationTestJava(GradleTask):
     def __init__(self, context: ConnectorTestContext) -> None:
         super().__init__(context, "integrationTestJava", step_title="Integration tests")
 
-    async def load_normalization_image(self, normalization_tar_file: File):
+    async def _load_normalization_image(self, normalization_tar_file: File):
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
         self.context.logger.info("Load the normalization image to the docker host.")
         await environments.load_image_to_docker_host(self.context, normalization_tar_file, normalization_image_tag)
         self.context.logger.info("Successfully loaded the normalization image to the docker host.")
 
-    async def load_connector_image(self, connector_tar_file: File):
+    async def _load_connector_image(self, connector_tar_file: File):
         connector_image_tag = f"airbyte/{self.context.connector.technical_name}:dev"
         self.context.logger.info("Load the connector image to the docker host")
         await environments.load_image_to_docker_host(self.context, connector_tar_file, connector_image_tag)
@@ -220,8 +224,8 @@ class IntegrationTestJava(GradleTask):
         try:
             async with anyio.create_task_group() as tg:
                 if normalization_tar_file:
-                    tg.start_soon(self.load_normalization_image, normalization_tar_file)
-                tg.start_soon(self.load_connector_image, connector_tar_file)
+                    tg.start_soon(self._load_normalization_image, normalization_tar_file)
+                tg.start_soon(self._load_connector_image, connector_tar_file)
             return await super()._run()
         except QueryError as e:
             return StepResult(self, StepStatus.FAILURE, stderr=str(e)), None
@@ -233,7 +237,7 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
     build_connector_step = BuildConnectorImage(context)
     build_normalization_step = None
     if context.connector.supports_normalization:
-        normalization_image = f"{context.connector.normalization_repository}:{context.connector.normalization_tag}"
+        normalization_image = f"{context.connector.normalization_repository}:dev"
         context.logger.info(f"This connector supports normalization: will build {normalization_image}.")
         build_normalization_step = BuildOrPullNormalization(context, normalization_image)
     integration_test_java_step = IntegrationTestJava(context)

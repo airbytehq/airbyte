@@ -50,7 +50,7 @@ async def run(context: ConnectorTestContext, semaphore: anyio.Semaphore) -> Conn
         async with context:
             async with asyncer.create_task_group() as task_group:
                 tasks = [
-                    task_group.soonify(tests.QaChecks(context).run)(),
+                    task_group.soonify(tests.run_qa_checks)(context),
                     task_group.soonify(tests.run_code_format_checks)(context),
                     task_group.soonify(tests.run_all_tests)(context),
                 ]

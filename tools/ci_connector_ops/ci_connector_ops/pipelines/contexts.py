@@ -31,7 +31,9 @@ class ConnectorTestContext:
     """The connector test context is used to store configuration for a specific connector pipeline run."""
 
     DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE = "airbyte/connector-acceptance-test:latest"
-    DEFAULT_EXCLUDED_FILES = glob("**/build/") + glob("**/.venv") + [".git"] + glob("**/secrets")
+    DEFAULT_EXCLUDED_FILES = (
+        glob("**/build", recursive=True) + glob("**/.venv", recursive=True) + glob("**/secrets", recursive=True) + [".git"]
+    )
 
     def __init__(
         self,

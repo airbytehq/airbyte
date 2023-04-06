@@ -43,7 +43,7 @@ QA_ENGINE_REQUIREMENTS = [
 ]
 
 PIPELINES_REQUIREMENTS = [
-    "dagger-io~=0.4.2",  # TODO unpin once this issue is resolved https://github.com/moby/buildkit/issues/3751 and last dagger version using the latest buildkit
+    "dagger-io~=0.4.2",
     "asyncer",
 ]
 

@@ -9,7 +9,7 @@ from __future__ import annotations
 import uuid
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
-from ci_connector_ops.pipelines.utils import get_file_contents
+from ci_connector_ops.pipelines.utils import get_file_contents, slugify
 from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Secret
 
 if TYPE_CHECKING:
@@ -223,7 +223,11 @@ def with_dockerd_service(
     dind = (
         context.dagger_client.container()
         .from_("docker:23.0.1-dind")
-        .with_mounted_cache("/var/lib/docker", context.dagger_client.cache_volume("docker-lib"), sharing=CacheSharingMode.PRIVATE)
+        .with_mounted_cache(
+            "/var/lib/docker",
+            context.dagger_client.cache_volume(f"{slugify(context.connector.technical_name)}-docker-lib"),
+            sharing=CacheSharingMode.PRIVATE,
+        )
     )
     if shared_volume is not None:
         dind = dind.with_mounted_cache(*shared_volume)
@@ -295,8 +299,8 @@ async def with_connector_acceptance_test(context: ConnectorTestContext, connecto
 
     return (
         with_bound_docker_host(context, cat_container, shared_tmp_volume)
-        .with_entrypoint(["pip"])
-        .with_exec(["install", "pytest-custom_exit_code"])
+        .with_entrypoint([])
+        .with_exec(["pip", "install", "pytest-custom_exit_code"])
         .with_mounted_directory("/test_input", context.get_connector_dir(exclude=["secrets", ".venv"]))
         .with_directory("/test_input/secrets", context.secrets_dir)
         .with_workdir("/test_input")

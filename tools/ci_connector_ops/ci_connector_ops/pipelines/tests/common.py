@@ -4,18 +4,19 @@
 
 """This module groups steps made to run tests agnostic to a connector language."""
 
-from typing import List, Optional
+from typing import Optional
 
 import asyncer
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.bases import PytestStep, Step, StepResult, StepStatus
+from ci_connector_ops.utils import DESTINATION_DEFINITIONS_FILE_PATH, SOURCE_DEFINITIONS_FILE_PATH
 from dagger import File
 
 
 class QaChecks(Step):
     title = "QA checks"
 
-    async def _run(self) -> List[StepResult]:
+    async def _run(self) -> StepResult:
         """Runs our QA checks on a connector.
         The QA checks are defined in this module:
         https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/qa_checks.py
@@ -23,7 +24,7 @@ class QaChecks(Step):
         Args:
             context (ConnectorTestContext): The current test context, providing a connector object, a dagger client and a repository directory.
         Returns:
-            List[StepResult]: Failure or success of the QA checks with stdout and stdout in a list.
+            StepResult: Failure or success of the QA checks with stdout and stderr.
         """
         ci_connector_ops = await environments.with_ci_connector_ops(self.context)
         filtered_repo = self.context.get_repo_dir(
@@ -31,8 +32,8 @@ class QaChecks(Step):
                 str(self.context.connector.code_directory),
                 str(self.context.connector.documentation_file_path),
                 str(self.context.connector.icon_path),
-                "airbyte-config/init/src/main/resources/seed/source_definitions.yaml",
-                "airbyte-config/init/src/main/resources/seed/destination_definitions.yaml",
+                SOURCE_DEFINITIONS_FILE_PATH,
+                DESTINATION_DEFINITIONS_FILE_PATH,
             ],
         )
         qa_checks = (
@@ -40,20 +41,20 @@ class QaChecks(Step):
             .with_workdir("/airbyte")
             .with_exec(["run-qa-checks", f"connectors/{self.context.connector.technical_name}"])
         )
-        return [await self.get_step_result(qa_checks)]
+        return await self.get_step_result(qa_checks)
 
 
 class AcceptanceTests(PytestStep):
     title = "Acceptance tests"
 
-    # TODO update docstring
     async def _run(self, connector_under_test_image_tar: Optional[File]) -> StepResult:
-        """Runs the acceptance test suite on a connector dev image.
-        It's rebuilding the connector acceptance test image if the tag is :dev.
-        It's building the connector under test dev image if the connector image is :dev in the acceptance test config.
+        """Run the acceptance test suite on a connector dev image. Build the connector acceptance test image if the tag is :dev.
+
+        Args:
+            connector_under_test_image_tar (File): The file holding the tar archive of the connector image.
 
         Returns:
-            StepResult: Failure or success of the acceptances tests with stdout and stdout.
+            StepResult: Failure or success of the acceptances tests with stdout and stderr.
         """
 
         if not self.context.connector.acceptance_test_config:
