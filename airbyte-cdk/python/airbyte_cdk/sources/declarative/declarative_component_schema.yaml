@@ -508,7 +508,9 @@ definitions:
         type: object
         additionalProperties: true
         examples:
-          -
+          - applicationId: "{{ config['application_id'] }}"
+            applicationSecret: "{{ config['application_secret'] }}"
+            token: "{{ config['token'] }}"
       scopes:
         title: Scopes
         description: List of scopes that should be granted to the access token
@@ -516,9 +518,7 @@ definitions:
         items:
           type: string
         examples:
-          - applicationId: "{{ config['application_id'] }}"
-            applicationSecret: "{{ config['application_secret'] }}"
-            token: "{{ config['token'] }}"
+          -
       token_expiry_date:
         title: Token Expiry Date
         description:
