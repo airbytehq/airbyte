@@ -11788,6 +11788,70 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "planetscale/airbyte-source:1.15.0"
+  spec:
+    documentationUrl: "https://planetscale.com/docs/integrations/airbyte"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "PlanetScale Source Spec"
+      type: "object"
+      required:
+      - "host"
+      - "database"
+      - "username"
+      - "password"
+      additionalProperties: false
+      properties:
+        host:
+          description: "The host name of the database."
+          title: "Host"
+          type: "string"
+          order: 0
+        shards:
+          description: "Comma separated list of shards you'd like to sync, by default\
+            \ all shards are synced."
+          title: "Shards"
+          type: "string"
+          order: 4
+        database:
+          description: "The PlanetScale database name."
+          title: "Database"
+          type: "string"
+          order: 1
+        username:
+          description: "The username which is used to access the database."
+          title: "Username"
+          type: "string"
+          order: 2
+        password:
+          description: "The password associated with the username."
+          title: "Password"
+          type: "string"
+          order: 3
+          airbyte_secret: true
+        options:
+          type: "object"
+          title: "Customize serialization"
+          description: "The storage Provider or Location of the file(s) which should\
+            \ be replicated."
+          default: "Public Web"
+          oneOf:
+          - title: "tinyint(1) serialization"
+            required:
+            - "do_not_treat_tiny_int_as_boolean"
+            properties:
+              storage:
+                type: "string"
+                const: "HTTPS"
+              do_not_treat_tiny_int_as_boolean:
+                type: "boolean"
+                title: "Do not treat tinyint(1) as boolean"
+                default: false
+                description: "If enabled, properties of type TinyInt(1) are output\
+                  \ as TinyInt, and not boolean."
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-plausible:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/plausible"
