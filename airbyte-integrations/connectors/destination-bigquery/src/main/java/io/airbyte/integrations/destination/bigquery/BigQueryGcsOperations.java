@@ -209,4 +209,9 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
     createTableIfNotExists(tableId, schema);
   }
 
+  @Override
+  public BigQuery getBigQuery() {
+    return bigQuery;
+  }
+
 }

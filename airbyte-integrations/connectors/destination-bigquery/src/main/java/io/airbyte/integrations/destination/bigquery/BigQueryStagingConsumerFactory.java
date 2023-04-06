@@ -5,6 +5,11 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.api.gax.paging.Page;
+import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.Schema;
+import com.google.cloud.bigquery.Table;
+import com.google.cloud.bigquery.TableId;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.concurrency.VoidCallable;
@@ -14,6 +19,7 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
+import io.airbyte.integrations.destination.bigquery.materialization.BigQueryMaterializationOperations;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
@@ -192,6 +198,36 @@ public class BigQueryStagingConsumerFactory {
         bigQueryGcsOperations.dropStageIfExists(writeConfig.datasetId(), writeConfig.streamName());
       }
       LOGGER.info("Cleaning up destination completed.");
+
+      LOGGER.info("begin typing+deduping");
+
+      // This would need to be refactored in reality, but hopefully it's illustrative.
+      final BigQuery bigquery = bigQueryGcsOperations.getBigQuery();
+      BigQueryMaterializationOperations ops = new BigQueryMaterializationOperations(bigquery);
+
+      // We should do each table in parallel. Not a huge lift, just didn't want to write that code for a POC.
+      for (Map.Entry<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> entry : writeConfigs.entrySet()) {
+        final AirbyteStreamNameNamespacePair streamIdentifier = entry.getKey();
+        final BigQueryWriteConfig writeConfig = entry.getValue();
+
+        /*
+         * commentary: Normalization has a ton of extra logic here, and we probably need to port that over.
+         * E.g. tablename length, reserved words, maybe other stuff that I'm unaware of.
+         */
+        String finalTableName = new BigQuerySQLNameTransformer().convertStreamName(streamIdentifier.getName());
+
+        // TODO this doesn't compile yet. Need to pass jsonschema into writeConfig
+        Schema finalSchema = ops.getTableSchema(writeConfig);
+
+        if (writeConfig.syncMode() == DestinationSyncMode.OVERWRITE) {
+          bigQueryGcsOperations.dropTableIfExists(writeConfig.datasetId(), TableId.of(writeConfig.datasetId(), finalTableName));
+        }
+
+        ops.createOrAlterTable(writeConfig.datasetId(), finalTableName, finalSchema);
+        ops.mergeFromRawTable(writeConfig.datasetId(), writeConfig.targetTableId().getTable(), finalTableName, finalSchema);
+      }
+
+      LOGGER.info("done typing+deduping");
     };
   }
 

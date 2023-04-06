@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.TableId;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
@@ -79,4 +80,5 @@ public interface BigQueryStagingOperations {
 
   void truncateTableIfExists(final String datasetId, final TableId tableId, Schema schema);
 
+  BigQuery getBigQuery();
 }
