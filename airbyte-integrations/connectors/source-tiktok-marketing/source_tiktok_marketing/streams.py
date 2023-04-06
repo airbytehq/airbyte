@@ -71,18 +71,18 @@ T = TypeVar("T")
 #       ├─CampaignsReports                      (7 campaigns_reports)
 #       ├─AdGroupsReports                       (8 ad_groups_reports)
 #       └─AudienceReport
-#         ├─AdGroupAudienceReports              (9  ad_group_audience_reports)
-#         ├─AdgroupAudienceReportsByCountry     (10 ad_group_audience_reports_by_country)
-#         ├─AdgroupAudienceReportsByPlatform    (11 ad_group_audience_reports_by_platform)
-#         ├─AdsAudienceReports                  (12 ads_audience_reports)
-#         ├─AdsAudienceReportsByCountry         (13 ads_audience_reports_by_country)
-#         ├─AdsAudienceReportsByPlatform        (14 ads_audience_reports_by_platform)
-#         ├─AdvertisersAudienceReports          (15 advertisers_audience_reports)
-#         ├─AdvertisersAudienceReportsByCountry (16 advertisers_audience_reports)
-#         ├─AdvertisersAudienceReportsByPlatform(17 advertisers_audience_reports_by_platform)
-#         └─CampaignsAudienceReports            (18 campaigns_audience_reports)
-#         └─CampaignsAudienceReportsByCountry   (19 campaigns_audience_reports_by_country)
-#         └─CampaignsAudienceReportsByPlatform  (20 campaigns_audience_reports_by_platform)
+#         ├─AdGroupAudienceReports                 (9  ad_group_audience_reports)
+#         | ├─AdGroupAudienceReportsByCountry      (10 ad_group_audience_reports_by_country)
+#         | └─AdGroupAudienceReportsByPlatform     (11 ad_group_audience_reports_by_platform)
+#         ├─AdsAudienceReports                     (12 ads_audience_reports)
+#         | ├─AdsAudienceReportsByCountry          (13 ads_audience_reports_by_country)
+#         | └─AdsAudienceReportsByPlatform         (14 ads_audience_reports_by_platform)
+#         ├─AdvertisersAudienceReports             (15 advertisers_audience_reports)
+#         | ├─AdvertisersAudienceReportsByCountry  (16 advertisers_audience_reports_by_country)
+#         | └─AdvertisersAudienceReportsByPlatform (17 advertisers_audience_reports_by_platform)
+#         └─CampaignsAudienceReports               (18 campaigns_audience_reports)
+#           ├─CampaignsAudienceReportsByCountry    (19 campaigns_audience_reports_by_country)
+#           └─CampaignsAudienceReportsByPlatform   (20 campaigns_audience_reports_by_platform)
 
 
 @total_ordering
@@ -374,24 +374,22 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
             result = result.get(key)
         return result
 
-    @staticmethod
-    def unnest_field(record: Mapping[str, Any], unnest_from: str, fields: Iterable[str]):
+    def unnest_cursor_and_pk(self, record: Mapping[str, Any]):
         """
-        Unnest cursor_field to the root level of the record.
+        unnest nested cursor_field and primary_key from nested `dimensions` object to root-level for *_reports streams
         """
-        if unnest_from in record:
-            prop = record.get(unnest_from, {})
-            for field in fields:
-                if field in prop:
-                    record[field] = prop.get(field)
 
-    def _get_fields(self):
-        """
-        Returns parsed to one list cursor and primary keys.
-        """
-        if type(self.primary_key) == list:
-            return [self.cursor_field, *self.primary_key]
-        return [self.cursor_field, self.primary_key]
+        def to_list(s):
+            if not isinstance(s, list):
+                s = [s]
+            return s
+
+        dimensions = record.get("dimensions", {})
+        fields = to_list(self.cursor_field) + to_list(self.primary_key)
+        for field in fields:
+            if field in dimensions:
+                record[field] = dimensions.get(field)
+        return record
 
     def parse_response(
         self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
@@ -399,8 +397,7 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
         """Additional data filtering"""
         state = self.select_cursor_field_value(stream_state) or self._start_time
         for record in super().parse_response(response=response, stream_state=stream_state, **kwargs):
-            # unnest nested cursor_field and primary_key from nested `dimensions` object to root-level for *_reports streams
-            self.unnest_field(record, "dimensions", self._get_fields())
+            record = self.unnest_cursor_and_pk(record)
             updated = self.select_cursor_field_value(record, stream_slice)
             if updated is None:
                 yield record
@@ -484,7 +481,6 @@ class BasicReports(IncrementalTiktokStream, ABC):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1738864915188737"""
 
     schema_name = "basic_reports"
-    ref_pk = "ad_id"
     report_granularity = None
 
     @property
@@ -527,8 +523,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
             return "stat_time_day"
         if self.report_granularity == ReportGranularity.HOUR:
             return "stat_time_hour"
-        if self.report_granularity == ReportGranularity.LIFETIME:
-            return "stat_time_day"
+        return []
 
     @staticmethod
     def _get_time_interval(
@@ -718,6 +713,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
 class AdsReports(BasicReports):
     """Custom reports for ads"""
 
+    ref_pk = "ad_id"
     report_level = ReportLevel.AD
 
 
@@ -742,7 +738,7 @@ class AdGroupsReports(BasicReports):
     report_level = ReportLevel.ADGROUP
 
 
-class AudienceReport(BasicReports):
+class AudienceReport(BasicReports, ABC):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1738864928947201"""
 
     audience_dimensions: List = ["gender", "age"]
@@ -768,8 +764,7 @@ class AudienceReport(BasicReports):
 
 class CampaignsAudienceReports(AudienceReport):
 
-    primary_key = "campaign_id"
-
+    ref_pk = "campaign_id"
     report_level = ReportLevel.CAMPAIGN
 
 
@@ -781,6 +776,7 @@ class AdGroupAudienceReports(AudienceReport):
 
 class AdsAudienceReports(AudienceReport):
 
+    ref_pk = "ad_id"
     report_level = ReportLevel.AD
 
 
@@ -790,68 +786,49 @@ class AdvertisersAudienceReports(AudienceReport):
     report_level = ReportLevel.ADVERTISER
 
 
-class CampaignsAudienceReportsByCountry(AudienceReport):
+class CampaignsAudienceReportsByCountry(CampaignsAudienceReports):
     """Custom reports for campaigns by country"""
 
-    ref_pk = "campaign_id"
-    report_level = ReportLevel.CAMPAIGN
     audience_dimensions = ["country_code"]
 
 
-class AdGroupAudienceReportsByCountry(AudienceReport):
+class AdGroupAudienceReportsByCountry(AdGroupAudienceReports):
     """Custom reports for adgroups by country"""
 
-    primary_key = "adgroup_id"
-
-    report_level = ReportLevel.ADGROUP
     audience_dimensions = ["country_code"]
 
 
-class AdsAudienceReportsByCountry(AudienceReport):
+class AdsAudienceReportsByCountry(AdsAudienceReports):
     """Custom reports for ads by country"""
 
-    report_level = ReportLevel.AD
     audience_dimensions = ["country_code"]
 
 
-class AdvertisersAudienceReportsByCountry(AudienceReport):
+class AdvertisersAudienceReportsByCountry(AdvertisersAudienceReports):
     """Custom reports for advertisers by country"""
 
-    primary_key = "advertiser_id"
-
-    report_level = ReportLevel.ADVERTISER
     audience_dimensions = ["country_code"]
 
 
-class CampaignsAudienceReportsByPlatform(AudienceReport):
+class CampaignsAudienceReportsByPlatform(CampaignsAudienceReports):
     """Custom reports for campaigns by platform"""
 
-    primary_key = "campaign_id"
-
-    report_level = ReportLevel.CAMPAIGN
     audience_dimensions = ["platform"]
 
 
-class AdGroupAudienceReportsByPlatform(AudienceReport):
+class AdGroupAudienceReportsByPlatform(AdGroupAudienceReports):
     """Custom reports for adgroups by platform"""
 
-    primary_key = "adgroup_id"
-
-    report_level = ReportLevel.ADGROUP
     audience_dimensions = ["platform"]
 
 
-class AdsAudienceReportsByPlatform(AudienceReport):
+class AdsAudienceReportsByPlatform(AdsAudienceReports):
     """Custom reports for ads by platform"""
 
-    report_level = ReportLevel.AD
     audience_dimensions = ["platform"]
 
 
-class AdvertisersAudienceReportsByPlatform(AudienceReport):
+class AdvertisersAudienceReportsByPlatform(AdvertisersAudienceReports):
     """Custom reports for advertisers by platform"""
 
-    primary_key = "advertiser_id"
-
-    report_level = ReportLevel.ADVERTISER
     audience_dimensions = ["platform"]
