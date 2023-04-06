@@ -43,27 +43,14 @@ class MeliInvoices(HttpStream):
         # parent = f"projects/{project_id}"
 
         # Create the Secret Manager client.
-        client = secretmanager.SecretManagerServiceClient()
-
-        # # Create the parent secret.
-        # secret = client.create_secret(
-        #     request={
-        #         "parent": parent,
-        #         "secret_id": secret_id,
-        #         "secret": {"replication": {"automatic": {}}},
-        #     }
-        # )
-        # # Add the secret version.
-        # version = client.add_secret_version(
-        #     request={"parent": secret.name, "payload": {"data": b"hello world!"}}
-        # )
+        # client = secretmanager.SecretManagerServiceClient()
 
         # Getting ACCESS_KEY_ID
-        resource_name = f"projects/{self.google_project_id}/secrets/{self.google_secret_aws_credstash_credentials}/versions/latest"
-        response = client.access_secret_version(name=resource_name)
-        aws_credentials = response.payload.data.decode('UTF-8')
-        print(aws_credentials)
-        logger.info(aws_credentials)
+        # resource_name = f"projects/{self.google_project_id}/secrets/{self.google_secret_aws_credstash_credentials}/versions/latest"
+        # response = client.access_secret_version(name=resource_name)
+        # aws_credentials = response.payload.data.decode('UTF-8')
+        # print(aws_credentials)
+        # logger.info(aws_credentials)
 
 
         # Getting the credentials from Secrets Manager
