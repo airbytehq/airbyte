@@ -67,7 +67,8 @@ definitions:
         type: object
         additionalProperties: true
   ApiKeyAuthenticator:
-    description: Authenticator for requests requiring an api token
+    title: API Key Authenticator
+    description: Authenticator for requests requiring an API token injected as a request header.
     type: object
     required:
       - type
@@ -77,9 +78,20 @@ definitions:
         type: string
         enum: [ApiKeyAuthenticator]
       api_token:
+        title: API Key
+        description: The API key to inject in the request
         type: string
+        examples:
+          - "{{ config['api_key'] }}"
+          - "Token token={{ config['api_key'] }}"
       header:
+        title: Header
+        description: The name of the header that will be injected in the request
         type: string
+        examples:
+          - Authorization
+          - Api-Token
+          - X-Auth-Token
       $parameters:
         type: object
         additionalProperties: true
