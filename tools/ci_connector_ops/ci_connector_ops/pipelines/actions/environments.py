@@ -284,20 +284,8 @@ async def with_connector_acceptance_test(context: ConnectorTestContext, connecto
         Container: A container with connector acceptance tests installed.
     """
 
-    # Hacky way to make sure the image is always loaded
-    connector_image_tar_name = f"{str(uuid.uuid4())}.tar"
-    docker_cli = with_docker_cli(context).with_mounted_file(connector_image_tar_name, connector_under_test_image_tar)
-
-    # TODO create a function to load and tag images
-    image_load_output = await (
-        docker_cli.with_exec(["echo", f"Load {connector_image_tar_name}"])
-        .with_exec(["docker", "load", "--input", connector_image_tar_name])
-        .stdout()
-    )
-    if "Loaded image ID: sha256:" in image_load_output:
-        connector_under_test_image_name = context.connector.acceptance_test_config["connector_image"]
-        image_id = image_load_output.replace("\n", "").replace("Loaded image ID: sha256:", "")
-        await docker_cli.with_exec(["docker", "tag", image_id, connector_under_test_image_name]).exit_code()
+    connector_under_test_image_name = context.connector.acceptance_test_config["connector_image"]
+    await load_image_to_docker_host(context, connector_under_test_image_tar, connector_under_test_image_name)
 
     if context.connector_acceptance_test_image.endswith(":dev"):
         cat_container = context.connector_acceptance_test_source_dir.docker_build()
@@ -373,3 +361,13 @@ def with_gradle(
         .with_workdir("/airbyte")
     )
     return with_bound_docker_host(context, openjdk_with_docker, shared_tmp_volume, docker_cache_volume_name)
+
+
+async def load_image_to_docker_host(context, tar_file: File, image_tag: str):
+    # Hacky way to make sure the image is always loaded
+    tar_name = f"{str(uuid.uuid4())}.tar"
+    docker_cli = with_docker_cli(context).with_mounted_file(tar_name, tar_file)
+    image_load_output = await docker_cli.with_exec(["docker", "load", "--input", tar_name]).stdout()
+    if "sha256:" in image_load_output:
+        image_id = image_load_output.replace("\n", "").replace("Loaded image ID: sha256:", "")
+        await docker_cli.with_exec(["docker", "tag", image_id, image_tag]).exit_code()

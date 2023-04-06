@@ -208,6 +208,11 @@ class Connector:
         if self.supports_normalization:
             return f"{self.definition['normalizationConfig']['normalizationRepository']}"
 
+    @property
+    def normalization_tag(self) -> Optional[str]:
+        if self.supports_normalization:
+            return f"{self.definition['normalizationConfig']['normalizationTag']}"
+
     def get_secret_manager(self, gsm_credentials: str):
         return SecretsManager(connector_name=self.technical_name, gsm_credentials=gsm_credentials)
 

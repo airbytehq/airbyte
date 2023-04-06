@@ -8,13 +8,13 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import TYPE_CHECKING, ClassVar, List, Optional, Union
+from typing import TYPE_CHECKING, ClassVar, List, Optional
 
 import asyncer
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.utils import check_path_in_workdir, with_exit_code, with_stderr, with_stdout
 from ci_connector_ops.utils import console
-from dagger import Client, Container, QueryError
+from dagger import Container, QueryError
 from rich.console import Group
 from rich.panel import Panel
 from rich.style import Style
@@ -82,9 +82,6 @@ class Step(ABC):
 
     def skip(self, reason: str = None) -> StepResult:
         return StepResult(self, StepStatus.SKIPPED, stdout=reason)
-
-    def get_dagger_pipeline(self, dagger_client_or_container: Union[Client, Container]) -> Union[Client, Container]:
-        return dagger_client_or_container.pipeline(f"{self.context.connector.technical_name} - {self.title}")
 
     async def get_step_result(self, container: Container) -> StepResult:
         """Concurrent retrieval of exit code, stdout and stdout of a container.
