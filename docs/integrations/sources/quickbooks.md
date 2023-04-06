@@ -1,10 +1,76 @@
 # QuickBooks
 
-## Overview
+This page contains the setup guide and reference information for the QuickBooks Source connector.
 
-The QuickBooks source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+## Prerequisites
 
-### Output schema
+- Account at [Intuit Developer account](https://developer.intuit.com/app/developer/qbo/docs/get-started)
+- Start date
+- Realm ID
+- User Agent
+
+<!-- env:oss -->
+**For Airbyte Open Source:**
+
+- OAuth2.0 credentials (see [OAuth 2.0 playground](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0-playground))
+<!-- /env:oss -->
+
+## Setup guide
+
+### Step 1: Set up QuickBooks
+
+Create a [Intuit Developer account](https://developer.intuit.com/app/developer/qbo/docs/get-started)
+
+<!-- env:oss -->
+**Airbyte Open Source additional setup steps**
+
+1. Create an application
+2. Obtain credentials. The easiest way to get these credentials is by using Quickbook's [OAuth 2.0 playground](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0-playground)
+
+<!-- /env:oss -->
+
+<!-- env:cloud -->
+### Step 2: Set up the QuickBooks connector in Airbyte
+
+**For Airbyte Cloud:**
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
+3. On the source setup page, select **QuickBooks** from the Source type dropdown and enter a name for this connector.
+4. Click `Authenticate your QuickBooks account`
+5. Log in and Authorize to the QuickBooks account.
+6. **Start date** - The date from which you'd like to replicate data for streams.
+7. **Realm ID** - The Labeled Company ID you'd like to replicate data for streams.
+8. **User Agent** - Process and email for API logging purposes.
+10. **Sandbox** - Turn on if you're going to replicate the data from the sandbox environment.
+11. Click **Set up source**.
+
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+**For Airbyte Open Source:**
+
+1. **Client ID** - The OAuth2.0 application ID
+2. **Client Secret** - The OAuth2.0 application secret
+3. **Refresh Token** - Refresh token used to get new access token every time the current one is expired
+4. **Access Token** - Access token to perform authenticated API calls with
+5. **Token Expiry Date** - DateTime when the access token becomes invalid
+6. **Start date** - The date from which you'd like to replicate data for streams.
+7. **Realm ID** - The Labeled Company ID you'd like to replicate data for streams.
+8. **User Agent** - Process and email for API logging purposes.
+9. **Sandbox** - Turn on if you're going to replicate the data from the sandbox environment.
+<!-- /env:oss -->
+
+## Supported sync modes
+
+The Quickbooks Source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+
+## Supported Streams
 
 This Source is capable of syncing the following [Streams](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/most-commonly-used/account):
 
@@ -37,46 +103,11 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 - [VendorCredits](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/vendorcredit)
 - [Vendors](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/vendor)
 
-### Data type mapping
-
-| Integration Type | Airbyte Type | Notes |
-| :--------------- | :----------- | :---- |
-| `string`         | `string`     |       |
-| `number`         | `number`     |       |
-| `array`          | `array`      |       |
-| `object`         | `object`     |       |
-
-### Features
-
-| Feature           | Supported?\(Yes/No\) | Notes |
-| :---------------- | :------------------- | :---- |
-| Full Refresh Sync | Yes                  |       |
-| Incremental Sync  | Yes                  |       |
-| SSL connection    | Yes                  |       |
-| Namespaces        | No                   |       |
-
-## Getting started
-
-1. Create an [Intuit Developer account](https://developer.intuit.com/app/developer/qbo/docs/get-started)
-2. Create an app
-3. Obtain credentials
-
-### Requirements
-
-- Client ID
-- Client Secret
-- Realm ID
-- Refresh token
-
-The easiest way to get these credentials is by using Quickbook's [OAuth 2.0 playground](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0-playground)
-
-**Important note:** The refresh token expires every 100 days. You will need to manually revisit the Oauth playground to obtain a refresh token every 100 days, or your syncs will expire. We plan on offering full Oauth support soon so you don't need to redo this process manually.
-
-## CHANGELOG
+## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                  |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------- |
-| `1.0.0` | 2023-03-20 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Migrate to Low-Code                                      |
+|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------|
+| `1.0.0` | 2023-03-20 | [24324](https://github.com/airbytehq/airbyte/pull/24324) | Migrate to Low-Code                                      |
 | `0.1.5` | 2022-02-17 | [10346](https://github.com/airbytehq/airbyte/pull/10346) | Update label `Quickbooks` -> `QuickBooks`                |
 | `0.1.4` | 2021-12-20 | [8960](https://github.com/airbytehq/airbyte/pull/8960)   | Update connector fields title/description                |
 | `0.1.3` | 2021-08-10 | [4986](https://github.com/airbytehq/airbyte/pull/4986)   | Using number data type for decimal fields instead string |

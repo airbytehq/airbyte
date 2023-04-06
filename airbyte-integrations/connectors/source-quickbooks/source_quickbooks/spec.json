@@ -1,8 +1,8 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/sources/quickbooks-singer",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/quickbooks",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Source QuickBooks Singer Spec",
+    "title": "Source QuickBooks Spec",
     "type": "object",
     "required": [
       "credentials",
@@ -67,17 +67,20 @@
         ]
       },
       "realm_id": {
+        "order": 1,
         "description": "Labeled Company ID. The Make API Calls panel is populated with the realm id and the current access token.",
         "title": "Realm ID",
         "type": "string",
         "airbyte_secret": true
       },
       "user_agent": {
+        "order": 2,
         "type": "string",
         "title": "User Agent",
         "description": "Process and email for API logging purposes. Example: tap-quickbooks <api_user_email@your_company.com>."
       },
       "start_date": {
+        "order": 3,
         "description": "The default value to use if no bookmark exists for an endpoint (rfc3339 date string). E.g, 2021-03-20T00:00:00+00:00. Any data before this date will not be replicated.",
         "title": "Start Date",
         "type": "string",
@@ -88,6 +91,7 @@
         ]
       },
       "sandbox": {
+        "order": 4,
         "description": "Determines whether to use the sandbox or production environment.",
         "title": "Sandbox",
         "type": "boolean",
