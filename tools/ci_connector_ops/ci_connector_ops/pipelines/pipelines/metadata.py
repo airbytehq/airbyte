@@ -2,7 +2,7 @@ import dagger
 from typing import Optional
 
 from ci_connector_ops.pipelines.bases import Step, StepStatus, TestReport
-from ci_connector_ops.pipelines.actions.environments import with_poetry_module
+from ci_connector_ops.pipelines.actions.environments import with_poetry_module, DEFAULT_PYTHON_EXCLUDE
 from ci_connector_ops.pipelines.contexts import PipelineContext
 from ci_connector_ops.pipelines.utils import (
     DAGGER_CONFIG,
@@ -14,14 +14,16 @@ METADATA_ORCHESTRATOR_MODULE_PATH = "orchestrator"
 
 
 class TestPoetryModule(Step):
-    def __init__(self, context: PipelineContext, title: str, parent_dir: str, module_path: str):
+    def __init__(self, context: PipelineContext, title: str, parent_dir_path: str, module_path: str):
         self.title = title
-        self.parent_dir = parent_dir
+        self.parent_dir_path = parent_dir_path
         self.module_path = module_path
         super().__init__(context)
 
     async def _run(self) -> StepStatus:
-        metadata_lib_module = with_poetry_module(self.context, self.parent_dir, self.module_path)
+        # TODO (ben): Use the GlobalExclusion when merged (https://github.com/airbytehq/airbyte/pull/24225/files#diff-c86417158894333350d986efd59ffada645270c1c65b4eec7645a0b63ac2d915R46)
+        parent_dir = self.context.get_repo_dir(self.parent_dir_path, exclude=DEFAULT_PYTHON_EXCLUDE)
+        metadata_lib_module = with_poetry_module(self.context, parent_dir, self.module_path)
         run_test = metadata_lib_module.with_exec(["poetry", "run", "pytest"])
         return await self.get_step_result(run_test)
 
@@ -50,7 +52,7 @@ async def run_metadata_lib_test_pipeline(
             test_lib_step = TestPoetryModule(
                 context=metadata_pipeline_context,
                 title="Test Metadata Service Lib",
-                parent_dir=METADATA_DIR,
+                parent_dir_path=METADATA_DIR,
                 module_path=METADATA_LIB_MODULE_PATH,
             )
             result = await test_lib_step.run()
@@ -83,7 +85,7 @@ async def run_metadata_orchestrator_test_pipeline(
             test_orch_step = TestPoetryModule(
                 context=metadata_pipeline_context,
                 title="Test Metadata Service Orchestrator",
-                parent_dir=METADATA_DIR,
+                parent_dir_path=METADATA_DIR,
                 module_path=METADATA_ORCHESTRATOR_MODULE_PATH,
             )
             result = await test_orch_step.run()

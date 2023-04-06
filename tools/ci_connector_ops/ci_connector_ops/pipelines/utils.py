@@ -158,7 +158,6 @@ def get_modified_connectors(modified_files: Set[str]) -> Set[Connector]:
     return set(modified_connectors)
 
 
-
 class DaggerPipelineCommand(click.Command):
     def invoke(self, ctx: click.Context) -> Any:
         """Wrap parent invoke in a try catch suited to handle pipeline failures.
@@ -178,4 +177,3 @@ class DaggerPipelineCommand(click.Command):
         except DaggerError as e:
             click.secho(str(e), err=True, fg="red")
             return sys.exit(1)
-

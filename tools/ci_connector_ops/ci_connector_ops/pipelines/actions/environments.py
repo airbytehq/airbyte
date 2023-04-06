@@ -246,7 +246,7 @@ def with_poetry(context: PipelineContext) -> Container:
     return poetry_with_cache
 
 
-def with_poetry_module(context: PipelineContext, parent_dir_path: str, module_path: str) -> Container:
+def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_path: str) -> Container:
     """Sets up a Poetry module.
 
     Args:
@@ -255,11 +255,10 @@ def with_poetry_module(context: PipelineContext, parent_dir_path: str, module_pa
         Container: A python environment with dependencies installed using poetry.
     """
     poetry_install_dependencies_cmd = ["poetry", "install"]
-    src = context.get_repo_dir(parent_dir_path, exclude=DEFAULT_PYTHON_EXCLUDE)
 
     python_with_poetry = with_poetry(context)
     return (
-        python_with_poetry.with_mounted_directory("/src", src)
+        python_with_poetry.with_mounted_directory("/src", parent_dir)
         .with_workdir(f"/src/{module_path}")
         .with_exec(poetry_install_dependencies_cmd)
     )
