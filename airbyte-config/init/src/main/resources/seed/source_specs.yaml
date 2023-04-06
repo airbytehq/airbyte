@@ -370,7 +370,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:2.0.13"
+- dockerImage: "airbyte/source-alloydb:2.0.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -6706,7 +6706,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-harvest:0.1.16"
+- dockerImage: "airbyte/source-harvest:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/harvest"
     connectionSpecification:
@@ -6734,6 +6734,7 @@
           - "2017-01-25T00:00:00Z"
           type: "string"
           order: 1
+          format: "date-time"
         replication_end_date:
           title: "End Date"
           description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any\
@@ -6744,6 +6745,7 @@
           type: "string"
           airbyte_hidden: true
           order: 2
+          format: "date-time"
         credentials:
           title: "Authentication mechanism"
           description: "Choose how to authenticate to Harvest."
@@ -7195,7 +7197,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-intercom:0.1.33"
+- dockerImage: "airbyte/source-intercom:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/intercom"
     connectionSpecification:
@@ -8596,7 +8598,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:1.0.8"
+- dockerImage: "airbyte/source-mssql:1.0.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
@@ -9066,7 +9068,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mixpanel:0.1.30"
+- dockerImage: "airbyte/source-mixpanel:0.1.31"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mixpanel"
     connectionSpecification:
@@ -9164,6 +9166,7 @@
           examples:
           - "2021-11-16"
           pattern: "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
+          format: "date-time"
         end_date:
           order: 6
           title: "End Date"
@@ -9173,6 +9176,7 @@
           examples:
           - "2021-11-16"
           pattern: "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
+          format: "date-time"
         region:
           order: 7
           title: "Region"
@@ -9471,7 +9475,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:2.0.11"
+- dockerImage: "airbyte/source-mysql:2.0.12"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -12065,7 +12069,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:2.0.14"
+- dockerImage: "airbyte/source-postgres:2.0.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -14175,7 +14179,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-slack:0.1.24"
+- dockerImage: "airbyte/source-slack:0.1.25"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/slack"
     connectionSpecification:
@@ -14196,6 +14200,7 @@
           examples:
           - "2017-01-25T00:00:00Z"
           title: "Start Date"
+          format: "date-time"
         lookback_window:
           type: "integer"
           title: "Threads Lookback window (Days)"
@@ -15579,7 +15584,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:2.0.5"
+- dockerImage: "airbyte/source-tiktok-marketing:2.0.6"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
