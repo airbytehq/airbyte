@@ -11,12 +11,15 @@ from airbyte_cdk.connector_builder.connector_builder_handler import list_streams
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
+from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 def create_source(config: Mapping[str, Any]) -> ManifestDeclarativeSource:
     manifest = config.get("__injected_declarative_manifest")
-    return ManifestDeclarativeSource(manifest, True)
+    return ManifestDeclarativeSource(
+        source_config=manifest, component_factory=ModelToComponentFactory(emit_connector_builder_messages=True)
+    )
 
 
 def get_config_and_catalog_from_args(args: List[str]) -> Tuple[str, Mapping[str, Any], Optional[ConfiguredAirbyteCatalog]]:
