@@ -2,16 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+"""This module is the CLI entrypoint to the airbyte-ci commands."""
+
 import click
-from .groups.metadata import metadata
-from .groups.connectors import connectors
 from ci_connector_ops.pipelines.contexts import CIContext
-from ci_connector_ops.pipelines.utils import (
-    get_current_epoch_time,
-    get_current_git_branch,
-    get_current_git_revision,
-    get_modified_files,
-)
+from ci_connector_ops.pipelines.utils import get_current_epoch_time, get_current_git_branch, get_current_git_revision, get_modified_files
+
+from .groups.connectors import connectors
+from .groups.metadata import metadata
 
 
 @click.group(help="Airbyte CI top-level command group.")
@@ -37,7 +35,7 @@ def airbyte_ci(
     gha_workflow_run_id: str,
     ci_context: str,
     pipeline_start_timestamp: int,
-):
+):  # noqa D103
     ctx.ensure_object(dict)
     ctx.obj["is_local"] = is_local
     ctx.obj["git_branch"] = git_branch

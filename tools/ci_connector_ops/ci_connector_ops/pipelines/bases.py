@@ -224,7 +224,7 @@ class TestReport:
         return len(self.failed_steps) == 0 and len(self.steps_results) > 0
 
     @property
-    def run_duration(self) -> int:
+    def run_duration(self) -> int:  # noqa D102
         return (self.created_at - self.pipeline_context.created_at).total_seconds()
 
     def to_json(self) -> str:
@@ -288,8 +288,10 @@ class TestReport:
 
 @dataclass(frozen=True)
 class ConnectorTestReport(TestReport):
+    """A dataclass to build connector test reports to share pipelines executions results with the user."""
+
     @property
-    def should_be_saved(self) -> bool:
+    def should_be_saved(self) -> bool:  # noqa D102
         return self.pipeline_context.is_ci
 
     def to_json(self) -> str:

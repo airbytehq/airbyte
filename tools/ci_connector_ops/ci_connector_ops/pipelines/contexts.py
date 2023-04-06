@@ -23,7 +23,7 @@ from dagger import Client, Directory
 
 
 class CIContext(str, Enum):
-    """An enum for Ci context values which can be ["manual", "pull_request", "nightly_builds"]"""
+    """An enum for Ci context values which can be ["manual", "pull_request", "nightly_builds"]."""
 
     MANUAL = "manual"
     PULL_REQUEST = "pull_request"
@@ -41,6 +41,8 @@ class ContextState(Enum):
 
 
 class PipelineContext:
+    """The pipeline context is used to store configuration for a specific pipeline run."""
+
     DEFAULT_EXCLUDED_FILES = (
         [".git"]
         + glob("**/build", recursive=True)
@@ -65,6 +67,17 @@ class PipelineContext:
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
     ):
+        """Initialize a pipeline context.
+
+        Args:
+            pipeline_name (str): The pipeline name.
+            is_local (bool): Whether the context is for a local run or a CI run.
+            git_branch (str): The current git branch name.
+            git_revision (str): The current git revision, commit hash.
+            gha_workflow_run_url (Optional[str], optional): URL to the github action workflow run. Only valid for CI run. Defaults to None.
+            pipeline_start_timestamp (Optional[int], optional): Timestamp at which the pipeline started. Defaults to None.
+            ci_context (Optional[str], optional): Pull requests, workflow dispatch or nightly build. Defaults to None.
+        """
         self.pipeline_name = pipeline_name
         self.is_local = is_local
         self.git_branch = git_branch
@@ -105,7 +118,7 @@ class PipelineContext:
         return self._test_report
 
     @test_report.setter
-    def test_report(self, test_report: TestReport):
+    def test_report(self, test_report: TestReport):  # noqa D102
         self._test_report = test_report
         self.state = ContextState.SUCCESSFUL if test_report.success else ContextState.FAILURE
 
@@ -154,13 +167,40 @@ class PipelineContext:
             return self.repo.branch(self.git_branch).tree().directory(subdir)
 
     async def __aenter__(self):
+        """Perform setup operation for the PipelineContext.
+
+        Updates the current commit status on Github.
+
+        Raises:
+            Exception: An error is raised when the context was not initialized with a Dagger client
+        Returns:
+            PipelineContext: A running instance of the PipelineContext.
+        """
         if self.dagger_client is None:
             raise Exception("A Pipeline can't be entered with an undefined dagger_client")
         self.state = ContextState.RUNNING
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         return self
 
-    async def __aexit__(self, exception_type, exception_value, traceback) -> bool:
+    async def __aexit__(
+        self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType]
+    ) -> bool:
+        """Perform teardown operation for the PipelineContext.
+
+        On the context exit the following operations will happen:
+            - Log the error value if an error was handled.
+            - Log the test report.
+            - Update the commit status check on GitHub if running in a CI environment.
+
+        It should gracefully handle all the execution errors that happens and always upload a test report and update commit status check.
+
+        Args:
+            exception_type (Optional[type[BaseException]]): The exception type if an exception was raised in the context execution, None otherwise.
+            exception_value (Optional[BaseException]): The exception value if an exception was raised in the context execution, None otherwise.
+            traceback (Optional[TracebackType]): The traceback if an exception was raised in the context execution, None otherwise.
+        Returns:
+            bool: Wether the teardown operation ran successfully.
+        """
         if exception_value:
             self.logger.error("An error was handled by the Pipeline", exc_info=True)
             self.state = ContextState.ERROR
@@ -245,11 +285,11 @@ class ConnectorTestContext(PipelineContext):
         self._updated_secrets_dir = updated_secrets_dir
 
     @property
-    def connector_acceptance_test_source_dir(self) -> Directory:
+    def connector_acceptance_test_source_dir(self) -> Directory:  # noqa D102
         return self.get_repo_dir("airbyte-integrations/bases/connector-acceptance-test")
 
     @property
-    def should_save_updated_secrets(self):
+    def should_save_updated_secrets(self):  # noqa D102
         return self.use_remote_secrets and self.updated_secrets_dir is not None
 
     def get_connector_dir(self, exclude=None, include=None) -> Directory:

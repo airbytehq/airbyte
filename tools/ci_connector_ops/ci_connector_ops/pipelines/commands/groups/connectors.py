@@ -34,6 +34,7 @@ logger = logging.getLogger(__name__)
 
 
 def validate_environment(is_local: bool, use_remote_secrets: bool):
+    """Check if the required environment variables exist."""
     if is_local:
         if not (os.getcwd().endswith("/airbyte") and Path(".git").is_dir()):
             raise click.UsageError("You need to run this command from the airbyte repository root.")
@@ -65,8 +66,7 @@ def connectors(
     ctx: click.Context,
     use_remote_secrets: str,
 ):
-    """A command group to gather all the connectors-ci command"""
-
+    """Group all the connectors-ci command."""
     validate_environment(ctx.obj["is_local"], use_remote_secrets)
 
     ctx.ensure_object(dict)

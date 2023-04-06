@@ -191,7 +191,8 @@ async def with_ci_credentials(context: PipelineContext, gsm_secret: Secret) -> C
 
 
 def with_git(base_container: Container) -> Container:
-    """Installs git in a alpine based container.
+    """Install git in a alpine based container.
+
     Args:
         context (Container): A alpine based container.
 
@@ -394,3 +395,40 @@ async def load_image_to_docker_host(context: ConnectorTestContext, tar_file: Fil
     if "sha256:" in image_load_output:
         image_id = image_load_output.replace("\n", "").replace("Loaded image ID: sha256:", "")
         await docker_cli.with_exec(["docker", "tag", image_id, image_tag]).exit_code()
+
+
+def with_poetry(context: PipelineContext) -> Container:
+    """Install poetry in a python environment.
+
+    Args:
+        context (PipelineContext): The current test context, providing the repository directory from which the ci_credentials sources will be pulled.
+    Returns:
+        Container: A python environment with poetry installed.
+    """
+    install_poetry_package_cmd = ["python", "-m", "pip", "install", "poetry"]
+
+    python_base_environment: Container = context.dagger_client.container().from_("python:3-alpine")
+    python_with_git = with_git(python_base_environment)
+    python_with_poetry = python_with_git.with_exec(install_poetry_package_cmd)
+
+    poetry_cache: CacheVolume = context.dagger_client.cache_volume("poetry_cache")
+    poetry_with_cache = python_with_poetry.with_mounted_cache("/root/.cache/pypoetry", poetry_cache, sharing=CacheSharingMode.PRIVATE)
+
+    return poetry_with_cache
+
+
+def with_poetry_module(context: PipelineContext, src_path: str) -> Container:
+    """Set up a Poetry module.
+
+    Args:
+        context (PipelineContext): The current test context, providing the repository directory from which the ci_credentials sources will be pulled.
+    Returns:
+        Container: A python environment with dependencies installed using poetry.
+    """
+    poetry_exclude = ["__pycache__"] + DEFAULT_PYTHON_EXCLUDE
+    poetry_install_dependencies_cmd = ["poetry", "install"]
+
+    src = context.dagger_client.host().directory(src_path, exclude=poetry_exclude)
+    python_with_poetry = with_poetry(context)
+
+    return python_with_poetry.with_mounted_directory("/src", src).with_workdir("/src").with_exec(poetry_install_dependencies_cmd)

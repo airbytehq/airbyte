@@ -42,11 +42,10 @@ def update_commit_status_check(
         should_send (bool, optional): Whether the commit check should actually be sent to GitHub API. Defaults to True.
         logger (Logger, optional): A logger to log info about updates. Defaults to None.
     """
-    safe_log(logger, f"Attempting to create {state} status for commit {sha} on Github in {context} context.")
-
     if not should_send:
         return
 
+    safe_log(logger, f"Attempting to create {state} status for commit {sha} on Github in {context} context.")
     try:
         github_client = Github(os.environ["CI_GITHUB_ACCESS_TOKEN"])
         airbyte_repo = github_client.get_repo(AIRBYTE_GITHUB_REPO)
