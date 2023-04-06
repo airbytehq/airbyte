@@ -258,7 +258,13 @@ cmd_publish() {
 
   echo "image_name $image_name"
   echo "versioned_image $versioned_image"
-  echo "latest_image $latest_image"
+
+  if [ "$pre_release" == "true" ]
+  then
+    echo "will skip updating latest_image $latest_image tag due to pre_release"
+  else
+    echo "latest_image $latest_image"
+  fi
 
   # before we start working sanity check that this version has not been published yet, so that we do not spend a lot of
   # time building, running tests to realize this version is a duplicate.
@@ -287,10 +293,12 @@ cmd_publish() {
       -f docker-compose.build.yaml                                       \
       --push
 
-    VERSION=latest GIT_REVISION=$GIT_REVISION docker buildx bake \
-      --set "*.platform=$build_arch"                             \
-      -f docker-compose.build.yaml                               \
-      --push
+    if [ "$pre_release" != "true" ]; then
+      VERSION=latest GIT_REVISION=$GIT_REVISION docker buildx bake \
+        --set "*.platform=$build_arch"                             \
+        -f docker-compose.build.yaml                               \
+        --push
+    fi
 
     docker buildx rm connector-buildx
 
@@ -309,14 +317,21 @@ cmd_publish() {
       local arch_versioned_image=$image_name:`echo $arch | sed "s/\//-/g"`-$image_version
       echo "Publishing new version ($arch_versioned_image) from $path"
       docker buildx build -t $arch_versioned_image --platform $arch --push $path
-      docker manifest create $latest_image --amend $arch_versioned_image
       docker manifest create $versioned_image --amend $arch_versioned_image
+
+      if [ "$pre_release" != "true" ]; then
+        docker manifest create $latest_image --amend $arch_versioned_image
+      fi
+
     done
 
-    docker manifest push $latest_image
     docker manifest push $versioned_image
-    docker manifest rm $latest_image
     docker manifest rm $versioned_image
+
+    if [ "$pre_release" != "true" ]; then
+      docker manifest push $latest_image
+      docker manifest rm $latest_image
+    fi
 
     # delete the temporary image tags made with arch_versioned_image
     sleep 10
