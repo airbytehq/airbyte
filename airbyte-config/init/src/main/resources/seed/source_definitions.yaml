@@ -1550,6 +1550,14 @@
   icon: plaid.svg
   sourceType: api
   releaseStage: alpha
+- name: PlanetScale
+  sourceDefinitionId: 5e354289-fee5-4dab-a863-6523e01cfa8a
+  dockerRepository: planetscale/airbyte-source
+  dockerImageTag: 1.15.0
+  documentationUrl: https://planetscale.com/docs/integrations/airbyte
+  icon: planetscale.svg
+  sourceType: database
+  releaseStage: alpha
 - name: Plausible
   sourceDefinitionId: 603ba446-3d75-41d7-92f3-aba901f8b897
   dockerRepository: airbyte/source-plausible

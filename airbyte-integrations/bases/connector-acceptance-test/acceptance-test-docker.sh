@@ -12,7 +12,8 @@ CONFIG_PATH="$(readlink_f acceptance-test-config.yml)"
 CONNECTOR_TAG_BASE="$(grep connector_image $CONFIG_PATH | head -n 1 | cut -d: -f2 | sed 's/^ *//')"
 CONNECTOR_TAG="$CONNECTOR_TAG_BASE:dev"
 CONNECTOR_NAME="$(echo $CONNECTOR_TAG_BASE | cut -d / -f 2)"
-CONNECTOR_DIR="$ROOT_DIR/airbyte-integrations/connectors/$CONNECTOR_NAME"
+DERIVED_CONNECTOR_DIR="$ROOT_DIR/airbyte-integrations/connectors/$CONNECTOR_NAME"
+CONNECTOR_DIR="${CONNECTOR_DIR:-"$DERIVED_CONNECTOR_DIR"}"
 
 if [ -n "$FETCH_SECRETS" ]; then
   cd $ROOT_DIR
@@ -24,9 +25,11 @@ if [ -n "$LOCAL_CDK" ] && [ -f "$CONNECTOR_DIR/setup.py" ]; then
   echo "Building Connector image with local CDK from $ROOT_DIR/airbyte-cdk"
   echo "Building docker image $CONNECTOR_TAG."
   CONNECTOR_NAME="$CONNECTOR_NAME" CONNECTOR_TAG="$CONNECTOR_TAG" QUIET_BUILD="$QUIET_BUILD" sh "$ROOT_DIR/airbyte-integrations/scripts/build-connector-image-with-local-cdk.sh"
-else
+elif [ -f "$CONNECTOR_DIR/Dockerfile" ]; then
   # Build latest connector image
   docker build -t "$CONNECTOR_TAG" .
+else
+  echo "nothing to build for connector $CONNECTOR_NAME @ $CONNECTOR_DIR"
 fi
 
 # Pull latest acctest image
