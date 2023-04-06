@@ -209,4 +209,8 @@ public class StateGeneratorUtils {
         .collect(Collectors.toList());
   }
 
+  public static AirbyteStateMessage convertStateMessage(final io.airbyte.protocol.models.AirbyteStateMessage state) {
+    return Jsons.object(Jsons.jsonNode(state), AirbyteStateMessage.class);
+  }
+
 }

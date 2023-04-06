@@ -12,7 +12,7 @@ from ci_connector_ops.pipelines.bases import Step, StepResult
 class QaChecks(Step):
     title = "QA checks"
 
-    async def run(self) -> List[StepResult]:
+    async def _run(self) -> List[StepResult]:
         """Runs our QA checks on a connector.
         The QA checks are defined in this module:
         https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/qa_checks.py
@@ -48,7 +48,7 @@ class CodeFormatChecks(Step):
     RUN_ISORT_CMD = ["python", "-m", "isort", f"--settings-file=/{environments.PYPROJECT_TOML_FILE_PATH}", "--check-only", "--diff", "."]
     RUN_FLAKE_CMD = ["python", "-m", "pflake8", f"--config=/{environments.PYPROJECT_TOML_FILE_PATH}", "."]
 
-    async def run(self) -> List[StepResult]:
+    async def _run(self) -> List[StepResult]:
         """Run a code format check on the container source code.
         We call black, isort and flake commands:
         - Black formats the code: fails if the code is not formatted.

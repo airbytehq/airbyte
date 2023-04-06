@@ -263,15 +263,15 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
         TestDataHolder.builder()
             .sourceType("DATE")
             .airbyteType(JsonSchemaType.STRING_DATE)
-            .addInsertValues("null", "'0001-01-01'", "'9999-12-31'")
-            .addExpectedValues(null, "0001-01-01", "9999-12-31")
+            .addInsertValues("null", "'0001-01-01'", "'9999-12-31'", "'12-JAN-2022'")
+            .addExpectedValues(null, "0001-01-01", "9999-12-31", "2022-01-12")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("DATETIME")
             .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
             .addInsertValues("null", "'0001-01-01 00:00:00'", "'9999-12-31 23:59:59'", "'9999-12-31 23:59:59.123456'")
-            .addExpectedValues(null, "0001-01-01T00:00:00.000000", "9999-12-31T23:59:59.000000", "9999-12-31T23:59:59.123456")
+            .addExpectedValues(null, "0001-01-01T00:00:00.000000", "9999-12-31T23:59:59", "9999-12-31T23:59:59.123456")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -286,7 +286,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
             .sourceType("TIMESTAMP")
             .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
             .addInsertValues("null", "'2018-03-22 12:00:00.123'", "'2018-03-22 12:00:00.123456'")
-            .addExpectedValues(null, "2018-03-22T12:00:00.123000", "2018-03-22T12:00:00.123456")
+            .addExpectedValues(null, "2018-03-22T12:00:00.123", "2018-03-22T12:00:00.123456")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -300,7 +300,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
             .sourceType("TIMESTAMP_NTZ")
             .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
             .addInsertValues("null", "'2018-03-22 12:00:00.123 +05:00'", "'2018-03-22 12:00:00.123456 +05:00'")
-            .addExpectedValues(null, "2018-03-22T12:00:00.123000", "2018-03-22T12:00:00.123456")
+            .addExpectedValues(null, "2018-03-22T12:00:00.123", "2018-03-22T12:00:00.123456")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()

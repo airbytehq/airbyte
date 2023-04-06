@@ -1,0 +1,55 @@
+name: "Run Dagger pipeline"
+description: "Runs a given dagger pipeline"
+inputs:
+  subcommand:
+    description: "Subcommand for airbyte-ci"
+    required: true
+  options:
+    description: "Options for the subcommand"
+    required: false
+  context:
+    description: "CI context (e.g., pull_request, manual)"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Get start timestamp
+      id: get-start-timestamp
+      run: echo "::set-output name=start-timestamp::$(date +%s)"
+      shell: bash
+    - name: Checkout Airbyte
+      uses: actions/checkout@v3
+      with:
+        repository: ${{ github.event.inputs.repo }}
+        ref: ${{ github.event.inputs.gitref }}
+    - name: Extract branch name
+      shell: bash
+      if: github.event_name == 'workflow_dispatch'
+      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+      id: extract_branch
+    - name: Install Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+    - name: Install ci-connector-ops package
+      shell: bash
+      run: pip install -e ./tools/ci_connector_ops\[pipelines]\
+    - name: Run airbyte-ci
+      shell: bash
+      run: |
+        export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
+        DAGGER_CLI_COMMIT="67c7e7635cf4ea0e446e2fed522a3e314c960f6a"
+        DAGGER_TMP_BINDIR="/tmp/dagger_${DAGGER_CLI_COMMIT}"
+        export _EXPERIMENTAL_DAGGER_CLI_BIN="$DAGGER_TMP_BINDIR/dagger"
+        if [ ! -f  "$_EXPERIMENTAL_DAGGER_CLI_BIN" ]; then
+            mkdir -p "$DAGGER_TMP_BINDIR"
+            curl "https://dl.dagger.io/dagger/main/${DAGGER_CLI_COMMIT}/dagger_${DAGGER_CLI_COMMIT}_$(uname -s | tr A-Z a-z)_$(uname -m | sed s/x86_64/amd64/).tar.gz" | tar xvz -C "$DAGGER_TMP_BINDIR"
+        fi
+
+        airbyte-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
+
+      env:
+        CI_GIT_BRANCH: ${{ github.head_ref }}
+        CI_GIT_REVISION: ${{ github.event.pull_request.head.sha }}
+        CI_CONTEXT: "${{ inputs.context }}"
+        CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
