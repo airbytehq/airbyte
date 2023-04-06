@@ -5,6 +5,19 @@ set -x
 
 . tools/lib/lib.sh
 
+# If you are looking at this file because you find yourself needing to publish a connector image manually, you might not need to do all of this!
+# If the connector you are publishing is a python connector (e.g. not using our base images), you can do the following:
+#
+# # NAME="source-foo"; VERSION="1.2.3"
+#
+# git pull
+#
+# cd airbyte-integrations/connectors/$NAME
+#
+# docker buildx build . --platform "linux/amd64,linux/arm64" --tag airbyte/$NAME:latest  --push
+# docker buildx build . --platform "linux/amd64,linux/arm64" --tag airbyte/$NAME:$VERSION  --push
+
+
 USAGE="
 Usage: $(basename "$0") <cmd>
 For publish, if you want to push the spec to the spec cache, provide a path to a service account key file that can write to the cache.
@@ -47,20 +60,21 @@ cmd_build() {
   echo "Building $path"
   # Note that we are only building (and testing) once on this build machine's architecture
   # Learn more @ https://github.com/airbytehq/airbyte/pull/13004
-  ./gradlew --no-daemon "$(_to_gradle_path "$path" clean)"
+  ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" clean)"
 
   if [ "$run_tests" = false ] ; then
     echo "Building and skipping unit tests + integration tests..."
-    ./gradlew --no-daemon "$(_to_gradle_path "$path" build)" -x test
+    ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" build)" -x test
   else
     echo "Building and running unit tests + integration tests..."
-    ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
+    ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" build)"
 
     if test "$path" == "airbyte-integrations/bases/base-normalization"; then
+      export RANDOM_TEST_SCHEMA="true"
       ./gradlew --no-daemon --scan :airbyte-integrations:bases:base-normalization:airbyteDocker
     fi
 
-    ./gradlew --no-daemon "$(_to_gradle_path "$path" integrationTest)"
+    ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" integrationTest)"
   fi
 }
 
@@ -70,8 +84,8 @@ cmd_build_experiment() {
   [ -d "$path" ] || error "Path must be the root path of the integration"
 
   echo "Building $path"
-  ./gradlew --no-daemon "$(_to_gradle_path "$path" clean)"
-  ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
+  ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" clean)"
+  ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" build)"
 
   # After this happens this image should exist: "image_name:dev"
   # Re-tag with CI candidate label
@@ -92,7 +106,7 @@ cmd_test() {
 
   # TODO: needs to know to use alternate image tag from cmd_build_experiment
   echo "Running integration tests..."
-  ./gradlew --no-daemon "$(_to_gradle_path "$path" integrationTest)"
+  ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" integrationTest)"
 }
 
 # Bumps connector version in Dockerfile, definitions.yaml file, and updates seeds with gradle.

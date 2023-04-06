@@ -126,10 +126,10 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
    */
   @Override
   public void copyIntoTableFromStage(final String datasetId,
-                                        final String stream,
-                                        final TableId tableId,
-                                        final Schema tableSchema,
-                                        final List<String> stagedFiles) {
+                                     final String stream,
+                                     final TableId tableId,
+                                     final Schema tableSchema,
+                                     final List<String> stagedFiles) {
     LOGGER.info("Uploading records from staging files to target table {} (dataset {}): {}",
         tableId, datasetId, stagedFiles);
 
@@ -154,7 +154,8 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
       } catch (final BigQueryException | InterruptedException e) {
         throw new RuntimeException(
             String.format("[%s] Failed to upload staging files to destination table %s (%s)", loadJob.getJobId(),
-                tableId, datasetId), e);
+                tableId, datasetId),
+            e);
       }
     });
   }

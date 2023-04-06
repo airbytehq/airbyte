@@ -266,7 +266,7 @@ class HttpStream(Stream, ABC):
         json: Any = None,
         data: Any = None,
     ) -> requests.PreparedRequest:
-        args = {"method": self.http_method, "url": urljoin(self.url_base, path), "headers": headers, "params": params}
+        args = {"method": self.http_method, "url": self._join_url(self.url_base, path), "headers": headers, "params": params}
         if self.http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
                 raise RequestBodyException(
@@ -278,6 +278,10 @@ class HttpStream(Stream, ABC):
                 args["data"] = data
 
         return self._session.prepare_request(requests.Request(**args))
+
+    @classmethod
+    def _join_url(cls, url_base: str, path: str):
+        return urljoin(url_base, path)
 
     def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
         """

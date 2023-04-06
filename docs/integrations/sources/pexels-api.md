@@ -63,7 +63,7 @@ The Pexels-API source connector supports the following [sync modes](https://docs
 
 ## API method example
 
-GET https://api.pexels.com/v1/curated?per_page=1
+`GET https://api.pexels.com/v1/curated?per_page=1`
 
 ## Performance considerations
 
