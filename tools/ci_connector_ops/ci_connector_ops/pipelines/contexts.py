@@ -199,7 +199,7 @@ class PipelineContext:
             exception_value (Optional[BaseException]): The exception value if an exception was raised in the context execution, None otherwise.
             traceback (Optional[TracebackType]): The traceback if an exception was raised in the context execution, None otherwise.
         Returns:
-            bool: Wether the teardown operation ran successfully.
+            bool: Whether the teardown operation ran successfully.
         """
         if exception_value:
             self.logger.error("An error was handled by the Pipeline", exc_info=True)
@@ -319,7 +319,7 @@ class ConnectorTestContext(PipelineContext):
             exception_value (Optional[BaseException]): The exception value if an exception was raised in the context execution, None otherwise.
             traceback (Optional[TracebackType]): The traceback if an exception was raised in the context execution, None otherwise.
         Returns:
-            bool: Wether the teardown operation ran successfully.
+            bool: Whether the teardown operation ran successfully.
         """
         if exception_value:
             self.logger.error("An error got handled by the ConnectorTestContext", exc_info=True)
