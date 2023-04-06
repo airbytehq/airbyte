@@ -6,7 +6,7 @@ test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
-    - spec_path: "integration_tests/spec.json"
+    - spec_path: "source_tiktok_marketing/spec.json"
       # the spec was changed with the `format: date` for start/end dates input,
       # to satisfy the DatePicker requirements
       backward_compatibility_tests_config:
@@ -55,22 +55,6 @@ acceptance_tests:
         bypass_reason: "Tested with daily granularity."
       - name: campaigns_reports_hourly
         bypass_reason: "Tested with daily granularity."
-      - name: ad_group_audience_reports_by_country
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: campaigns_audience_reports
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: ads_audience_reports_by_country
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: advertisers_audience_reports_by_country
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: advertisers_audience_reports_by_platform
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: ads_audience_reports_by_platform
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: campaigns_audience_reports_by_platform
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: ad_group_audience_reports_by_platform
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
       - name: campaigns_audience_reports_daily
         bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
       - name: advertisers_audience_reports_by_country_daily
@@ -86,22 +70,6 @@ acceptance_tests:
       - name: advertisers_audience_reports_by_platform_daily
         bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
       - name: ads_audience_reports_by_platform_daily
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: campaigns_audience_reports_hourly
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: advertisers_audience_reports_by_country_hourly
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: ads_audience_reports_by_country_hourly
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: campaigns_audience_reports_by_platform_hourly
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: ad_group_audience_reports_by_platform_hourly
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: ad_group_audience_reports_by_country_hourly
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: advertisers_audience_reports_by_platform_hourly
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: ads_audience_reports_by_platform_hourly
         bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
       # Old style streams with granularity config (for < 0.1.13)
       # Note: not needed to be tested separately in full and incremental tests, because code of
@@ -124,54 +92,6 @@ acceptance_tests:
         bypass_reason: "This stream is tested on the new style config."
       - name: campaigns
         bypass_reason: "This stream is tested on the new style config."
-      - name: ad_group_audience_reports_by_country
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: campaigns_audience_reports
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: ads_audience_reports_by_country
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: advertisers_audience_reports_by_country
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: advertisers_audience_reports_by_platform
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: ads_audience_reports_by_platform
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: campaigns_audience_reports_by_platform
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: ad_group_audience_reports_by_platform
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: campaigns_audience_reports_daily
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: advertisers_audience_reports_by_country_daily
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: ads_audience_reports_by_country_daily
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: campaigns_audience_reports_by_platform_daily
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: ad_group_audience_reports_by_platform_daily
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: ad_group_audience_reports_by_country_daily
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: advertisers_audience_reports_by_platform_daily
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: ads_audience_reports_by_platform_daily
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: campaigns_audience_reports_hourly
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: advertisers_audience_reports_by_country_hourly
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: ads_audience_reports_by_country_hourly
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: campaigns_audience_reports_by_platform_hourly
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: ad_group_audience_reports_by_platform_hourly
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: ad_group_audience_reports_by_country_hourly
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: advertisers_audience_reports_by_platform_hourly
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-      - name: ads_audience_reports_by_platform_hourly
-        bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
   full_refresh:
     tests:
     - config_path: "secrets/prod_config_with_day_granularity.json"
