@@ -370,7 +370,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:2.0.15"
+- dockerImage: "airbyte/source-alloydb:2.0.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -6706,7 +6706,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-harvest:0.1.16"
+- dockerImage: "airbyte/source-harvest:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/harvest"
     connectionSpecification:
@@ -6734,6 +6734,7 @@
           - "2017-01-25T00:00:00Z"
           type: "string"
           order: 1
+          format: "date-time"
         replication_end_date:
           title: "End Date"
           description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any\
@@ -6744,6 +6745,7 @@
           type: "string"
           airbyte_hidden: true
           order: 2
+          format: "date-time"
         credentials:
           title: "Authentication mechanism"
           description: "Choose how to authenticate to Harvest."
@@ -12065,7 +12067,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:2.0.16"
+- dockerImage: "airbyte/source-postgres:2.0.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
