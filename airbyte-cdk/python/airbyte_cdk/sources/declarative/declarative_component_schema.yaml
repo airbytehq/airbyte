@@ -489,7 +489,7 @@ definitions:
         examples:
           - access_token
       expires_in_name:
-        title: Expires_in Field Name
+        title: Time To Expiration Field Name
         description: The name of the field the extract the number of seconds the access token will be valid from the token refresh response
         type: string
         default: "expires_in"
