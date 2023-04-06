@@ -131,7 +131,7 @@ cmd_bump_version() {
     echo "Invalid connector_type from $connector"
     exit 1
   fi
-  definitions_path="./airbyte-config/init/src/main/resources/seed/${connector_type}_definitions.yaml"
+  definitions_path="./airbyte-config-oss/init-oss/src/main/resources/seed/${connector_type}_definitions.yaml"
   dockerfile="$connector_path/Dockerfile"
   master_dockerfile="/tmp/master_${connector}_dockerfile"
   # This allows getting the contents of a file without checking it out
