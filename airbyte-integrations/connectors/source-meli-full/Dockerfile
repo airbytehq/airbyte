@@ -7,6 +7,7 @@ WORKDIR /airbyte/integration_code
 COPY source_meli_full ./source_meli_full
 COPY main.py ./
 COPY setup.py ./
+COPY configure_aws_credentials.sh ./
 RUN pip install .
 RUN pip install xmltodict
 RUN pip install credstash
