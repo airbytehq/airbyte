@@ -215,3 +215,54 @@ def test_stream_stops_on_401(mock_lists_resp):
         _ = list(users_stream.read_records(stream_slice=slice_, sync_mode=SyncMode.full_refresh))
     assert len(responses.calls) == 1
     assert slices > 1
+
+
+@responses.activate
+def test_listuser_stream_keep_working_on_500(mock_lists_resp):
+    users_stream = ListUsers(authenticator=NoAuth())
+    responses.add(
+        responses.GET,
+        "https://api.iterable.com/api/lists/getUsers?listId=1",
+        json={
+            "msg": "An error occurred. Please try again later. If problem persists, please contact your CSM",
+            "code": "GenericError",
+            "params": None
+        },
+        status=500
+    )
+    responses.add(
+        responses.GET,
+        "https://api.iterable.com/api/lists/getUsers?listId=1",
+        json={
+            "msg": "An error occurred. Please try again later. If problem persists, please contact your CSM",
+            "code": "GenericError",
+            "params": None
+        },
+        status=500
+    )
+    responses.add(
+        responses.GET,
+        "https://api.iterable.com/api/lists/getUsers?listId=1",
+        json={
+            "msg": "An error occurred. Please try again later. If problem persists, please contact your CSM",
+            "code": "GenericError",
+            "params": None
+        },
+        status=500
+    )
+    responses.add(
+        responses.GET,
+        "https://api.iterable.com/api/lists/getUsers?listId=2",
+        body="one@example.com\ntwo@example.com\nthree@example.com",
+        status=200
+    )
+    expected_records = [
+        {'email': 'one@example.com', 'listId': 2},
+        {'email': 'two@example.com', 'listId': 2},
+        {'email': 'three@example.com', 'listId': 2}
+    ]
+
+    records = []
+    for stream_slice in users_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+        records += list(users_stream.read_records(stream_slice=stream_slice, sync_mode=SyncMode.full_refresh))
+    assert records == expected_records
