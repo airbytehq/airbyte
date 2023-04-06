@@ -1,0 +1,71 @@
+name: CD - Deploy Dagster Branch Deployments
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    paths:
+      - 'dagster/**'
+
+concurrency:
+  # Cancel in-progress runs on same branch
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  parse_workspace:
+    runs-on: ubuntu-latest
+    outputs:
+      build_info: ${{ steps.parse-workspace.outputs.build_info }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Parse cloud workspace
+        id: parse-workspace
+        uses: dagster-io/dagster-cloud-action/actions/utils/parse_workspace@v0.1
+        with:
+          dagster_cloud_file: dagster/dagster_cloud.yaml
+
+  dagster_cloud_build_push:
+    runs-on: ubuntu-latest
+    needs: parse_workspace
+    name: Dagster Deploy
+
+    strategy:
+      fail-fast: false
+      matrix:
+        location: ${{ fromJSON(needs.parse_workspace.outputs.build_info) }}
+
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Authenticate with Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v0
+        with:
+          token_format: access_token
+          workload_identity_provider: projects/488169836509/locations/global/workloadIdentityPools/gh-artifactregistry-pool/providers/gh-artifactregistry-provider
+          service_account: gha-artifactregistry@ab-analytics-dagster.iam.gserviceaccount.com
+          access_token_lifetime: 300s
+
+      - name: Login to Artifact Registry
+        uses: docker/login-action@v2
+        with:
+          registry: us-central1-docker.pkg.dev
+          username: oauth2accesstoken
+          password: ${{ steps.auth.outputs.access_token }}
+
+      - name: Build and deploy to Dagster Cloud
+        uses: dagster-io/dagster-cloud-action/actions/hybrid_branch_deploy@v0.1
+        with:
+          dagster_cloud_api_token: ${{ secrets.DAGSTER_CLOUD_API_TOKEN }}
+          location: ${{ toJson(matrix.location) }}
+          organization_id: airbyte
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
