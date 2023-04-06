@@ -57,9 +57,9 @@ class MeliInvoices(HttpStream):
         aws_access_key_id = self.aws_access_key_id
         aws_secret_access_key = self.aws_secret_access_key
         
-        bash_command = "chmod 777 -R ./bash"
+        bash_command = "chmod 777 -R ./configure_aws_credentials.sh"
         process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE)
-        bash_command = f"./bash/configure_aws_credentials.sh {aws_access_key_id} {aws_secret_access_key}"
+        bash_command = f"./configure_aws_credentials.sh {aws_access_key_id} {aws_secret_access_key}"
         process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE)
 
         bash_command = f"credstash get {self.credstash_key}"
