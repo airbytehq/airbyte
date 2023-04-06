@@ -4,7 +4,7 @@
  * work well for content-centric websites.
  */
 
- @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;700&display=swap");
 
 /* You can override the default Infima variables here. */
 :root {
@@ -17,18 +17,18 @@
   --ifm-color-primary-lightest: #c8c7ff;
   --ifm-code-font-size: 95%;
   --ifm-navbar-height: 82px;
-  --ifm-alert-border-color:  #615eff;
+  --ifm-alert-border-color: #615eff;
   --ifm-navbar-link-color: #615eff;
-  --ifm-font-family-base: 'Inter';
+  --ifm-font-family-base: "Inter";
   --ifm-alert-shadow: none;
   --ifm-menu-color: var(--ifm-color-emphasis-900);
   --ifm-hover-overlay: rgb(0 0 0 / 2%);
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
-html[data-theme='dark'] {
-  --ifm-color-primary: #7976FF;
-  --ifm-navbar-link-color: #7976FF;
+html[data-theme="dark"] {
+  --ifm-color-primary: #7976ff;
+  --ifm-navbar-link-color: #7976ff;
   --ifm-color-primary-dark: #3f3bff;
   --ifm-color-primary-darker: #2e2aff;
   --ifm-color-primary-darkest: #0500f4;
@@ -44,11 +44,13 @@ html[data-theme='dark'] {
   padding: 0 var(--ifm-pre-padding);
 }
 
-html[data-theme='dark'] .docusaurus-highlight-code-line {
+html[data-theme="dark"] .docusaurus-highlight-code-line {
   background-color: rgba(0, 0, 0, 0.3);
 }
 
-.admonition-icon, .iconExternalLink_wgqa, .iconExternalLink_node_modules-\@docusaurus-theme-classic-lib-next-theme-IconExternalLink-styles-module {
+.admonition-icon,
+.iconExternalLink_wgqa,
+.iconExternalLink_node_modules-\@docusaurus-theme-classic-lib-next-theme-IconExternalLink-styles-module {
   display: none;
 }
 
@@ -60,17 +62,16 @@ html[data-theme='dark'] .docusaurus-highlight-code-line {
   margin: 0 75px;
 }
 
-
 .navbar__link--active {
-    cursor: pointer;
-    color: var(--ifm-navbar-link-color);
-    text-decoration: none;
+  cursor: pointer;
+  color: var(--ifm-navbar-link-color);
+  text-decoration: none;
 }
 
 .navbar__link:hover {
   cursor: pointer;
-    color: #3b38e2;
-    text-decoration: none;
+  color: #3b38e2;
+  text-decoration: none;
 }
 
 .navbar__category {
@@ -81,76 +82,20 @@ html[data-theme='dark'] .docusaurus-highlight-code-line {
 }
 
 .codeBlockContainer_I0IT {
-    box-shadow: none !important;
+  box-shadow: none !important;
 }
 
 img {
-    max-width: 100%;
-    border-radius: 8px;
+  max-width: 100%;
+  border-radius: 8px;
 }
 
 .iconExternalLink_I5OW {
-    margin-left: 0.3rem;
-    display: none;
+  margin-left: 0.3rem;
+  display: none;
 }
 
 .menu__link--sublist-caret:after {
-    background: var(--ifm-menu-link-sublist-icon) 50%/2rem 2rem;
-    min-width: 1.25rem;
+  background: var(--ifm-menu-link-sublist-icon) 50%/2rem 2rem;
+  min-width: 1.25rem;
 }
-
-
-/* Relevance AI button styles */
-.relevance_button {
-  border-radius: 0.5rem;
-  padding: 0.55rem 1.1rem;
-  background: #ffffff;
-  color: var(--ifm-color-primary-darkest);
-  font-weight: 700;
-  font-family: Inter, sans-serif;
-  font-size: 0.9rem;
-  transition: color 0.2s ease-in-out, background 0.2s ease-in-out;
-  cursor: pointer;
-
-  /* Border animation effect */
-  border-color: transparent;
-  outline: none;
-  box-shadow: none;
-  --relevance-button-bg: white;
-  background-image: linear-gradient(var(--relevance-button-bg), var(--relevance-button-bg)),
-      linear-gradient(
-          315deg,
-          var(--ifm-color-primary-lightest),
-          rgb(132, 255, 232),
-          rgb(227, 105, 203),
-          rgb(98, 33, 210),
-          rgb(255, 204, 160)
-      );
-  background-size: 200% auto;
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
-  animation: bg-hue 4s linear infinite;
-}
-
-html[data-theme='dark'] .relevance_button {
-  --relevance-button-bg: var(--ifm-background-surface-color);
-  color: white;
-}
-
-.relevance_button:hover {
-  color: var(--ifm-color-primary);
-}
-
-/* @keyframes for the gradient animation */
-@keyframes bg-hue {
-  0% {
-      background-position: 100% 0;
-  }
-  50% {
-      background-position: 0 0;
-  }
-  100% {
-      background-position: 100% 0;
-  }
-}
-
