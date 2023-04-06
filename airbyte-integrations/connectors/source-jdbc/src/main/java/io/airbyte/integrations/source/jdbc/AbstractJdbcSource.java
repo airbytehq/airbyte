@@ -183,7 +183,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
                 .map(f -> {
                   final Datatype datatype = sourceOperations.getDatabaseFieldType(f);
                   final JsonSchemaType jsonType = getAirbyteType(datatype);
-
                   LOGGER.info("Table {} column {} (type {}[{}], nullable {}) -> {}",
                       fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
                       f.get(INTERNAL_COLUMN_NAME).asText(),
