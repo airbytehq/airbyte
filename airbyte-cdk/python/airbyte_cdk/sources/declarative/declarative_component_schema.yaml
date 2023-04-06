@@ -96,7 +96,8 @@ definitions:
         type: object
         additionalProperties: true
   BasicHttpAuthenticator:
-    description: Authenticator for requests authenticated with a username and optional password
+    title: Basic HTTP Authenticator
+    description: Authenticator for requests authenticated with the Basic HTTP authentication scheme, which encodes a username and an optional password in the Authorization request header
     type: object
     required:
       - type
@@ -106,12 +107,20 @@ definitions:
         type: string
         enum: [BasicHttpAuthenticator]
       username:
+        title: Username
         description: The username that will be combined with the password, base64 encoded and used to make requests
         type: string
+        examples:
+          - "{{ config['username'] }}"
+          - "{{ config['api_key'] }}"
       password:
+        title: Password
         description: The password that will be combined with the username, base64 encoded and used to make requests
         type: string
         default: ""
+        examples:
+          - "{{ config['password'] }}"
+          - ""
       $parameters:
         type: object
         additionalProperties: true
