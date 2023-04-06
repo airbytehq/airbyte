@@ -20,7 +20,6 @@ const config = {
   projectName: "airbyte", // Usually your repo name.
 
   plugins: [
-    [require.resolve("@cmfcmf/docusaurus-search-local"), { indexBlog: false }],
     [
       "@docusaurus/plugin-client-redirects",
       {
@@ -138,6 +137,11 @@ const config = {
         sidebar: {
           autoCollapseCategories: true,
         },
+      },
+      algolia: {
+          appId: 'R2IYF7ETH7',
+          apiKey: '599cec31baffa4868cae4e79f180729b', // Public API key: it is safe to commit it
+          indexName: 'docsearch',
       },
       navbar: {
         title: "",
