@@ -252,11 +252,6 @@ class MinMaxDatetime(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class NoAuth(BaseModel):
-    type: Literal["NoAuth"]
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
-
-
 class NoPagination(BaseModel):
     type: Literal["NoPagination"]
 
@@ -529,7 +524,6 @@ class HttpRequester(BaseModel):
             CustomAuthenticator,
             OAuthAuthenticator,
             SingleUseRefreshTokenOAuthAuthenticator,
-            NoAuth,
             SessionTokenAuthenticator,
         ]
     ] = Field(
