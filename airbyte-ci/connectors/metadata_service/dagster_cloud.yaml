@@ -1,10 +1,11 @@
 locations:
-  - location_name: orchestrator
+  - location_name: metadata_service_orchestrator
     code_source:
       module_name: orchestrator
     build:
       directory: ./airbyte-ci/connectors/metadata_service
-      # TODO change to our own docker registry
       registry: us-central1-docker.pkg.dev/ab-analytics-dagster/ab-dagster/dagster/metadata_service
     container_context:
       k8s:
+        env_secrets:
+          - dagster-warehouse-ci-cd-secrets
