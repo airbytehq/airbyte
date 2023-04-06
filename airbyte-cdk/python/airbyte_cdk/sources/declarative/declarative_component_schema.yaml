@@ -1117,10 +1117,10 @@ definitions:
         description: The name of the header that will be injected in the request
         type: string
         examples:
-          -
+          - X-Session
       login_url:
         title: Login URL
-        description: Full URL of the endpoint used to get a new session token
+        description: Path of the endpoint used to get a new session token
         type: string
       session_token:
         type: string
