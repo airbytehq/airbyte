@@ -59,7 +59,6 @@ async def run(context: ConnectorTestContext, semaphore: anyio.Semaphore) -> Conn
                     task_group.soonify(tests.run_all_tests)(context),
                 ]
             results = list(itertools.chain(*(task.value for task in tasks)))
-
             context.test_report = ConnectorTestReport(context, steps_results=results)
 
         return context.test_report

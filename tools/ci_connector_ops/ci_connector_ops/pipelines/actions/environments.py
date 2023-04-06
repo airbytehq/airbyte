@@ -222,7 +222,7 @@ def with_dockerd_service(
         .with_mounted_cache(
             "/var/lib/docker",
             context.dagger_client.cache_volume(f"{slugify(context.connector.technical_name)}-docker-lib"),
-            sharing=CacheSharingMode.PRIVATE,
+            sharing=CacheSharingMode.SHARED,
         )
     )
     if shared_volume is not None:

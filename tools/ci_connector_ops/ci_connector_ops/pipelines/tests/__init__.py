@@ -49,7 +49,7 @@ async def run_code_format_checks(context: ConnectorTestContext) -> List[StepResu
     """
     if _run_code_format_checks := LANGUAGE_MAPPING["run_code_format_checks"].get(context.connector.language):
         context.logger.info("Run code format checks.")
-        return [await _run_code_format_checks(context)]
+        return await _run_code_format_checks(context)
     else:
         context.logger.warning(f"No code format checks defined for connector language {context.connector.language}!")
         return []
