@@ -29,8 +29,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import io.airbyte.commons.exceptions.ConfigErrorException;
 import datadog.trace.api.Trace;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -113,6 +113,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public static final String MODE = "mode";
 
   private List<String> schemas;
+
+  private Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc;
   private final FeatureFlags featureFlags;
   private static final Set<String> INVALID_CDC_SSL_MODES = ImmutableSet.of("allow", "prefer");
 
@@ -219,6 +221,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           .map(PostgresCdcCatalogHelper::removeIncrementalWithoutPk)
           .map(PostgresCdcCatalogHelper::setIncrementalToSourceDefined)
           .map(PostgresCdcCatalogHelper::addCdcMetadataColumns)
+          // If we're in CDC mode and a stream is not in the publication, the user should only be able to sync this in FULL_REFRESH mode
+          .map(stream -> PostgresCdcCatalogHelper.setFullRefreshForNonPublicationStreams(stream, publicizedTablesInCdc))
           .collect(toList());
 
       catalog.setStreams(streams);
@@ -228,17 +232,15 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   @Override
-  public List<TableInfo<CommonField<PostgresType>>> discoverInternal(final JdbcDatabase database) throws Exception {
-    final List<TableInfo<CommonField<PostgresType>>> rawTables = discoverRawTables(database);
-    final Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc = PostgresCdcCatalogHelper.getPublicizedTables(database);
+  public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
+    final JdbcDatabase database = super.createDatabase(config);
+    this.publicizedTablesInCdc = PostgresCdcCatalogHelper.getPublicizedTables(database);
+    return database;
+  }
 
-    if (publicizedTablesInCdc.isEmpty()) {
-      return rawTables;
-    }
-    // under cdc mode, only return tables that are in the publication
-    return rawTables.stream()
-        .filter(table -> publicizedTablesInCdc.contains(new AirbyteStreamNameNamespacePair(table.getName(), table.getNameSpace())))
-        .collect(toList());
+  @Override
+  public List<TableInfo<CommonField<PostgresType>>> discoverInternal(final JdbcDatabase database) throws Exception {
+    return discoverRawTables(database);
   }
 
   public List<TableInfo<CommonField<PostgresType>>> discoverRawTables(final JdbcDatabase database) throws Exception {

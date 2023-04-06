@@ -137,6 +137,11 @@ In this case, you can configure the server timezone to the equivalent IANA timez
 
 When a sync runs for the first time using CDC, Airbyte performs an initial consistent snapshot of your database. Airbyte doesn't acquire any table locks \(for tables defined with MyISAM engine, the tables would still be locked\) while creating the snapshot to allow writes by other database clients. But in order for the sync to work without any error/unexpected behaviour, it is assumed that no schema changes are happening while the snapshot is running.
 
+If seeing `EventDataDeserializationException` errors intermittently with root cause `EOFException` or `SocketException`, you may need to extend the following *MySql server* timeout values by running:
+```
+set global slave_net_timeout = 120;
+set global thread_pool_idle_timeout = 120;
+```
 ## Connection via SSH Tunnel
 
 Airbyte has the ability to connect to a MySQl instance via an SSH Tunnel. The reason you might want to do this because it is not possible \(or against security policy\) to connect to the database directly \(e.g. it does not have a public IP address\).
@@ -256,6 +261,7 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 
 | Version | Date       | Pull Request                                                 | Subject                                                                                                                                         |
 |:--------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.12  | 2022-04-04 | [24833](https://github.com/airbytehq/airbyte/pull/24833)     | Fix Debezium retry policy configuration                                                                                                         |
 | 2.0.11  | 2022-03-28 | [24166](https://github.com/airbytehq/airbyte/pull/24166)     | Fix InterruptedException bug during Debezium shutdown                                                                                           |
 | 2.0.10  | 2022-03-27 | [24529](https://github.com/airbytehq/airbyte/pull/24373)     | Preparing the connector for CDC checkpointing                                                                                                   |
 | 2.0.9   | 2022-03-24 | [24529](https://github.com/airbytehq/airbyte/pull/24529)   | Set SSL Mode to required on strict-encrypt variant                                                                                                |
