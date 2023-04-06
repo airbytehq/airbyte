@@ -105,7 +105,7 @@ def with_python_package(
 
 
 async def with_installed_python_package(
-    context: ConnectorTestContext,
+    context: PipelineContext,
     python_environment: Container,
     package_source_code_path: str,
     additional_dependency_groups: Optional[List] = None,
@@ -114,7 +114,7 @@ async def with_installed_python_package(
     """Install a python package in a python environment container.
 
     Args:
-        context (ConnectorTestContext): The current test context, providing the repository directory from which the python sources will be pulled.
+        context (PipelineContext): The current test context, providing the repository directory from which the python sources will be pulled.
         python_environment (Container): An existing python environment in which the package will be installed.
         package_source_code_path (str): The local path to the package source code.
         additional_dependency_groups (Optional[List]): extra_requires dependency of setup.py to install. Defaults to None.
