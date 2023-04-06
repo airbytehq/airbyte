@@ -528,7 +528,7 @@ definitions:
           - 1680842386
       token_expiry_date_format:
         title: Token Expiry Date Format
-        description: The format of the time to expiration datetime; provide it if the time is returned in date-time string instead of seconds
+        description: The format of the time to expiration datetime. Provide it if the time is returned as a date-time string instead of seconds
         type: string
         examples:
           - %Y-%m-%d %H:%M:%S.%f+00:00
