@@ -122,10 +122,6 @@ class ConnectorTestContext:
         return f"CI test for {self.connector.technical_name}"
 
     @property
-    def resources_dir(self) -> Directory:
-        return self.get_repo_dir("tools/ci_connector_ops/ci_connector_ops/pipelines/resources")
-
-    @property
     def test_report(self) -> ConnectorTestReport:
         return self._test_report
 
