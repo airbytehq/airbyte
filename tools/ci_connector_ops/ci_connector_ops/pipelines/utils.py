@@ -6,8 +6,7 @@ import re
 import sys
 import click
 from pathlib import Path
-from typing import Optional, Set
-import functools
+from typing import Optional, Set, Any
 
 import anyio
 import git
@@ -159,16 +158,24 @@ def get_modified_connectors(modified_files: Set[str]) -> Set[Connector]:
     return set(modified_connectors)
 
 
-def pipeline_command(func):
-    @functools.wraps(func)
-    def wrapper(ctx: click.Context, *args, **kwargs):
-        click.secho(f"Running {func.__name__}...")
+
+class DaggerPipelineCommand(click.Command):
+    def invoke(self, ctx: click.Context) -> Any:
+        """Wrap parent invoke in a try catch suited to handle pipeline failures.
+        Args:
+            ctx (click.Context): The invocation context.
+        Raises:
+            e: Raise whatever exception that was caught.
+        Returns:
+            Any: The invocation return value.
+        """
+        command_name = self.name
+        click.secho(f"Running {command_name}...")
         try:
-            pipeline_success = func(ctx, *args, **kwargs)
+            pipeline_success = super().invoke(ctx)
             if not pipeline_success:
-                raise DaggerError(f"{func.__name__} failed.")
+                raise DaggerError(f"{command_name} failed.")
         except DaggerError as e:
             click.secho(str(e), err=True, fg="red")
             return sys.exit(1)
 
-    return wrapper
