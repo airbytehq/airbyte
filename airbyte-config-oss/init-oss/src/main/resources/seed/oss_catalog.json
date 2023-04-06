@@ -12565,7 +12565,7 @@
     "sourceDefinitionId": "778daa7c-feaf-4db6-96f3-70fd645acc77",
     "name": "File (CSV, JSON, Excel, Feather, Parquet)",
     "dockerRepository": "airbyte/source-file",
-    "dockerImageTag": "0.2.36",
+    "dockerImageTag": "0.2.37",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/file",
     "icon": "file.svg",
     "sourceType": "file",
@@ -12597,7 +12597,7 @@
             "examples": [ "{}", "{\"sep\": \" \"}", {
               "sep": "\t",
               "header": 0,
-              "names": "column1, column2"
+              "names": [ "column1", "column2" ]
             } ]
           },
           "url": {
