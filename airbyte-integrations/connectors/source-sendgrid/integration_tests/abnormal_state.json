@@ -1,45 +1,45 @@
 [
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_state" : {
-        "created" : "7270247822"
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "created": "7270247822"
       },
-      "stream_descriptor" : {
-        "name" : "global_suppressions"
+      "stream_descriptor": {
+        "name": "global_suppressions"
       }
     }
   },
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_state" : {
-        "created" : "7270247822"
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "created": "7270247822"
       },
-      "stream_descriptor" : {
-        "name" : "blocks"
+      "stream_descriptor": {
+        "name": "blocks"
       }
     }
   },
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_state" : {
-        "created" : "7270247822"
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "created": "7270247822"
       },
-      "stream_descriptor" : {
-        "name" : "bounces"
+      "stream_descriptor": {
+        "name": "bounces"
       }
     }
   },
   {
-    "type" : "STREAM",
-    "stream" : {
-      "stream_state" : {
-        "created" : "7270247822"
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "created": "7270247822"
       },
-      "stream_descriptor" : {
-        "name" : "invalid_emails"
+      "stream_descriptor": {
+        "name": "invalid_emails"
       }
     }
   }

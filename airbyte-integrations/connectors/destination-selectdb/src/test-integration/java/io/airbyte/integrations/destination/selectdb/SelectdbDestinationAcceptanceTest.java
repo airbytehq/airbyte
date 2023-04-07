@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.selectdb;
@@ -16,7 +16,6 @@ import java.nio.file.Paths;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -24,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SelectdbDestinationAcceptanceTest extends DestinationAcceptanceTest {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(SelectdbDestinationAcceptanceTest.class);
 
   private JsonNode configJson;
@@ -48,7 +48,7 @@ public class SelectdbDestinationAcceptanceTest extends DestinationAcceptanceTest
     try {
       Class.forName(JDBC_DRIVER);
       conn =
-              DriverManager.getConnection(dbUrl, config.get("user_name").asText(), config.get("password") == null ? "" : config.get("password").asText());
+          DriverManager.getConnection(dbUrl, config.get("user_name").asText(), config.get("password") == null ? "" : config.get("password").asText());
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -83,7 +83,7 @@ public class SelectdbDestinationAcceptanceTest extends DestinationAcceptanceTest
                                            String streamName,
                                            String namespace,
                                            JsonNode streamSchema)
-          throws IOException, SQLException {
+      throws IOException, SQLException {
     // TODO Implement this method to retrieve records which written to the destination by the connector.
     // Records returned from this method will be compared against records provided to the connector
     // to verify they were written correctly
@@ -91,8 +91,8 @@ public class SelectdbDestinationAcceptanceTest extends DestinationAcceptanceTest
     final String tableName = namingResolver.getIdentifier(streamName);
 
     String query = String.format(
-            "SELECT * FROM %s.%s ORDER BY %s ASC;", configJson.get("database").asText(), tableName,
-            JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+        "SELECT * FROM %s.%s ORDER BY %s ASC;", configJson.get("database").asText(), tableName,
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     PreparedStatement stmt = conn.prepareStatement(query);
     ResultSet resultSet = stmt.executeQuery();
 

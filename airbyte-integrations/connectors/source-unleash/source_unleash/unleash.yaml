@@ -40,11 +40,11 @@ definitions:
 
   # API Docs: https://docs.getunleash.io/reference/api/legacy/unleash/client/features
   features_stream:
-    $ref: "#/definitions/base_stream" 
+    $ref: "#/definitions/base_stream"
     retriever:
-      $ref: "#/definitions/retriever" 
+      $ref: "#/definitions/retriever"
       record_selector:
-          $ref: "#/definitions/selector_features"      
+        $ref: "#/definitions/selector_features"
     $parameters:
       name: "features"
       primary_key: "name"

@@ -60,7 +60,8 @@ public class SnowflakeInternalStagingDestinationAcceptanceTest extends Snowflake
     testSyncWithNormalizationWithKeyPairAuth(messagesFilename, catalogFilename, "secrets/config_key_pair_encrypted.json");
   }
 
-  private void testSyncWithNormalizationWithKeyPairAuth(final String messagesFilename, final String catalogFilename, final String configName) throws Exception {
+  private void testSyncWithNormalizationWithKeyPairAuth(final String messagesFilename, final String catalogFilename, final String configName)
+      throws Exception {
     if (!normalizationFromDefinition()) {
       return;
     }

@@ -29,7 +29,7 @@
       "stream_descriptor": { "name": "images" }
     }
   },
-    {
+  {
     "type": "STREAM",
     "stream": {
       "stream_state": {

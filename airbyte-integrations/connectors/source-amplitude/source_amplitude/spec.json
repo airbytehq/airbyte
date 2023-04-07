@@ -39,23 +39,18 @@
         "description": "Amplitude event stream time interval",
         "required": ["size_unit", "size"],
         "properties": {
-          "size_unit" : {
-            "type" : "string",
-            "title" : "Events Time Interval Size Unit",
-            "description" : "Amplitude event stream's interval size unit",
-            "enum" : [
-              "days",
-              "hours",
-              "weeks",
-              "months"
-            ],
-            "default" : "days"
+          "size_unit": {
+            "type": "string",
+            "title": "Events Time Interval Size Unit",
+            "description": "Amplitude event stream's interval size unit",
+            "enum": ["days", "hours", "weeks", "months"],
+            "default": "days"
           },
-          "size" : {
-            "type" : "integer",
-            "title" : "Events Time Interval Size",
-            "description" : "Amplitude event stream's interval size unit",
-            "default" : 1
+          "size": {
+            "type": "integer",
+            "title": "Events Time Interval Size",
+            "description": "Amplitude event stream's interval size unit",
+            "default": 1
           }
         }
       }

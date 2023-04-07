@@ -71,7 +71,7 @@
     },
     "additionalRecipients": {
       "type": "array",
-      "items": { "type": "object"}
+      "items": { "type": "object" }
     }
   }
 }

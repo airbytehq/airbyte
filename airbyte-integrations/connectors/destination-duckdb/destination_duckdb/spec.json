@@ -16,12 +16,11 @@
         "description": "Path to the .duckdb file. The file will be placed inside that local mount. For more information check out our <a href=\"https://docs.airbyte.io/integrations/destinations/duckdb\">docs</a>",
         "example": "/local/destination.duckdb"
       },
-        "schema": {
+      "schema": {
         "type": "string",
         "description": "database schema, default for duckdb is main",
         "example": "main"
       }
-
     }
   }
 }

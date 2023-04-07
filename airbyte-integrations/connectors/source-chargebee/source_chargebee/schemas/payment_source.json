@@ -21,8 +21,22 @@
     "type": {
       "type": ["string", "null"],
       "enum": [
-        "card", "paypal_express_checkout", "amazon_payments", "direct_debit", "generic", "alipay", "unionpay",
-        "apple_pay", "wechat_pay", "ideal", "google_pay", "sofort", "bancontact", "giropay", "dotpay", "upi",
+        "card",
+        "paypal_express_checkout",
+        "amazon_payments",
+        "direct_debit",
+        "generic",
+        "alipay",
+        "unionpay",
+        "apple_pay",
+        "wechat_pay",
+        "ideal",
+        "google_pay",
+        "sofort",
+        "bancontact",
+        "giropay",
+        "dotpay",
+        "upi",
         "netbanking_emandates"
       ]
     },
@@ -42,12 +56,51 @@
     "gateway": {
       "type": ["string", "null"],
       "enum": [
-        "chargebee", "chargebee_payments", "stripe", "wepay", "braintree", "authorize_net", "paypal_pro", "pin",
-        "eway", "eway_rapid", "worldpay", "balanced_payments", "beanstream", "bluepay", "elavon", "first_data_global",
-        "hdfc", "migs", "nmi", "ogone", "paymill", "paypal_payflow_pro", "sage_pay", "tco", "wirecard",
-        "amazon_payments", "paypal_express_checkout", "gocardless", "adyen", "orbital", "moneris_us",
-        "moneris", "bluesnap", "cybersource", "vantiv", "checkout_com", "paypal", "ingenico_direct", "exact", "mollie",
-        "quickbooks", "razorpay", "global_payments", "bank_of_america", "not_applicable"
+        "chargebee",
+        "chargebee_payments",
+        "stripe",
+        "wepay",
+        "braintree",
+        "authorize_net",
+        "paypal_pro",
+        "pin",
+        "eway",
+        "eway_rapid",
+        "worldpay",
+        "balanced_payments",
+        "beanstream",
+        "bluepay",
+        "elavon",
+        "first_data_global",
+        "hdfc",
+        "migs",
+        "nmi",
+        "ogone",
+        "paymill",
+        "paypal_payflow_pro",
+        "sage_pay",
+        "tco",
+        "wirecard",
+        "amazon_payments",
+        "paypal_express_checkout",
+        "gocardless",
+        "adyen",
+        "orbital",
+        "moneris_us",
+        "moneris",
+        "bluesnap",
+        "cybersource",
+        "vantiv",
+        "checkout_com",
+        "paypal",
+        "ingenico_direct",
+        "exact",
+        "mollie",
+        "quickbooks",
+        "razorpay",
+        "global_payments",
+        "bank_of_america",
+        "not_applicable"
       ]
     },
     "gateway_account_id": {
@@ -83,8 +136,15 @@
         "brand": {
           "type": ["string", "null"],
           "enum": [
-            "visa", "mastercard", "american_express", "discover", "jcb",
-            "diners_club", "other", "bancontact", "not_applicable"
+            "visa",
+            "mastercard",
+            "american_express",
+            "discover",
+            "jcb",
+            "diners_club",
+            "other",
+            "bancontact",
+            "not_applicable"
           ]
         },
         "funding_type": {
@@ -201,8 +261,8 @@
           "type": ["string", "null"]
         },
         "created_at": {
-            "type": ["integer", "null"]
-          }
+          "type": ["integer", "null"]
+        }
       }
     },
     "custom_fields": {

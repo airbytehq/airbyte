@@ -8,16 +8,16 @@
     "time": {
       "type": ["null", "string"]
     },
-    "clicks" : {
-      "type": ["null", "integer"]
-    } ,
-    "impressions" : {
+    "clicks": {
       "type": ["null", "integer"]
     },
-    "unique_clicks" : {
+    "impressions": {
       "type": ["null", "integer"]
     },
-    "unique_impressions" : {
+    "unique_clicks": {
+      "type": ["null", "integer"]
+    },
+    "unique_impressions": {
       "type": ["null", "integer"]
     }
   }

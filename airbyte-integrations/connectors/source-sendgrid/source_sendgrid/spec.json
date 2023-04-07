@@ -20,10 +20,7 @@
         "format": "date-time",
         "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(.\\d+)?Z$",
         "description": "Start time in ISO8601 format. Any data before this time point will not be replicated.",
-        "examples": [
-          "2020-01-01T01:01:01Z",
-          "2020-01-01T01:01:01.000001Z"
-        ],
+        "examples": ["2020-01-01T01:01:01Z", "2020-01-01T01:01:01.000001Z"],
         "order": 1
       }
     }

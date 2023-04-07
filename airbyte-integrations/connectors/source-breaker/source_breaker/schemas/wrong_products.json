@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "A correctly defined 'cars' stream",
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string" },
+    "make": { "type": "string" },
+    "model": { "type": "string" },
+    "year": { "type": "string" },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    }
+  }
+}
