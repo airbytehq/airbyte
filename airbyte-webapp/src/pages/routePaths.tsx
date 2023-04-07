@@ -25,6 +25,7 @@ export enum RoutePaths {
   SelectDestination = "select-destination",
   SelectConnection = "select-connection",
 
+  // Auth Routes
   UserSignup = "user_signup",
   Signup = "signup",
   Signin = "signin",
