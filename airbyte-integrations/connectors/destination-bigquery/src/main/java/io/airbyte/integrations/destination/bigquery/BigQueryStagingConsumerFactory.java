@@ -213,7 +213,7 @@ public class BigQueryStagingConsumerFactory {
          * commentary: Normalization has a ton of extra logic here, and we probably need to port that over.
          * E.g. tablename length, reserved words, maybe other stuff that I'm unaware of.
          */
-        String finalTableName = new BigQuerySQLNameTransformer().convertStreamName(streamIdentifier.getName());
+        String finalTableName = "edgao_1s1t_test_" +  new BigQuerySQLNameTransformer().convertStreamName(streamIdentifier.getName());
 
         // TODO this doesn't compile yet. Need to pass jsonschema into writeConfig
         Schema finalSchema = ops.getTableSchema(writeConfig.configuredAirbyteStream());

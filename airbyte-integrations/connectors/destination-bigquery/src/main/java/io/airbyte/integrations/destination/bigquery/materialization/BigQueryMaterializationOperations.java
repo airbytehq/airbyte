@@ -27,8 +27,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import org.apache.logging.log4j.core.lookup.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -175,32 +177,31 @@ public class BigQueryMaterializationOperations implements MaterializationOperati
 
     String format = """
         WITH new_raw_records AS (
-          SELECT * FROM %1$s.%2$s
-          WHERE _airbyte_emitted_at > (SELECT MAX(_airbyte_emitted_at) FROM %1$s.%3$s)
+          SELECT * FROM ${dataset}.${raw_table}
+          WHERE _airbyte_emitted_at > (SELECT MAX(_airbyte_emitted_at) FROM ${dataset}.${final_table})
         ), flattened_raw_records AS (
           SELECT
-            %4$s
+            ${extract_calls}
             _airbyte_emitted_at
           FROM new_raw_records
         ), typed_raw_records AS (
-          %5$s
+          ${cast_calls}
           _airbyte_emitted_at
           FROM flattened_raw_records
         )
-        MERGE %1$s.%3$s T
-        USING %1$s.typed_raw_records S
-        ON T.primary_key = S.primary_key
-        %6$s
-          DELETE
+        MERGE ${dataset}.${final_table} T
+        USING typed_raw_records S
+        ON T.${primary_key} = S.${primary_key}
+        ${cdc_delete_clause}
         WHEN MATCHED THEN
-          UPDATE SET field1 = S.field1, ...
+          UPDATE SET ${set_calls}
         WHEN NOT MATCHED THEN
-          INSERT (field1, ...) VALUES (S.field1, ...)
+          INSERT (${insert_fields}) VALUES (${insert_values})
         """;
 
     String extractCalls = schema.getFields()
         .stream()
-        .map(field -> String.format("JSON_EXTRACT(_airbyte_data, %s) AS field1,\n", field.getName()))
+        .map(field -> String.format("JSON_EXTRACT(_airbyte_data, '$.%1$s') AS %1$s,\n", field.getName()))
         .collect(Collectors.joining());
 
     String castCalls = schema.getFields()
@@ -209,16 +210,38 @@ public class BigQueryMaterializationOperations implements MaterializationOperati
         .collect(Collectors.joining());
 
     // TODO check for CDC columns + sync mode; generate if necessary
-    String cdcMerge = "";
+    String cdcDeleteClause = "";
 
-    String mergeQuery = String.format(
+    String setCalls = schema.getFields()
+        .stream()
+        .map(field -> String.format("%1$s = S.%1$s", field.getName()))
+        .collect(Collectors.joining(","));
+
+    String insertFields = schema.getFields()
+        .stream()
+        .map(field -> String.format("%s", field.getName()))
+        .collect(Collectors.joining(","));
+
+    String insertValues = schema.getFields()
+        .stream()
+        .map(field -> String.format("S.%s", field.getName()))
+        .collect(Collectors.joining(","));
+
+    String mergeQuery = StrSubstitutor.replace(
         format,
-        dataset,
-        rawTable,
-        finalTable,
-        extractCalls,
-        castCalls,
-        cdcMerge
+        Map.of(
+            "dataset", dataset,
+            "raw_table", rawTable,
+            "final_table", finalTable,
+            "extract_calls", extractCalls,
+            "cast_calls", castCalls,
+            // TODO handle nested PK (maybe) + composite PK (maybe)
+            "primary_key", stream.getPrimaryKey().get(0).get(0),
+            "cdc_delete_clause", cdcDeleteClause,
+            "set_calls", setCalls,
+            "insert_fields", insertFields,
+            "insert_values", insertValues
+        )
     );
     bigquery.query(QueryJobConfiguration.newBuilder(mergeQuery).build());
   }
