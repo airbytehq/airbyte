@@ -93,7 +93,7 @@ class SourceHubspot(AbstractSource):
             ContactsListMemberships(**common_params),
             DealPipelines(**common_params),
             Deals(**common_params),
-            DealsArchived(**common_params, include_archived_only=True),
+            DealsArchived(**common_params),
             EmailEvents(**common_params),
             EmailSubscriptions(**common_params),
             Engagements(**common_params),
