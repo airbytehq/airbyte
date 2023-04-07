@@ -480,23 +480,7 @@ class SubscriptionSchedule(IncrementalStripeStream):
 
     def path(self, **kwargs):
         return "subscription_schedules"
-
-
-class SubscriptionScheduleWithId(StripeSubStream):
-    """
-    API docs: https://stripe.com/docs/api/subscription_schedules/retrieve
-    """
-
-    name = "subscription_schedule"
-
-    parent = SubscriptionSchedule
-    parent_id: str = "subscription_schedule_id"
-    sub_items_attr = "subscription_schedules"
-    add_parent_id = True
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
-        return f"subscription_schedules/{stream_slice[self.parent_id]}/"
-
+    
 
 class Transfers(IncrementalStripeStream):
     """

@@ -29,8 +29,6 @@ acceptance_tests:
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "checkout_sessions_line_items"
             bypass_reason: "This stream can't be seeded in our sandbox account"
-          - name: "subscription_schedule"
-            bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "transfers"
             bypass_reason: "This stream can't be seeded in our sandbox account"
         expect_records:
@@ -76,3 +74,4 @@ acceptance_tests:
               bypass_reason: "URL changes upon each request for privacy/security"
             - name: hosted_invoice_url
               bypass_reason: "URL changes upon each request for privacy/security"
+              

@@ -1,6 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
+  "type": ["null", "object"],
   "additionalProperties": true,
   "properties": {
     "id": {
@@ -28,13 +27,13 @@
       "type": ["null", "string"]
     },
     "default_settings": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "application_fee_percent": {
           "type": ["null", "string"]
         },
         "automatic_tax": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "enabled": {
               "type": ["null", "boolean"]
@@ -74,13 +73,13 @@
       "type": ["null", "boolean"]
     },
     "metadata": {
-      "type": "object"
+      "type": ["null", "object"]
     },
     "phases": {
       "type": ["null", "array"],
       "items": [
         {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "add_invoice_items": {
               "type": ["null", "array"],
@@ -121,16 +120,16 @@
               "type": ["null", "string"]
             },
             "items": {
-              "type": "array",
+              "type": ["null", "array"],
               "items": [
                 {
-                  "type": "object",
+                  "type": ["null", "object"],
                   "properties": {
                     "billing_thresholds": {
                       "type": ["null", "string"]
                     },
                     "metadata": {
-                      "type": "object"
+                      "type": ["null", "object"]
                     },
                     "price": {
                       "type": ["null", "string"]
@@ -147,10 +146,10 @@
               ]
             },
             "metadata": {
-              "type": "object"
+              "type": ["null", "object"]
             },
             "on_behalf_of": {
-              "type": "null"
+              "type": ["null", "string"]
             },
             "proration_behavior": {
               "type": ["null", "string"]

@@ -3840,361 +3840,186 @@
         "json_schema": {
           "type": ["null", "object"],
           "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
             "object": {
               "type": ["null", "string"]
             },
-            "url": {
-              "type": "string"
+            "application": {
+              "type": ["null", "string"]
             },
-            "has_more": {
-              "type": "boolean"
+            "canceled_at": {
+              "type": ["null", "string"]
             },
-            "data": {
-              "type": ["null","array"],
-              "items": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "object": {
-                    "type": "string"
-                  },
-                  "application": {},
-                  "canceled_at": {},
-                  "completed_at": {},
-                  "created": {
-                    "type": "number"
-                  },
-                  "current_phase": {
-                    "type": "object",
-                    "properties": {
-                      "end_date": {
-                        "type": "number"
-                      },
-                      "start_date": {
-                        "type": "number"
-                      }
-                    },
-                    "required": [
-                      "end_date",
-                      "start_date"
-                    ]
-                  },
-                  "customer": {
-                    "type": "string"
-                  },
-                  "default_settings": {
-                    "type": "object",
-                    "properties": {
-                      "application_fee_percent": {},
-                      "automatic_tax": {
-                        "type": "object",
-                        "properties": {
-                          "enabled": {
-                            "type": "boolean"
-                          }
-                        },
-                        "required": [
-                          "enabled"
-                        ]
-                      },
-                      "billing_cycle_anchor": {
-                        "type": "string"
-                      },
-                      "billing_thresholds": {},
-                      "collection_method": {
-                        "type": "string"
-                      },
-                      "default_payment_method": {},
-                      "description": {},
-                      "invoice_settings": {},
-                      "on_behalf_of": {},
-                      "transfer_data": {}
-                    }
-                  },
-                  "end_behavior": {
-                    "type": "string"
-                  },
-                  "livemode": {
-                    "type": "boolean"
-                  },
-                  "metadata": {
-                    "type": "object",
-                    "properties": {},
-                    "required": []
-                  },
-                  "phases": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "add_invoice_items": {
-                          "type": "array",
-                          "items": {}
-                        },
-                        "application_fee_percent": {},
-                        "billing_cycle_anchor": {},
-                        "billing_thresholds": {},
-                        "collection_method": {},
-                        "coupon": {},
-                        "currency": {
-                          "type": "string"
-                        },
-                        "default_payment_method": {},
-                        "default_tax_rates": {
-                          "type": "array",
-                          "items": {}
-                        },
-                        "description": {},
-                        "end_date": {
-                          "type": "number"
-                        },
-                        "invoice_settings": {},
-                        "items": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "billing_thresholds": {},
-                              "metadata": {
-                                "type": "object",
-                                "properties": {},
-                                "required": []
-                              },
-                              "price": {
-                                "type": "string"
-                              },
-                              "quantity": {
-                                "type": "number"
-                              },
-                              "tax_rates": {
-                                "type": "array",
-                                "items": {}
-                              }
-                            },
-                            "required": [
-                              "billing_thresholds",
-                              "metadata",
-                              "price",
-                              "quantity",
-                              "tax_rates"
-                            ]
-                          }
-                        },
-                        "metadata": {
-                          "type": "object",
-                          "properties": {},
-                          "required": []
-                        },
-                        "on_behalf_of": {},
-                        "proration_behavior": {
-                          "type": "string"
-                        },
-                        "start_date": {
-                          "type": "number"
-                        },
-                        "transfer_data": {},
-                        "trial_end": {}
-                      }
-                    }
-                  },
-                  "released_at": {},
-                  "released_subscription": {},
-                  "status": {
-                    "type": "string"
-                  },
-                  "subscription": {
-                    "type": "string"
-                  },
-                  "test_clock": {}
-                },
-                "required": [
-                  "id",
-                  "object",
-                  "application",
-                  "canceled_at",
-                  "completed_at",
-                  "created",
-                  "current_phase",
-                  "customer",
-                  "default_settings",
-                  "end_behavior",
-                  "livemode",
-                  "metadata",
-                  "phases",
-                  "released_at",
-                  "released_subscription",
-                  "status",
-                  "subscription",
-                  "test_clock"
-                ]
-              }
-            }
-          }
-        },
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["created"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"]
-    },
-    {
-      "stream": {
-        "name": "subscription_schedule",
-        "json_schema": {
-          "type": ["null", "object"],
-          "properties": {
-            "id": {
-              "type": "string"
+            "completed_at": {
+              "type": ["null", "string"]
             },
-            "object": {
-              "type": "string"
-            },
-            "application": {},
-            "canceled_at": {},
-            "completed_at": {},
             "created": {
-              "type": "number"
+              "type": ["null", "integer"]
             },
             "current_phase": {
-              "type": "object",
-              "properties": {
-                "end_date": {
-                  "type": "number"
-                },
-                "start_date": {
-                  "type": "number"
-                }
-              },
-              "required": [
-                "end_date",
-                "start_date"
-              ]
+              "type": ["null", "string"]
             },
             "customer": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "default_settings": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
-                "application_fee_percent": {},
+                "application_fee_percent": {
+                  "type": ["null", "string"]
+                },
                 "automatic_tax": {
-                  "type": "object",
+                  "type": ["null", "object"],
                   "properties": {
                     "enabled": {
-                      "type": "boolean"
+                      "type": ["null", "boolean"]
                     }
-                  },
-                  "required": [
-                    "enabled"
-                  ]
+                  }
                 },
                 "billing_cycle_anchor": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
-                "billing_thresholds": {},
+                "billing_thresholds": {
+                  "type": ["null", "string"]
+                },
                 "collection_method": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
-                "default_payment_method": {},
-                "description": {},
-                "invoice_settings": {},
-                "on_behalf_of": {},
-                "transfer_data": {}
+                "default_payment_method": {
+                  "type": ["null", "string"]
+                },
+                "description": {
+                  "type": ["null", "string"]
+                },
+                "invoice_settings": {
+                  "type": ["null", "string"]
+                },
+                "on_behalf_of": {
+                  "type": ["null", "string"]
+                },
+                "transfer_data": {
+                  "type": ["null", "string"]
+                }
               }
             },
             "end_behavior": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "livemode": {
-              "type": "boolean"
+              "type": ["null", "boolean"]
             },
             "metadata": {
-              "type": "object",
-              "properties": {},
-              "required": []
+              "type": ["null", "object"]
             },
             "phases": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "add_invoice_items": {
-                    "type": "array",
-                    "items": {}
-                  },
-                  "application_fee_percent": {},
-                  "billing_cycle_anchor": {},
-                  "billing_thresholds": {},
-                  "collection_method": {},
-                  "coupon": {},
-                  "currency": {
-                    "type": "string"
-                  },
-                  "default_payment_method": {},
-                  "default_tax_rates": {
-                    "type": "array",
-                    "items": {}
-                  },
-                  "description": {},
-                  "end_date": {
-                    "type": "number"
-                  },
-                  "invoice_settings": {},
-                  "items": {
-                    "type": "array",
+              "type": ["null", "array"],
+              "items": [
+                {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "add_invoice_items": {
+                      "type": ["null", "array"],
+                      "items": {}
+                    },
+                    "application_fee_percent": {
+                      "type": ["null", "string"]
+                    },
+                    "billing_cycle_anchor": {
+                      "type": ["null", "string"]
+                    },
+                    "billing_thresholds": {
+                      "type": ["null", "string"]
+                    },
+                    "collection_method": {
+                      "type": ["null", "string"]
+                    },
+                    "coupon": {
+                      "type": ["null", "string"]
+                    },
+                    "currency": {
+                      "type": ["null", "string"]
+                    },
+                    "default_payment_method": {
+                      "type": ["null", "string"]
+                    },
+                    "default_tax_rates": {
+                      "type": ["null", "array"],
+                      "items": {}
+                    },
+                    "description": {
+                      "type": ["null", "string"]
+                    },
+                    "end_date": {
+                      "type": ["null", "integer"]
+                    },
+                    "invoice_settings": {
+                      "type": ["null", "string"]
+                    },
                     "items": {
-                      "type": "object",
-                      "properties": {
-                        "billing_thresholds": {},
-                        "metadata": {
-                          "type": "object",
-                          "properties": {},
-                          "required": []
-                        },
-                        "price": {
-                          "type": "string"
-                        },
-                        "quantity": {
-                          "type": "number"
-                        },
-                        "tax_rates": {
-                          "type": "array",
-                          "items": {}
+                      "type": ["null", "array"],
+                      "items": [
+                        {
+                          "type": ["null", "object"],
+                          "properties": {
+                            "billing_thresholds": {
+                              "type": ["null", "string"]
+                            },
+                            "metadata": {
+                              "type": ["null", "object"]
+                            },
+                            "price": {
+                              "type": ["null", "string"]
+                            },
+                            "quantity": {
+                              "type": ["null", "integer"]
+                            },
+                            "tax_rates": {
+                              "type": ["null", "array"],
+                              "items": {}
+                            }
+                          }
                         }
-                      }
+                      ]
+                    },
+                    "metadata": {
+                      "type": ["null", "object"]
+                    },
+                    "on_behalf_of": {
+                      "type": ["null", "string"]
+                    },
+                    "proration_behavior": {
+                      "type": ["null", "string"]
+                    },
+                    "start_date": {
+                      "type": ["null", "integer"]
+                    },
+                    "transfer_data": {
+                      "type": ["null", "string"]
+                    },
+                    "trial_end": {
+                      "type": ["null", "string"]
                     }
-                  },
-                  "metadata": {
-                    "type": "object",
-                    "properties": {},
-                    "required": []
-                  },
-                  "on_behalf_of": {},
-                  "proration_behavior": {
-                    "type": "string"
-                  },
-                  "start_date": {
-                    "type": "number"
-                  },
-                  "transfer_data": {},
-                  "trial_end": {}
+                  }
                 }
-              }
+              ]
             },
-            "released_at": {},
-            "released_subscription": {},
+            "released_at": {
+              "type": ["null", "string"]
+            },
+            "released_subscription": {
+              "type": ["null", "string"]
+            },
             "status": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "subscription": {
-              "type": "string"
+              "type": ["null", "string"]
             },
-            "test_clock": {}
+            "test_clock": {
+              "type": ["null", "string"]
+            }
           }
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
