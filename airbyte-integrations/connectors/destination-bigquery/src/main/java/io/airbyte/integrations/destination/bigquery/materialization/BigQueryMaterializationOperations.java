@@ -21,7 +21,7 @@ public class BigQueryMaterializationOperations implements MaterializationOperati
   }
 
   /*
-   * commentary: this is equivalent to existing normalization code.
+   * commentary: this is equivalent to existing normalization code. It's the whole "convert jsonschema types to sql types" thing.
    */
   public Schema getTableSchema(ConfiguredAirbyteStream stream) {
     // TODO
