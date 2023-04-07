@@ -503,13 +503,12 @@ class BasicReports(IncrementalTiktokStream, ABC):
         report_granularity = kwargs.pop("report_granularity", None)
         self.attribution_window = kwargs.get("attribution_window") or 0
         super().__init__(**kwargs)
-        
+
         # Important:
         # for >= 0.1.13 - granularity is set via inheritance
         # for < 0.1.13 - granularity is set via init param
         if report_granularity:
             self.report_granularity = report_granularity
-        
 
     @property
     @abstractmethod
@@ -533,9 +532,9 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
     @staticmethod
     def _get_time_interval(
-        start_date: Union[datetime, str], 
-        ending_date: Union[datetime, str], 
-        granularity: ReportGranularity, 
+        start_date: Union[datetime, str],
+        ending_date: Union[datetime, str],
+        granularity: ReportGranularity,
         attr_window: int = 0,
     ) -> Iterable[Tuple[datetime, datetime]]:
         """Due to time range restrictions based on the level of granularity of reports, we have to chunk API calls in order
@@ -550,7 +549,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
             start_date = pendulum.parse(start_date).subtract(days=attr_window)
         elif isinstance(start_date, datetime):
             start_date = start_date.subtract(days=attr_window)
-    
+
         end_date = pendulum.parse(ending_date) if ending_date else pendulum.now()
 
         # TikTok API only allows certain amount of days of data based on the reporting granularity
