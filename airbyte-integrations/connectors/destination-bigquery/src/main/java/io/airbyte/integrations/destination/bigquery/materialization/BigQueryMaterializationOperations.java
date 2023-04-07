@@ -101,15 +101,15 @@ public class BigQueryMaterializationOperations implements MaterializationOperati
     // TODO we probably should only do the getDataset().list() once per dataset
     // TODO maybe we put the raw table in a different dataset from the final table
     final Page<Table> page = bigquery.getDataset(datasetId).list();
-    boolean tableExists = false;
+    Table existingTable = null;
     for (Table table : page.getValues()) {
       if (tableName.equals(table.getFriendlyName())) {
-        tableExists = true;
+        existingTable = table;
         break;
       }
     }
-    
-    if (!tableExists) {
+
+    if (existingTable == null) {
       bigquery.create(TableInfo.newBuilder(
           TableId.of(datasetId, tableName),
           StandardTableDefinition.newBuilder()
@@ -120,7 +120,9 @@ public class BigQueryMaterializationOperations implements MaterializationOperati
       ).build());
     } else {
       // TODO table exists - check existing table schema + alter table to match schema (maybe also alter partitoining/clustering)
-      LOGGER.warn("schema evolution is not yet implemented");
+      if (!schema.equals(existingTable.getDefinition().getSchema())) {
+        LOGGER.warn("schema evolution is not yet implemented. Found schema " + existingTable.getDefinition().getSchema() + "; wanted schema " + schema);
+      }
     }
   }
 
