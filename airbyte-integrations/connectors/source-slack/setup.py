@@ -7,6 +7,7 @@ from setuptools import find_packages, setup
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
+    "requests_mock"
 ]
 
 setup(
