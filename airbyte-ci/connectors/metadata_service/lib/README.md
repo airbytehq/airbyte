@@ -32,5 +32,5 @@ poetry run pytest
 
 ## Validating Metadata Files
 ```bash
-poetry run validate_metadata_file tests/fixtures/valid/metadata_catalog_override.yaml
+poetry run metadata_service validate tests/fixtures/valid/metadata_catalog_override.yaml
 ```

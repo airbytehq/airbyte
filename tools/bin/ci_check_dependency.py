@@ -8,8 +8,8 @@ from typing import Any, Dict, Text, List
 CONNECTORS_PATH = "./airbyte-integrations/connectors/"
 NORMALIZATION_PATH = "./airbyte-integrations/bases/base-normalization/"
 DOC_PATH = "docs/integrations/"
-SOURCE_DEFINITIONS_PATH = "./airbyte-config/init/src/main/resources/seed/source_definitions.yaml"
-DESTINATION_DEFINITIONS_PATH = "./airbyte-config/init/src/main/resources/seed/destination_definitions.yaml"
+SOURCE_DEFINITIONS_PATH = "./airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml"
+DESTINATION_DEFINITIONS_PATH = "./airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml"
 IGNORE_LIST = [
     # Java
     "/src/test/","/src/test-integration/", "/src/testFixtures/",
