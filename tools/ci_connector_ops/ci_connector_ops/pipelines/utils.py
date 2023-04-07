@@ -14,7 +14,7 @@ from typing import Any, Optional, Set
 import anyio
 import git
 from ci_connector_ops.utils import DESTINATION_CONNECTOR_PATH_PREFIX, SOURCE_CONNECTOR_PATH_PREFIX, Connector, get_connector_name_from_path
-from dagger import Config, Connection, Container, QueryError
+from dagger import Config, Connection, Container, File, QueryError
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
@@ -189,3 +189,38 @@ def slugify(value: Any, allow_unicode: bool = False):
         value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
     value = re.sub(r"[^\w\s-]", "", value.lower())
     return re.sub(r"[-\s]+", "-", value).strip("-_")
+
+
+def key_value_text_to_dict(text: str) -> dict:
+    kv = {}
+    for line in text.split("\n"):
+        if "=" in line:
+            try:
+                k, v = line.split("=")
+            except ValueError:
+                continue
+            kv[k] = v
+    return kv
+
+
+async def key_value_file_to_dict(file: File) -> dict:
+    return key_value_text_to_dict(await file.contents())
+
+
+async def get_dockerfile_labels(dockerfile: File) -> dict:
+    return {k.replace("LABEL ", ""): v for k, v in (await key_value_file_to_dict(dockerfile)).items() if k.startswith("LABEL")}
+
+
+async def get_version_from_dockerfile(dockerfile: File) -> str:
+    dockerfile_labels = await get_dockerfile_labels(dockerfile)
+    try:
+        return dockerfile_labels["io.airbyte.version"]
+    except KeyError:
+        raise Exception("Could not get the version from the Dockerfile labels.")
+
+
+async def should_enable_sentry(dockerfile: File) -> bool:
+    for line in await dockerfile.contents():
+        if "ENV ENABLE_SENTRY true" in line:
+            return True
+    return False

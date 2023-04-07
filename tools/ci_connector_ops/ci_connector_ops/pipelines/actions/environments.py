@@ -9,7 +9,7 @@ from __future__ import annotations
 import uuid
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
-from ci_connector_ops.pipelines.utils import get_file_contents, slugify
+from ci_connector_ops.pipelines.utils import get_file_contents, get_version_from_dockerfile, should_enable_sentry, slugify
 from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Secret
 
 if TYPE_CHECKING:
@@ -327,13 +327,17 @@ async def with_connector_acceptance_test(context: ConnectorTestContext, connecto
 
 
 def with_gradle(
-    context: ConnectorTestContext, sources_to_include: List[str] = None, docker_service_name: Optional[str] = "gradle"
+    context: ConnectorTestContext,
+    sources_to_include: List[str] = None,
+    bind_to_docker_host: bool = True,
+    docker_service_name: Optional[str] = "gradle",
 ) -> Container:
     """Create a container with Gradle installed and bound to a persistent docker host.
 
     Args:
         context (ConnectorTestContext): The current connector test context.
         sources_to_include (List[str], optional): List of additional source path to mount to the container. Defaults to None.
+        bind_to_docker_host (bool): Whether to bind the gradle container to a docker host.
         docker_service_name (Optional[str], optional): The name of the docker service, useful context isolation. Defaults to "gradle".
 
     Returns:
@@ -381,7 +385,10 @@ def with_gradle(
         .with_mounted_cache("/airbyte/.gradle", airbyte_gradle_cache, sharing=CacheSharingMode.LOCKED)
         .with_workdir("/airbyte")
     )
-    return with_bound_docker_host(context, openjdk_with_docker, shared_tmp_volume, docker_service_name=docker_service_name)
+    if bind_to_docker_host:
+        return with_bound_docker_host(context, openjdk_with_docker, shared_tmp_volume, docker_service_name=docker_service_name)
+    else:
+        return openjdk_with_docker
 
 
 async def load_image_to_docker_host(
@@ -440,3 +447,79 @@ def with_poetry_module(context: PipelineContext, src_path: str) -> Container:
     python_with_poetry = with_poetry(context)
 
     return python_with_poetry.with_mounted_directory("/src", src).with_workdir("/src").with_exec(poetry_install_dependencies_cmd)
+
+
+def with_integration_base(context: PipelineContext, jdk_version: str = "17.0.4") -> Container:
+    """Create an integration base container.
+
+    Reproduce with Dagger the Dockerfile defined here: airbyte-integrations/bases/base/Dockerfile
+    """
+    base_sh = context.get_repo_dir("airbyte-integrations/bases/base", include=["base.sh"]).file("base.sh")
+
+    return (
+        context.dagger_client.container()
+        .from_(f"amazoncorretto:{jdk_version}")
+        .with_workdir("/airbyte")
+        .with_file("base.sh", base_sh)
+        .with_env_variable("AIRBYTE_ENTRYPOINT", "/airbyte/base.sh")
+        .with_label("io.airbyte.version", "0.1.0")
+        .with_label("io.airbyte.name", "airbyte/integration-base")
+    )
+
+
+async def with_java_base(context: PipelineContext, jdk_version: str = "17.0.4") -> Container:
+    """Create a java base container.
+
+    Reproduce with Dagger the Dockerfile defined here: airbyte-integrations/bases/base-java/Dockerfile_
+    """
+    datadog_java_agent = context.dagger_client.http("https://dtdg.co/latest-java-tracer")
+    javabase_sh = context.get_repo_dir("airbyte-integrations/bases/base-java", include=["javabase.sh"]).file("javabase.sh")
+    dockerfile = context.get_repo_dir("airbyte-integrations/bases/base-java", include=["Dockerfile"]).file("Dockerfile")
+    java_base_version = await get_version_from_dockerfile(dockerfile)
+
+    return (
+        with_integration_base(context, jdk_version)
+        .with_exec(["yum", "install", "-y", "tar", "openssl"])
+        .with_exec(["yum", "clean", "all"])
+        .with_workdir("/airbyte")
+        .with_file("dd-java-agent.jar", datadog_java_agent)
+        .with_file("javabase.sh", javabase_sh)
+        .with_env_variable("AIRBYTE_SPEC_CMD", "/airbyte/javabase.sh --spec")
+        .with_env_variable("AIRBYTE_CHECK_CMD", "/airbyte/javabase.sh --check")
+        .with_env_variable("AIRBYTE_DISCOVER_CMD", "/airbyte/javabase.sh --discover")
+        .with_env_variable("AIRBYTE_READ_CMD", "/airbyte/javabase.sh --read")
+        .with_env_variable("AIRBYTE_WRITE_CMD", "/airbyte/javabase.sh --write")
+        .with_env_variable("AIRBYTE_ENTRYPOINT", "/airbyte/base.sh")
+        .with_label("io.airbyte.version", java_base_version)
+        .with_label("io.airbyte.name", "airbyte/integration-base-java")
+    )
+
+
+async def with_airbyte_java_connector(context: ConnectorTestContext, connector_java_tar_file: File):
+    dockerfile = context.get_connector_dir(include=["Dockerfile"]).file("Dockerfile")
+    connector_version = await get_version_from_dockerfile(dockerfile)
+    application = context.connector.technical_name
+    java_base = await with_java_base(context)
+    enable_sentry = await should_enable_sentry(dockerfile)
+
+    return (
+        java_base.with_workdir("/airbyte")
+        .with_env_variable("APPLICATION", application)
+        .with_file(f"{application}.tar", connector_java_tar_file)
+        .with_exec(["tar", "xf", f"{application}.tar", "--strip-components=1"])
+        .with_exec(["rm", "-rf", f"{application}.tar"])
+        .with_label("io.airbyte.version", connector_version)
+        .with_label("io.airbyte.name", f"airbyte/{application}")
+        .with_env_variable("ENABLE_SENTRY", str(enable_sentry).lower())
+        .with_entrypoint("/airbyte/base.sh")
+    )
+
+
+def with_normalization(context, normalization_dockerfile_name: str) -> Container:
+    normalization_directory = context.get_repo_dir("airbyte-integrations/bases/base-normalization")
+    sshtunneling_file = context.get_repo_dir(
+        "airbyte-connector-test-harnesses/acceptance-test-harness/src/main/resources", include="sshtunneling.sh"
+    ).file("sshtunneling.sh")
+    normalization_directory_with_build = normalization_directory.with_new_directory("build")
+    normalization_directory_with_sshtunneling = normalization_directory_with_build.with_file("build/sshtunneling.sh", sshtunneling_file)
+    return normalization_directory_with_sshtunneling.docker_build(normalization_dockerfile_name)
