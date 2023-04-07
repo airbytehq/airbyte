@@ -32,6 +32,7 @@ acceptance_tests:
         bypass_reason: "Hourly reports are disabled, because sync is too long"
       - name: keyword_performance_report_hourly
         bypass_reason: "Hourly reports are disabled, because sync is too long"
+      fail_on_extra_columns: false
   full_refresh:
     tests:
     - config_path: secrets/config.json

@@ -1,11 +1,11 @@
-version: "0.1.0"
+version: "0.29.0"
 
 definitions:
   selector:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: ['data']
+      field_path: ["data"]
   requester:
     type: HttpRequester
     url_base: "https://api.railz.ai/"
@@ -35,7 +35,7 @@ definitions:
     requester:
       $ref: "#/definitions/requester"
 
-# Full Refresh Base
+  # Full Refresh Base
   base_stream:
     type: DeclarativeStream
     retriever:
@@ -53,7 +53,7 @@ definitions:
       path: "/connections"
     primary_key: "connectionId"
 
-# Internal stream for slicing
+  # Internal stream for slicing
   connections_slice_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -67,7 +67,7 @@ definitions:
       name: "connections_slice"
       path: "/connections"
 
-# Full Refresh Service
+  # Full Refresh Service
   base_service_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -96,42 +96,110 @@ definitions:
     $parameters:
       name: "customers"
       path: "/customers"
-      serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "dynamicsBusinessCentral", "wave", "myob"]
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageBusinessCloud",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "wave",
+          "myob",
+        ]
     primary_key: "id"
   accounts_stream:
     $ref: "#/definitions/base_service_stream"
     $parameters:
       name: "accounts"
       path: "/accounts"
-      serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "dynamicsBusinessCentral", "wave", "myob"]
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageBusinessCloud",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "wave",
+          "myob",
+        ]
     primary_key: "id"
   inventory_stream:
     $ref: "#/definitions/base_service_stream"
     $parameters:
       name: "inventory"
       path: "/inventory"
-      serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "dynamicsBusinessCentral", "wave", "myob"]
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageBusinessCloud",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "wave",
+          "myob",
+        ]
     primary_key: "id"
   tax_rates_stream:
     $ref: "#/definitions/base_service_stream"
     $parameters:
       name: "tax_rates"
       path: "/taxRates"
-      serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageIntacct", "dynamicsBusinessCentral", "wave", "myob"]
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "wave",
+          "myob",
+        ]
     primary_key: "id"
   tracking_categories_stream:
     $ref: "#/definitions/base_service_stream"
     $parameters:
       name: "tracking_categories"
       path: "/trackingCategories"
-      serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageIntacct", "myob"]
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageIntacct",
+          "myob",
+        ]
     primary_key: "id"
   vendors_stream:
     $ref: "#/definitions/base_service_stream"
     $parameters:
       name: "vendors"
       path: "/vendors"
-      serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "dynamicsBusinessCentral", "wave", "myob"]
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageBusinessCloud",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "wave",
+          "myob",
+        ]
     primary_key: "id"
   bank_accounts_stream:
     $ref: "#/definitions/base_service_stream"
@@ -141,7 +209,7 @@ definitions:
       serviceNames: ["plaid"]
     primary_key: "accountId"
 
-# Incremental Service
+  # Incremental Service
   base_incremental_service_stream:
     $ref: "#/definitions/base_service_stream"
     retriever:
@@ -184,7 +252,18 @@ definitions:
       name: "accounting_transactions"
       path: "/accountingTransactions"
       cursor_field: "postedDate"
-      serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "dynamicsBusinessCentral", "myob"]
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageBusinessCloud",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "myob",
+        ]
     primary_key: "id"
   bank_transfers_stream:
     $ref: "#/definitions/base_incremental_service_stream"
@@ -200,7 +279,18 @@ definitions:
       name: "bills"
       path: "/bills"
       cursor_field: "postedDate"
-      serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "dynamicsBusinessCentral", "myob"]
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageBusinessCloud",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "myob",
+        ]
     primary_key: "id"
   bills_credit_notes_stream:
     $ref: "#/definitions/base_incremental_service_stream"
@@ -208,7 +298,8 @@ definitions:
       name: "bills_credit_notes"
       path: "/bills/creditNotes"
       cursor_field: "postedDate"
-      serviceNames: ["quickbooks", "xero", "oracleNetsuite", "sageIntacct", "myob"]
+      serviceNames:
+        ["quickbooks", "xero", "oracleNetsuite", "sageIntacct", "myob"]
     primary_key: "id"
   bills_payments_stream:
     $ref: "#/definitions/base_incremental_service_stream"
@@ -216,7 +307,18 @@ definitions:
       name: "bills_payments"
       path: "/bills/payments"
       cursor_field: "date"
-      serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "dynamicsBusinessCentral", "myob"]
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageBusinessCloud",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "myob",
+        ]
     primary_key: "id"
   deposits_stream:
     $ref: "#/definitions/base_incremental_service_stream"
@@ -240,7 +342,19 @@ definitions:
       name: "invoices"
       path: "/invoices"
       cursor_field: "postedDate"
-      serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "dynamicsBusinessCentral", "wave", "myob"]
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageBusinessCloud",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "wave",
+          "myob",
+        ]
     primary_key: "id"
   invoices_credit_notes_stream:
     $ref: "#/definitions/base_incremental_service_stream"
@@ -248,7 +362,16 @@ definitions:
       name: "invoices_credit_notes"
       path: "/invoices/creditNotes"
       cursor_field: "postedDate"
-      serviceNames: ["freshbooks", "quickbooks", "xero", "oracleNetsuite", "sageIntacct", "dynamicsBusinessCentral", "myob"]
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "xero",
+          "oracleNetsuite",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "myob",
+        ]
     primary_key: "id"
   invoices_payments_stream:
     $ref: "#/definitions/base_incremental_service_stream"
@@ -256,7 +379,18 @@ definitions:
       name: "invoices_payments"
       path: "/invoices/payments"
       cursor_field: "date"
-      serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "dynamicsBusinessCentral", "myob"]
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageBusinessCloud",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "myob",
+        ]
     primary_key: "id"
   journal_entries_stream:
     $ref: "#/definitions/base_incremental_service_stream"
@@ -264,7 +398,17 @@ definitions:
       name: "journal_entries"
       path: "/journalEntries"
       cursor_field: "postedDate"
-      serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "myob"]
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageBusinessCloud",
+          "sageIntacct",
+          "myob",
+        ]
     primary_key: "id"
   purchase_orders_stream:
     $ref: "#/definitions/base_incremental_service_stream"
@@ -272,7 +416,15 @@ definitions:
       name: "purchase_orders"
       path: "/purchaseOrders"
       cursor_field: "postedDate"
-      serviceNames: ["quickbooks", "xero", "oracleNetsuite", "sageIntacct", "dynamicsBusinessCentral", "myob"]
+      serviceNames:
+        [
+          "quickbooks",
+          "xero",
+          "oracleNetsuite",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "myob",
+        ]
     primary_key: "id"
   refunds_stream:
     $ref: "#/definitions/base_incremental_service_stream"
@@ -314,7 +466,6 @@ definitions:
       cursor_field: "createdDate"
       serviceNames: ["shopify", "square", "myob"]
     primary_key: "id"
-
 
 streams:
   - "#/definitions/businesses_stream"

@@ -1,0 +1,24 @@
+name: Metadata Service CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+    # TODO (ben): Change to any connector change once the metadata service is in use
+    paths:
+      - "airbyte-integrations/connectors/**/metadata.yml"
+jobs:
+  metadata_service_ci:
+    name: Validate Metadata Manifest for Connectors
+    timeout-minutes: 10 # 10 minutes
+    runs-on: medium-runner
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Run Metadata unit test pipeline
+        id: metadata-lib-unit-test-pipeline
+        uses: ./.github/actions/run-dagger-pipeline
+        with:
+          subcommand: "metadata validate"
+          context: "pull_request"
+        env:
+          CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}

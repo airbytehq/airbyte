@@ -41,8 +41,12 @@ class AirbyteConnectorAcceptanceTestPlugin implements Plugin<Project> {
                         '-w', "$targetMountDirectory",
                         '-e', "AIRBYTE_SAT_CONNECTOR_DIR=${project.projectDir.absolutePath}",
                         "airbyte/connector-acceptance-test:${project.connectorAcceptanceTestVersion}",
-                        '-p', 'integration_tests.acceptance',
                     ]
+                    if (project.file('integration_tests/acceptance.py').exists()) {
+                        // if integration_tests/acceptance.py exists, use it for setup/tear down external test dependencies
+                        args.add('-p')
+                        args.add('integration_tests.acceptance')
+                    }
                     commandLine args
                 }
             }

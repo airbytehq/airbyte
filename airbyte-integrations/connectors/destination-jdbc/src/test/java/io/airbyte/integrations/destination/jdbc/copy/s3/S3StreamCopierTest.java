@@ -16,7 +16,7 @@ import static org.mockito.Mockito.verify;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.common.collect.Lists;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.csv.CsvSheetGenerator;
@@ -133,7 +133,7 @@ public class S3StreamCopierTest {
         s3Client,
         db,
         new S3CopyConfig(true, S3_CONFIG),
-        new ExtendedNameTransformer(),
+        new StandardNameTransformer(),
         sqlOperations,
         CONFIGURED_STREAM,
         UPLOAD_TIME,
@@ -234,7 +234,7 @@ public class S3StreamCopierTest {
         db,
         // Explicitly disable purgeStagingData
         new S3CopyConfig(false, S3_CONFIG),
-        new ExtendedNameTransformer(),
+        new StandardNameTransformer(),
         sqlOperations,
         CONFIGURED_STREAM,
         UPLOAD_TIME,

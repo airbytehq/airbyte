@@ -3440,6 +3440,9 @@
             "cancel_at_period_end": {
               "type": ["null", "boolean"]
             },
+            "cancel_at": {
+              "type": ["null", "number"]
+            },
             "tax_percent": {
               "type": ["null", "number"]
             },
