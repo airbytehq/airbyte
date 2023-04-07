@@ -5,11 +5,11 @@
         "name": "advertisers",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
+        "source_defined_primary_key": [["advertiser_id"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "append",
-      "primary_key": [["id"]]
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["advertiser_id"]]
     },
     {
       "stream": {
@@ -21,7 +21,7 @@
         "source_defined_primary_key": [["ad_id"]]
       },
       "sync_mode": "incremental",
-      "destination_sync_mode": "append",
+      "destination_sync_mode": "overwrite",
       "cursor_field": ["modify_time"],
       "primary_key": [["ad_id"]]
     },
@@ -35,7 +35,7 @@
         "source_defined_primary_key": [["adgroup_id"]]
       },
       "sync_mode": "incremental",
-      "destination_sync_mode": "append",
+      "destination_sync_mode": "overwrite",
       "cursor_field": ["modify_time"],
       "primary_key": [["adgroup_id"]]
     },
@@ -49,121 +49,121 @@
         "source_defined_primary_key": [["campaign_id"]]
       },
       "sync_mode": "incremental",
-      "destination_sync_mode": "append",
-      "primary_key": [["campaign_id"]],
-      "cursor_field": ["modify_time"]
-    },
-    {
-      "stream": {
-        "name": "ads_reports",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["stat_time_day"],
-        "source_defined_primary_key": [["ad_id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append",
-      "cursor_field": ["stat_time_day"],
-      "primary_key": [["ad_id"]]
-    },
-    {
-      "stream": {
-        "name": "advertisers_reports",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["stat_time_day"],
-        "source_defined_primary_key": [["advertiser_id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append",
-      "cursor_field": ["stat_time_day"],
-      "primary_key": [["advertiser_id"]]
-    },
-    {
-      "stream": {
-        "name": "ad_groups_reports",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["stat_time_day"],
-        "source_defined_primary_key": [["adgroup_id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append",
-      "cursor_field": ["stat_time_day"],
-      "primary_key": [["adgroup_id"]]
-    },
-    {
-      "stream": {
-        "name": "campaigns_reports",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["stat_time_day"],
-        "source_defined_primary_key": [["campaign_id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append",
-      "cursor_field": ["stat_time_day"],
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["modify_time"],
       "primary_key": [["campaign_id"]]
     },
     {
       "stream": {
-        "name": "campaigns_audience_reports_by_country",
+        "name": "ads_reports_daily",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
-        "source_defined_primary_key": [["campaign_id"]]
+        "source_defined_primary_key": [["ad_id"], ["stat_time_day"]]
       },
       "sync_mode": "incremental",
-      "destination_sync_mode": "append",
+      "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [["campaign_id"]]
+      "primary_key": [["ad_id"], ["stat_time_day"]]
     },
     {
       "stream": {
-        "name": "ad_group_audience_reports",
+        "name": "ad_groups_reports_daily",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
-        "source_defined_primary_key": [["adgroup_id"]]
+        "source_defined_primary_key": [["adgroup_id"], ["stat_time_day"]]
       },
       "sync_mode": "incremental",
-      "destination_sync_mode": "append",
+      "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [["adgroup_id"]]
+      "primary_key": [["adgroup_id"], ["stat_time_day"]]
     },
     {
       "stream": {
-        "name": "ads_audience_reports",
+        "name": "campaigns_reports_daily",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
-        "source_defined_primary_key": [["ad_id"]]
+        "source_defined_primary_key": [["campaign_id"], ["stat_time_day"]]
       },
       "sync_mode": "incremental",
-      "destination_sync_mode": "append",
+      "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [["ad_id"]]
+      "primary_key": [["campaign_id"], ["stat_time_day"]]
     },
     {
       "stream": {
-        "name": "advertisers_audience_reports",
+        "name": "advertisers_reports_daily",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
-        "source_defined_primary_key": [["advertiser_id"]]
+        "source_defined_primary_key": [["advertiser_id"], ["stat_time_day"]]
       },
       "sync_mode": "incremental",
-      "destination_sync_mode": "append",
+      "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [["advertiser_id"]]
+      "primary_key": [["advertiser_id"], ["stat_time_day"]]
+    },
+    {
+      "stream": {
+        "name": "ads_audience_reports_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["stat_time_day"],
+        "source_defined_primary_key": [["ad_id"], ["stat_time_day"], ["gender"], ["age"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["stat_time_day"],
+      "primary_key": [["ad_id"], ["stat_time_day"], ["gender"], ["age"]]
+    },
+    {
+      "stream": {
+        "name": "ad_group_audience_reports_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["stat_time_day"],
+        "source_defined_primary_key": [["adgroup_id"], ["stat_time_day"], ["gender"], ["age"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["stat_time_day"],
+      "primary_key": [["adgroup_id"], ["stat_time_day"], ["gender"], ["age"]]
+    },
+    {
+      "stream": {
+        "name": "campaigns_audience_reports_by_country_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["stat_time_day"],
+        "source_defined_primary_key": [["campaign_id"], ["stat_time_day"], ["country_code"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["stat_time_day"],
+      "primary_key": [["campaign_id"], ["stat_time_day"], ["country_code"]]
+    },
+    {
+      "stream": {
+        "name": "advertisers_audience_reports_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["stat_time_day"],
+        "source_defined_primary_key": [["advertiser_id"], ["stat_time_day"], ["gender"], ["age"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["stat_time_day"],
+      "primary_key": [["advertiser_id"], ["stat_time_day"], ["gender"], ["age"]]
     }
   ]
 }
