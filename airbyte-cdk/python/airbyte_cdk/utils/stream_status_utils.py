@@ -5,7 +5,7 @@
 
 from datetime import datetime
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteStreamStatusTraceMessage, AirbyteTraceMessage, TraceType
+from airbyte_cdk.models import AirbyteMessage, AirbyteStreamStatusTraceMessage, AirbyteTraceMessage, StreamDescriptor, TraceType
 from airbyte_cdk.models import Type as MessageType
 
 
@@ -19,7 +19,7 @@ def as_airbyte_message(self, stream, current_status, successful) -> AirbyteMessa
     trace_message = AirbyteTraceMessage(
         type=TraceType.STREAM_STATUS,
         emitted_at=now_millis,
-        stream_status=AirbyteStreamStatusTraceMessage(stream_descriptor=stream, status=current_status, success=successful),
+        stream_status=AirbyteStreamStatusTraceMessage(stream_descriptor=StreamDescriptor(stream.name, stream.namespace), status=current_status, success=successful),
     )
 
     return AirbyteMessage(type=MessageType.TRACE, trace=trace_message)
