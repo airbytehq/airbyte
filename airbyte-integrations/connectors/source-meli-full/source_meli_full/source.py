@@ -73,12 +73,9 @@ class MeliInvoices(HttpStream):
         output, error = process.communicate()
         refresh_token = output.decode('utf-8').strip()
 
-        try:
-            print("tentando pegar o credstash_refresh_token")
-            credstash_refresh_token = AbstractCredentialsProvider.getSecret(self.credstash_key)
-            print(f"credstash_refresh_token {credstash_refresh_token}")
-        except:
-            print("Couldn't get credstash key with meramacore ")
+        print("tentando pegar o credstash_refresh_token")
+        credstash_refresh_token = AbstractCredentialsProvider.getSecret(self.credstash_key)
+        print(f"credstash_refresh_token {credstash_refresh_token}")
 
         payload = json.dumps({
             "grant_type":"refresh_token",
