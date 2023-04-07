@@ -131,7 +131,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected CdcTargetPosition cdcLatestTargetPosition() {
+  protected MySqlCdcTargetPosition cdcLatestTargetPosition() {
     final DataSource dataSource = DataSourceFactory.create(
         "root",
         "test",
@@ -146,7 +146,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected CdcTargetPosition extractPosition(final JsonNode record) {
+  protected MySqlCdcTargetPosition extractPosition(final JsonNode record) {
     return new MySqlCdcTargetPosition(record.get(CDC_LOG_FILE).asText(), record.get(CDC_LOG_POS).asLong());
   }
 

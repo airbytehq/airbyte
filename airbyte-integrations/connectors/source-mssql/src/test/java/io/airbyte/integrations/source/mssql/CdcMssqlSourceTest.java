@@ -378,7 +378,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected CdcTargetPosition cdcLatestTargetPosition() {
+  protected MssqlCdcTargetPosition cdcLatestTargetPosition() {
     try {
       // Sleeping because sometimes the db is not yet completely ready and the lsn is not found
       Thread.sleep(5000);
@@ -400,7 +400,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected CdcTargetPosition extractPosition(final JsonNode record) {
+  protected MssqlCdcTargetPosition extractPosition(final JsonNode record) {
     return new MssqlCdcTargetPosition(Lsn.valueOf(record.get(CDC_LSN).asText()));
   }
 

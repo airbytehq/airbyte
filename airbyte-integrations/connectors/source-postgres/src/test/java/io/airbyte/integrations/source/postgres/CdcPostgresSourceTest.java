@@ -235,7 +235,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected CdcTargetPosition cdcLatestTargetPosition() {
+  protected PostgresCdcTargetPosition cdcLatestTargetPosition() {
     final JdbcDatabase database = new DefaultJdbcDatabase(
         DataSourceFactory.create(
             config.get(JdbcUtils.USERNAME_KEY).asText(),
@@ -250,7 +250,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected CdcTargetPosition extractPosition(final JsonNode record) {
+  protected PostgresCdcTargetPosition extractPosition(final JsonNode record) {
     return new PostgresCdcTargetPosition(PgLsn.fromLong(record.get(CDC_LSN).asLong()));
   }
 
@@ -461,9 +461,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
   @Test
   void testReachedTargetPosition() {
-    final CdcTargetPosition ctp = cdcLatestTargetPosition();
-    final PostgresCdcTargetPosition pctp = (PostgresCdcTargetPosition) ctp;
-    final PgLsn target = pctp.targetLsn;
+    final PostgresCdcTargetPosition ctp = cdcLatestTargetPosition();
+    final PgLsn target = ctp.targetLsn;
     assertTrue(ctp.reachedTargetPosition(target.asLong() + 1));
     assertTrue(ctp.reachedTargetPosition(target.asLong()));
     assertFalse(ctp.reachedTargetPosition(target.asLong() - 1));
