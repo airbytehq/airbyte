@@ -170,6 +170,11 @@ def get_big_schema_configured_stream():
                 "items": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"},
             },
             "airbyte_type_object_not_integer": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"},
+            "object_with_additional_properties": {
+                "type": ["null", "object"],
+                "properties": {"id": {"type": ["null", "integer"]}, "name": {"type": ["null", "string"]}},
+                "additionalProperties": "true",
+            },
         },
     }
 
@@ -256,6 +261,7 @@ def test_get_glue_dtypes_from_json_schema():
         "nested_bad_object": "string",
         "nested_mixed_types": "string",
         "nested_nested_bad_object": "string",
+        "object_with_additional_properties": "string",
         "percentage": "double",
         "phone_number_ids": "string",
         "questions": "array<struct<id:bigint,question:string,answer:string>>",
@@ -275,6 +281,7 @@ def test_get_glue_dtypes_from_json_schema():
         "nested_mixed_types",
         "nested_nested_bad_object",
         "phone_number_ids",
+        "object_with_additional_properties",
     }
 
 

@@ -275,7 +275,8 @@ class StreamWriter:
 
             if col_typ == "object":
                 properties = definition.get("properties")
-                if properties and self._is_invalid_struct_or_array(properties):
+                allow_additional_properties = definition.get("additionalProperties")
+                if properties and not allow_additional_properties and self._is_invalid_struct_or_array(properties):
                     object_props, _ = self._get_glue_dtypes_from_json_schema(properties)
                     result_typ = f"struct<{','.join([f'{k}:{v}' for k, v in object_props.items()])}>"
                 else:
