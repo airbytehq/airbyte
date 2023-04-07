@@ -14,18 +14,26 @@ from .streams import (
     DEFAULT_END_DATE,
     DEFAULT_START_DATE,
     AdGroupAudienceReports,
+    AdGroupAudienceReportsByCountry,
+    AdGroupAudienceReportsByPlatform,
     AdGroups,
     AdGroupsReports,
     Ads,
     AdsAudienceReports,
+    AdsAudienceReportsByCountry,
+    AdsAudienceReportsByPlatform,
     AdsReports,
     AdvertiserIds,
     Advertisers,
     AdvertisersAudienceReports,
+    AdvertisersAudienceReportsByCountry,
+    AdvertisersAudienceReportsByPlatform,
     AdvertisersReports,
     BasicReports,
     Campaigns,
+    CampaignsAudienceReports,
     CampaignsAudienceReportsByCountry,
+    CampaignsAudienceReportsByPlatform,
     CampaignsReports,
     Daily,
     Hourly,
@@ -166,15 +174,32 @@ class SourceTiktokMarketing(AbstractSource):
 
             # 2. Basic report streams:
             reports = [AdsReports, AdGroupsReports, CampaignsReports]
-            audience_reports = [AdsAudienceReports, AdGroupAudienceReports, CampaignsAudienceReportsByCountry]
+            audience_reports = [
+                AdsAudienceReports,
+                AdsAudienceReportsByCountry,
+                AdsAudienceReportsByPlatform,
+                AdGroupAudienceReports,
+                AdGroupAudienceReportsByCountry,
+                AdGroupAudienceReportsByPlatform,
+                CampaignsAudienceReports,
+                CampaignsAudienceReportsByCountry,
+                CampaignsAudienceReportsByPlatform,
+            ]
             if is_production:
                 # 2.1 streams work only in prod env
                 reports.append(AdvertisersReports)
-                audience_reports.append(AdvertisersAudienceReports)
+                audience_reports.extend(
+                    [
+                        AdvertisersAudienceReports,
+                        AdvertisersAudienceReportsByCountry,
+                        AdvertisersAudienceReportsByPlatform,
+                    ]
+                )
 
             for Report in reports:
                 for Granularity in [Hourly, Daily, Lifetime]:
                     streams.append(get_report_stream(Report, Granularity)(**args))
+                    # add a for loop here for the other dimension to split by
 
             # 3. Audience report streams:
             for Report in audience_reports:

@@ -6,7 +6,7 @@ data:
   githubIssueLabel: source-alloydb-strict-encrypt
   dockerRepository: airbyte/source-alloydb-strict-encrypt
   supportUrl: https://docs.airbyte.com/integrations/sources/alloydb
-  sourceType: database
+  connectorSubtype: database
   releaseStage: generally_available
   license: MIT
   allowedHosts:
