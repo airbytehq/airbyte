@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "additionalProperties": true,
   "properties": {
@@ -16,7 +16,25 @@
       "type": ["null", "string"]
     },
     "media": {
-      "type": ["null", "string"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "sid": {
+            "type": ["null", "string"]
+          },
+          "size": {
+            "type": ["null", "integer"]
+          },
+          "content_type": {
+            "type": ["null", "string"]
+          },
+          "filename": {
+            "type": ["null", "string"]
+          }
+        }
+      }
     },
     "author": {
       "type": ["null", "string"]
@@ -34,14 +52,14 @@
       "type": ["null", "string"]
     },
     "index": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "delivery": {
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "total": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "sent": {
           "type": ["null", "string"]
