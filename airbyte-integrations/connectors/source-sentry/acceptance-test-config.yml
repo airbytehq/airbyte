@@ -21,6 +21,8 @@ acceptance_tests:
               bypass_reason: "Order features return randomly"
             - name: plugins/*/features
               bypass_reason: "Order features return randomly"
+            - name: performanceIssueSendToPlatform
+              bypass_reason: "Randomly updated in sandbox"
           projects:
             - name: features
               bypass_reason: "Order features return randomly"
