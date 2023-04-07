@@ -16,6 +16,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
+from merama.core.storage import AbstractCredentialsProvider
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 
@@ -56,24 +57,21 @@ class MeliInvoices(HttpStream):
         # Getting the credentials from Secrets Manager
         aws_access_key_id = self.aws_access_key_id
         aws_secret_access_key = self.aws_secret_access_key
-        
-        bash_command = "chmod 777 -R ./configure_aws_credentials.sh"
-        process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE)
-        bash_command = f"./configure_aws_credentials.sh {aws_access_key_id} {aws_secret_access_key}"
-        process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE)
 
-        # bash_command = "mkdir ~/.aws"
-        # print(bash_command)
-        # process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE)
+        # Configuring credentials to run Credstash
+        bash_region = f"aws configure set default.region us-east-2"
+        process_region = subprocess.Popen(bash_region.split(), stdout=subprocess.PIPE)
+        bash_access_key = f"aws configure set aws_access_key_id {aws_access_key_id}"
+        process_access_key = subprocess.Popen(bash_access_key.split(), stdout=subprocess.PIPE)
+        bash_secret_key = f"aws configure set aws_secret_access_key {aws_secret_access_key}"
+        process_secret_key = subprocess.Popen(bash_secret_key.split(), stdout=subprocess.PIPE)
+        time.sleep(5)
 
-
-        # bash_command = f"credstash get {self.credstash_key}"
+        # Running Credstash
         bash_command = f"credstash get {self.credstash_key}"
         process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE)
         output, error = process.communicate()
         refresh_token = output.decode('utf-8').strip()
-        print(type(refresh_token))
-        print(refresh_token)
 
         payload = json.dumps({
             "grant_type":"refresh_token",
@@ -92,7 +90,6 @@ class MeliInvoices(HttpStream):
 
         if new_refresh_token != refresh_token:
             # Updating Credstash
-            # Example: credstash -r us-east-1 put -k {self.refresh_token} 'devpass_updated' role=dev -a
             bash_command = f"credstash put {self.credstash_key} {new_refresh_token}"
             process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE)
 
