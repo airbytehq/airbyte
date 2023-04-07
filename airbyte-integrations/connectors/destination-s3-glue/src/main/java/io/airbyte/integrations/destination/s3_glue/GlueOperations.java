@@ -140,15 +140,14 @@ public class GlueOperations implements MetastoreOperations {
         Set<String> itemTypes;
         if (jsonNode.has("items")) {
           itemTypes = filterTypes(jsonNode.get("items").get("type"));
-          if (itemTypes.size() > 1) {
-            // TODO(itaseski) use union instead of array when having multiple types (rare occurrence)?
-            arrayType += "string>";
-          } else {
-            String subtype = transformSchemaRecursive(jsonNode.get("items"));
-            arrayType += (subtype + ">");
-          }
-        } else
+        if (itemTypes.size() > 1) {
+          // TODO(itaseski) use union instead of array when having multiple types (rare occurrence)?
           arrayType += "string>";
+        } else {
+          String subtype = transformSchemaRecursive(jsonNode.get("items"));
+          arrayType += (subtype + ">");
+        }
+        } else arrayType += "string>";
         yield arrayType;
       }
       case "object" -> {

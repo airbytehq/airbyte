@@ -39,8 +39,7 @@ public abstract class SshElasticsearchDestinationAcceptanceTest extends Elastics
         .put("upsert", false)
         .put("authenticationMethod", Jsons.jsonNode(ImmutableMap.builder().put("method", "basic")
             .put("username", "elastic")
-            .put("password", ELASTIC_PASSWORD).build())),
-        false);
+            .put("password", ELASTIC_PASSWORD).build())), false);
   }
 
   @Override
@@ -50,8 +49,7 @@ public abstract class SshElasticsearchDestinationAcceptanceTest extends Elastics
         .put("upsert", true)
         .put("authenticationMethod", Jsons.jsonNode(ImmutableMap.builder().put("method", "basic")
             .put("username", "elastic")
-            .put("password", "wrongpassword").build())),
-        false);
+            .put("password", "wrongpassword").build())), false);
   }
 
   @BeforeAll

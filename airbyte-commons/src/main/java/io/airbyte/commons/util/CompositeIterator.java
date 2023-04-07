@@ -87,7 +87,7 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
     }
 
     try {
-      if (i == 0 && firstRead) {
+      if (isFirstStream()) {
         emitStartStreamStatus(getAirbyteStream());
       }
       return currentIterator().next();
@@ -104,6 +104,10 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
 
   private AutoCloseableIterator<T> currentIterator() {
     return iterators.get(i);
+  }
+
+  private boolean isFirstStream() {
+    return i == 0 && firstRead;
   }
 
   @Override
