@@ -16,7 +16,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
-from merama.core.storage import AbstractCredentialsProvider
+# from merama.core.storage import AbstractCredentialsProvider
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 
@@ -74,9 +74,9 @@ class MeliInvoices(HttpStream):
         output, error = process.communicate()
         refresh_token = output.decode('utf-8').strip()
 
-        print("tentando pegar o credstash_refresh_token")
-        credstash_refresh_token = AbstractCredentialsProvider.getSecret(self.credstash_key)
-        print(f"credstash_refresh_token {credstash_refresh_token}")
+        # print("tentando pegar o credstash_refresh_token")
+        # credstash_refresh_token = AbstractCredentialsProvider.getSecret(self.credstash_key)
+        # print(f"credstash_refresh_token {credstash_refresh_token}")
 
         payload = json.dumps({
             "grant_type":"refresh_token",
@@ -191,7 +191,7 @@ class MeliInvoices(HttpStream):
 
                 # Transforming XML in json
                 xml = xmltodict.parse(xml)
-                xml = format_xml(xml)
+                xml = self.format_xml(xml)
                 items.append(xml)
 
         # with open('./invoices.json', 'w+') as f:
