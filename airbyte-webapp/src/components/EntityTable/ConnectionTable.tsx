@@ -12,10 +12,10 @@ import useRouter from "hooks/useRouter";
 
 import { RoutePaths } from "../../pages/routePaths";
 import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
-// import ConnectorCell from "./components/ConnectorCell";
+import ConnectorCell from "./components/ConnectorCell";
 // import FrequencyCell from "./components/FrequencyCell";
 import LastSyncCell from "./components/LastSyncCell";
-// import NameCell from "./components/NameCell";
+import NameCell from "./components/NameCell";
 // import SortButton from "./components/SortButton";
 // import StatusCell from "./components/StatusCell";
 // import SwitchButton from "./components/SwitchButton";
@@ -134,9 +134,9 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
         headerHighlighted: true,
         accessor: "name",
         customWidth: 30,
-        // Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-        //   <NameCell value={cell.value} enabled={row.original.enabled} status={row.original.lastSyncStatus} />
-        // ),
+        Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
+          <NameCell value={cell.value} enabled={row.original.enabled} status={row.original.lastSyncStatus} />
+        ),
       },
       {
         Header: <FormattedMessage id="tables.status" />,
@@ -178,14 +178,14 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
         ),
         headerHighlighted: true,
         accessor: "entityName",
-        // Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-        //   <NameCell
-        //     value={cell.value}
-        //     enabled={row.original.enabled}
-        //     icon={entity === "connection"}
-        //     img={row.original.entityIcon}
-        //   />
-        // ),
+        Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
+          <NameCell
+            value={cell.value}
+            enabled={row.original.enabled}
+            icon={entity === "connection"}
+            img={row.original.entityIcon}
+          />
+        ),
       },
       {
         Header: (
@@ -203,9 +203,9 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
           </>
         ),
         accessor: "connectorName",
-        // Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-        //     <ConnectorCell value={cell.value} enabled={row.original.enabled} img={row.original.connectorIcon} />
-        // ),
+        Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
+          <ConnectorCell value={cell.value} enabled={row.original.enabled} img={row.original.connectorIcon} />
+        ),
       },
 
       // {

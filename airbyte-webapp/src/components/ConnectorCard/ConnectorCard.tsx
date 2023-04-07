@@ -60,10 +60,10 @@ const ConnectorName = styled.div`
   margin-top: 10px;
   color: #999999;
   text-align: left;
-  word-wrap: break-word;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: -webkit-box;
+  max-width: 250px;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 `;
