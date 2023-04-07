@@ -48,7 +48,11 @@ class RechargeStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        params = {"limit": self.limit, "updated_at_min": (stream_slice or {}).get("start_date", self._start_date), "updated_at_max": (stream_slice or {}).get("end_date", self._start_date)}
+        params = {
+            "limit": self.limit,
+            "updated_at_min": (stream_slice or {}).get("start_date", self._start_date),
+            "updated_at_max": (stream_slice or {}).get("end_date", self._start_date),
+        }
 
         if next_page_token:
             params.update(next_page_token)
@@ -77,7 +81,7 @@ class RechargeStream(HttpStream, ABC):
         return super().should_retry(response)
 
     def stream_slices(
-            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         start_date = (stream_state or {}).get(self.cursor_field, self._start_date) if self.cursor_field else self._start_date
 
