@@ -61,6 +61,7 @@ public class BigQueryMaterializationOperations implements MaterializationOperati
     // TODO handle non dedup sync modes (i.e. no PK) - probably needs to be an INSERT instead of MERGE
     // TODO handle CDC (multiple new raw records for a single PK)
     // TODO we should save this generated SQL. Just log it for now, but thats going to be super unergonomic
+    // TODO we need to stick another _airbyte_eimtted_at > whatever clause somewhere maybe, to avoid a full table scan?
     /*
     WITH new_raw_records AS (
       SELECT * FROM dataset.rawTable
