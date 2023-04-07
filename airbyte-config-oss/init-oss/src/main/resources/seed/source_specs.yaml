@@ -6893,7 +6893,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.5.0"
+- dockerImage: "airbyte/source-hubspot:0.5.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/hubspot"
     connectionSpecification:
@@ -6913,6 +6913,7 @@
             \ data before this date will not be replicated."
           examples:
           - "2017-01-25T00:00:00Z"
+          format: "date-time"
         credentials:
           title: "Authentication"
           description: "Choose how to authenticate to HubSpot."
