@@ -52,7 +52,7 @@ public class BigQueryMaterializationOperations implements MaterializationOperati
   @Override
   public Schema getTableSchema(ConfiguredAirbyteStream stream) {
     final JsonNode jsonSchema = stream.getStream().getJsonSchema();
-    if (jsonSchema.hasNonNull("properties")) {
+    if (!jsonSchema.hasNonNull("properties")) {
       // TODO we probably should handle this in some reasonable way
       throw new IllegalArgumentException("Top-level stream schema must be an object; got " + jsonSchema);
     }
