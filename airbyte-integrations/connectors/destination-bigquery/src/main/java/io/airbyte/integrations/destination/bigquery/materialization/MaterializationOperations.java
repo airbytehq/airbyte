@@ -9,5 +9,5 @@ public interface MaterializationOperations<Schema> {
 
   Schema getTableSchema(ConfiguredAirbyteStream stream);
   void createOrAlterTable(String datasetId, String tableName, Schema schema);
-  void mergeFromRawTable(String dataset, String rawTable, String finalTable, ConfiguredAirbyteStream stream);
+  void mergeFromRawTable(String dataset, String rawTable, String finalTable, ConfiguredAirbyteStream stream, Schema schema) throws InterruptedException;
 }

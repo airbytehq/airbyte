@@ -223,7 +223,7 @@ public class BigQueryStagingConsumerFactory {
         }
 
         ops.createOrAlterTable(writeConfig.datasetId(), finalTableName, finalSchema);
-        ops.mergeFromRawTable(writeConfig.datasetId(), writeConfig.targetTableId().getTable(), finalTableName, writeConfig.configuredAirbyteStream());
+        ops.mergeFromRawTable(writeConfig.datasetId(), writeConfig.targetTableId().getTable(), finalTableName, writeConfig.configuredAirbyteStream(), finalSchema);
       }
 
       LOGGER.info("done typing+deduping");

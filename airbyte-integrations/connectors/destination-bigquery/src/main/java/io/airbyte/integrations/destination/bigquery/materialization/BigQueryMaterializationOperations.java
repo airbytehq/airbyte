@@ -12,6 +12,7 @@ import com.google.api.gax.paging.Page;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.Clustering;
 import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
@@ -27,6 +28,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +47,7 @@ public class BigQueryMaterializationOperations implements MaterializationOperati
   /*
    * commentary: this is equivalent to existing normalization code. It's the whole "convert jsonschema types to sql types" thing.
    */
+  @Override
   public Schema getTableSchema(ConfiguredAirbyteStream stream) {
     final JsonNode jsonSchema = stream.getStream().getJsonSchema();
     if (jsonSchema.hasNonNull("properties")) {
@@ -84,6 +87,7 @@ public class BigQueryMaterializationOperations implements MaterializationOperati
           // TODO handle airbyte_type nonsense
           case "string", "array", "object" -> StandardSQLTypeName.STRING;
           case "integer", "number" -> StandardSQLTypeName.NUMERIC;
+          default -> StandardSQLTypeName.STRING;
         };
       } else {
         bqType = StandardSQLTypeName.STRING;
@@ -97,6 +101,7 @@ public class BigQueryMaterializationOperations implements MaterializationOperati
   /*
    * commentary: This is new code. dbt handled this for us transparently.
    */
+  @Override
   public void createOrAlterTable(String datasetId, String tableName, Schema schema) {
     // TODO we probably should only do the getDataset().list() once per dataset
     // TODO maybe we put the raw table in a different dataset from the final table
@@ -135,8 +140,8 @@ public class BigQueryMaterializationOperations implements MaterializationOperati
    *
    * The DELETE thing is new, and an improvement over normalization (where we need a separate DELETE call)
    */
-  public void mergeFromRawTable(String dataset, String rawTable, String finalTable, ConfiguredAirbyteStream stream) {
-    // TODO generate a SQL query >.>
+  @Override
+  public void mergeFromRawTable(String dataset, String rawTable, String finalTable, ConfiguredAirbyteStream stream, Schema schema) throws InterruptedException {
     // TODO handle non dedup sync modes (i.e. no PK) - probably needs to be an INSERT instead of MERGE
     // TODO handle CDC (multiple new raw records for a single PK)
     // TODO we should save this generated SQL. Just log it for now, but thats going to be super unergonomic
@@ -167,5 +172,54 @@ public class BigQueryMaterializationOperations implements MaterializationOperati
     WHEN NOT MATCHED THEN
       INSERT (field1, ...) VALUES (S.field1, ...)
      */
+
+    String format = """
+        WITH new_raw_records AS (
+          SELECT * FROM %1$s.%2$s
+          WHERE _airbyte_emitted_at > (SELECT MAX(_airbyte_emitted_at) FROM %1$s.%3$s)
+        ), flattened_raw_records AS (
+          SELECT
+            %4$s
+            _airbyte_emitted_at
+          FROM new_raw_records
+        ), typed_raw_records AS (
+          %5$s
+          _airbyte_emitted_at
+          FROM flattened_raw_records
+        )
+        MERGE %1$s.%3$s T
+        USING %1$s.typed_raw_records S
+        ON T.primary_key = S.primary_key
+        %6$s
+          DELETE
+        WHEN MATCHED THEN
+          UPDATE SET field1 = S.field1, ...
+        WHEN NOT MATCHED THEN
+          INSERT (field1, ...) VALUES (S.field1, ...)
+        """;
+
+    String extractCalls = schema.getFields()
+        .stream()
+        .map(field -> String.format("JSON_EXTRACT(_airbyte_data, %s) AS field1,\n", field.getName()))
+        .collect(Collectors.joining());
+
+    String castCalls = schema.getFields()
+        .stream()
+        .map(field -> String.format("CAST(%s AS %s),\n", field.getName(), field.getType()))
+        .collect(Collectors.joining());
+
+    // TODO check for CDC columns + sync mode; generate if necessary
+    String cdcMerge = "";
+
+    String mergeQuery = String.format(
+        format,
+        dataset,
+        rawTable,
+        finalTable,
+        extractCalls,
+        castCalls,
+        cdcMerge
+    );
+    bigquery.query(QueryJobConfiguration.newBuilder(mergeQuery).build());
   }
 }
