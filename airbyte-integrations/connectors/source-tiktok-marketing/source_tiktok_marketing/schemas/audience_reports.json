@@ -24,6 +24,18 @@
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
+    "country_code": {
+      "type": ["null", "string"]
+    },
+    "platform": {
+      "type": ["null", "string"]
+    },
+    "gender": {
+      "type": ["null", "string"]
+    },
+    "age": {
+      "type": ["null", "string"]
+    },
     "metrics": {
       "type": ["null", "object"],
       "properties": {

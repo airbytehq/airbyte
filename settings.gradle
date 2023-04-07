@@ -88,9 +88,9 @@ if (!System.getenv().containsKey("SUB_BUILD") || (System.getenv().containsKey("S
     include ':airbyte-api'
     include ':airbyte-commons-cli'
     include ':airbyte-commons-protocol'
-    include ':airbyte-config:specs'
-    include ':airbyte-config:init'
-    include ':airbyte-config:config-models' // reused by acceptance tests in connector base.
+    include ':airbyte-config-oss:specs-oss'
+    include ':airbyte-config-oss:init-oss'
+    include ':airbyte-config-oss:config-models-oss' // reused by acceptance tests in connector base.
     include ':airbyte-db:db-lib' // reused by acceptance tests in connector base.
     include ':airbyte-json-validation'
     include ':airbyte-test-utils'

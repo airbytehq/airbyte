@@ -156,14 +156,8 @@ class SourceTiktokMarketing(AbstractSource):
                 streams.extend(
                     [
                         AdsAudienceReports(**report_args),
-                        AdsAudienceReportsByCountry(**report_args),
-                        AdsAudienceReportsByPlatform(**report_args),
                         AdGroupAudienceReports(**report_args),
-                        AdGroupAudienceReportsByCountry(**report_args),
-                        AdGroupAudienceReportsByPlatform(**report_args),
-                        CampaignsAudienceReports(**report_args),
                         CampaignsAudienceReportsByCountry(**report_args),
-                        CampaignsAudienceReportsByPlatform(**report_args),
                     ]
                 )
 
@@ -173,8 +167,6 @@ class SourceTiktokMarketing(AbstractSource):
                     [
                         AdvertisersReports(**report_args),
                         AdvertisersAudienceReports(**report_args),
-                        AdvertisersAudienceReportsByCountry(**report_args),
-                        AdvertisersAudienceReportsByPlatform(**report_args),
                     ]
                 )
 
