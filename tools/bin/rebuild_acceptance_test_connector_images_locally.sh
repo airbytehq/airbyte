@@ -12,8 +12,8 @@ assert_root
 
 unset SUB_BUILD
 
-LATEST_POSTGRES_SOURCE=$(grep -A1 'airbyte/source-postgres' ./airbyte-config/init/src/main/resources/seed/source_definitions.yaml | grep -v postgres | cut -d ' '  -f 4)
-LATEST_POSTGRES_DESTINATION=$(grep -A1 'airbyte/destination-postgres' ./airbyte-config/init/src/main/resources/seed/destination_definitions.yaml | grep -v postgres | cut -d ' '  -f 4)
+LATEST_POSTGRES_SOURCE=$(grep -A1 'airbyte/source-postgres' ./airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml | grep -v postgres | cut -d ' '  -f 4)
+LATEST_POSTGRES_DESTINATION=$(grep -A1 'airbyte/destination-postgres' ./airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml | grep -v postgres | cut -d ' '  -f 4)
 
 git checkout master && ./gradlew clean :airbyte-integrations:connectors:source-postgres:build -x test && docker tag airbyte/source-postgres:dev airbyte/source-postgres:"$LATEST_POSTGRES_SOURCE"
 git checkout master && ./gradlew clean :airbyte-integrations:connectors:destination-postgres:build -x test && docker tag airbyte/destination-postgres:dev airbyte/destination-postgres:"$LATEST_POSTGRES_DESTINATION"
