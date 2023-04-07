@@ -11,12 +11,7 @@ Schema:
 ```yaml
   Paginator:
     type: object
-    anyOf:
-      - "$ref": "#/definitions/DefaultPaginator"
-      - "$ref": "#/definitions/NoPagination"
-  NoPagination:
-    type: object
-    additionalProperties: true
+    "$ref": "#/definitions/DefaultPaginator"
 ```
 
 ## Default paginator

@@ -114,9 +114,7 @@ requester:
     api_token: "{{ config['apikey'] }}"
   request_parameters:
     unit: "day"
-retriever:
-  paginator:
-    type: NoPagination
+retriever: {}
 partial_stream:
   type: DeclarativeStream
   schema_loader:
@@ -1171,7 +1169,6 @@ class TestCreateTransformations:
                     "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config['api_key'] }}"},
                 },
                 "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_path": ["items"]}},
-                "paginator": {"type": "NoPagination"},
             },
         }
         resolved_manifest = resolver.preprocess_manifest(component_definition)

@@ -32,7 +32,6 @@ from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer impo
                 "type": "DeclarativeStream",
                 "retriever": {
                     "type": "SimpleRetriever",
-                    "paginator": {"type": "NoPagination"},
                     "record_selector": {"type": "RecordSelector"},
                     "requester": {"type": "HttpRequester"},
                 },

@@ -25,14 +25,12 @@ MANIFEST = {
         "retriever": {
             "type": "DeclarativeSource",
             "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
-            "paginator": {"type": "NoPagination"},
             "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
         },
         "hashiras_stream": {
             "retriever": {
                 "type": "DeclarativeSource",
                 "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
-                "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
             "$parameters": {"name": "hashiras", "path": "/hashiras"},
@@ -41,7 +39,6 @@ MANIFEST = {
             "retriever": {
                 "type": "DeclarativeSource",
                 "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
-                "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
             "$parameters": {"name": "breathing-techniques", "path": "/breathing_techniques"},
@@ -53,7 +50,6 @@ MANIFEST = {
             "retriever": {
                 "type": "SimpleRetriever",
                 "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
-                "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
             "$parameters": {"name": "hashiras", "path": "/hashiras"},
@@ -63,7 +59,6 @@ MANIFEST = {
             "retriever": {
                 "type": "SimpleRetriever",
                 "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
-                "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
             "$parameters": {"name": "breathing-techniques", "path": "/breathing_techniques"},

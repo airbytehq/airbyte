@@ -848,15 +848,6 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
-  NoPagination:
-    description: Pagination implementation that never returns a next page
-    type: object
-    required:
-      - type
-    properties:
-      type:
-        type: string
-        enum: [NoPagination]
   OffsetIncrement:
     description: Pagination strategy that returns the number of records reads so far and returns it as the next page token
     type: object
@@ -1069,9 +1060,7 @@ definitions:
           - "$ref": "#/definitions/HttpRequester"
       paginator:
         description: Paginator component that describes how to navigate through the API's pages.
-        anyOf:
-          - "$ref": "#/definitions/DefaultPaginator"
-          - "$ref": "#/definitions/NoPagination"
+        "$ref": "#/definitions/DefaultPaginator"
       partition_router:
         default: []
         description: StreamSlicer component that describes how to partition the stream, enabling incremental syncs and checkpointing.

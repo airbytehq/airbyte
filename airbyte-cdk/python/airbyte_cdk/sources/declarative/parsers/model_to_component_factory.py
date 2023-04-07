@@ -59,7 +59,6 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ListPartitionRouter as ListPartitionRouterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import MinMaxDatetime as MinMaxDatetimeModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import NoAuth as NoAuthModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import NoPagination as NoPaginationModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import OAuthAuthenticator as OAuthAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import OffsetIncrement as OffsetIncrementModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import PageIncrement as PageIncrementModel
@@ -154,7 +153,6 @@ class ModelToComponentFactory:
             ListPartitionRouterModel: self.create_list_partition_router,
             MinMaxDatetimeModel: self.create_min_max_datetime,
             NoAuthModel: self.create_no_auth,
-            NoPaginationModel: self.create_no_pagination,
             OAuthAuthenticatorModel: self.create_oauth_authenticator,
             SingleUseRefreshTokenOAuthAuthenticatorModel: self.create_single_use_refresh_token_oauth_authenticator,
             OffsetIncrementModel: self.create_offset_increment,
@@ -643,10 +641,6 @@ class ModelToComponentFactory:
     @staticmethod
     def create_no_auth(model: NoAuthModel, config: Config, **kwargs) -> NoAuth:
         return NoAuth(parameters=model.parameters)
-
-    @staticmethod
-    def create_no_pagination(model: NoPaginationModel, config: Config, **kwargs) -> NoPagination:
-        return NoPagination(parameters={})
 
     @staticmethod
     def create_oauth_authenticator(model: OAuthAuthenticatorModel, config: Config, **kwargs) -> DeclarativeOauth2Authenticator:

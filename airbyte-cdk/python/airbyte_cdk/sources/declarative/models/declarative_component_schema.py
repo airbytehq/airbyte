@@ -257,10 +257,6 @@ class NoAuth(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class NoPagination(BaseModel):
-    type: Literal["NoPagination"]
-
-
 class OffsetIncrement(BaseModel):
     type: Literal["OffsetIncrement"]
     page_size: Union[int, str] = Field(..., description="The number of records to request")
@@ -615,7 +611,7 @@ class SimpleRetriever(BaseModel):
         ...,
         description="Requester component that describes how to prepare HTTP requests to send to the source API.",
     )
-    paginator: Optional[Union[DefaultPaginator, NoPagination]] = Field(
+    paginator: Optional[DefaultPaginator] = Field(
         None,
         description="Paginator component that describes how to navigate through the API's pages.",
     )
