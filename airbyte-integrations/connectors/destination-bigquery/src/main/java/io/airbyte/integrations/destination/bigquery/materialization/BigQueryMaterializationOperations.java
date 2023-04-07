@@ -17,14 +17,12 @@ import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.Table;
-import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
 import com.google.cloud.bigquery.TimePartitioning;
 import com.google.cloud.bigquery.TimePartitioning.Type;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -97,6 +95,8 @@ public class BigQueryMaterializationOperations implements MaterializationOperati
 
       bqFields.add(Field.of(fieldName, bqType));
     }
+
+    bqFields.add(Field.of("_airbyte_emitted_at", StandardSQLTypeName.TIMESTAMP));
     return Schema.of(bqFields);
   }
 
@@ -110,7 +110,7 @@ public class BigQueryMaterializationOperations implements MaterializationOperati
     final Page<Table> page = bigquery.getDataset(datasetId).list();
     Table existingTable = null;
     for (Table table : page.getValues()) {
-      if (tableName.equals(table.getFriendlyName())) {
+      if (tableName.equals(table.getTableId().getTable())) {
         existingTable = table;
         break;
       }
@@ -172,41 +172,45 @@ public class BigQueryMaterializationOperations implements MaterializationOperati
     WHEN MATCHED THEN
       UPDATE SET field1 = S.field1, ...
     WHEN NOT MATCHED THEN
-      INSERT (field1, ...) VALUES (S.field1, ...)
+      INSERT (field1, ..., _airbyte_emitted_at) VALUES (S.field1, ..., S._airbyte_emitted_at)
      */
 
+    // TODO is there a better thing than coalesce(`0001-01-01 00:00:00')? i.e. check for table being empty -> remove the where clause
     String format = """
-        WITH new_raw_records AS (
-          SELECT * FROM ${dataset}.${raw_table}
-          WHERE _airbyte_emitted_at > (SELECT MAX(_airbyte_emitted_at) FROM ${dataset}.${final_table})
-        ), flattened_raw_records AS (
-          SELECT
-            ${extract_calls}
-            _airbyte_emitted_at
-          FROM new_raw_records
-        ), typed_raw_records AS (
-          ${cast_calls}
-          _airbyte_emitted_at
-          FROM flattened_raw_records
-        )
         MERGE ${dataset}.${final_table} T
-        USING typed_raw_records S
+        USING (
+          WITH new_raw_records AS (
+            SELECT * FROM ${dataset}.${raw_table}
+            WHERE _airbyte_emitted_at > (SELECT COALESCE(MAX(_airbyte_emitted_at), '0001-01-01 00:00:00') FROM ${dataset}.${final_table})
+          ), flattened_raw_records AS (
+            SELECT
+              ${extract_calls}
+              _airbyte_emitted_at
+            FROM new_raw_records
+          )
+          SELECT
+            ${cast_calls}
+            _airbyte_emitted_at
+          FROM flattened_raw_records
+        ) S
         ON T.${primary_key} = S.${primary_key}
         ${cdc_delete_clause}
         WHEN MATCHED THEN
-          UPDATE SET ${set_calls}
+          UPDATE SET ${set_calls}, _airbyte_emitted_at = S._airbyte_emitted_at
         WHEN NOT MATCHED THEN
-          INSERT (${insert_fields}) VALUES (${insert_values})
+          INSERT (${insert_fields}, _airbyte_emitted_at) VALUES (${insert_values}, S._airbyte_emitted_at)
         """;
 
     String extractCalls = schema.getFields()
         .stream()
+        .filter(field -> !"_airbyte_emitted_at".equals(field.getName()))
         .map(field -> String.format("JSON_EXTRACT(_airbyte_data, '$.%1$s') AS %1$s,\n", field.getName()))
         .collect(Collectors.joining());
 
     String castCalls = schema.getFields()
         .stream()
-        .map(field -> String.format("CAST(%s AS %s),\n", field.getName(), field.getType()))
+        .filter(field -> !"_airbyte_emitted_at".equals(field.getName()))
+        .map(field -> String.format("CAST(%1$s AS %2$s) AS %1$s,\n", field.getName(), field.getType()))
         .collect(Collectors.joining());
 
     // TODO check for CDC columns + sync mode; generate if necessary
@@ -214,16 +218,19 @@ public class BigQueryMaterializationOperations implements MaterializationOperati
 
     String setCalls = schema.getFields()
         .stream()
+        .filter(field -> !"_airbyte_emitted_at".equals(field.getName()))
         .map(field -> String.format("%1$s = S.%1$s", field.getName()))
         .collect(Collectors.joining(","));
 
     String insertFields = schema.getFields()
         .stream()
+        .filter(field -> !"_airbyte_emitted_at".equals(field.getName()))
         .map(field -> String.format("%s", field.getName()))
         .collect(Collectors.joining(","));
 
     String insertValues = schema.getFields()
         .stream()
+        .filter(field -> !"_airbyte_emitted_at".equals(field.getName()))
         .map(field -> String.format("S.%s", field.getName()))
         .collect(Collectors.joining(","));
 
@@ -243,6 +250,9 @@ public class BigQueryMaterializationOperations implements MaterializationOperati
             "insert_values", insertValues
         )
     );
+
+    LOGGER.info("Generated sql: {}", mergeQuery);
+
     bigquery.query(QueryJobConfiguration.newBuilder(mergeQuery).build());
   }
 }
