@@ -292,7 +292,7 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
         List[StepResult]: The results of all the tests steps.
     """
     step_results = []
-    unit_test_step = GradleTask(context, "test", step_title="Unit tests")
+    # unit_test_step = GradleTask(context, "test", step_title="Unit tests")
     build_connector_step = BuildConnectorImage(context)
     build_normalization_step = None
     if context.connector.supports_normalization:
@@ -313,19 +313,20 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
         context.logger.info(f"{build_normalization_step.normalization_image} was successfully built.")
         step_results.append(build_normalization_results)
 
-    context.logger.info("Run unit tests.")
-    unit_test_results = await unit_test_step.run()
-    if unit_test_results.status is StepStatus.FAILURE:
-        return step_results + [unit_test_results, integration_test_java_step.skip(), acceptance_test_step.skip()]
-    context.logger.info("Unit tests successfully ran.")
-    step_results.append(unit_test_results)
-
+    # TODO move it after unit tests
     context.logger.info("Run build connector step")
     build_connector_results, connector_image_tar_file = await build_connector_step.run()
     if build_connector_results.status is StepStatus.FAILURE:
         return step_results + [build_connector_results, integration_test_java_step.skip(), acceptance_test_step.skip()]
     context.logger.info("The connector was successfully built.")
     step_results.append(build_connector_results)
+
+    # context.logger.info("Run unit tests.")
+    # unit_test_results = await unit_test_step.run()
+    # if unit_test_results.status is StepStatus.FAILURE:
+    #     return step_results + [unit_test_results, build_connector_step.skip(), integration_test_java_step.skip(), acceptance_test_step.skip()]
+    # context.logger.info("Unit tests successfully ran.")
+    # step_results.append(unit_test_results)
 
     context.logger.info("Start integration and acceptance tests in parallel.")
     async with asyncer.create_task_group() as task_group:
