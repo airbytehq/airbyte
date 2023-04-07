@@ -46,8 +46,6 @@ definitions:
       name: "contact_lists"
       primary_key: "id"
       path: "/contact_lists"
-    paginator:
-      type: "NoPagination"
   questions_stream:
     $ref: "#/definitions/base_stream"
     $parameters:

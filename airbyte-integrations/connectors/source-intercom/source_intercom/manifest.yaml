@@ -203,8 +203,6 @@ definitions:
       cursor_field: "updated_at"
     retriever:
       $ref: "#/definitions/stream_full_refresh/retriever"
-      paginator:
-        type: "NoPagination"
       record_selector:
         $ref: "#/definitions/selector"
         record_filter:
