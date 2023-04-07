@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Mercado Libre Spec",
     "type": "object",
-    "required": ["credstash_key","client_id","client_secret","year_month"],
+    "required": ["credstash_key", "client_id", "merchant_code", "client_secret", "year_month", "google_project_id", "google_secret_aws_credstash_credentials", "aws_access_key_id", "aws_secret_access_key"],
     "additionalProperties": false,
     "properties": {
       "credstash_key": {
