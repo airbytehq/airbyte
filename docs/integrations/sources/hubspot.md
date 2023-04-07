@@ -134,6 +134,7 @@ Now that you have set up the Hubspot source connector, check out the following H
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.5.1   | 2023-04-05 | [22982](https://github.com/airbytehq/airbyte/pull/22982) | Specified date formatting in specification                                                                                                       |
 | 0.5.0   | 2023-03-30 | [24711](https://github.com/airbytehq/airbyte/pull/24711) | Add incremental sync support for `campaigns`, `deal_pipelines`, `ticket_pipelines`, `forms`, `form_submissions`, `form_submissions`, `workflows`, `owners` |
 | 0.4.0   | 2023-03-31 | [22910](https://github.com/airbytehq/airbyte/pull/22910) | Add `email_subscriptions` stream                                                                                                                           |
 | 0.3.4   | 2023-03-28 | [24641](https://github.com/airbytehq/airbyte/pull/24641) | Convert to int only numeric values                                                                                                                         |
