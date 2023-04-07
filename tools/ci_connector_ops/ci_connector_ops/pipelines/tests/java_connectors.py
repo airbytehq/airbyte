@@ -7,7 +7,6 @@
 from typing import List, Optional, Tuple
 
 import anyio
-import asyncer
 from ci_connector_ops.pipelines.actions import environments, secrets
 from ci_connector_ops.pipelines.bases import Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
@@ -329,9 +328,8 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
     # step_results.append(unit_test_results)
 
     context.logger.info("Start integration and acceptance tests in parallel.")
-    async with asyncer.create_task_group() as task_group:
-        tasks = [
-            task_group.soonify(integration_test_java_step.run)(connector_image_tar_file, normalization_tar_file),
-            task_group.soonify(acceptance_test_step.run)(connector_image_tar_file),
-        ]
-    return step_results + [task.value for task in tasks]
+    acceptance_test_results = await acceptance_test_step.run(connector_image_tar_file)
+    step_results.append(acceptance_test_results)
+    integration_test_results = await integration_test_java_step.run(connector_image_tar_file, normalization_tar_file)
+    step_results.append(integration_test_results)
+    return step_results
