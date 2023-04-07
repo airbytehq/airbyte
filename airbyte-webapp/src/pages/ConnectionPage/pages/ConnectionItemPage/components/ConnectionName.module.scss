@@ -40,7 +40,7 @@
       line-height: 30px;
       text-align: center;
       color: colors.$dark-blue-900;
-      margin: variables.$spacing-md;
+      margin: variables.$spacing-md variables.$spacing-2xl variables.$spacing-md variables.$spacing-md;
       word-wrap: break-word;
     }
   }

@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import { ConnectorIcon } from "components/ConnectorIcon";
+// import { ConnectorIcon } from "components/ConnectorIcon";
 
 interface IProps {
   value: string;
@@ -10,20 +10,27 @@ interface IProps {
 }
 
 const Content = styled.div<{ enabled?: boolean }>`
-  display: flex;
-  align-items: center;
-  color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inheret")};
+  // display: flex;
+  // align-items: center;
+  // color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inheret")};
+  color: inheret;
   font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
 `;
 
-const Image = styled(ConnectorIcon)`
-  margin-right: 6px;
-`;
+// const Image = styled(ConnectorIcon)`
+//   margin-right: 6px;
+// `;
 
-const ConnectorCell: React.FC<IProps> = ({ value, enabled, img }) => {
+const ConnectorCell: React.FC<IProps> = ({
+  value,
+  enabled, // img
+}) => {
   return (
     <Content enabled={enabled}>
-      <Image icon={img} />
+      {/* <Image icon={img} /> */}
       {value}
     </Content>
   );
