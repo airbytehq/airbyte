@@ -17,6 +17,11 @@
         "type": "string",
         "description": "client_id"
       },
+      "merchant_code": {
+        "title": "merchant_code",
+        "type": "string",
+        "description": "Merchant_code. Example: BRABC"
+      },
       "client_secret": {
         "title": "client_secret",
         "type": "string",

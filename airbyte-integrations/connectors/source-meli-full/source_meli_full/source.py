@@ -29,6 +29,7 @@ class MeliInvoices(HttpStream):
         super().__init__()
         self.credstash_key = config["credstash_key"]
         self.client_id = config["client_id"]
+        self.merchant_code = config["merchant_code"]
         self.client_secret = config["client_secret"]
         self.year_month = config["year_month"]
         self.google_project_id = config["google_project_id"]
@@ -144,6 +145,19 @@ class MeliInvoices(HttpStream):
         """
         return {'Authorization': f'Bearer {self.access_token}'}
     
+    def format_xml(
+        self,
+        xml_item: Mapping[str, Any]
+    ) -> str:
+        
+        invoice = {
+            "data": xml_item,
+            "merchant": self.merchant_code.upper(),
+            "user_id": self.client_id,
+            "source": "AIRBYTE_MELI_FULL"
+        }
+        return invoice
+
     def parse_response(
         self,
         response: requests.Response,
@@ -177,6 +191,7 @@ class MeliInvoices(HttpStream):
 
                 # Transforming XML in json
                 xml = xmltodict.parse(xml)
+                xml = format_xml(xml)
                 items.append(xml)
 
         # with open('./invoices.json', 'w+') as f:

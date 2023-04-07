@@ -13,6 +13,9 @@
             "client_id": {
               "type": "string"
             },
+            "merchant_code": {
+              "type": "string"
+            },
             "client_secret": {
               "type": "string"
             },
