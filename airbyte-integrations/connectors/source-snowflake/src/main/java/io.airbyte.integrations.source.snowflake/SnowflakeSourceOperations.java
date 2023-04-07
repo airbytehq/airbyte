@@ -73,8 +73,7 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
     preparedStatement.setString(parameterIndex, value);
   }
 
-  protected void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value)
-      throws SQLException {
+  protected void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     preparedStatement.setString(parameterIndex, value);
   }
 
