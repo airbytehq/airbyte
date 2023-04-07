@@ -13,6 +13,7 @@ from airbyte_cdk.models import (
     AirbyteLogMessage,
     AirbyteMessage,
     AirbyteStateMessage,
+    AirbyteStreamStatus,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     Level,
@@ -29,6 +30,7 @@ from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_messa
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 
 
 class AbstractSource(Source, ABC):
@@ -113,6 +115,7 @@ class AbstractSource(Source, ABC):
                     continue
                 try:
                     timer.start_event(f"Syncing stream {configured_stream.stream.name}")
+                    stream_status_as_airbyte_message(self, configured_stream, AirbyteStreamStatus.STARTED, None)
                     yield from self._read_stream(
                         logger=logger,
                         stream_instance=stream_instance,
@@ -120,6 +123,7 @@ class AbstractSource(Source, ABC):
                         state_manager=state_manager,
                         internal_config=internal_config,
                     )
+                    stream_status_as_airbyte_message(self, configured_stream, AirbyteStreamStatus.STOPPED, True)
                 except AirbyteTracedException as e:
                     raise e
                 except Exception as e:
@@ -127,6 +131,7 @@ class AbstractSource(Source, ABC):
                     display_message = stream_instance.get_error_display_message(e)
                     if display_message:
                         raise AirbyteTracedException.from_exception(e, message=display_message) from e
+                    stream_status_as_airbyte_message(self, configured_stream, AirbyteStreamStatus.STOPPED, False)
                     raise e
                 finally:
                     timer.finish_event()
@@ -185,6 +190,8 @@ class AbstractSource(Source, ABC):
         for record in record_iterator:
             if record.type == MessageType.RECORD:
                 record_counter += 1
+            if record_counter == 1:
+                stream_status_as_airbyte_message(self, configured_stream, AirbyteStreamStatus.RUNNING, None)
             yield record
 
         logger.info(f"Read {record_counter} records from {stream_name} stream")
