@@ -16,7 +16,6 @@ RUN pip install .
 RUN pip install xmltodict
 RUN pip install credstash
 RUN pip install google-cloud-secret-manager
-RUN pip install --index-url https://meradata:YZHRoMChxmGN4eYXZE28NusiApFXRMs@pypi.merama.link/simple/ merama-core
 
 # ADD configure_aws_credentials.sh ./
 # RUN ./bash/configure_aws_credentials.sh.sh

@@ -10,7 +10,8 @@
       "credstash_key": {
         "title": "credstash_key",
         "type": "string",
-        "description": "credstash_key"
+        "description": "credstash_key",
+        "airbyte_secret": true
       },
       "client_id": {
         "title": "client_id",
@@ -25,7 +26,8 @@
       "client_secret": {
         "title": "client_secret",
         "type": "string",
-        "description": "client_secret"
+        "description": "client_secret",
+        "airbyte_secret": true
       },
       "year_month": {
         "title": "year_month",
@@ -40,17 +42,20 @@
       "google_secret_aws_credstash_credentials": {
         "title": "google_secret_aws_credstash_credentials",
         "type": "string",
-        "description": "google_secret_aws_credstash_credentials date in format YYYYMM"
+        "description": "google_secret_aws_credstash_credentials date in format YYYYMM",
+        "airbyte_secret": true
       },
       "aws_access_key_id": {
         "title": "aws_access_key_id",
         "type": "string",
-        "description": "aws_access_key_id date in format YYYYMM"
+        "description": "aws_access_key_id date in format YYYYMM",
+        "airbyte_secret": true
       },
       "aws_secret_access_key": {
         "title": "aws_secret_access_key",
         "type": "string",
-        "description": "aws_secret_access_key date in format YYYYMM"
+        "description": "aws_secret_access_key date in format YYYYMM",
+        "airbyte_secret": true
       }
     }
   }

@@ -16,7 +16,6 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
-# from merama.core.storage import AbstractCredentialsProvider
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 
@@ -41,17 +40,13 @@ class MeliInvoices(HttpStream):
     def get_access_token(self):
         # Meli URL to get the access_token
         url = "https://api.mercadolibre.com/oauth/token"
-        # Build the parent name from the project.
-        # parent = f"projects/{project_id}"
 
         # Create the Secret Manager client.
         # client = secretmanager.SecretManagerServiceClient()
-
-        # Getting ACCESS_KEY_ID
+        # Getting AWS Credentials from Google Secrets
         # resource_name = f"projects/{self.google_project_id}/secrets/{self.google_secret_aws_credstash_credentials}/versions/latest"
         # response = client.access_secret_version(name=resource_name)
         # aws_credentials = response.payload.data.decode('UTF-8')
-        # print(aws_credentials)
         # logger.info(aws_credentials)
 
 
@@ -68,15 +63,11 @@ class MeliInvoices(HttpStream):
         process_secret_key = subprocess.Popen(bash_secret_key.split(), stdout=subprocess.PIPE)
         time.sleep(5)
 
-        # Running Credstash
+        # Running Credstash to get the Refresh Token
         bash_command = f"credstash get {self.credstash_key}"
         process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE)
         output, error = process.communicate()
         refresh_token = output.decode('utf-8').strip()
-
-        # print("tentando pegar o credstash_refresh_token")
-        # credstash_refresh_token = AbstractCredentialsProvider.getSecret(self.credstash_key)
-        # print(f"credstash_refresh_token {credstash_refresh_token}")
 
         payload = json.dumps({
             "grant_type":"refresh_token",
@@ -94,31 +85,10 @@ class MeliInvoices(HttpStream):
         new_refresh_token = response.json()["refresh_token"]
 
         if new_refresh_token != refresh_token:
-            # Updating Credstash
+            # Updating Credstash with new refresh token
             bash_command = f"credstash put {self.credstash_key} {new_refresh_token}"
             process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE)
 
-        # Response 403, token not valid anymore 
-        
-        # check se o que recebemos é igual ao do response
-        # retry to generate the access_token
-        # Credstash (Policy on AWS)
-        # KMS
-        # Dynamo tem o secret e o public
-        # KMS tem o private e o public
-        # Salvar no container criptografada e descriptografar com o secret manager
-        # Ninguém pode ler lá
-        # Public key, como usar o Secret Manager
-        # Install merama core
-
-        # Pegar com o secret manager
-        # Colocar na env variables
-        # Instalar merama Core (CredentialStorage)
-        # 
-
-
-        logger.info(f"Access Token: {access_token}")
-        logger.info(f"Access Token: {new_refresh_token}")
         return access_token
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
