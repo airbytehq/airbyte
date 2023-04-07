@@ -68,7 +68,6 @@ The Stripe source connector supports the following streams:
 - [Refunds](https://stripe.com/docs/api/refunds/list) \(Incremental\)
 - [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
 - [Subscription Schedule](https://stripe.com/docs/api/subscription_schedules) \(Incremental\)
-- [Subscription Schedule With Id](https://stripe.com/docs/api/subscription_schedules)
 - [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
 - [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 
