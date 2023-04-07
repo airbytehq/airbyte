@@ -4,25 +4,37 @@
 
 package io.airbyte.integrations.destination.bigquery.materialization;
 
+import static java.util.Collections.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.Clustering;
 import com.google.cloud.bigquery.Field;
-import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
+import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.Table;
+import com.google.cloud.bigquery.TableDefinition;
+import com.google.cloud.bigquery.TableId;
+import com.google.cloud.bigquery.TableInfo;
+import com.google.cloud.bigquery.TimePartitioning;
+import com.google.cloud.bigquery.TimePartitioning.Type;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // name is debatable :P but "BigQueryTypingAndDedupingOperations" is a really sad name
 // `Schema` here is a com.google.cloud.bigquery.Schema
 public class BigQueryMaterializationOperations implements MaterializationOperations<Schema> {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryMaterializationOperations.class);
 
   private final BigQuery bigquery;
 
@@ -34,7 +46,6 @@ public class BigQueryMaterializationOperations implements MaterializationOperati
    * commentary: this is equivalent to existing normalization code. It's the whole "convert jsonschema types to sql types" thing.
    */
   public Schema getTableSchema(ConfiguredAirbyteStream stream) {
-    // TODO
     final JsonNode jsonSchema = stream.getStream().getJsonSchema();
     if (jsonSchema.hasNonNull("properties")) {
       // TODO we probably should handle this in some reasonable way
@@ -93,12 +104,23 @@ public class BigQueryMaterializationOperations implements MaterializationOperati
     boolean tableExists = false;
     for (Table table : page.getValues()) {
       if (tableName.equals(table.getFriendlyName())) {
-        // TODO table exists - check existing table schema + alter table to match schema (maybe also alter partitoining/clustering)
         tableExists = true;
+        break;
       }
     }
+    
     if (!tableExists) {
-      // TODO table doesn't exist - create it with schema + partitoining + clustering
+      bigquery.create(TableInfo.newBuilder(
+          TableId.of(datasetId, tableName),
+          StandardTableDefinition.newBuilder()
+              .setSchema(schema)
+              .setClustering(Clustering.newBuilder().setFields(singletonList("_airbyte_emitted_at")).build())
+              .setTimePartitioning(TimePartitioning.newBuilder(Type.DAY).setField("_airbyte_emitted_at").build())
+              .build()
+      ).build());
+    } else {
+      // TODO table exists - check existing table schema + alter table to match schema (maybe also alter partitoining/clustering)
+      LOGGER.warn("schema evolution is not yet implemented");
     }
   }
 
