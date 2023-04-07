@@ -164,7 +164,8 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
   }
 
   private void emitStreamStatus(final AirbyteStreamNameNamespacePair airbyteStream) {
-    // TODO This method will also take in the status enum and create an AirbyteStreamStatus object to send to the consumer, if present
+    // TODO This method will also take in the status enum and create an AirbyteStreamStatus object to
+    // send to the consumer, if present
     airbyteStreamStatusConsumer.ifPresent(c -> c.accept(new AirbyteStreamStatus(airbyteStream)));
   }
 
