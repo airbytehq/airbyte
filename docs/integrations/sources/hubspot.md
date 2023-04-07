@@ -70,6 +70,7 @@ The HubSpot source connector supports the following streams:
 * [Contacts List Memberships](https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts)
 * [Deal Pipelines](https://developers.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type) \(Client-Side Incremental\)
 * [Deals](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
+  * Records that have been deleted (archived) and stored in HubSpot's recycle bin will only be kept for 90 days, see [response from HubSpot Team](https://community.hubspot.com/t5/APIs-Integrations/Archived-deals-deleted-or-different/m-p/714157)
 * [Deals Archived](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
 * [Email Events](https://developers.hubspot.com/docs/methods/email/get_events) \(Incremental\)
 * [Email Subscriptions](https://developers.hubspot.com/docs/methods/email/get_subscriptions)
