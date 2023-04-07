@@ -2,7 +2,6 @@ import React from "react";
 import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-// import { LoadingButton } from "components";
 import { Separator } from "components/Separator";
 
 import { GetUpgradeSubscriptionDetail } from "core/domain/payment";
@@ -12,8 +11,6 @@ interface IProps {
   productPrice: number;
   selectedProductPrice: number;
   planDetail?: GetUpgradeSubscriptionDetail;
-  // onUpdadePlan: () => void;
-  // updatePlanLoading: boolean;
 }
 
 const Container = styled.div`
@@ -70,21 +67,7 @@ const ContentText = styled.div`
   color: ${({ theme }) => theme.black300};
 `;
 
-// const FooterContainer = styled.div`
-//   width: 100%;
-//   display: flex;
-//   flex-direction: row;
-//   align-items: center;
-//   justify-content: center;
-// `;
-
-const BillingPaymentStep: React.FC<IProps> = ({
-  productPrice,
-  selectedProductPrice,
-  planDetail,
-  // onUpdadePlan,
-  // updatePlanLoading,
-}) => {
+const BillingPaymentStep: React.FC<IProps> = ({ productPrice, selectedProductPrice, planDetail }) => {
   const { formatMessage } = useIntl();
   const seperatorHeight = "47px";
 
@@ -96,65 +79,57 @@ const BillingPaymentStep: React.FC<IProps> = ({
   };
 
   return (
-    <>
-      <Container>
-        <ContentContainer>
-          <Logo src="/daspireLogo.svg" alt="logo" />
-          <Separator />
-          <PlanName>
-            <FormattedMessage id="payment.planName" values={{ planName: planDetail?.planName }} />
-          </PlanName>
-          <Separator height={seperatorHeight} />
-          <ContentItem>
-            <ContentHeading>
-              <FormattedMessage id="plan.detail.rows" />
-            </ContentHeading>
-            <ContentText>{convert_M_To_Million(planDetail?.productItemName as string)}</ContentText>
-          </ContentItem>
-          <Separator height={seperatorHeight} />
-          <ContentItem>
-            <ContentHeading>
-              <FormattedMessage id="plan.detail.billing" />
-            </ContentHeading>
-            <ContentText>
-              US ${planDetail?.productItemPrice}&nbsp;/&nbsp;
-              <FormattedMessage id="payment.planDeductionTime" />
-            </ContentText>
-          </ContentItem>
-          <Separator height={seperatorHeight} />
-          <ContentItem>
-            <ContentHeading>
-              <FormattedMessage id="plan.detail.dueToday" />
-            </ContentHeading>
-            <ContentText>US ${calculateProductDuePrice(planDetail?.totalDueToday as number)}</ContentText>
-          </ContentItem>
-          <Separator height={seperatorHeight} />
-          <ContentItem>
-            <ContentHeading>
-              <FormattedMessage id="plan.detail.reoccuringBilling" />
-            </ContentHeading>
-            <ContentText>
-              <FormattedMessage id="payment.nextBillingDate" />
-              :&nbsp;
-              <FormattedDate
-                value={(planDetail?.expiresTime as number) * 1000}
-                day="numeric"
-                month="long"
-                year="numeric"
-              />
-              <br />
-              <FormattedMessage id="payment.cancelTime" />
-            </ContentText>
-          </ContentItem>
-        </ContentContainer>
-      </Container>
-      {/* <Separator height={seperatorHeight} />
-      <FooterContainer>
-        <LoadingButton size="xl" onClick={onUpdadePlan} isLoading={updatePlanLoading}>
-          <FormattedMessage id="plan.update.btn" />
-        </LoadingButton>
-      </FooterContainer> */}
-    </>
+    <Container>
+      <ContentContainer>
+        <Logo src="/daspireLogo.svg" alt="logo" />
+        <Separator />
+        <PlanName>
+          <FormattedMessage id="payment.planName" values={{ planName: planDetail?.planName }} />
+        </PlanName>
+        <Separator height={seperatorHeight} />
+        <ContentItem>
+          <ContentHeading>
+            <FormattedMessage id="plan.detail.rows" />
+          </ContentHeading>
+          <ContentText>{convert_M_To_Million(planDetail?.productItemName as string)}</ContentText>
+        </ContentItem>
+        <Separator height={seperatorHeight} />
+        <ContentItem>
+          <ContentHeading>
+            <FormattedMessage id="plan.detail.billing" />
+          </ContentHeading>
+          <ContentText>
+            US ${planDetail?.productItemPrice}&nbsp;/&nbsp;
+            <FormattedMessage id="payment.planDeductionTime" />
+          </ContentText>
+        </ContentItem>
+        <Separator height={seperatorHeight} />
+        <ContentItem>
+          <ContentHeading>
+            <FormattedMessage id="plan.detail.dueToday" />
+          </ContentHeading>
+          <ContentText>US ${calculateProductDuePrice(planDetail?.totalDueToday as number)}</ContentText>
+        </ContentItem>
+        <Separator height={seperatorHeight} />
+        <ContentItem>
+          <ContentHeading>
+            <FormattedMessage id="plan.detail.reoccuringBilling" />
+          </ContentHeading>
+          <ContentText>
+            <FormattedMessage id="payment.nextBillingDate" />
+            :&nbsp;
+            <FormattedDate
+              value={(planDetail?.expiresTime as number) * 1000}
+              day="numeric"
+              month="long"
+              year="numeric"
+            />
+            <br />
+            <FormattedMessage id="payment.cancelTime" />
+          </ContentText>
+        </ContentItem>
+      </ContentContainer>
+    </Container>
   );
 };
 

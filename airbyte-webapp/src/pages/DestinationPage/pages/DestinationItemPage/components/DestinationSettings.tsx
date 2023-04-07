@@ -39,9 +39,7 @@ const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
   const destinationDefinition = useDestinationDefinition(currentDestination.destinationDefinitionId);
   const { mutateAsync: updateDestination } = useUpdateDestination();
   const { setDocumentationPanelOpen } = useDocumentationPanelContext();
-  // const { mutateAsync: deleteDestination } = useDeleteDestination();
   const formId = useUniqueFormId();
-  // const { clearFormChange } = useFormChangeTrackerService();
 
   useTrackPage(PageTrackingCodes.DESTINATION_ITEM_SETTINGS);
 

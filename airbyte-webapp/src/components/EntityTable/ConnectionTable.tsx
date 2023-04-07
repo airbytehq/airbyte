@@ -12,18 +12,8 @@ import useRouter from "hooks/useRouter";
 
 import { RoutePaths } from "../../pages/routePaths";
 import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
-// import ConnectorCell from "./components/ConnectorCell";
-// import FrequencyCell from "./components/FrequencyCell";
 import LastSyncCell from "./components/LastSyncCell";
-// import NameCell from "./components/NameCell";
-// import SortButton from "./components/SortButton";
-// import StatusCell from "./components/StatusCell";
-// import SwitchButton from "./components/SwitchButton";
 import { ITableDataItem, SortOrderEnum } from "./types";
-
-// const Content = styled.div`
-//   margin: 0 32px 0 27px;
-// `;
 
 const SwitchContent = styled.div`
   display: flex;
@@ -71,26 +61,6 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
     [push, sortBy, sortOrder]
   );
 
-  // const sortData = useCallback(
-  //   (a, b) => {
-  //     let result;
-  //     if (sortBy === "lastSync") {
-  //       result = b[sortBy] - a[sortBy];
-  //     } else {
-  //       result = a[sortBy].toLowerCase().localeCompare(b[sortBy].toLowerCase());
-  //     }
-  //
-  //     if (sortOrder === SortOrderEnum.DESC) {
-  //       return -1 * result;
-  //     }
-  //
-  //     return result;
-  //   },
-  //   [sortBy, sortOrder]
-  // );
-
-  // const sortingData = React.useMemo(() => data.sort(sortData), [sortData, data]);
-
   const onClickRows = (connectionId: string) => push(`/${RoutePaths.Connections}/${connectionId}`);
 
   const columns = React.useMemo(
@@ -111,9 +81,6 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
                 swithSize="medium"
                 id={`${cell.row.original.connectionId}`}
                 checked={cell.row.original.status === "Active" ? true : false}
-                // onClick={() => {
-                //   onChangeStatus(cell.row.original.connectionId);
-                // }}
                 loading={rowId === cell.row.original.connectionId && statusLoading ? true : false}
               />
             </SwitchContent>
@@ -121,39 +88,19 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
         },
       },
       {
-        Header: (
-          <>
-            <FormattedMessage id="tables.name" />
-            {/* <SortButton*/}
-            {/*  wasActive={sortBy === "name"}*/}
-            {/*  lowToLarge={sortOrder === SortOrderEnum.ASC}*/}
-            {/*  onClick={() => onSortClick("name")}*/}
-            {/*/ >*/}
-          </>
-        ),
+        Header: <FormattedMessage id="tables.name" />,
         headerHighlighted: true,
         accessor: "name",
         customWidth: 30,
-        // Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-        //   <NameCell value={cell.value} enabled={row.original.enabled} status={row.original.lastSyncStatus} />
-        // ),
       },
       {
         Header: <FormattedMessage id="tables.status" />,
         accessor: "statusLang",
-        // Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-        //     <FrequencyCell value={cell.value} enabled={row.original.enabled} />
-        // ),
       },
       {
         Header: (
           <HeaderColumns>
             <FormattedMessage id="tables.lastSyncAt" />
-            {/* <SortButton*/}
-            {/*    wasActive={sortBy === "lastSync"}*/}
-            {/*    lowToLarge={sortOrder === SortOrderEnum.ASC}*/}
-            {/*    onClick={() => onSortClick("lastSync")}*/}
-            {/*/ >*/}
           </HeaderColumns>
         ),
         accessor: "lastSync",
@@ -162,75 +109,14 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
         ),
       },
       {
-        Header: (
-          <>
-            {/* {entity === "connection" ? (*/}
-            <FormattedMessage id="tables.destination" />
-            {/* ) : (*/}
-            {/*  <FormattedMessage id={`tables.${entity}ConnectionToName`} />*/}
-            {/* )}*/}
-            {/* <SortButton*/}
-            {/*  wasActive={sortBy === "entityName"}*/}
-            {/*  lowToLarge={sortOrder === SortOrderEnum.ASC}*/}
-            {/*  onClick={() => onSortClick("entityName")}*/}
-            {/*/ >*/}
-          </>
-        ),
+        Header: <FormattedMessage id="tables.destination" />,
         headerHighlighted: true,
         accessor: "entityName",
-        // Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-        //   <NameCell
-        //     value={cell.value}
-        //     enabled={row.original.enabled}
-        //     icon={entity === "connection"}
-        //     img={row.original.entityIcon}
-        //   />
-        // ),
       },
       {
-        Header: (
-          <>
-            {/* {entity === "connection" ? (*/}
-            <FormattedMessage id="tables.source" />
-            {/* ) : (*/}
-            {/*    <FormattedMessage id="tables.connector" />*/}
-            {/* )}*/}
-            {/* <SortButton*/}
-            {/*    wasActive={sortBy === "connectorName"}*/}
-            {/*    lowToLarge={sortOrder === SortOrderEnum.ASC}*/}
-            {/*    onClick={() => onSortClick("connectorName")}*/}
-            {/*/ >*/}
-          </>
-        ),
+        Header: <FormattedMessage id="tables.source" />,
         accessor: "connectorName",
-        // Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-        //     <ConnectorCell value={cell.value} enabled={row.original.enabled} img={row.original.connectorIcon} />
-        // ),
       },
-
-      // {
-      //   Header: <FormattedMessage id="tables.frequency" />,
-      //   accessor: "schedule",
-      //   Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-      //     <FrequencyCell value={cell.value} enabled={row.original.enabled} />
-      //   ),
-      // },
-      // {
-      //   Header: <FormattedMessage id="tables.enabled" />,
-      //   accessor: "enabled",
-      //   customWidth: 1,
-      //   Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-      //     <StatusCell
-      //       enabled={cell.value}
-      //       id={row.original.connectionId}
-      //       isSyncing={row.original.isSyncing}
-      //       isManual={!row.original.schedule}
-      //       onChangeStatus={onChangeStatus}
-      //       onSync={onSync}
-      //       allowSync={allowSync}
-      //     />
-      //   ),
-      // },
       {
         Header: "",
         accessor: "connectionId",
@@ -250,16 +136,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
     [allowSync, entity, onChangeStatus, onSync, onSortClick, sortBy, sortOrder]
   );
 
-  return (
-    // <Content>
-    <Table
-      columns={columns}
-      data={data}
-      // onClickRow={onClickRow}
-      erroredRows
-    />
-    // </Content>
-  );
+  return <Table columns={columns} data={data} erroredRows />;
 };
 
 export default ConnectionTable;

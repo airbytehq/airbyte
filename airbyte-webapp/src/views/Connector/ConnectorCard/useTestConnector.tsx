@@ -72,8 +72,6 @@ export const useTestConnector = (
       }
 
       if (!payload) {
-        console.error("Unexpected state met: no connectorId or connectorDefinitionId provided");
-
         throw new Error("Unexpected state met");
       }
 

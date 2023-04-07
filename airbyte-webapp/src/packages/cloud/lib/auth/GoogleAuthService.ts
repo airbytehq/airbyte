@@ -132,7 +132,6 @@ export class GoogleAuthService {
     const currentUser = this.getCurrentUser();
 
     if (!currentUser) {
-      console.error("sendEmailVerifiedLink should be used within auth flow");
       throw new Error("user is not authorised");
     }
 
@@ -151,10 +150,8 @@ export class GoogleAuthService {
         case AuthErrorCodes.INVALID_EMAIL:
           throw new FieldError("email", EmailLinkErrorCodes.EMAIL_MISMATCH);
         case AuthErrorCodes.INVALID_OOB_CODE:
-          // The link was already used
           throw new Error(EmailLinkErrorCodes.LINK_INVALID);
         case AuthErrorCodes.EXPIRED_OOB_CODE:
-          // The link expired
           throw new Error(EmailLinkErrorCodes.LINK_EXPIRED);
       }
 

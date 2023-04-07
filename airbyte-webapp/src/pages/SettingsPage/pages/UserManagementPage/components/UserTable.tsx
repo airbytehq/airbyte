@@ -35,7 +35,7 @@ const HeaderCell = styled(Cell)`
   color: #6b6b6f;
 `;
 
-const UserTable: React.FC<IProps> = ({ users, roles, onDelete, onChangeRole, onResendInvite }) => {
+const UserTable: React.FC<IProps> = React.memo(({ users, roles, onDelete, onChangeRole, onResendInvite }) => {
   return (
     <TableContainer>
       <HeaderRow style={{ padding: "20px 0" }}>
@@ -64,6 +64,6 @@ const UserTable: React.FC<IProps> = ({ users, roles, onDelete, onChangeRole, onR
       />
     </TableContainer>
   );
-};
+});
 
 export default UserTable;

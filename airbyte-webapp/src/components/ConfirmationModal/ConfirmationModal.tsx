@@ -10,9 +10,6 @@ import useLoadingState from "../../hooks/useLoadingState";
 
 const Content = styled.div`
   width: 540px;
-  // font-size: 14px;
-  // line-height: 28px;
-  //padding: 30px;
 `;
 
 const ButtonContent = styled.div<{
@@ -70,41 +67,43 @@ export interface ConfirmationModalProps {
   buttonReverse?: boolean;
 }
 
-export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
-  onClose,
-  title,
-  text,
-  center,
-  onSubmit,
-  contentValues,
-  submitButtonText,
-  submitButtonDataId,
-  cancelButtonText,
-  loading,
-  buttonReverse,
-}) => {
-  const { isLoading, startAction } = useLoadingState();
-  const onSubmitBtnClick = () => startAction({ action: () => onSubmit() });
-  return (
-    <Modal onClose={onClose} title={<FormattedMessage id={title} />}>
-      <Content>
-        <Text center={center}>
-          <FormattedMessage id={text} values={contentValues ?? {}} />
-        </Text>
-        <ButtonContent reverse={buttonReverse}>
-          <ButtonWithMargin onClick={onClose} type="button" disabled={loading || isLoading} secondary={buttonReverse}>
-            <FormattedMessage id={cancelButtonText ?? "form.cancel"} />
-          </ButtonWithMargin>
-          <ButtonLoadingContainer
-            onClick={onSubmitBtnClick}
-            secondary={!buttonReverse}
-            data-id={submitButtonDataId}
-            isLoading={loading || isLoading}
-          >
-            <FormattedMessage id={submitButtonText} />
-          </ButtonLoadingContainer>
-        </ButtonContent>
-      </Content>
-    </Modal>
-  );
-};
+export const ConfirmationModal: React.FC<ConfirmationModalProps> = React.memo(
+  ({
+    onClose,
+    title,
+    text,
+    center,
+    onSubmit,
+    contentValues,
+    submitButtonText,
+    submitButtonDataId,
+    cancelButtonText,
+    loading,
+    buttonReverse,
+  }) => {
+    const { isLoading, startAction } = useLoadingState();
+    const onSubmitBtnClick = () => startAction({ action: () => onSubmit() });
+    return (
+      <Modal onClose={onClose} title={<FormattedMessage id={title} />}>
+        <Content>
+          <Text center={center}>
+            <FormattedMessage id={text} values={contentValues ?? {}} />
+          </Text>
+          <ButtonContent reverse={buttonReverse}>
+            <ButtonWithMargin onClick={onClose} type="button" disabled={loading || isLoading} secondary={buttonReverse}>
+              <FormattedMessage id={cancelButtonText ?? "form.cancel"} />
+            </ButtonWithMargin>
+            <ButtonLoadingContainer
+              onClick={onSubmitBtnClick}
+              secondary={!buttonReverse}
+              data-id={submitButtonDataId}
+              isLoading={loading || isLoading}
+            >
+              <FormattedMessage id={submitButtonText} />
+            </ButtonLoadingContainer>
+          </ButtonContent>
+        </Content>
+      </Modal>
+    );
+  }
+);

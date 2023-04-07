@@ -7,7 +7,7 @@ import { LoadingPage, DropDownRow } from "components";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import Breadcrumbs from "components/Breadcrumbs";
 import { CreateStepTypes } from "components/ConnectionStep";
-import { TableItemTitle } from "components/ConnectorBlocks"; // StepsTypes
+import { TableItemTitle } from "components/ConnectorBlocks";
 import { ConnectorIcon } from "components/ConnectorIcon";
 import DeleteBlock from "components/DeleteBlock";
 import { CategoryItem } from "components/TabMenu";
@@ -59,7 +59,6 @@ const TableContainer = styled.div`
 const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   useTrackPage(PageTrackingCodes.DESTINATION_ITEM);
   const { params, push, pathname } = useRouter<unknown, { id: string; "*": string }>();
-  // const currentStep = useMemo<string>(() => (params["*"] === "" ? StepsTypes.OVERVIEW : params["*"]), [params]);
   const [currentStep, setCurrentStep] = useState(StepsTypes.CREATE_ENTITY);
   const [loadingStatus, setLoadingStatus] = useState<boolean>(true);
   const [fetchingConnectorError, setFetchingConnectorError] = useState<JSX.Element | string | null>(null);
@@ -116,17 +115,6 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
         },
       });
     }
-
-    // const path = `../${RoutePaths.ConnectionNew}`;
-    // const state =
-    //   data.value === "create-new-item"
-    //     ? { destinationId: destination.destinationId }
-    //     : {
-    //         sourceId: data.value,
-    //         destinationId: destination.destinationId,
-    //       };
-
-    // push(path, { state });
   };
 
   const goBack = () => {
@@ -136,10 +124,6 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   const onDelete = async () => {
     await deleteDestination({ connectionsWithDestination, destination });
   };
-
-  // const onCreateClick = () => {
-  //   push(`/${RoutePaths.Source}/${RoutePaths.SelectSource}`);
-  // };
 
   const menuItems: CategoryItem[] = pageConfig?.menuConfig || [
     {
@@ -157,7 +141,6 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
                 entity={destination.destinationName}
                 entityIcon={destinationDefinition.icon ? getIcon(destinationDefinition.icon) : null}
                 releaseStage={destinationDefinition.releaseStage}
-                // onClick={onCreateClick}
                 num={connectionsWithDestination.length}
                 btnText={<FormattedMessage id="sources.newSourceTitle" />}
               />

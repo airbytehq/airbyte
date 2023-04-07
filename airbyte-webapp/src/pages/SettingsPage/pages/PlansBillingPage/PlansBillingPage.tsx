@@ -18,7 +18,7 @@ import { RoutePaths } from "pages/routePaths";
 import { useAuthenticationService } from "services/auth/AuthSpecificationService";
 import { useUserPlanDetail, useAsyncAction } from "services/payments/PaymentsService";
 
-import PlanClause from "./components/PlanClause";
+import { PlanClause } from "./components/PlanClause";
 import styles from "./style.module.scss";
 
 const CancelSubscriptionBtn = styled(Button)`
@@ -67,7 +67,7 @@ const PlansBillingPage: React.FC = () => {
   const [toggleCancel, setToggleCancel] = useState<boolean>(false);
   const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
 
-  const toggleCancleSuscriptionModal = () => setToggleCancel(!toggleCancel);
+  const toggleCancleSubscriptionModal = () => setToggleCancel(!toggleCancel);
 
   const onCancelSubscription = useCallback(() => {
     setConfirmLoading(true);
@@ -113,15 +113,6 @@ const PlansBillingPage: React.FC = () => {
 
   return (
     <>
-      {/* {toggleCancel && (
-        <CancelPlanModal
-          onClose={toggleCancleSuscriptionModal}
-          onConfirm={onCancelSubscription}
-          onNotNow={toggleCancleSuscriptionModal}
-          confirmLoading={confirmLoading}
-          expiresOn={userPlanDetail.expiresTime}
-        />
-      )} */}
       {toggleCancel && (
         <ConfirmationModal
           title="subscription.cancelSubscriptionModal.title"
@@ -129,7 +120,7 @@ const PlansBillingPage: React.FC = () => {
           submitButtonText="cancelSubscription.modal.btn.confirm"
           cancelButtonText="cancelSubscription.modal.btn.notNow"
           onSubmit={onCancelSubscription}
-          onClose={toggleCancleSuscriptionModal}
+          onClose={toggleCancleSubscriptionModal}
           loading={confirmLoading}
           contentValues={{
             expiryDate: (
@@ -184,7 +175,7 @@ const PlansBillingPage: React.FC = () => {
             <div className={styles.planDetailRowContainer}>
               <div className={styles.rowContainer}>
                 {userPlanDetail.planDetail.map((item) => (
-                  <PlanClause text={manipulatePlanDetail(item) as string} />
+                  <PlanClause planItem={item} clause={manipulatePlanDetail(item)} key={item.planItemid} />
                 ))}
               </div>
             </div>
@@ -192,7 +183,7 @@ const PlansBillingPage: React.FC = () => {
         </div>
         <div className={styles.footer}>
           {getPaymentStatus(user.status) === PAYMENT_STATUS.Subscription && (
-            <CancelSubscriptionBtn size="xl" onClick={toggleCancleSuscriptionModal}>
+            <CancelSubscriptionBtn size="xl" onClick={toggleCancleSubscriptionModal}>
               <BtnText color="#6B6B6F">
                 <FormattedMessage id="plan.cancel.btn" />
               </BtnText>

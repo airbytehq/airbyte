@@ -6,7 +6,6 @@ import Modal, { ModalProps } from "components/Modal";
 import { ConnectionFormMode } from "views/Connection/ConnectionForm/ConnectionForm";
 
 import styles from "./ArrayOfObjectsEditor.module.scss";
-// import { EditorHeader } from "./components/EditorHeader";
 import { EditorRow } from "./components/EditorRow";
 
 interface ItemBase {
@@ -37,15 +36,10 @@ export const ArrayOfObjectsEditor = <T extends ItemBase = ItemBase>({
   renderItemEditorForm,
   items,
   editableItemIndex,
-  // mainTitle,
-  // addButtonText,
   mode,
   disabled,
   editModalSize,
 }: ArrayOfObjectsEditorProps<T>): JSX.Element => {
-  // const onAddItem = React.useCallback(() => {
-  //   onStartEdit(items.length);
-  // }, [onStartEdit, items]);
   const isEditable = editableItemIndex !== null && editableItemIndex !== undefined;
 
   const renderEditModal = () => {
@@ -65,14 +59,6 @@ export const ArrayOfObjectsEditor = <T extends ItemBase = ItemBase>({
   return (
     <>
       <div className={styles.container}>
-        {/* <EditorHeader
-          itemsCount={items.length}
-          onAddItem={onAddItem}
-          mainTitle={mainTitle}
-          addButtonText={addButtonText}
-          mode={mode}
-          disabled={disabled}
-        /> */}
         {items.length ? (
           <div className={styles.list}>
             {items.map((item, index) => (

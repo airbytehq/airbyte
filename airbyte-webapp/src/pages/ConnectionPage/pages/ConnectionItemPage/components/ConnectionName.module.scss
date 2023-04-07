@@ -47,8 +47,6 @@
 
   &:hover {
     cursor: pointer;
-
-    // border: variables.$border-thin solid colors.$backgroundColor;
     background-color: colors.$backgroundColor;
 
     & > .icon {
@@ -80,22 +78,20 @@
 
 .inputContainer {
   height: 50px;
-
-  // width: 100%;
   flex: 1;
 
   div {
     border-radius: 6px;
     border: none;
     box-shadow: none;
-    background-color: colors.$backgroundColor !important; // fix style import order issue
+    background-color: colors.$backgroundColor !important;
   }
 }
 
 .input {
   border-radius: 6px;
   background-color: colors.$backgroundColor;
-  font-size: 22px !important; // fix style import order issue
+  font-size: 22px !important;
   height: 50px;
   text-align: center;
   padding: 0 20px;

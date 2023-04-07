@@ -11,9 +11,9 @@
   <g
      id="Google-Button"
      stroke="none"
-     stroke-width="1"
+     strokeWidth="1"
      fill="none"
-     fill-rule="evenodd"
+     fillRule="evenodd"
      transform="translate(-14,-14)">
     <g
        id="9-PATCH"
@@ -29,7 +29,7 @@
            id="button-bg">
           <use
              fill="#ffffff"
-             fill-rule="evenodd"
+             fillRule="evenodd"
              id="use734" />
         </g>
       </g>
