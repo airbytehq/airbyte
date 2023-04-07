@@ -237,7 +237,7 @@ class BuildConnectorImage(GradleTask):
             )
 
             step_result = await self.get_step_result(built_container)
-            connector_tar_file = self._export_connector_image()
+            connector_tar_file = await self._export_connector_image()
             return step_result, connector_tar_file
         except QueryError as e:
             return StepResult(self, StepStatus.FAILURE, stderr=str(e)), None
