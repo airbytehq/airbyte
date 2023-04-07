@@ -1,9 +1,13 @@
 {
   "properties": {
+    "account_id": {
+      "description": "The Facebook Ad account ID to use when pulling data from the Facebook Marketing API. Open your Meta Ads Manager. The Ad account ID number is in the account dropdown menu or in your browser's address bar. See the https://www.facebook.com/business/help/1492627900875762 for more information."
+    },
     "end_date": {
       "format": "date-time"
     },
     "custom_insights": {
+      "description": "A list which contains ad statistics entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns.",
       "items": {
         "properties": {
           "action_breakdowns": {
