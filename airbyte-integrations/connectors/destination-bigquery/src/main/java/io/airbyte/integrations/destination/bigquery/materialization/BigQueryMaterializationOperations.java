@@ -4,11 +4,21 @@
 
 package io.airbyte.integrations.destination.bigquery.materialization;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.Schema;
+import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
 
 // name is debatable :P but "BigQueryTypingAndDedupingOperations" is a really sad name
 // `Schema` here is a com.google.cloud.bigquery.Schema
@@ -25,7 +35,52 @@ public class BigQueryMaterializationOperations implements MaterializationOperati
    */
   public Schema getTableSchema(ConfiguredAirbyteStream stream) {
     // TODO
-    return null;
+    final JsonNode jsonSchema = stream.getStream().getJsonSchema();
+    if (jsonSchema.hasNonNull("properties")) {
+      // TODO we probably should handle this in some reasonable way
+      throw new IllegalArgumentException("Top-level stream schema must be an object; got " + jsonSchema);
+    }
+    List<Field> bqFields = new ArrayList<>();
+    final ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
+    for (Iterator<Entry<String, JsonNode>> it = properties.fields(); it.hasNext(); ) {
+      final Entry<String, JsonNode> field = it.next();
+      String fieldName = field.getKey();
+      JsonNode fieldSchema = field.getValue();
+
+      // This is completely wrong, but the full implementation is really complicated
+      String jsonTypeString = null;
+      if (fieldSchema.hasNonNull("type")) {
+        final JsonNode jsonType = fieldSchema.get("type");
+        if (jsonType.isArray()) {
+          // we have a schema like {type: [foo, bar]}
+          // TODO handle multi-typed fields
+          // for now, just pick the first non-null type
+          for (JsonNode subtype : jsonType) {
+            if (!"null".equals(subtype.asText())) {
+              jsonTypeString = subtype.asText();
+              break;
+            }
+          }
+        } else {
+          // presumably this is something like {type: foo}
+          jsonTypeString = jsonType.asText();
+        }
+      }
+
+      StandardSQLTypeName bqType;
+      if (jsonTypeString != null) {
+        bqType = switch (jsonTypeString) {
+          // TODO handle airbyte_type nonsense
+          case "string", "array", "object" -> StandardSQLTypeName.STRING;
+          case "integer", "number" -> StandardSQLTypeName.NUMERIC;
+        };
+      } else {
+        bqType = StandardSQLTypeName.STRING;
+      }
+
+      bqFields.add(Field.of(fieldName, bqType));
+    }
+    return Schema.of(bqFields);
   }
 
   /*
