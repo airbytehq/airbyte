@@ -57,41 +57,37 @@ To access the Sandbox environment:
 
 ## Supported streams and sync modes
 
-| Stream                                    | Environment  | Key         | Incremental |
-| :--------------------------------------   | ------------ | ----------- | :---------- |
-| Advertisers                               | Prod,Sandbox | id          | No          |
-| AdGroups                                  | Prod,Sandbox | adgroup_id  | Yes         |
-| Ads                                       | Prod,Sandbox | ad_id       | Yes         |
-| Campaigns                                 | Prod,Sandbox | campaign_id | Yes         |
-| AdsReportsHourly                          | Prod,Sandbox | None        | Yes         |
-| AdsReportsDaily                           | Prod,Sandbox | None        | Yes         |
-| AdsReportsLifetime                        | Prod,Sandbox | None        | No          |
-| AdvertisersReportsHourly                  | Prod         | None        | Yes         |
-| AdvertisersReportsDaily                   | Prod         | None        | Yes         |
-| AdvertisersReportsLifetime                | Prod         | None        | No          |
-| AdGroupsReportsHourly                     | Prod,Sandbox | None        | Yes         |
-| AdGroupsReportsDaily                      | Prod,Sandbox | None        | Yes         |
-| AdGroupsReportsLifetime                   | Prod,Sandbox | None        | No          |
-| CampaignsReportsHourly                    | Prod,Sandbox | None        | Yes         |
-| CampaignsReportsDaily                     | Prod,Sandbox | None        | Yes         |
-| CampaignsReportsLifetime                  | Prod,Sandbox | None        | No          |
-| AdvertisersAudienceReportsHourly          | Prod         | None        | Yes         |
-| AdvertisersAudienceReportsDaily           | Prod         | None        | Yes         |
-| AdvertisersAudienceReportsByCountryDaily  | Prod         | None        | Yes         |
-| AdvertisersAudienceReportsByPlatformDaily | Prod         | None        | Yes         |
-| AdvertisersAudienceReportsLifetime        | Prod         | None        | No          |
-| AdGroupAudienceReportsHourly              | Prod,Sandbox | None        | Yes         |
-| AdGroupAudienceReportsDaily               | Prod,Sandbox | None        | Yes         |
-| AdGroupAudienceReportsByCountryDaily      | Prod,Sandbox | None        | Yes         |
-| AdGroupAudienceReportsByPlatformDaily     | Prod,Sandbox | None        | Yes         |
-| AdsAudienceReportsHourly                  | Prod,Sandbox | None        | Yes         |
-| AdsAudienceReportsDaily                   | Prod,Sandbox | None        | Yes         |
-| AdsAudienceReportsByCountryDaily          | Prod,Sandbox | None        | Yes         |
-| AdsAudienceReportsByPlatformDaily         | Prod,Sandbox | None        | Yes         |
-| CampaignsAudienceReportsByCountryHourly   | Prod,Sandbox | None        | Yes         |
-| CampaignsAudienceReportsDaily             | Prod,Sandbox | None        | Yes         |
-| CampaignsAudienceReportsByCountryDaily    | Prod,Sandbox | None        | Yes         |
-| CampaignsAudienceReportsByPlatformDaily   | Prod,Sandbox | None        | Yes         |
+| Stream                                      | Environment  | Key                                        | Incremental |
+|:----------------------------------------    |--------------|--------------------------------------------|:------------|
+| Advertisers                                 | Prod,Sandbox | advertiser_id                              | No          |
+| AdGroups                                    | Prod,Sandbox | adgroup_id                                 | Yes         |
+| Ads                                         | Prod,Sandbox | ad_id                                      | Yes         |
+| Campaigns                                   | Prod,Sandbox | campaign_id                                | Yes         |
+| AdsReportsHourly                            | Prod,Sandbox | ad_id, stat_time_hour                      | Yes         |
+| AdsReportsDaily                             | Prod,Sandbox | ad_id, stat_time_day                       | Yes         |
+| AdsReportsLifetime                          | Prod,Sandbox | ad_id                                      | No          |
+| AdvertisersReportsHourly                    | Prod         | advertiser_id, stat_time_hour              | Yes         |
+| AdvertisersReportsDaily                     | Prod         | advertiser_id, stat_time_day               | Yes         |
+| AdvertisersReportsLifetime                  | Prod         | advertiser_id                              | No          |
+| AdGroupsReportsHourly                       | Prod,Sandbox | adgroup_id, stat_time_hour                 | Yes         |
+| AdGroupsReportsDaily                        | Prod,Sandbox | adgroup_id, stat_time_day                  | Yes         |
+| AdGroupsReportsLifetime                     | Prod,Sandbox | adgroup_id                                 | No          |
+| CampaignsReportsHourly                      | Prod,Sandbox | campaign_id, stat_time_hour                | Yes         |
+| CampaignsReportsDaily                       | Prod,Sandbox | campaign_id, stat_time_day                 | Yes         |
+| CampaignsReportsLifetime                    | Prod,Sandbox | campaign_id                                | No          |
+| AdvertisersAudienceReportsDaily             | Prod         | advertiser_id, stat_time_day, gender, age  | Yes         |
+| AdvertisersAudienceReportsByCountryDaily    | Prod         | advertiser_id, stat_time_day, country_code | Yes         |
+| AdvertisersAudienceReportsByPlatformDaily   | Prod         | advertiser_id, stat_time_day, platform     | Yes         |
+| AdvertisersAudienceReportsLifetime          | Prod         | advertiser_id, gender, age                 | No          |
+| AdGroupAudienceReportsDaily                 | Prod,Sandbox | adgroup_id, stat_time_day, gender, age     | Yes         |
+| AdGroupAudienceReportsByCountryDaily        | Prod,Sandbox | adgroup_id, stat_time_day, country_code    | Yes         |
+| AdGroupAudienceReportsByPlatformDaily       | Prod,Sandbox | adgroup_id, stat_time_day, platform        | Yes         |
+| AdsAudienceReportsDaily                     | Prod,Sandbox | ad_id, stat_time_day, gender, age          | Yes         |
+| AdsAudienceReportsByCountryDaily            | Prod,Sandbox | ad_id, stat_time_day, country_code         | Yes         |
+| AdsAudienceReportsByPlatformDaily           | Prod,Sandbox | ad_id, stat_time_day, platform             | Yes         |
+| CampaignsAudienceReportsDaily               | Prod,Sandbox | campaign_id, stat_time_day, gender, age    | Yes         |
+| CampaignsAudienceReportsByCountryDaily      | Prod,Sandbox | campaign_id, stat_time_day, country_code   | Yes         |
+| CampaignsAudienceReportsByPlatformDaily     | Prod,Sandbox | campaign_id, stat_time_day, platform       | Yes         |
 
 ### Report Aggregation
 Reports synced by this connector can use either hourly, daily, or lifetime granularities for aggregating performance data. For example, if you select the daily-aggregation flavor of a report, the report will contain a row for each day for the duration of the report. Each row will indicate the number of impressions recorded on that day.
