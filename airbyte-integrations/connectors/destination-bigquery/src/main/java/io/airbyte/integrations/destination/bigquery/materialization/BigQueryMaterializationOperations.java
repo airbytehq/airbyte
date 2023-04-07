@@ -51,7 +51,8 @@ public class BigQueryMaterializationOperations implements MaterializationOperati
    * commentary: Some of this is equivalent to normalization code - the stuff around extracting JSON fields
    * and casting their types, etc.
    *
-   * The stuff around explicitly writing a merge / insert is new; dbt handles that for us.
+   * The stuff around explicitly writing a merge / insert is new; dbt handles that for us. That's also destination-specific;
+   * e.g. some destinations might need explicit UPDATE and INSERT statements.
    *
    * The DELETE thing is new, and an improvement over normalization (where we need a separate DELETE call)
    */
