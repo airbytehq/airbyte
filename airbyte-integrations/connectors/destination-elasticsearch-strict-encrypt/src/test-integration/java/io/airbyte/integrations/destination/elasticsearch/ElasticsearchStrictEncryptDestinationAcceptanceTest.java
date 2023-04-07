@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StandardCheckConnectionOutput.Status;
+import io.airbyte.configoss.StandardCheckConnectionOutput.Status;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
@@ -117,10 +117,10 @@ public class ElasticsearchStrictEncryptDestinationAcceptanceTest extends Destina
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(DestinationAcceptanceTest.TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final DestinationAcceptanceTest.TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws IOException {
     // Records returned from this method will be compared against records provided to the connector
     // to verify they were written correctly
@@ -129,16 +129,16 @@ public class ElasticsearchStrictEncryptDestinationAcceptanceTest extends Destina
         .setStreamName(streamName)
         .getIndexName();
 
-    ElasticsearchConnection connection = new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
+    final ElasticsearchConnection connection = new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
     return connection.getRecords(indexName);
   }
 
   @Override
-  protected void setup(DestinationAcceptanceTest.TestDestinationEnv testEnv) {}
+  protected void setup(final DestinationAcceptanceTest.TestDestinationEnv testEnv) {}
 
   @Override
-  protected void tearDown(DestinationAcceptanceTest.TestDestinationEnv testEnv) {
-    ElasticsearchConnection connection = new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
+  protected void tearDown(final DestinationAcceptanceTest.TestDestinationEnv testEnv) {
+    final ElasticsearchConnection connection = new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
     connection.allIndices().forEach(connection::deleteIndexIfPresent);
   }
 
