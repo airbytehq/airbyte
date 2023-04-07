@@ -1232,6 +1232,7 @@ class Deals(CRMSearchStream):
 
 class DealsArchived(Deals):
     """Archived Deals, API v3"""
+    updated_at_field = "archivedAt"
     last_modified_field = "archivedAt"
 
 
