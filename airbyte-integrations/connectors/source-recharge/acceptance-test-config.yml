@@ -11,6 +11,10 @@ acceptance_tests:
         bypass_reason: "no data from stream"
       - name: onetimes
         bypass_reason: "no data from stream"
+      - name: orders
+        bypass_reason: "no data from stream"
+      - name: subscriptions
+        bypass_reason: "no data from stream"
       ignored_fields:
         shop:
           - name: shop/updated_at
