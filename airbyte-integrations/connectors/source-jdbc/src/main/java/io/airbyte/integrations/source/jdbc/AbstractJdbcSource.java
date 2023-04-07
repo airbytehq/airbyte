@@ -51,7 +51,6 @@ import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -103,12 +102,15 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     this.sourceOperations = sourceOperations;
   }
 
+  /**
+   * {@inheritDoc}
+   * @param database database instance
+   * @param catalog schema of the incoming messages.
+   * @throws SQLException
+   */
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
-                                                    final ConfiguredAirbyteCatalog catalog,
-                                                    final JsonNode state)
-      throws Exception {
-    final JdbcDatabase database = createDatabase(config);
+  public void logDatabaseData(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog)
+      throws SQLException {
     LOGGER.info("Data source product recognized as {}:{}",
         database.getMetaData().getDatabaseProductName(),
         database.getMetaData().getDatabaseProductVersion());
@@ -124,8 +126,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
             !indexInfo.getBoolean(JDBC_INDEX_NON_UNIQUE));
       }
     }
-
-    return super.read(config, catalog, state);
   }
 
   /**
