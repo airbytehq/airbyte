@@ -82,6 +82,7 @@ class GradleTask(Step):
     """
 
     RUN_AIRBYTE_DOCKER = False
+    DOCKER_SERVICE_NAME = "gradle"
 
     JAVA_BUILD_INCLUDE = [
         "airbyte-api",
@@ -175,7 +176,7 @@ class GradleTask(Step):
         connector_java_build_cache = self.context.dagger_client.cache_volume("connector_java_build_cache")
 
         connector_under_test = (
-            environments.with_gradle(self.context, self.build_include)
+            environments.with_gradle(self.context, self.build_include, docker_service_name=self.DOCKER_SERVICE_NAME)
             .with_mounted_cache(
                 f"{self.context.connector.code_directory}/build", connector_java_build_cache, sharing=CacheSharingMode.SHARED
             )
@@ -197,6 +198,7 @@ class BuildConnectorImage(GradleTask):
     """
 
     RUN_AIRBYTE_DOCKER = True
+    DOCKER_SERVICE_NAME = "gradle-build-connector-image"
 
     def __init__(self, context: ConnectorTestContext) -> None:
         """Initialize the step to build a connector image with the airbyteDock Gradle task.
@@ -215,7 +217,7 @@ class BuildConnectorImage(GradleTask):
         tar_name = f"{slugify(self.context.connector.technical_name)}.tar"
         image_name = f"airbyte/{self.context.connector.technical_name}:dev"
         export_success = await (
-            environments.with_gradle(self.context)
+            environments.with_gradle(self.context, docker_service_name=self.DOCKER_SERVICE_NAME)
             .with_exec(["docker", "save", "--output", tar_name, image_name])
             .file(tar_name)
             .export(f"{self.host_image_export_dir_path}/{tar_name}")
@@ -227,7 +229,7 @@ class BuildConnectorImage(GradleTask):
         try:
             connector_java_build_cache = self.context.dagger_client.cache_volume("connector_java_build_cache")
             built_container = (
-                environments.with_gradle(self.context, self.build_include)
+                environments.with_gradle(self.context, self.build_include, docker_service_name=self.DOCKER_SERVICE_NAME)
                 .with_mounted_cache(
                     f"{self.context.connector.code_directory}/build", connector_java_build_cache, sharing=CacheSharingMode.SHARED
                 )
@@ -245,6 +247,8 @@ class BuildConnectorImage(GradleTask):
 class IntegrationTestJava(GradleTask):
     """A step to run integrations tests for Java connectors using the integrationTestJava Gradle task."""
 
+    DOCKER_SERVICE_NAME = "gradle-integration-test-java"
+
     def __init__(self, context: ConnectorTestContext) -> None:
         """Initialize the step to run :integrationTestJava Gradle task.
 
@@ -256,13 +260,17 @@ class IntegrationTestJava(GradleTask):
     async def _load_normalization_image(self, normalization_tar_file: File):
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
         self.context.logger.info("Load the normalization image to the docker host.")
-        await environments.load_image_to_docker_host(self.context, normalization_tar_file, normalization_image_tag, service_name="gradle")
+        await environments.load_image_to_docker_host(
+            self.context, normalization_tar_file, normalization_image_tag, docker_service_name=self.DOCKER_SERVICE_NAME
+        )
         self.context.logger.info("Successfully loaded the normalization image to the docker host.")
 
     async def _load_connector_image(self, connector_tar_file: File):
         connector_image_tag = f"airbyte/{self.context.connector.technical_name}:dev"
         self.context.logger.info("Load the connector image to the docker host")
-        await environments.load_image_to_docker_host(self.context, connector_tar_file, connector_image_tag, service_name="gradle")
+        await environments.load_image_to_docker_host(
+            self.context, connector_tar_file, connector_image_tag, docker_service_name=self.DOCKER_SERVICE_NAME
+        )
         self.context.logger.info("Successfully loaded the connector image to the docker host.")
 
     async def _run(self, connector_tar_file: File, normalization_tar_file: Optional[File]) -> StepResult:

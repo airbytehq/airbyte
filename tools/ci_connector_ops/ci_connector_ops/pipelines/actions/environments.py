@@ -221,21 +221,21 @@ async def with_ci_connector_ops(context: PipelineContext) -> Container:
 
 
 def with_dockerd_service(
-    context: ConnectorTestContext, shared_volume: Optional(Tuple[str, CacheVolume]) = None, service_name: Optional[str] = None
+    context: ConnectorTestContext, shared_volume: Optional(Tuple[str, CacheVolume]) = None, docker_service_name: Optional[str] = None
 ) -> Container:
     """Create a container running dockerd, exposing its 2375 port, can be used as the docker host for docker-in-docker use cases.
 
     Args:
         context (ConnectorTestContext): The current connector test context.
         shared_volume (Optional, optional): A tuple in the form of (mounted path, cache volume) that will be mounted to the dockerd container. Defaults to None.
-        service_name (Optional[str], optional): The name of the docker service, appended to volume name, useful context isolation. Defaults to None.
+        docker_service_name (Optional[str], optional): The name of the docker service, appended to volume name, useful context isolation. Defaults to None.
 
     Returns:
         Container: The container running dockerd as a service.
     """
     docker_lib_volume_name = f"{slugify(context.connector.technical_name)}-docker-lib"
-    if service_name:
-        docker_lib_volume_name = f"{docker_lib_volume_name}-{slugify(service_name)}"
+    if docker_service_name:
+        docker_lib_volume_name = f"{docker_lib_volume_name}-{slugify(docker_service_name)}"
     dind = (
         context.dagger_client.container()
         .from_("docker:23.0.1-dind")
@@ -256,7 +256,7 @@ def with_bound_docker_host(
     context: ConnectorTestContext,
     container: Container,
     shared_volume: Optional(Tuple[str, CacheVolume]) = None,
-    service_name: Optional[str] = None,
+    docker_service_name: Optional[str] = None,
 ) -> Container:
     """Bind a container to a docker host. It will use the dockerd service as a docker host.
 
@@ -264,15 +264,15 @@ def with_bound_docker_host(
         context (ConnectorTestContext): The current connector test context.
         container (Container): The container to bind to the docker host.
         shared_volume (Optional, optional): A tuple in the form of (mounted path, cache volume) that will be both mounted to the container and the dockerd container. Defaults to None.
-        service_name (Optional[str], optional): The name of the docker service, useful context isolation. Defaults to None.
+        docker_service_name (Optional[str], optional): The name of the docker service, useful context isolation. Defaults to None.
 
     Returns:
         Container: The container bound to the docker host.
     """
-    dockerd = with_dockerd_service(context, shared_volume, service_name)
+    dockerd = with_dockerd_service(context, shared_volume, docker_service_name)
     docker_hostname = f"dockerhost-{slugify(context.connector.technical_name)}"
-    if service_name:
-        docker_hostname = f"{docker_hostname}-{slugify(service_name)}"
+    if docker_service_name:
+        docker_hostname = f"{docker_hostname}-{slugify(docker_service_name)}"
     bound = container.with_env_variable("DOCKER_HOST", f"tcp://{docker_hostname}:2375").with_service_binding(docker_hostname, dockerd)
     if shared_volume:
         bound = bound.with_mounted_cache(*shared_volume)
@@ -280,20 +280,20 @@ def with_bound_docker_host(
 
 
 def with_docker_cli(
-    context: ConnectorTestContext, shared_volume: Optional(Tuple[str, CacheVolume]) = None, service_name: Optional[str] = None
+    context: ConnectorTestContext, shared_volume: Optional(Tuple[str, CacheVolume]) = None, docker_service_name: Optional[str] = None
 ) -> Container:
     """Create a container with the docker CLI installed and bound to a persistent docker host.
 
     Args:
         context (ConnectorTestContext): The current connector test context.
         shared_volume (Optional, optional): A tuple in the form of (mounted path, cache volume) that will be both mounted to the container and the dockerd container. Defaults to None.
-        service_name (Optional[str], optional): The name of the docker service, useful context isolation. Defaults to None.
+        docker_service_name (Optional[str], optional): The name of the docker service, useful context isolation. Defaults to None.
 
     Returns:
         Container: A docker cli container bound to a docker host.
     """
     docker_cli = context.dagger_client.container().from_("docker:23.0.1-cli")
-    return with_bound_docker_host(context, docker_cli, shared_volume, service_name)
+    return with_bound_docker_host(context, docker_cli, shared_volume, docker_service_name)
 
 
 async def with_connector_acceptance_test(context: ConnectorTestContext, connector_under_test_image_tar: File) -> Container:
@@ -306,7 +306,7 @@ async def with_connector_acceptance_test(context: ConnectorTestContext, connecto
         Container: A container with connector acceptance tests installed.
     """
     connector_under_test_image_name = context.connector.acceptance_test_config["connector_image"]
-    await load_image_to_docker_host(context, connector_under_test_image_tar, connector_under_test_image_name, service_name="cat")
+    await load_image_to_docker_host(context, connector_under_test_image_tar, connector_under_test_image_name, docker_service_name="cat")
 
     if context.connector_acceptance_test_image.endswith(":dev"):
         cat_container = context.connector_acceptance_test_source_dir.docker_build()
@@ -315,7 +315,7 @@ async def with_connector_acceptance_test(context: ConnectorTestContext, connecto
     shared_tmp_volume = ("/tmp", context.dagger_client.cache_volume("share-tmp-cat"))
 
     return (
-        with_bound_docker_host(context, cat_container, shared_tmp_volume, service_name="cat")
+        with_bound_docker_host(context, cat_container, shared_tmp_volume, docker_service_name="cat")
         .with_entrypoint([])
         .with_exec(["pip", "install", "pytest-custom_exit_code"])
         .with_mounted_directory("/test_input", context.get_connector_dir(exclude=["secrets", ".venv"]))
@@ -326,12 +326,15 @@ async def with_connector_acceptance_test(context: ConnectorTestContext, connecto
     )
 
 
-def with_gradle(context: ConnectorTestContext, sources_to_include: List[str] = None) -> Container:
+def with_gradle(
+    context: ConnectorTestContext, sources_to_include: List[str] = None, docker_service_name: Optional[str] = "gradle"
+) -> Container:
     """Create a container with Gradle installed and bound to a persistent docker host.
 
     Args:
         context (ConnectorTestContext): The current connector test context.
         sources_to_include (List[str], optional): List of additional source path to mount to the container. Defaults to None.
+        docker_service_name (Optional[str], optional): The name of the docker service, useful context isolation. Defaults to "gradle".
 
     Returns:
         Container: A container with Gradle installed and Java sources from the repository.
@@ -378,21 +381,23 @@ def with_gradle(context: ConnectorTestContext, sources_to_include: List[str] = N
         .with_mounted_cache("/airbyte/.gradle", airbyte_gradle_cache, sharing=CacheSharingMode.LOCKED)
         .with_workdir("/airbyte")
     )
-    return with_bound_docker_host(context, openjdk_with_docker, shared_tmp_volume, service_name="gradle")
+    return with_bound_docker_host(context, openjdk_with_docker, shared_tmp_volume, docker_service_name=docker_service_name)
 
 
-async def load_image_to_docker_host(context: ConnectorTestContext, tar_file: File, image_tag: str, service_name: Optional[str] = None):
+async def load_image_to_docker_host(
+    context: ConnectorTestContext, tar_file: File, image_tag: str, docker_service_name: Optional[str] = None
+):
     """Load a docker image tar archive to the docker host.
 
     Args:
         context (ConnectorTestContext): The current connector test context.
         tar_file (File): The file object holding the docker image tar archive.
         image_tag (str): The tag to create on the image if it has no tag.
-        service_name (str): Name of the docker service, useful for context isolation.
+        docker_service_name (str): Name of the docker service, useful for context isolation.
     """
     # Hacky way to make sure the image is always loaded
     tar_name = f"{str(uuid.uuid4())}.tar"
-    docker_cli = with_docker_cli(context, service_name=service_name).with_mounted_file(tar_name, tar_file)
+    docker_cli = with_docker_cli(context, docker_service_name=docker_service_name).with_mounted_file(tar_name, tar_file)
     image_load_output = await docker_cli.with_exec(["docker", "load", "--input", tar_name]).stdout()
     # Not tagged images only have a sha256 id the load output shares.
     if "sha256:" in image_load_output:
