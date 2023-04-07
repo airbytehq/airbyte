@@ -18,7 +18,6 @@ export const CustomSelect = styled(Select)<
     background: ${({ $background, theme }) => ($background ? $background : theme.greyColor0)};
     border-radius: 6px;
     font-size: 14px;
-    //line-height: 20px;
     line-height: 16px;
     min-height: 36px;
 
@@ -38,7 +37,6 @@ export const CustomSelect = styled(Select)<
     }
 
     & .react-select__value-container {
-      // overflow: visible;
       display: flex;
       align-items: center;
       flex-wrap: nowrap;

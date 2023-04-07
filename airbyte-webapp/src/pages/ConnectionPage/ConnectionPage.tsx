@@ -1,16 +1,17 @@
-import React, { Suspense } from "react";
+import React, { Suspense, lazy } from "react";
 import { Route, Routes } from "react-router-dom";
 
 import { LoadingPage } from "components";
 
-import SelectConnectionCard from "pages/ConnectionPage/pages/CreationFormPage/SelectConnectionPage";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 
 import { RoutePaths } from "../routePaths";
-import AllConnectionsPage from "./pages/AllConnectionsPage";
-import ConnectionItemPage from "./pages/ConnectionItemPage";
-import { CreationFormPage } from "./pages/CreationFormPage/CreationFormPage";
+
+const AllConnectionsPage = lazy(() => import("./pages/AllConnectionsPage"));
+const SelectConnectionCard = lazy(() => import("pages/ConnectionPage/pages/CreationFormPage/SelectConnectionPage"));
+const ConnectionItemPage = lazy(() => import("./pages/ConnectionItemPage"));
+const CreationFormPage = lazy(() => import("./pages/CreationFormPage"));
 
 export const ConnectionPage: React.FC = () => (
   <Suspense fallback={<LoadingPage position="relative" />}>

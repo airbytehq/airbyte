@@ -40,7 +40,6 @@ export const Input: React.FC<InputProps> = ({ light, error, grey, focusedStyle, 
     element.focus();
 
     if (selectionStart) {
-      // Update input cursor position to where it was before
       window.setTimeout(() => {
         element.setSelectionRange(selectionStart, selectionStart);
       }, 0);

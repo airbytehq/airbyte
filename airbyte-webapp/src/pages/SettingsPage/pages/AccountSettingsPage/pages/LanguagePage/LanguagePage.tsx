@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -33,7 +33,7 @@ const LanguagePage: React.FC = () => {
   const [isUpdated, setIsUpdated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const updateLang = () => {
+  const updateLang = useCallback(() => {
     setIsLoading(true);
     onUpdateLang(language)
       .then(() => {
@@ -45,7 +45,7 @@ const LanguagePage: React.FC = () => {
         setIsUpdated(false);
         setIsLoading(false);
       });
-  };
+  }, []);
 
   return (
     <PageContainer>

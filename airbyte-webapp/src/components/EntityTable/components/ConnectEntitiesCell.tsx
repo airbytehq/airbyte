@@ -36,7 +36,6 @@ const ConnectEntitiesCell: React.FC<IProps> = ({ values, enabled, entity }) => {
       <Content enabled={enabled}>
         <Image num={values.length} />
         <div>
-          {/* {values[0].name} */}
           <FormattedMessage id={`tables.${entity}ConnectWithNum`} values={{ num: values.length }} />
           <Connector>{values[0].connector}</Connector>
         </div>

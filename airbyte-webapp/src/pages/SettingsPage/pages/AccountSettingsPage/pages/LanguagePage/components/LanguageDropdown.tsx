@@ -21,7 +21,7 @@ const DDLabel = styled.div`
   margin-bottom: 10px;
 `;
 
-export const LanguageDropdown: React.FC<IProps> = ({ labelId, value, onChange }) => {
+export const LanguageDropdown: React.FC<IProps> = React.memo(({ labelId, value, onChange }) => {
   const languages: DropDownRow.IDataItem[] = [
     { label: "English", value: LOCALES.ENGLISH },
     { label: "简体中文", value: LOCALES.CHINESE_SIMPLIFIED },
@@ -43,4 +43,4 @@ export const LanguageDropdown: React.FC<IProps> = ({ labelId, value, onChange })
       />
     </>
   );
-};
+});

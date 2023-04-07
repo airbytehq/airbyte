@@ -5,7 +5,7 @@ import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationRead } from "core/request/AirbyteClient";
 import { DestinationCloneRequestBody } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
-import { useUniqueFormId } from "hooks/services/FormChangeTracker"; // useFormChangeTrackerService
+import { useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useCloneDestination } from "hooks/services/useDestinationHook";
 import useRouter from "hooks/useRouter";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
@@ -41,7 +41,6 @@ const DestinationCopy: React.FC<DestinationSettingsProps> = ({
   const { setDocumentationPanelOpen } = useDocumentationPanelContext();
   const formId = useUniqueFormId();
   const { query } = useRouter<{ id: string }, { id: string; "*": string }>();
-  // const { clearFormChange } = useFormChangeTrackerService();
 
   useTrackPage(PageTrackingCodes.SOURCE_ITEM_SETTINGS);
   useEffect(() => {

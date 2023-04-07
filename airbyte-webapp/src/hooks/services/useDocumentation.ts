@@ -9,7 +9,6 @@ export const documentationKeys = {
   text: (integrationUrl: string) => ["document", integrationUrl] as const,
 };
 
-// const DOCS_URL = /^https:\/\/docs\.airbyte\.(io|com)/;
 const DOCS_URL = /^https:\/\/docs\.daspire\.(io|com)/;
 
 export const useDocumentation = (documentationUrl: string): UseDocumentationResult => {

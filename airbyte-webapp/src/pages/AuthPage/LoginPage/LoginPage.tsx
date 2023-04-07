@@ -10,6 +10,7 @@ import HeadTitle from "components/HeadTitle";
 import { Separator } from "components/Separator";
 
 import { useUser } from "core/AuthContext";
+import { IAuthUser } from "core/AuthContext/authenticatedUser";
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { FormHeaderSection } from "pages/AuthPage/components/FormHeaderSection";
 import { useAuthenticationService } from "services/auth/AuthSpecificationService";
@@ -85,10 +86,10 @@ const LoginPage: React.FC = () => {
           validationSchema={LoginPageValidationSchema}
           onSubmit={async (values) => {
             Signin.post(values, user?.lang)
-              .then((res: any) => {
+              .then((res: IAuthUser) => {
                 setUser?.(res);
               })
-              .catch((err: any) => {
+              .catch((err: Error) => {
                 setErrorMessage(err.message);
               });
           }}
@@ -157,18 +158,6 @@ const LoginPage: React.FC = () => {
                   <FormattedMessage id="login.button" />
                 </LoadingButton>
               </BottomBlock>
-              {/* <div className={styles.signupLink}>
-              <FormattedMessage
-                id="login.signupDescription"
-                values={{
-                  signupLink: (
-                    <Link to={`/${RoutePaths.Signup}`} $clear>
-                      <FormattedMessage id="login.signup" />
-                    </Link>
-                  ),
-                }}
-              />
-            </div> */}
             </Form>
           )}
         </Formik>

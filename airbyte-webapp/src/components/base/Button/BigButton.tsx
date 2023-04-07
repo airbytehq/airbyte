@@ -36,20 +36,6 @@ export const BtnInnerContainer = styled.div`
   min-width: 150px;
 `;
 
-// export const ButtonContainer = styled(Button)`
-//   // box-sizing: border-box;
-//   padding: 8px 16px;
-//   // width: 264px;
-//   height: 54px;
-//   border: 1px solid #d1d5db;
-//   border-radius: 6px;
-//   display: inline-flex;
-//   align-items: center;
-//   justify-content: center;
-//   font-weight: 500;
-//   font-size: 16px;
-// `;
-
 export const BigButton: React.FC<ButtonProps> = (props) => {
   return (
     <Button {...props}>

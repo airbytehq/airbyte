@@ -50,85 +50,81 @@ export const UsageOptions: DropDownRow.IDataItem[] = [
   { label: "100%", value: 1.0 },
 ];
 
-export const UsageTableRow: React.FC<IProps> = ({
-  usageItem,
-  saveNotificationSetting,
-  updateLoading,
-  updateNotificationSetting,
-  deleteNotificationSetting,
-}) => {
-  return (
-    <Row>
-      <FirstCell flex={FirstCellFlexValue}>
-        <FormattedMessage id="usageTable.cell.limit" />
-        <DDContainer>
-          <DropDown
-            $withBorder
-            $background="#FFFFFF"
-            options={UsageOptions}
-            value={usageItem.value}
-            isDisabled={usageItem.defaultFlag}
-            onChange={(option: DropDownRow.IDataItem) => {
+export const UsageTableRow: React.FC<IProps> = React.memo(
+  ({ usageItem, saveNotificationSetting, updateLoading, updateNotificationSetting, deleteNotificationSetting }) => {
+    return (
+      <Row>
+        <FirstCell flex={FirstCellFlexValue}>
+          <FormattedMessage id="usageTable.cell.limit" />
+          <DDContainer>
+            <DropDown
+              $withBorder
+              $background="#FFFFFF"
+              options={UsageOptions}
+              value={usageItem.value}
+              isDisabled={usageItem.defaultFlag}
+              onChange={(option: DropDownRow.IDataItem) => {
+                updateNotificationSetting({
+                  id: usageItem.id,
+                  type: usageItem.type,
+                  value: option.value,
+                  emailFlag: usageItem.emailFlag,
+                  appsFlag: usageItem.appsFlag,
+                });
+              }}
+            />
+          </DDContainer>
+          {!usageItem?.defaultFlag && (
+            <>
+              <Tooltip
+                control={
+                  <AddRemoveBtn onClick={() => deleteNotificationSetting(usageItem.id)}>
+                    <RemoveIcon />
+                  </AddRemoveBtn>
+                }
+                placement="top"
+              >
+                <FormattedMessage id="usageTable.cell.removeBtn.text" />
+              </Tooltip>
+              {usageItem.id.includes(CharacterInID) && (
+                <SaveButton onClick={() => saveNotificationSetting(usageItem)}>
+                  <FormattedMessage id="usageTable.cell.saveBtn.text" />
+                </SaveButton>
+              )}
+            </>
+          )}
+        </FirstCell>
+        <BodyCell>
+          <NotificationFlag
+            isLoading={updateLoading}
+            isActive={usageItem.emailFlag}
+            onClick={() => {
               updateNotificationSetting({
                 id: usageItem.id,
                 type: usageItem.type,
-                value: option.value,
-                emailFlag: usageItem.emailFlag,
+                value: usageItem.value,
+                emailFlag: !usageItem.emailFlag,
                 appsFlag: usageItem.appsFlag,
               });
             }}
           />
-        </DDContainer>
-        {!usageItem?.defaultFlag && (
-          <>
-            <Tooltip
-              control={
-                <AddRemoveBtn onClick={() => deleteNotificationSetting(usageItem.id)}>
-                  <RemoveIcon />
-                </AddRemoveBtn>
-              }
-              placement="top"
-            >
-              <FormattedMessage id="usageTable.cell.removeBtn.text" />
-            </Tooltip>
-            {usageItem.id.includes(CharacterInID) && (
-              <SaveButton onClick={() => saveNotificationSetting(usageItem)}>
-                <FormattedMessage id="usageTable.cell.saveBtn.text" />
-              </SaveButton>
-            )}
-          </>
-        )}
-      </FirstCell>
-      <BodyCell>
-        <NotificationFlag
-          isLoading={updateLoading}
-          isActive={usageItem.emailFlag}
-          onClick={() => {
-            updateNotificationSetting({
-              id: usageItem.id,
-              type: usageItem.type,
-              value: usageItem.value,
-              emailFlag: !usageItem.emailFlag,
-              appsFlag: usageItem.appsFlag,
-            });
-          }}
-        />
-      </BodyCell>
-      <BodyCell>
-        <NotificationFlag
-          isLoading={updateLoading}
-          isActive={usageItem.appsFlag}
-          onClick={() => {
-            updateNotificationSetting({
-              id: usageItem.id,
-              type: usageItem.type,
-              value: usageItem.value,
-              emailFlag: usageItem.emailFlag,
-              appsFlag: !usageItem.appsFlag,
-            });
-          }}
-        />
-      </BodyCell>
-    </Row>
-  );
-};
+        </BodyCell>
+        <BodyCell>
+          <NotificationFlag
+            isLoading={updateLoading}
+            isActive={usageItem.appsFlag}
+            onClick={() => {
+              updateNotificationSetting({
+                id: usageItem.id,
+                type: usageItem.type,
+                value: usageItem.value,
+                emailFlag: usageItem.emailFlag,
+                appsFlag: !usageItem.appsFlag,
+              });
+            }}
+          />
+        </BodyCell>
+      </Row>
+    );
+  }
+);

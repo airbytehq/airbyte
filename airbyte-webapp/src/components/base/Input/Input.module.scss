@@ -3,8 +3,6 @@
 .container {
   width: 100%;
   position: relative;
-
-  // background-color: colors.$grey-50;
   border: 1px solid colors.$borderColor;
   border-radius: 6px;
   flex: 1;
@@ -26,9 +24,6 @@
   &:not(.disabled, .focused):hover {
     background-color: colors.$grey-50;
 
-    // border-color: colors.$grey-100;
-    // border-color: colors.$blue;
-
     &.light {
       background-color: colors.$white;
     }
@@ -39,7 +34,6 @@
   }
 
   &.focused {
-    // background-color: colors.$primaryColor12;
     border-color: colors.$blue;
 
     &.light {
@@ -58,8 +52,6 @@
   border: none;
   background: none;
   color: colors.$black300;
-
-  // caret-color: colors.$blue;
 
   &:not(.disabled).password {
     width: calc(100% - 22px);

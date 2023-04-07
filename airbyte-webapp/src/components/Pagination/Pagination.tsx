@@ -70,7 +70,7 @@ const PageButton = styled(Button)<ButtonProps>`
   pointer-events: ${({ clickable }) => (clickable ? "none" : "all")};
 `;
 
-export const Pagination: React.FC<IProps> = ({ pages, value, onChange }) => {
+export const Pagination: React.FC<IProps> = React.memo(({ pages, value, onChange }) => {
   const totalPage = Math.ceil(pages);
   const formPages = (numberOfPages: number): number[] => {
     const myPages = [];
@@ -177,11 +177,6 @@ export const Pagination: React.FC<IProps> = ({ pages, value, onChange }) => {
       <PageButton onClick={onPrev} buttonType="prev">
         <PrevIcon />
       </PageButton>
-      {/* {formPages(pages).map((page) => (
-        <PageButton isSelected={page === currentPage} onClick={() => setCurrentPage(page)} buttonType="page">
-          {page}
-        </PageButton>
-      ))} */}
       {renderPageNumbers()}
       <PageButton onClick={onNext} buttonType="next">
         <NextIcon />
@@ -191,4 +186,4 @@ export const Pagination: React.FC<IProps> = ({ pages, value, onChange }) => {
       </PageButton>
     </Container>
   );
-};
+});

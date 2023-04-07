@@ -4,10 +4,8 @@ import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button, LoadingButton } from "components";
-// import { Card } from "components/base/Card";
 import { Tooltip } from "components/base/Tooltip";
 import EmptyResource from "components/EmptyResourceBlock";
-// import { RotateIcon } from "components/icons/RotateIcon";
 
 import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
@@ -15,7 +13,6 @@ import { ConnectionStatus, JobWithAttemptsRead, WebBackendConnectionRead } from 
 import Status from "core/statuses";
 import { useTrackPage, PageTrackingCodes, useAnalyticsService } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-// import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 import { useCancelJob, useListJobs } from "services/job/JobService";
 
@@ -87,8 +84,6 @@ const StatusView: React.FC<StatusViewProps> = ({
   };
 
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
-
-  // const allowSync = useFeature(FeatureItem.AllowSync);
   const cancelJob = useCancelJob();
 
   const { mutateAsync: resetConnection } = useResetConnection();
@@ -121,7 +116,6 @@ const StatusView: React.FC<StatusViewProps> = ({
       onSubmit: async () => {
         closeConfirmationModal();
         await onCancelJob();
-        // setActiveJob((state) => ({ ...state, action: ActionType.RESET } as ActiveJob));
       },
       submitButtonDataId: "cancel",
       center: true,
@@ -130,7 +124,6 @@ const StatusView: React.FC<StatusViewProps> = ({
 
   useEffect(() => {
     const jobRunningOrPending = getJobRunningOrPending(jobs);
-    // getLastSyncTime(jobs[0].job?.updatedAt);
     findLastSyncTime();
 
     setActiveJob(
@@ -139,7 +132,6 @@ const StatusView: React.FC<StatusViewProps> = ({
           id: jobRunningOrPending?.job?.id,
           action: jobRunningOrPending?.job?.configType,
           isCanceling: state?.isCanceling && !!jobRunningOrPending,
-          // We need to disable button when job is canceled but the job list still has a running job
         } as ActiveJob)
     );
   }, [jobs]);
@@ -201,17 +193,9 @@ const StatusView: React.FC<StatusViewProps> = ({
           {connection.status === ConnectionStatus.active && (
             <div className={styles.actions}>
               {!activeJob?.action && (
-                <>
-                  <Button className={styles.resetButton} secondary onClick={onResetDataButtonClick}>
-                    <FormattedMessage id="connection.resetData" />
-                  </Button>
-                  {/* <Button className={styles.syncButton} disabled={!allowSync} onClick={onSyncNowButtonClick}>
-                    <div className={styles.iconRotate}>
-                      <RotateIcon />
-                    </div>
-                    <FormattedMessage id="sources.syncNow" />
-                  </Button> */}
-                </>
+                <Button className={styles.resetButton} secondary onClick={onResetDataButtonClick}>
+                  <FormattedMessage id="connection.resetData" />
+                </Button>
               )}
               {activeJob?.action && !activeJob.isCanceling && cancelJobBtn}
               {activeJob?.action && activeJob.isCanceling && (

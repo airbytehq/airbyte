@@ -1,6 +1,7 @@
 import _ from "lodash";
 import React from "react";
-import styled from "styled-components";
+
+import { Separator } from "components/Separator";
 
 import { ProcessedPackageMap, ProductItem, ProductOptionItem } from "core/domain/product";
 
@@ -17,11 +18,6 @@ interface IProps {
   onSelectPlan: () => void;
 }
 
-const CardSeperator = styled.div`
-  width: 100%;
-  height: 30px;
-`;
-
 const SelectPlanStep: React.FC<IProps> = ({
   product,
   setProduct,
@@ -34,7 +30,7 @@ const SelectPlanStep: React.FC<IProps> = ({
   return (
     <>
       <RangeCard productOptions={productOptions} product={product} setProduct={setProduct} />
-      <CardSeperator />
+      <Separator height="30px" />
       <FeaturesCard
         product={product}
         selectPlanBtnDisability={_.isEqual(product?.id, selectedProduct?.id)}

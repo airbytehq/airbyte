@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-// import CreateStepTypes from "components/ConnectionStep";
 
 import useRouter from "hooks/useRouter";
 
@@ -41,7 +40,6 @@ export const StepBlock = styled.div`
   justify-content: center;
   align-items: center;
   flex-shrink: 0;
-  // margin-bottom: 10px;
 `;
 
 export const SingleText = styled.div`
@@ -108,7 +106,6 @@ const ConnectionStep: React.FC<IProps> = ({ onSelect, type, lightMode, activeSte
       break;
   }
 
-  // ["", "createSource", "createDestination", "createConnection", "allFinish"];
   const currentStepArray: string[] = steps.map((val) => val.id);
   currentStepArray.push("allFinish");
   currentStepArray.unshift("");

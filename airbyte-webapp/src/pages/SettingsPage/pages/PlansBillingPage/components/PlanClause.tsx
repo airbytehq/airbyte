@@ -3,8 +3,11 @@ import styled from "styled-components";
 
 import { TickIcon } from "components/icons/TickIcon";
 
+import { PlanItem } from "core/domain/payment";
+
 interface IProps {
-  text: string;
+  planItem: PlanItem;
+  clause: string | React.ReactElement;
 }
 
 const Container = styled.div`
@@ -22,16 +25,14 @@ const Text = styled.div`
   margin-left: 16px;
 `;
 
-const PlanClause: React.FC<IProps> = ({ text }) => {
-  if (text === "") {
+export const PlanClause: React.FC<IProps> = React.memo(({ planItem, clause }) => {
+  if (clause === "") {
     return null;
   }
   return (
-    <Container>
+    <Container key={planItem.planItemid}>
       <TickIcon />
-      <Text>{text}</Text>
+      <Text key={planItem.planItemid}>{clause}</Text>
     </Container>
   );
-};
-
-export default PlanClause;
+});

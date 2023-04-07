@@ -28,7 +28,6 @@ export const getUser = (): IAuthUser => {
   return MyAuthUser.userJSON();
 };
 
-// initialize the context with an empty object
 const UserContext = createContext<IUserContext>({ user: getUser() });
 
 export const AuthContextProvider: React.FC = ({ children }) => {
@@ -80,7 +79,6 @@ export const AuthContextProvider: React.FC = ({ children }) => {
   );
 };
 
-// export the hook so we can use it in other components.
 export const useUser = () => {
   const ctx = useContext<IUserContext>(UserContext);
   return ctx;

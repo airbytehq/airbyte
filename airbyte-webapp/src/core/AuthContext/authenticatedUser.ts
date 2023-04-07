@@ -6,7 +6,7 @@ export interface IAuthUser {
   roleDesc?: string;
   status: number;
   statusDesc?: string;
-  expiresTime: number;
+  expiresTime: number | string;
   company: string;
   lang: string;
   workspaceId: string;

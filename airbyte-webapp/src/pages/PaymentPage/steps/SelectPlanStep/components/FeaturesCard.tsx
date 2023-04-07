@@ -8,6 +8,7 @@ import { Separator } from "components/Separator";
 import { Row, Cell } from "components/SimpleTableComponents";
 
 import { ProductOptionItem, ProcessedPackageMap } from "core/domain/product";
+import { getKeyProp } from "utils/common";
 
 import EnterpriseCell from "./EnterpriseCell";
 import ProfessionalCell from "./ProfessionalCell";
@@ -102,7 +103,7 @@ const FeaturesCard: React.FC<IProps> = ({
         </HeaderCell>
       </HighlightedRow>
       {packagesMap.features.map((item) => (
-        <FeatureBodyRow borderBottom="1px solid #E5E7EB">
+        <FeatureBodyRow borderBottom="1px solid #E5E7EB" key={getKeyProp()}>
           <FeatureBodyCell>{item.itemName}</FeatureBodyCell>
           <FeatureBodyCell>{item.professional?.itemScopeLang}</FeatureBodyCell>
           <FeatureBodyCell>{item.enterprise?.itemScopeLang}</FeatureBodyCell>
@@ -114,7 +115,7 @@ const FeaturesCard: React.FC<IProps> = ({
         </HeaderCell>
       </HighlightedRow>
       {packagesMap.dataReplication.map((item) => (
-        <FeatureBodyRow borderBottom="1px solid #E5E7EB">
+        <FeatureBodyRow borderBottom="1px solid #E5E7EB" key={getKeyProp()}>
           <FeatureBodyCell>{item.itemName}</FeatureBodyCell>
           <FeatureBodyCell>{item.professional?.itemScopeLang}</FeatureBodyCell>
           <FeatureBodyCell>{item.enterprise?.itemScopeLang}</FeatureBodyCell>
@@ -126,7 +127,7 @@ const FeaturesCard: React.FC<IProps> = ({
         </HeaderCell>
       </HighlightedRow>
       {packagesMap.support.map((item) => (
-        <FeatureBodyRow borderBottom="1px solid #E5E7EB">
+        <FeatureBodyRow borderBottom="1px solid #E5E7EB" key={getKeyProp()}>
           <FeatureBodyCell>{item.itemName}</FeatureBodyCell>
           <FeatureBodyCell>
             {item.professional?.itemScope === "false" || item.professional?.itemScope === "true" ? (

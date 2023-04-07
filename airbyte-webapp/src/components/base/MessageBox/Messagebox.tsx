@@ -4,12 +4,14 @@ import styled, { keyframes } from "styled-components";
 
 import { CrossIcon } from "components/icons/CrossIcon";
 
+import { useConfig } from "config";
+
 interface IProps {
   message?: string;
   onClose?: () => void;
   type: "info" | "error";
   position?: "left" | "center" | "right";
-  isString?: boolean; // components/SingletonCard
+  isString?: boolean;
   fixed?: boolean;
 }
 
@@ -62,8 +64,10 @@ const CrossButton = styled.button`
 `;
 
 export const MessageBox: React.FC<IProps> = ({ message, onClose, type, position, isString, fixed = true }) => {
+  const { notificationInterval } = useConfig();
+
   useEffect(() => {
-    const intervalID = setTimeout(() => onClose?.(), 3000);
+    const intervalID = setTimeout(() => onClose?.(), notificationInterval);
     return () => clearInterval(intervalID);
   }, [message]);
 

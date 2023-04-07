@@ -20,7 +20,6 @@ import { BulkHeader } from "../../CatalogTree/components/BulkHeader";
 import { ConnectionFormMode } from "../ConnectionForm";
 import Search from "./Search";
 import styles from "./SyncCatalogField.module.scss";
-// import { ArrowCell, HeaderCell } from "./styles";
 
 const TreeViewContainer = styled.div<{ mode?: ConnectionFormMode }>`
   margin-bottom: 29px;
@@ -34,10 +33,8 @@ const TreeViewContainer = styled.div<{ mode?: ConnectionFormMode }>`
 const SubtitleCell = styled(Cell).attrs(() => ({ lighter: true }))`
   font-size: 10px;
   line-height: 12px;
-  // padding-top: 10px;
   width: 120px;
 `;
-// border-top: 1px solid ${({ theme }) => theme.greyColor0};
 const ClearSubtitleCell = styled(SubtitleCell)`
   border-top: none;
 `;
