@@ -15584,7 +15584,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:2.0.6"
+- dockerImage: "airbyte/source-tiktok-marketing:3.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
@@ -15672,18 +15672,6 @@
           order: 2
           type: "string"
           format: "date"
-        report_granularity:
-          title: "Report Aggregation Granularity"
-          description: "The granularity used for aggregating performance data in reports.\
-            \ See <a href=\"https://docs.airbyte.com/integrations/sources/tiktok-marketing/#report-aggregation\"\
-            >the docs</a>."
-          enum:
-          - "LIFETIME"
-          - "DAY"
-          - "HOUR"
-          order: 3
-          airbyte_hidden: true
-          type: "string"
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: false
