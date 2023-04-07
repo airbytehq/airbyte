@@ -107,17 +107,6 @@ class RetentlyStream(HttpStream):
         }
 
 
-class Campaigns(RetentlyStream):
-    json_path = "campaigns"
-
-    def path(self, **kwargs) -> str:
-        return "campaigns"
-
-    # does not support pagination
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
-
-
 class Companies(RetentlyStream):
     json_path = "companies"
 
@@ -138,16 +127,6 @@ class Customers(RetentlyStream):
         return "nps/customers"
 
 
-class Feedback(RetentlyStream):
-    json_path = "responses"
-
-    def path(
-        self,
-        **kwargs,
-    ) -> str:
-        return "feedback"
-
-
 class Outbox(RetentlyStream):
     json_path = "surveys"
 
@@ -166,9 +145,11 @@ class Reports(RetentlyStream):
         **kwargs,
     ) -> str:
         return "reports"
+
     # does not support pagination
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
+
 
 class Nps(RetentlyStream):
     json_path = None
@@ -202,6 +183,7 @@ class Templates(RetentlyStream):
         data = response.json().get("data")
         yield data
 
+
 class Campaigns(RetentlyStream):
     json_path = "campaigns"
 
@@ -222,6 +204,7 @@ class Campaigns(RetentlyStream):
         for d in stream_data:
             yield d
 
+
 class Feedback(RetentlyStream):
     json_path = "responses"
 
@@ -229,4 +212,3 @@ class Feedback(RetentlyStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "feedback"
-
