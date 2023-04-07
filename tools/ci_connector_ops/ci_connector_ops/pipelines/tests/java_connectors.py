@@ -4,7 +4,8 @@
 
 """This module groups steps made to run tests for a specific Java connector given a test context."""
 
-from typing import List, Optional, Tuple
+from abc import ABC
+from typing import ClassVar, List, Optional, Tuple
 
 import anyio
 from ci_connector_ops.pipelines.actions import environments, secrets
@@ -13,7 +14,7 @@ from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.pipelines.tests.common import AcceptanceTests
 from ci_connector_ops.pipelines.utils import slugify
 from ci_connector_ops.utils import Connector
-from dagger import CacheSharingMode, Directory, File, QueryError
+from dagger import CacheVolume, Container, Directory, File, QueryError
 
 
 class BuildOrPullNormalization(Step):
@@ -46,17 +47,10 @@ class BuildOrPullNormalization(Step):
     async def _run(self) -> Tuple[StepResult, File]:
         normalization_local_tar_path = f"{slugify(self.normalization_image)}.tar"
         if self.use_dev_normalization:
-            normalization_directory = self.context.get_repo_dir("airbyte-integrations/bases/base-normalization")
-            sshtunneling_file = self.context.get_repo_dir(
-                "airbyte-connector-test-harnesses/acceptance-test-harness/src/main/resources", include="sshtunneling.sh"
-            ).file("sshtunneling.sh")
-            normalization_directory_with_build = normalization_directory.with_new_directory("build")
-            normalization_directory_with_sshtunneling = normalization_directory_with_build.with_file(
-                "build/sshtunneling.sh", sshtunneling_file
-            )
-            build_normalization_container = normalization_directory_with_sshtunneling.docker_build(self.normalization_dockerfile)
+            build_normalization_container = environments.with_normalization(self.context, self.normalization_dockerfile)
         else:
             build_normalization_container = self.context.dagger_client.container().from_(self.normalization_image)
+
         try:
             export_success = await build_normalization_container.export(f"{self.host_image_export_dir_path}/{normalization_local_tar_path}")
             if export_success:
@@ -72,7 +66,7 @@ class BuildOrPullNormalization(Step):
             return StepResult(self, StepStatus.FAILURE, stderr=str(e)), None
 
 
-class GradleTask(Step):
+class GradleTask(Step, ABC):
     """
     A step to run a Gradle task.
 
@@ -81,8 +75,9 @@ class GradleTask(Step):
         title (str): The step title.
     """
 
-    RUN_AIRBYTE_DOCKER = False
-    DOCKER_SERVICE_NAME = "gradle"
+    DEFAULT_TASKS_TO_EXCLUDE = ["airbyteDocker"]
+    BIND_TO_DOCKER_HOST = True
+    gradle_task_name: ClassVar
 
     JAVA_BUILD_INCLUDE = [
         "airbyte-api",
@@ -111,21 +106,16 @@ class GradleTask(Step):
 
     # These are the lines we remove from the connector gradle file to not run acceptance test and not build normalization.
     LINES_TO_REMOVE_FROM_GRADLE_FILE = [
-        "id 'airbyte-connector-acceptance-test'",
-        "project(':airbyte-integrations:bases:base-normalization').airbyteDocker.output",
+        "id 'airbyte-docker'" "project(':airbyte-integrations:bases:base-normalization').airbyteDocker.output",
     ]
 
-    def __init__(self, context: ConnectorTestContext, gradle_task_name: str, step_title: Optional[str] = None) -> None:
-        """Initialize a step to run a Gradle task.
+    @property
+    def docker_service_name(self) -> str:
+        return slugify(f"gradle-{self.title}")
 
-        Args:
-            context (ConnectorTestContext): The current connector test context.
-            gradle_task_name (str): The name of the gradle task to run.
-            step_title (Optional[str], optional): Custom title for the step. Defaults to None.
-        """
-        super().__init__(context)
-        self.task_name = gradle_task_name
-        self.title = step_title if step_title else f"Gradle {self.task_name} task"
+    @property
+    def connector_java_build_cache(self) -> CacheVolume:
+        return self.context.dagger_client.cache_volume("connector_java_build_cache")
 
     @property
     def build_include(self) -> List[str]:
@@ -145,40 +135,36 @@ class GradleTask(Step):
 
     async def _get_patched_connector_dir(self) -> Directory:
         """Patch the build.gradle file of the connector under test.
-
         - Remove the airbyte-connector-acceptance-test plugin import from build.gradle to not run CAT with Gradle.
         - Do not depend on normalization build to run.
         - Do not run airbyteDocker task if RUN_AIRBYTE_DOCKER is false.
-
         Returns:
             Directory: The patched connector directory
         """
-        if not self.RUN_AIRBYTE_DOCKER:
-            lines_to_remove_from_gradle_file = self.LINES_TO_REMOVE_FROM_GRADLE_FILE + ["id 'airbyte-docker'"]
-        else:
-            lines_to_remove_from_gradle_file = self.LINES_TO_REMOVE_FROM_GRADLE_FILE
+        lines_to_remove_from_gradle_file = self.LINES_TO_REMOVE_FROM_GRADLE_FILE
 
         gradle_file_content = await self.context.get_connector_dir(include=["build.gradle"]).file("build.gradle").contents()
         patched_file_content = ""
         for line in gradle_file_content.split("\n"):
             if not any(line_to_remove in line for line_to_remove in lines_to_remove_from_gradle_file):
                 patched_file_content += line + "\n"
-        return self.context.get_connector_dir(exclude=["build", "secrets"]).with_new_file("build.gradle", patched_file_content)
+        return self.context.get_connector_dir().with_new_file("build.gradle", patched_file_content)
 
     def _get_gradle_command(self, extra_options: Tuple[str] = ("--no-daemon", "--scan")) -> List:
-        return (
+        command = (
             ["./gradlew"]
             + list(extra_options)
-            + [f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.task_name}"]
+            + [f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"]
         )
+        for task in self.DEFAULT_TASKS_TO_EXCLUDE:
+            command += ["-x", task]
+        return command
 
     async def _run(self) -> StepResult:
-        connector_java_build_cache = self.context.dagger_client.cache_volume("connector_java_build_cache")
 
         connector_under_test = (
-            environments.with_gradle(self.context, self.build_include, docker_service_name=self.DOCKER_SERVICE_NAME)
-            .with_mounted_cache(
-                f"{self.context.connector.code_directory}/build", connector_java_build_cache, sharing=CacheSharingMode.SHARED
+            environments.with_gradle(
+                self.context, self.build_include, docker_service_name=self.docker_service_name, bind_to_docker_host=self.BIND_TO_DOCKER_HOST
             )
             .with_mounted_directory(str(self.context.connector.code_directory), await self._get_patched_connector_dir())
             # Disable the Ryuk container because it needs privileged docker access that does not work:
@@ -190,56 +176,65 @@ class GradleTask(Step):
         return await self.get_step_result(connector_under_test)
 
 
+class UnitTests(GradleTask):
+    title = "Unit tests"
+    gradle_task_name = "test"
+
+
 class BuildConnectorImage(GradleTask):
     """
-    A step to build a Java connector image using the airbyteDocker Gradle task.
+    A step to build a Java connector image using the build Gradle task.
 
     Export the image as a tar archive to host.
     """
 
-    RUN_AIRBYTE_DOCKER = True
-    DOCKER_SERVICE_NAME = "gradle-build-connector-image"
+    title = "Build Connector Image"
+    gradle_task_name = "distTar"
 
-    def __init__(self, context: ConnectorTestContext) -> None:
-        """Initialize the step to build a connector image with the airbyteDock Gradle task.
-
-        Args:
-            context (ConnectorTestContext): The current connector test context.
-        """
-        super().__init__(context, "airbyteDocker", "Build connector image")
-
-    async def _export_connector_image(self) -> Optional[File]:
+    async def _export_connector_image(self, connector: Container) -> Optional[File]:
         """Save the connector image to the host filesystem as a tar archive.
 
         Returns:
             Optional[File]: The file object holding the tar archive on the host.
         """
-        tar_name = f"{slugify(self.context.connector.technical_name)}.tar"
-        image_name = f"airbyte/{self.context.connector.technical_name}:dev"
-        export_success = await (
-            environments.with_gradle(self.context, docker_service_name=self.DOCKER_SERVICE_NAME)
-            .with_exec(["docker", "save", "--output", tar_name, image_name])
-            .file(tar_name)
-            .export(f"{self.host_image_export_dir_path}/{tar_name}")
-        )
+        connector_image_tar = f"{self.context.connector.technical_name}.tar"
+        export_success = await connector.export(f"{self.host_image_export_dir_path}/{connector_image_tar}")
         if export_success:
-            return self.context.dagger_client.host().directory(self.host_image_export_dir_path, include=[tar_name]).file(tar_name)
+            exported_file = (
+                self.context.dagger_client.host()
+                .directory(self.host_image_export_dir_path, include=[connector_image_tar])
+                .file(connector_image_tar)
+            )
+            return exported_file
+        else:
+            return None
 
     async def _run(self) -> Tuple[StepResult, Optional[File]]:
         try:
-            connector_java_build_cache = self.context.dagger_client.cache_volume("connector_java_build_cache")
-            built_container = (
-                environments.with_gradle(self.context, self.build_include, docker_service_name=self.DOCKER_SERVICE_NAME)
-                .with_mounted_cache(
-                    f"{self.context.connector.code_directory}/build", connector_java_build_cache, sharing=CacheSharingMode.SHARED
+            distTar = (
+                environments.with_gradle(
+                    self.context,
+                    self.build_include,
+                    docker_service_name=self.docker_service_name,
+                    bind_to_docker_host=self.BIND_TO_DOCKER_HOST,
                 )
                 .with_mounted_directory(str(self.context.connector.code_directory), await self._get_patched_connector_dir())
                 .with_exec(self._get_gradle_command())
+                .with_workdir(f"{self.context.connector.code_directory}/build/distributions")
             )
 
-            step_result = await self.get_step_result(built_container)
-            connector_tar_file = await self._export_connector_image()
-            return step_result, connector_tar_file
+            distributions = await distTar.directory(".").entries()
+            tar_files = [f for f in distributions if f.endswith(".tar")]
+            if len(tar_files) > 1:
+                raise Exception("The distributions directory contains multiple tar file. We can't infer which one the is freshest.")
+            tar_file = distTar.file(tar_files[0])
+            java_connector = await environments.with_airbyte_java_connector(self.context, tar_file)
+            step_result = await self.get_step_result(java_connector)
+            connector_image_tar_file = await self._export_connector_image(java_connector)
+
+            if connector_image_tar_file is None:
+                step_result = StepResult(self, StepStatus.FAILURE, stderr="The java connector could not be exported to the host FS.")
+            return step_result, connector_image_tar_file
         except QueryError as e:
             return StepResult(self, StepStatus.FAILURE, stderr=str(e)), None
 
@@ -247,21 +242,14 @@ class BuildConnectorImage(GradleTask):
 class IntegrationTestJava(GradleTask):
     """A step to run integrations tests for Java connectors using the integrationTestJava Gradle task."""
 
-    DOCKER_SERVICE_NAME = "gradle-integration-test-java"
-
-    def __init__(self, context: ConnectorTestContext) -> None:
-        """Initialize the step to run :integrationTestJava Gradle task.
-
-        Args:
-            context (ConnectorTestContext): The current connector test context.
-        """
-        super().__init__(context, "integrationTestJava", step_title="Integration tests")
+    title = "Integration tests"
+    gradle_task_name = "integrationTestJava"
 
     async def _load_normalization_image(self, normalization_tar_file: File):
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
         self.context.logger.info("Load the normalization image to the docker host.")
         await environments.load_image_to_docker_host(
-            self.context, normalization_tar_file, normalization_image_tag, docker_service_name=self.DOCKER_SERVICE_NAME
+            self.context, normalization_tar_file, normalization_image_tag, docker_service_name=self.docker_service_name
         )
         self.context.logger.info("Successfully loaded the normalization image to the docker host.")
 
@@ -269,7 +257,7 @@ class IntegrationTestJava(GradleTask):
         connector_image_tag = f"airbyte/{self.context.connector.technical_name}:dev"
         self.context.logger.info("Load the connector image to the docker host")
         await environments.load_image_to_docker_host(
-            self.context, connector_tar_file, connector_image_tag, docker_service_name=self.DOCKER_SERVICE_NAME
+            self.context, connector_tar_file, connector_image_tag, docker_service_name=self.docker_service_name
         )
         self.context.logger.info("Successfully loaded the connector image to the docker host.")
 
@@ -299,50 +287,61 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
         List[StepResult]: The results of all the tests steps.
     """
     step_results = []
-    unit_test_step = GradleTask(context, "test", step_title="Unit tests")
     build_connector_step = BuildConnectorImage(context)
+    unit_tests_step = UnitTests(context)
     build_normalization_step = None
     if context.connector.supports_normalization:
         normalization_image = f"{context.connector.normalization_repository}:dev"
         context.logger.info(f"This connector supports normalization: will build {normalization_image}.")
         build_normalization_step = BuildOrPullNormalization(context, normalization_image)
-    integration_test_java_step = IntegrationTestJava(context)
-    acceptance_test_step = AcceptanceTests(context)
-
-    context.secrets_dir = await secrets.get_connector_secret_dir(context)
+    integration_tests_java_step = IntegrationTestJava(context)
+    acceptance_tests_step = AcceptanceTests(context)
 
     normalization_tar_file = None
     if build_normalization_step:
         context.logger.info("Run build normalization step.")
         build_normalization_results, normalization_tar_file = await build_normalization_step.run()
         if build_normalization_results.status is StepStatus.FAILURE:
-            return step_results + [build_normalization_results, integration_test_java_step.skip(), acceptance_test_step.skip()]
+            return step_results + [
+                build_normalization_results,
+                build_connector_step.skip(),
+                unit_tests_step.skip(),
+                integration_tests_java_step.skip(),
+                acceptance_tests_step.skip(),
+            ]
         context.logger.info(f"{build_normalization_step.normalization_image} was successfully built.")
         step_results.append(build_normalization_results)
-
-    context.logger.info("Run unit tests.")
-    unit_test_results = await unit_test_step.run()
-    if unit_test_results.status is StepStatus.FAILURE:
-        return step_results + [
-            unit_test_results,
-            build_connector_step.skip(),
-            integration_test_java_step.skip(),
-            acceptance_test_step.skip(),
-        ]
-    context.logger.info("Unit tests successfully ran.")
-    step_results.append(unit_test_results)
 
     context.logger.info("Run build connector step")
     build_connector_results, connector_image_tar_file = await build_connector_step.run()
     if build_connector_results.status is StepStatus.FAILURE:
-        return step_results + [build_connector_results, integration_test_java_step.skip(), acceptance_test_step.skip()]
+        return step_results + [
+            build_connector_results,
+            unit_tests_step.skip(),
+            integration_tests_java_step.skip(),
+            acceptance_tests_step.skip(),
+        ]
     context.logger.info("The connector was successfully built.")
     step_results.append(build_connector_results)
 
+    context.secrets_dir = await secrets.get_connector_secret_dir(context)
+
+    context.logger.info("Run unit tests.")
+    unit_test_results = await unit_tests_step.run()
+    if unit_test_results.status is StepStatus.FAILURE:
+        return step_results + [
+            unit_test_results,
+            build_connector_step.skip(),
+            integration_tests_java_step.skip(),
+            acceptance_tests_step.skip(),
+        ]
+    context.logger.info("Unit tests successfully ran.")
+    step_results.append(unit_test_results)
+
     context.logger.info("Start acceptance tests.")
-    acceptance_test_results = await acceptance_test_step.run(connector_image_tar_file)
+    acceptance_test_results = await acceptance_tests_step.run(connector_image_tar_file)
     step_results.append(acceptance_test_results)
     context.logger.info("Start integration tests.")
-    integration_test_results = await integration_test_java_step.run(connector_image_tar_file, normalization_tar_file)
+    integration_test_results = await integration_tests_java_step.run(connector_image_tar_file, normalization_tar_file)
     step_results.append(integration_test_results)
     return step_results
