@@ -9,12 +9,14 @@ import re
 import sys
 import unicodedata
 from pathlib import Path
-from typing import Any, Optional, Set
+from typing import Any, Callable, List, Optional, Set
 
 import anyio
+import asyncer
+import click
 import git
 from ci_connector_ops.utils import DESTINATION_CONNECTOR_PATH_PREFIX, SOURCE_CONNECTOR_PATH_PREFIX, Connector, get_connector_name_from_path
-from dagger import Config, Connection, Container, File, QueryError
+from dagger import Config, Connection, Container, DaggerError, File, QueryError
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
@@ -224,3 +226,33 @@ async def should_enable_sentry(dockerfile: File) -> bool:
         if "ENV ENABLE_SENTRY true" in line:
             return True
     return False
+
+
+class DaggerPipelineCommand(click.Command):
+    def invoke(self, ctx: click.Context) -> Any:
+        """Wrap parent invoke in a try catch suited to handle pipeline failures.
+        Args:
+            ctx (click.Context): The invocation context.
+        Raises:
+            e: Raise whatever exception that was caught.
+        Returns:
+            Any: The invocation return value.
+        """
+        command_name = self.name
+        click.secho(f"Running {command_name}...")
+        try:
+            pipeline_success = super().invoke(ctx)
+            if not pipeline_success:
+                raise DaggerError(f"{command_name} failed.")
+        except DaggerError as e:
+            click.secho(str(e), err=True, fg="red")
+            return sys.exit(1)
+
+
+async def execute_concurrently(steps: List[Callable], concurrency: int = 5):
+    semaphore = anyio.Semaphore(concurrency)
+    async with semaphore:
+        async with asyncer.create_task_group() as task_group:
+            tasks = [task_group.soonify(step)() for step in steps]
+
+        return [task.value for task in tasks]

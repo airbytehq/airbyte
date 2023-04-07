@@ -79,6 +79,7 @@ class GradleTask(Step, ABC):
     BIND_TO_DOCKER_HOST = True
     gradle_task_name: ClassVar
 
+    # TODO more robust way to find all projects on which the task depends?
     JAVA_BUILD_INCLUDE = [
         "airbyte-api",
         "airbyte-commons-cli",
@@ -91,6 +92,7 @@ class GradleTask(Step, ABC):
         "airbyte-json-validation",
         "airbyte-protocol",
         "airbyte-test-utils",
+        "airbyte-config-oss",
     ]
 
     SOURCE_BUILD_INCLUDE = [

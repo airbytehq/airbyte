@@ -16,7 +16,7 @@ Note:
 {
   "config": <normal config>,
   "__injected_declarative_manifest": {...},
-  "__command": <"resolve_manifest" | "list_streams" | "stream_read">
+  "__command": <"resolve_manifest" | "list_streams" | "test_read">
 }
 ```
 *See [ConnectionSpecification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#actor-specification) for details on the `"config"` key if needed.

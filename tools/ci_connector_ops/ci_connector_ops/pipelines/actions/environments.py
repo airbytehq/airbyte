@@ -29,7 +29,7 @@ CONNECTOR_TESTING_REQUIREMENTS = [
     "pytest-custom_exit_code",
 ]
 
-DEFAULT_PYTHON_EXCLUDE = [".venv"]
+DEFAULT_PYTHON_EXCLUDE = ["**/.venv", "**/__pycache__"]
 CI_CREDENTIALS_SOURCE_PATH = "tools/ci_credentials"
 CI_CONNECTOR_OPS_SOURCE_PATH = "tools/ci_connector_ops"
 
@@ -50,13 +50,16 @@ def with_python_base(context: PipelineContext, python_image_name: str = "python:
     if not python_image_name.startswith("python:3"):
         raise ValueError("You have to use a python image to build the python base environment")
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
-    return (
+
+    base_container = (
         context.dagger_client.container()
         .from_(python_image_name)
         .with_mounted_cache("/root/.cache/pip", pip_cache, sharing=CacheSharingMode.LOCKED)
         .with_mounted_directory("/tools", context.get_repo_dir("tools", include=["ci_credentials", "ci_common_utils"], exclude=[".venv"]))
         .with_exec(["pip", "install", "--upgrade", "pip"])
     )
+
+    return base_container
 
 
 def with_testing_dependencies(context: PipelineContext) -> Container:
@@ -190,19 +193,43 @@ async def with_ci_credentials(context: PipelineContext, gsm_secret: Secret) -> C
     return ci_credentials.with_env_variable("VERSION", "dev").with_secret_variable("GCP_GSM_CREDENTIALS", gsm_secret).with_workdir("/")
 
 
-def with_git(base_container: Container) -> Container:
-    """Install git in a alpine based container.
-
+def with_alpine_packages(base_container: Container, packages_to_install: List[str]) -> Container:
+    """Installs packages using apk-get.
     Args:
         context (Container): A alpine based container.
 
     Returns:
-        Container: A container with git installed.
+        Container: A container with the packages installed.
 
     """
     package_install_command = ["apk", "add"]
-    packages_to_install = ["gcc", "libffi-dev", "musl-dev", "git"]
+    return base_container.with_exec(package_install_command + packages_to_install)
 
+
+def with_debian_packages(base_container: Container, packages_to_install: List[str]) -> Container:
+    """Installs packages using apt-get.
+    Args:
+        context (Container): A alpine based container.
+
+    Returns:
+        Container: A container with the packages installed.
+
+    """
+    update_packages_command = ["apt-get", "update"]
+    package_install_command = ["apt-get", "install", "-y"]
+    return base_container.with_exec(update_packages_command).with_exec(package_install_command + packages_to_install)
+
+
+def with_pip_packages(base_container: Container, packages_to_install: List[str]) -> Container:
+    """Installs packages using pip
+    Args:
+        context (Container): A container with python installed
+
+    Returns:
+        Container: A container with the pip packages installed.
+
+    """
+    package_install_command = ["python", "-m", "pip", "install"]
     return base_container.with_exec(package_install_command + packages_to_install)
 
 
@@ -216,7 +243,7 @@ async def with_ci_connector_ops(context: PipelineContext) -> Container:
         Container: A python environment container with ci_connector_ops installed.
     """
     python_base_environment: Container = with_python_base(context, "python:3-alpine")
-    python_with_git = with_git(python_base_environment)
+    python_with_git = with_alpine_packages(python_base_environment, ["gcc", "libffi-dev", "musl-dev", "git"])
     return await with_installed_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH, exclude=["pipelines"])
 
 
@@ -420,11 +447,9 @@ def with_poetry(context: PipelineContext) -> Container:
     Returns:
         Container: A python environment with poetry installed.
     """
-    install_poetry_package_cmd = ["python", "-m", "pip", "install", "poetry"]
-
-    python_base_environment: Container = context.dagger_client.container().from_("python:3-alpine")
-    python_with_git = with_git(python_base_environment)
-    python_with_poetry = python_with_git.with_exec(install_poetry_package_cmd)
+    python_base_environment: Container = with_python_base(context, "python:3.9")
+    python_with_git = with_debian_packages(python_base_environment, ["git"])
+    python_with_poetry = with_pip_packages(python_with_git, ["poetry"])
 
     poetry_cache: CacheVolume = context.dagger_client.cache_volume("poetry_cache")
     poetry_with_cache = python_with_poetry.with_mounted_cache("/root/.cache/pypoetry", poetry_cache, sharing=CacheSharingMode.PRIVATE)
@@ -432,21 +457,54 @@ def with_poetry(context: PipelineContext) -> Container:
     return poetry_with_cache
 
 
-def with_poetry_module(context: PipelineContext, src_path: str) -> Container:
-    """Set up a Poetry module.
+def with_pipx(base_python_container: Container) -> Container:
+    """Installs pipx in a python container.
+
+    Args:
+       base_python_container (Container): The container to install pipx on.
+
+    Returns:
+        Container: A python environment with pipx installed.
+    """
+    python_with_pipx = with_pip_packages(base_python_container, ["pipx"]).with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
+
+    return python_with_pipx
+
+
+def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_path: str) -> Container:
+    """Sets up a Poetry module.
 
     Args:
         context (PipelineContext): The current test context, providing the repository directory from which the ci_credentials sources will be pulled.
     Returns:
         Container: A python environment with dependencies installed using poetry.
     """
-    poetry_exclude = ["__pycache__"] + DEFAULT_PYTHON_EXCLUDE
     poetry_install_dependencies_cmd = ["poetry", "install"]
 
-    src = context.dagger_client.host().directory(src_path, exclude=poetry_exclude)
     python_with_poetry = with_poetry(context)
+    return (
+        python_with_poetry.with_mounted_directory("/src", parent_dir)
+        .with_workdir(f"/src/{module_path}")
+        .with_exec(poetry_install_dependencies_cmd)
+    )
 
-    return python_with_poetry.with_mounted_directory("/src", src).with_workdir("/src").with_exec(poetry_install_dependencies_cmd)
+
+def with_pipx_module(context: PipelineContext, parent_dir_path: str, module_path: str, include: List[str]) -> Container:
+    """Installs a pipx module
+
+    Args:
+        context (PipelineContext): The current pipeline context
+    Returns:
+        Container: A python environment with dependencies installed using pipx.
+    """
+    pipx_include = [module_path] + include
+    pipx_install_dependencies_cmd = ["pipx", "install", module_path]
+    src = context.get_repo_dir(parent_dir_path, exclude=DEFAULT_PYTHON_EXCLUDE, include=pipx_include)
+
+    python_base_environment = with_python_base(context, "python:3.9")
+    python_with_pipx = with_pipx(python_base_environment)
+
+    return python_with_pipx.with_mounted_directory("/src", src).with_workdir("/src").with_exec(pipx_install_dependencies_cmd)
 
 
 def with_integration_base(context: PipelineContext, jdk_version: str = "17.0.4") -> Container:
