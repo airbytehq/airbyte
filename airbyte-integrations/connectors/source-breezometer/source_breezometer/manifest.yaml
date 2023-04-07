@@ -9,8 +9,6 @@ definitions:
     retriever:
       record_selector:
         $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
@@ -27,8 +25,6 @@ definitions:
     retriever:
       record_selector:
         $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
@@ -46,8 +42,6 @@ definitions:
     retriever:
       record_selector:
         $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
@@ -65,8 +59,6 @@ definitions:
     retriever:
       record_selector:
         $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
@@ -84,8 +76,6 @@ definitions:
     retriever:
       record_selector:
         $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
@@ -102,8 +92,6 @@ definitions:
     retriever:
       record_selector:
         $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
@@ -120,8 +108,6 @@ definitions:
     retriever:
       record_selector:
         $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
@@ -138,8 +124,6 @@ definitions:
     retriever:
       record_selector:
         $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"

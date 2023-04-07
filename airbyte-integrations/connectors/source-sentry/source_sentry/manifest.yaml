@@ -98,8 +98,6 @@ streams:
       requester:
         $ref: "#/definitions/requester"
         path: "projects/{{config.organization}}/{{config.project}}/"
-      paginator:
-        type: NoPagination
 check:
   type: CheckStream
   stream_names: ["project_detail"]

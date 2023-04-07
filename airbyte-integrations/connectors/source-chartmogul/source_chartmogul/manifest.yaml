@@ -69,8 +69,6 @@ definitions:
           start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
           end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
           interval: "{{ config['interval'] }}"
-      paginator:
-        type: NoPagination
     $parameters:
       name: "customer_count"
       primary_key: "date"

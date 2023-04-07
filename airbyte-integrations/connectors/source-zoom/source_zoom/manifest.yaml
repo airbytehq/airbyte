@@ -78,8 +78,6 @@ definitions:
       name: "meetings"
       primary_key: "id"
     retriever:
-      paginator:
-        type: NoPagination
       record_selector:
         extractor:
           type: DpathExtractor
@@ -140,8 +138,6 @@ definitions:
       name: "meeting_polls"
       primary_key: "id"
     retriever:
-      paginator:
-        type: NoPagination
       record_selector:
         extractor:
           type: DpathExtractor
@@ -177,8 +173,6 @@ definitions:
     $parameters:
       name: "meeting_poll_results"
     retriever:
-      paginator:
-        type: NoPagination
       record_selector:
         extractor:
           type: DpathExtractor
@@ -215,8 +209,6 @@ definitions:
     $parameters:
       name: "meeting_registration_questions"
     retriever:
-      paginator:
-        type: NoPagination
       record_selector:
         extractor:
           type: DpathExtractor
@@ -286,8 +278,6 @@ definitions:
       name: "webinars"
       primary_key: "id"
     retriever:
-      paginator:
-        type: NoPagination
       record_selector:
         extractor:
           type: DpathExtractor
@@ -320,8 +310,6 @@ definitions:
     $parameters:
       name: "webinar_panelists"
     retriever:
-      paginator:
-        type: NoPagination
       record_selector:
         extractor:
           type: DpathExtractor
@@ -435,8 +423,6 @@ definitions:
     $parameters:
       name: "webinar_polls"
     retriever:
-      paginator:
-        type: NoPagination
       record_selector:
         extractor:
           type: DpathExtractor
@@ -473,8 +459,6 @@ definitions:
     $parameters:
       name: "webinar_poll_results"
     retriever:
-      paginator:
-        type: NoPagination
       record_selector:
         extractor:
           type: DpathExtractor
@@ -509,8 +493,6 @@ definitions:
     $parameters:
       name: "webinar_registration_questions"
     retriever:
-      paginator:
-        type: NoPagination
       record_selector:
         extractor:
           type: DpathExtractor
@@ -547,8 +529,6 @@ definitions:
       name: "webinar_tracking_sources"
       primary_key: "id"
     retriever:
-      paginator:
-        type: NoPagination
       record_selector:
         extractor:
           type: DpathExtractor
@@ -583,8 +563,6 @@ definitions:
     $parameters:
       name: "webinar_qna_results"
     retriever:
-      paginator:
-        type: NoPagination
       record_selector:
         extractor:
           type: DpathExtractor
@@ -620,8 +598,6 @@ definitions:
       name: "report_meetings"
       primary_key: "id"
     retriever:
-      paginator:
-        type: NoPagination
       record_selector:
         extractor:
           type: DpathExtractor
@@ -693,8 +669,6 @@ definitions:
     $parameters:
       name: "report_webinars"
     retriever:
-      paginator:
-        type: NoPagination
       record_selector:
         extractor:
           type: DpathExtractor

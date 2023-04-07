@@ -24,8 +24,6 @@ definitions:
   base_retriever:
     record_selector:
       $ref: "#/definitions/selector"
-    paginator:
-      type: NoPagination
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:

@@ -200,8 +200,6 @@ streams:
         extractor:
           type: DpathExtractor
           field_path: []
-      paginator:
-        type: NoPagination
   - type: DeclarativeStream
     name: Feature
     primary_key:
@@ -415,8 +413,6 @@ streams:
         extractor:
           type: DpathExtractor
           field_path: []
-      paginator:
-        type: NoPagination
   - type: DeclarativeStream
     name: Report
     primary_key:
@@ -1078,8 +1074,6 @@ streams:
         extractor:
           type: DpathExtractor
           field_path: []
-      paginator:
-        type: NoPagination
   - type: DeclarativeStream
     name: Guide
     primary_key:
@@ -1944,8 +1938,6 @@ streams:
         extractor:
           type: DpathExtractor
           field_path: []
-      paginator:
-        type: NoPagination
   - type: DeclarativeStream
     name: Account Metadata
     primary_key: []
@@ -2241,8 +2233,6 @@ streams:
         extractor:
           type: DpathExtractor
           field_path: []
-      paginator:
-        type: NoPagination
   - type: DeclarativeStream
     name: Visitor Metadata
     primary_key: []
@@ -2957,8 +2947,6 @@ streams:
         extractor:
           type: DpathExtractor
           field_path: []
-      paginator:
-        type: NoPagination
 spec:
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#

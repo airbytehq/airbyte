@@ -7,8 +7,6 @@ definitions:
     request_parameters:
       api-key: "{{ config['api_key'] }}"
   retriever:
-    paginator:
-      type: NoPagination
     requester:
       $ref: "#/definitions/requester"
   archive_stream:

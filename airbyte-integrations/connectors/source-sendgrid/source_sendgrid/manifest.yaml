@@ -80,8 +80,6 @@ definitions:
           field_path: []
       requester:
         $ref: "#/definitions/requester"
-      paginator:
-        type: NoPagination
 streams:
   - $ref: "#/definitions/base_stream"
     $parameters:

@@ -41,16 +41,12 @@ definitions:
   per_article_retriever:
     record_selector:
       $ref: "#/definitions/selector"
-    paginator:
-      type: NoPagination
     requester:
       $ref: "#/definitions/per_article_requester"
 
   top_retriever:
     record_selector:
       $ref: "#/definitions/selector"
-    paginator:
-      type: NoPagination
     requester:
       $ref: "#/definitions/top_requester"
   per_article_stream:

@@ -58,8 +58,6 @@ definitions:
   retriever:
     record_selector:
       $ref: "#/definitions/selector"
-    paginator:
-      type: NoPagination
     requester:
       $ref: "#/definitions/requester"
 

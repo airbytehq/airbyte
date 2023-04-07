@@ -50,8 +50,6 @@ definitions:
   base_nopagination_stream:
     retriever:
       $ref: "#/definitions/retriever"
-      paginator:
-        type: NoPagination
   items_stream:
     $ref: "#/definitions/base_stream"
     retriever:

@@ -25,15 +25,11 @@ definitions:
   retriever:
     record_selector:
       $ref: "#/definitions/selector"
-    paginator:
-      type: NoPagination
     requester:
       $ref: "#/definitions/requester"
   data_field_retriever:
     record_selector:
       $ref: "#/definitions/data_field_selector"
-    paginator:
-      type: NoPagination
     requester:
       $ref: "#/definitions/requester"
   base_stream:

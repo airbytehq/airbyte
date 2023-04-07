@@ -34,8 +34,6 @@ definitions:
   custom_retriever:
     record_selector:
       $ref: "#/definitions/update_selector"
-    paginator:
-      type: NoPagination
     requester:
       $ref: "#/definitions/requester"
   retriever:
@@ -73,8 +71,6 @@ definitions:
     retriever:
       record_selector:
         $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
       requester:
         $ref: "#/definitions/requester"
     $parameters:

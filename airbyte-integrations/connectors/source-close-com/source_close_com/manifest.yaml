@@ -103,8 +103,6 @@ definitions:
       $ref: "#/definitions/selector"
     requester:
       $ref: "#/definitions/requester"
-    paginator:
-      type: NoPagination
 
   base_stream:
     retriever:
