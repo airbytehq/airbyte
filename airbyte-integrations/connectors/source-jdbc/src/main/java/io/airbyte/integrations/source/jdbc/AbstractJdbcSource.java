@@ -21,7 +21,6 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_INDEX_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_INDEX_NON_UNIQUE;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
-import static io.airbyte.db.jdbc.JdbcConstants.JDBC_TABLE;
 import static io.airbyte.db.jdbc.JdbcUtils.DATABASE_KEY;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
@@ -52,6 +51,7 @@ import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -101,6 +101,47 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     this.driverClass = driverClass;
     this.streamingQueryConfigProvider = streamingQueryConfigProvider;
     this.sourceOperations = sourceOperations;
+  }
+
+  @Override
+  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
+                                                    final ConfiguredAirbyteCatalog catalog,
+                                                    final JsonNode state)
+      throws Exception {
+    final JdbcDatabase database = createDatabase(config);
+    LOGGER.info("Data source product recognized as {}:{}",
+        database.getMetaData().getDatabaseProductName(),
+        database.getMetaData().getDatabaseProductVersion());
+
+    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
+      final String streamName = stream.getStream().getName();
+      final ResultSet indexInfo = getStreamIndex(database, streamName);
+      LOGGER.info("Discovering indexes for table \"{}\"", streamName);
+      while (indexInfo.next()) {
+        LOGGER.info("Index name: {}, Column: {}, Unique: {}",
+            indexInfo.getString(JDBC_INDEX_NAME),
+            indexInfo.getString(JDBC_COLUMN_COLUMN_NAME),
+            !indexInfo.getBoolean(JDBC_INDEX_NON_UNIQUE));
+      }
+    }
+
+    return super.read(config, catalog, state);
+  }
+
+  /**
+   * This method uses the JDBCdatabase getIndexInfo method to retrieve the index information
+   *
+   * @param database the jdbcDatabase object that's been instantiated with the source configuration
+   * @param streamName the name of the selected table (stream) to sync
+   * @return a ResultSet of all indexes and their metadata
+   * @throws SQLException
+   */
+  private ResultSet getStreamIndex(final JdbcDatabase database, final String streamName) throws SQLException {
+    return database.getMetaData().getIndexInfo(null,
+        null,
+        streamName,
+        false,
+        false);
   }
 
   @Override
@@ -427,28 +468,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
     database.setSourceConfig(sourceConfig);
     database.setDatabaseConfig(jdbcConfig);
-    LOGGER.info("Data source product recognized as {}:{}",
-        database.getMetaData().getDatabaseProductName(),
-        database.getMetaData().getDatabaseProductVersion());
-    final ResultSet tables = database.getMetaData().getTables(null,
-        null,
-        "%",
-        new String[] {JDBC_TABLE});
-    while (tables.next()) {
-      final String tableName = tables.getString(JDBC_COLUMN_TABLE_NAME);
-      final ResultSet indexInfo = database.getMetaData().getIndexInfo(null,
-          null,
-          tableName,
-          false,
-          false);
-      LOGGER.info("Discovering indexes for table \"{}\"", tableName);
-      while (indexInfo.next()) {
-        LOGGER.info("Index name: {}, Column: {}, Unique: {}",
-            indexInfo.getString(JDBC_INDEX_NAME),
-            indexInfo.getString(JDBC_COLUMN_COLUMN_NAME),
-            !indexInfo.getBoolean(JDBC_INDEX_NON_UNIQUE));
-      }
-    }
 
     return database;
   }
