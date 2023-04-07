@@ -92,7 +92,8 @@ public class BigQueryStagingConsumerFactory {
               tmpTableNameTransformer.apply(streamName),
               targetTableNameTransformer.apply(streamName),
               recordFormatter.getBigQuerySchema(),
-              configuredStream.getDestinationSyncMode());
+              configuredStream.getDestinationSyncMode(),
+              configuredStream);
 
           LOGGER.info("BigQuery write config: {}", writeConfig);
 
@@ -222,7 +223,7 @@ public class BigQueryStagingConsumerFactory {
         }
 
         ops.createOrAlterTable(writeConfig.datasetId(), finalTableName, finalSchema);
-        ops.mergeFromRawTable(writeConfig.datasetId(), writeConfig.targetTableId().getTable(), finalTableName, finalSchema);
+        ops.mergeFromRawTable(writeConfig.datasetId(), writeConfig.targetTableId().getTable(), finalTableName, writeConfig.configuredAirbyteStream());
       }
 
       LOGGER.info("done typing+deduping");

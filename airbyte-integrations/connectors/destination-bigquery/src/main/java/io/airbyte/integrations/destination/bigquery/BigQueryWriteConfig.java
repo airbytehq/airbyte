@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.bigquery;
 
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.TableId;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,26 +14,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @param streamName output stream name
+ * @param streamName              output stream name
  * @param namespace
- * @param datasetId the dataset ID is equivalent to output schema
- * @param datasetLocation location of dataset (e.g. US, EU)
- * @param tmpTableId BigQuery temporary table
- * @param targetTableId BigQuery final raw table
- * @param tableSchema schema for the table
- * @param syncMode BigQuery's mapping of write modes to Airbyte's sync mode
- * @param stagedFiles collection of staged files to copy data from
+ * @param datasetId               the dataset ID is equivalent to output schema
+ * @param datasetLocation         location of dataset (e.g. US, EU)
+ * @param tmpTableId              BigQuery temporary table
+ * @param targetTableId           BigQuery final raw table
+ * @param tableSchema             schema for the table
+ * @param syncMode                BigQuery's mapping of write modes to Airbyte's sync mode
+ * @param stagedFiles             collection of staged files to copy data from
+ * @param configuredAirbyteStream
  */
 public record BigQueryWriteConfig(
-                                  String streamName,
-                                  String namespace,
-                                  String datasetId,
-                                  String datasetLocation,
-                                  TableId tmpTableId,
-                                  TableId targetTableId,
-                                  Schema tableSchema,
-                                  DestinationSyncMode syncMode,
-                                  List<String> stagedFiles) {
+    String streamName,
+    String namespace,
+    String datasetId,
+    String datasetLocation,
+    TableId tmpTableId,
+    TableId targetTableId,
+    Schema tableSchema,
+    DestinationSyncMode syncMode,
+    List<String> stagedFiles,
+    ConfiguredAirbyteStream configuredAirbyteStream) {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryWriteConfig.class);
 
@@ -43,7 +46,8 @@ public record BigQueryWriteConfig(
                              final String tmpTableName,
                              final String targetTableName,
                              final Schema tableSchema,
-                             final DestinationSyncMode syncMode) {
+                             final DestinationSyncMode syncMode,
+                             final ConfiguredAirbyteStream configuredAirbyteStream) {
     this(
         streamName,
         namespace,
@@ -53,7 +57,8 @@ public record BigQueryWriteConfig(
         TableId.of(datasetId, targetTableName),
         tableSchema,
         syncMode,
-        new ArrayList<>());
+        new ArrayList<>(),
+        configuredAirbyteStream);
   }
 
   public void addStagedFile(final String file) {
