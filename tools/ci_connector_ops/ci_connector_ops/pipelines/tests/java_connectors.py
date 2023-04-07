@@ -59,11 +59,11 @@ class BuildOrPullNormalization(Step):
         else:
             build_normalization_container = self.context.dagger_client.container().from_(self.normalization_image)
         try:
-            export_success = await build_normalization_container.export(f"/tmp/{normalization_local_tar_path}")
+            export_success = await build_normalization_container.export(f"{self.host_image_export_dir_path}/{normalization_local_tar_path}")
             if export_success:
                 exported_file = (
                     self.context.dagger_client.host()
-                    .directory("/tmp", include=[normalization_local_tar_path])
+                    .directory(self.host_image_export_dir_path, include=[normalization_local_tar_path])
                     .file(normalization_local_tar_path)
                 )
                 return StepResult(self, StepStatus.SUCCESS), exported_file
@@ -165,7 +165,7 @@ class GradleTask(Step):
                 patched_file_content += line + "\n"
         return self.context.get_connector_dir(exclude=["build", "secrets"]).with_new_file("build.gradle", patched_file_content)
 
-    def _get_gradle_command(self, extra_options: Tuple[str] = ("--no-daemon",)) -> List:
+    def _get_gradle_command(self, extra_options: Tuple[str] = ("--no-daemon", "--scan")) -> List:
         return (
             ["./gradlew"]
             + list(extra_options)
@@ -194,7 +194,7 @@ class BuildConnectorImage(GradleTask):
     """
     A step to build a Java connector image using the airbyteDocker Gradle task.
 
-    Export the image as a tar archive on the host /tmp folder.
+    Export the image as a tar archive to host.
     """
 
     RUN_AIRBYTE_DOCKER = True
@@ -219,16 +219,13 @@ class BuildConnectorImage(GradleTask):
             environments.with_gradle(self.context)
             .with_exec(["docker", "save", "--output", tar_name, image_name])
             .file(tar_name)
-            .export(f"/tmp/{tar_name}")
+            .export(f"{self.host_image_export_dir_path}/{tar_name}")
         )
         if export_success:
-            return self.context.dagger_client.host().directory("/tmp", include=[tar_name]).file(tar_name)
+            return self.context.dagger_client.host().directory(self.host_image_export_dir_path, include=[tar_name]).file(tar_name)
 
     async def _run(self) -> Tuple[StepResult, Optional[File]]:
         try:
-            connector_tar_file = None
-            tar_name = f"airbyte_{self.context.connector.technical_name}.tar"
-
             connector_java_build_cache = self.context.dagger_client.cache_volume("connector_java_build_cache")
             built_container = (
                 environments.with_gradle(self.context, self.build_include)
@@ -240,12 +237,7 @@ class BuildConnectorImage(GradleTask):
             )
 
             step_result = await self.get_step_result(built_container)
-            image_name = f"airbyte/{self.context.connector.technical_name}:dev"
-            export_success = await (
-                built_container.with_exec(["docker", "save", "--output", tar_name, image_name]).file(tar_name).export(f"/tmp/{tar_name}")
-            )
-            if export_success:
-                connector_tar_file = self.context.dagger_client.host().directory("/tmp", include=[tar_name]).file(tar_name)
+            connector_tar_file = self._export_connector_image()
             return step_result, connector_tar_file
         except QueryError as e:
             return StepResult(self, StepStatus.FAILURE, stderr=str(e)), None

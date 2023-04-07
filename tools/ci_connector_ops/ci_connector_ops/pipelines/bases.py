@@ -77,6 +77,7 @@ class Step(ABC):
 
     def __init__(self, context: ConnectorTestContext) -> None:  # noqa D107
         self.context = context
+        self.host_image_export_dir_path = "." if self.context.is_ci else "/tmp"
 
     async def run(self, *args, **kwargs) -> StepResult:
         """Public method to run the step. It output a step result.
