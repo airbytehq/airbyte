@@ -17,8 +17,8 @@ from octavia_cli.generate.renderers import ConnectionRenderer, ConnectorSpecific
 
 pytestmark = pytest.mark.integration
 
-SOURCE_SPECS = "../airbyte-config/init/src/main/resources/seed/source_specs.yaml"
-DESTINATION_SPECS = "../airbyte-config/init/src/main/resources/seed/destination_specs.yaml"
+SOURCE_SPECS = "../airbyte-config-oss/init-oss/src/main/resources/seed/source_specs.yaml"
+DESTINATION_SPECS = "../airbyte-config-oss/init-oss/src/main/resources/seed/destination_specs.yaml"
 
 
 def get_all_specs_params():

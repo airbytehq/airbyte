@@ -565,23 +565,9 @@ class BasicReports(IncrementalTiktokStream, ABC):
             yield chunk_start, chunk_end
 
     def _get_reporting_dimensions(self):
-        result = []
-        spec_id_dimensions = {
-            ReportLevel.ADVERTISER: "advertiser_id",
-            ReportLevel.CAMPAIGN: "campaign_id",
-            ReportLevel.ADGROUP: "adgroup_id",
-            ReportLevel.AD: "ad_id",
-        }
-        if self.report_level and self.report_level in spec_id_dimensions:
-            result.append(spec_id_dimensions[self.report_level])
-
-        spec_time_dimensions = {
-            ReportGranularity.DAY: "stat_time_day",
-            ReportGranularity.HOUR: "stat_time_hour",
-        }
-        if self.report_granularity and self.report_granularity in spec_time_dimensions:
-            result.append(spec_time_dimensions[self.report_granularity])
-
+        result = [self.spec_id_dimensions[self.report_level]]
+        if self.report_granularity in self.spec_time_dimensions:
+            result.append(self.spec_time_dimensions[self.report_granularity])
         return result
 
     def _get_metrics(self):
@@ -749,16 +735,16 @@ class AudienceReport(BasicReports, ABC):
         result = [e for e in result if e not in NOT_AUDIENCE_METRICS]
         return result
 
+    def _get_reporting_dimensions(self):
+        result = super()._get_reporting_dimensions()
+        result += self.audience_dimensions
+        return result
+
     def request_params(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-
-        dimensions = self._get_reporting_dimensions()
-        dimensions += self.audience_dimensions
-        params["dimensions"] = json.dumps(dimensions)
         params["report_type"] = "AUDIENCE"
-
         return params
 
 
