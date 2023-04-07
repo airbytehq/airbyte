@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/s3",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/s3-glue",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
