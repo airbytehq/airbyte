@@ -25046,7 +25046,7 @@
     "sourceDefinitionId": "4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35",
     "name": "TikTok Marketing",
     "dockerRepository": "airbyte/source-tiktok-marketing",
-    "dockerImageTag": "3.0.0",
+    "dockerImageTag": "3.0.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/tiktok-marketing",
     "icon": "tiktok.svg",
     "sourceType": "api",
@@ -25139,6 +25139,13 @@
             "order": 2,
             "type": "string",
             "format": "date"
+          },
+          "attribution_window": {
+            "title": "Attribution Window",
+            "description": "The attribution window in days.",
+            "default": 0,
+            "order": 3,
+            "type": "integer"
           }
         }
       },

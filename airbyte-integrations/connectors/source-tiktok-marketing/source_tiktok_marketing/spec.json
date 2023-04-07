@@ -90,6 +90,13 @@
         "order": 2,
         "type": "string",
         "format": "date"
+      },
+      "attribution_window": {
+        "title": "Attribution Window",
+        "description": "The attribution window in days.",
+        "default": 0,
+        "order": 3,
+        "type": "integer"
       }
     }
   },

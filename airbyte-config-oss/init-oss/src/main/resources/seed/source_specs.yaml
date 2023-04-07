@@ -15585,7 +15585,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:3.0.0"
+- dockerImage: "airbyte/source-tiktok-marketing:3.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
@@ -15673,6 +15673,12 @@
           order: 2
           type: "string"
           format: "date"
+        attribution_window:
+          title: "Attribution Window"
+          description: "The attribution window in days."
+          default: 0
+          order: 3
+          type: "integer"
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: false
