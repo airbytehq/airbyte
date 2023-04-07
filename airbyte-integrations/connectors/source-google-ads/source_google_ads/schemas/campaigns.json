@@ -188,7 +188,10 @@
     "campaign.target_cpa.target_cpa_micros": {
       "type": ["null", "integer"]
     },
-    "campaign.target_cpm": {
+    "campaign.target_cpm.target_frequency_goal.target_count": {
+      "type": ["null", "integer"]
+    },
+    "campaign.target_cpm.target_frequency_goal.time_unit": {
       "type": ["null", "string"]
     },
     "campaign.target_impression_share.cpc_bid_ceiling_micros": {
@@ -249,10 +252,10 @@
       "type": ["null", "number"]
     },
     "metrics.conversions": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "metrics.conversions_value": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "metrics.cost_micros": {
       "type": ["null", "integer"]
