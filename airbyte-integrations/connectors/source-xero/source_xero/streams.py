@@ -144,7 +144,8 @@ class IncrementalXeroStream(XeroStream, ABC):
         state_cursor_value = current_stream_state.get(self.cursor_field)
         if state_cursor_value:
             record_cursor_value = max(record_cursor_value, state_cursor_value)
-        return {self.cursor_field: record_cursor_value}
+        current_stream_state[self.cursor_field] = record_cursor_value
+        return current_stream_state
 
 
 class BankTransactions(IncrementalXeroStream):

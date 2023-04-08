@@ -106,6 +106,7 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                       |
 |:---------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------|
+| `1.0.3`  | 2023-02-13 | [22938](https://github.com/airbytehq/airbyte/pull/22938) | Specified date formatting in specification                                                                     |
 | `1.0.2`  | 2023-02-01 | [22203](https://github.com/airbytehq/airbyte/pull/22203) | Handle Null cursor values                                                                     |
 | `1.0.1`  | 2023-01-31 | [22015](https://github.com/airbytehq/airbyte/pull/22015) | Set `AvailabilityStrategy` for streams explicitly to `None`                                   |
 | `1.0.0`  | 2023-01-25 | [21790](https://github.com/airbytehq/airbyte/pull/21790) | Fix `activities_*` stream schemas                                                             |
