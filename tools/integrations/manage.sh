@@ -60,21 +60,21 @@ cmd_build() {
   echo "Building $path"
   # Note that we are only building (and testing) once on this build machine's architecture
   # Learn more @ https://github.com/airbytehq/airbyte/pull/13004
-  ./gradlew --no-daemon "$(_to_gradle_path "$path" clean)"
+  ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" clean)"
 
   if [ "$run_tests" = false ] ; then
     echo "Building and skipping unit tests + integration tests..."
-    ./gradlew --no-daemon "$(_to_gradle_path "$path" build)" -x test
+    ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" build)" -x test
   else
     echo "Building and running unit tests + integration tests..."
-    ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
+    ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" build)"
 
     if test "$path" == "airbyte-integrations/bases/base-normalization"; then
       export RANDOM_TEST_SCHEMA="true"
       ./gradlew --no-daemon --scan :airbyte-integrations:bases:base-normalization:airbyteDocker
     fi
 
-    ./gradlew --no-daemon "$(_to_gradle_path "$path" integrationTest)"
+    ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" integrationTest)"
   fi
 }
 
@@ -84,8 +84,8 @@ cmd_build_experiment() {
   [ -d "$path" ] || error "Path must be the root path of the integration"
 
   echo "Building $path"
-  ./gradlew --no-daemon "$(_to_gradle_path "$path" clean)"
-  ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
+  ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" clean)"
+  ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" build)"
 
   # After this happens this image should exist: "image_name:dev"
   # Re-tag with CI candidate label
@@ -106,7 +106,7 @@ cmd_test() {
 
   # TODO: needs to know to use alternate image tag from cmd_build_experiment
   echo "Running integration tests..."
-  ./gradlew --no-daemon "$(_to_gradle_path "$path" integrationTest)"
+  ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" integrationTest)"
 }
 
 # Bumps connector version in Dockerfile, definitions.yaml file, and updates seeds with gradle.
@@ -131,7 +131,7 @@ cmd_bump_version() {
     echo "Invalid connector_type from $connector"
     exit 1
   fi
-  definitions_path="./airbyte-config/init/src/main/resources/seed/${connector_type}_definitions.yaml"
+  definitions_path="./airbyte-config-oss/init-oss/src/main/resources/seed/${connector_type}_definitions.yaml"
   dockerfile="$connector_path/Dockerfile"
   master_dockerfile="/tmp/master_${connector}_dockerfile"
   # This allows getting the contents of a file without checking it out

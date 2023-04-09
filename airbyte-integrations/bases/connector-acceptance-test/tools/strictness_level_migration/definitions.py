@@ -5,7 +5,7 @@
 
 import yaml
 
-SOURCE_DEFINITIONS_FILE_PATH = "../../../../../airbyte-config/init/src/main/resources/seed/source_definitions.yaml"
+SOURCE_DEFINITIONS_FILE_PATH = "../../../../../airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml"
 
 
 def read_source_definitions():
