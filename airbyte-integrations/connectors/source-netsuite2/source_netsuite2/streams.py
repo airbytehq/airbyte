@@ -135,7 +135,7 @@ class InventorySnapshot(NetSuiteStream):
 
     def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Optional[Mapping]:
         return {
-	        "q": "SELECT id,itemid, BUILTIN.DF(itemtype) as type, lastmodifieddate FROM item where itemtype IN ('InvtPart','Assembly') and isinactive = 'F'"
+	        "q": "SELECT id,itemid, BUILTIN.DF(itemtype) as type, to_char(lastModifiedDate, 'yyyy-mm-dd HH24:MI:SS') as lastModifiedDate FROM item where itemtype IN ('InvtPart','Assembly') and isinactive = 'F'"
         }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
