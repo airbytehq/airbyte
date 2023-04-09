@@ -199,7 +199,7 @@ class InventorySnapshot(NetSuiteStream):
                 itemRecord_with_type = {
                       "internalId": itemRecord.get("internalId")
                     , "id": itemRecord.get("internalId")
-                    , "itemId": itemRecord.get("itemid")
+                    , "itemId": itemRecord.get("itemId")
                     , "type": record_type
                     , "locations": itemRecord.get("locations").get("items")
                     , "lastModifiedDate": record.get("lastmodifieddate")
