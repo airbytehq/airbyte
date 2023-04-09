@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.performance;
+package io.airbyte.integrations.destination_performance;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,7 +37,7 @@ public class Main {
     final Path credsPath = Path.of(CREDENTIALS_PATH.formatted(dataset));
 
     if (!Files.exists(credsPath)) {
-      throw new IllegalStateException("{module-root}/" + credsPath + " not found. Must provide path to a source-harness credentials file.");
+      throw new IllegalStateException("{module-root}/" + credsPath + " not found. Must provide path to a destination-harness credentials file.");
     }
 
     final JsonNode config = Jsons.deserialize(IOs.readFile(credsPath));
