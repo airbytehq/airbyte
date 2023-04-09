@@ -1,11 +1,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from abc import ABC, abstractmethod, abstractproperty
-import logging
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from datetime import datetime
+import logging
 import json
+
 import requests
+import uuid
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests_oauthlib import OAuth1
@@ -134,8 +136,9 @@ class InventorySnapshot(NetSuiteStream):
         return REST_PATH + "query/v1/suiteql"
 
     def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Optional[Mapping]:
+        importid = str(uuid.uuid4())
         return {
-	        "q": "SELECT id,itemid, BUILTIN.DF(itemtype) as type, to_char(lastModifiedDate, 'yyyy-mm-dd HH24:MI:SS') as lastModifiedDate FROM item where itemtype IN ('InvtPart','Assembly') and isinactive = 'F'"
+	        "q": "SELECT id,itemid, BUILTIN.DF(itemtype) as type, to_char(lastModifiedDate, 'yyyy-mm-dd HH24:MI:SS') as lastModifiedDate, '" + importid + "' as importid FROM item where itemtype IN ('InvtPart','Assembly') and isinactive = 'F'"
         }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -144,6 +147,7 @@ class InventorySnapshot(NetSuiteStream):
     
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
+            currentImportId = record.get("importid")
             record_type = record.get("type").replace(" ", "").lower()
             if (record_type.startswith("assembly")):
                 record_type = "assemblyitem"
@@ -197,7 +201,8 @@ class InventorySnapshot(NetSuiteStream):
                     cleaned_itemLocations.append(cleaned_item_location)
                 
                 itemRecord_with_type = {
-                      "internalId": itemRecord.get("internalId")
+                        "importId": currentImportId
+                    , "internalId": itemRecord.get("internalId")
                     , "id": itemRecord.get("internalId")
                     , "itemId": itemRecord.get("itemId")
                     , "type": record_type
