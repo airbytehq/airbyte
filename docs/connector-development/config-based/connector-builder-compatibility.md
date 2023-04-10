@@ -1,12 +1,12 @@
 # Connector Builder Compatibility Guide
 Answer the following questions to determine whether the Connector Builder is the right tool to build the connector you need:
-- [ ] [Is it a REST API returning a collection of records synchronously?](#is-the-integration-a-rest-api-returning-a-collection-of-records-synchronously)
+- [ ] [Is it an HTTP API returning a collection of records synchronously?](#is-the-integration-a-rest-api-returning-a-collection-of-records-synchronously)
 - [ ] [Is the API using one of the following authentication mechanism?](#what-type-of-authentication-is-required)
     - [Basic HTTP](#basic-http)
     - [API key injected in request header or query parameter](#api-key)
     - [OAuth2.0 with long-lived refresh token](#is-the-oauth-refresh-token-long-lived)
     - [Session authentication](#session)
-- [ ] [Is the data returned as JSON format?](#is-the-data-returned-as-json-format)
+- [ ] [Is the data returned as JSON?](#is-the-data-returned-as-json)
 - [ ] [If records are paginated, are they using one of the following mechanism?](#how-are-records-paginated)
     - [Limit-offset](#limit-offset--offsetincrement-)
     - [Page count](#page-count)
@@ -92,13 +92,17 @@ Are requests authenticated using the Basic HTTP authentication method? You can s
 
 Example: [Greenhouse](https://developers.greenhouse.io/harvest.html#introduction)
 
+If the authentication mechanism is Basic HTTP, it is compatible with the Connector Builder.
+
 ### API Key
 Are requests authenticated using an API key injected either as a query parameter or as a request header?
 
 Examples: [Congress API](https://api.congress.gov/), [Sendgrid](https://docs.sendgrid.com/for-developers/sending-email/authentication)
 
+If the authentication mechanism is an API key injected as a query parameter or as a request header, it is compatible with the Connector Builder.
+
 ### OAuth
-Are requests authenticated using an OAuth2.0 flow?
+Are requests authenticated using an OAuth2.0 flow with a refresh token grant type?
 
 Examples: [Square](https://developer.squareup.com/docs/oauth-api/overview), [Woocommerce](https://woocommerce.github.io/woocommerce-rest-api-docs/#introduction)
 
@@ -120,9 +124,10 @@ Example:
 - Yes: [Gitlab](https://docs.gitlab.com/ee/api/oauth2.html)
 - No: [Square](https://developer.squareup.com/docs/oauth-api/overview), [Woocommerce](https://woocommerce.github.io/woocommerce-rest-api-docs/#introduction)
 
-If the OAuth flow requires a single-use refresh token, use the [Python CDK](https://github.com/airbytehq/airbyte/issues/18035). Otherwise, check if the refresh request needs to be authenticated.
-
+If the OAuth flow requires a single-use refresh token, use the [Python CDK](https://github.com/airbytehq/airbyte/issues/18035).
 If the refresh request requires custom query parameters or request headers, use the Python CDK.
+If the refresh request requires a [grant type](https://oauth.net/2/grant-types/) that is not "Refresh Token", such as an Authorization Code, or a PKCE, use the Python CDK. 
+If the authentication mechanism is OAuth flow 2.0 with refresh token and does not require refreshing the refresh token or custom query params, it is compatible with the Connector Builder.
 
 ### Session
 Requests are authenticated using a session token.
@@ -144,17 +149,18 @@ curl -X GET \
 http://localhost:3000/api/user/current
 ```
 
-
 Example: [Metabase](https://www.metabase.com/learn/administration/metabase-api#authenticate-your-requests-with-a-session-token)
+
+If the authentication mechanism uses a session token obtained using a username+password pair, it is compatible with the Connector Builder.
 
 ### Other
 AWS endpoints are examples of APIs requiring a non-standard authentication mechanism. You can tell from [the documentation](https://docs.aws.amazon.com/pdfs/awscloudtrail/latest/APIReference/awscloudtrail-api.pdf#Welcome) that requests need to be signed with a hash.
 
 Example: [AWS Cloudtrail](https://docs.aws.amazon.com/pdfs/awscloudtrail/latest/APIReference/awscloudtrail-api.pdf#Welcome)
 
-If the integration requires a non-standard authentication mechanism, use Python CDK or low-code with custom components. If the integration uses OAuth2.0, verify if it uses single-use refresh tokens.
+If the integration requires a non-standard authentication mechanism, use Python CDK or low-code with custom components.
 
-## Is the data returned as JSON format?
+## Is the data returned as JSON?
 Is the data returned by the API formatted as JSON, or is it formatted as another format such as XML, CSV, gRPC, or PDF?
 
 Examples:
@@ -193,8 +199,9 @@ You can search the documentation and the sample response for the “next” keyw
 
 Example: [Greenhouse](https://developers.greenhouse.io/harvest.html#pagination)
 
-### Does the integration require query params that are not key-value pairs?
-Do requests require complex query parameters? Does it support GraphQL querying?
+### Are the required query parameters of the integration key-value pairs?
+The Connector Builder currently only supports key-value query params and request body parameters.
+This means endpoints requiring [GraphQL](https://graphql.org/) are not well supported at the moment.
 
 An example of an endpoint that would be tricky to implement with the Connector Builder is [SproutSocial’s Analytics endpoint](https://api.sproutsocial.com/docs/#analytics-endpoints).
 
@@ -207,4 +214,4 @@ Examples:
 - Yes: [Shopify GraphQL Admin API](https://shopify.dev/docs/api/admin-graphql#endpoints), [SproutSocial](https://api.sproutsocial.com/docs/#analytics-endpoints)
 - No: [Congress API](https://api.congress.gov/)
 
-If the integration requires query params that are not key-value pairs, use the Python CDK.
+If the integration requires query params or body parameters that are not key-value pairs, use the Python CDK.
