@@ -35,7 +35,7 @@
         "examples": [
           "{}",
           "{\"sep\": \" \"}",
-          { "sep": "\t", "header": 0, "names": ["column1", "column2"] }
+          "{\"sep\": \"\t\", \"header\": 0, \"names\": [\"column1\", \"column2\"] }"
         ]
       },
       "url": {
