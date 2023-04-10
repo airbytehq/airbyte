@@ -6,7 +6,6 @@
     "type": "object",
     "required": [
       "credentials",
-      "realm_id",
       "start_date",
       "sandbox"
     ],
@@ -25,7 +24,8 @@
               "client_secret",
               "refresh_token",
               "access_token",
-              "token_expiry_date"
+              "token_expiry_date",
+              "realm_id"
             ],
             "properties": {
               "auth_type": {
