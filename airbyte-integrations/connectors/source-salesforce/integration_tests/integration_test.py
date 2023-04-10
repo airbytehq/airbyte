@@ -79,13 +79,25 @@ def test_update_for_deleted_record(stream):
 
     created_note_id = response.json()["id"]
 
-    now = pendulum.now(tz="UTC")
-    stream_slice = {
-        "start_date": now.add(days=-1).isoformat(timespec="milliseconds"),
-        "end_date": now.isoformat(timespec="milliseconds")
-    }
-    notes = set(record["Id"] for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
-    assert created_note_id in notes, "The stream didn't return the note we created"
+    # A record may not be accessible right after creation. This workaround makes few attempts to receive latest record
+    notes = []
+    attempts = 10
+    while created_note_id not in notes:
+        now = pendulum.now(tz="UTC")
+        stream_slice = {
+            "start_date": now.add(days=-1).isoformat(timespec="milliseconds"),
+            "end_date": now.isoformat(timespec="milliseconds")
+        }
+        notes = set(record["Id"] for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
+        try:
+            assert created_note_id in notes, "The stream didn't return the note we created"
+            break
+        except Exception as e:
+            if attempts:
+                time.sleep(2)
+            else:
+                raise e
+        attempts = attempts - 1
 
     response = delete_note(stream, created_note_id, headers)
     assert response.status_code == 204, "Note was not deleted"
@@ -117,13 +129,25 @@ def test_deleted_record(stream):
 
     created_note_id = response.json()["id"]
 
-    now = pendulum.now(tz="UTC")
-    stream_slice = {
-        "start_date": now.add(days=-1).isoformat(timespec="milliseconds"),
-        "end_date": now.isoformat(timespec="milliseconds")
-    }
-    notes = set(record["Id"] for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
-    assert created_note_id in notes, "No created note during the sync"
+    # A record may not be accessible right after creation. This workaround makes few attempts to receive latest record
+    notes = []
+    attempts = 10
+    while created_note_id not in notes:
+        now = pendulum.now(tz="UTC")
+        stream_slice = {
+            "start_date": now.add(days=-1).isoformat(timespec="milliseconds"),
+            "end_date": now.isoformat(timespec="milliseconds")
+        }
+        notes = set(record["Id"] for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
+        try:
+            assert created_note_id in notes, "No created note during the sync"
+            break
+        except Exception as e:
+            if attempts:
+                time.sleep(2)
+            else:
+                raise e
+        attempts = attempts - 1
 
     response = update_note(stream, created_note_id, headers)
     assert response.status_code == 204, "Note was not updated"
