@@ -1,6 +1,6 @@
 # Connector Builder Compatibility Guide
 Answer the following questions to determine whether the Connector Builder is the right tool to build the connector you need:
-- [ ] [Is it an HTTP API returning a collection of records synchronously?](#is-the-integration-a-rest-api-returning-a-collection-of-records-synchronously)
+- [ ] [Is it an HTTP API returning a collection of records synchronously?](#is-the-integration-an-http-api-returning-a-collection-of-records-synchronously)
 - [ ] [Is the API using one of the following authentication mechanism?](#what-type-of-authentication-is-required)
     - [Basic HTTP](#basic-http)
     - [API key injected in request header or query parameter](#api-key)
@@ -11,9 +11,9 @@ Answer the following questions to determine whether the Connector Builder is the
     - [Limit-offset](#limit-offset--offsetincrement-)
     - [Page count](#page-count)
     - [Link to the next page](#link-to-next-page--cursorpagination-)
-- [ ] [Do endpoints only require query parameters that are key-value pairs?](#does-the-integration-require-query-params-that-are-not-key-value-pairs)
+- [ ] [Are the required parameters of the integration key-value pairs?](#are-the-required-parameters-of-the-integration-key-value-pairs)
 
-You can use the Connector Builder if you check all the items.
+You can use the Connector Builder if the integration checks all the items.
 
 You can follow [this chart](https://whimsical.com/how-should-i-build-my-connector-YNXaNQhRuPuWy68Xg8Akhy) to guide you through the process.
 
@@ -70,9 +70,9 @@ Sample response:
 Some endpoints are parameterized. An example of such endpoint is the [Congress API’s bill by congress endpoint](https://api.congress.gov/#/bill/bill_list_by_congress).
 `GET /bill/:congress`
 
-These endpoints are also valid synchronous REST endpoints.
+These endpoints are also valid synchronous HTTP endpoints.
 
-This differs from the [Amazon Ads reports endpoint](https://advertising.amazon.com/API/docs/en-us/info/api-overview), which returns a report ID, which will be generated asynchronously by the source. This is not a synchronous REST API because the reports need to be downloaded separately.
+This differs from the [Amazon Ads reports endpoint](https://advertising.amazon.com/API/docs/en-us/info/api-overview), which returns a report ID, which will be generated asynchronously by the source. This is not a synchronous HTTP API because the reports need to be downloaded separately.
 
 Examples:
 - Yes: [Congress API](https://api.congress.gov/#/)
@@ -199,7 +199,7 @@ You can search the documentation and the sample response for the “next” keyw
 
 Example: [Greenhouse](https://developers.greenhouse.io/harvest.html#pagination)
 
-### Are the required query parameters of the integration key-value pairs?
+### Are the required parameters of the integration key-value pairs?
 The Connector Builder currently only supports key-value query params and request body parameters.
 This means endpoints requiring [GraphQL](https://graphql.org/) are not well supported at the moment.
 
