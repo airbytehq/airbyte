@@ -134,8 +134,9 @@ if test $(tput cols) -ge 64; then
 fi
 
 ########## Dependency Check ##########
-if ! which -s docker-compose; then
-  echo "$red_text""docker compose not found! please install docker compose!""$default_text"
+if ! docker compose version >/dev/null 2>/dev/null; then
+  echo -e "$red_text""docker compose v2 not found! please install docker compose!""$default_text"
+  exit 1
 fi
 
 Download
@@ -153,15 +154,15 @@ done
 echo
 echo -e "$blue_text""Starting Docker Compose""$default_text"
 
-docker-compose up
+docker compose up
 
-# $? is the exit code of the last command. So here: docker-compose up
+# $? is the exit code of the last command. So here: docker compose up
 if test $? -ne 0; then
   echo -e "$red_text""Docker compose failed.  If you are seeing container conflicts""$default_text"
   echo -e "$red_text""please consider removing old containers""$default_text"
 fi
 
 ########## Ending Docker ##########
-docker-compose down
+docker compose down
 
-echo -e "$blue_text""Starting Docker Compose""$default_text"
+echo -e "$blue_text""Stopping Docker Compose""$default_text"
