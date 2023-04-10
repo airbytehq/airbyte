@@ -27,7 +27,7 @@ Taking the [Congress API](https://api.congress.gov/#/bill) as an example,
 
 `GET /bill`
 
-Indicates the records can be retrieved by submitting a GET request to the /bill path.The sample response shows that the response returns a collection of records, so the Congress API is REST API returning a collection of records.
+Indicates the records can be retrieved by submitting a GET request to the /bill path. The sample response shows that the response returns a collection of records, so the Congress API is a REST API returning a collection of records.
 
 Sample response:
 ```
