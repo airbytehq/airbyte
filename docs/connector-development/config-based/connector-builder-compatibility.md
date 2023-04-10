@@ -180,7 +180,7 @@ Example: [newsapi.ai](https://newsapi.ai/documentation)
 ### Limit-Offset (OffsetIncrement)
 Endpoints using limit-offset pagination accept two pagination parameters
 1. The number of records to be returned (typically called “limit”)
-2. The ID of the first record to return (typically called “offset”)
+2. The index of the first record to return (typically called “offset”)
 
 ![Offset-limit-example](./assets/connector_builder_compatibility/offset_limit_example.png)
 
