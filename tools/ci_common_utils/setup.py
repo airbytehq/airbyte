@@ -1,11 +1,11 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["cryptography", "requests", "pyjwt~=2.3.0"]
+MAIN_REQUIREMENTS = ["cryptography", "requests", "pyjwt~=2.6.0"]
 
 TEST_REQUIREMENTS = ["requests-mock"]
 

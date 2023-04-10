@@ -12,12 +12,13 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.SnapshotMetadata;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PostgresCdcTargetPosition implements CdcTargetPosition {
+public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcTargetPosition.class);
   @VisibleForTesting
@@ -71,8 +72,8 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
   }
 
   @Override
-  public boolean reachedTargetPosition(final Long lsn) {
-    return lsn != null && lsn.compareTo(targetLsn.asLong()) >= 0;
+  public boolean reachedTargetPosition(final Long positionFromHeartbeat) {
+    return positionFromHeartbeat != null && positionFromHeartbeat.compareTo(targetLsn.asLong()) >= 0;
   }
 
   private PgLsn extractLsn(final JsonNode valueAsJson) {
@@ -86,6 +87,11 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
   @Override
   public boolean isHeartbeatSupported() {
     return true;
+  }
+
+  @Override
+  public Long extractPositionFromHeartbeatOffset(final Map<String, ?> sourceOffset) {
+    return (long) sourceOffset.get("lsn");
   }
 
 }

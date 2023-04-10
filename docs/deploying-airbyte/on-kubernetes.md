@@ -1,7 +1,7 @@
 # (Deprecated) Deploy Airbyte on Kubernetes using Kustomize
 
 :::caution
-This deployment method uses Kustomize and is only supported up to [Airbyte version `0.40.32`](https://github.com/airbytehq/airbyte/releases/tag/v0.40.32). For existing deployments, check out [commit `21a7e102183e20d2d4998ea70c2a8fe4eac8921b`](https://github.com/airbytehq/airbyte/commit/21a7e102183e20d2d4998ea70c2a8fe4eac8921b) to continue deploying using Kustomize. For new deployments, [deploy Airbyte on Kubernetes via Helm](/deploying-airbyte/on-kubernetes-via-helm.md).
+This deployment method uses Kustomize and is only supported up to [Airbyte version `0.40.32`](https://github.com/airbytehq/airbyte/releases/tag/v0.40.32). For existing deployments, check out [commit `21a7e102183e20d2d4998ea70c2a8fe4eac8921b`](https://github.com/airbytehq/airbyte/commit/21a7e102183e20d2d4998ea70c2a8fe4eac8921b) to continue deploying using Kustomize. For new deployments, [deploy Airbyte on Kubernetes via Helm](https://docs.airbyte.com/deploying-airbyte/on-kubernetes-via-helm).
 :::
 
 This page guides you through deploying Airbyte Open Source on Kubernetes. 

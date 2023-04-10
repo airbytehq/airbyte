@@ -47,13 +47,13 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
     if (db == null) {
-      db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
+      db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2022-RTM-CU2-ubuntu-20.04").acceptLicense();
       db.start();
     }
-
+    final var containerAddress = SshHelpers.getOuterContainerAddress(db);
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, db.getHost())
-        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
+        .put(JdbcUtils.HOST_KEY, containerAddress.left)
+        .put(JdbcUtils.PORT_KEY, containerAddress.right)
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .build());
@@ -79,8 +79,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-  }
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {}
 
   @Override
   protected String getImageName() {

@@ -34,7 +34,7 @@ This page contains the setup guide and reference information for the Jira source
 
 The Jira source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
@@ -126,6 +126,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                                | Subject                                                                                                                 |
 |:--------|:-----------|:------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| 0.3.5   | 2023-04-05 | [\#24890](https://github.com/airbytehq/airbyte/pull/24890)  | Fix streams "IssuePropertyKeys", "ScreenTabFields"                                                                      |
 | 0.3.4   | 2023-02-14 | [\#23006](https://github.com/airbytehq/airbyte/pull/23006)  | Remove caching for `Issues` stream                                                                                      |
 | 0.3.3   | 2023-01-04 | [\#20739](https://github.com/airbytehq/airbyte/pull/20739)  | fix: check_connection fails if no projects are defined                                                                  |
 | 0.3.2   | 2022-12-23 | [\#20859](https://github.com/airbytehq/airbyte/pull/20859)  | Fixed pagination for streams `issue_remote_links`, `sprints`                                                            |
