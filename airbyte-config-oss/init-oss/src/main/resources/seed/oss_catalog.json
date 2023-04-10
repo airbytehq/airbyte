@@ -15696,7 +15696,7 @@
     "sourceDefinitionId": "68e63de2-bb83-4c7e-93fa-a8a9051e3993",
     "name": "Jira",
     "dockerRepository": "airbyte/source-jira",
-    "dockerImageTag": "0.3.5",
+    "dockerImageTag": "0.3.6",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/jira",
     "icon": "jira.svg",
     "sourceType": "api",
@@ -15719,9 +15719,8 @@
           "domain": {
             "type": "string",
             "title": "Domain",
-            "examples": [ "domainname.atlassian.net" ],
-            "pattern": "^[a-zA-Z0-9._-]*\\.atlassian\\.net$",
-            "description": "The Domain for your Jira account, e.g. airbyteio.atlassian.net",
+            "examples": [ "<your-domain>.atlassian.net", "<your-domain>.jira.com", "jira.<your-domain>.com" ],
+            "description": "The Domain for your Jira account, e.g. airbyteio.atlassian.net, airbyteio.jira.com, jira.your-domain.com",
             "order": 1
           },
           "email": {
