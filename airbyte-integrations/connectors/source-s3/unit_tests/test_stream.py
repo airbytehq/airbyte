@@ -456,7 +456,7 @@ class TestIncrementalFileStream:
         stream_instance = IncrementalFileStreamS3(
             dataset="dummy", provider={"bucket": "test-test"}, format={}, path_pattern="**/prefix*.csv"
         )
-        assert stream_instance.fileformatparser_map
+        assert stream_instance.file_formatparser_map
 
     @pytest.mark.parametrize(
         ("bucket", "path_prefix", "list_v2_objects", "expected_file_info"),
