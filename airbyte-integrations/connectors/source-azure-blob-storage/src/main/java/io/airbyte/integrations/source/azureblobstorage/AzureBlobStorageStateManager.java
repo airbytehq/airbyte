@@ -2,8 +2,8 @@ package io.airbyte.integrations.source.azureblobstorage;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StateWrapper;
-import io.airbyte.config.helpers.StateMessageHelper;
+import io.airbyte.configoss.StateWrapper;
+import io.airbyte.configoss.helpers.StateMessageHelper;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
@@ -16,8 +16,8 @@ public class AzureBlobStorageStateManager {
 
     }
 
-    public static StreamState deserializeStreamState(JsonNode state, boolean useStreamCapableState) {
-        Optional<StateWrapper> typedState =
+    public static StreamState deserializeStreamState(final JsonNode state, final boolean useStreamCapableState) {
+        final Optional<StateWrapper> typedState =
             StateMessageHelper.getTypedState(state, useStreamCapableState);
         return typedState.map(stateWrapper -> switch (stateWrapper.getStateType()) {
             case STREAM:

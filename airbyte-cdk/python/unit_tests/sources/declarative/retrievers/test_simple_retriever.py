@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from typing import Mapping
 from unittest.mock import MagicMock, patch
 
 import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
@@ -10,6 +11,7 @@ import requests
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode, Type
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
+from airbyte_cdk.sources.declarative.partition_routers import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
@@ -701,3 +703,42 @@ def test_read_records_updates_stream_slicer_once_if_no_records(test_name, last_r
 
 def _generate_slices(number_of_slices):
     return [{"date": f"2022-01-0{day + 1}"} for day in range(number_of_slices)]
+
+
+def test_emit_log_request_response_messages():
+    record_selector = MagicMock()
+    record_selector.select_records.return_value = records
+
+    request = requests.PreparedRequest()
+    request.headers = {"header": "value"}
+    request.url = "http://byrde.enterprises.com/casinos"
+
+    response = requests.Response()
+    response.request = request
+    response.status_code = 200
+
+    retriever = SimpleRetrieverTestReadDecorator(
+        name="stream_name",
+        primary_key=primary_key,
+        requester=MagicMock(),
+        paginator=MagicMock(),
+        record_selector=record_selector,
+        stream_slicer=SinglePartitionRouter(parameters={}),
+        parameters={},
+        config={},
+    )
+
+    request_log_message, response_log_message, record_1, record_2 = [
+        record for record in retriever.parse_records(request=request, response=response, stream_slice={}, stream_state={})
+    ]
+
+    assert isinstance(request_log_message, AirbyteMessage)
+    assert request_log_message.type == Type.LOG
+    assert "request:" in request_log_message.log.message
+    assert isinstance(response_log_message, AirbyteMessage)
+    assert response_log_message.type == Type.LOG
+    assert "response:" in response_log_message.log.message
+    assert isinstance(record_1, Mapping)
+    assert record_1 == records[0]
+    assert isinstance(record_1, Mapping)
+    assert record_2 == records[1]
