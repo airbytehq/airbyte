@@ -1,21 +1,16 @@
-import click
 import yaml
+import pathlib
 from pydantic import ValidationError
 from metadata_service.models.generated.ConnectorMetadataDefinitionV1 import ConnectorMetadataDefinitionV1
 
 
-@click.command()
-@click.argument("file_path")
-def validate_metadata_file(file_path):
+def validate_metadata_file(file_path: pathlib.Path):
     """
     Validates a metadata YAML file against a metadata Pydantic model.
     """
-    with open(file_path, "r") as f:
-        try:
-            metadata = yaml.safe_load(f)
-            ConnectorMetadataDefinitionV1.parse_obj(metadata)
-            click.echo(f"{file_path} is a valid ConnectorMetadataDefinitionV1 YAML file.")
-        except ValidationError as e:
-            click.echo(f"{file_path} is not a valid ConnectorMetadataDefinitionV1 YAML file.")
-            click.echo(str(e))
-            exit(1)
+    try:
+        metadata = yaml.safe_load(file_path.read_text())
+        ConnectorMetadataDefinitionV1.parse_obj(metadata)
+        return True, None
+    except ValidationError as e:
+        return False, e
