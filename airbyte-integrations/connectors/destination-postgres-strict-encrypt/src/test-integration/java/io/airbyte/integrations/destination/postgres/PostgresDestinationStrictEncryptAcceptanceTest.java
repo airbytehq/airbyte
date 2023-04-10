@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StandardCheckConnectionOutput.Status;
+import io.airbyte.configoss.StandardCheckConnectionOutput.Status;
 import io.airbyte.db.Database;
 import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.factory.DSLContextFactory;
@@ -23,7 +23,6 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -206,19 +205,7 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   }
 
   @Override
-  protected String getNormalizationIntegrationType() {
-    return getOptionalDestinationDefinitionFromProvider("airbyte/destination-postgres")
-        .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
-        .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationConfig().getNormalizationIntegrationType())
-        .orElse(null);
-  }
-
-  @Override
-  protected String getNormalizationImageName() {
-    return getOptionalDestinationDefinitionFromProvider("airbyte/destination-postgres")
-        .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
-        .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationConfig().getNormalizationRepository() + ":"
-            + NORMALIZATION_VERSION)
-        .orElse(null);
+  protected String getDestinationDefinitionKey() {
+    return "airbyte/destination-postgres";
   }
 }

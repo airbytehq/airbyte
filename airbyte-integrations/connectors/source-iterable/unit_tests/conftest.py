@@ -38,3 +38,8 @@ def lists_stream():
     # return the instance of the stream so we could make global tests on it,
     # to cover the different `should_retry` logic
     return Lists(authenticator=NoAuth())
+
+
+@pytest.fixture(autouse=True)
+def mock_sleep(mocker):
+    mocker.patch("time.sleep")
