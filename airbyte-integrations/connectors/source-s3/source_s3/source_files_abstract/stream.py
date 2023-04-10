@@ -52,7 +52,7 @@ class FileStream(Stream, ABC):
     # we need to support both of them for a while
     deprecated_datetime_format_string = "%Y-%m-%dT%H:%M:%S%z"
 
-    def __init__(self, dataset: str, provider: dict, format: dict, path_pattern: str, start_date: str = None, schema: str = None):
+    def __init__(self, dataset: str, provider: dict, format: dict, path_pattern: str, schema: str = None, start_date: str = None):
         """
         :param dataset: table name for this stream
         :param provider: provider specific mapping as described in spec.json
