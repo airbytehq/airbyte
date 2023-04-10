@@ -21,7 +21,7 @@ The sections below provide more details to help you answer the questions.
 
 Is the integration a REST API? In doubt, look for the word “REST” in the documentation.
 
-Rook at the shape of the resource path.
+Look at the shape of the resource path.
 
 Taking the [Congress API](https://api.congress.gov/#/bill) as an example,
 
