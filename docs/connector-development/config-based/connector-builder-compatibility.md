@@ -15,7 +15,7 @@ Answer the following questions to determine whether the Connector Builder is the
 
 You can use the Connector Builder if the integration checks all the items.
 
-You can follow [this chart](https://whimsical.com/how-should-i-build-my-connector-YNXaNQhRuPuWy68Xg8Akhy) to guide you through the process.
+You can follow [this chart](https://whimsical.com/connector-builder-compatibility-NEuqCZJzn7eaxfESQzCGWy@2Ux7TurymMvSCmDXoyPf) to guide you through the process.
 
 The sections below provide more details to help you answer the questions.
 
