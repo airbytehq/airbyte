@@ -385,6 +385,8 @@ jobs:
           fi
           if [[ ${{ steps.auto-bump.outcome }} = "success" ]]; then
             echo "AUTO_BUMP_OUTCOME=:white_check_mark:" >> $GITHUB_ENV
+          elif [[ ${{ steps.auto-bump.outcome }} = "skipped" ]]; then
+            echo "AUTO_BUMP_OUTCOME=skipped" >> $GITHUB_ENV
           else
             echo "AUTO_BUMP_OUTCOME=:x:" >> $GITHUB_ENV
           fi
