@@ -171,7 +171,7 @@ Here are the standard pagination mechanisms:
 ### Page count
 Endpoints using page count pagination accept two pagination parameters
 1. The number of records to be returned (typically called “page_size”)
-2. The page to request (typically called “page”)
+2. The page to request (typically called “page” or “page number“)
 
 Example: [newsapi.ai](https://newsapi.ai/documentation)
 
