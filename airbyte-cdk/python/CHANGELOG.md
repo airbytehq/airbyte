@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.34.0
+Low-Code CDK: Enable use of SingleUseRefreshTokenAuthenticator
+
+## 0.33.2
+low-code: fix duplicate stream slicer update
+
 ## 0.33.1
 Low-Code CDK: make RecordFilter.filter_records as generator
 
