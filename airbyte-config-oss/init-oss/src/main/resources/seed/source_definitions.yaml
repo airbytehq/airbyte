@@ -733,6 +733,7 @@
   allowedHosts:
     hosts:
       - api.github.com
+  maxSecondsBetweenMessages: 5400
 - name: Gitlab
   sourceDefinitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
   dockerRepository: airbyte/source-gitlab
