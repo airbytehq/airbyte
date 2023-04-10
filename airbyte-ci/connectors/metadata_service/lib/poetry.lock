@@ -879,7 +879,7 @@ testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.
 name = "pyyaml"
 version = "6.0"
 description = "YAML parser and emitter for Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 files = [
@@ -1142,4 +1142,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "ce2e1eb8e745ebde27f1fe4606cf5f6d2e0da03df6a3c45dd38a149730b01e09"
+content-hash = "5dc476982554a3de710f06cb9ce2399764bf0398e85b6347563b1a79420d0bc8"
