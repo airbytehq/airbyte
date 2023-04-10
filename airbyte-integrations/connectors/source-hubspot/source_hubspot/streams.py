@@ -1242,9 +1242,9 @@ class DealPipelines(ClientSideIncrementalStream):
     cursor_field_datetime_format = "x"
     primary_key = "pipelineId"
     scopes = {
-        "contacts", 
-        "tickets", 
-        "crm.objects.contacts.read", 
+        "contacts",
+        "tickets",
+        "crm.objects.contacts.read",
         "crm.schemas.contacts.read",
     }
 
