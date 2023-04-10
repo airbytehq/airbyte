@@ -11,11 +11,10 @@ definitions:
     pagination_strategy:
       type: "CursorPagination"
       cursor_value: "{{ response['next'] }}"
-      page_size_option:
-        type: RequestOption
-        inject_into: request_parameter
-        field_name: limit
-        page_size: 100
+      page_size: 100
+    page_size_option:
+      inject_into: request_parameter
+      field_name: limit
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:

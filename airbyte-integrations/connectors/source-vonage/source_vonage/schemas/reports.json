@@ -42,7 +42,7 @@
       "type": ["null", "string"]
     },
     "date_received": {
-      "type": ["null", "string"],
+      "type": ["string"],
       "format": "date-time"
     },
     "date_finalized": {
