@@ -49,7 +49,18 @@ class LastRecordDictProxy(abc.MutableMapping):
 
 @dataclass
 class CustomDatetimeBasedCursor(DatetimeBasedCursor):
-
+    """
+    This class is used to override the default DatetimeBasedCursor behavior in the way the cursor values from the `last_record` are
+    retrieved, specifically the nested values. In case the last_record looks like follows, there is no way we can get the nested cursor
+    value for now by means of the base class.
+    {
+      "id": "id",
+      "Metadata": {
+        "LastUpdatedTime": "<DateTime>"
+      }
+    }
+    To adopt this change to the LowCode CDK, this issue was created - https://github.com/airbytehq/airbyte/issues/25008.
+    """
     def update_cursor(self, stream_slice: StreamSlice, last_record: typing.Optional[Record] = None):
         super(CustomDatetimeBasedCursor, self).update_cursor(
             stream_slice=stream_slice,

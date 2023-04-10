@@ -7,7 +7,6 @@
     "required": [
       "credentials",
       "realm_id",
-      "user_agent",
       "start_date",
       "sandbox"
     ],
@@ -72,12 +71,6 @@
         "title": "Realm ID",
         "type": "string",
         "airbyte_secret": true
-      },
-      "user_agent": {
-        "order": 2,
-        "type": "string",
-        "title": "User Agent",
-        "description": "Process and email for API logging purposes. Example: tap-quickbooks <api_user_email@your_company.com>."
       },
       "start_date": {
         "order": 3,

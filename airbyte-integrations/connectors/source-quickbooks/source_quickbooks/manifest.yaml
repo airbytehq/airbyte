@@ -19,7 +19,7 @@ definitions:
       query: "SELECT * FROM {{ parameters.table_name }} WHERE Metadata.LastUpdatedTime > '{{ stream_slice.start_time }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time }}' {{ parameters.additional_where }} ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{ (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{ (config.max_results or '200') | int }}"
     request_headers:
       "Accept": "application/json"
-      "User-Agent": "{{ config.user_agent }}"
+      "User-Agent": "airbyte-connector"
     authenticator:
       type: SingleUseRefreshTokenOAuthAuthenticator
       token_refresh_endpoint: "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"

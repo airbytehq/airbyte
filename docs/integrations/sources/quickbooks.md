@@ -4,10 +4,8 @@ This page contains the setup guide and reference information for the QuickBooks 
 
 ## Prerequisites
 
-- Account at [Intuit Developer account](https://developer.intuit.com/app/developer/qbo/docs/get-started)
-- Start date
+- [Intuit QuickBooks account](https://quickbooks.intuit.com/global/)
 - Realm ID
-- User Agent
 
 <!-- env:oss -->
 **For Airbyte Open Source:**
@@ -39,11 +37,10 @@ Create a [Intuit Developer account](https://developer.intuit.com/app/developer/q
 3. On the source setup page, select **QuickBooks** from the Source type dropdown and enter a name for this connector.
 4. Click `Authenticate your QuickBooks account`
 5. Log in and Authorize to the QuickBooks account.
-6. **Start date** - The date from which you'd like to replicate data for streams.
+6. **Start date** - The date starting from which you'd like to replicate data.
 7. **Realm ID** - The Labeled Company ID you'd like to replicate data for streams.
-8. **User Agent** - Process and email for API logging purposes.
-10. **Sandbox** - Turn on if you're going to replicate the data from the sandbox environment.
-11. Click **Set up source**.
+8. **Sandbox** - Turn on if you're going to replicate the data from the sandbox environment.
+9. Click **Set up source**.
 
 <!-- /env:cloud -->
 
@@ -57,8 +54,7 @@ Create a [Intuit Developer account](https://developer.intuit.com/app/developer/q
 5. **Token Expiry Date** - DateTime when the access token becomes invalid
 6. **Start date** - The date from which you'd like to replicate data for streams.
 7. **Realm ID** - The Labeled Company ID you'd like to replicate data for streams.
-8. **User Agent** - Process and email for API logging purposes.
-9. **Sandbox** - Turn on if you're going to replicate the data from the sandbox environment.
+8. **Sandbox** - Turn on if you're going to replicate the data from the sandbox environment.
 <!-- /env:oss -->
 
 ## Supported sync modes
