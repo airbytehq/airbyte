@@ -515,6 +515,60 @@ class TestIncrementalFileStream:
             for file_info in stream_instance.filepath_iterator():
                 assert file_info == next(expected_info)
 
+    @pytest.mark.parametrize(
+        ("start_date", "bucket", "path_prefix", "list_v2_objects", "expected_files_count"),
+        (
+                ("2021-01-01T00:00:00Z",
+                 "test_bucket",
+                 "/widescreen",
+                 [
+                     {
+                         "Contents": [
+                             {"Key": "Key_A", "Size": 2048,
+                              "LastModified": datetime(2020, 2, 20, 20, 0, 2, tzinfo=timezone.utc)},
+                             {"Key": "Key_B", "Size": 1024,
+                              "LastModified": datetime(2020, 2, 20, 20, 22, 2, tzinfo=timezone.utc)},
+                         ],
+                         "NextContinuationToken": "token",
+                     },
+                     {"Contents": [{"Key": "Key_C", "Size": 512,
+                                    "LastModified": datetime(2022, 2, 2, 2, 2, 2, tzinfo=timezone.utc)}]},
+                 ],
+                 1,
+                 ),
+                ("2023-01-01T00:00:00Z",
+                 "almost_real_test_bucket",
+                 "/HD",
+                 [
+                     {
+                         "Contents": [
+                             {"Key": "file/path", "Size": 2048,
+                              "LastModified": datetime(2020, 2, 20, 20, 0, 2, tzinfo=timezone.utc)},
+                             {"Key": "file/path/A/", "Size": 1024,
+                              "LastModified": datetime(2020, 2, 20, 20, 22, 2, tzinfo=timezone.utc)},
+                         ],
+                         "NextContinuationToken": "token",
+                     },
+                     {"Contents": [{"Key": "file/path/B/", "Size": 512,
+                                    "LastModified": datetime(2022, 2, 2, 2, 2, 2, tzinfo=timezone.utc)}]},
+                 ],
+                 0,
+                 ),
+        ),
+    )
+    def test_filepath_iterator_date_filter(self, start_date, bucket, path_prefix, list_v2_objects, expected_files_count):
+        provider = {"aws_access_key_id": "key_id", "aws_secret_access_key": "access_key"}
+        s3_client_mock = MagicMock(return_value=MagicMock(list_objects_v2=MagicMock(side_effect=list_v2_objects)))
+        with patch("source_s3.stream.make_s3_client", s3_client_mock):
+            stream_instance = IncrementalFileStreamS3(
+                dataset="dummy",
+                provider={"bucket": bucket, "path_prefix": path_prefix, **provider},
+                format={},
+                path_pattern="**/prefix*.png",
+                start_date=start_date
+            )
+            assert len(list(stream_instance.filepath_iterator())) == expected_files_count
+
     def test_get_schema(self):
         stream_instance = IncrementalFileStreamS3(
             dataset="dummy",
