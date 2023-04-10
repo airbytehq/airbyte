@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.mysql.cj.MysqlType;
@@ -17,19 +15,11 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.v0.AirbyteStream;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.LongStream;
-import java.util.stream.Stream;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 
 public class MySqlDatatypeAccuracyTest extends AbstractMySqlSourceDatatypeTest {
