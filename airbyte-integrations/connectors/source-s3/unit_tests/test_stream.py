@@ -655,6 +655,3 @@ class TestIncrementalFileStream:
             path_pattern="**/prefix*.csv"
         )
         assert stream_instance.get_updated_state(current_state, latest_record)["_ab_source_file_last_modified"] == "2022-11-09T11:12:00Z"
-
-
-    def some_task(self):
