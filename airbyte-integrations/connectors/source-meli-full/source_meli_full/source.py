@@ -123,7 +123,7 @@ class MeliInvoices(HttpStream):
         invoice = {
             "data": xml_item,
             "merchant": self.merchant_code.upper(),
-            "user_id": self.client_id,
+            "user_id": self.credstash_key.split('_')[-1].split('.')[0],
             "source": "AIRBYTE_MELI_FULL"
         }
         return invoice
