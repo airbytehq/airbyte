@@ -15,6 +15,8 @@ import pendulum as pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams import IncrementalMixin
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -660,8 +662,71 @@ class Stream(HttpStream, ABC):
             if "associations" in record:
                 associations = record.pop("associations")
                 for name, association in associations.items():
-                    record[name] = [row["id"] for row in association.get("results", [])]
+                    record[name.replace(" ", "_")] = [row["id"] for row in association.get("results", [])]
             yield record
+
+
+class ClientSideIncrementalStream(Stream, IncrementalMixin):
+    _cursor_value = ""
+
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        return self.updated_at_field
+
+    @property
+    @abstractmethod
+    def updated_at_field(self):
+        """Name of the field associated with the state"""
+
+    @property
+    @abstractmethod
+    def cursor_field_datetime_format(self):
+        """Date-time expressed in pendulum formats, see: https://pendulum.eustace.io/docs/#formatter"""
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        return {self.cursor_field: self._cursor_value}
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._cursor_value = value[self.cursor_field]
+
+    def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> bool:
+        """
+        Filter out old records that come from source in unsorted order.
+        Hubspot API uses 2 date-time formats for different endpoints:
+        1. "YYYY-MM-DDTHH:mm:ss.SSSSSSZ" - date-time in ISO format
+        2. "x" - date-time in timestamp in milliseconds
+        """
+        int_field_type = "integer" in self.get_json_schema().get("properties").get(self.cursor_field).get("type")
+        record_value = (
+            pendulum.parse(record.get(self.cursor_field))
+            if isinstance(record.get(self.cursor_field), str)
+            else pendulum.from_format(str(record.get(self.cursor_field)), self.cursor_field_datetime_format)
+        )
+        start_date = (
+            pendulum.from_format(str(stream_state.get(self.cursor_field)), self.cursor_field_datetime_format)
+            if stream_state
+            else self._start_date
+        )
+        cursor_value = max(start_date, record_value)
+        max_state = max(str(self.state.get(self.cursor_field)), cursor_value.format(self.cursor_field_datetime_format))
+        self.state = {self.cursor_field: int(max_state) if int_field_type else max_state}
+        return (
+            not stream_state
+            or pendulum.from_format(str(stream_state.get(self.cursor_field)), self.cursor_field_datetime_format) < record_value
+        )
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[StreamData]:
+        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            if self.filter_by_state(stream_state=stream_state, record=record):
+                yield record
 
 
 class AssociationsStream(Stream):
@@ -1068,7 +1133,7 @@ class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):
         yield from self._flat_associations(records)
 
 
-class Campaigns(Stream):
+class Campaigns(ClientSideIncrementalStream):
     """Email campaigns, API v1
     There is some confusion between emails and campaigns in docs, this endpoint returns actual emails
     Docs: https://legacydocs.hubspot.com/docs/methods/email/get_campaign_data
@@ -1079,6 +1144,7 @@ class Campaigns(Stream):
     data_field = "campaigns"
     limit = 500
     updated_at_field = "lastUpdatedTime"
+    cursor_field_datetime_format = "x"
     primary_key = "id"
     scopes = {"crm.lists.read"}
 
@@ -1091,7 +1157,8 @@ class Campaigns(Stream):
     ) -> Iterable[Mapping[str, Any]]:
         for row in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
             record, response = self._api.get(f"/email/public/v1/campaigns/{row['id']}")
-            yield {**row, **record}
+            if self.filter_by_state(stream_state=stream_state, record=row):
+                yield {**row, **record}
 
 
 class ContactLists(IncrementalStream):
@@ -1163,7 +1230,30 @@ class Deals(CRMSearchStream):
     scopes = {"contacts", "crm.objects.deals.read"}
 
 
-class DealPipelines(Stream):
+class DealsArchived(ClientSideIncrementalStream):
+    """Archived Deals, API v3"""
+
+    url = "/crm/v3/objects/deals"
+    entity = "deal"
+    updated_at_field = "archivedAt"
+    created_at_field = "createdAt"
+    associations = ["contacts", "companies", "line_items"]
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
+    primary_key = "id"
+    scopes = {"contacts", "crm.objects.deals.read"}
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params.update({"archived": "true", "associations": self.associations})
+        return params
+
+
+class DealPipelines(ClientSideIncrementalStream):
     """Deal pipelines, API v1,
     This endpoint requires the contacts scope the tickets scope.
     Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
@@ -1172,11 +1262,12 @@ class DealPipelines(Stream):
     url = "/crm-pipelines/v1/pipelines/deals"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+    cursor_field_datetime_format = "x"
     primary_key = "pipelineId"
     scopes = {"contacts", "tickets"}
 
 
-class TicketPipelines(Stream):
+class TicketPipelines(ClientSideIncrementalStream):
     """Ticket pipelines, API v1
     This endpoint requires the tickets scope.
     Docs: https://developers.hubspot.com/docs/api/crm/pipelines
@@ -1185,6 +1276,7 @@ class TicketPipelines(Stream):
     url = "/crm/v3/pipelines/tickets"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
     primary_key = "id"
     scopes = {
         "media_bridge.read",
@@ -1305,7 +1397,7 @@ class Engagements(IncrementalStream):
         self._update_state(latest_cursor=latest_cursor, is_last_record=True)
 
 
-class Forms(Stream):
+class Forms(ClientSideIncrementalStream):
     """Marketing Forms, API v3
     by default non-marketing forms are filtered out of this endpoint
     Docs: https://developers.hubspot.com/docs/api/marketing/forms
@@ -1315,11 +1407,12 @@ class Forms(Stream):
     url = "/marketing/v3/forms"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
     primary_key = "id"
     scopes = {"forms"}
 
 
-class FormSubmissions(Stream):
+class FormSubmissions(ClientSideIncrementalStream):
     """Marketing Forms, API v1
     This endpoint requires the forms scope.
     Docs: https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form
@@ -1328,6 +1421,7 @@ class FormSubmissions(Stream):
     url = "/form-integrations/v1/submissions/forms"
     limit = 50
     updated_at_field = "updatedAt"
+    cursor_field_datetime_format = "x"
     scopes = {"forms"}
 
     def path(
@@ -1375,8 +1469,9 @@ class FormSubmissions(Stream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
-            record["formId"] = stream_slice["form_id"]
-            yield record
+            if self.filter_by_state(stream_state=stream_state, record=record):
+                record["formId"] = stream_slice["form_id"]
+                yield record
 
 
 class MarketingEmails(Stream):
@@ -1394,7 +1489,7 @@ class MarketingEmails(Stream):
     scopes = {"content"}
 
 
-class Owners(Stream):
+class Owners(ClientSideIncrementalStream):
     """Owners, API v3
     Docs: https://legacydocs.hubspot.com/docs/methods/owners/get_owners
     """
@@ -1402,6 +1497,7 @@ class Owners(Stream):
     url = "/crm/v3/owners"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
     primary_key = "id"
     scopes = {"crm.objects.owners.read"}
 
@@ -1471,7 +1567,7 @@ class SubscriptionChanges(IncrementalStream):
     scopes = {"content"}
 
 
-class Workflows(Stream):
+class Workflows(ClientSideIncrementalStream):
     """Workflows, API v3
     Docs: https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows
     """
@@ -1480,6 +1576,7 @@ class Workflows(Stream):
     data_field = "workflows"
     updated_at_field = "updatedAt"
     created_at_field = "insertedAt"
+    cursor_field_datetime_format = "x"
     primary_key = "id"
     scopes = {"automation"}
 
