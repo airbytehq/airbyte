@@ -353,19 +353,4 @@ class SponsoredProductsReportStream(ReportStream):
             },
         }
 
-        if RecordType.ASINS in record_type:
-            body["campaignType"] = "sponsoredProducts"
-            if profile.accountInfo.type == "vendor":
-                metrics_list = copy(metrics_list)
-                metrics_list.remove("sku")
-        if record_type == "keywords_searchTerms":
-            body["segment"] = "query"
-
-        # adId is automatically added to the report by amazon and requesting adId causes an amazon error
-        if "adId" in metrics_list:
-            metrics_list.remove("adId")
-        # query is automatically added to the report by amazon and requesting query causes an amazon error
-        if "query" in metrics_list:
-            metrics_list.remove("query")
-
         return body
