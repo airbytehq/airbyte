@@ -72,7 +72,7 @@ Some endpoints are parameterized. An example of such endpoint is the [Congress A
 
 These endpoints are also valid synchronous REST endpoints.
 
-This differs from the [Amazon Ads reports endpoint](https://advertising.amazon.com/API/docs/en-us/info/api-overview)), which returns a report ID, which will be generated asynchronously by the source. Because the reports need to be downloaded separately, this is not a synchronous REST API.
+This differs from the [Amazon Ads reports endpoint](https://advertising.amazon.com/API/docs/en-us/info/api-overview), which returns a report ID, which will be generated asynchronously by the source. Because the reports need to be downloaded separately, this is not a synchronous REST API.
 
 Examples:
 - Yes: [Congress API](https://api.congress.gov/#/)
