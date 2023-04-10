@@ -29,8 +29,8 @@ class QaChecks(Step):
                 str(self.context.connector.code_directory),
                 str(self.context.connector.documentation_file_path),
                 str(self.context.connector.icon_path),
-                "airbyte-config/init/src/main/resources/seed/source_definitions.yaml",
-                "airbyte-config/init/src/main/resources/seed/destination_definitions.yaml",
+                "airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml",
+                "airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml",
             ],
         )
         qa_checks = (
