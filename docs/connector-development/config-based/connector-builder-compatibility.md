@@ -199,6 +199,7 @@ Do requests require complex query parameters? Does it support GraphQL querying?
 An example of an endpoint that would be tricky to implement with the Connector Builder is [SproutSocial’s Analytics endpoint](https://api.sproutsocial.com/docs/#analytics-endpoints).
 
 The endpoint requires a list of filters and metrics.
+
 ![Filters-example](./assets/connector_builder_compatibility/filters_example.png)
 
 This endpoint is not supported by the connector builder because the “filters” and “metrics” fields are lists.
