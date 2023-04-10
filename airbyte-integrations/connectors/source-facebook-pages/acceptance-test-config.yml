@@ -29,6 +29,7 @@ acceptance_tests:
             bypass_reason: "Data is not permanent"
           - name: post_insights
             bypass_reason: "Data is not permanent"
+        timeout_seconds: 600
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
