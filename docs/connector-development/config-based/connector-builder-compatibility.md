@@ -21,13 +21,13 @@ The sections below provide more details to help you answer the questions.
 
 Is the integration a REST API? In doubt, look for the word “REST” in the documentation.
 
-Rook at the shape of the resource path.
+Look at the shape of the resource path.
 
 Taking the [Congress API](https://api.congress.gov/#/bill) as an example,
 
 `GET /bill`
 
-Indicates the records can be retrieved by submitting a GET request to the /bill path.The sample response shows that the response returns a collection of records, so the Congress API is REST API returning a collection of records.
+Indicates the records can be retrieved by submitting a GET request to the /bill path. The sample response shows that the response returns a collection of records, so the Congress API is a REST API returning a collection of records.
 
 Sample response:
 ```
@@ -72,7 +72,7 @@ Some endpoints are parameterized. An example of such endpoint is the [Congress A
 
 These endpoints are also valid synchronous REST endpoints.
 
-This differs from the [Amazon Ads reports endpoint](https://advertising.amazon.com/API/docs/en-us/info/api-overview)), which returns a report ID, which will be generated asynchronously by the source. Because the reports need to be downloaded separately, this is not a synchronous REST API.
+This differs from the [Amazon Ads reports endpoint](https://advertising.amazon.com/API/docs/en-us/info/api-overview), which returns a report ID, which will be generated asynchronously by the source. Because the reports need to be downloaded separately, this is not a synchronous REST API.
 
 Examples:
 - Yes: [Congress API](https://api.congress.gov/#/)
@@ -177,7 +177,7 @@ Here are the standard pagination mechanisms:
 ### Page count
 Endpoints using page count pagination accept two pagination parameters
 1. The number of records to be returned (typically called “page_size”)
-2. The page to request (typically called “page”)
+2. The page to request (typically called “page” or “page number“)
 
 Example: [newsapi.ai](https://newsapi.ai/documentation)
 
@@ -186,7 +186,7 @@ Example: [newsapi.ai](https://newsapi.ai/documentation)
 ### Limit-Offset (OffsetIncrement)
 Endpoints using limit-offset pagination accept two pagination parameters
 1. The number of records to be returned (typically called “limit”)
-2. The ID of the first record to return (typically called “offset”)
+2. The index of the first record to return (typically called “offset”)
 
 ![Offset-limit-example](./assets/connector_builder_compatibility/offset_limit_example.png)
 
@@ -206,6 +206,7 @@ This means endpoints requiring [GraphQL](https://graphql.org/) are not well supp
 An example of an endpoint that would be tricky to implement with the Connector Builder is [SproutSocial’s Analytics endpoint](https://api.sproutsocial.com/docs/#analytics-endpoints).
 
 The endpoint requires a list of filters and metrics.
+
 ![Filters-example](./assets/connector_builder_compatibility/filters_example.png)
 
 This endpoint is not supported by the connector builder because the “filters” and “metrics” fields are lists.
