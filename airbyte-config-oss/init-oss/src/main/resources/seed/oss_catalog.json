@@ -13411,7 +13411,8 @@
     },
     "suggestedStreams": {
       "streams": [ "branches", "comments", "issues", "organizations", "pull_requests", "repositories", "stargazers", "tags", "teams", "users" ]
-    }
+    },
+    "maxSecondsBetweenMessages": 5400
   }, {
     "sourceDefinitionId": "5e6175e5-68e1-4c17-bff9-56103bbb0d80",
     "name": "Gitlab",
