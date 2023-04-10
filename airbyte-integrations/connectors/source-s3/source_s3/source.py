@@ -50,7 +50,7 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
         endpoint: str = Field("", description="Endpoint to an S3 compatible service. Leave empty to use AWS.", order=4)
         start_date: Optional[str] = Field(
             title="Start Date",
-            description="Set start_date to sync only new files",
+            description="UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not be replicated.",
             examples=["2021-01-01T00:00:00Z"],
             format="date-time",
             pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
