@@ -63,7 +63,6 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
     if (bufferSizeInBytes + messageSizeInBytes > maxQueueSizeInBytes) {
       flushAll();
       flushed = Optional.of(BufferFlushType.FLUSH_ALL);
-      bufferSizeInBytes = 0;
     }
 
     final List<AirbyteRecordMessage> bufferedRecords = streamBuffer.computeIfAbsent(stream, k -> new ArrayList<>());
@@ -93,6 +92,7 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
     }
     close();
     clear();
+    bufferSizeInBytes = 0;
   }
 
   @Override

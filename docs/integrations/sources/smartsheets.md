@@ -33,7 +33,7 @@ You'll also need the ID of the Spreadsheet you'd like to sync. Unlike Google She
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click Sources. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Smartsheets connector and select **Smartsheets** from the Source type dropdown.
 4. Authenticate via OAuth2.0 using the API access token from Prerequisites
