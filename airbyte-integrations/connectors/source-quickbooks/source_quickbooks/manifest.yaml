@@ -53,7 +53,7 @@ definitions:
           - path: [ "airbyte_cursor" ]
             value: "{{ record.MetaData.LastUpdatedTime }}"
     $parameters:
-      path: "/v3/company/{{ config.realm_id }}/query"
+      path: "/v3/company/{{ config.credentials.realm_id }}/query"
       table_name: "BillPayment"
 
   accounts:

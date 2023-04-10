@@ -5,12 +5,12 @@ This page contains the setup guide and reference information for the QuickBooks 
 ## Prerequisites
 
 - [Intuit QuickBooks account](https://quickbooks.intuit.com/global/)
-- Realm ID
 
 <!-- env:oss -->
 **For Airbyte Open Source:**
 
 - OAuth2.0 credentials (see [OAuth 2.0 playground](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0-playground))
+- Realm ID
 <!-- /env:oss -->
 
 ## Setup guide
@@ -38,9 +38,8 @@ Create a [Intuit Developer account](https://developer.intuit.com/app/developer/q
 4. Click `Authenticate your QuickBooks account`
 5. Log in and Authorize to the QuickBooks account.
 6. **Start date** - The date starting from which you'd like to replicate data.
-7. **Realm ID** - The Labeled Company ID you'd like to replicate data for streams.
-8. **Sandbox** - Turn on if you're going to replicate the data from the sandbox environment.
-9. Click **Set up source**.
+7. **Sandbox** - Turn on if you're going to replicate the data from the sandbox environment.
+8. Click **Set up source**.
 
 <!-- /env:cloud -->
 
@@ -53,7 +52,7 @@ Create a [Intuit Developer account](https://developer.intuit.com/app/developer/q
 4. **Access Token** - Access token to perform authenticated API calls with
 5. **Token Expiry Date** - DateTime when the access token becomes invalid
 6. **Start date** - The date from which you'd like to replicate data for streams.
-7. **Realm ID** - The Labeled Company ID you'd like to replicate data for streams.
+7. **Realm ID** - The Labeled [Company ID](https://developer.intuit.com/app/developer/qbo/docs/learn/learn-basic-field-definitions#realm-id) you'd like to replicate data for streams.
 8. **Sandbox** - Turn on if you're going to replicate the data from the sandbox environment.
 <!-- /env:oss -->
 
