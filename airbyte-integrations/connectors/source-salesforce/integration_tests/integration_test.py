@@ -102,20 +102,31 @@ def test_update_for_deleted_record(stream):
     response = delete_note(stream, created_note_id, headers)
     assert response.status_code == 204, "Note was not deleted"
 
-    is_note_updated = False
-    is_deleted = False
-    now = pendulum.now(tz="UTC")
-    stream_slice = {
-        "start_date": now.add(days=-1).isoformat(timespec="milliseconds"),
-        "end_date": now.isoformat(timespec="milliseconds")
-    }
-    for record in stream.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state, stream_slice=stream_slice):
-        if created_note_id == record["Id"]:
-            is_note_updated = True
-            is_deleted = record["IsDeleted"]
+    # A record may still be accessible right after deletion for some time
+    attempts = 10
+    while True:
+        is_note_updated = False
+        is_deleted = False
+        now = pendulum.now(tz="UTC")
+        stream_slice = {
+            "start_date": now.add(days=-1).isoformat(timespec="milliseconds"),
+            "end_date": now.isoformat(timespec="milliseconds")
+        }
+        for record in stream.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state, stream_slice=stream_slice):
+            if created_note_id == record["Id"]:
+                is_note_updated = True
+                is_deleted = record["IsDeleted"]
+                break
+        try:
+            assert is_note_updated, "No deleted note during the sync"
+            assert is_deleted, "Wrong field value for deleted note during the sync"
             break
-    assert is_note_updated, "No deleted note during the sync"
-    assert is_deleted, "Wrong field value for deleted note during the sync"
+        except Exception as e:
+            if attempts:
+                time.sleep(2)
+            else:
+                raise e
+        attempts = attempts - 1
 
     time.sleep(1)
     response = update_note(stream, created_note_id, headers)
@@ -156,19 +167,29 @@ def test_deleted_record(stream):
     response = delete_note(stream, created_note_id, headers)
     assert response.status_code == 204, "Note was not deleted"
 
-    now = pendulum.now(tz="UTC")
-    stream_slice = {
-        "start_date": now.add(days=-1).isoformat(timespec="milliseconds"),
-        "end_date": now.isoformat(timespec="milliseconds")
-    }
-    record = None
-    for record in stream.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state, stream_slice=stream_slice):
-        if created_note_id == record["Id"]:
+    # A record updates take some time to become accessible
+    attempts = 10
+    while created_note_id not in notes:
+        now = pendulum.now(tz="UTC")
+        stream_slice = {
+            "start_date": now.add(days=-1).isoformat(timespec="milliseconds"),
+            "end_date": now.isoformat(timespec="milliseconds")
+        }
+        record = None
+        for record in stream.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state, stream_slice=stream_slice):
+            if created_note_id == record["Id"]:
+                break
+        try:
+            assert record, "No updated note during the sync"
+            assert record["IsDeleted"], "Wrong field value for deleted note during the sync"
+            assert record["TextPreview"] == UPDATED_NOTE_CONTENT and record["TextPreview"] != NOTE_CONTENT, "Note Content was not updated"
             break
-
-    assert record, "No updated note during the sync"
-    assert record["IsDeleted"], "Wrong field value for deleted note during the sync"
-    assert record["TextPreview"] == UPDATED_NOTE_CONTENT and record["TextPreview"] != NOTE_CONTENT, "Note Content was not updated"
+        except Exception as e:
+            if attempts:
+                time.sleep(2)
+            else:
+                raise e
+        attempts = attempts - 1
 
 
 def test_parallel_discover(input_sandbox_config):
