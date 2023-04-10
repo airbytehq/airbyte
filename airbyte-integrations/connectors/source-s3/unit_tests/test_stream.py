@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Mapping
 from unittest.mock import MagicMock, patch
 
@@ -467,17 +467,17 @@ class TestIncrementalFileStream:
                 [
                     {
                         "Contents": [
-                            {"Key": "Key_A", "Size": 2048, "LastModified": datetime(2020, 2, 20, 20, 0, 2)},
-                            {"Key": "Key_B", "Size": 1024, "LastModified": datetime(2020, 2, 20, 20, 22, 2)},
+                            {"Key": "Key_A", "Size": 2048, "LastModified": datetime(2020, 2, 20, 20, 0, 2, tzinfo=timezone.utc)},
+                            {"Key": "Key_B", "Size": 1024, "LastModified": datetime(2020, 2, 20, 20, 22, 2, tzinfo=timezone.utc)},
                         ],
                         "NextContinuationToken": "token",
                     },
-                    {"Contents": [{"Key": "Key_C", "Size": 512, "LastModified": datetime(2022, 2, 2, 2, 2, 2)}]},
+                    {"Contents": [{"Key": "Key_C", "Size": 512, "LastModified": datetime(2022, 2, 2, 2, 2, 2, tzinfo=timezone.utc)}]},
                 ],
                 [
-                    FileInfo(key="Key_A", size=2048, last_modified=datetime(2020, 2, 20, 20, 0, 2)),
-                    FileInfo(key="Key_B", size=1024, last_modified=datetime(2020, 2, 20, 20, 22, 2)),
-                    FileInfo(key="Key_C", size=512, last_modified=datetime(2022, 2, 2, 2, 2, 2)),
+                    FileInfo(key="Key_A", size=2048, last_modified=datetime(2020, 2, 20, 20, 0, 2, tzinfo=timezone.utc)),
+                    FileInfo(key="Key_B", size=1024, last_modified=datetime(2020, 2, 20, 20, 22, 2, tzinfo=timezone.utc)),
+                    FileInfo(key="Key_C", size=512, last_modified=datetime(2022, 2, 2, 2, 2, 2, tzinfo=timezone.utc)),
                 ],
             ),
             ("another_test_bucket", "/fullscreen", [{}], []),  # empty response
@@ -487,15 +487,15 @@ class TestIncrementalFileStream:
                 [
                     {
                         "Contents": [
-                            {"Key": "file/path", "Size": 2048, "LastModified": datetime(2020, 2, 20, 20, 0, 2)},
-                            {"Key": "file/path/A/", "Size": 1024, "LastModified": datetime(2020, 2, 20, 20, 22, 2)},
+                            {"Key": "file/path", "Size": 2048, "LastModified": datetime(2020, 2, 20, 20, 0, 2, tzinfo=timezone.utc)},
+                            {"Key": "file/path/A/", "Size": 1024, "LastModified": datetime(2020, 2, 20, 20, 22, 2, tzinfo=timezone.utc)},
                         ],
                         "NextContinuationToken": "token",
                     },
-                    {"Contents": [{"Key": "file/path/B/", "Size": 512, "LastModified": datetime(2022, 2, 2, 2, 2, 2)}]},
+                    {"Contents": [{"Key": "file/path/B/", "Size": 512, "LastModified": datetime(2022, 2, 2, 2, 2, 2, tzinfo=timezone.utc)}]},
                 ],
                 [
-                    FileInfo(key="file/path", size=2048, last_modified=datetime(2020, 2, 20, 20, 0, 2)),
+                    FileInfo(key="file/path", size=2048, last_modified=datetime(2020, 2, 20, 20, 0, 2, tzinfo=timezone.utc)),
                 ],
             ),
         ),

@@ -53,10 +53,10 @@ class IncrementalFileStreamS3(IncrementalFileStream):
             except KeyError:
                 pass
             else:
-                for c in content:
-                    key = c["Key"]
-                    if accept_key(key):
-                        yield FileInfo(key=key, last_modified=c["LastModified"], size=c["Size"])
+                for file in content:
+                    key = file["Key"]
+                    if accept_key(key) and file.get("LastModified") > self.start_date:
+                        yield FileInfo(key=key, last_modified=file["LastModified"], size=file["Size"])
             ctoken = response.get("NextContinuationToken", None)
             if not ctoken:
                 break
