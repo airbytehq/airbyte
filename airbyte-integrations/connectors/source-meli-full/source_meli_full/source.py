@@ -150,20 +150,23 @@ class MeliInvoices(HttpStream):
 
         logger.info("Iterating through the xml folders to unify all xmls in just one object")
         items = []
-        for path in paths:
-            for filename in os.listdir(path):
-                if not filename.endswith('.xml'): continue
-                fullname = os.path.join(path, filename)
-                tree = ET.parse(fullname)
-            
-                # Trasforming XML in string
-                root = tree.getroot()
-                xml = ET.tostring(root)
+        try:
+            for path in paths:
+                for filename in os.listdir(path):
+                    if not filename.endswith('.xml'): continue
+                    fullname = os.path.join(path, filename)
+                    tree = ET.parse(fullname)
+                
+                    # Trasforming XML in string
+                    root = tree.getroot()
+                    xml = ET.tostring(root)
 
-                # Transforming XML in json
-                xml = xmltodict.parse(xml)
-                xml = self.format_xml(xml)
-                items.append(xml)
+                    # Transforming XML in json
+                    xml = xmltodict.parse(xml)
+                    xml = self.format_xml(xml)
+                    items.append(xml)
+        except:
+            pass
 
         # with open('./invoices.json', 'w+') as f:
         #     json.dump(items, f)
