@@ -1,16 +1,19 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
 
+import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SSL_MODE;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mysql.cj.MysqlType;
@@ -29,6 +32,8 @@ import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
+import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
@@ -46,15 +51,18 @@ import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,6 +70,22 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSource.class);
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
+  public static final String NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY =
+      """
+        SELECT (EXISTS (SELECT * from `%s`.`%s` where `%s` IS NULL LIMIT 1)) AS %s
+      """;
+  public static final String NULL_CURSOR_VALUE_WITHOUT_SCHEMA_QUERY =
+      """
+      SELECT (EXISTS (SELECT * from %s where `%s` IS NULL LIMIT 1)) AS %s
+      """;
+  public static final String DESCRIBE_TABLE_WITHOUT_SCHEMA_QUERY =
+      """
+      DESCRIBE %s
+      """;
+  public static final String DESCRIBE_TABLE_WITH_SCHEMA_QUERY =
+      """
+      DESCRIBE `%s`.`%s`
+      """;
 
   public static final String DRIVER_CLASS = DatabaseDriver.MYSQL.getDriverClassName();
   public static final String MYSQL_CDC_OFFSET = "mysql_cdc_offset";
@@ -173,7 +197,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
       jdbcUrl.append(JdbcUtils.AMPERSAND).append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
-    final Map<String, String> sslParameters = parseSSLConfig(config);
+    final Map<String, String> sslParameters = JdbcSSLConnectionUtils.parseSSLConfig(config);
     jdbcUrl.append(JdbcUtils.AMPERSAND).append(toJDBCQueryParams(sslParameters));
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
@@ -186,6 +210,27 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
     return Jsons.jsonNode(configBuilder.build());
+  }
+
+  /**
+   * Generates SSL related query parameters from map of parsed values.
+   *
+   * @apiNote Different connector may need an override for specific implementation
+   * @param sslParams
+   * @return SSL portion of JDBC question params or and empty string
+   */
+  private String toJDBCQueryParams(final Map<String, String> sslParams) {
+    return Objects.isNull(sslParams) ? ""
+        : sslParams.entrySet()
+            .stream()
+            .map((entry) -> {
+              if (entry.getKey().equals(SSL_MODE)) {
+                return entry.getKey() + EQUALS + toSslJdbcParam(SslMode.valueOf(entry.getValue()));
+              } else {
+                return entry.getKey() + EQUALS + entry.getValue();
+              }
+            })
+            .collect(Collectors.joining(JdbcUtils.AMPERSAND));
   }
 
   private static boolean isCdc(final JsonNode config) {
@@ -240,8 +285,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
       LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
-      final AirbyteDebeziumHandler handler =
-          new AirbyteDebeziumHandler(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), true, firstRecordWaitTime);
+      final AirbyteDebeziumHandler<MySqlCdcPosition> handler =
+          new AirbyteDebeziumHandler<>(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), true, firstRecordWaitTime);
 
       final MySqlCdcStateHandler mySqlCdcStateHandler = new MySqlCdcStateHandler(stateManager);
       final MySqlCdcConnectorMetadataInjector mySqlCdcConnectorMetadataInjector = new MySqlCdcConnectorMetadataInjector();
@@ -254,7 +299,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
           new MySqlCdcStateHandler(stateManager),
           new MySqlCdcConnectorMetadataInjector(),
           MySqlCdcProperties.getDebeziumProperties(database),
-          emittedAt);
+          emittedAt,
+          false);
 
       if (streamsToSnapshot.isEmpty()) {
         return Collections.singletonList(incrementalIteratorSupplier.get());
@@ -286,7 +332,60 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   @Override
-  protected String toSslJdbcParam(final SslMode sslMode) {
+  protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName)
+      throws SQLException {
+    boolean nullValExist;
+    final String resultColName = "nullValue";
+    final String descQuery = schema == null || schema.isBlank()
+        ? String.format(DESCRIBE_TABLE_WITHOUT_SCHEMA_QUERY, tableName)
+        : String.format(DESCRIBE_TABLE_WITH_SCHEMA_QUERY, schema, tableName);
+    final List<JsonNode> tableRows = database.bufferedResultSetQuery(conn -> conn.createStatement()
+        .executeQuery(descQuery),
+        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+
+    Optional<JsonNode> field = Optional.empty();
+    String nullableColumnName = "";
+    for (JsonNode tableRow : tableRows) {
+      LOGGER.info("MySQL Table Structure {}, {}, {}", tableRow.toString(), schema, tableName);
+      if (tableRow.get("Field") != null && tableRow.get("Field").asText().equalsIgnoreCase(columnName)) {
+        field = Optional.of(tableRow);
+        nullableColumnName = "Null";
+      } else if (tableRow.get("COLUMN_NAME") != null && tableRow.get("COLUMN_NAME").asText().equalsIgnoreCase(columnName)) {
+        field = Optional.of(tableRow);
+        nullableColumnName = "IS_NULLABLE";
+      }
+    }
+    if (field.isPresent()) {
+      final JsonNode jsonNode = field.get();
+      final JsonNode isNullable = jsonNode.get(nullableColumnName);
+      if (isNullable != null) {
+        if (isNullable.asText().equalsIgnoreCase("YES")) {
+          final String query = schema == null || schema.isBlank()
+              ? String.format(NULL_CURSOR_VALUE_WITHOUT_SCHEMA_QUERY,
+                  tableName, columnName, resultColName)
+              : String.format(NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY,
+                  schema, tableName, columnName, resultColName);
+
+          LOGGER.debug("null value query: {}", query);
+          final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(query),
+              resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+          Preconditions.checkState(jsonNodes.size() == 1);
+          nullValExist = convertToBoolean(jsonNodes.get(0).get(resultColName).toString());
+          LOGGER.info("null cursor value for MySQL source : {}, shema {} , tableName {}, columnName {} ", nullValExist, schema, tableName,
+              columnName);
+        }
+      }
+    }
+    // return !nullValExist;
+    // will enable after we have sent comms to users this affects
+    return true;
+  }
+
+  private boolean convertToBoolean(String value) {
+    return "1".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value);
+  }
+
+  private String toSslJdbcParam(final SslMode sslMode) {
     return toSslJdbcParamInternal(sslMode);
   }
 

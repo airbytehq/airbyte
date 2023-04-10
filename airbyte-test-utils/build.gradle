@@ -10,8 +10,7 @@ configurations.all {
 dependencies {
     api project(':airbyte-db:db-lib')
     implementation project(':airbyte-api')
-    implementation project(':airbyte-commons-temporal')
-    implementation project(':airbyte-commons-worker')
+    implementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
 
     implementation 'io.fabric8:kubernetes-client:5.12.2'
     implementation libs.temporal.sdk

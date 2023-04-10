@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.dest_state_lifecycle_manager;
@@ -52,6 +52,11 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
     return listStatesInOrder(streamToLastPendingState);
   }
 
+  /*
+   * Similar to #markFlushedAsCommmitted, this method should no longer be used to align with the
+   * changes to destination checkpointing where flush/commit operations will be bundled
+   */
+  @Deprecated
   @Override
   public void markPendingAsFlushed() {
     moveToNextPhase(streamToLastPendingState, streamToLastFlushedState);
@@ -62,14 +67,35 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
     return listStatesInOrder(streamToLastFlushedState);
   }
 
+  /*
+   * During the process of migration to destination checkpointing, this method should no longer be in
+   * use in favor of #markPendingAsCommitted where states will be flushed/committed as a singular
+   * transaction
+   */
+  @Deprecated
   @Override
   public void markFlushedAsCommitted() {
     moveToNextPhase(streamToLastFlushedState, streamToLastCommittedState);
   }
 
   @Override
+  public void clearCommitted() {
+    streamToLastCommittedState.clear();
+  }
+
+  @Override
+  public void markPendingAsCommitted() {
+    moveToNextPhase(streamToLastPendingState, streamToLastCommittedState);
+  }
+
+  @Override
   public Queue<AirbyteMessage> listCommitted() {
     return listStatesInOrder(streamToLastCommittedState);
+  }
+
+  @Override
+  public boolean supportsPerStreamFlush() {
+    return true;
   }
 
   /**

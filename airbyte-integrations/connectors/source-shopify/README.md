@@ -54,10 +54,10 @@ and place them into `secrets/config.json`.
 ### Locally running the connector
 Use your .venv inside your connector in order to proceed:
 ```
-python3 main.py spec
-python3 main.py check --config secrets/config.json
-python3 main.py discover --config secrets/config.json
-python3 main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+python main.py spec
+python main.py check --config secrets/config.json
+python main.py discover --config secrets/config.json
+python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Locally running the connector docker image
@@ -107,12 +107,12 @@ python3 -m pytest integration_tests
 ```
 
 #### Acceptance Tests
-Customize `acceptance-test-config.yml` file to configure tests. See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference) for more information.
+Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 To run your integration tests with acceptance tests, from the connector root, run
 ```
 docker build . --no-cache -t airbyte/source-shopify:dev \
-&& python -m pytest -p source_acceptance_test.plugin
+&& python -m pytest -p connector_acceptance_test.plugin
 ```
 To run your integration tests with docker
 

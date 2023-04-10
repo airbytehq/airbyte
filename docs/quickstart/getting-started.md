@@ -11,7 +11,7 @@ First of all, make sure you have Docker and Docker Compose installed. Then run t
 ```text
 git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
-docker-compose -f docker-compose.yaml up
+docker compose -f docker-compose.yaml up
 ```
 
 Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000/](http://localhost:8000/).
@@ -43,6 +43,12 @@ You might have to wait ~30 seconds before the fields show up because it is the f
 The destination we are creating is a simple JSON line file, meaning that it will contain one JSON object per line. Each objects will represent data extracted from the source.
 
 The resulting files will be located in `/tmp/airbyte_local/json_data`
+
+:::caution
+
+Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a MacOS, as /tmp has a symlink that points to /private. It will not work otherwise). You allow it with "File sharing" in `Settings -> Resources -> File sharing -> add the one or two above folder` and hit the "Apply & restart" button.
+
+:::
 
 To set it up, just follow the instructions on the screenshot below.
 

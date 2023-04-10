@@ -1,7 +1,8 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
 import json
 from datetime import timedelta
 from urllib.parse import urljoin
@@ -14,7 +15,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from requests.exceptions import ConnectionError
 from source_zendesk_support.source import BasicApiTokenAuthenticator
-from source_zendesk_support.streams import Macros
+from source_zendesk_support.streams import Macros, Organizations
 
 STREAM_ARGS: dict = {
     "subdomain": "fake-subdomain",
@@ -23,7 +24,7 @@ STREAM_ARGS: dict = {
 }
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def time_sleep_mock(mocker):
     time_mock = mocker.patch("time.sleep", lambda x: None)
     yield time_mock
@@ -39,7 +40,7 @@ def time_sleep_mock(mocker):
         (101, 100, 2),
     ],
 )
-def test_proper_number_of_future_requests_generated(records_count, page_size, expected_futures_deque_len):
+def test_proper_number_of_future_requests_generated(records_count, page_size, expected_futures_deque_len, time_sleep_mock):
     stream = Macros(**STREAM_ARGS)
     stream.page_size = page_size
 
@@ -60,7 +61,7 @@ def test_proper_number_of_future_requests_generated(records_count, page_size, ex
         (10, 10, 0),
     ],
 )
-def test_parse_future_records(records_count, page_size, expected_futures_deque_len):
+def test_parse_future_records(records_count, page_size, expected_futures_deque_len, time_sleep_mock):
     stream = Macros(**STREAM_ARGS)
     stream.page_size = page_size
     expected_records = [
@@ -82,7 +83,7 @@ def test_parse_future_records(records_count, page_size, expected_futures_deque_l
         if not stream.future_requests and not expected_futures_deque_len:
             assert len(stream.future_requests) == 0 and not expected_records
         else:
-            response = stream.future_requests[0]["future"].result()
+            response, _ = stream.future_requests[0]["future"].result()
             records = list(stream.parse_response(response, stream_state=None, stream_slice=None))
             assert records == expected_records
 
@@ -97,7 +98,7 @@ def test_parse_future_records(records_count, page_size, expected_futures_deque_l
         (101, 101, 2, None),
     ],
 )
-def test_read_records(mocker, records_count, page_size, expected_futures_deque_len, expected_exception):
+def test_read_records(mocker, records_count, page_size, expected_futures_deque_len, expected_exception, time_sleep_mock):
     stream = Macros(**STREAM_ARGS)
     stream.page_size = page_size
     should_retry = bool(expected_exception)
@@ -131,3 +132,45 @@ def test_read_records(mocker, records_count, page_size, expected_futures_deque_l
                 list(stream.read_records(sync_mode=SyncMode.full_refresh))
         else:
             assert list(stream.read_records(sync_mode=SyncMode.full_refresh)) == list(record_gen(end=expected_records_count))
+
+
+def test_sleep_time():
+    page_size = 100
+    x_rate_limit = 10
+    records_count = 350
+    pages = 4
+
+    start = datetime.datetime.now()
+    stream = Organizations(**STREAM_ARGS)
+    stream.page_size = page_size
+
+    def record_gen(start=0, end=100):
+        for i in range(start, end):
+            yield {f"key{i}": f"val{i}", stream.cursor_field: (pendulum.parse("2020-01-01") + timedelta(days=i)).isoformat()}
+
+    with requests_mock.Mocker() as m:
+        count_url = urljoin(stream.url_base, f"{stream.path()}/count.json")
+        m.get(count_url, text=json.dumps({"count": {"value": records_count}}))
+
+        records_url = urljoin(stream.url_base, stream.path())
+        responses = [
+            {
+                "status_code": 429,
+                "headers": {"X-Rate-Limit": str(x_rate_limit)},
+                "text": "{}"
+            }
+            for _ in range(pages)
+        ] + [
+            {
+                "status_code": 200,
+                "headers": {},
+                "text": json.dumps({"organizations": list(record_gen(page * page_size, min(records_count, (page + 1) * page_size)))})
+            }
+            for page in range(pages)
+        ]
+        m.get(records_url, responses)
+        records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+        assert len(records) == records_count
+        end = datetime.datetime.now()
+        sleep_time = int(60 / x_rate_limit)
+        assert sleep_time - 1 <= (end - start).seconds <= sleep_time + 1

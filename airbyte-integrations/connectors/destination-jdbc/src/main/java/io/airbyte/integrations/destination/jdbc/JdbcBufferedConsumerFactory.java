@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc;
@@ -35,15 +35,15 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// Strategy:
-// 1. Create a temporary table for each stream
-// 2. Accumulate records in a buffer. One buffer per stream.
-// 3. As records accumulate write them in batch to the database. We set a minimum numbers of records
-// before writing to avoid wasteful record-wise writes.
-// 4. Once all records have been written to buffer, flush the buffer and write any remaining records
-// to the database (regardless of how few are left).
-// 5. In a single transaction, delete the target tables if they exist and rename the temp tables to
-// the final table name.
+/**Strategy:
+ * <p>1. Create a final table for each stream
+ * <p>2. Accumulate records in a buffer. One buffer per stream
+ * <p>3. As records accumulate write them in batch to the database. We set a minimum numbers of records
+ * before writing to avoid wasteful record-wise writes. In the case with slow syncs this will be
+ * superseded with a periodic record flush from {@link BufferedStreamConsumer#periodicBufferFlush()}
+ * <p>4. Once all records have been written to buffer, flush the buffer and write any remaining records
+ * to the database (regardless of how few are left)
+ */
 public class JdbcBufferedConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcBufferedConsumerFactory.class);
@@ -116,24 +116,52 @@ public class JdbcBufferedConsumerFactory {
         : namingResolver.getNamespace(defaultDestSchema);
   }
 
+  /**
+   * Sets up destination storage through:
+   * <p>1. Creates Schema (if not exists)
+   * <p>2. Creates airybte_raw table (if not exists)
+   * <p>3. <Optional>Truncates table if sync mode is in OVERWRITE
+   *
+   * @param database JDBC database to connect to
+   * @param sqlOperations interface for execution SQL queries
+   * @param writeConfigs settings for each stream
+   * @return
+   */
   private static OnStartFunction onStartFunction(final JdbcDatabase database,
                                                  final SqlOperations sqlOperations,
                                                  final List<WriteConfig> writeConfigs) {
     return () -> {
-      LOGGER.info("Preparing tmp tables in destination started for {} streams", writeConfigs.size());
+      LOGGER.info("Preparing raw tables in destination started for {} streams", writeConfigs.size());
+      final List<String> queryList = new ArrayList<>();
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schemaName = writeConfig.getOutputSchemaName();
-        final String tmpTableName = writeConfig.getTmpTableName();
-        LOGGER.info("Preparing tmp table in destination started for stream {}. schema: {}, tmp table name: {}", writeConfig.getStreamName(),
-            schemaName, tmpTableName);
-
+        final String dstTableName = writeConfig.getOutputTableName();
+        LOGGER.info("Preparing raw table in destination started for stream {}. schema: {}, table name: {}",
+            writeConfig.getStreamName(),
+            schemaName,
+            dstTableName);
         sqlOperations.createSchemaIfNotExists(database, schemaName);
-        sqlOperations.createTableIfNotExists(database, schemaName, tmpTableName);
+        sqlOperations.createTableIfNotExists(database, schemaName, dstTableName);
+        switch (writeConfig.getSyncMode()) {
+          case OVERWRITE -> queryList.add(sqlOperations.truncateTableQuery(database, schemaName, dstTableName));
+          case APPEND, APPEND_DEDUP -> {}
+          default -> throw new IllegalStateException("Unrecognized sync mode: " + writeConfig.getSyncMode());
+        }
       }
-      LOGGER.info("Preparing tables in destination completed.");
+      sqlOperations.executeTransaction(database, queryList);
+      LOGGER.info("Preparing raw tables in destination completed.");
     };
   }
 
+  /**
+   * Writes {@link AirbyteRecordMessage} to JDBC database's airbyte_raw table
+   *
+   * @param database JDBC database to connect to
+   * @param sqlOperations interface of SQL queries to execute
+   * @param writeConfigs settings for each stream
+   * @param catalog catalog of all streams to sync
+   * @return
+   */
   private static RecordWriter<AirbyteRecordMessage> recordWriterFunction(final JdbcDatabase database,
                                                                          final SqlOperations sqlOperations,
                                                                          final List<WriteConfig> writeConfigs,
@@ -148,54 +176,26 @@ public class JdbcBufferedConsumerFactory {
       }
 
       final WriteConfig writeConfig = pairToWriteConfig.get(pair);
-      sqlOperations.insertRecords(database, records, writeConfig.getOutputSchemaName(), writeConfig.getTmpTableName());
+      sqlOperations.insertRecords(database, records, writeConfig.getOutputSchemaName(), writeConfig.getOutputTableName());
     };
   }
 
+  /**
+   * Closes connection to JDBC database and other tear down functionality
+   *
+   * @param database JDBC database to connect to
+   * @param sqlOperations interface used to execute SQL queries
+   * @param writeConfigs settings for each stream
+   * @return
+   */
   private static OnCloseFunction onCloseFunction(final JdbcDatabase database,
                                                  final SqlOperations sqlOperations,
                                                  final List<WriteConfig> writeConfigs) {
     return (hasFailed) -> {
-      // copy data
       if (!hasFailed) {
-        final List<String> queryList = new ArrayList<>();
         sqlOperations.onDestinationCloseOperations(database, writeConfigs);
-        LOGGER.info("Finalizing tables in destination started for {} streams", writeConfigs.size());
-        for (final WriteConfig writeConfig : writeConfigs) {
-          final String schemaName = writeConfig.getOutputSchemaName();
-          final String srcTableName = writeConfig.getTmpTableName();
-          final String dstTableName = writeConfig.getOutputTableName();
-          LOGGER.info("Finalizing stream {}. schema {}, tmp table {}, final table {}", writeConfig.getStreamName(), schemaName, srcTableName,
-              dstTableName);
-
-          sqlOperations.createTableIfNotExists(database, schemaName, dstTableName);
-          switch (writeConfig.getSyncMode()) {
-            case OVERWRITE -> queryList.add(sqlOperations.truncateTableQuery(database, schemaName, dstTableName));
-            case APPEND -> {}
-            case APPEND_DEDUP -> {}
-            default -> throw new IllegalStateException("Unrecognized sync mode: " + writeConfig.getSyncMode());
-          }
-          queryList.add(sqlOperations.insertTableQuery(database, schemaName, srcTableName, dstTableName));
-        }
-
-        LOGGER.info("Executing finalization of tables.");
-        sqlOperations.executeTransaction(database, queryList);
-        LOGGER.info("Finalizing tables in destination completed.");
       }
-      // clean up
-      LOGGER.info("Cleaning tmp tables in destination started for {} streams", writeConfigs.size());
-      for (final WriteConfig writeConfig : writeConfigs) {
-        final String schemaName = writeConfig.getOutputSchemaName();
-        final String tmpTableName = writeConfig.getTmpTableName();
-        LOGGER.info("Cleaning tmp table in destination started for stream {}. schema {}, tmp table name: {}", writeConfig.getStreamName(), schemaName,
-            tmpTableName);
-
-        sqlOperations.dropTableIfExists(database, schemaName, tmpTableName);
-      }
-      LOGGER.info("Cleaning tmp tables in destination completed.");
-    }
-
-    ;
+    };
   }
 
   private static AirbyteStreamNameNamespacePair toNameNamespacePair(final WriteConfig config) {

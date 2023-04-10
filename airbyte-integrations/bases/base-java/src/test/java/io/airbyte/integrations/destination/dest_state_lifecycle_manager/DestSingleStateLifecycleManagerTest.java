@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.dest_state_lifecycle_manager;
@@ -117,6 +117,25 @@ class DestSingleStateLifecycleManagerTest {
     assertTrue(mgr.listPending().isEmpty());
     assertTrue(mgr.listFlushed().isEmpty());
     assertEquals(MESSAGE1, mgr.listCommitted().poll());
+  }
+
+  /*
+   * This change follows the same changes in DestStreamStateLifecycleManager where the goal is to
+   * confirm that `markPendingAsCommitted` combines what was previous `markPendingAsFlushed` and
+   * `markFlushedAsCommitted`
+   *
+   * The reason for this method is due to destination checkpointing will no longer hold into a state
+   * as "Flushed" but immediately commit records to the destination's final table
+   */
+  @Test
+  void testMarkPendingAsCommitted() {
+    mgr.addState(MESSAGE1);
+    mgr.addState(MESSAGE2);
+    mgr.markPendingAsCommitted();
+
+    assertTrue(mgr.listPending().isEmpty());
+    assertTrue(mgr.listFlushed().isEmpty());
+    assertEquals(MESSAGE2, mgr.listCommitted().poll());
   }
 
 }

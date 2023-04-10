@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -28,7 +28,7 @@ public abstract class AbstractSshMySqlSourceAcceptanceTest extends SourceAccepta
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
 
-  private JsonNode config;
+  protected static JsonNode config;
 
   public abstract Path getConfigFilePath();
 
