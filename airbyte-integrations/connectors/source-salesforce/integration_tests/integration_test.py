@@ -79,9 +79,10 @@ def test_update_for_deleted_record(stream):
 
     created_note_id = response.json()["id"]
 
+    now = pendulum.now(tz="UTC")
     stream_slice = {
-        "start_date": "2020-10-22T00:00:00.000+0000",
-        "end_date": pendulum.now(tz="UTC").isoformat(timespec="milliseconds")
+        "start_date": now.add(days=-1).isoformat(timespec="milliseconds"),
+        "end_date": now.isoformat(timespec="milliseconds")
     }
     notes = set(record["Id"] for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
     assert created_note_id in notes, "The stream didn't return the note we created"
@@ -91,9 +92,10 @@ def test_update_for_deleted_record(stream):
 
     is_note_updated = False
     is_deleted = False
+    now = pendulum.now(tz="UTC")
     stream_slice = {
-        "start_date": "2020-10-22T00:00:00.000+0000",
-        "end_date": pendulum.now(tz="UTC").isoformat(timespec="milliseconds")
+        "start_date": now.add(days=-1).isoformat(timespec="milliseconds"),
+        "end_date": now.isoformat(timespec="milliseconds")
     }
     for record in stream.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state, stream_slice=stream_slice):
         if created_note_id == record["Id"]:
@@ -115,9 +117,10 @@ def test_deleted_record(stream):
 
     created_note_id = response.json()["id"]
 
+    now = pendulum.now(tz="UTC")
     stream_slice = {
-        "start_date": "2020-10-22T00:00:00.000+0000",
-        "end_date": pendulum.now(tz="UTC").isoformat(timespec="milliseconds")
+        "start_date": now.add(days=-1).isoformat(timespec="milliseconds"),
+        "end_date": now.isoformat(timespec="milliseconds")
     }
     notes = set(record["Id"] for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
     assert created_note_id in notes, "No created note during the sync"
@@ -129,9 +132,10 @@ def test_deleted_record(stream):
     response = delete_note(stream, created_note_id, headers)
     assert response.status_code == 204, "Note was not deleted"
 
+    now = pendulum.now(tz="UTC")
     stream_slice = {
-        "start_date": "2020-10-22T00:00:00.000+0000",
-        "end_date": pendulum.now(tz="UTC").isoformat(timespec="milliseconds")
+        "start_date": now.add(days=-1).isoformat(timespec="milliseconds"),
+        "end_date": now.isoformat(timespec="milliseconds")
     }
     record = None
     for record in stream.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state, stream_slice=stream_slice):
