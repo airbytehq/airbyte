@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -16,6 +16,7 @@ from airbyte_cdk.sources.streams.core import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests.auth import AuthBase
+from source_freshdesk.availability_strategy import FreshdeskAvailabilityStrategy
 from source_freshdesk.utils import CallCredit
 
 
@@ -48,19 +49,12 @@ class FreshdeskStream(HttpStream, ABC):
         return parse.urljoin(f"https://{self.domain.rstrip('/')}", "/api/v2/")
 
     @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return FreshdeskAvailabilityStrategy()
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == requests.codes.too_many_requests:
             return float(response.headers.get("Retry-After", 0))
-
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == requests.codes.FORBIDDEN:
-            self.forbidden_stream = True
-            setattr(self, "raise_on_http_errors", False)
-            self.logger.warn(f"Stream `{self.name}` is not available. {response.text}")
-        return super().should_retry(response)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         link_header = response.headers.get("Link")

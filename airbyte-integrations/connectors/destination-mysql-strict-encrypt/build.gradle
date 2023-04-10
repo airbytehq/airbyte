@@ -12,7 +12,7 @@ application {
 dependencies {
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
     implementation project(':airbyte-integrations:connectors:destination-mysql')
 
@@ -25,4 +25,3 @@ dependencies {
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
 }
-

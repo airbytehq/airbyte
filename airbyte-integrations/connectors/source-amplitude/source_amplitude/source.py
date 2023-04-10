@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -56,7 +56,12 @@ class SourceAmplitude(AbstractSource):
         return [
             Cohorts(authenticator=auth, data_region=config["data_region"]),
             Annotations(authenticator=auth, data_region=config["data_region"]),
-            Events(authenticator=auth, start_date=config["start_date"], data_region=config["data_region"]),
+            Events(
+                authenticator=auth,
+                start_date=config["start_date"],
+                data_region=config["data_region"],
+                event_time_interval=config.get("event_time_interval", None),
+            ),
             ActiveUsers(authenticator=auth, start_date=config["start_date"], data_region=config["data_region"]),
             AverageSessionLength(authenticator=auth, start_date=config["start_date"], data_region=config["data_region"]),
         ]

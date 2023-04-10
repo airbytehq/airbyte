@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import datetime
@@ -15,70 +15,16 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http import HttpStream, auth
+from airbyte_cdk.sources.streams.http import HttpStream
 from source_google_analytics_data_api import utils
-from source_google_analytics_data_api.authenticator import GoogleServiceKeyAuthenticator
 from source_google_analytics_data_api.utils import DATE_FORMAT
 
-metrics_data_types_map: Dict = {
-    "METRIC_TYPE_UNSPECIFIED": "string",
-    "TYPE_INTEGER": "integer",
-    "TYPE_FLOAT": "number",
-    "TYPE_SECONDS": "number",
-    "TYPE_MILLISECONDS": "number",
-    "TYPE_MINUTES": "number",
-    "TYPE_HOURS": "number",
-    "TYPE_STANDARD": "number",
-    "TYPE_CURRENCY": "number",
-    "TYPE_FEET": "number",
-    "TYPE_MILES": "number",
-    "TYPE_METERS": "number",
-    "TYPE_KILOMETERS": "number",
-}
+from .api_quota import GoogleAnalyticsApiQuota
+from .utils import authenticator_class_map, get_dimensions_type, get_metrics_type, metrics_type_to_python
 
-
-def get_metrics_type(t: str) -> str:
-    return metrics_data_types_map.get(t, "number")
-
-
-metrics_data_native_types_map: Dict = {
-    "METRIC_TYPE_UNSPECIFIED": str,
-    "TYPE_INTEGER": int,
-    "TYPE_FLOAT": float,
-    "TYPE_SECONDS": float,
-    "TYPE_MILLISECONDS": float,
-    "TYPE_MINUTES": float,
-    "TYPE_HOURS": float,
-    "TYPE_STANDARD": float,
-    "TYPE_CURRENCY": float,
-    "TYPE_FEET": float,
-    "TYPE_MILES": float,
-    "TYPE_METERS": float,
-    "TYPE_KILOMETERS": float,
-}
-
-
-def metrics_type_to_python(t: str) -> type:
-    return metrics_data_native_types_map.get(t, str)
-
-
-def get_dimensions_type(d: str) -> str:
-    return "string"
-
-
-authenticator_class_map: Dict = {
-    "Service": (GoogleServiceKeyAuthenticator, lambda credentials: {"credentials": credentials["credentials_json"]}),
-    "Client": (
-        auth.Oauth2Authenticator,
-        lambda credentials: {
-            "token_refresh_endpoint": "https://oauth2.googleapis.com/token",
-            "scopes": ["https://www.googleapis.com/auth/analytics.readonly"],
-            "client_secret": credentials["client_secret"],
-            "client_id": credentials["client_id"],
-            "refresh_token": credentials["refresh_token"],
-        },
-    ),
-}
+# set the quota handler globaly since limitations are the same for all streams
+# the initial values should be saved once and tracked for each stream, inclusivelly.
+GoogleAnalyticsQuotaHandler: GoogleAnalyticsApiQuota = GoogleAnalyticsApiQuota()
 
 
 class ConfigurationError(Exception):
@@ -96,8 +42,8 @@ class MetadataDescriptor:
             if not metadata:
                 raise Exception("failed to get metadata, over quota, try later")
             self._metadata = {
-                "dimensions": {m["apiName"]: m for m in metadata["dimensions"]},
-                "metrics": {m["apiName"]: m for m in metadata["metrics"]},
+                "dimensions": {m.get("apiName"): m for m in metadata.get("dimensions", [{}])},
+                "metrics": {m.get("apiName"): m for m in metadata.get("metrics", [{}])},
             }
 
         return self._metadata
@@ -106,28 +52,32 @@ class MetadataDescriptor:
 class GoogleAnalyticsDataApiAbstractStream(HttpStream, ABC):
     url_base = "https://analyticsdata.googleapis.com/v1beta/"
     http_method = "POST"
+    raise_on_http_errors = True
 
     def __init__(self, *, config: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
         self._config = config
-        self._stop_iteration = False
 
     @property
     def config(self):
         return self._config
 
+    # handle the quota errors with prepared values for:
+    # `should_retry`, `backoff_time`, `raise_on_http_errors`, `stop_iter` based on quota scenario.
+    @GoogleAnalyticsQuotaHandler.handle_quota()
     def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == 429:
-            return False
+        if response.status_code == requests.codes.too_many_requests:
+            setattr(self, "raise_on_http_errors", GoogleAnalyticsQuotaHandler.raise_on_http_errors)
+            return GoogleAnalyticsQuotaHandler.should_retry
+        # for all other cases not covered by GoogleAnalyticsQuotaHandler
         return super().should_retry(response)
 
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        try:
-            yield from super().read_records(**kwargs)
-        except requests.exceptions.HTTPError as e:
-            self._stop_iteration = True
-            if e.response.status_code != 429:
-                raise e
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        # handle the error with prepared GoogleAnalyticsQuotaHandler backoff value
+        if response.status_code == requests.codes.too_many_requests:
+            return GoogleAnalyticsQuotaHandler.backoff_time
+        # for all other cases not covered by GoogleAnalyticsQuotaHandler
+        return super().backoff_time(response)
 
 
 class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
@@ -137,9 +87,13 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
     _record_date_format = "%Y%m%d"
     primary_key = "uuid"
-    cursor_field = "date"
+    cursor_field = None
 
     metadata = MetadataDescriptor()
+
+    def __init__(self, *args, config: Mapping[str, Any], **kwargs):
+        self.cursor_field = "date" if "date" in config.get("dimensions") else []
+        super().__init__(*args, config=config, **kwargs)
 
     @staticmethod
     def add_primary_key() -> dict:
@@ -167,7 +121,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         Override get_json_schema CDK method to retrieve the schema information for GoogleAnalyticsV4 Object dynamically.
         """
         schema: Dict[str, Any] = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "type": ["null", "object"],
             "additionalProperties": True,
             "properties": {
@@ -221,9 +175,9 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
     ) -> Iterable[Mapping]:
         r = response.json()
 
-        dimensions = [h["name"] for h in r["dimensionHeaders"]]
-        metrics = [h["name"] for h in r["metricHeaders"]]
-        metrics_type_map = {h["name"]: h["type"] for h in r["metricHeaders"]}
+        dimensions = [h.get("name") for h in r.get("dimensionHeaders", [{}])]
+        metrics = [h.get("name") for h in r.get("metricHeaders", [{}])]
+        metrics_type_map = {h.get("name"): h.get("type") for h in r.get("metricHeaders", [{}])}
 
         for row in r.get("rows", []):
             yield self.add_primary_key() | self.add_property_id(self.config["property_id"]) | self.add_dimensions(
@@ -245,11 +199,13 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
-        return {
+        payload = {
             "metrics": [{"name": m} for m in self.config["metrics"]],
             "dimensions": [{"name": d} for d in self.config["dimensions"]],
             "dateRanges": [stream_slice],
+            "returnPropertyQuota": True,
         }
+        return payload
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -265,14 +221,16 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             start_date = self.config["date_ranges_start_date"]
 
         while start_date <= today:
-            if self._stop_iteration:
-                return
-
-            yield {
-                "startDate": utils.date_to_string(start_date),
-                "endDate": utils.date_to_string(min(start_date + datetime.timedelta(days=self.config["window_in_days"] - 1), today)),
-            }
-            start_date += datetime.timedelta(days=self.config["window_in_days"])
+            # stop producing slices if 429 + specific scenario is hit
+            # see GoogleAnalyticsQuotaHandler for more info.
+            if GoogleAnalyticsQuotaHandler.stop_iter:
+                return []
+            else:
+                yield {
+                    "startDate": utils.date_to_string(start_date),
+                    "endDate": utils.date_to_string(min(start_date + datetime.timedelta(days=self.config["window_in_days"] - 1), today)),
+                }
+                start_date += datetime.timedelta(days=self.config["window_in_days"])
 
 
 class GoogleAnalyticsDataApiMetadataStream(GoogleAnalyticsDataApiAbstractStream):
@@ -298,10 +256,11 @@ class GoogleAnalyticsDataApiMetadataStream(GoogleAnalyticsDataApiAbstractStream)
 class SourceGoogleAnalyticsDataApi(AbstractSource):
     def _validate_and_transform(self, config: Mapping[str, Any], report_names: Set[str]):
         if "custom_reports" in config:
-            try:
-                config["custom_reports"] = json.loads(config["custom_reports"])
-            except ValueError:
-                raise ConfigurationError("custom_reports is not valid JSON")
+            if isinstance(config["custom_reports"], str):
+                try:
+                    config["custom_reports"] = json.loads(config["custom_reports"])
+                except ValueError:
+                    raise ConfigurationError("custom_reports is not valid JSON")
         else:
             config["custom_reports"] = []
 
@@ -318,11 +277,6 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         if existing_names:
             existing_names = ", ".join(existing_names)
             raise ConfigurationError(f"custom_reports: {existing_names} already exist as a default report(s).")
-
-        for report in config["custom_reports"]:
-            # "date" dimension is mandatory because it's cursor_field
-            if "date" not in report["dimensions"]:
-                report["dimensions"].append("date")
 
         if "credentials_json" in config["credentials"]:
             try:
@@ -371,16 +325,20 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             if invalid_metrics:
                 invalid_metrics = ", ".join(invalid_metrics)
                 return False, f"custom_reports: invalid metric(s): {invalid_metrics} for the custom report: {report['name']}"
+            report_stream = self.instantiate_report_class(report, config)
+            # check if custom_report dimensions + metrics can be combined and report generated
+            stream_slice = next(report_stream.stream_slices(sync_mode=SyncMode.full_refresh))
+            next(report_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         reports = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/default_reports.json"))
         config = self._validate_and_transform(config, report_names={r["name"] for r in reports})
         config["authenticator"] = self.get_authenticator(config)
+        return [self.instantiate_report_class(report, config) for report in reports + config["custom_reports"]]
 
-        return [
-            type(report["name"], (GoogleAnalyticsDataApiBaseStream,), {})(
-                config=dict(**config, metrics=report["metrics"], dimensions=report["dimensions"]), authenticator=config["authenticator"]
-            )
-            for report in reports + config["custom_reports"]
-        ]
+    @staticmethod
+    def instantiate_report_class(report: dict, config: Mapping[str, Any]) -> GoogleAnalyticsDataApiBaseStream:
+        return type(report["name"], (GoogleAnalyticsDataApiBaseStream,), {})(
+            config=dict(**config, metrics=report["metrics"], dimensions=report["dimensions"]), authenticator=config["authenticator"]
+        )

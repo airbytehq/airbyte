@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -14,11 +14,12 @@ import io.debezium.connector.sqlserver.Lsn;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MssqlCdcTargetPosition implements CdcTargetPosition {
+public class MssqlCdcTargetPosition implements CdcTargetPosition<Lsn> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlCdcTargetPosition.class);
   public final Lsn targetLsn;
@@ -29,9 +30,9 @@ public class MssqlCdcTargetPosition implements CdcTargetPosition {
 
   @Override
   public boolean reachedTargetPosition(final JsonNode valueAsJson) {
-    final SnapshotMetadata snapshotMetadata = SnapshotMetadata.valueOf(valueAsJson.get("source").get("snapshot").asText().toUpperCase());
+    final SnapshotMetadata snapshotMetadata = SnapshotMetadata.fromString(valueAsJson.get("source").get("snapshot").asText());
 
-    if (SnapshotMetadata.TRUE == snapshotMetadata) {
+    if (SnapshotMetadata.isSnapshotEventMetadata(snapshotMetadata)) {
       return false;
     } else if (SnapshotMetadata.LAST == snapshotMetadata) {
       LOGGER.info("Signalling close because Snapshot is complete");
@@ -44,6 +45,11 @@ public class MssqlCdcTargetPosition implements CdcTargetPosition {
       }
       return isEventLSNAfter;
     }
+  }
+
+  @Override
+  public Lsn extractPositionFromHeartbeatOffset(final Map<String, ?> sourceOffset) {
+    throw new RuntimeException("Heartbeat is not supported for MSSQL");
   }
 
   private Lsn extractLsn(final JsonNode valueAsJson) {

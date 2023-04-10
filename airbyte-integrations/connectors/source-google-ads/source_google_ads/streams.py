@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -295,7 +295,7 @@ class Campaigns(IncrementalGoogleAdsStream):
     """
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    primary_key = ["campaign.id", "segments.date"]
+    primary_key = ["campaign.id", "segments.date", "segments.hour"]
 
 
 class CampaignLabels(GoogleAdsStream):

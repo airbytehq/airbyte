@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC
@@ -37,6 +37,9 @@ class NotionStream(HttpStream, ABC):
         retry_after = response.headers.get("retry-after")
         if retry_after:
             return float(retry_after)
+
+    def should_retry(self, response: requests.Response) -> bool:
+        return response.status_code == 400 or super().should_retry(response)
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         params = super().request_headers(**kwargs)

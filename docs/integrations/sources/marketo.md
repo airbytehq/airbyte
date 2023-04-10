@@ -47,7 +47,7 @@ We're almost there! Armed with your Endpoint & Identity URLs and your Client ID 
 <!-- env:cloud -->
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click Sources. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Marketo connector and select **Marketo** from the Source type dropdown.
 4. Enter the start date, domain URL, client ID and secret
@@ -106,6 +106,7 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                       |
 |:---------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------|
+| `1.0.3`  | 2023-02-13 | [22938](https://github.com/airbytehq/airbyte/pull/22938) | Specified date formatting in specification                                                                     |
 | `1.0.2`  | 2023-02-01 | [22203](https://github.com/airbytehq/airbyte/pull/22203) | Handle Null cursor values                                                                     |
 | `1.0.1`  | 2023-01-31 | [22015](https://github.com/airbytehq/airbyte/pull/22015) | Set `AvailabilityStrategy` for streams explicitly to `None`                                   |
 | `1.0.0`  | 2023-01-25 | [21790](https://github.com/airbytehq/airbyte/pull/21790) | Fix `activities_*` stream schemas                                                             |

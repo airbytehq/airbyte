@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import re
@@ -41,6 +41,7 @@ METRIC_RESPONSE is gzip compressed binary representing this string:
     "adId": "665320125",
     "targetId": "791320341",
     "asin": "G000PSH142",
+    "advertisedAsin": "G000PSH142",
     "keywordBid": "511234974",
     "keywordId": "965783021"
   },
@@ -51,6 +52,7 @@ METRIC_RESPONSE is gzip compressed binary representing this string:
     "adId": "665320125",
     "targetId": "791320341",
     "asin": "G000PSH142",
+    "advertisedAsin": "G000PSH142",
     "keywordBid": "511234974",
     "keywordId": "965783021"
   },
@@ -61,6 +63,7 @@ METRIC_RESPONSE is gzip compressed binary representing this string:
     "adId": "665320125",
     "targetId": "791320341",
     "asin": "G000PSH142",
+    "advertisedAsin": "G000PSH142",
     "keywordBid": "511234974",
     "keywordId": "965783021"
   },
@@ -71,6 +74,7 @@ METRIC_RESPONSE is gzip compressed binary representing this string:
     "adId": "665320125",
     "targetId": "791320341",
     "asin": "G000PSH142",
+    "advertisedAsin": "G000PSH142",
     "keywordBid": "511234974",
     "keywordId": "965783021"
   },
@@ -81,6 +85,7 @@ METRIC_RESPONSE is gzip compressed binary representing this string:
     "adId": "665320125",
     "targetId": "791320341",
     "asin": "G000PSH142",
+    "advertisedAsin": "G000PSH142",
     "keywordBid": "511234974",
     "keywordId": "965783021"
   }
@@ -88,10 +93,12 @@ METRIC_RESPONSE is gzip compressed binary representing this string:
 """
 METRIC_RESPONSE = b64decode(
     """
-H4sIANnqymMC/92SsYrCQBBA+3zFsrWBmdnZ7K6lTbSRgyvFYjFBwl2iJIqI+O+3p2aPEyxSmmKLnceb4jHJKhHiEp
-4QcuPrva+2zaKQU0HIYCyTnfyHS1+XAcsu/L/LtB+nTZinUZIPyxd5uzvubxtlxg5Q8R97jDOtCJB0Dw6+3ZaHOzQO
-A1SM0eqq5hfkAPDxOUemnnyV59OuLWbVTdSIpNgZfsL3tS7TxioglAFeJy8aMGtgbWlIgt4ZRwENDpmtGnQFURpHA1
-JokGDYGURpHA2s0woyYBjSIErv1SBZJz+HyV3zFgUAAA==
+    H4sIAAAAAAAACuWSPWvDMBCGd/8KoTmGu9PJkrq1S5olBDqWDqIWwbRxgu
+    02hJD/HjX+ooUMXutBg95Hzwle7jUR4hyPEPLd7w6+2JarXD4IQgZjmezi
+    N1z7XYhY1vH+GdI+TsuYp4MkO8vny2r/dbhNlBk7QMUj6+JMKwIk3YPGV9
+    vQtNA4jFAxDlZdlD9gCQCbl2dkGud9h6op6pA/3n3zEU7HfZU/FbfhGpEU
+    O8N/cPu1y7SxCghlhJfFnZ6YNbC2NKWm3plPSxocMls1aZsGaT49kUKDBN
+    PWaZDm05N1WkEGDFN6sr30/3pK3q5AhIPlyAUAAA==
 """
 )
 METRICS_COUNT = 5
@@ -103,9 +110,15 @@ def setup_responses(init_response=None, init_response_products=None, init_respon
     if init_response_products:
         responses.add(
             responses.POST,
-            re.compile(r"https://advertising-api.amazon.com/v2/sp/[a-zA-Z]+/report"),
+            re.compile(r"https://advertising-api.amazon.com/reporting/reports"),
             body=init_response_products,
-            status=202,
+            status=200,
+        )
+        responses.add(
+            responses.POST,
+            re.compile(r"https://advertising-api.amazon.com/reporting/reports"),
+            body=init_response_products,
+            status=200,
         )
     if init_response_brands:
         responses.add(
@@ -114,7 +127,17 @@ def setup_responses(init_response=None, init_response_products=None, init_respon
     if status_response:
         responses.add(
             responses.GET,
+            re.compile(r"https://advertising-api.amazon.com/reporting/reports/[^/]+$"),
+            body=status_response,
+        )
+        responses.add(
+            responses.GET,
             re.compile(r"https://advertising-api.amazon.com/v2/reports/[^/]+$"),
+            body=status_response,
+        )
+        responses.add(
+            responses.GET,
+            re.compile(r"https://advertising-api.amazon.com/reporting/reports"),
             body=status_response,
         )
     if metric_response:
@@ -178,7 +201,7 @@ def test_products_report_stream(config):
     profiles = make_profiles(profile_type="vendor")
 
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
-    stream_slice = {"profile": profiles[0], "reportDate": "20210725", "retry_count": 3}
+    stream_slice = {"profile": profiles[0], "reportDate": "2021-07-25", "retry_count": 3}
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
     assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)
 
@@ -384,9 +407,9 @@ def test_get_start_date(config):
 
     profile_id = str(profiles[0].profileId)
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
-    assert stream.get_start_date(profiles[0], {profile_id: {"reportDate": "20210810"}}) == Date(2021, 8, 10)
+    assert stream.get_start_date(profiles[0], {profile_id: {"reportDate": "2021-08-10"}}) == Date(2021, 8, 10)
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
-    assert stream.get_start_date(profiles[0], {profile_id: {"reportDate": "20210510"}}) == Date(2021, 6, 1)
+    assert stream.get_start_date(profiles[0], {profile_id: {"reportDate": "2021-05-10"}}) == Date(2021, 6, 1)
 
     config.pop("start_date")
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
@@ -399,7 +422,7 @@ def test_stream_slices_different_timezones(config):
     profile2 = Profile(profileId=2, timezone="UTC", accountInfo=AccountInfo(marketplaceStringId="", id="", type="seller"))
     stream = SponsoredProductsReportStream(config, [profile1, profile2], authenticator=mock.MagicMock())
     slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state={}))
-    assert slices == [{"profile": profile1, "reportDate": "20210731"}, {"profile": profile2, "reportDate": "20210801"}]
+    assert slices == [{"profile": profile1, "reportDate": "2021-07-31"}, {"profile": profile2, "reportDate": "2021-08-01"}]
 
 
 def test_stream_slices_lazy_evaluation(config):
@@ -417,19 +440,19 @@ def test_stream_slices_lazy_evaluation(config):
             frozen_datetime.tick(delta=timedelta(minutes=10))
 
         assert slices == [
-            {"profile": profile1, "reportDate": "20220527"},
-            {"profile": profile2, "reportDate": "20220528"},
-            {"profile": profile1, "reportDate": "20220528"},
-            {"profile": profile2, "reportDate": "20220529"},
-            {"profile": profile1, "reportDate": "20220529"},
-            {"profile": profile2, "reportDate": "20220530"},
-            {"profile": profile1, "reportDate": "20220530"},
-            {"profile": profile2, "reportDate": "20220531"},
-            {"profile": profile1, "reportDate": "20220531"},
-            {"profile": profile2, "reportDate": "20220601"},
-            {"profile": profile1, "reportDate": "20220601"},
-            {"profile": profile2, "reportDate": "20220602"},
-            {"profile": profile1, "reportDate": "20220602"},
+            {"profile": profile1, "reportDate": "2022-05-27"},
+            {"profile": profile2, "reportDate": "2022-05-28"},
+            {"profile": profile1, "reportDate": "2022-05-28"},
+            {"profile": profile2, "reportDate": "2022-05-29"},
+            {"profile": profile1, "reportDate": "2022-05-29"},
+            {"profile": profile2, "reportDate": "2022-05-30"},
+            {"profile": profile1, "reportDate": "2022-05-30"},
+            {"profile": profile2, "reportDate": "2022-05-31"},
+            {"profile": profile1, "reportDate": "2022-05-31"},
+            {"profile": profile2, "reportDate": "2022-06-01"},
+            {"profile": profile1, "reportDate": "2022-06-01"},
+            {"profile": profile2, "reportDate": "2022-06-02"},
+            {"profile": profile1, "reportDate": "2022-06-02"},
         ]
 
 
@@ -438,10 +461,10 @@ def test_get_date_range_lazy_evaluation():
 
     with freeze_time("2022-06-01T12:00:00+00:00") as frozen_datetime:
         date_range = list(get_date_range(start_date=Date(2022, 5, 29), timezone="UTC"))
-        assert date_range == ["20220529", "20220530", "20220531", "20220601"]
+        assert date_range == ["2022-05-29", "2022-05-30", "2022-05-31", "2022-06-01"]
 
         date_range = list(get_date_range(start_date=Date(2022, 6, 1), timezone="UTC"))
-        assert date_range == ["20220601"]
+        assert date_range == ["2022-06-01"]
 
         date_range = list(get_date_range(start_date=Date(2022, 6, 2), timezone="UTC"))
         assert date_range == []
@@ -450,7 +473,7 @@ def test_get_date_range_lazy_evaluation():
         for date in get_date_range(start_date=Date(2022, 5, 29), timezone="UTC"):
             date_range.append(date)
             frozen_datetime.tick(delta=timedelta(hours=3))
-        assert date_range == ["20220529", "20220530", "20220531", "20220601", "20220602"]
+        assert date_range == ["2022-05-29", "2022-05-30", "2022-05-31", "2022-06-01", "2022-06-02"]
 
 
 @responses.activate
@@ -486,7 +509,6 @@ def test_read_incremental_with_records(config):
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
 
     with freeze_time("2021-01-02 12:00:00") as frozen_datetime:
-
         state = {}
         records = list(read_incremental(stream, state))
         assert state == {"1": {"reportDate": "20210102"}}
@@ -531,7 +553,6 @@ def test_read_incremental_without_records_start_date(config):
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
 
     with freeze_time("2021-01-02 12:00:00") as frozen_datetime:
-
         state = {}
         reportDates = ["20201231", "20210101", "20210102", "20210103", "20210104"]
         for reportDate in reportDates:
@@ -554,7 +575,6 @@ def test_read_incremental_with_records_start_date(config):
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
 
     with freeze_time("2021-01-02 12:00:00") as frozen_datetime:
-
         state = {}
         records = list(read_incremental(stream, state))
 
@@ -643,3 +663,148 @@ def test_streams_state_filter(mocker, config, state_filter, stream_class):
         assert params["stateFilter"] == ",".join(state_filter)
     else:
         assert state_filter is None
+
+
+@responses.activate
+@pytest.mark.parametrize(
+    "custom_record_types, flag_match_error",
+    [
+        (
+                ["campaigns"],
+                True
+        ),
+        (
+                ["campaigns", "adGroups"],
+                True
+        ),
+        (
+                [],
+                False
+        ),
+        (
+                ["invalid_record_type"],
+                True
+        )
+    ]
+)
+def test_display_report_stream_with_custom_record_types(config_gen, custom_record_types, flag_match_error):
+    setup_responses(
+        init_response=REPORT_INIT_RESPONSE,
+        status_response=REPORT_STATUS_RESPONSE,
+        metric_response=METRIC_RESPONSE,
+    )
+
+    profiles = make_profiles()
+
+    stream = SponsoredDisplayReportStream(config_gen(report_record_types=custom_record_types), profiles, authenticator=mock.MagicMock())
+    stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
+    records = list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
+    for record in records:
+        if record['recordType'] not in custom_record_types:
+            if flag_match_error:
+                assert False
+
+
+@responses.activate
+@pytest.mark.parametrize(
+    "custom_record_types, expected_record_types, flag_match_error",
+    [
+        (
+                ["campaigns"],
+                ["campaigns"],
+                True
+        ),
+        (
+                ["asins_keywords"],
+                ["asins_keywords"],
+                True
+        ),
+        (
+                ["asins_targets"],
+                ["asins_targets"],
+                True
+        ),
+        (
+                ["campaigns", "adGroups"],
+                ["campaigns", "adGroups"],
+                True
+        ),
+        (
+                [],
+                [],
+                False
+        ),
+        (
+                ["invalid_record_type"],
+                [],
+                True
+        )
+    ]
+)
+def test_products_report_stream_with_custom_record_types(config_gen, custom_record_types, expected_record_types, flag_match_error):
+    setup_responses(
+        init_response_products=REPORT_INIT_RESPONSE,
+        status_response=REPORT_STATUS_RESPONSE,
+        metric_response=METRIC_RESPONSE,
+    )
+
+    profiles = make_profiles(profile_type="vendor")
+
+    stream = SponsoredProductsReportStream(config_gen(report_record_types=custom_record_types), profiles, authenticator=mock.MagicMock())
+    stream_slice = {"profile": profiles[0], "reportDate": "2021-07-25", "retry_count": 3}
+    records = list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
+    for record in records:
+        print(record)
+        if record['recordType'] not in expected_record_types:
+            if flag_match_error:
+                assert False
+
+
+@responses.activate
+@pytest.mark.parametrize(
+    "custom_record_types, expected_record_types, flag_match_error",
+    [
+        (
+                ["campaigns"],
+                ["campaigns"],
+                True
+        ),
+        (
+                ["asins"],
+                ["asins"],
+                True
+        ),
+        (
+                ["campaigns", "adGroups"],
+                ["campaigns", "adGroups"],
+                True
+        ),
+        (
+                [],
+                [],
+                False
+        ),
+        (
+                ["invalid_record_type"],
+                [],
+                True
+        )
+    ]
+)
+def test_brands_video_report_with_custom_record_types(config_gen, custom_record_types, expected_record_types, flag_match_error):
+    setup_responses(
+        init_response_brands=REPORT_INIT_RESPONSE,
+        status_response=REPORT_STATUS_RESPONSE,
+        metric_response=METRIC_RESPONSE,
+    )
+
+    profiles = make_profiles()
+
+    stream = SponsoredBrandsVideoReportStream(config_gen(report_record_types=custom_record_types), profiles, authenticator=mock.MagicMock())
+    stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
+    records = list(stream.read_records(SyncMode.incremental, stream_slice=stream_slice))
+    for record in records:
+        print(record)
+        if record['recordType'] not in expected_record_types:
+            if flag_match_error:
+                assert False

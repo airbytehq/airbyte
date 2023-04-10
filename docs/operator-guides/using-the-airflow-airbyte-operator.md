@@ -2,9 +2,15 @@
 description: Start triggering Airbyte jobs with Apache Airflow in minutes
 ---
 
-# Using the Airflow Airbyte Operator
+# Using the Airbyte Operator to orchestrate Airbyte OSS
 
-Airbyte is an official community provider for the Apache Airflow project. The Airbyte operator allows you to trigger synchronization jobs in Apache Airflow, and this tutorial will walk through configuring your Airflow DAG to do so.
+Airbyte is an official community provider for the Apache Airflow project. The Airbyte operator allows you to trigger Airbyte OSS synchronization jobs from Apache Airflow, and this article will walk through configuring your Airflow DAG to do so. 
+
+:::note
+
+For [historic reasons](https://github.com/airbytehq/airbyte/issues/836), the Airbyte operator is designed to work with the internal [Config API](https://airbyte-public-api-docs.s3.us-east-2.amazonaws.com/rapidoc-api-docs.html) rather than the newer [Airbyte API](https://reference.airbyte.com/reference/start) and is therefore not intended or designed for orchstrating Airbyte Cloud. As an alternative, it is possible to make use of [Airflow's HTTP operators](https://airflow.apache.org/docs/apache-airflow-providers-http/stable/operators.html) with both Airbyte OSS and Airbyte Cloud. This approach is described in [Using the new Airbyte API to orchestrate Airbyte Cloud with Airflow](https://airbyte.com/blog/orchestrating-airbyte-api-airbyte-cloud-airflow).
+
+:::
 
 :::caution
 
@@ -131,3 +137,11 @@ Don't be fooled by our simple example of only one Airflow task. Airbyte is a pow
 
 We love to hear any questions or feedback on our [Slack](https://slack.airbyte.io/). We're still in alpha, so if you see any rough edges or want to request a connector, feel free to create an issue on our [Github](https://github.com/airbytehq/airbyte) or thumbs up an existing issue.
 
+## Related articles
+For additional information about using the Airflow and Airbyte together, see the following:
+
+- [Using the new Airbyte API to orchestrate Airbyte Cloud with Airflow](https://airbyte.com/blog/orchestrating-airbyte-api-airbyte-cloud-airflow)
+- [A step-by-step guide to setting up and configuring Airbyte and Airflow to work together](https://airbyte.com/tutorials/how-to-use-airflow-and-airbyte-together)
+- [The difference between Airbyte and Airflow](https://airbyte.com/blog/airbyte-vs-airflow)
+- [ETL Pipelines with Airflow: the Good, the Bad and the Ugly](https://airbyte.com/blog/airflow-etl-pipelines)
+- [Automate your Data Scraping with Apache Airflow and Beautiful Soup](https://airbyte.com/tutorials/data-scraping-with-airflow-and-beautiful-soup)

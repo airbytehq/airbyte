@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -51,7 +51,6 @@ class AdsInsights(FBMarketingIncrementalStream):
     # https://developers.facebook.com/docs/marketing-api/reference/ad-account/insights/#overview
     INSIGHTS_RETENTION_PERIOD = pendulum.duration(months=37)
 
-    level = "ad"
     action_attribution_windows = ALL_ACTION_ATTRIBUTION_WINDOWS
     time_increment = 1
 
@@ -65,6 +64,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         action_report_time: str = None,
         time_increment: Optional[int] = None,
         insights_lookback_window: int = None,
+        level: str = "ad",
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -83,6 +83,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         self.action_report_time = action_report_time or self.action_report_time
         self._new_class_name = name
         self._insights_lookback_window = insights_lookback_window
+        self.level = level
 
         # state
         self._cursor_value: Optional[pendulum.Date] = None  # latest period that was read

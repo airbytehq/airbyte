@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import random
@@ -61,7 +61,7 @@ def test_http_method(patch_base_class):
     ("http_status", "should_retry"),
     [
         (HTTPStatus.OK, False),
-        (HTTPStatus.BAD_REQUEST, False),
+        (HTTPStatus.BAD_REQUEST, True),
         (HTTPStatus.TOO_MANY_REQUESTS, True),
         (HTTPStatus.INTERNAL_SERVER_ERROR, True),
     ],

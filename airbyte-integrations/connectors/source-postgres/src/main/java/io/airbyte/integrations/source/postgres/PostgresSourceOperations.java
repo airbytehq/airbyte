@@ -1,11 +1,10 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.db.DataTypeUtils.TIMESTAMPTZ_FORMATTER;
-import static io.airbyte.db.DataTypeUtils.TIMETZ_FORMATTER;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
@@ -34,6 +33,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -231,7 +231,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
       if (timetz == null) {
         arrayNode.add(NullNode.getInstance());
       } else {
-        arrayNode.add(timetz.format(TIMETZ_FORMATTER));
+        arrayNode.add(DateTimeConverter.convertToTimeWithTimezone(timetz));
       }
     }
     node.set(columnName, arrayNode);
@@ -241,7 +241,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
-      final LocalDateTime timestamp = getObject(arrayResultSet, 2, LocalDateTime.class);
+      final Timestamp timestamp = arrayResultSet.getTimestamp(2);
       if (timestamp == null) {
         arrayNode.add(NullNode.getInstance());
       } else {
@@ -591,6 +591,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   }
 
   private static class ColumnInfo {
+
     public String columnTypeName;
     public PostgresType columnType;
 

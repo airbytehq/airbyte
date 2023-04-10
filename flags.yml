@@ -1,3 +1,11 @@
 flags:
   - name: performance.backgroundJsonSchemaValidation
-    enabled: false
+    serve: false
+  - name: heartbeat.failSync
+    serve: true
+  - name: platform.commitStatsAsap
+    serve: true
+  - name: connectors.versionOverridesEnabled
+    serve: true
+  - name: heartbeat-max-seconds-between-messages
+    serve: "10800"

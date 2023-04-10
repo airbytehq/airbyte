@@ -1,11 +1,10 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 from copy import deepcopy
 
-import pydantic
 import pytest
 from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification, Status
 from facebook_business import FacebookAdsApi, FacebookSession
@@ -69,19 +68,17 @@ class TestSourceFacebookMarketing:
 
     def test_check_connection_empty_config(self, api, logger_mock):
         config = {}
+        ok, error_msg = SourceFacebookMarketing().check_connection(logger_mock, config=config)
 
-        with pytest.raises(pydantic.ValidationError):
-            SourceFacebookMarketing().check_connection(logger_mock, config=config)
-
-        assert not api.called
+        assert not ok
+        assert error_msg
 
     def test_check_connection_invalid_config(self, api, config, logger_mock):
         config.pop("start_date")
+        ok, error_msg = SourceFacebookMarketing().check_connection(logger_mock, config=config)
 
-        with pytest.raises(pydantic.ValidationError):
-            SourceFacebookMarketing().check_connection(logger_mock, config=config)
-
-        assert not api.called
+        assert not ok
+        assert error_msg
 
     def test_check_connection_exception(self, api, config, logger_mock):
         api.side_effect = RuntimeError("Something went wrong!")

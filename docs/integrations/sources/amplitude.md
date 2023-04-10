@@ -8,7 +8,7 @@ To set up the Amplitude source connector, you'll need your Amplitude [`API Key` 
 
 ## Set up the Amplitude source connector
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**. 
 3. On the Set up the source page, select **Amplitude** from the Source type dropdown.
 4. Enter a name for your source.
@@ -43,7 +43,10 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
-| 0.1.21  | TODO       | [21888](https://github.com/airbytehq/airbyte/pull/21888) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
+| 0.1.24  | 2023-03-28 | [21022](https://github.com/airbytehq/airbyte/pull/21022) | Enable event stream time interval selection                                                     |
+| 0.1.23  | 2023-03-02 | [23087](https://github.com/airbytehq/airbyte/pull/23087) | Specified date formatting in specification                                                      |
+| 0.1.22  | 2023-02-17 | [23192](https://github.com/airbytehq/airbyte/pull/23192) | Skip the stream if `start_date` is specified in the future.                                     
+| 0.1.21  | 2023-02-01 | [21888](https://github.com/airbytehq/airbyte/pull/21888) | Set `AvailabilityStrategy` for streams explicitly to `None`                                     |
 | 0.1.20  | 2023-01-27 | [21957](https://github.com/airbytehq/airbyte/pull/21957) | Handle null values and empty strings in date-time fields                                        |
 | 0.1.19  | 2022-12-09 | [19727](https://github.com/airbytehq/airbyte/pull/19727) | Remove `data_region` as required                                                                |
 | 0.1.18  | 2022-12-08 | [19727](https://github.com/airbytehq/airbyte/pull/19727) | Add parameter to select region                                                                  |

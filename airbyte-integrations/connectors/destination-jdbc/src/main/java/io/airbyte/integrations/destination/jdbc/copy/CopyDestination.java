@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy;
@@ -13,8 +13,8 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -44,7 +44,7 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
    */
   public abstract void checkPersistence(JsonNode config) throws Exception;
 
-  public abstract ExtendedNameTransformer getNameTransformer();
+  public abstract StandardNameTransformer getNameTransformer();
 
   public abstract DataSource getDataSource(JsonNode config);
 

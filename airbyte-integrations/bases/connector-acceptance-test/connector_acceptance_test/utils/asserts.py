@@ -1,12 +1,14 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 import logging
 import re
 from collections import defaultdict
-from typing import List, Mapping
+from typing import Any, Dict, List, Mapping
 
+import dpath.util
 import pendulum
 from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog
 from jsonschema import Draft7Validator, FormatChecker, FormatError, ValidationError, validators
@@ -44,22 +46,36 @@ class CustomFormatChecker(FormatChecker):
             return super().check(instance, format)
 
 
+def _enforce_no_additional_top_level_properties(json_schema: Dict[str, Any]):
+    """Create a copy of the schema in which `additionalProperties` is set to False for the dict of top-level properties.
+
+    This method will override the value of `additionalProperties` if it is set,
+    or will create the property and set it to False if it does not exist.
+    """
+    enforced_schema = copy.deepcopy(json_schema)
+    dpath.util.new(enforced_schema, "additionalProperties", False)
+    return enforced_schema
+
+
 def verify_records_schema(
-    records: List[AirbyteRecordMessage], catalog: ConfiguredAirbyteCatalog
+    records: List[AirbyteRecordMessage], catalog: ConfiguredAirbyteCatalog, fail_on_extra_columns: bool
 ) -> Mapping[str, Mapping[str, ValidationError]]:
     """Check records against their schemas from the catalog, yield error messages.
     Only first record with error will be yielded for each stream.
     """
     stream_validators = {}
     for stream in catalog.streams:
+        schema_to_validate_against = stream.stream.json_schema
+        if fail_on_extra_columns:
+            schema_to_validate_against = _enforce_no_additional_top_level_properties(schema_to_validate_against)
         stream_validators[stream.stream.name] = Draft7ValidatorWithStrictInteger(
-            stream.stream.json_schema, format_checker=CustomFormatChecker()
+            schema_to_validate_against, format_checker=CustomFormatChecker()
         )
     stream_errors = defaultdict(dict)
     for record in records:
         validator = stream_validators.get(record.stream)
         if not validator:
-            logging.error(f"Record from the {record.stream} stream that is not in the catalog.")
+            logging.error(f"Received record from the `{record.stream}` stream, which is not in the catalog.")
             continue
 
         errors = list(validator.iter_errors(record.data))
