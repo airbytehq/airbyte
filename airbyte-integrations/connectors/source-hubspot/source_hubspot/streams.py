@@ -1243,13 +1243,13 @@ class DealsArchived(ClientSideIncrementalStream):
     scopes = {"contacts", "crm.objects.deals.read"}
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
-        params.update({"archived": 'true', "associations": self.associations})
+        params.update({"archived": "true", "associations": self.associations})
         return params
 
 
