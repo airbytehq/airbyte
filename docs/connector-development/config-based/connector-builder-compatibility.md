@@ -13,13 +13,13 @@ Answer the following questions to determine whether the Connector Builder is the
     - [Link to the next page](#link-to-next-page--cursorpagination-)
 - [ ] [Do endpoints only require query parameters that are key-value pairs?](#does-the-integration-require-query-params-that-are-not-key-value-pairs)
 
+You can use the Connector Builder if you check all the items.
+
 You can follow [this chart](https://whimsical.com/how-should-i-build-my-connector-YNXaNQhRuPuWy68Xg8Akhy) to guide you through the process.
 
 The sections below provide more details to help you answer the questions.
 
-## Is the integration a REST API returning a collection of records synchronously?
-
-Is the integration a REST API? In doubt, look for the word “REST” in the documentation.
+## Is the integration an HTTP API returning a collection of records synchronously?
 
 Look at the shape of the resource path.
 
@@ -27,7 +27,7 @@ Taking the [Congress API](https://api.congress.gov/#/bill) as an example,
 
 `GET /bill`
 
-Indicates the records can be retrieved by submitting a GET request to the /bill path. The sample response shows that the response returns a collection of records, so the Congress API is a REST API returning a collection of records.
+Indicates the records can be retrieved by submitting a GET request to the `/bill` path. The sample response shows that the response returns a collection of records, so the Congress API is a REST API returning a collection of records.
 
 Sample response:
 ```
@@ -72,13 +72,13 @@ Some endpoints are parameterized. An example of such endpoint is the [Congress A
 
 These endpoints are also valid synchronous REST endpoints.
 
-This differs from the [Amazon Ads reports endpoint](https://advertising.amazon.com/API/docs/en-us/info/api-overview), which returns a report ID, which will be generated asynchronously by the source. Because the reports need to be downloaded separately, this is not a synchronous REST API.
+This differs from the [Amazon Ads reports endpoint](https://advertising.amazon.com/API/docs/en-us/info/api-overview), which returns a report ID, which will be generated asynchronously by the source. This is not a synchronous REST API because the reports need to be downloaded separately.
 
 Examples:
 - Yes: [Congress API](https://api.congress.gov/#/)
 - No: [Amazon Ads](https://advertising.amazon.com/API/docs/en-us/info/api-overview)
 
-If the integration is not a synchronous REST API, use the Python CDK.
+If the integration is not an HTTP API returning the records synchronously, use the Python CDK.
 
 ## What type of authentication is required?
 Look up the authentication mechanism in the API documentation, and identify which type it is.
