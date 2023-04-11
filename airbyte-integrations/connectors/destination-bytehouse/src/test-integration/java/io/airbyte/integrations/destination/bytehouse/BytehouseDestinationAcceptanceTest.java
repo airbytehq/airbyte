@@ -98,7 +98,7 @@ public class BytehouseDestinationAcceptanceTest extends DestinationAcceptanceTes
     return new DefaultJdbcDatabase(
         DataSourceFactory.create(
             BytehouseDestination.DEFAULT_USERNAME,
-            null,
+            config.has(JdbcUtils.PASSWORD_KEY) ? config.get(JdbcUtils.PASSWORD_KEY).asText() : null,
             BytehouseDestination.DRIVER_CLASS,
             config.get(JdbcUtils.JDBC_URL_KEY).asText(),
             getConnectionProperties(config)),
