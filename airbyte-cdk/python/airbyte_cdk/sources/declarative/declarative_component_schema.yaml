@@ -662,6 +662,7 @@ definitions:
         type: object
         additionalProperties: true
   DeclarativeStream:
+    title: Declarative Stream
     description: A stream whose behavior is described by a set of declarative low code components
     type: object
     additionalProperties: true
@@ -673,29 +674,38 @@ definitions:
         type: string
         enum: [DeclarativeStream]
       retriever:
-        definition: Component used to coordinate how records are extracted across stream slices and request pages
+        title: Retriever
+        description: Component used to coordinate how records are extracted across stream slices and request pages
         anyOf:
           - "$ref": "#/definitions/CustomRetriever"
           - "$ref": "#/definitions/SimpleRetriever"
       incremental_sync:
+        title: Incremental Sync
+        description: Component used to fetch data incrementally based on a time field in the data
         anyOf:
           - "$ref": "#/definitions/CustomIncrementalSync"
           - "$ref": "#/definitions/DatetimeBasedCursor"
       name:
-        definition: The stream name
+        title: Name
+        description: The stream name
         type: string
         default: ""
+        example:
+          - "Users"
       primary_key:
-        definition: The primary key of the stream
+        title: Primary Key
+        description: The primary key of the stream
         "$ref": "#/definitions/PrimaryKey"
         default: ""
       schema_loader:
-        definition: The schema loader used to retrieve the schema for the current stream
+        title: Schema Loader
+        description: Component used to retrieve the schema for the current stream
         anyOf:
           - "$ref": "#/definitions/InlineSchemaLoader"
           - "$ref": "#/definitions/JsonFileSchemaLoader"
       transformations:
-        definition: A list of transformations to be applied to each output record in the
+        title: Transformations
+        description: A list of transformations to be applied to each output record in the
         type: array
         items:
           anyOf:
