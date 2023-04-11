@@ -1420,7 +1420,8 @@ definitions:
         type: object
         additionalProperties: true
   WaitTimeFromHeader:
-    description: Extract wait time from http header
+    title: Wait Time Extracted From Response Header
+    description: Extract wait time from a HTTP header in the response
     type: object
     required:
       - type
@@ -1430,9 +1431,17 @@ definitions:
         type: string
         enum: [WaitTimeFromHeader]
       header:
+        title: Response Header
+        description: The name of the response header defining how long to wait before retrying
         type: string
+        examples:
+          - "Retry-After"
       regex:
+        title: Extraction Regex
+        description: Optional regex to apply on the header to extract its value. The regex should define a capture group defining the wait time
         type: string
+        example:
+          - "([-+]?\d+)"
       $parameters:
         type: object
         additionalProperties: true
