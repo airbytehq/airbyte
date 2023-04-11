@@ -4727,9 +4727,8 @@
           examples:
             - "{}"
             - '{"sep": " "}'
-            - sep: "\t"
-              header: 0
-              names: "column1, column2"
+            - "{\"sep\": \"\t\", \"header\": 0, \"names\": [\"column1\", \"column2\"\
+              ] }"
         url:
           type: "string"
           title: "URL"
@@ -7215,6 +7214,7 @@
             \ data before this date will not be replicated."
           examples:
             - "2017-01-25T00:00:00Z"
+          format: "date-time"
         credentials:
           title: "Authentication"
           description: "Choose how to authenticate to HubSpot."
@@ -7679,9 +7679,12 @@
           type: "string"
           title: "Domain"
           examples:
-            - "domainname.atlassian.net"
-          pattern: "^[a-zA-Z0-9._-]*\\.atlassian\\.net$"
-          description: "The Domain for your Jira account, e.g. airbyteio.atlassian.net"
+            - "<your-domain>.atlassian.net"
+            - "<your-domain>.jira.com"
+            - "jira.<your-domain>.com"
+          description:
+            "The Domain for your Jira account, e.g. airbyteio.atlassian.net,\
+            \ airbyteio.jira.com, jira.your-domain.com"
           order: 1
         email:
           type: "string"
@@ -8622,7 +8625,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mailchimp:0.4.0"
+- dockerImage: "airbyte/source-mailchimp:0.3.5"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mailchimp"
     connectionSpecification:
@@ -13319,7 +13322,7 @@
         oauthFlowOutputParameters:
           - - "token"
           - - "key"
-- dockerImage: "airbyte/source-quickbooks-singer:0.1.5"
+- dockerImage: "airbyte/source-quickbooks:1.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/quickbooks"
     connectionSpecification:
@@ -13327,59 +13330,79 @@
       title: "Source QuickBooks Spec"
       type: "object"
       required:
-        - "client_id"
-        - "client_secret"
-        - "refresh_token"
-        - "realm_id"
-        - "user_agent"
+        - "credentials"
         - "start_date"
         - "sandbox"
-      additionalProperties: false
+      additionalProperties: true
       properties:
-        client_id:
-          type: "string"
-          title: "Client ID"
-          description:
-            "Identifies which app is making the request. Obtain this value\
-            \ from the Keys tab on the app profile via My Apps on the developer site.\
-            \ There are two versions of this key: development and production."
-        client_secret:
-          description:
-            " Obtain this value from the Keys tab on the app profile via\
-            \ My Apps on the developer site. There are two versions of this key: development\
-            \ and production."
-          title: "Client Secret"
-          type: "string"
-          airbyte_secret: true
-        refresh_token:
-          description: "A token used when refreshing the access token."
-          title: "Refresh Token"
-          type: "string"
-          airbyte_secret: true
-        realm_id:
-          description:
-            "Labeled Company ID. The Make API Calls panel is populated\
-            \ with the realm id and the current access token."
-          title: "Realm ID"
-          type: "string"
-          airbyte_secret: true
-        user_agent:
-          type: "string"
-          title: "User Agent"
-          description:
-            "Process and email for API logging purposes. Example: tap-quickbooks\
-            \ <api_user_email@your_company.com>."
+        credentials:
+          title: "Authorization Method"
+          type: "object"
+          order: 0
+          oneOf:
+            - type: "object"
+              title: "OAuth2.0"
+              required:
+                - "client_id"
+                - "client_secret"
+                - "refresh_token"
+                - "access_token"
+                - "token_expiry_date"
+                - "realm_id"
+              properties:
+                auth_type:
+                  type: "string"
+                  const: "oauth2.0"
+                client_id:
+                  type: "string"
+                  title: "Client ID"
+                  description:
+                    "Identifies which app is making the request. Obtain this\
+                    \ value from the Keys tab on the app profile via My Apps on the\
+                    \ developer site. There are two versions of this key: development\
+                    \ and production."
+                client_secret:
+                  description:
+                    " Obtain this value from the Keys tab on the app profile\
+                    \ via My Apps on the developer site. There are two versions of this\
+                    \ key: development and production."
+                  title: "Client Secret"
+                  type: "string"
+                  airbyte_secret: true
+                refresh_token:
+                  description: "A token used when refreshing the access token."
+                  title: "Refresh Token"
+                  type: "string"
+                  airbyte_secret: true
+                access_token:
+                  description: "Access token fot making authenticated requests."
+                  title: "Access Token"
+                  type: "string"
+                  airbyte_secret: true
+                token_expiry_date:
+                  type: "string"
+                  title: "Token Expiry Date"
+                  description: "The date-time when the access token should be refreshed."
+                  format: "date-time"
+                realm_id:
+                  description:
+                    "Labeled Company ID. The Make API Calls panel is populated\
+                    \ with the realm id and the current access token."
+                  title: "Realm ID"
+                  type: "string"
+                  airbyte_secret: true
         start_date:
+          order: 1
           description:
             "The default value to use if no bookmark exists for an endpoint\
-            \ (rfc3339 date string). E.g, 2021-03-20T00:00:00Z. Any data before this\
-            \ date will not be replicated."
+            \ (rfc3339 date string). E.g, 2021-03-20T00:00:00+00:00. Any data before\
+            \ this date will not be replicated."
           title: "Start Date"
           type: "string"
           format: "date-time"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           examples:
-            - "2021-03-20T00:00:00Z"
+            - "2021-03-20T00:00:00+00:00"
         sandbox:
           order: 2
           description: "Determines whether to use the sandbox or production environment."
@@ -16423,16 +16446,10 @@
           order: 2
           type: "string"
           format: "date"
-        report_granularity:
-          title: "Report Aggregation Granularity"
-          description:
-            "The granularity used for aggregating performance data in reports.\
-            \ See <a href=\"https://docs.airbyte.com/integrations/sources/tiktok-marketing/#report-aggregation\"\
-            >the docs</a>."
-          enum:
-            - "LIFETIME"
-            - "DAY"
-            - "HOUR"
+        attribution_window:
+          title: "Attribution Window"
+          description: "The attribution window in days."
+          default: 0
           order: 3
           type: "integer"
     supportsIncremental: true
