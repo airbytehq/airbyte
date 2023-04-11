@@ -75,12 +75,8 @@ def metadata_updated_sensor(job, resources_def) -> SensorDefinition:
 
             context.log.info(f"Old etag cursor: {etag_cursor}")
 
-
-            # TODO ensure blobs is a list of all metadata.yml files
-            # metadata_blobs = metadata_bucket.list_blobs(prefix=METADATA_FOLDER)
-
-            gcs_metadata_blobs = resources.gcs_metadata_blobs
-            new_etag_cursors = [blob.etag for blob in gcs_metadata_blobs]
+            metadata_folder_blobs = resources.metadata_folder_blobs
+            new_etag_cursors = [blob.etag for blob in metadata_folder_blobs if blob.name.endswith("metadata.yml")]
             new_etag_cursor_set = set(new_etag_cursors)
             context.log.info(f"New etag cursor: {new_etag_cursor_set}")
 

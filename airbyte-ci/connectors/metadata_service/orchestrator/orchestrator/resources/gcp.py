@@ -84,3 +84,22 @@ def gcs_file_blob(resource_context: InitResourceContext) -> storage.Blob:
         raise Exception(f"File does not exist at path: {gcs_file_path}")
 
     return gcs_file_blob
+
+@resource(
+    required_resource_keys={"gcs_bucket_manager"},
+    config_schema={
+        "gcs_prefix": StringSource,
+    },
+)
+def gcs_directory_blobs(resource_context: InitResourceContext) -> storage.Blob:
+    """
+    List all blobs in a bucket that match the prefix.
+    """
+    bucket = resource_context.resources.gcs_bucket_manager
+    gcs_prefix = resource_context.resource_config["gcs_prefix"]
+
+    resource_context.log.info(f"retrieving gcs file blobs for {gcs_prefix}")
+
+    gcs_file_blobs = bucket.list_blobs(prefix=gcs_prefix)
+
+    return gcs_file_blobs

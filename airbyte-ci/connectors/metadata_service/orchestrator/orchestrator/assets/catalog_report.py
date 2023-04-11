@@ -2,6 +2,7 @@ import pandas as pd
 from dagster import MetadataValue, Output, asset
 
 from orchestrator.templates.render import render_connector_catalog_locations_html, render_connector_catalog_locations_markdown
+from orchestrator.utils.dagster_helpers import output_dataframe
 
 GROUP_NAME = "catalog_reports"
 
@@ -151,18 +152,9 @@ def all_destinations_dataframe(
 
 
 @asset(group_name=GROUP_NAME)
-def all_sources_dataframe(
-    cloud_sources_dataframe, oss_sources_dataframe, github_connector_folders, valid_metadata_report_dataframe, cached_specs
-) -> pd.DataFrame:
-    """
-    Merge the cloud and oss source catalogs into a single dataframe.
-    """
-    return augment_and_normalize_connector_dataframes(
-        cloud_df=cloud_sources_dataframe,
-        oss_df=oss_sources_dataframe,
-        primaryKey="sourceDefinitionId",
-        connector_type="source",
-        valid_metadata_report_dataframe=valid_metadata_report_dataframe,
-        github_connector_folders=github_connector_folders,
-        cached_specs=cached_specs,
-    )
+def metadata_directory_report(context):
+    metadata_folder_blobs = resources.metadata_folder_blobs
+    blobs = [blob for blob in metadata_folder_blobs if blob.name.endswith("metadata.yml")]
+    blobs_df = pd.DataFrame([blob for blob in blobs])
+
+    return output_dataframe(blobs_df)

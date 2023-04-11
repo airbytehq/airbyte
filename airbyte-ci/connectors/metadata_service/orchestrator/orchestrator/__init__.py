@@ -1,6 +1,6 @@
 from dagster import Definitions
 
-from orchestrator.resources.gcp import gcp_gcs_client, gcs_bucket_manager, gcs_file_manager, gcs_file_blob
+from orchestrator.resources.gcp import gcp_gcs_client, gcs_bucket_manager, gcs_file_manager, gcs_file_blob, gcs_directory_blobs
 from orchestrator.resources.github import github_client, github_connector_repo, github_connectors_directory
 from orchestrator.resources.local import simple_local_file_manager
 
@@ -11,6 +11,7 @@ from orchestrator.assets.catalog_report import (
     all_destinations_dataframe,
     connector_catalog_location_markdown,
     connector_catalog_location_html,
+    metadata_directory_report,
 )
 from orchestrator.assets.catalog import (
     oss_destinations_dataframe,
@@ -37,9 +38,9 @@ from orchestrator.assets.dev import (
 )
 
 from orchestrator.jobs.catalog import generate_catalog_markdown, generate_local_metadata_files
-from orchestrator.sensors.catalog import catalog_updated_sensor
+from orchestrator.sensors.catalog import catalog_updated_sensor, metadata_updated_sensor
 
-from orchestrator.config import REPORT_FOLDER, CATALOG_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME
+from orchestrator.config import REPORT_FOLDER, CATALOG_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME, METADATA_FOLDER
 
 ASSETS = [
     oss_destinations_dataframe,
@@ -64,6 +65,7 @@ ASSETS = [
     cloud_catalog_from_metadata,
     cloud_catalog_diff_dataframe,
     oss_catalog_diff_dataframe,
+    metadata_directory_report,
 ]
 
 RESOURCES = {
@@ -80,11 +82,15 @@ RESOURCES = {
     "catalog_report_directory_manager": gcs_file_manager.configured(
         {"gcs_bucket": {"env": "METADATA_BUCKET"}, "gcs_prefix": REPORT_FOLDER}
     ),
+    "metadata_folder_blobs": gcs_directory_blobs.configured({"gcs_prefix": METADATA_FOLDER}),
     "latest_oss_catalog_gcs_file": gcs_file_blob.configured({"gcs_prefix": CATALOG_FOLDER, "gcs_filename": "oss_catalog.json"}),
     "latest_cloud_catalog_gcs_file": gcs_file_blob.configured({"gcs_prefix": CATALOG_FOLDER, "gcs_filename": "cloud_catalog.json"}),
 }
 
-SENSORS = [catalog_updated_sensor(job=generate_catalog_markdown, resources_def=RESOURCES)]
+SENSORS = [
+    catalog_updated_sensor(job=generate_catalog_markdown, resources_def=RESOURCES),
+    metadata_updated_sensor(job=generate_catalog_markdown, resources_def=RESOURCES)
+]
 
 SCHEDULES = []
 
