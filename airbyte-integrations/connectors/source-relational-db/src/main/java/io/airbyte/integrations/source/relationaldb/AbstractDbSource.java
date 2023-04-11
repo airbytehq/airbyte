@@ -393,7 +393,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         // if no cursor is present then this is the first read for is the same as doing a full refresh read.
         estimateFullRefreshSyncSize(database, airbyteStream);
         airbyteMessageIterator = getFullRefreshStream(database, streamName, namespace,
-            selectedDatabaseFields, table, emittedAt);
+            selectedDatabaseFields, table, emittedAt, SyncMode.INCREMENTAL, Optional.of(cursorField));
       }
 
       final JsonSchemaPrimitive cursorType = IncrementalUtils.getCursorType(airbyteStream,
@@ -412,7 +412,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     } else if (airbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
       estimateFullRefreshSyncSize(database, airbyteStream);
       iterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields,
-          table, emittedAt);
+          table, emittedAt, SyncMode.FULL_REFRESH, Optional.empty());
     } else if (airbyteStream.getSyncMode() == null) {
       throw new IllegalArgumentException(
           String.format("%s requires a source sync mode", this.getClass()));
@@ -482,6 +482,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @param selectedDatabaseFields List of all interested database column names
    * @param table information in tabular format
    * @param emittedAt Time when data was emitted from the Source database
+   * @param syncMode The sync mode that this full refresh stream should be associated with.
    * @return AirbyteMessageIterator with all records for a database source
    */
   private AutoCloseableIterator<AirbyteMessage> getFullRefreshStream(final Database database,
@@ -489,10 +490,12 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                      final String namespace,
                                                                      final List<String> selectedDatabaseFields,
                                                                      final TableInfo<CommonField<DataType>> table,
-                                                                     final Instant emittedAt) {
+                                                                     final Instant emittedAt,
+                                                                     final SyncMode syncMode,
+                                                                     final Optional<String> cursorField) {
     final AutoCloseableIterator<JsonNode> queryStream =
         queryTableFullRefresh(database, selectedDatabaseFields, table.getNameSpace(),
-            table.getName());
+            table.getName(), syncMode, cursorField);
     return getMessageIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
   }
 
@@ -626,12 +629,15 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @param columnNames interested column names
    * @param schemaName table namespace
    * @param tableName target table
+   * @param syncMode The sync mode that this full refresh stream should be associated with.
    * @return iterator with read data
    */
   protected abstract AutoCloseableIterator<JsonNode> queryTableFullRefresh(final Database database,
                                                                            final List<String> columnNames,
                                                                            final String schemaName,
-                                                                           final String tableName);
+                                                                           final String tableName,
+                                                                           final SyncMode syncMode,
+                                                                           final Optional<String> cursorField);
 
   /**
    * Read incremental data from a table. Incremental read should return only records where cursor

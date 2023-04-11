@@ -77,6 +77,19 @@
         "default": "require",
         "oneOf": [
           {
+            "title": "disable",
+            "additionalProperties": true,
+            "description": "Disables encryption of communication between Airbyte and source database.",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "disable",
+                "order": 0
+              }
+            }
+          },
+          {
             "title": "allow",
             "additionalProperties": true,
             "description": "Enables encryption only when required by the source database.",
