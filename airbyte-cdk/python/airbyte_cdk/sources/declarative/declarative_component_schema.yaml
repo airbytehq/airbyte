@@ -944,23 +944,53 @@ definitions:
         type: string
         enum: [HttpResponseFilter]
       action:
+        title: Action
+        description: Action to execute if a response matches the filter
         type: string
         enum:
           - SUCCESS
           - FAIL
           - RETRY
           - IGNORE
+        examples:
+          - SUCCESS
+          - FAIL
+          - RETRY
+          - IGNORE
       error_message:
+        title: Error Message
+        description: Error Message to display if the response matches the filter
         type: string
+        interpolation_context:
+          - config
+          - response
+          - headers
       error_message_contains:
+        title: Error Message Substring
+        description: Match the response if its error message contains the substring
         type: string
+        example:
+          - This API operation is not enabled for this site
       http_codes:
+        title: HTTP Codes
+        description: Match the response if its HTTP code is included in this list
         type: array
         items:
           type: integer
         uniqueItems: true
+        examples:
+          - [420, 429]
+          - [500]
       predicate:
+        title: Predicate
+        description: Match the response if the predicate evaluates to true
         type: string
+        interpolation_context:
+          - response
+          - headers
+        examples:
+          - "{{ 'Too much requests' in response }}"
+          - "{{ 'error_code' in response and response['error_code'] == 'ComplexityException' }}"
       $parameters:
         type: object
         additionalProperties: true
