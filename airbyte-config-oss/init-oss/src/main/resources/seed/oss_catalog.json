@@ -5893,7 +5893,7 @@
     "destinationDefinitionId": "471e5cab-8ed1-49f3-ba11-79c687784737",
     "name": "S3 Glue",
     "dockerRepository": "airbyte/destination-s3-glue",
-    "dockerImageTag": "0.1.4",
+    "dockerImageTag": "0.1.5",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/s3-glue",
     "icon": "s3-glue.svg",
     "spec": {
@@ -5982,11 +5982,12 @@
                     }
                   } ]
                 },
-                "flatten_data": {
-                  "title": "Flatten Data",
-                  "description": "If true data will be flattened and won't be nested in the _airbyte_data field",
-                  "type": "boolean",
-                  "default": true
+                "flattening": {
+                  "type": "string",
+                  "title": "Flattening",
+                  "description": "Whether the input json data should be normalized (flattened) in the output JSON Lines. Please refer to docs for details.",
+                  "default": "Root level flattening",
+                  "enum": [ "No flattening", "Root level flattening" ]
                 }
               }
             } ],
