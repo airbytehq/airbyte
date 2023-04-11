@@ -12,6 +12,7 @@ import requests
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from pendulum import Date
 
 
@@ -20,8 +21,6 @@ class MixpanelStream(HttpStream, ABC):
     Formatted API Rate Limit  (https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-API-Endpoints):
       A maximum of 5 concurrent queries
       60 queries per hour.
-
-    API Rate Limit Handler: after each request freeze for the time period: 3600/reqs_per_hour_limit seconds
     """
 
     @property
@@ -58,7 +57,7 @@ class MixpanelStream(HttpStream, ABC):
 
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
+        return HttpAvailabilityStrategy()
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """Define abstract method"""

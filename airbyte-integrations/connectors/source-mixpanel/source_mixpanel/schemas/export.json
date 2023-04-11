@@ -23,6 +23,27 @@
     },
     "dataset": {
       "type": ["null", "string"]
+    },
+    "Referred by": {
+      "type": ["null", "string"]
+    },
+    "import": {
+      "type": ["null", "boolean"]
+    },
+    "URL": {
+      "type": ["null", "string"]
+    },
+    "insert_id": {
+      "type": ["null", "string"]
+    },
+    "mp_api_timestamp_ms": {
+      "type": ["null", "integer"]
+    },
+    "mp_api_endpoint": {
+      "type": ["null", "string"]
+    },
+    "mp_processing_time_ms": {
+      "type": ["null", "string"]
     }
   }
 }
