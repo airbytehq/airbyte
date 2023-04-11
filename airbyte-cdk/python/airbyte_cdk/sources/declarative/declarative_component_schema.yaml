@@ -81,6 +81,8 @@ definitions:
         title: API Key
         description: The API key to inject in the request
         type: string
+        interpolation_context:
+          - config
         examples:
           - "{{ config['api_key'] }}"
           - "Token token={{ config['api_key'] }}"
@@ -88,6 +90,8 @@ definitions:
         title: Header
         description: The name of the header that will be injected in the request
         type: string
+        interpolation_context:
+          - config
         examples:
           - Authorization
           - Api-Token
@@ -110,6 +114,8 @@ definitions:
         title: Username
         description: The username that will be combined with the password, base64 encoded and used to make requests
         type: string
+        interpolation_context:
+          - config
         examples:
           - "{{ config['username'] }}"
           - "{{ config['api_key'] }}"
@@ -118,6 +124,8 @@ definitions:
         description: The password that will be combined with the username, base64 encoded and used to make requests
         type: string
         default: ""
+        interpolation_context:
+          - config
         examples:
           - "{{ config['password'] }}"
           - ""
@@ -139,6 +147,8 @@ definitions:
         title: Bearer Token
         description: Token to inject as request header for authenticating with the API
         type: string
+        interpolation_context:
+          - config
         examples:
           - "{{ config['api_key'] }}"
           - "{{ config['token'] }}"
@@ -204,6 +214,8 @@ definitions:
         anyOf:
           - type: number
           - type: string
+        interpolation_context:
+          - config
         examples:
           - 30
           - 30.5
@@ -809,6 +821,8 @@ definitions:
         type: array
         items:
           - type: string
+        interpolation_content:
+          - config
         examples:
           - ["data"]
           - ["data", "records"]
@@ -836,6 +850,8 @@ definitions:
           - type: number
           - type: string
         default: 5
+        interpolation_context:
+          - config
         examples:
           - 5
           - 5.5
@@ -1020,6 +1036,8 @@ definitions:
         title: Datetime
         description: Datetime value
         type: string
+        interpolation_context:
+          - config
         examples:
           - 2021-01-01
           - 2021-01-01T00:00:00Z
@@ -1037,6 +1055,8 @@ definitions:
         title: Max Datetime
         description: Ceiling applied on the datetime value. Must be formatted with the datetime_format field
         type: string
+        interpolation_context:
+          - config
         examples:
           - "2021-01-01T00:00:00Z"
           - "2021-01-01"
@@ -1044,6 +1064,8 @@ definitions:
         title: Min Datetime
         description: Floor applied on the datetime value. Must be formatted with the datetime_format field
         type: string
+        interpolation_context:
+          - config
         examples:
           - "2010-01-01T00:00:00Z"
           - "2010-01-01"
@@ -1503,6 +1525,8 @@ definitions:
         title: Response Header
         description: The name of the response header defining how long to wait before retrying
         type: string
+        interpolation_context:
+          - config
         examples:
           - "Retry-After"
       regex:
@@ -1529,6 +1553,8 @@ definitions:
         title: Response Header
         description: The name of the response header defining how long to wait before retrying
         type: string
+        interpolation_context:
+          - config
         examples:
           - wait_time
       min_wait:
@@ -1537,6 +1563,8 @@ definitions:
         anyOf:
           - type: number
           - type: string
+        interpolation_context:
+          - config
         examples:
           - 10
           - "60"
@@ -1544,6 +1572,8 @@ definitions:
         title: Extraction Regex
         description: Optional regex to apply on the header to extract its value. The regex should define a capture group defining the wait time
         type: string
+        interpolation_context:
+          - config
         examples:
           - "([-+]?\\d+)"
       $parameters:
