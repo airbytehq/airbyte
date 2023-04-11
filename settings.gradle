@@ -88,18 +88,13 @@ if (!System.getenv().containsKey("SUB_BUILD") || (System.getenv().containsKey("S
     include ':airbyte-api'
     include ':airbyte-commons-cli'
     include ':airbyte-commons-protocol'
-    include ':airbyte-config:specs'
-    include ':airbyte-config:init'
-    include ':airbyte-config:config-models' // reused by acceptance tests in connector base.
+    include ':airbyte-config-oss:specs-oss'
+    include ':airbyte-config-oss:init-oss'
+    include ':airbyte-config-oss:config-models-oss' // reused by acceptance tests in connector base.
     include ':airbyte-db:db-lib' // reused by acceptance tests in connector base.
     include ':airbyte-json-validation'
     include ':airbyte-test-utils'
 
-    // airbyte-workers has a lot of dependencies.
-    include ':airbyte-commons-worker'
-    include ':airbyte-config:config-persistence' // transitively used by airbyte-workers.
-    include ':airbyte-db:jooq' // transitively used by airbyte-workers.
-    include ':airbyte-persistence:job-persistence' // transitively used by airbyte-workers.
     include ':airbyte-connector-test-harnesses:acceptance-test-harness'
 }
 
@@ -116,7 +111,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-integrations:bases:s3-destination-base-integration-test'
     include ':airbyte-integrations:bases:standard-source-test'
     include ':airbyte-integrations:connector-templates:generator'
-    include ':airbyte-integrations:bases:debezium-v1-9-6'
+    include ':airbyte-integrations:bases:debezium'
 
     // Needed by normalization integration tests
     include ':airbyte-integrations:connectors:destination-bigquery'
@@ -136,6 +131,8 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-integrations:connectors:destination-gcs'
 
     include ':tools:code-generator'
+
+    include 'airbyte-integrations:connectors-performance:source-harness'
 }
 
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "OCTAVIA_CLI") {

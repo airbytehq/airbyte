@@ -24,8 +24,11 @@ from .errors import HTTP_ERROR_CODES, error_msg_from_status
 class AmplitudeStream(HttpStream, ABC):
     api_version = 2
 
-    def __init__(self, data_region: str, **kwargs):
+    def __init__(self, data_region: str, event_time_interval: dict = None, **kwargs):
+        if event_time_interval is None:
+            event_time_interval = {"size_unit": "days", "size": 1}
         self.data_region = data_region
+        self.event_time_interval = event_time_interval
         super().__init__(**kwargs)
 
     @property
@@ -166,7 +169,10 @@ class Events(IncrementalAmplitudeStream):
     compare_date_template = "%Y-%m-%d %H:%M:%S.%f"
     primary_key = "uuid"
     state_checkpoint_interval = 1000
-    time_interval = {"days": 1}
+
+    @property
+    def time_interval(self) -> dict:
+        return {self.event_time_interval.get("size_unit"): self.event_time_interval.get("size")}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         state_value = stream_state[self.cursor_field] if stream_state else self._start_date.strftime(self.compare_date_template)

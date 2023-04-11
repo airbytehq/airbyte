@@ -20,7 +20,7 @@ Generate API key [on the dashboard](https://dashboard.railz.ai/developers/api-ke
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account;
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account;
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**;
 3. On the source setup page, select **Railz** from the Source type dropdown and enter a name for this connector;
 4. Enter `Client ID (client_id)`;
