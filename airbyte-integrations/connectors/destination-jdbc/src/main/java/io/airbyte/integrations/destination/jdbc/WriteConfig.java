@@ -9,7 +9,8 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 /**
- * Write configuration POJO (plain old java object) for all destinations extending {@link AbstractJdbcDestination}.
+ * Write configuration POJO (plain old java object) for all destinations extending
+ * {@link AbstractJdbcDestination}.
  */
 public class WriteConfig {
 
