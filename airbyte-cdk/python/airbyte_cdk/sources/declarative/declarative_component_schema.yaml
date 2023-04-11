@@ -1197,6 +1197,7 @@ definitions:
             type: string
     default: ""
   RecordFilter:
+    title: Record Filter
     description: Filter applied on a list of Records
     type: object
     required:
@@ -1209,6 +1210,15 @@ definitions:
         description: The predicate to filter a record. Records will be removed if evaluated to False
         type: string
         default: ""
+        interpolation_context:
+          - config
+          - next_page_token
+          - record
+          - stream_slice
+          - stream_state
+        examples:
+          - "{{ record['created_at'] >= stream_slice['start_time'] }}"
+          - "{{ record.status in ['active', 'expired'] }}"
       $parameters:
         type: object
         additionalProperties: true
