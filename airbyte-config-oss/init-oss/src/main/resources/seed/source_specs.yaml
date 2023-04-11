@@ -13322,7 +13322,7 @@
         oauthFlowOutputParameters:
           - - "token"
           - - "key"
-- dockerImage: "airbyte/source-quickbooks:1.0.0"
+- dockerImage: "airbyte/source-quickbooks:2.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/quickbooks"
     connectionSpecification:
