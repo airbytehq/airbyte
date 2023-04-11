@@ -146,7 +146,8 @@ definitions:
         type: object
         additionalProperties: true
   CheckStream:
-    description: Checks the connections by trying to read records from one or many of the streams selected by the developer
+    title: Stream to Check
+    description: Defines the streams to try reading when running a check operation
     type: object
     required:
       - type
@@ -156,9 +157,14 @@ definitions:
         type: string
         enum: [CheckStream]
       stream_names:
+        title: Stream Names
+        description: Names of the streams to try reading from when running a check operation
         type: array
         items:
           type: string
+        examples:
+          - ["users"]
+          - ["users", "contacts"]
   CompositeErrorHandler:
     description: Error handler that sequentially iterates over a list of error handlers
     type: object
