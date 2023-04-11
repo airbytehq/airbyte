@@ -7,6 +7,7 @@ package io.airbyte.integrations.debezium.internals;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.integrations.debezium.CdcStateHandler;
+import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.debezium.engine.ChangeEvent;
@@ -25,7 +26,7 @@ import org.slf4j.LoggerFactory;
  * checkpoints for CDC replications. That way, if the process fails in the middle of a long sync, it
  * will be able to recover for any acknowledged checkpoint in the next syncs.
  */
-public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
+public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
 
   public static final Duration SYNC_CHECKPOINT_DURATION = Duration.ofMinutes(15);
   public static final Integer SYNC_CHECKPOINT_RECORDS = 10_000;
@@ -34,6 +35,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
 
   private final Iterator<ChangeEvent<String, String>> changeEventIterator;
   private final CdcStateHandler cdcStateHandler;
+  private final CdcTargetPosition<T> targetPosition;
   private final AirbyteFileOffsetBackingStore offsetManager;
   private final boolean trackSchemaHistory;
   private final AirbyteSchemaHistoryStorage schemaHistoryManager;
@@ -89,6 +91,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
    */
   public DebeziumStateDecoratingIterator(final Iterator<ChangeEvent<String, String>> changeEventIterator,
                                          final CdcStateHandler cdcStateHandler,
+                                         final CdcTargetPosition<T> targetPosition,
                                          final CdcMetadataInjector cdcMetadataInjector,
                                          final Instant emittedAt,
                                          final AirbyteFileOffsetBackingStore offsetManager,
@@ -98,6 +101,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
                                          final Long checkpointRecords) {
     this.changeEventIterator = changeEventIterator;
     this.cdcStateHandler = cdcStateHandler;
+    this.targetPosition = targetPosition;
     this.cdcMetadataInjector = cdcMetadataInjector;
     this.emittedAt = emittedAt;
     this.offsetManager = offsetManager;
@@ -148,7 +152,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
           // the assignation
           try {
             final HashMap<String, String> temporalOffset = (HashMap<String, String>) offsetManager.read();
-            if (!cdcStateHandler.isSameOffset(previousCheckpointOffset, temporalOffset)) {
+            if (!targetPosition.isSameOffset(previousCheckpointOffset, temporalOffset)) {
               checkpointOffsetToSend.putAll(temporalOffset);
             }
           } catch (final ConnectException e) {
@@ -158,8 +162,8 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
 
         if (checkpointOffsetToSend.size() == 1
             && changeEventIterator.hasNext()
-            && !cdcStateHandler.isSnapshotEvent(event)
-            && cdcStateHandler.isRecordBehindOffset(checkpointOffsetToSend, event)) {
+            && !targetPosition.isSnapshotEvent(event)
+            && targetPosition.isRecordBehindOffset(checkpointOffsetToSend, event)) {
           sendCheckpointMessage = true;
         }
       }

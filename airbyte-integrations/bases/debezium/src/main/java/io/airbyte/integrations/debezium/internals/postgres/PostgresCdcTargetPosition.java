@@ -2,15 +2,17 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.postgres;
+package io.airbyte.integrations.debezium.internals.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.PgLsn;
 import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.SnapshotMetadata;
+import io.debezium.engine.ChangeEvent;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Objects;
@@ -22,7 +24,7 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcTargetPosition.class);
   @VisibleForTesting
-  final PgLsn targetLsn;
+  public final PgLsn targetLsn;
 
   public PostgresCdcTargetPosition(final PgLsn targetLsn) {
     this.targetLsn = targetLsn;
@@ -30,8 +32,7 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
 
   @Override
   public boolean equals(final Object obj) {
-    if (obj instanceof PostgresCdcTargetPosition) {
-      final PostgresCdcTargetPosition cdcTargetPosition = (PostgresCdcTargetPosition) obj;
+    if (obj instanceof final PostgresCdcTargetPosition cdcTargetPosition) {
       return cdcTargetPosition.targetLsn.compareTo(targetLsn) == 0;
     }
     return false;
@@ -42,7 +43,7 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
     return Objects.hash(targetLsn.asLong());
   }
 
-  static PostgresCdcTargetPosition targetPosition(final JdbcDatabase database) {
+  public static PostgresCdcTargetPosition targetPosition(final JdbcDatabase database) {
     try {
       final PgLsn lsn = PostgresUtils.getLsn(database);
       LOGGER.info("identified target lsn: " + lsn);
@@ -92,6 +93,45 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
   @Override
   public Long extractPositionFromHeartbeatOffset(final Map<String, ?> sourceOffset) {
     return (long) sourceOffset.get("lsn");
+  }
+
+  @Override
+  public boolean isSnapshotEvent(final ChangeEvent<String, String> event) {
+    JsonNode isSnapshotEvent = Jsons.deserialize(event.value()).get("source").get("snapshot");
+    return isSnapshotEvent != null && isSnapshotEvent.asBoolean();
+  }
+
+  @Override
+  public boolean isRecordBehindOffset(final Map<String, String> offset, final ChangeEvent<String, String> event) {
+    if (offset.size() != 1) {
+      return false;
+    }
+
+    final JsonNode offsetJson = Jsons.deserialize((String) offset.values().toArray()[0]);
+
+    final String offset_lsn =
+        offsetJson.get("lsn_commit") != null ? String.valueOf(offsetJson.get("lsn_commit")) : String.valueOf(offsetJson.get("lsn"));
+    final String event_lsn = String.valueOf(Jsons.deserialize(event.value()).get("source").get("lsn"));
+    return Integer.parseInt(event_lsn) > Integer.parseInt(offset_lsn);
+  }
+
+  @Override
+  public boolean isSameOffset(final Map<String, String> offsetA, final Map<String, String> offsetB) {
+    if (offsetA == null || offsetA.size() != 1) {
+      return false;
+    }
+    if (offsetB == null || offsetB.size() != 1) {
+      return false;
+    }
+    final JsonNode offsetJsonA = Jsons.deserialize((String) offsetA.values().toArray()[0]);
+    final JsonNode offsetJsonB = Jsons.deserialize((String) offsetB.values().toArray()[0]);
+
+    final String lsnA =
+        offsetJsonA.get("lsn_commit") != null ? String.valueOf(offsetJsonA.get("lsn_commit")) : String.valueOf(offsetJsonA.get("lsn"));
+    final String lsnB =
+        offsetJsonB.get("lsn_commit") != null ? String.valueOf(offsetJsonB.get("lsn_commit")) : String.valueOf(offsetJsonB.get("lsn"));
+
+    return Integer.parseInt(lsnA) == Integer.parseInt(lsnB);
   }
 
 }

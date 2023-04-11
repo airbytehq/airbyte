@@ -41,7 +41,7 @@ public class DebeziumPropertiesManager {
     this.schemaHistoryManager = schemaHistoryManager;
   }
 
-  protected Properties getDebeziumProperties() {
+  public Properties getDebeziumProperties() {
     final Properties props = new Properties();
     props.putAll(properties);
 

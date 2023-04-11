@@ -32,6 +32,7 @@ reactor = "3.5.2"
 segment = "2.1.1"
 slf4j = "1.7.36"
 temporal = "1.17.0"
+debezium = "2.1.2.Final"
 
 [libraries]
 airbyte-protocol = { module = "io.airbyte.airbyte-protocol:protocol-models", version.ref = "airbyte-protocol" }
@@ -117,6 +118,11 @@ spotbugs-annotations = { module = "com.github.spotbugs:spotbugs-annotations", ve
 temporal-sdk = { module = "io.temporal:temporal-sdk", version.ref = "temporal" }
 temporal-serviceclient = { module = "io.temporal:temporal-serviceclient", version.ref = "temporal" }
 temporal-testing = { module = "io.temporal:temporal-testing", version.ref = "temporal" }
+debezium-api = { module = "io.debezium:debezium-api", version.ref = "debezium"}
+debezium-embedded = { module = "io.debezium:debezium-embedded", version.ref = "debezium"}
+debezium-sqlserver = { module = "io.debezium:debezium-connector-sqlserver", version.ref = "debezium"}
+debezium-mysql = { module = "io.debezium:debezium-connector-mysql", version.ref = "debezium"}
+debezium-postgres = { module = "io.debezium:debezium-connector-postgres", version.ref = "debezium"}
 
 # Micronaut-related dependencies
 h2-database = { module = "com.h2database:h2", version = "2.1.214" }
@@ -159,3 +165,4 @@ micronaut-test = ["micronaut-test-core", "micronaut-test-junit5", "h2-database"]
 micronaut-test-annotation-processor = ["micronaut-inject-java"]
 slf4j = ["jul-to-slf4j", "jcl-over-slf4j", "log4j-over-slf4j"]
 temporal = ["temporal-sdk", "temporal-serviceclient"]
+debezium-bundle = ["debezium-api", "debezium-embedded", "debezium-sqlserver", "debezium-mysql", "debezium-postgres"]
