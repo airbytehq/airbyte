@@ -71,5 +71,6 @@ The connector is restricted by Insightly [requests limitation](https://api.na1.i
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------- |
-| 0.1.1   | 2022-11-11 |    | Fix state date parse bug                            |
-| 0.1.0   | 2022-10-19 |    | Release Insightly CDK Connector                     |
+| 0.1.2   | 2023-03-23 |[24422](https://github.com/airbytehq/airbyte/pull/24422)  | Fix incremental timedelta causing missing records   |
+| 0.1.1   | 2022-11-11 |[19356](https://github.com/airbytehq/airbyte/pull/19356)  | Fix state date parse bug                            |
+| 0.1.0   | 2022-10-19 |[18164](https://github.com/airbytehq/airbyte/pull/18164)  | Release Insightly CDK Connector                     |
