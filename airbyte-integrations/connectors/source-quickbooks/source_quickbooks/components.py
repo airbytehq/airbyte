@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import datetime
 import typing
 from collections import abc
@@ -5,7 +9,7 @@ from dataclasses import dataclass
 
 import dpath.util
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
-from airbyte_cdk.sources.declarative.types import StreamSlice, Record
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice
 
 
 class LastRecordDictProxy(abc.MutableMapping):
@@ -61,14 +65,15 @@ class CustomDatetimeBasedCursor(DatetimeBasedCursor):
     }
     To adopt this change to the LowCode CDK, this issue was created - https://github.com/airbytehq/airbyte/issues/25008.
     """
+
     def update_cursor(self, stream_slice: StreamSlice, last_record: typing.Optional[Record] = None):
         super(CustomDatetimeBasedCursor, self).update_cursor(
             stream_slice=stream_slice,
-            last_record=LastRecordDictProxy(last_record, {self.cursor_field.eval(self.config): "MetaData/LastUpdatedTime"})
+            last_record=LastRecordDictProxy(last_record, {self.cursor_field.eval(self.config): "MetaData/LastUpdatedTime"}),
         )
 
     def _format_datetime(self, dt: datetime.datetime):
-        return dt.isoformat('T', 'seconds')
+        return dt.isoformat("T", "seconds")
 
     def parse_date(self, date: str) -> datetime.datetime:
         return datetime.datetime.strptime(date, self.datetime_format).astimezone(self._timezone)

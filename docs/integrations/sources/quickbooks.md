@@ -5,29 +5,18 @@ This page contains the setup guide and reference information for the QuickBooks 
 ## Prerequisites
 
 - [Intuit QuickBooks account](https://quickbooks.intuit.com/global/)
-
-<!-- env:oss -->
-**For Airbyte Open Source:**
-
+- [Intuit Developer account](https://developer.intuit.com/app/developer/qbo/docs/get-started)
 - OAuth2.0 credentials (see [OAuth 2.0 playground](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0-playground))
 - Realm ID
-<!-- /env:oss -->
 
 ## Setup guide
 
 ### Step 1: Set up QuickBooks
 
-Create a [Intuit Developer account](https://developer.intuit.com/app/developer/qbo/docs/get-started)
+1. Create an [Intuit Developer account](https://developer.intuit.com/app/developer/qbo/docs/get-started)
+2. Create an application
+3. Obtain credentials. The easiest way to get these credentials is by using Quickbook's [OAuth 2.0 playground](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0-playground)
 
-<!-- env:oss -->
-**Airbyte Open Source additional setup steps**
-
-1. Create an application
-2. Obtain credentials. The easiest way to get these credentials is by using Quickbook's [OAuth 2.0 playground](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0-playground)
-
-<!-- /env:oss -->
-
-<!-- env:cloud -->
 ### Step 2: Set up the QuickBooks connector in Airbyte
 
 **For Airbyte Cloud:**
@@ -35,11 +24,15 @@ Create a [Intuit Developer account](https://developer.intuit.com/app/developer/q
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **QuickBooks** from the Source type dropdown and enter a name for this connector.
-4. Click `Authenticate your QuickBooks account`
-5. Log in and Authorize to the QuickBooks account.
-6. **Start date** - The date starting from which you'd like to replicate data.
-7. **Sandbox** - Turn on if you're going to replicate the data from the sandbox environment.
-8. Click **Set up source**.
+4. **Client ID** - The OAuth2.0 application ID
+5. **Client Secret** - The OAuth2.0 application secret
+6. **Refresh Token** - Refresh token used to get new access token every time the current one is expired
+7. **Access Token** - Access token to perform authenticated API calls with
+8. **Token Expiry Date** - DateTime when the access token becomes invalid
+9. **Realm ID** - The Labeled [Company ID](https://developer.intuit.com/app/developer/qbo/docs/learn/learn-basic-field-definitions#realm-id) you'd like to replicate data for streams.
+10. **Start date** - The date starting from which you'd like to replicate data.
+11. **Sandbox** - Turn on if you're going to replicate the data from the sandbox environment.
+12. Click **Set up source**.
 
 <!-- /env:cloud -->
 
@@ -51,8 +44,8 @@ Create a [Intuit Developer account](https://developer.intuit.com/app/developer/q
 3. **Refresh Token** - Refresh token used to get new access token every time the current one is expired
 4. **Access Token** - Access token to perform authenticated API calls with
 5. **Token Expiry Date** - DateTime when the access token becomes invalid
-6. **Start date** - The date from which you'd like to replicate data for streams.
-7. **Realm ID** - The Labeled [Company ID](https://developer.intuit.com/app/developer/qbo/docs/learn/learn-basic-field-definitions#realm-id) you'd like to replicate data for streams.
+6. **Realm ID** - The Labeled [Company ID](https://developer.intuit.com/app/developer/qbo/docs/learn/learn-basic-field-definitions#realm-id) you'd like to replicate data for streams.
+7. **Start date** - The date starting from which you'd like to replicate data.
 8. **Sandbox** - Turn on if you're going to replicate the data from the sandbox environment.
 <!-- /env:oss -->
 
@@ -111,6 +104,7 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 
 | Version | Date       | Pull Request                                             | Subject                                                  |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------|
+| `2.0.0` | 2023-04-11 | [25045](https://github.com/airbytehq/airbyte/pull/25045) | Fix datetime format, disable OAuth button in cloud       |
 | `1.0.0` | 2023-03-20 | [24324](https://github.com/airbytehq/airbyte/pull/24324) | Migrate to Low-Code                                      |
 | `0.1.5` | 2022-02-17 | [10346](https://github.com/airbytehq/airbyte/pull/10346) | Update label `Quickbooks` -> `QuickBooks`                |
 | `0.1.4` | 2021-12-20 | [8960](https://github.com/airbytehq/airbyte/pull/8960)   | Update connector fields title/description                |
