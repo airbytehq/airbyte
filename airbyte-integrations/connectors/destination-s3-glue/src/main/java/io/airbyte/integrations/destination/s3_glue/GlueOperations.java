@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3_glue;
@@ -57,7 +57,7 @@ public class GlueOperations implements MetastoreOperations {
           .withTableInput(
               new TableInput()
                   .withName(tableName)
-                  // .withTableType("GOVERNED")
+                  .withTableType("EXTERNAL_TABLE")
                   .withStorageDescriptor(
                       new StorageDescriptor()
                           .withLocation(location)
@@ -80,7 +80,7 @@ public class GlueOperations implements MetastoreOperations {
           .withTableInput(
               new TableInput()
                   .withName(tableName)
-                  // .withTableType("GOVERNED")
+                  .withTableType("EXTERNAL_TABLE")
                   .withStorageDescriptor(
                       new StorageDescriptor()
                           .withLocation(location)
@@ -129,13 +129,15 @@ public class GlueOperations implements MetastoreOperations {
         if (jsonNode.has("airbyte_type") && jsonNode.get("airbyte_type").asText().equals("integer")) {
           yield "int";
         }
-        yield "float";
+        yield "decimal";  // Default to use decimal as it is a more precise type and allows for large values
       }
       case "boolean" -> "boolean";
       case "integer" -> "int";
       case "array" -> {
         String arrayType = "array<";
-        Set<String> itemTypes = filterTypes(jsonNode.get("items").get("type"));
+        Set<String> itemTypes;
+        if (jsonNode.has("items")) {
+          itemTypes = filterTypes(jsonNode.get("items").get("type"));
         if (itemTypes.size() > 1) {
           // TODO(itaseski) use union instead of array when having multiple types (rare occurrence)?
           arrayType += "string>";
@@ -143,6 +145,7 @@ public class GlueOperations implements MetastoreOperations {
           String subtype = transformSchemaRecursive(jsonNode.get("items"));
           arrayType += (subtype + ">");
         }
+        } else arrayType += "string>";
         yield arrayType;
       }
       case "object" -> {
@@ -150,7 +153,7 @@ public class GlueOperations implements MetastoreOperations {
           String objectType = "struct<";
           Map<String, JsonNode> properties = objectMapper.convertValue(jsonNode.get("properties"), new TypeReference<>() {});
           String columnTypes = properties.entrySet().stream()
-              .map(p -> p.getKey() + " : " + transformSchemaRecursive(p.getValue()))
+              .map(p -> p.getKey() + ":" + transformSchemaRecursive(p.getValue()))
               .collect(Collectors.joining(","));
           objectType += (columnTypes + ">");
           yield objectType;

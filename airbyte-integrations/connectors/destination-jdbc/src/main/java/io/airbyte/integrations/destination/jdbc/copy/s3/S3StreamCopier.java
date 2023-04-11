@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy.s3;
@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination.jdbc.copy.s3;
 import com.amazonaws.services.s3.AmazonS3;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
@@ -17,9 +17,9 @@ import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
 import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
 import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -50,7 +50,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   protected final String stagingFolder;
   protected final Map<String, DestinationFileWriter> stagingWritersByFile = new HashMap<>();
   private final DestinationSyncMode destSyncMode;
-  private final ExtendedNameTransformer nameTransformer;
+  private final StandardNameTransformer nameTransformer;
   private final SqlOperations sqlOperations;
   private final Timestamp uploadTime;
   protected final Set<String> activeStagingWriterFileNames = new HashSet<>();
@@ -68,7 +68,7 @@ public abstract class S3StreamCopier implements StreamCopier {
                         final AmazonS3 client,
                         final JdbcDatabase db,
                         final S3CopyConfig config,
-                        final ExtendedNameTransformer nameTransformer,
+                        final StandardNameTransformer nameTransformer,
                         final SqlOperations sqlOperations,
                         final ConfiguredAirbyteStream configuredAirbyteStream,
                         final Timestamp uploadTime,
@@ -189,7 +189,7 @@ public abstract class S3StreamCopier implements StreamCopier {
       queries.append(sqlOperations.truncateTableQuery(db, schemaName, destTableName));
       LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.", destTableName, schemaName);
     }
-    queries.append(sqlOperations.copyTableQuery(db, schemaName, tmpTableName, destTableName));
+    queries.append(sqlOperations.insertTableQuery(db, schemaName, tmpTableName, destTableName));
     return queries.toString();
   }
 

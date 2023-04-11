@@ -45,6 +45,7 @@ Here are some example commands:
 3. `/test connector=connectors/source-sendgrid` - Runs integration tests for a single connector on the latest PR commit.
 4. `/test connector=source-sendgrid ref=master` - Runs integration tests for a single connector on a different branch.
 5. `/test connector=source-sendgrid ref=d5c53102` - Runs integration tests for a single connector on a specific commit.
+5. `/test connector=source-sendgrid local_cdk=1` - Runs integration tests for a single connector on the latest PR commit, against any CDK changes on that commit.
 
 A command dispatcher GitHub workflow will launch on comment submission. This dispatcher will add an :eyes: reaction to the comment when it starts processing. If there is an error dispatching your request, an error will be appended to your comment. If it launches the test run successfully, a :rocket: reaction will appear on your comment.
 

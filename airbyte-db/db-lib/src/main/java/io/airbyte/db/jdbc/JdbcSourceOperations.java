@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
@@ -18,6 +18,9 @@ import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.format.DateTimeParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +40,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final int columnTypeInt = resultSet.getMetaData().getColumnType(colIndex);
     final String columnName = resultSet.getMetaData().getColumnName(colIndex);
     final JDBCType columnType = safeGetJdbcType(columnTypeInt);
@@ -63,15 +66,17 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public void setStatementField(final PreparedStatement preparedStatement,
-                                final int parameterIndex,
-                                final JDBCType cursorFieldType,
-                                final String value)
+  public void setCursorField(final PreparedStatement preparedStatement,
+                             final int parameterIndex,
+                             final JDBCType cursorFieldType,
+                             final String value)
       throws SQLException {
     switch (cursorFieldType) {
 
       case TIMESTAMP -> setTimestamp(preparedStatement, parameterIndex, value);
+      case TIMESTAMP_WITH_TIMEZONE -> setTimestampWithTimezone(preparedStatement, parameterIndex, value);
       case TIME -> setTime(preparedStatement, parameterIndex, value);
+      case TIME_WITH_TIMEZONE -> setTimeWithTimezone(preparedStatement, parameterIndex, value);
       case DATE -> setDate(preparedStatement, parameterIndex, value);
       case BIT -> setBit(preparedStatement, parameterIndex, value);
       case BOOLEAN -> setBoolean(preparedStatement, parameterIndex, value);
@@ -89,8 +94,25 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
     }
   }
 
+  protected void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value)
+      throws SQLException {
+    try {
+      preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  protected void setTimeWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    try {
+      preparedStatement.setObject(parameterIndex, OffsetTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   @Override
-  public JDBCType getFieldType(final JsonNode field) {
+  public JDBCType getDatabaseFieldType(final JsonNode field) {
     try {
       return JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
     } catch (final IllegalArgumentException ex) {
@@ -109,7 +131,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public JsonSchemaType getJsonType(final JDBCType jdbcType) {
+  public JsonSchemaType getAirbyteType(final JDBCType jdbcType) {
     return switch (jdbcType) {
       case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
       case TINYINT, SMALLINT -> JsonSchemaType.INTEGER;

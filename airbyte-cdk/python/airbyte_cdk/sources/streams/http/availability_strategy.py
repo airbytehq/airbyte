@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -9,7 +9,7 @@ from typing import Dict, Optional, Tuple
 import requests
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.utils.stream_helpers import StreamHelper
+from airbyte_cdk.sources.streams.utils.stream_helper import get_first_record_for_slice, get_first_stream_slice
 from requests import HTTPError
 
 if typing.TYPE_CHECKING:
@@ -31,11 +31,24 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
           resolve the unavailability, if possible.
         """
         try:
-            stream_helper = StreamHelper()
-            stream_helper.get_first_record(stream)
+            # Some streams need a stream slice to read records (e.g. if they have a SubstreamPartitionRouter)
+            # Streams that don't need a stream slice will return `None` as their first stream slice.
+            stream_slice = get_first_stream_slice(stream)
+        except StopIteration:
+            # If stream_slices has no `next()` item (Note - this is different from stream_slices returning [None]!)
+            # This can happen when a substream's `stream_slices` method does a `for record in parent_records: yield <something>`
+            # without accounting for the case in which the parent stream is empty.
+            reason = f"Cannot attempt to connect to stream {stream.name} - no stream slices were found, likely because the parent stream is empty."
+            return False, reason
+
+        try:
+            get_first_record_for_slice(stream, stream_slice)
+            return True, None
+        except StopIteration:
+            logger.info(f"Successfully connected to stream {stream.name}, but got 0 records.")
+            return True, None
         except HTTPError as error:
             return self.handle_http_error(stream, logger, source, error)
-        return True, None
 
     def handle_http_error(
         self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError

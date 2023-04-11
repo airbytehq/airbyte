@@ -1,11 +1,13 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 import json
+import sys
 import tempfile
 import traceback
+import urllib
 from os import environ
 from typing import Iterable
 from urllib.parse import urlparse
@@ -26,6 +28,8 @@ from google.oauth2 import service_account
 from yaml import safe_load
 
 from .utils import backoff_handler
+
+SSH_TIMEOUT = 60
 
 
 class ConfigurationError(Exception):
@@ -106,8 +110,11 @@ class URLFile:
             port = self._provider["port"]
             return smart_open.open(f"webhdfs://{host}:{port}/{url}", **self.args)
         elif storage in ("ssh://", "scp://", "sftp://"):
-            user = self._provider["user"]
-            host = self._provider["host"]
+            # We need to quote parameters to deal with special characters
+            # https://bugs.python.org/issue18140
+            user = urllib.parse.quote(self._provider["user"])
+            host = urllib.parse.quote(self._provider["host"])
+            url = urllib.parse.quote(url)
             # TODO: Remove int casting when https://github.com/airbytehq/airbyte/issues/4952 is addressed
             # TODO: The "port" field in spec.json must also be changed
             _port_value = self._provider.get("port", 22)
@@ -116,9 +123,9 @@ class URLFile:
             except ValueError as err:
                 raise ValueError(f"{_port_value} is not a valid integer for the port") from err
             # Explicitly turn off ssh keys stored in ~/.ssh
-            transport_params = {"connect_kwargs": {"look_for_keys": False}}
+            transport_params = {"connect_kwargs": {"look_for_keys": False}, "timeout": SSH_TIMEOUT}
             if "password" in self._provider:
-                password = self._provider["password"]
+                password = urllib.parse.quote(self._provider["password"])
                 uri = f"{storage}{user}:{password}@{host}:{port}/{url}"
             else:
                 uri = f"{storage}{user}@{host}:{port}/{url}"
@@ -179,8 +186,8 @@ class URLFile:
             try:
                 credentials = json.loads(self._provider["service_account_json"])
             except json.decoder.JSONDecodeError as err:
-                error_msg = f"Failed to parse gcs service account json: {repr(err)}\n{traceback.format_exc()}"
-                logger.error(error_msg)
+                error_msg = f"Failed to parse gcs service account json: {repr(err)}"
+                logger.error(f"{error_msg}\n{traceback.format_exc()}")
                 raise ConfigurationError(error_msg) from err
 
         if credentials:
@@ -282,11 +289,12 @@ class Client:
         if self._reader_format == "yaml":
             return pd.DataFrame(safe_load(fp))
 
-    def load_dataframes(self, fp, skip_data=False) -> Iterable:
+    def load_dataframes(self, fp, skip_data=False, read_sample_chunk: bool = False) -> Iterable:
         """load and return the appropriate pandas dataframe.
 
         :param fp: file-like object to read from
         :param skip_data: limit reading data
+        :param read_sample_chunk: indicates whether a single chunk should only be read to generate schema
         :return: a list of dataframe loaded from files described in the configuration
         """
         readers = {
@@ -308,26 +316,34 @@ class Client:
         try:
             reader = readers[self._reader_format]
         except KeyError as err:
-            error_msg = f"Reader {self._reader_format} is not supported\n{traceback.format_exc()}"
-            logger.error(error_msg)
+            error_msg = f"Reader {self._reader_format} is not supported."
+            logger.error(f"{error_msg}\n{traceback.format_exc()}")
             raise ConfigurationError(error_msg) from err
 
         reader_options = {**self._reader_options}
         try:
             if self._reader_format == "csv":
+                bytes_read = 0
                 reader_options["chunksize"] = self.CSV_CHUNK_SIZE
                 if skip_data:
                     reader_options["nrows"] = 0
                     reader_options["index_col"] = 0
-                yield from reader(fp, **reader_options)
+                for record in reader(fp, **reader_options):
+                    bytes_read += sys.getsizeof(record)
+                    yield record
+                    if read_sample_chunk and bytes_read >= self.CSV_CHUNK_SIZE:
+                        return
             elif self._reader_options == "excel_binary":
                 reader_options["engine"] = "pyxlsb"
                 yield from reader(fp, **reader_options)
             else:
                 yield reader(fp, **reader_options)
         except UnicodeDecodeError as err:
-            error_msg = f"File {fp} can't be parsed with reader of chosen type ({self._reader_format})\n{traceback.format_exc()}"
-            logger.error(error_msg)
+            error_msg = (
+                f"File {fp} can't be parsed with reader of chosen type ({self._reader_format}). "
+                f"Please check provided Format and Reader Options. {repr(err)}."
+            )
+            logger.error(f"{error_msg}\n{traceback.format_exc()}")
             raise ConfigurationError(error_msg) from err
 
     @staticmethod
@@ -387,13 +403,17 @@ class Client:
         fp.close()
         return fp_tmp
 
-    def _stream_properties(self, fp):
+    def _stream_properties(self, fp, empty_schema: bool = False, read_sample_chunk: bool = False):
+        """
+        empty_schema param is used to check connectivity, i.e. we only read a header and do not produce stream properties
+        read_sample_chunk is used to determine if just one chunk should be read to generate schema
+        """
         if self._reader_format == "yaml":
             df_list = [self.load_yaml(fp)]
         else:
             if self.binary_source:
                 fp = self._cache_stream(fp)
-            df_list = self.load_dataframes(fp, skip_data=False)
+            df_list = self.load_dataframes(fp, skip_data=empty_schema, read_sample_chunk=read_sample_chunk)
         fields = {}
         for df in df_list:
             for col in df.columns:
@@ -402,8 +422,7 @@ class Client:
                 fields[col] = self.dtype_to_json_type(prev_frame_column_type, df[col].dtype)
         return {field: {"type": [fields[field], "null"]} for field in fields}
 
-    @property
-    def streams(self) -> Iterable:
+    def streams(self, empty_schema: bool = False) -> Iterable:
         """Discovers available streams"""
         # TODO handle discovery of directories of multiple files instead
         with self.reader.open() as fp:
@@ -413,6 +432,6 @@ class Client:
                 json_schema = {
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
-                    "properties": self._stream_properties(fp),
+                    "properties": self._stream_properties(fp, empty_schema=empty_schema, read_sample_chunk=True),
                 }
         yield AirbyteStream(name=self.stream_name, json_schema=json_schema, supported_sync_modes=[SyncMode.full_refresh])

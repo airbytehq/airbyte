@@ -65,13 +65,19 @@ A sync mode is therefore, a combination of a source and destination mode togethe
 
 ### Airbyte basic normalization
 
-As described by the [Airbyte Protocol from the Airbyte Specifications](../airbyte-protocol.md), a replication is composed of source connectors that are transmitting data in a JSON format. It is then written as such by the destination connectors.
+As described by the [Airbyte Protocol from the Airbyte Specifications](../airbyte-protocol.md), replication is composed of source connectors that are transmitting data in a JSON format. It is then written as such by the destination connectors.
 
 On top of this replication, Airbyte provides the option to enable or disable an additional transformation step at the end of the sync called [basic normalization](../basic-normalization.md). This operation is:
 
-* only available for destinations that support dbt execution.
-* responsible for automatically generating a pipeline or a DAG of dbt transformation models to convert JSON blob objects into normalized tables.
-* responsible for running and applying these dbt models to the data written in the destination.
+* Only available for destinations that support dbt execution
+* Automatically generates a pipeline or DAG of dbt transformation models to convert JSON blob objects into normalized tables
+* Runs and applies these dbt models to the data written in the destination
+
+:::note
+
+Normalizing data may cause an increase in your destination's compute cost. This cost will vary depending on the amount of data that is normalized and is not related to Airbyte credit usage.
+
+:::
 
 ### Custom sync operations
 

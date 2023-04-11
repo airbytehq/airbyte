@@ -214,6 +214,7 @@ font-style: italic;
   <h4><a href="#Attempt">Attempt</a></h4>
   <ul>
   <li><a href="#saveStats"><code><span class="http-method">post</span> /v1/attempt/save_stats</code></a></li>
+  <li><a href="#saveSyncConfig"><code><span class="http-method">post</span> /v1/attempt/save_sync_config</code></a></li>
   <li><a href="#setWorkflowInAttempt"><code><span class="http-method">post</span> /v1/attempt/set_workflow_in_attempt</code></a></li>
   </ul>
   <h4><a href="#Connection">Connection</a></h4>
@@ -273,7 +274,9 @@ font-style: italic;
   <li><a href="#createOrUpdateState"><code><span class="http-method">post</span> /v1/state/create_or_update</code></a></li>
   <li><a href="#getAttemptNormalizationStatusesForJob"><code><span class="http-method">post</span> /v1/jobs/get_normalization_status</code></a></li>
   <li><a href="#saveStats"><code><span class="http-method">post</span> /v1/attempt/save_stats</code></a></li>
+  <li><a href="#saveSyncConfig"><code><span class="http-method">post</span> /v1/attempt/save_sync_config</code></a></li>
   <li><a href="#setWorkflowInAttempt"><code><span class="http-method">post</span> /v1/attempt/set_workflow_in_attempt</code></a></li>
+  <li><a href="#writeDiscoverCatalogResult"><code><span class="http-method">post</span> /v1/sources/write_discover_catalog_result</code></a></li>
   </ul>
   <h4><a href="#Jobs">Jobs</a></h4>
   <ul>
@@ -282,6 +285,7 @@ font-style: italic;
   <li><a href="#getJobDebugInfo"><code><span class="http-method">post</span> /v1/jobs/get_debug_info</code></a></li>
   <li><a href="#getJobInfo"><code><span class="http-method">post</span> /v1/jobs/get</code></a></li>
   <li><a href="#getJobInfoLight"><code><span class="http-method">post</span> /v1/jobs/get_light</code></a></li>
+  <li><a href="#getLastReplicationJob"><code><span class="http-method">post</span> /v1/jobs/get_last_replication_job</code></a></li>
   <li><a href="#listJobsFor"><code><span class="http-method">post</span> /v1/jobs/list</code></a></li>
   </ul>
   <h4><a href="#Logs">Logs</a></h4>
@@ -319,10 +323,12 @@ font-style: italic;
   <li><a href="#createSource"><code><span class="http-method">post</span> /v1/sources/create</code></a></li>
   <li><a href="#deleteSource"><code><span class="http-method">post</span> /v1/sources/delete</code></a></li>
   <li><a href="#discoverSchemaForSource"><code><span class="http-method">post</span> /v1/sources/discover_schema</code></a></li>
+  <li><a href="#getMostRecentSourceActorCatalog"><code><span class="http-method">post</span> /v1/sources/most_recent_source_actor_catalog</code></a></li>
   <li><a href="#getSource"><code><span class="http-method">post</span> /v1/sources/get</code></a></li>
   <li><a href="#listSourcesForWorkspace"><code><span class="http-method">post</span> /v1/sources/list</code></a></li>
   <li><a href="#searchSources"><code><span class="http-method">post</span> /v1/sources/search</code></a></li>
   <li><a href="#updateSource"><code><span class="http-method">post</span> /v1/sources/update</code></a></li>
+  <li><a href="#writeDiscoverCatalogResult"><code><span class="http-method">post</span> /v1/sources/write_discover_catalog_result</code></a></li>
   </ul>
   <h4><a href="#SourceDefinition">SourceDefinition</a></h4>
   <ul>
@@ -395,6 +401,58 @@ font-style: italic;
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
       <div class="param">SaveStatsRequestBody <a href="#SaveStatsRequestBody">SaveStatsRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#InternalOperationResult">InternalOperationResult</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "succeeded" : true
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful Operation
+        <a href="#InternalOperationResult">InternalOperationResult</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="saveSyncConfig"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/attempt/save_sync_config</code></pre></div>
+    <div class="method-summary">For worker to save the AttemptSyncConfig for an attempt. (<span class="nickname">saveSyncConfig</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SaveAttemptSyncConfigRequestBody <a href="#SaveAttemptSyncConfigRequestBody">SaveAttemptSyncConfigRequestBody</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -548,6 +606,7 @@ font-style: italic;
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -569,6 +628,7 @@ font-style: italic;
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -725,6 +785,7 @@ font-style: italic;
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -746,6 +807,7 @@ font-style: italic;
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -858,6 +920,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -879,6 +942,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -934,6 +998,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -955,6 +1020,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1068,6 +1134,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1089,6 +1156,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1144,6 +1212,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1165,6 +1234,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1251,6 +1321,7 @@ font-style: italic;
   "job" : {
     "createdAt" : 6,
     "configId" : "configId",
+    "startedAt" : 5,
     "id" : 0,
     "resetConfig" : {
       "streamsToReset" : [ {
@@ -1266,12 +1337,12 @@ font-style: italic;
   "attempts" : [ {
     "attempt" : {
       "totalStats" : {
-        "stateMessagesEmitted" : 7,
+        "stateMessagesEmitted" : 1,
         "recordsCommitted" : 1,
-        "bytesEmitted" : 4,
-        "estimatedBytes" : 1,
+        "bytesEmitted" : 7,
+        "estimatedBytes" : 6,
         "estimatedRecords" : 1,
-        "recordsEmitted" : 2
+        "recordsEmitted" : 4
       },
       "failureSummary" : {
         "failures" : [ {
@@ -1279,43 +1350,45 @@ font-style: italic;
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         } ],
         "partialSuccess" : true
       },
-      "createdAt" : 5,
-      "bytesSynced" : 9,
-      "endedAt" : 7,
+      "createdAt" : 2,
+      "bytesSynced" : 3,
+      "endedAt" : 9,
       "streamStats" : [ {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
-      "recordsSynced" : 3,
-      "updatedAt" : 2
+      "recordsSynced" : 2,
+      "updatedAt" : 7
     },
     "logs" : {
       "logLines" : [ "logLines", "logLines" ]
@@ -1323,12 +1396,12 @@ font-style: italic;
   }, {
     "attempt" : {
       "totalStats" : {
-        "stateMessagesEmitted" : 7,
+        "stateMessagesEmitted" : 1,
         "recordsCommitted" : 1,
-        "bytesEmitted" : 4,
-        "estimatedBytes" : 1,
+        "bytesEmitted" : 7,
+        "estimatedBytes" : 6,
         "estimatedRecords" : 1,
-        "recordsEmitted" : 2
+        "recordsEmitted" : 4
       },
       "failureSummary" : {
         "failures" : [ {
@@ -1336,43 +1409,45 @@ font-style: italic;
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         } ],
         "partialSuccess" : true
       },
-      "createdAt" : 5,
-      "bytesSynced" : 9,
-      "endedAt" : 7,
+      "createdAt" : 2,
+      "bytesSynced" : 3,
+      "endedAt" : 9,
       "streamStats" : [ {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
-      "recordsSynced" : 3,
-      "updatedAt" : 2
+      "recordsSynced" : 2,
+      "updatedAt" : 7
     },
     "logs" : {
       "logLines" : [ "logLines", "logLines" ]
@@ -1465,6 +1540,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1486,6 +1562,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1541,6 +1618,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1562,6 +1640,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1645,6 +1724,7 @@ font-style: italic;
   "job" : {
     "createdAt" : 6,
     "configId" : "configId",
+    "startedAt" : 5,
     "id" : 0,
     "resetConfig" : {
       "streamsToReset" : [ {
@@ -1660,12 +1740,12 @@ font-style: italic;
   "attempts" : [ {
     "attempt" : {
       "totalStats" : {
-        "stateMessagesEmitted" : 7,
+        "stateMessagesEmitted" : 1,
         "recordsCommitted" : 1,
-        "bytesEmitted" : 4,
-        "estimatedBytes" : 1,
+        "bytesEmitted" : 7,
+        "estimatedBytes" : 6,
         "estimatedRecords" : 1,
-        "recordsEmitted" : 2
+        "recordsEmitted" : 4
       },
       "failureSummary" : {
         "failures" : [ {
@@ -1673,43 +1753,45 @@ font-style: italic;
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         } ],
         "partialSuccess" : true
       },
-      "createdAt" : 5,
-      "bytesSynced" : 9,
-      "endedAt" : 7,
+      "createdAt" : 2,
+      "bytesSynced" : 3,
+      "endedAt" : 9,
       "streamStats" : [ {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
-      "recordsSynced" : 3,
-      "updatedAt" : 2
+      "recordsSynced" : 2,
+      "updatedAt" : 7
     },
     "logs" : {
       "logLines" : [ "logLines", "logLines" ]
@@ -1717,12 +1799,12 @@ font-style: italic;
   }, {
     "attempt" : {
       "totalStats" : {
-        "stateMessagesEmitted" : 7,
+        "stateMessagesEmitted" : 1,
         "recordsCommitted" : 1,
-        "bytesEmitted" : 4,
-        "estimatedBytes" : 1,
+        "bytesEmitted" : 7,
+        "estimatedBytes" : 6,
         "estimatedRecords" : 1,
-        "recordsEmitted" : 2
+        "recordsEmitted" : 4
       },
       "failureSummary" : {
         "failures" : [ {
@@ -1730,43 +1812,45 @@ font-style: italic;
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         } ],
         "partialSuccess" : true
       },
-      "createdAt" : 5,
-      "bytesSynced" : 9,
-      "endedAt" : 7,
+      "createdAt" : 2,
+      "bytesSynced" : 3,
+      "endedAt" : 9,
       "streamStats" : [ {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
-      "recordsSynced" : 3,
-      "updatedAt" : 2
+      "recordsSynced" : 2,
+      "updatedAt" : 7
     },
     "logs" : {
       "logLines" : [ "logLines", "logLines" ]
@@ -1861,6 +1945,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1882,6 +1967,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1965,6 +2051,7 @@ containing the updated stream needs to be sent.</div>
   "message" : "message",
   "jobInfo" : {
     "createdAt" : 0,
+    "connectorConfigurationUpdated" : false,
     "configId" : "configId",
     "endedAt" : 6,
     "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -2034,6 +2121,7 @@ containing the updated stream needs to be sent.</div>
   "message" : "message",
   "jobInfo" : {
     "createdAt" : 0,
+    "connectorConfigurationUpdated" : false,
     "configId" : "configId",
     "endedAt" : 6,
     "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -2587,8 +2675,15 @@ containing the updated stream needs to be sent.</div>
   "dockerImageTag" : "dockerImageTag",
   "releaseDate" : "2000-01-23",
   "dockerRepository" : "dockerRepository",
+  "supportsDbt" : true,
   "name" : "name",
   "icon" : "icon",
+  "normalizationConfig" : {
+    "normalizationIntegrationType" : "normalizationIntegrationType",
+    "normalizationRepository" : "normalizationRepository",
+    "normalizationTag" : "normalizationTag",
+    "supported" : false
+  },
   "protocolVersion" : "protocolVersion",
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -2720,8 +2815,15 @@ containing the updated stream needs to be sent.</div>
   "dockerImageTag" : "dockerImageTag",
   "releaseDate" : "2000-01-23",
   "dockerRepository" : "dockerRepository",
+  "supportsDbt" : true,
   "name" : "name",
   "icon" : "icon",
+  "normalizationConfig" : {
+    "normalizationIntegrationType" : "normalizationIntegrationType",
+    "normalizationRepository" : "normalizationRepository",
+    "normalizationTag" : "normalizationTag",
+    "supported" : false
+  },
   "protocolVersion" : "protocolVersion",
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -2808,8 +2910,15 @@ containing the updated stream needs to be sent.</div>
   "dockerImageTag" : "dockerImageTag",
   "releaseDate" : "2000-01-23",
   "dockerRepository" : "dockerRepository",
+  "supportsDbt" : true,
   "name" : "name",
   "icon" : "icon",
+  "normalizationConfig" : {
+    "normalizationIntegrationType" : "normalizationIntegrationType",
+    "normalizationRepository" : "normalizationRepository",
+    "normalizationTag" : "normalizationTag",
+    "supported" : false
+  },
   "protocolVersion" : "protocolVersion",
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -2897,8 +3006,15 @@ containing the updated stream needs to be sent.</div>
     "dockerImageTag" : "dockerImageTag",
     "releaseDate" : "2000-01-23",
     "dockerRepository" : "dockerRepository",
+    "supportsDbt" : true,
     "name" : "name",
     "icon" : "icon",
+    "normalizationConfig" : {
+      "normalizationIntegrationType" : "normalizationIntegrationType",
+      "normalizationRepository" : "normalizationRepository",
+      "normalizationTag" : "normalizationTag",
+      "supported" : false
+    },
     "protocolVersion" : "protocolVersion",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   },
@@ -2976,8 +3092,15 @@ containing the updated stream needs to be sent.</div>
     "dockerImageTag" : "dockerImageTag",
     "releaseDate" : "2000-01-23",
     "dockerRepository" : "dockerRepository",
+    "supportsDbt" : true,
     "name" : "name",
     "icon" : "icon",
+    "normalizationConfig" : {
+      "normalizationIntegrationType" : "normalizationIntegrationType",
+      "normalizationRepository" : "normalizationRepository",
+      "normalizationTag" : "normalizationTag",
+      "supported" : false
+    },
     "protocolVersion" : "protocolVersion",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   }, {
@@ -3008,8 +3131,15 @@ containing the updated stream needs to be sent.</div>
     "dockerImageTag" : "dockerImageTag",
     "releaseDate" : "2000-01-23",
     "dockerRepository" : "dockerRepository",
+    "supportsDbt" : true,
     "name" : "name",
     "icon" : "icon",
+    "normalizationConfig" : {
+      "normalizationIntegrationType" : "normalizationIntegrationType",
+      "normalizationRepository" : "normalizationRepository",
+      "normalizationTag" : "normalizationTag",
+      "supported" : false
+    },
     "protocolVersion" : "protocolVersion",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ]
@@ -3092,8 +3222,15 @@ containing the updated stream needs to be sent.</div>
     "dockerImageTag" : "dockerImageTag",
     "releaseDate" : "2000-01-23",
     "dockerRepository" : "dockerRepository",
+    "supportsDbt" : true,
     "name" : "name",
     "icon" : "icon",
+    "normalizationConfig" : {
+      "normalizationIntegrationType" : "normalizationIntegrationType",
+      "normalizationRepository" : "normalizationRepository",
+      "normalizationTag" : "normalizationTag",
+      "supported" : false
+    },
     "protocolVersion" : "protocolVersion",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   }, {
@@ -3124,8 +3261,15 @@ containing the updated stream needs to be sent.</div>
     "dockerImageTag" : "dockerImageTag",
     "releaseDate" : "2000-01-23",
     "dockerRepository" : "dockerRepository",
+    "supportsDbt" : true,
     "name" : "name",
     "icon" : "icon",
+    "normalizationConfig" : {
+      "normalizationIntegrationType" : "normalizationIntegrationType",
+      "normalizationRepository" : "normalizationRepository",
+      "normalizationTag" : "normalizationTag",
+      "supported" : false
+    },
     "protocolVersion" : "protocolVersion",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ]
@@ -3196,8 +3340,15 @@ containing the updated stream needs to be sent.</div>
     "dockerImageTag" : "dockerImageTag",
     "releaseDate" : "2000-01-23",
     "dockerRepository" : "dockerRepository",
+    "supportsDbt" : true,
     "name" : "name",
     "icon" : "icon",
+    "normalizationConfig" : {
+      "normalizationIntegrationType" : "normalizationIntegrationType",
+      "normalizationRepository" : "normalizationRepository",
+      "normalizationTag" : "normalizationTag",
+      "supported" : false
+    },
     "protocolVersion" : "protocolVersion",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   }, {
@@ -3228,8 +3379,15 @@ containing the updated stream needs to be sent.</div>
     "dockerImageTag" : "dockerImageTag",
     "releaseDate" : "2000-01-23",
     "dockerRepository" : "dockerRepository",
+    "supportsDbt" : true,
     "name" : "name",
     "icon" : "icon",
+    "normalizationConfig" : {
+      "normalizationIntegrationType" : "normalizationIntegrationType",
+      "normalizationRepository" : "normalizationRepository",
+      "normalizationTag" : "normalizationTag",
+      "supported" : false
+    },
     "protocolVersion" : "protocolVersion",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ]
@@ -3313,8 +3471,15 @@ containing the updated stream needs to be sent.</div>
       "dockerImageTag" : "dockerImageTag",
       "releaseDate" : "2000-01-23",
       "dockerRepository" : "dockerRepository",
+      "supportsDbt" : true,
       "name" : "name",
       "icon" : "icon",
+      "normalizationConfig" : {
+        "normalizationIntegrationType" : "normalizationIntegrationType",
+        "normalizationRepository" : "normalizationRepository",
+        "normalizationTag" : "normalizationTag",
+        "supported" : false
+      },
       "protocolVersion" : "protocolVersion",
       "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
@@ -3348,8 +3513,15 @@ containing the updated stream needs to be sent.</div>
       "dockerImageTag" : "dockerImageTag",
       "releaseDate" : "2000-01-23",
       "dockerRepository" : "dockerRepository",
+      "supportsDbt" : true,
       "name" : "name",
       "icon" : "icon",
+      "normalizationConfig" : {
+        "normalizationIntegrationType" : "normalizationIntegrationType",
+        "normalizationRepository" : "normalizationRepository",
+        "normalizationTag" : "normalizationTag",
+        "supported" : false
+      },
       "protocolVersion" : "protocolVersion",
       "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
@@ -3481,8 +3653,15 @@ containing the updated stream needs to be sent.</div>
   "dockerImageTag" : "dockerImageTag",
   "releaseDate" : "2000-01-23",
   "dockerRepository" : "dockerRepository",
+  "supportsDbt" : true,
   "name" : "name",
   "icon" : "icon",
+  "normalizationConfig" : {
+    "normalizationIntegrationType" : "normalizationIntegrationType",
+    "normalizationRepository" : "normalizationRepository",
+    "normalizationTag" : "normalizationTag",
+    "supported" : false
+  },
   "protocolVersion" : "protocolVersion",
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -3544,14 +3723,12 @@ containing the updated stream needs to be sent.</div>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "documentationUrl" : "documentationUrl",
-  "supportsNormalization" : true,
   "connectionSpecification" : {
     "user" : {
       "type" : "string"
     }
   },
   "supportedDestinationSyncModes" : [ null, null ],
-  "supportsDbt" : true,
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "advancedAuth" : {
     "predicateValue" : "predicateValue",
@@ -3569,6 +3746,7 @@ containing the updated stream needs to be sent.</div>
   },
   "jobInfo" : {
     "createdAt" : 0,
+    "connectorConfigurationUpdated" : false,
     "configId" : "configId",
     "endedAt" : 6,
     "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -3996,6 +4174,58 @@ containing the updated stream needs to be sent.</div>
         <a href="#InternalOperationResult">InternalOperationResult</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="saveSyncConfig"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/attempt/save_sync_config</code></pre></div>
+    <div class="method-summary">For worker to save the AttemptSyncConfig for an attempt. (<span class="nickname">saveSyncConfig</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SaveAttemptSyncConfigRequestBody <a href="#SaveAttemptSyncConfigRequestBody">SaveAttemptSyncConfigRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#InternalOperationResult">InternalOperationResult</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "succeeded" : true
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful Operation
+        <a href="#InternalOperationResult">InternalOperationResult</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="setWorkflowInAttempt"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -4048,6 +4278,58 @@ containing the updated stream needs to be sent.</div>
         <a href="#InternalOperationResult">InternalOperationResult</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="writeDiscoverCatalogResult"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/sources/write_discover_catalog_result</code></pre></div>
+    <div class="method-summary">Should only called from worker, to write result from discover activity back to DB. (<span class="nickname">writeDiscoverCatalogResult</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceDiscoverSchemaWriteRequestBody <a href="#SourceDiscoverSchemaWriteRequestBody">SourceDiscoverSchemaWriteRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#DiscoverCatalogResult">DiscoverCatalogResult</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful Operation
+        <a href="#DiscoverCatalogResult">DiscoverCatalogResult</a>
+  </div> <!-- method -->
+  <hr/>
   <h1><a name="Jobs">Jobs</a></h1>
   <div class="method"><a name="cancelJob"/>
     <div class="method-path">
@@ -4088,6 +4370,7 @@ containing the updated stream needs to be sent.</div>
   "job" : {
     "createdAt" : 6,
     "configId" : "configId",
+    "startedAt" : 5,
     "id" : 0,
     "resetConfig" : {
       "streamsToReset" : [ {
@@ -4103,12 +4386,12 @@ containing the updated stream needs to be sent.</div>
   "attempts" : [ {
     "attempt" : {
       "totalStats" : {
-        "stateMessagesEmitted" : 7,
+        "stateMessagesEmitted" : 1,
         "recordsCommitted" : 1,
-        "bytesEmitted" : 4,
-        "estimatedBytes" : 1,
+        "bytesEmitted" : 7,
+        "estimatedBytes" : 6,
         "estimatedRecords" : 1,
-        "recordsEmitted" : 2
+        "recordsEmitted" : 4
       },
       "failureSummary" : {
         "failures" : [ {
@@ -4116,43 +4399,45 @@ containing the updated stream needs to be sent.</div>
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         } ],
         "partialSuccess" : true
       },
-      "createdAt" : 5,
-      "bytesSynced" : 9,
-      "endedAt" : 7,
+      "createdAt" : 2,
+      "bytesSynced" : 3,
+      "endedAt" : 9,
       "streamStats" : [ {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
-      "recordsSynced" : 3,
-      "updatedAt" : 2
+      "recordsSynced" : 2,
+      "updatedAt" : 7
     },
     "logs" : {
       "logLines" : [ "logLines", "logLines" ]
@@ -4160,12 +4445,12 @@ containing the updated stream needs to be sent.</div>
   }, {
     "attempt" : {
       "totalStats" : {
-        "stateMessagesEmitted" : 7,
+        "stateMessagesEmitted" : 1,
         "recordsCommitted" : 1,
-        "bytesEmitted" : 4,
-        "estimatedBytes" : 1,
+        "bytesEmitted" : 7,
+        "estimatedBytes" : 6,
         "estimatedRecords" : 1,
-        "recordsEmitted" : 2
+        "recordsEmitted" : 4
       },
       "failureSummary" : {
         "failures" : [ {
@@ -4173,43 +4458,45 @@ containing the updated stream needs to be sent.</div>
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         } ],
         "partialSuccess" : true
       },
-      "createdAt" : 5,
-      "bytesSynced" : 9,
-      "endedAt" : 7,
+      "createdAt" : 2,
+      "bytesSynced" : 3,
+      "endedAt" : 9,
       "streamStats" : [ {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
-      "recordsSynced" : 3,
-      "updatedAt" : 2
+      "recordsSynced" : 2,
+      "updatedAt" : 7
     },
     "logs" : {
       "logLines" : [ "logLines", "logLines" ]
@@ -4403,8 +4690,15 @@ containing the updated stream needs to be sent.</div>
       "dockerImageTag" : "dockerImageTag",
       "releaseDate" : "2000-01-23",
       "dockerRepository" : "dockerRepository",
+      "supportsDbt" : true,
       "name" : "name",
       "icon" : "icon",
+      "normalizationConfig" : {
+        "normalizationIntegrationType" : "normalizationIntegrationType",
+        "normalizationRepository" : "normalizationRepository",
+        "normalizationTag" : "normalizationTag",
+        "supported" : false
+      },
       "protocolVersion" : "protocolVersion",
       "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     }
@@ -4412,12 +4706,12 @@ containing the updated stream needs to be sent.</div>
   "attempts" : [ {
     "attempt" : {
       "totalStats" : {
-        "stateMessagesEmitted" : 7,
+        "stateMessagesEmitted" : 1,
         "recordsCommitted" : 1,
-        "bytesEmitted" : 4,
-        "estimatedBytes" : 1,
+        "bytesEmitted" : 7,
+        "estimatedBytes" : 6,
         "estimatedRecords" : 1,
-        "recordsEmitted" : 2
+        "recordsEmitted" : 4
       },
       "failureSummary" : {
         "failures" : [ {
@@ -4425,43 +4719,45 @@ containing the updated stream needs to be sent.</div>
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         } ],
         "partialSuccess" : true
       },
-      "createdAt" : 5,
-      "bytesSynced" : 9,
-      "endedAt" : 7,
+      "createdAt" : 2,
+      "bytesSynced" : 3,
+      "endedAt" : 9,
       "streamStats" : [ {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
-      "recordsSynced" : 3,
-      "updatedAt" : 2
+      "recordsSynced" : 2,
+      "updatedAt" : 7
     },
     "logs" : {
       "logLines" : [ "logLines", "logLines" ]
@@ -4469,12 +4765,12 @@ containing the updated stream needs to be sent.</div>
   }, {
     "attempt" : {
       "totalStats" : {
-        "stateMessagesEmitted" : 7,
+        "stateMessagesEmitted" : 1,
         "recordsCommitted" : 1,
-        "bytesEmitted" : 4,
-        "estimatedBytes" : 1,
+        "bytesEmitted" : 7,
+        "estimatedBytes" : 6,
         "estimatedRecords" : 1,
-        "recordsEmitted" : 2
+        "recordsEmitted" : 4
       },
       "failureSummary" : {
         "failures" : [ {
@@ -4482,43 +4778,45 @@ containing the updated stream needs to be sent.</div>
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         } ],
         "partialSuccess" : true
       },
-      "createdAt" : 5,
-      "bytesSynced" : 9,
-      "endedAt" : 7,
+      "createdAt" : 2,
+      "bytesSynced" : 3,
+      "endedAt" : 9,
       "streamStats" : [ {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
-      "recordsSynced" : 3,
-      "updatedAt" : 2
+      "recordsSynced" : 2,
+      "updatedAt" : 7
     },
     "logs" : {
       "logLines" : [ "logLines", "logLines" ]
@@ -4584,6 +4882,7 @@ containing the updated stream needs to be sent.</div>
   "job" : {
     "createdAt" : 6,
     "configId" : "configId",
+    "startedAt" : 5,
     "id" : 0,
     "resetConfig" : {
       "streamsToReset" : [ {
@@ -4599,12 +4898,12 @@ containing the updated stream needs to be sent.</div>
   "attempts" : [ {
     "attempt" : {
       "totalStats" : {
-        "stateMessagesEmitted" : 7,
+        "stateMessagesEmitted" : 1,
         "recordsCommitted" : 1,
-        "bytesEmitted" : 4,
-        "estimatedBytes" : 1,
+        "bytesEmitted" : 7,
+        "estimatedBytes" : 6,
         "estimatedRecords" : 1,
-        "recordsEmitted" : 2
+        "recordsEmitted" : 4
       },
       "failureSummary" : {
         "failures" : [ {
@@ -4612,43 +4911,45 @@ containing the updated stream needs to be sent.</div>
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         } ],
         "partialSuccess" : true
       },
-      "createdAt" : 5,
-      "bytesSynced" : 9,
-      "endedAt" : 7,
+      "createdAt" : 2,
+      "bytesSynced" : 3,
+      "endedAt" : 9,
       "streamStats" : [ {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
-      "recordsSynced" : 3,
-      "updatedAt" : 2
+      "recordsSynced" : 2,
+      "updatedAt" : 7
     },
     "logs" : {
       "logLines" : [ "logLines", "logLines" ]
@@ -4656,12 +4957,12 @@ containing the updated stream needs to be sent.</div>
   }, {
     "attempt" : {
       "totalStats" : {
-        "stateMessagesEmitted" : 7,
+        "stateMessagesEmitted" : 1,
         "recordsCommitted" : 1,
-        "bytesEmitted" : 4,
-        "estimatedBytes" : 1,
+        "bytesEmitted" : 7,
+        "estimatedBytes" : 6,
         "estimatedRecords" : 1,
-        "recordsEmitted" : 2
+        "recordsEmitted" : 4
       },
       "failureSummary" : {
         "failures" : [ {
@@ -4669,43 +4970,45 @@ containing the updated stream needs to be sent.</div>
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         } ],
         "partialSuccess" : true
       },
-      "createdAt" : 5,
-      "bytesSynced" : 9,
-      "endedAt" : 7,
+      "createdAt" : 2,
+      "bytesSynced" : 3,
+      "endedAt" : 9,
       "streamStats" : [ {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
-      "recordsSynced" : 3,
-      "updatedAt" : 2
+      "recordsSynced" : 2,
+      "updatedAt" : 7
     },
     "logs" : {
       "logLines" : [ "logLines", "logLines" ]
@@ -4771,6 +5074,7 @@ containing the updated stream needs to be sent.</div>
   "job" : {
     "createdAt" : 6,
     "configId" : "configId",
+    "startedAt" : 5,
     "id" : 0,
     "resetConfig" : {
       "streamsToReset" : [ {
@@ -4796,6 +5100,79 @@ containing the updated stream needs to be sent.</div>
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#JobInfoLightRead">JobInfoLightRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="getLastReplicationJob"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/jobs/get_last_replication_job</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">getLastReplicationJob</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">ConnectionIdRequestBody <a href="#ConnectionIdRequestBody">ConnectionIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#JobOptionalRead">JobOptionalRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "job" : {
+    "createdAt" : 6,
+    "configId" : "configId",
+    "startedAt" : 5,
+    "id" : 0,
+    "resetConfig" : {
+      "streamsToReset" : [ {
+        "name" : "name",
+        "namespace" : "namespace"
+      }, {
+        "name" : "name",
+        "namespace" : "namespace"
+      } ]
+    },
+    "updatedAt" : 1
+  }
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#JobOptionalRead">JobOptionalRead</a>
     <h4 class="field-label">404</h4>
     Object with given id was not found.
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
@@ -4845,6 +5222,7 @@ containing the updated stream needs to be sent.</div>
     "job" : {
       "createdAt" : 6,
       "configId" : "configId",
+      "startedAt" : 5,
       "id" : 0,
       "resetConfig" : {
         "streamsToReset" : [ {
@@ -4859,12 +5237,12 @@ containing the updated stream needs to be sent.</div>
     },
     "attempts" : [ {
       "totalStats" : {
-        "stateMessagesEmitted" : 7,
+        "stateMessagesEmitted" : 1,
         "recordsCommitted" : 1,
-        "bytesEmitted" : 4,
-        "estimatedBytes" : 1,
+        "bytesEmitted" : 7,
+        "estimatedBytes" : 6,
         "estimatedRecords" : 1,
-        "recordsEmitted" : 2
+        "recordsEmitted" : 4
       },
       "failureSummary" : {
         "failures" : [ {
@@ -4872,51 +5250,53 @@ containing the updated stream needs to be sent.</div>
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         } ],
         "partialSuccess" : true
       },
-      "createdAt" : 5,
-      "bytesSynced" : 9,
-      "endedAt" : 7,
+      "createdAt" : 2,
+      "bytesSynced" : 3,
+      "endedAt" : 9,
       "streamStats" : [ {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
-      "recordsSynced" : 3,
-      "updatedAt" : 2
+      "recordsSynced" : 2,
+      "updatedAt" : 7
     }, {
       "totalStats" : {
-        "stateMessagesEmitted" : 7,
+        "stateMessagesEmitted" : 1,
         "recordsCommitted" : 1,
-        "bytesEmitted" : 4,
-        "estimatedBytes" : 1,
+        "bytesEmitted" : 7,
+        "estimatedBytes" : 6,
         "estimatedRecords" : 1,
-        "recordsEmitted" : 2
+        "recordsEmitted" : 4
       },
       "failureSummary" : {
         "failures" : [ {
@@ -4924,48 +5304,51 @@ containing the updated stream needs to be sent.</div>
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         } ],
         "partialSuccess" : true
       },
-      "createdAt" : 5,
-      "bytesSynced" : 9,
-      "endedAt" : 7,
+      "createdAt" : 2,
+      "bytesSynced" : 3,
+      "endedAt" : 9,
       "streamStats" : [ {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
-      "recordsSynced" : 3,
-      "updatedAt" : 2
+      "recordsSynced" : 2,
+      "updatedAt" : 7
     } ]
   }, {
     "job" : {
       "createdAt" : 6,
       "configId" : "configId",
+      "startedAt" : 5,
       "id" : 0,
       "resetConfig" : {
         "streamsToReset" : [ {
@@ -4980,12 +5363,12 @@ containing the updated stream needs to be sent.</div>
     },
     "attempts" : [ {
       "totalStats" : {
-        "stateMessagesEmitted" : 7,
+        "stateMessagesEmitted" : 1,
         "recordsCommitted" : 1,
-        "bytesEmitted" : 4,
-        "estimatedBytes" : 1,
+        "bytesEmitted" : 7,
+        "estimatedBytes" : 6,
         "estimatedRecords" : 1,
-        "recordsEmitted" : 2
+        "recordsEmitted" : 4
       },
       "failureSummary" : {
         "failures" : [ {
@@ -4993,51 +5376,53 @@ containing the updated stream needs to be sent.</div>
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         } ],
         "partialSuccess" : true
       },
-      "createdAt" : 5,
-      "bytesSynced" : 9,
-      "endedAt" : 7,
+      "createdAt" : 2,
+      "bytesSynced" : 3,
+      "endedAt" : 9,
       "streamStats" : [ {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
-      "recordsSynced" : 3,
-      "updatedAt" : 2
+      "recordsSynced" : 2,
+      "updatedAt" : 7
     }, {
       "totalStats" : {
-        "stateMessagesEmitted" : 7,
+        "stateMessagesEmitted" : 1,
         "recordsCommitted" : 1,
-        "bytesEmitted" : 4,
-        "estimatedBytes" : 1,
+        "bytesEmitted" : 7,
+        "estimatedBytes" : 6,
         "estimatedRecords" : 1,
-        "recordsEmitted" : 2
+        "recordsEmitted" : 4
       },
       "failureSummary" : {
         "failures" : [ {
@@ -5045,43 +5430,45 @@ containing the updated stream needs to be sent.</div>
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         }, {
           "retryable" : true,
           "stacktrace" : "stacktrace",
           "internalMessage" : "internalMessage",
           "externalMessage" : "externalMessage",
-          "timestamp" : 6
+          "timestamp" : 7
         } ],
         "partialSuccess" : true
       },
-      "createdAt" : 5,
-      "bytesSynced" : 9,
-      "endedAt" : 7,
+      "createdAt" : 2,
+      "bytesSynced" : 3,
+      "endedAt" : 9,
       "streamStats" : [ {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
-          "stateMessagesEmitted" : 7,
+          "stateMessagesEmitted" : 1,
           "recordsCommitted" : 1,
-          "bytesEmitted" : 4,
-          "estimatedBytes" : 1,
+          "bytesEmitted" : 7,
+          "estimatedBytes" : 6,
           "estimatedRecords" : 1,
-          "recordsEmitted" : 2
+          "recordsEmitted" : 4
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
-      "recordsSynced" : 3,
-      "updatedAt" : 2
+      "recordsSynced" : 2,
+      "updatedAt" : 7
     } ]
   } ]
 }</code></pre>
@@ -5746,6 +6133,7 @@ containing the updated stream needs to be sent.</div>
   "message" : "message",
   "jobInfo" : {
     "createdAt" : 0,
+    "connectorConfigurationUpdated" : false,
     "configId" : "configId",
     "endedAt" : 6,
     "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -5812,6 +6200,7 @@ containing the updated stream needs to be sent.</div>
   "message" : "message",
   "jobInfo" : {
     "createdAt" : 0,
+    "connectorConfigurationUpdated" : false,
     "configId" : "configId",
     "endedAt" : 6,
     "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -5889,6 +6278,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -5910,6 +6300,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -5924,6 +6315,7 @@ containing the updated stream needs to be sent.</div>
   },
   "jobInfo" : {
     "createdAt" : 0,
+    "connectorConfigurationUpdated" : false,
     "configId" : "configId",
     "endedAt" : 6,
     "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -6035,6 +6427,7 @@ containing the updated stream needs to be sent.</div>
   "message" : "message",
   "jobInfo" : {
     "createdAt" : 0,
+    "connectorConfigurationUpdated" : false,
     "configId" : "configId",
     "endedAt" : 6,
     "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -6104,6 +6497,7 @@ containing the updated stream needs to be sent.</div>
   "message" : "message",
   "jobInfo" : {
     "createdAt" : 0,
+    "connectorConfigurationUpdated" : false,
     "configId" : "configId",
     "endedAt" : 6,
     "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -6361,6 +6755,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -6382,6 +6777,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -6396,6 +6792,7 @@ containing the updated stream needs to be sent.</div>
   },
   "jobInfo" : {
     "createdAt" : 0,
+    "connectorConfigurationUpdated" : false,
     "configId" : "configId",
     "endedAt" : 6,
     "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -6462,6 +6859,65 @@ containing the updated stream needs to be sent.</div>
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#SourceDiscoverSchemaRead">SourceDiscoverSchemaRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="getMostRecentSourceActorCatalog"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/sources/most_recent_source_actor_catalog</code></pre></div>
+    <div class="method-summary">Get most recent ActorCatalog for source (<span class="nickname">getMostRecentSourceActorCatalog</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceIdRequestBody <a href="#SourceIdRequestBody">SourceIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#ActorCatalogWithUpdatedAt">ActorCatalogWithUpdatedAt</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "catalog" : "{}",
+  "updatedAt" : 0
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#ActorCatalogWithUpdatedAt">ActorCatalogWithUpdatedAt</a>
     <h4 class="field-label">404</h4>
     Object with given id was not found.
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
@@ -6753,6 +7209,58 @@ containing the updated stream needs to be sent.</div>
     <h4 class="field-label">422</h4>
     Input failed validation
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="writeDiscoverCatalogResult"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/sources/write_discover_catalog_result</code></pre></div>
+    <div class="method-summary">Should only called from worker, to write result from discover activity back to DB. (<span class="nickname">writeDiscoverCatalogResult</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceDiscoverSchemaWriteRequestBody <a href="#SourceDiscoverSchemaWriteRequestBody">SourceDiscoverSchemaWriteRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#DiscoverCatalogResult">DiscoverCatalogResult</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful Operation
+        <a href="#DiscoverCatalogResult">DiscoverCatalogResult</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="SourceDefinition">SourceDefinition</a></h1>
@@ -7811,6 +8319,7 @@ containing the updated stream needs to be sent.</div>
   },
   "jobInfo" : {
     "createdAt" : 0,
+    "connectorConfigurationUpdated" : false,
     "configId" : "configId",
     "endedAt" : 6,
     "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -8458,6 +8967,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -8479,6 +8989,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -8706,6 +9217,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -8727,6 +9239,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -8838,7 +9351,7 @@ containing the updated stream needs to be sent.</div>
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">WorkspaceIdRequestBody <a href="#WorkspaceIdRequestBody">WorkspaceIdRequestBody</a> (required)</div>
+      <div class="param">WebBackendConnectionListRequestBody <a href="#WebBackendConnectionListRequestBody">WebBackendConnectionListRequestBody</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -8859,34 +9372,24 @@ containing the updated stream needs to be sent.</div>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "connections" : [ {
-    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "latestSyncJobCreatedAt" : 0,
+    "name" : "name",
     "destination" : {
-      "connectionConfiguration" : {
-        "user" : "charles"
-      },
       "destinationName" : "destinationName",
       "name" : "name",
       "icon" : "icon",
       "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+      "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "isSyncing" : true,
     "source" : {
       "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "connectionConfiguration" : {
-        "user" : "charles"
-      },
       "name" : "name",
       "icon" : "icon",
       "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "sourceName" : "sourceName",
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+      "sourceName" : "sourceName"
     },
-    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "name" : "name",
-    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "scheduleData" : {
       "cron" : {
         "cronExpression" : "cronExpression",
@@ -8898,34 +9401,24 @@ containing the updated stream needs to be sent.</div>
       }
     }
   }, {
-    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "latestSyncJobCreatedAt" : 0,
+    "name" : "name",
     "destination" : {
-      "connectionConfiguration" : {
-        "user" : "charles"
-      },
       "destinationName" : "destinationName",
       "name" : "name",
       "icon" : "icon",
       "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+      "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "isSyncing" : true,
     "source" : {
       "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "connectionConfiguration" : {
-        "user" : "charles"
-      },
       "name" : "name",
       "icon" : "icon",
       "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "sourceName" : "sourceName",
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+      "sourceName" : "sourceName"
     },
-    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "name" : "name",
-    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "scheduleData" : {
       "cron" : {
         "cronExpression" : "cronExpression",
@@ -9202,6 +9695,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -9223,6 +9717,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -10008,6 +10503,7 @@ containing the updated stream needs to be sent.</div>
 
   <h3>Table of Contents</h3>
   <ol>
+    <li><a href="#ActorCatalogWithUpdatedAt"><code>ActorCatalogWithUpdatedAt</code> - </a></li>
     <li><a href="#ActorDefinitionResourceRequirements"><code>ActorDefinitionResourceRequirements</code> - </a></li>
     <li><a href="#AdvancedAuth"><code>AdvancedAuth</code> - </a></li>
     <li><a href="#AirbyteCatalog"><code>AirbyteCatalog</code> - </a></li>
@@ -10025,6 +10521,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#AttemptStats"><code>AttemptStats</code> - </a></li>
     <li><a href="#AttemptStatus"><code>AttemptStatus</code> - </a></li>
     <li><a href="#AttemptStreamStats"><code>AttemptStreamStats</code> - </a></li>
+    <li><a href="#AttemptSyncConfig"><code>AttemptSyncConfig</code> - </a></li>
     <li><a href="#AuthSpecification"><code>AuthSpecification</code> - </a></li>
     <li><a href="#CatalogDiff"><code>CatalogDiff</code> - </a></li>
     <li><a href="#CheckConnectionRead"><code>CheckConnectionRead</code> - </a></li>
@@ -10070,8 +10567,10 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#DestinationRead"><code>DestinationRead</code> - </a></li>
     <li><a href="#DestinationReadList"><code>DestinationReadList</code> - </a></li>
     <li><a href="#DestinationSearch"><code>DestinationSearch</code> - </a></li>
+    <li><a href="#DestinationSnippetRead"><code>DestinationSnippetRead</code> - </a></li>
     <li><a href="#DestinationSyncMode"><code>DestinationSyncMode</code> - </a></li>
     <li><a href="#DestinationUpdate"><code>DestinationUpdate</code> - </a></li>
+    <li><a href="#DiscoverCatalogResult"><code>DiscoverCatalogResult</code> - </a></li>
     <li><a href="#FieldAdd"><code>FieldAdd</code> - </a></li>
     <li><a href="#FieldRemove"><code>FieldRemove</code> - </a></li>
     <li><a href="#FieldSchemaUpdate"><code>FieldSchemaUpdate</code> - </a></li>
@@ -10091,6 +10590,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#JobInfoLightRead"><code>JobInfoLightRead</code> - </a></li>
     <li><a href="#JobInfoRead"><code>JobInfoRead</code> - </a></li>
     <li><a href="#JobListRequestBody"><code>JobListRequestBody</code> - </a></li>
+    <li><a href="#JobOptionalRead"><code>JobOptionalRead</code> - </a></li>
     <li><a href="#JobRead"><code>JobRead</code> - </a></li>
     <li><a href="#JobReadList"><code>JobReadList</code> - </a></li>
     <li><a href="#JobStatus"><code>JobStatus</code> - </a></li>
@@ -10103,6 +10603,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#LogsRequestBody"><code>LogsRequestBody</code> - </a></li>
     <li><a href="#NamespaceDefinitionType"><code>NamespaceDefinitionType</code> - </a></li>
     <li><a href="#NonBreakingChangesPreference"><code>NonBreakingChangesPreference</code> - </a></li>
+    <li><a href="#NormalizationDestinationDefinitionConfig"><code>NormalizationDestinationDefinitionConfig</code> - </a></li>
     <li><a href="#NotFoundKnownExceptionInfo"><code>NotFoundKnownExceptionInfo</code> - </a></li>
     <li><a href="#Notification"><code>Notification</code> - </a></li>
     <li><a href="#NotificationRead"><code>NotificationRead</code> - </a></li>
@@ -10129,6 +10630,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#ReleaseStage"><code>ReleaseStage</code> - </a></li>
     <li><a href="#ResetConfig"><code>ResetConfig</code> - </a></li>
     <li><a href="#ResourceRequirements"><code>ResourceRequirements</code> - </a></li>
+    <li><a href="#SaveAttemptSyncConfigRequestBody"><code>SaveAttemptSyncConfigRequestBody</code> - </a></li>
     <li><a href="#SaveStatsRequestBody"><code>SaveStatsRequestBody</code> - </a></li>
     <li><a href="#SchemaChange"><code>SchemaChange</code> - </a></li>
     <li><a href="#SelectedFieldInfo"><code>SelectedFieldInfo</code> - </a></li>
@@ -10150,11 +10652,13 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#SourceDefinitionUpdate"><code>SourceDefinitionUpdate</code> - </a></li>
     <li><a href="#SourceDiscoverSchemaRead"><code>SourceDiscoverSchemaRead</code> - </a></li>
     <li><a href="#SourceDiscoverSchemaRequestBody"><code>SourceDiscoverSchemaRequestBody</code> - </a></li>
+    <li><a href="#SourceDiscoverSchemaWriteRequestBody"><code>SourceDiscoverSchemaWriteRequestBody</code> - </a></li>
     <li><a href="#SourceIdRequestBody"><code>SourceIdRequestBody</code> - </a></li>
     <li><a href="#SourceOauthConsentRequest"><code>SourceOauthConsentRequest</code> - </a></li>
     <li><a href="#SourceRead"><code>SourceRead</code> - </a></li>
     <li><a href="#SourceReadList"><code>SourceReadList</code> - </a></li>
     <li><a href="#SourceSearch"><code>SourceSearch</code> - </a></li>
+    <li><a href="#SourceSnippetRead"><code>SourceSnippetRead</code> - </a></li>
     <li><a href="#SourceUpdate"><code>SourceUpdate</code> - </a></li>
     <li><a href="#StreamDescriptor"><code>StreamDescriptor</code> - </a></li>
     <li><a href="#StreamState"><code>StreamState</code> - </a></li>
@@ -10165,6 +10669,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#WebBackendCheckUpdatesRead"><code>WebBackendCheckUpdatesRead</code> - </a></li>
     <li><a href="#WebBackendConnectionCreate"><code>WebBackendConnectionCreate</code> - </a></li>
     <li><a href="#WebBackendConnectionListItem"><code>WebBackendConnectionListItem</code> - </a></li>
+    <li><a href="#WebBackendConnectionListRequestBody"><code>WebBackendConnectionListRequestBody</code> - </a></li>
     <li><a href="#WebBackendConnectionRead"><code>WebBackendConnectionRead</code> - </a></li>
     <li><a href="#WebBackendConnectionReadList"><code>WebBackendConnectionReadList</code> - </a></li>
     <li><a href="#WebBackendConnectionRequestBody"><code>WebBackendConnectionRequestBody</code> - </a></li>
@@ -10185,6 +10690,14 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#WorkspaceUpdateName"><code>WorkspaceUpdateName</code> - </a></li>
   </ol>
 
+  <div class="model">
+    <h3><a name="ActorCatalogWithUpdatedAt"><code>ActorCatalogWithUpdatedAt</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>A source actor catalog with the timestamp it was mostly recently updated</div>
+    <div class="field-items">
+      <div class="param">updatedAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">catalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#">Object</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
   <div class="model">
     <h3><a name="ActorDefinitionResourceRequirements"><code>ActorDefinitionResourceRequirements</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'>actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level.</div>
@@ -10242,7 +10755,8 @@ containing the updated stream needs to be sent.</div>
 <div class="param">destinationSyncMode </div><div class="param-desc"><span class="param-type"><a href="#DestinationSyncMode">DestinationSyncMode</a></span>  </div>
 <div class="param">primaryKey (optional)</div><div class="param-desc"><span class="param-type"><a href="#array">array[array[String]]</a></span> Paths to the fields that will be used as primary key. This field is REQUIRED if <code>destination_sync_mode</code> is <code>*_dedup</code>. Otherwise it is ignored. </div>
 <div class="param">aliasName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Alias name to the stream to be used in the destination </div>
-<div class="param">selected (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> If this is true, the stream is selected with all of its properties. </div>
+<div class="param">selected (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> If this is true, the stream is selected with all of its properties. For new connections, this considers if the stream is suggested or not </div>
+<div class="param">suggested (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Does the connector suggest that this stream be enabled by default? </div>
 <div class="param">fieldSelectionEnabled (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Whether field selection should be enabled. If this is true, only the properties in <code>selectedFields</code> will be included. </div>
 <div class="param">selectedFields (optional)</div><div class="param-desc"><span class="param-type"><a href="#SelectedFieldInfo">array[SelectedFieldInfo]</a></span> Paths to the fields that will be included in the configured catalog. This must be set if <code>fieldSelectedEnabled</code> is set. An empty list indicates that no properties will be included. </div>
     </div>  <!-- field-items -->
@@ -10344,7 +10858,17 @@ containing the updated stream needs to be sent.</div>
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">streamName </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">streamNamespace (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">stats </div><div class="param-desc"><span class="param-type"><a href="#AttemptStats">AttemptStats</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="AttemptSyncConfig"><code>AttemptSyncConfig</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">sourceConfiguration </div><div class="param-desc"><span class="param-type"><a href="#SourceConfiguration">SourceConfiguration</a></span>  </div>
+<div class="param">destinationConfiguration </div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
+<div class="param">state (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionState">ConnectionState</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10670,7 +11194,8 @@ containing the updated stream needs to be sent.</div>
     <h3><a name="DestinationCoreConfig"><code>DestinationCoreConfig</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+      <div class="param">destinationId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
 <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
@@ -10726,6 +11251,8 @@ containing the updated stream needs to be sent.</div>
 <div class="param">releaseStage (optional)</div><div class="param-desc"><span class="param-type"><a href="#ReleaseStage">ReleaseStage</a></span>  </div>
 <div class="param">releaseDate (optional)</div><div class="param-desc"><span class="param-type"><a href="#date">date</a></span> The date when this connector was first released, in yyyy-mm-dd format. format: date</div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ActorDefinitionResourceRequirements">ActorDefinitionResourceRequirements</a></span>  </div>
+<div class="param">supportsDbt </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> an optional flag indicating whether DBT is used in the normalization. If the flag value is NULL - DBT is not used. </div>
+<div class="param">normalizationConfig </div><div class="param-desc"><span class="param-type"><a href="#NormalizationDestinationDefinitionConfig">NormalizationDestinationDefinitionConfig</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10746,8 +11273,6 @@ containing the updated stream needs to be sent.</div>
 <div class="param">advancedAuth (optional)</div><div class="param-desc"><span class="param-type"><a href="#AdvancedAuth">AdvancedAuth</a></span>  </div>
 <div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#SynchronousJobRead">SynchronousJobRead</a></span>  </div>
 <div class="param">supportedDestinationSyncModes (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationSyncMode">array[DestinationSyncMode]</a></span>  </div>
-<div class="param">supportsDbt (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">supportsNormalization (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10810,6 +11335,17 @@ containing the updated stream needs to be sent.</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="DestinationSnippetRead"><code>DestinationSnippetRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">destinationName </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">icon (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="DestinationSyncMode"><code>DestinationSyncMode</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -10822,6 +11358,13 @@ containing the updated stream needs to be sent.</div>
       <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DiscoverCatalogResult"><code>DiscoverCatalogResult</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">catalogId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10986,6 +11529,13 @@ containing the updated stream needs to be sent.</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="JobOptionalRead"><code>JobOptionalRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">job (optional)</div><div class="param-desc"><span class="param-type"><a href="#JobRead">JobRead</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="JobRead"><code>JobRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -10994,6 +11544,7 @@ containing the updated stream needs to be sent.</div>
 <div class="param">configId </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">createdAt </div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
 <div class="param">updatedAt </div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">startedAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#JobStatus">JobStatus</a></span>  </div>
 <div class="param">resetConfig (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResetConfig">ResetConfig</a></span>  </div>
     </div>  <!-- field-items -->
@@ -11076,6 +11627,16 @@ containing the updated stream needs to be sent.</div>
     <div class='model-description'></div>
     <div class="field-items">
           </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="NormalizationDestinationDefinitionConfig"><code>NormalizationDestinationDefinitionConfig</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>describes a normalization config for destination definition</div>
+    <div class="field-items">
+      <div class="param">supported </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> whether the destination definition supports normalization. </div>
+<div class="param">normalizationRepository (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> a field indicating the name of the repository to be used for normalization. If the value of the flag is NULL - normalization is not used. </div>
+<div class="param">normalizationTag (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> a field indicating the tag of the docker repository to be used for normalization. </div>
+<div class="param">normalizationIntegrationType (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> a field indicating the type of integration dialect to use for normalization. </div>
+    </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="NotFoundKnownExceptionInfo"><code>NotFoundKnownExceptionInfo</code> - </a> <a class="up" href="#__Models">Up</a></h3>
@@ -11304,6 +11865,15 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="SaveAttemptSyncConfigRequestBody"><code>SaveAttemptSyncConfigRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">jobId </div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">attemptNumber </div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  format: int32</div>
+<div class="param">syncConfig </div><div class="param-desc"><span class="param-type"><a href="#AttemptSyncConfig">AttemptSyncConfig</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="SaveStatsRequestBody"><code>SaveStatsRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -11386,7 +11956,8 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <h3><a name="SourceCoreConfig"><code>SourceCoreConfig</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+      <div class="param">sourceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#SourceConfiguration">SourceConfiguration</a></span>  </div>
 <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
@@ -11494,6 +12065,17 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
       <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">connectionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">disable_cache (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">notifySchemaChange (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="SourceDiscoverSchemaWriteRequestBody"><code>SourceDiscoverSchemaWriteRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>to write this requested object to database.</div>
+    <div class="field-items">
+      <div class="param">catalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
+<div class="param">sourceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">connectorVersion (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">configurationHash (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11544,6 +12126,17 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">connectionConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#SourceConfiguration">SourceConfiguration</a></span>  </div>
 <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">sourceName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="SourceSnippetRead"><code>SourceSnippetRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">sourceName </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">icon (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11598,6 +12191,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">createdAt </div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
 <div class="param">endedAt </div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
 <div class="param">succeeded </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">connectorConfigurationUpdated (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">logs (optional)</div><div class="param-desc"><span class="param-type"><a href="#LogRead">LogRead</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
@@ -11648,17 +12242,24 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <div class="field-items">
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">scheduleType (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleType">ConnectionScheduleType</a></span>  </div>
 <div class="param">scheduleData (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleData">ConnectionScheduleData</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
-<div class="param">source </div><div class="param-desc"><span class="param-type"><a href="#SourceRead">SourceRead</a></span>  </div>
-<div class="param">destination </div><div class="param-desc"><span class="param-type"><a href="#DestinationRead">DestinationRead</a></span>  </div>
+<div class="param">source </div><div class="param-desc"><span class="param-type"><a href="#SourceSnippetRead">SourceSnippetRead</a></span>  </div>
+<div class="param">destination </div><div class="param-desc"><span class="param-type"><a href="#DestinationSnippetRead">DestinationSnippetRead</a></span>  </div>
 <div class="param">latestSyncJobCreatedAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> epoch time of the latest sync job. null if no sync job has taken place. format: int64</div>
 <div class="param">latestSyncJobStatus (optional)</div><div class="param-desc"><span class="param-type"><a href="#JobStatus">JobStatus</a></span>  </div>
 <div class="param">isSyncing </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">schemaChange </div><div class="param-desc"><span class="param-type"><a href="#SchemaChange">SchemaChange</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WebBackendConnectionListRequestBody"><code>WebBackendConnectionListRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">sourceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
+<div class="param">destinationId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

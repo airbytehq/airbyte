@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
@@ -15,8 +15,8 @@ import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.jsonl.JsonLSerializedBuffer;
 import io.airbyte.integrations.destination.s3.jsonl.S3JsonlFormatConfig;
 import io.airbyte.integrations.destination.s3.parquet.ParquetSerializedBuffer;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 import org.slf4j.Logger;

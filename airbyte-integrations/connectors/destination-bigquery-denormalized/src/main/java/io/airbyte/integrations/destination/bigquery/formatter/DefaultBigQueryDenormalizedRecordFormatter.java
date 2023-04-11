@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery.formatter;
@@ -31,7 +31,7 @@ import io.airbyte.integrations.destination.bigquery.JsonSchemaFormat;
 import io.airbyte.integrations.destination.bigquery.JsonSchemaType;
 import io.airbyte.integrations.destination.bigquery.formatter.arrayformater.ArrayFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.arrayformater.DefaultArrayFormatter;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
@@ -40,6 +40,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +69,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     return arrayFormatter;
   }
 
-  public void setArrayFormatter(ArrayFormatter arrayFormatter) {
+  public void setArrayFormatter(final ArrayFormatter arrayFormatter) {
     this.arrayFormatter = arrayFormatter;
     this.jsonSchema = formatJsonSchema(this.originalJsonSchema.deepCopy());
     this.bigQuerySchema = getBigQuerySchema(jsonSchema);
@@ -76,7 +77,8 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
 
   @Override
   protected JsonNode formatJsonSchema(final JsonNode jsonSchema) {
-    var modifiedJsonSchema = jsonSchema.deepCopy(); // Issue #5912 is reopened (PR #11166) formatAllOfAndAnyOfFields(namingResolver, jsonSchema);
+    final var modifiedJsonSchema = jsonSchema.deepCopy(); // Issue #5912 is reopened (PR #11166) formatAllOfAndAnyOfFields(namingResolver,
+                                                          // jsonSchema);
     getArrayFormatter().populateEmptyArrays(modifiedJsonSchema);
     getArrayFormatter().surroundArraysByObjects(modifiedJsonSchema);
     return modifiedJsonSchema;
@@ -117,7 +119,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     if (fields == null) {
       return root;
     }
-    JsonNode formattedData;
+    final JsonNode formattedData;
     if (root.isObject()) {
       formattedData = getObjectNode(fields, root);
     } else if (root.isArray()) {
@@ -151,7 +153,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     } else {
       subFields = arrayField.getSubFields();
     }
-    List<JsonNode> arrayItems = MoreIterators.toList(root.elements()).stream()
+    final List<JsonNode> arrayItems = MoreIterators.toList(root.elements()).stream()
         .map(p -> formatData(subFields, p))
         .toList();
 
@@ -245,15 +247,15 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
   }
 
   private static JsonNode allOfAndAnyOfFieldProcessing(final String fieldName, final JsonNode fieldDefinition) {
-    ObjectReader reader = mapper.readerFor(new TypeReference<List<JsonNode>>() {});
-    List<JsonNode> list;
+    final ObjectReader reader = mapper.readerFor(new TypeReference<List<JsonNode>>() {});
+    final List<JsonNode> list;
     try {
       list = reader.readValue(fieldDefinition.get(fieldName));
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new IllegalStateException(
           String.format("Failed to read and process the following field - %s", fieldDefinition));
     }
-    ObjectNode objectNode = mapper.createObjectNode();
+    final ObjectNode objectNode = mapper.createObjectNode();
     list.forEach(field -> {
       objectNode.set("big_query_" + field.get("type").asText(), field);
     });
@@ -268,8 +270,8 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
   private static Builder getField(final StandardNameTransformer namingResolver, final String key, final JsonNode fieldDefinition) {
     final String fieldName = namingResolver.getIdentifier(key);
     final Builder builder = Field.newBuilder(fieldName, StandardSQLTypeName.STRING);
-    JsonNode updatedFileDefinition = getFileDefinition(fieldDefinition);
-    JsonNode type = updatedFileDefinition.get(TYPE_FIELD);
+    final JsonNode updatedFileDefinition = getFileDefinition(fieldDefinition);
+    final JsonNode type = updatedFileDefinition.get(TYPE_FIELD);
     final JsonNode airbyteType = updatedFileDefinition.get(AIRBYTE_TYPE);
     final List<JsonSchemaType> fieldTypes = getTypes(fieldName, type);
     for (int i = 0; i < fieldTypes.size(); i++) {
@@ -288,7 +290,9 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
             builder.setType(primaryType.getBigQueryType());
           }
           case NUMBER -> {
-            if (airbyteType != null && airbyteType.asText().equals("big_integer")) {
+            if (airbyteType != null
+                && StringUtils.equalsAnyIgnoreCase(airbyteType.asText(),
+                    "big_integer", "integer")) {
               builder.setType(StandardSQLTypeName.INT64);
             } else {
               builder.setType(primaryType.getBigQueryType());

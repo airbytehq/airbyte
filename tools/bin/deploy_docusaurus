@@ -6,6 +6,7 @@
 # $0 is the currently running program (this file)
 this_file_directory=$(dirname $0)
 relative_path_to_defaults=$this_file_directory/../shell_defaults
+SKIP_DEPLOY=${SKIP_DEPLOY:-'no'}
 
 # if a file exists there, source it. otherwise complain
 if test -f $relative_path_to_defaults; then
@@ -31,11 +32,8 @@ fi
 
 # ------------- Start Main
 set +o xtrace
-echo -e "$blue_text""This script pushes changes (somewhat pointlessly) to ""$default_text"
+echo -e "$blue_text""This script pushes changes to ""$default_text"
 echo -e "$blue_text""airbyte's gh_pages branch\n""$default_text"
-echo -e "$blue_text""It also actually deploys by copying those assets to""$default_text"
-echo -e "$blue_text""the repo airbytehq/airbytehq.github.io\n\n""$default_text"
-
 
 echo -e "$blue_text""Current path:""$default_text"
 pwd
@@ -79,6 +77,12 @@ if ! yarn build; then
   exit 1
 fi
 
+# "check PR mode" -- we run "yarn build" and stop before "yarn deploy"
+if [ "${SKIP_DEPLOY}" = "yes" ]; then
+  echo -e "$blue_text""Check mode is ON: skipipping yarn deploy && git push CNAME to repo!\n\n""$default_text"
+  exit 0
+fi
+
 # Check tty for local/remote deploys (we expect cloud to be non-interactive)
 # results like /dev/ttys000 || not a tty
 if test "$(tty)" == "not a tty"; then
@@ -95,8 +99,6 @@ if test "$(tty)" == "not a tty"; then
 else
   yarn run deploy
 fi
-
-
 
 # Git makes more sense from /
 cd ..
@@ -128,11 +130,13 @@ git add CNAME
 # Skip pre-commit hooks fire_elmo.jpg
 PRE_COMMIT_ALLOW_NO_CONFIG=1 git commit --message "Adds CNAME to deploy for $revision"
 
-git push
+# These are raw static files, we aren't trying to resolve conflicts
+git push --force
 
 # non functional. for debugging
 git rev-parse --abbrev-ref HEAD
 
+git checkout -
 
 set +o xtrace
 echo -e "$blue_text""Script exiting 0 GREAT SUCCESS!!!?""$default_text"

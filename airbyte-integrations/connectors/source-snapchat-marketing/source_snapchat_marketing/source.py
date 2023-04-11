@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -97,7 +97,6 @@ METRICS_NOT_HOURLY = [
     "earned_reach",
 ]
 
-
 logger = logging.getLogger("airbyte")
 
 
@@ -162,6 +161,7 @@ def get_parent_ids(parent) -> List:
 class SnapchatMarketingStream(HttpStream, ABC):
     url_base = "https://adsapi.snapchat.com/v1/"
     primary_key = "id"
+    raise_on_http_errors = True
 
     def __init__(self, start_date, end_date, **kwargs):
         super().__init__(**kwargs)
@@ -206,13 +206,20 @@ class SnapchatMarketingStream(HttpStream, ABC):
         Also, the client side filtering for incremental sync is used
         """
 
-        json_response = response.json().get(self.response_root_name)
+        json_response = response.json().get(self.response_root_name, [])
         for resp in json_response:
             if self.response_item_name not in resp:
                 error_text = f"stream {self.name}: field named '{self.response_item_name}' is absent in the response: {resp}"
                 self.logger.error(error_text)
                 raise SnapchatMarketingException(error_text)
             yield resp.get(self.response_item_name)
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 403:
+            setattr(self, "raise_on_http_errors", False)
+            self.logger.warning(f"Got permission error when accessing URL {response.request.url}. " f"Skipping {self.name} stream.")
+            return False
+        return super().should_retry(response)
 
 
 class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
@@ -476,7 +483,7 @@ class StatsIncremental(Stats, IncrementalMixin):
             self.number_of_last_records += 1
             # Update state if 'last' records for all dependant entities have been read
             if self.number_of_parent_ids == self.number_of_last_records:
-                self.state = record_end_date
+                self.state = {self.cursor_field: record_end_date}
 
     @property
     def state(self):
@@ -484,7 +491,7 @@ class StatsIncremental(Stats, IncrementalMixin):
 
     @state.setter
     def state(self, value):
-        self._state[self.cursor_field] = value
+        self._state = value
 
     def parse_response(
         self,
@@ -498,7 +505,7 @@ class StatsIncremental(Stats, IncrementalMixin):
 
         # Update state for each date slice (start_date), it ensures that previous date slices have been read
         # and can be skipped in next incremental sync
-        self.state = stream_slice[self.cursor_field]
+        self.state = {self.cursor_field: stream_slice[self.cursor_field]}
 
         for record in super().parse_response(
             response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token

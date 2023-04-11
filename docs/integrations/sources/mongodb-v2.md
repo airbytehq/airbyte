@@ -52,7 +52,7 @@ use admin;
 db.createUser({user: "READ_ONLY_USER", pwd: "READ_ONLY_PASSWORD", roles: [{role: "read", db: "TARGET_DATABASE"}]})
 ```
 
-Make sure the user have appropriate access levels.
+**Make sure the user have appropriate access levels, a user with higher access levels may throw an exception.**
 
 ### Enable MongoDB authentication
 

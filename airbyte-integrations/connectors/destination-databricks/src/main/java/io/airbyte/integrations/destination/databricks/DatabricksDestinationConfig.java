@@ -1,41 +1,32 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.databricks;
 
+import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_CATALOG_KEY;
+import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_HTTP_PATH_KEY;
+import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_PERSONAL_ACCESS_TOKEN_KEY;
+import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_PORT_KEY;
+import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_PURGE_STAGING_DATA_KEY;
+import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_SCHEMA_KEY;
+import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_SERVER_HOSTNAME_KEY;
+import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_DATA_SOURCE_KEY;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 
-public class DatabricksDestinationConfig {
-
+public record DatabricksDestinationConfig(String serverHostname,
+                                          String httpPath,
+                                          String port,
+                                          String personalAccessToken,
+                                          String catalog,
+                                          String schema,
+                                          boolean isPurgeStagingData,
+                                          DatabricksStorageConfigProvider storageConfig) {
   static final String DEFAULT_DATABRICKS_PORT = "443";
-  static final String DEFAULT_DATABASE_SCHEMA = "public";
+  static final String DEFAULT_DATABASE_SCHEMA = "default";
   static final boolean DEFAULT_PURGE_STAGING_DATA = true;
-
-  private final String databricksServerHostname;
-  private final String databricksHttpPath;
-  private final String databricksPort;
-  private final String databricksPersonalAccessToken;
-  private final String databaseSchema;
-  private final boolean purgeStagingData;
-  private final DatabricksStorageConfig storageConfig;
-
-  public DatabricksDestinationConfig(final String databricksServerHostname,
-                                     final String databricksHttpPath,
-                                     final String databricksPort,
-                                     final String databricksPersonalAccessToken,
-                                     final String databaseSchema,
-                                     final boolean purgeStagingData,
-                                     DatabricksStorageConfig storageConfig) {
-    this.databricksServerHostname = databricksServerHostname;
-    this.databricksHttpPath = databricksHttpPath;
-    this.databricksPort = databricksPort;
-    this.databricksPersonalAccessToken = databricksPersonalAccessToken;
-    this.databaseSchema = databaseSchema;
-    this.purgeStagingData = purgeStagingData;
-    this.storageConfig = storageConfig;
-  }
 
   public static DatabricksDestinationConfig get(final JsonNode config) {
     Preconditions.checkArgument(
@@ -43,41 +34,13 @@ public class DatabricksDestinationConfig {
         "You must agree to the Databricks JDBC Terms & Conditions to use this connector");
 
     return new DatabricksDestinationConfig(
-        config.get("databricks_server_hostname").asText(),
-        config.get("databricks_http_path").asText(),
-        config.has("databricks_port") ? config.get("databricks_port").asText() : DEFAULT_DATABRICKS_PORT,
-        config.get("databricks_personal_access_token").asText(),
-        config.has("database_schema") ? config.get("database_schema").asText() : DEFAULT_DATABASE_SCHEMA,
-        config.has("purge_staging_data") ? config.get("purge_staging_data").asBoolean() : DEFAULT_PURGE_STAGING_DATA,
-        DatabricksStorageConfig.getDatabricksStorageConfig(config.get("data_source")));
+        config.get(DATABRICKS_SERVER_HOSTNAME_KEY).asText(),
+        config.get(DATABRICKS_HTTP_PATH_KEY).asText(),
+        config.has(DATABRICKS_PORT_KEY) ? config.get(DATABRICKS_PORT_KEY).asText() : DEFAULT_DATABRICKS_PORT,
+        config.get(DATABRICKS_PERSONAL_ACCESS_TOKEN_KEY).asText(),
+        config.has(DATABRICKS_CATALOG_KEY) ? config.get(DATABRICKS_CATALOG_KEY).asText() : null,
+        config.has(DATABRICKS_SCHEMA_KEY) ? config.get(DATABRICKS_SCHEMA_KEY).asText() : DEFAULT_DATABASE_SCHEMA,
+        config.has(DATABRICKS_PURGE_STAGING_DATA_KEY) ? config.get(DATABRICKS_PURGE_STAGING_DATA_KEY).asBoolean() : DEFAULT_PURGE_STAGING_DATA,
+        DatabricksStorageConfigProvider.getDatabricksStorageConfig(config.get(DATABRICKS_DATA_SOURCE_KEY)));
   }
-
-  public String getDatabricksServerHostname() {
-    return databricksServerHostname;
-  }
-
-  public String getDatabricksHttpPath() {
-    return databricksHttpPath;
-  }
-
-  public String getDatabricksPort() {
-    return databricksPort;
-  }
-
-  public String getDatabricksPersonalAccessToken() {
-    return databricksPersonalAccessToken;
-  }
-
-  public String getDatabaseSchema() {
-    return databaseSchema;
-  }
-
-  public boolean isPurgeStagingData() {
-    return purgeStagingData;
-  }
-
-  public DatabricksStorageConfig getStorageConfig() {
-    return storageConfig;
-  }
-
 }

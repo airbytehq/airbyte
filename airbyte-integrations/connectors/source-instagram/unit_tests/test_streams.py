@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from datetime import datetime
@@ -179,3 +179,13 @@ def test_common_error_retry(error_response, requests_mock, api, account_id):
     records = read_full_refresh(stream)
 
     assert [response] == records
+
+
+def test_exit_gracefully(api, config, requests_mock, caplog):
+    test_id = "test_id"
+    stream = UserInsights(api=api, start_date=datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%S"))
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/insights", json={"data": []})
+    records = read_incremental(stream, {})
+    assert not records
+    assert requests_mock.call_count == 6  # 4 * 1 per `metric_to_period` map + 1 `summary` request + 1 `business_account_id` request
+    assert "Stopping syncing stream 'user_insights'" in caplog.text

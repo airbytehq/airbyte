@@ -8,10 +8,13 @@
     "canceled_at": {
       "type": ["null", "number"]
     },
+    "cancel_at": {
+      "type": ["null", "number"]
+    },
     "livemode": {
       "type": ["null", "boolean"]
     },
-    "start": {
+    "start_date": {
       "type": ["null", "integer"]
     },
     "items": {
@@ -115,7 +118,7 @@
         "customer": {
           "type": ["null", "string"]
         },
-        "start_date": {
+        "start": {
           "type": ["null", "integer"]
         },
         "object": {

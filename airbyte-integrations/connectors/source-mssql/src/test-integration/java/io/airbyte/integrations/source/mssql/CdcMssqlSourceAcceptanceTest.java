@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -8,38 +8,49 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.List;
 import java.util.Map;
 import org.jooq.DSLContext;
+import org.junit.jupiter.api.AfterAll;
 import org.testcontainers.containers.MSSQLServerContainer;
 
 public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
-  private static final String DB_NAME = "acceptance";
   private static final String SCHEMA_NAME = "dbo";
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
-  private static final String TEST_USER_NAME = "tester";
   private static final String TEST_USER_PASSWORD = "testerjester[1]";
   private static final String CDC_ROLE_NAME = "cdc_selector";
-  private MSSQLServerContainer<?> container;
+  public static MSSQLServerContainer<?> container;
+  private String dbName;
+  private String testUserName;
   private JsonNode config;
   private Database database;
   private DSLContext dslContext;
+
+  @AfterAll
+  public static void closeContainer() {
+    if (container != null) {
+      container.close();
+      container.stop();
+    }
+  }
 
   @Override
   protected String getImageName() {
@@ -92,9 +103,14 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws InterruptedException {
-    container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
-    container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
-    container.start();
+    if (container == null) {
+      container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
+      container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
+      container.start();
+    }
+
+    dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
+    testUserName = Strings.addRandomSuffix("test", "_", 5).toLowerCase();
 
     final JsonNode replicationConfig = Jsons.jsonNode(Map.of(
         "method", "CDC",
@@ -105,26 +121,26 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
         .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
-        .put(JdbcUtils.DATABASE_KEY, DB_NAME)
-        .put(JdbcUtils.USERNAME_KEY, TEST_USER_NAME)
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.USERNAME_KEY, testUserName)
         .put(JdbcUtils.PASSWORD_KEY, TEST_USER_PASSWORD)
         .put("replication_method", replicationConfig)
-        .put("is_test", true)
+        .put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "unencrypted")))
         .build());
 
-    dslContext = DSLContextFactory.create(
+    dslContext = DSLContextFactory.create(DataSourceFactory.create(
         container.getUsername(),
         container.getPassword(),
         container.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt()),
-        null);
+        Map.of("encrypt", "false")), null);
     database = new Database(dslContext);
 
-    executeQuery("CREATE DATABASE " + DB_NAME + ";");
-    executeQuery("ALTER DATABASE " + DB_NAME + "\n\tSET ALLOW_SNAPSHOT_ISOLATION ON");
-    executeQuery("USE " + DB_NAME + "\n" + "EXEC sys.sp_cdc_enable_db");
+    executeQuery("CREATE DATABASE " + dbName + ";");
+    executeQuery("ALTER DATABASE " + dbName + "\n\tSET ALLOW_SNAPSHOT_ISOLATION ON");
+    executeQuery("USE " + dbName + "\n" + "EXEC sys.sp_cdc_enable_db");
 
     setupTestUser();
     revokeAllPermissions();
@@ -133,14 +149,14 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private void setupTestUser() {
-    executeQuery("USE " + DB_NAME);
-    executeQuery("CREATE LOGIN " + TEST_USER_NAME + " WITH PASSWORD = '" + TEST_USER_PASSWORD + "';");
-    executeQuery("CREATE USER " + TEST_USER_NAME + " FOR LOGIN " + TEST_USER_NAME + ";");
+    executeQuery("USE " + dbName);
+    executeQuery("CREATE LOGIN " + testUserName + " WITH PASSWORD = '" + TEST_USER_PASSWORD + "';");
+    executeQuery("CREATE USER " + testUserName + " FOR LOGIN " + testUserName + ";");
   }
 
   private void revokeAllPermissions() {
-    executeQuery("REVOKE ALL FROM " + TEST_USER_NAME + " CASCADE;");
-    executeQuery("EXEC sp_msforeachtable \"REVOKE ALL ON '?' TO " + TEST_USER_NAME + ";\"");
+    executeQuery("REVOKE ALL FROM " + testUserName + " CASCADE;");
+    executeQuery("EXEC sp_msforeachtable \"REVOKE ALL ON '?' TO " + testUserName + ";\"");
   }
 
   private void createAndPopulateTables() throws InterruptedException {
@@ -185,9 +201,9 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private void grantCorrectPermissions() {
-    executeQuery(String.format("EXEC sp_addrolemember N'%s', N'%s';", "db_datareader", TEST_USER_NAME));
-    executeQuery(String.format("USE %s;\n" + "GRANT SELECT ON SCHEMA :: [%s] TO %s", DB_NAME, "cdc", TEST_USER_NAME));
-    executeQuery(String.format("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, TEST_USER_NAME));
+    executeQuery(String.format("EXEC sp_addrolemember N'%s', N'%s';", "db_datareader", testUserName));
+    executeQuery(String.format("USE %s;\n" + "GRANT SELECT ON SCHEMA :: [%s] TO %s", dbName, "cdc", testUserName));
+    executeQuery(String.format("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, testUserName));
   }
 
   private void executeQuery(final String query) {
@@ -203,7 +219,6 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     dslContext.close();
-    container.close();
   }
 
 }

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -11,6 +11,7 @@ import requests
 from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from pydantic.error_wrappers import ValidationError
 from source_facebook_marketing.api import API
 from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams import (
@@ -35,6 +36,7 @@ from source_facebook_marketing.streams import (
 from .utils import validate_end_date, validate_start_date
 
 logger = logging.getLogger("airbyte")
+UNSUPPORTED_FIELDS = {"unique_conversions", "unique_ctr", "unique_clicks"}
 
 
 class SourceFacebookMarketing(AbstractSource):
@@ -54,14 +56,15 @@ class SourceFacebookMarketing(AbstractSource):
         :param config:  the user-input config object conforming to the connector's spec.json
         :return Tuple[bool, Any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        config = self._validate_and_transform(config)
-        if config.end_date < config.start_date:
-            return False, "end_date must be equal or after start_date."
-
         try:
+            config = self._validate_and_transform(config)
+
+            if config.end_date < config.start_date:
+                return False, "end_date must be equal or after start_date."
+
             api = API(account_id=config.account_id, access_token=config.access_token)
             logger.info(f"Select account {api.account}")
-        except requests.exceptions.RequestException as e:
+        except (requests.exceptions.RequestException, ValidationError) as e:
             return False, e
 
         # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
@@ -183,10 +186,18 @@ class SourceFacebookMarketing(AbstractSource):
         """return custom insights streams"""
         streams = []
         for insight in config.custom_insights or []:
+            insight_fields = set(insight.fields)
+            if insight_fields.intersection(UNSUPPORTED_FIELDS):
+                # https://github.com/airbytehq/oncall/issues/1137
+                mes = (
+                    f"Please remove Following fields from the Custom {insight.name} fields list due to possible "
+                    f"errors on Facebook side: {insight_fields.intersection(UNSUPPORTED_FIELDS)}"
+                )
+                raise ValueError(mes)
             stream = AdsInsights(
                 api=api,
                 name=f"Custom{insight.name}",
-                fields=list(set(insight.fields)),
+                fields=list(insight_fields),
                 breakdowns=list(set(insight.breakdowns)),
                 action_breakdowns=list(set(insight.action_breakdowns)),
                 action_breakdowns_allow_empty=config.action_breakdowns_allow_empty,
@@ -194,6 +205,7 @@ class SourceFacebookMarketing(AbstractSource):
                 start_date=insight.start_date or config.start_date,
                 end_date=insight.end_date or config.end_date,
                 insights_lookback_window=insight.insights_lookback_window or config.insights_lookback_window,
+                level=insight.level,
             )
             streams.append(stream)
         return streams

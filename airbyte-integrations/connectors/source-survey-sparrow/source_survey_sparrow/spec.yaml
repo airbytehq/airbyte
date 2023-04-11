@@ -21,7 +21,7 @@ connectionSpecification:
       description: A List of your survey ids for survey-specific stream
       order: 2
     region:
-      title: Base URL 
+      title: Base URL
       type: object
       description: Is your account location is EU based? If yes, the base url to retrieve data will be different.
       oneOf:
