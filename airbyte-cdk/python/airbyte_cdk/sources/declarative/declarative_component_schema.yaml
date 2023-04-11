@@ -1020,9 +1020,7 @@ definitions:
       - api_url
       - header
       - login_url
-      - session_token
       - session_token_response_key
-      - username
       - validate_session_url
     properties:
       type:

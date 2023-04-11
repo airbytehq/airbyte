@@ -321,9 +321,9 @@ class SessionTokenAuthenticator(BaseModel):
     api_url: str
     header: str
     login_url: str
-    session_token: str
+    session_token: Optional[str] = None
     session_token_response_key: str
-    username: str
+    username: Optional[str] = None
     validate_session_url: str
     password: Optional[str] = ""
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
