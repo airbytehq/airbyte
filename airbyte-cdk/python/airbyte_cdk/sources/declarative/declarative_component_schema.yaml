@@ -457,7 +457,7 @@ definitions:
         type: object
         additionalProperties: true
   OAuthAuthenticator:
-    title: OAuth 2.0
+    title: OAuth2
     description: Authenticator for requests using OAuth 2.0 authorization flow
     type: object
     required:
@@ -534,10 +534,14 @@ definitions:
         items:
           type: string
         examples:
-          - ["crm.list.read", "crm.objects.contacts.read", "crm.schema.contacts.read"]
+          - [
+              "crm.list.read",
+              "crm.objects.contacts.read",
+              "crm.schema.contacts.read",
+            ]
       token_expiry_date:
         title: Token Expiry Date
-        description:
+        description: T
         type: string
         examples:
           - 2023-04-06T07:12:10.421833+00:00
@@ -547,7 +551,7 @@ definitions:
         description: The format of the time to expiration datetime. Provide it if the time is returned as a date-time string instead of seconds
         type: string
         examples:
-          - %Y-%m-%d %H:%M:%S.%f+00:00
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
       $parameters:
         type: object
         additionalProperties: true
@@ -660,7 +664,11 @@ definitions:
         items:
           type: string
         examples:
-          - ["crm.list.read", "crm.objects.contacts.read", "crm.schema.contacts.read"]
+          - [
+              "crm.list.read",
+              "crm.objects.contacts.read",
+              "crm.schema.contacts.read",
+            ]
       $parameters:
         type: object
         additionalProperties: true
@@ -1014,9 +1022,9 @@ definitions:
         type: string
         default: ""
         examples:
-          - %Y-%m-%dT%H:%M:%S.%f%"
-          - %Y-%m-%d
-          - %s
+          - "%Y-%m-%dT%H:%M:%S.%f%"
+          - "%Y-%m-%d"
+          - "%s"
       max_datetime:
         title: Max Datetime
         description: Ceiling applied on the datetime value. Must be formatted with the datetime_format field
@@ -1494,7 +1502,7 @@ definitions:
         description: Optional regex to apply on the header to extract its value. The regex should define a capture group defining the wait time
         type: string
         examples:
-          - "([-+]?\d+)"
+          - "([-+]?\\d+)"
       $parameters:
         type: object
         additionalProperties: true
@@ -1529,7 +1537,7 @@ definitions:
         description: Optional regex to apply on the header to extract its value. The regex should define a capture group defining the wait time
         type: string
         examples:
-          - "([-+]?\d+)"
+          - "([-+]?\\d+)"
       $parameters:
         type: object
         additionalProperties: true
