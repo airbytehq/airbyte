@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redshift.operations;
@@ -81,7 +81,11 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   }
 
   @Override
-  public String uploadRecordsToStage(final JdbcDatabase database, final SerializableBuffer recordsData, final String schemaName, final String stageName, final String stagingPath)
+  public String uploadRecordsToStage(final JdbcDatabase database,
+                                     final SerializableBuffer recordsData,
+                                     final String schemaName,
+                                     final String stageName,
+                                     final String stagingPath)
       throws Exception {
     return s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stageName, stagingPath);
   }
@@ -94,11 +98,11 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
 
   @Override
   public void copyIntoTableFromStage(final JdbcDatabase database,
-                                        final String stageName,
-                                        final String stagingPath,
-                                        final List<String> stagedFiles,
-                                        final String tableName,
-                                        final String schemaName)
+                                     final String stageName,
+                                     final String stagingPath,
+                                     final List<String> stagedFiles,
+                                     final String tableName,
+                                     final String schemaName)
       throws Exception {
     LOGGER.info("Starting copy to target table from stage: {} in destination from stage: {}, schema: {}, .",
         tableName, stagingPath, schemaName);

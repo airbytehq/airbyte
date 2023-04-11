@@ -1,9 +1,8 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
-import logging
 from dataclasses import InitVar, dataclass, field
 from itertools import islice
 from json import JSONDecodeError
@@ -15,22 +14,21 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
-from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSlice
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
+class SimpleRetriever(Retriever, HttpStream):
     """
     Retrieves records by synchronously sending requests to fetch records.
 
@@ -49,27 +47,28 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         record_selector (HttpSelector): The record selector
         paginator (Optional[Paginator]): The paginator
         stream_slicer (Optional[StreamSlicer]): The stream slicer
-        options (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
+        parameters (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
     """
 
     requester: Requester
     record_selector: HttpSelector
     config: Config
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     name: str
     _name: Union[InterpolatedString, str] = field(init=False, repr=False, default="")
     primary_key: Optional[Union[str, List[str], List[List[str]]]]
     _primary_key: str = field(init=False, repr=False, default="")
     paginator: Optional[Paginator] = None
-    stream_slicer: Optional[StreamSlicer] = SingleSlice(options={})
+    stream_slicer: Optional[StreamSlicer] = SinglePartitionRouter(parameters={})
+    emit_connector_builder_messages: bool = False
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self.paginator = self.paginator or NoPagination(options=options)
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self.paginator = self.paginator or NoPagination(parameters=parameters)
         HttpStream.__init__(self, self.requester.get_authenticator())
         self._last_response = None
         self._last_records = None
-        self._options = options
-        self.name = InterpolatedString(self._name, options=options)
+        self._parameters = parameters
+        self.name = InterpolatedString(self._name, parameters=parameters)
 
     @property
     def name(self) -> str:
@@ -369,16 +368,18 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         stream_slice = stream_slice or {}  # None-check
         self.paginator.reset()
         records_generator = self._read_pages(
-            self._parse_records_and_emit_request_and_responses,
+            self.parse_records,
             stream_slice,
             stream_state,
         )
+        cursor_updated = False
         for record in records_generator:
             # Only record messages should be parsed to update the cursor which is indicated by the Mapping type
             if isinstance(record, Mapping):
                 self.stream_slicer.update_cursor(stream_slice, last_record=record)
+                cursor_updated = True
             yield record
-        else:
+        if not cursor_updated:
             last_record = self._last_records[-1] if self._last_records else None
             if last_record and isinstance(last_record, Mapping):
                 self.stream_slicer.update_cursor(stream_slice, last_record=last_record)
@@ -407,13 +408,13 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         """State setter, accept state serialized by state getter."""
         self.stream_slicer.update_cursor(value)
 
-    def _parse_records_and_emit_request_and_responses(self, request, response, stream_slice, stream_state) -> Iterable[StreamData]:
-        # Only emit requests and responses when running in debug mode
-        if self.logger.isEnabledFor(logging.DEBUG):
-            yield _prepared_request_to_airbyte_message(request)
-            yield _response_to_airbyte_message(response)
-        # Not great to need to call _read_pages which is a private method
-        # A better approach would be to extract the HTTP client from the HttpStream and call it directly from the HttpRequester
+    def parse_records(
+        self,
+        request: requests.PreparedRequest,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any],
+    ) -> Iterable[StreamData]:
         yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
 
 
@@ -437,6 +438,17 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Optional[StreamState] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         return islice(super().stream_slices(sync_mode=sync_mode, stream_state=stream_state), self.maximum_number_of_slices)
+
+    def parse_records(
+        self,
+        request: requests.PreparedRequest,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any],
+    ) -> Iterable[StreamData]:
+        yield _prepared_request_to_airbyte_message(request)
+        yield _response_to_airbyte_message(response)
+        yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
 
 
 def _prepared_request_to_airbyte_message(request: requests.PreparedRequest) -> AirbyteMessage:

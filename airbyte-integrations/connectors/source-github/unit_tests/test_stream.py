@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -377,6 +377,7 @@ def test_stream_commits_incremental_read():
     branches_to_pull = {"organization/repository": ["branch"]}
 
     stream = Commits(**repository_args_with_start_date, branches_to_pull=branches_to_pull, default_branches=default_branches)
+    stream.page_size = 2
 
     data = [
         {"sha": 1, "commit": {"author": {"date": "2022-02-02T10:10:02Z"}}},
@@ -384,6 +385,8 @@ def test_stream_commits_incremental_read():
         {"sha": 3, "commit": {"author": {"date": "2022-02-02T10:10:06Z"}}},
         {"sha": 4, "commit": {"author": {"date": "2022-02-02T10:10:08Z"}}},
         {"sha": 5, "commit": {"author": {"date": "2022-02-02T10:10:10Z"}}},
+        {"sha": 6, "commit": {"author": {"date": "2022-02-02T10:10:12Z"}}},
+        {"sha": 7, "commit": {"author": {"date": "2022-02-02T10:10:14Z"}}},
     ]
 
     api_url = "https://api.github.com/repos/organization/repository/commits"
@@ -392,14 +395,22 @@ def test_stream_commits_incremental_read():
         "GET",
         api_url,
         json=data[0:3],
-        match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:03Z", "sha": "branch"}, strict_match=False)],
+        match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:03Z", "sha": "branch", "per_page": "2"}, strict_match=False)],
     )
 
     responses.add(
         "GET",
         api_url,
         json=data[3:5],
-        match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:06Z", "sha": "branch"}, strict_match=False)],
+        headers={"Link": '<https://api.github.com/repos/organization/repository/commits?page=2>; rel="next"'},
+        match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:06Z", "sha": "branch", "per_page": "2"}, strict_match=False)],
+    )
+
+    responses.add(
+        "GET",
+        api_url,
+        json=data[5:7],
+        match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:06Z", "sha": "branch", "per_page": "2", "page": "2"}, strict_match=False)],
     )
 
     stream_state = {}
@@ -407,38 +418,8 @@ def test_stream_commits_incremental_read():
     assert [r["sha"] for r in records] == [2, 3]
     assert stream_state == {"organization/repository": {"branch": {"created_at": "2022-02-02T10:10:06Z"}}}
     records = read_incremental(stream, stream_state)
-    assert [r["sha"] for r in records] == [4, 5]
-    assert stream_state == {"organization/repository": {"branch": {"created_at": "2022-02-02T10:10:10Z"}}}
-
-
-@responses.activate
-def test_stream_commits_state_upgrade():
-
-    repository_args_with_start_date = {
-        "repositories": ["organization/repository"],
-        "page_size_for_large_streams": 100,
-        "start_date": "2022-02-02T10:10:02Z",
-    }
-
-    default_branches = {"organization/repository": "master"}
-    branches_to_pull = {"organization/repository": ["master"]}
-
-    stream = Commits(**repository_args_with_start_date, branches_to_pull=branches_to_pull, default_branches=default_branches)
-
-    responses.add(
-        "GET",
-        "https://api.github.com/repos/organization/repository/commits",
-        json=[
-            {"sha": 1, "commit": {"author": {"date": "2022-02-02T10:10:02Z"}}},
-            {"sha": 2, "commit": {"author": {"date": "2022-02-02T10:10:04Z"}}},
-        ],
-        match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:02Z", "sha": "master"}, strict_match=False)],
-    )
-
-    stream_state = {"organization/repository": {"created_at": "2022-02-02T10:10:02Z"}}
-    records = read_incremental(stream, stream_state)
-    assert [r["sha"] for r in records] == [2]
-    assert stream_state == {"organization/repository": {"master": {"created_at": "2022-02-02T10:10:04Z"}}}
+    assert [r["sha"] for r in records] == [4, 5, 6, 7]
+    assert stream_state == {"organization/repository": {"branch": {"created_at": "2022-02-02T10:10:14Z"}}}
 
 
 @responses.activate

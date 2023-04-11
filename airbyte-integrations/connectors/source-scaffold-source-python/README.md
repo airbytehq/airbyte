@@ -60,6 +60,11 @@ First, make sure you build the latest Docker image:
 docker build . -t airbyte/source-scaffold-source-python:dev
 ```
 
+If you want to build the Docker image with the CDK on your local machine (rather than the most recent package published to pypi), from the airbyte base directory run:
+```bash
+CONNECTOR_TAG=<TAG_NAME> CONNECTOR_NAME=<CONNECTOR_NAME> sh airbyte-integrations/scripts/build-connector-image-with-local-cdk.sh
+```
+
 You can also build the connector image via Gradle:
 ```
 ./gradlew :airbyte-integrations:connectors:source-scaffold-source-python:airbyteDocker
@@ -95,7 +100,7 @@ Place custom tests inside `integration_tests/` folder, then, from the connector 
 python -m pytest integration_tests
 ```
 #### Acceptance Tests
-Customize `acceptance-test-config.yml` file to configure tests. See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference) for more information.
+Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 To run your integration tests with acceptance tests, from the connector root, run
 ```

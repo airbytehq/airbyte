@@ -49,7 +49,7 @@ You can secure access to Airbyte using the following methods:
     
     location / {
       proxy_pass http://127.0.0.1:8000;
-      proxy_set_header Cookie $http_ccokie;  # if you use Airbytes basic auth
+      proxy_set_header Cookie $http_cookie;  # if you use Airbytes basic auth
       proxy_read_timeout 3600;  # set a number in seconds suitable for you
     }
   }
@@ -102,7 +102,7 @@ Only certain Airbyte staff can access Airbyte infrastructure and technical logs 
 
 ### Network security
 
-Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud#choose-your-default-data-residency) location, you may need to allowlist the following IP addresses to enable access to Airbyte:
+Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-data-residency) location, you may need to allowlist the following IP addresses to enable access to Airbyte:
 
 #### United States and Airbyte Default
 
@@ -156,7 +156,7 @@ Airbyte Cloud allows you to log in to the platform using your email and password
 
 ### Access Control
 
-Airbyte Cloud supports [user management](https://docs.airbyte.com/cloud/managing-airbyte-cloud#add-users-to-your-workspace) but doesn’t support role-based access control (RBAC) yet.
+Airbyte Cloud supports [user management](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-airbyte-cloud-workspace#add-users-to-your-workspace) but doesn’t support role-based access control (RBAC) yet.
 
 ### Compliance
 

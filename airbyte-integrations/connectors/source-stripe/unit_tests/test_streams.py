@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import pendulum
@@ -72,7 +72,9 @@ def test_missed_id_child_stream(requests_mock):
     )
 
     stream = CheckoutSessionsLineItems(start_date=100_100, account_id=None)
-    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+    records = []
+    for slice_ in stream.stream_slices(sync_mode=SyncMode.full_refresh):
+        records.extend(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_))
     assert len(records) == 1
 
 
@@ -132,7 +134,9 @@ def test_sub_stream(requests_mock):
     # make start date a recent date so there's just one slice in a parent stream
     start_date = pendulum.today().subtract(days=3).int_timestamp
     stream = InvoiceLineItems(start_date=start_date, account_id="None")
-    records = stream.read_records(sync_mode=SyncMode.full_refresh)
+    records = []
+    for slice_ in stream.stream_slices(sync_mode=SyncMode.full_refresh):
+        records.extend(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_))
     assert list(records) == [
         {"id": "il_1", "invoice_id": "in_1KD6OVIEn5WyEQxn9xuASHsD", "object": "line_item"},
         {"id": "il_2", "invoice_id": "in_1KD6OVIEn5WyEQxn9xuASHsD", "object": "line_item"},
@@ -152,7 +156,7 @@ def config_fixture():
         (Customers, {}, "customers"),
         (BalanceTransactions, {}, "balance_transactions"),
         (Charges, {}, "charges"),
-        (CustomerBalanceTransactions, {"stream_slice": {"customer_id": "C1"}}, "customers/C1/balance_transactions"),
+        (CustomerBalanceTransactions, {"stream_slice": {"id": "C1"}}, "customers/C1/balance_transactions"),
         (Coupons, {}, "coupons"),
         (Disputes, {}, "disputes"),
         (Events, {}, "events"),

@@ -19,3 +19,17 @@ pip install -e . # assuming you are in the ./tools/ci_connector_ops directory
 ```
 
 pip will make binaries for all the commands in setup.py, so you can run `allowed-hosts-checks` directly from the virtual-env
+
+## Testing Locally
+
+To install requirements to run unit tests, use:
+
+```
+pip install -e ".[tests]"
+```
+
+Unit tests are currently configured to be run from the base `airbyte` directory. You can run the tests from that directory with the following command:
+
+```
+pytest -s tools/ci_connector_ops/tests
+```

@@ -22,6 +22,6 @@ The community is also welcomed to participate in the opened topic!
 * [Connector development](https://discuss.airbyte.io/c/connector-development/16): Anything related to connector development.
 * [Connector Job Board](https://discuss.airbyte.io/c/connector-job-board/10/none): Asks and offers for building custom connectors not yet supported by Airbyte.
 * [Contributing to Airbyte](https://discuss.airbyte.io/c/contributing-to-airbyte/21): Anything related to contributing to the open-source repo.
-* [Releases](https://discuss.airbyte.io/c/releases/19): Posts about new releases of Airbyte, including any migration instructions.
 * [Q&A](https://discuss.airbyte.io/c/faq/15): Ask anything that doesn’t belong to the other categories.
 * [Guides](https://discuss.airbyte.io/c/guides/17): Small tutorials and guides solving deployments or workarounds using connectors.
+* [Frequently Asked Questions](https://discuss.airbyte.io/c/read-answers-by-the-airbyte-team-to-commonly-asked-questions-from-our-community/22): Read answers from the Airbyte team for commonly asked questions from the community.

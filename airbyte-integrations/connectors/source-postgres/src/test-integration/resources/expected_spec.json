@@ -10,7 +10,8 @@
         "title": "Host",
         "description": "Hostname of the database.",
         "type": "string",
-        "order": 0
+        "order": 0,
+        "group": "db"
       },
       "port": {
         "title": "Port",
@@ -20,13 +21,15 @@
         "maximum": 65536,
         "default": 5432,
         "examples": ["5432"],
-        "order": 1
+        "order": 1,
+        "group": "db"
       },
       "database": {
         "title": "Database Name",
         "description": "Name of the database.",
         "type": "string",
-        "order": 2
+        "order": 2,
+        "group": "db"
       },
       "schemas": {
         "title": "Schemas",
@@ -38,39 +41,48 @@
         "minItems": 0,
         "uniqueItems": true,
         "default": ["public"],
-        "order": 3
+        "order": 3,
+        "group": "db"
       },
       "username": {
         "title": "Username",
         "description": "Username to access the database.",
         "type": "string",
-        "order": 4
+        "order": 4,
+        "group": "auth"
       },
       "password": {
         "title": "Password",
         "description": "Password associated with the username.",
         "type": "string",
         "airbyte_secret": true,
-        "order": 5
+        "order": 5,
+        "group": "auth",
+        "always_show": true
       },
       "jdbc_url_params": {
         "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (Eg. key1=value1&key2=value2&key3=value3). For more information read about <a href=\"https://jdbc.postgresql.org/documentation/head/connect.html\">JDBC URL parameters</a>.",
         "title": "JDBC URL Parameters (Advanced)",
         "type": "string",
-        "order": 6
+        "order": 6,
+        "group": "advanced",
+        "pattern_descriptor": "key1=value1&key2=value2"
       },
       "ssl": {
         "title": "Connect using SSL",
         "description": "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
         "type": "boolean",
         "default": false,
-        "order": 7
+        "order": 7,
+        "group": "security",
+        "always_show": true
       },
       "ssl_mode": {
         "title": "SSL Modes",
         "description": "SSL connection modes. \n  Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"> in the docs</a>.",
         "type": "object",
-        "order": 7,
+        "order": 8,
+        "group": "security",
         "oneOf": [
           {
             "title": "disable",
@@ -218,7 +230,8 @@
         "type": "object",
         "title": "Replication Method",
         "description": "Replication method for extracting data from the database.",
-        "order": 8,
+        "order": 9,
+        "group": "advanced",
         "oneOf": [
           {
             "title": "Standard",
@@ -246,8 +259,8 @@
               "plugin": {
                 "type": "string",
                 "title": "Plugin",
-                "description": "A logical decoding plugin installed on the PostgreSQL server. The `pgoutput` plugin is used by default. If the replication table contains a lot of big jsonb values it is recommended to use `wal2json` plugin. Read more about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-2-select-a-replication-plugin\">selecting replication plugins</a>.",
-                "enum": ["pgoutput", "wal2json"],
+                "description": "A logical decoding plugin installed on the PostgreSQL server.",
+                "enum": ["pgoutput"],
                 "default": "pgoutput",
                 "order": 2
               },
@@ -276,7 +289,10 @@
                 "type": "string",
                 "title": "LSN commit behaviour",
                 "description": "Determines when Airbtye should flush the LSN of processed WAL logs in the source database. `After loading Data in the destination` is default. If `While reading Data` is selected, in case of a downstream failure (while loading data into the destination), next sync would result in a full sync.",
-                "enum": ["While reading Data", "After loading Data in the destination"],
+                "enum": [
+                  "While reading Data",
+                  "After loading Data in the destination"
+                ],
                 "default": "After loading Data in the destination",
                 "order": 6
               }
@@ -288,6 +304,7 @@
         "type": "object",
         "title": "SSH Tunnel Method",
         "description": "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
+        "group": "security",
         "oneOf": [
           {
             "title": "No Tunnel",
@@ -398,7 +415,23 @@
           }
         ]
       }
-    }
+    },
+    "groups": [
+      {
+        "id": "db"
+      },
+      {
+        "id": "auth"
+      },
+      {
+        "id": "security",
+        "title": "Security"
+      },
+      {
+        "id": "advanced",
+        "title": "Advanced"
+      }
+    ]
   },
   "supported_destination_sync_modes": []
 }

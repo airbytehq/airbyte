@@ -1,15 +1,17 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3_glue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.functional.CheckedBiConsumer;
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
@@ -85,6 +87,8 @@ public class S3GlueConsumerFactory {
       final String fullOutputPath = storageOperations.getBucketObjectPath(namespace, streamName, SYNC_DATETIME, customOutputFormat);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
       final JsonNode jsonSchema = abStream.getJsonSchema();
+      ((ObjectNode) jsonSchema.get("properties")).putPOJO(JavaBaseConstants.COLUMN_NAME_AB_ID, Map.of("type", "string"));
+      ((ObjectNode) jsonSchema.get("properties")).putPOJO(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, Map.of("type", "number"));
       final String location = "s3://" + s3Config.getBucketName() + "/" +
           fullOutputPath.substring(0, fullOutputPath.lastIndexOf("/") + 1);
       final S3GlueWriteConfig writeConfig =
