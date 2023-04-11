@@ -34,3 +34,6 @@ acceptance_tests:
       configured_catalog_path: "integration_tests/configured_catalog.json"
       future_state:
         future_state_path: "integration_tests/abnormal_state.json"
+      empty_streams:
+        - name: "events"
+          bypass_reason: "Fix wrong cursor field to address Issue #16943, to keep old connections compatible"
