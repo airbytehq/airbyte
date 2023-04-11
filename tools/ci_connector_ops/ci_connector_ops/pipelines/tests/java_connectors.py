@@ -106,9 +106,10 @@ class GradleTask(Step, ABC):
         "airbyte-integrations/connectors/destination-gcs",
     ]
 
-    # These are the lines we remove from the connector gradle file to not run acceptance test and not build normalization.
+    # These are the lines we remove from the connector gradle file to ignore specific tasks / plugins.
     LINES_TO_REMOVE_FROM_GRADLE_FILE = [
-        "id 'airbyte-docker'" "project(':airbyte-integrations:bases:base-normalization').airbyteDocker.output",
+        # Do not build normalization with Gradle - we build normalization with Dagger in the BuildOrPullNormalization step.
+        "project(':airbyte-integrations:bases:base-normalization').airbyteDocker.output",
     ]
 
     @property
@@ -136,19 +137,16 @@ class GradleTask(Step, ABC):
             raise ValueError(f"{self.context.connector.connector_type} is not supported")
 
     async def _get_patched_connector_dir(self) -> Directory:
-        """Patch the build.gradle file of the connector under test.
-        - Remove the airbyte-connector-acceptance-test plugin import from build.gradle to not run CAT with Gradle.
-        - Do not depend on normalization build to run.
-        - Do not run airbyteDocker task if RUN_AIRBYTE_DOCKER is false.
+        """Patch the build.gradle file of the connector under test by removing the lines declared in LINES_TO_REMOVE_FROM_GRADLE_FILE.
+
         Returns:
             Directory: The patched connector directory
         """
-        lines_to_remove_from_gradle_file = self.LINES_TO_REMOVE_FROM_GRADLE_FILE
 
         gradle_file_content = await self.context.get_connector_dir(include=["build.gradle"]).file("build.gradle").contents()
         patched_file_content = ""
         for line in gradle_file_content.split("\n"):
-            if not any(line_to_remove in line for line_to_remove in lines_to_remove_from_gradle_file):
+            if not any(line_to_remove in line for line_to_remove in self.LINES_TO_REMOVE_FROM_GRADLE_FILE):
                 patched_file_content += line + "\n"
         return self.context.get_connector_dir().with_new_file("build.gradle", patched_file_content)
 
@@ -211,25 +209,30 @@ class BuildConnectorImage(GradleTask):
         else:
             return None
 
+    async def build_tar(self) -> File:
+        distTar = (
+            environments.with_gradle(
+                self.context,
+                self.build_include,
+                docker_service_name=self.docker_service_name,
+                bind_to_docker_host=self.BIND_TO_DOCKER_HOST,
+            )
+            .with_mounted_directory(str(self.context.connector.code_directory), await self._get_patched_connector_dir())
+            .with_exec(self._get_gradle_command())
+            .with_workdir(f"{self.context.connector.code_directory}/build/distributions")
+        )
+
+        distributions = await distTar.directory(".").entries()
+        tar_files = [f for f in distributions if f.endswith(".tar")]
+        if len(tar_files) > 1:
+            raise Exception(
+                "The distributions directory contains multiple connector tar files. We can't infer which one should be used for the text. Please review and delete any unnecessary tar files."
+            )
+        return distTar.file(tar_files[0])
+
     async def _run(self) -> Tuple[StepResult, Optional[File]]:
         try:
-            distTar = (
-                environments.with_gradle(
-                    self.context,
-                    self.build_include,
-                    docker_service_name=self.docker_service_name,
-                    bind_to_docker_host=self.BIND_TO_DOCKER_HOST,
-                )
-                .with_mounted_directory(str(self.context.connector.code_directory), await self._get_patched_connector_dir())
-                .with_exec(self._get_gradle_command())
-                .with_workdir(f"{self.context.connector.code_directory}/build/distributions")
-            )
-
-            distributions = await distTar.directory(".").entries()
-            tar_files = [f for f in distributions if f.endswith(".tar")]
-            if len(tar_files) > 1:
-                raise Exception("The distributions directory contains multiple tar file. We can't infer which one the is freshest.")
-            tar_file = distTar.file(tar_files[0])
+            tar_file = await self.build_tar()
             java_connector = await environments.with_airbyte_java_connector(self.context, tar_file)
             step_result = await self.get_step_result(java_connector)
             connector_image_tar_file = await self._export_connector_image(java_connector)

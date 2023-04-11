@@ -155,16 +155,16 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
         return results + [build_connector_image_step.skip(), integration_tests_step.skip(), acceptance_test_step.skip()]
     context.logger.info("Successfully ran the unit tests step.")
 
-    if context.connector.acceptance_test_config["connector_image"].endswith(":dev"):
+    if not context.connector.acceptance_test_config["connector_image"].endswith(":dev"):
+        context.logger.info("Not building the connector image as CAT is run with a non dev version of the connector.")
+        connector_image_tar_file = None
+    else:
         context.logger.info("Run the build connector image step.")
         build_connector_image_results, connector_image_tar_file = await build_connector_image_step.run()
         results.append(build_connector_image_results)
         if build_connector_image_results.status is StepStatus.FAILURE:
             return results + [integration_tests_step.skip(), acceptance_test_step.skip()]
         context.logger.info("Successfully ran the build connector image step.")
-    else:
-        context.logger.info("Not building the connector image as CAT is run with a non dev version of the connector.")
-        connector_image_tar_file = None
 
     context.logger.info("Retrieve the connector secrets.")
     context.secrets_dir = await secrets.get_connector_secret_dir(context)
