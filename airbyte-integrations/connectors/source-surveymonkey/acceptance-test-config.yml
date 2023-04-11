@@ -6,6 +6,8 @@ acceptance_tests:
       - spec_path: "source_surveymonkey/spec.json"
   connection:
     tests:
+      - config_path: "secrets/config_old.json"
+        status: "succeed"
       - config_path: "secrets/config.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
