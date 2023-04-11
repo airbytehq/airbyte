@@ -12594,11 +12594,7 @@
             "type": "string",
             "title": "Reader Options",
             "description": "This should be a string in JSON format. It depends on the chosen file format to provide additional options and tune its behavior.",
-            "examples": [ "{}", "{\"sep\": \" \"}", {
-              "sep": "\t",
-              "header": 0,
-              "names": [ "column1", "column2" ]
-            } ]
+            "examples": [ "{}", "{\"sep\": \" \"}", "{\"sep\": \"\t\", \"header\": 0, \"names\": [\"column1\", \"column2\"] }" ]
           },
           "url": {
             "type": "string",
@@ -25884,7 +25880,7 @@
     "sourceDefinitionId": "b9dc6155-672e-42ea-b10d-9f1f1fb95ab1",
     "name": "Twilio",
     "dockerRepository": "airbyte/source-twilio",
-    "dockerImageTag": "0.3.0",
+    "dockerImageTag": "0.4.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/twilio",
     "icon": "twilio.svg",
     "sourceType": "api",
