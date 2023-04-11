@@ -5893,7 +5893,7 @@
     "destinationDefinitionId": "471e5cab-8ed1-49f3-ba11-79c687784737",
     "name": "S3 Glue",
     "dockerRepository": "airbyte/destination-s3-glue",
-    "dockerImageTag": "0.1.4",
+    "dockerImageTag": "0.1.5",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/s3-glue",
     "icon": "s3-glue.svg",
     "spec": {
@@ -5982,11 +5982,12 @@
                     }
                   } ]
                 },
-                "flatten_data": {
-                  "title": "Flatten Data",
-                  "description": "If true data will be flattened and won't be nested in the _airbyte_data field",
-                  "type": "boolean",
-                  "default": true
+                "flattening": {
+                  "type": "string",
+                  "title": "Flattening",
+                  "description": "Whether the input json data should be normalized (flattened) in the output JSON Lines. Please refer to docs for details.",
+                  "default": "Root level flattening",
+                  "enum": [ "No flattening", "Root level flattening" ]
                 }
               }
             } ],
@@ -20909,7 +20910,7 @@
     "sourceDefinitionId": "decd338e-5647-4c0b-adf4-da0e75f5a750",
     "name": "Postgres",
     "dockerRepository": "airbyte/source-postgres",
-    "dockerImageTag": "2.0.19",
+    "dockerImageTag": "2.0.20",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/postgres",
     "icon": "postgresql.svg",
     "sourceType": "database",
@@ -20982,15 +20983,6 @@
             "order": 6,
             "group": "advanced",
             "pattern_descriptor": "key1=value1&key2=value2"
-          },
-          "ssl": {
-            "title": "Connect using SSL",
-            "description": "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
-            "type": "boolean",
-            "default": false,
-            "order": 7,
-            "group": "security",
-            "always_show": true
           },
           "ssl_mode": {
             "title": "SSL Modes",
