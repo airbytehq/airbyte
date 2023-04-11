@@ -61,7 +61,7 @@ public interface CdcTargetPosition<T> {
    * @return Returns `true` when the DB event is part of the snapshot load. Otherwise, returns `false`
    */
   default boolean isSnapshotEvent(final ChangeEvent<String, String> event) {
-    return true;
+    return false;
   }
 
   /**

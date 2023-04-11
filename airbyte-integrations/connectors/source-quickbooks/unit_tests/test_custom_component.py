@@ -1,8 +1,11 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import re
 from datetime import datetime, timezone
 
-from source_quickbooks.components import LastRecordDictProxy
-from source_quickbooks.components import CustomDatetimeBasedCursor
+from source_quickbooks.components import CustomDatetimeBasedCursor, LastRecordDictProxy
 
 
 def test_dict_proxy():
