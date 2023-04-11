@@ -774,7 +774,8 @@ definitions:
         type: object
         additionalProperties: true
   ExponentialBackoffStrategy:
-    description: Backoff strategy with an exponential backoff interval
+    title: Exponential Backoff
+    description: Backoff strategy with an exponential backoff interval. The interval is defined as factor * 2^attempt_count
     type: object
     required:
       - type
@@ -783,10 +784,16 @@ definitions:
         type: string
         enum: [ExponentialBackoffStrategy]
       factor:
+        title: Factor
+        description: Multiplicative constant applied on each retry
         anyOf:
           - type: number
           - type: string
         default: 5
+        examples:
+          - 5
+          - 5.5
+          - "10"
       $parameters:
         type: object
         additionalProperties: true
