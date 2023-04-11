@@ -10,10 +10,15 @@
 2. `y.python`
 
 ## 🚨 User Impact 🚨
-Are there any breaking changes? What is the end result perceived by the user? If yes, please merge this PR with the 🚨🚨 emoji so changelog authors can further highlight this if needed.
+*Are there any breaking changes? What is the end result perceived by the user?*
+
+*For connector PRs, use this section to explain which type of semantic versioning bump occurs as a result of the changes. Refer to our [Semantic Versioning for Connectors](https://docs.airbyte.com/contributing-to-airbyte/#semantic-versioning-for-connectors) guidelines for more information. **Breaking changes to connectors must be documented by an Airbyte engineer (PR author, or reviewer for community PRs) by using the [Breaking Change Release Playbook](https://docs.google.com/document/d/1VYQggHbL_PN0dDDu7rCyzBLGRtX-R3cpwXaY8QxEgzw/edit).***
+
+*If there are breaking changes, please merge this PR with the 🚨🚨 emoji so changelog authors can further highlight this if needed.*
+
 
 ## Pre-merge Checklist
-Expand the relevant checklist and delete the others.
+*Expand the relevant checklist and delete the others.*
 
 <details><summary><strong>New Connector</strong></summary>
 
@@ -56,7 +61,7 @@ If this is a community PR, the Airbyte engineer reviewing this PR is responsible
 - [ ] Unit & integration tests added and passing. Community members, please provide proof of success locally e.g: screenshot or copy-paste unit, integration, and acceptance test output. To run acceptance tests for a Python connector, follow instructions in the README. For java connectors run `./gradlew :airbyte-integrations:connectors:<name>:integrationTest`.
 - [ ] Code reviews completed
 - [ ] Connector version has been incremented
-    - [ ] Version has been bumped according to our [Semantic Versioning for Connectors](https://docs.airbyte.com/contributing-to-airbyte/semantic-versioning-for-connectors) guidelines
+    - [ ] Version has been bumped according to our [Semantic Versioning for Connectors](https://docs.airbyte.com/contributing-to-airbyte/#semantic-versioning-for-connectors) guidelines
     - [ ] `Dockerfile` has updated version
 - [ ] Documentation updated
     - [ ] Connector's `README.md`

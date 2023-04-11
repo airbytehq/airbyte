@@ -35,16 +35,12 @@ class ConfigurationError(Exception):
 
 
 class FileStream(Stream, ABC):
-    @property
-    def fileformatparser_map(self) -> Mapping[str, type]:
-        """Mapping where every key is equal  'filetype' and values are  corresponding  parser classes."""
-        return {
-            "csv": CsvParser,
-            "parquet": ParquetParser,
-            "avro": AvroParser,
-            "jsonl": JsonlParser,
-        }
-
+    file_formatparser_map = {
+        "csv": CsvParser,
+        "parquet": ParquetParser,
+        "avro": AvroParser,
+        "jsonl": JsonlParser,
+    }
     # TODO: make these user configurable in spec.json
     ab_additional_col = "_ab_additional_properties"
     ab_last_mod_col = "_ab_source_file_last_modified"
@@ -100,6 +96,13 @@ class FileStream(Stream, ABC):
 
         return py_schema
 
+    @classmethod
+    def with_minimal_block_size(cls, config: MutableMapping[str, Any]):
+        file_type = config["format"]["filetype"]
+        file_reader = cls.file_formatparser_map[file_type]
+        file_reader.set_minimal_block_size(config["format"])
+        return cls(**config)
+
     @property
     def name(self) -> str:
         return self.dataset
@@ -114,10 +117,10 @@ class FileStream(Stream, ABC):
         :return: reference to the relevant fileformatparser class e.g. CsvParser
         """
         filetype = self._format.get("filetype")
-        file_reader = self.fileformatparser_map.get(filetype)
+        file_reader = self.file_formatparser_map.get(filetype)
         if not file_reader:
             raise RuntimeError(
-                f"Detected mismatched file format '{filetype}'. Available values: '{list(self.fileformatparser_map.keys())}''."
+                f"Detected mismatched file format '{filetype}'. Available values: '{list(self.file_formatparser_map.keys())}''."
             )
         return file_reader
 

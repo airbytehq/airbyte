@@ -25,8 +25,8 @@ BRANCH = "master"
 WORKFLOW_PATH = ".github/workflows/test-command.yml"
 RUN_UUID_REGEX = re.compile("^UUID ([0-9a-f-]+)$")
 SLEEP = 1200
-SOURCE_DEFINITIONS = "airbyte-config/init/src/main/resources/seed/source_definitions.yaml"
-DESTINATION_DEFINITIONS = "./airbyte-config/init/src/main/resources/seed/destination_definitions.yaml"
+SOURCE_DEFINITIONS = "airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml"
+DESTINATION_DEFINITIONS = "./airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml"
 STAGES = ["alpha", "beta", "generally_available"]
 
 
