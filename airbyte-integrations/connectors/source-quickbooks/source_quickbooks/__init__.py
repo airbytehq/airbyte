@@ -3,7 +3,7 @@
 #
 
 
-from .source import SourceQuickbooks
 from .components import CustomDatetimeBasedCursor
+from .source import SourceQuickbooks
 
 __all__ = ["SourceQuickbooks", "CustomDatetimeBasedCursor"]
