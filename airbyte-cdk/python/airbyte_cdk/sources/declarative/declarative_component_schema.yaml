@@ -541,7 +541,7 @@ definitions:
             ]
       token_expiry_date:
         title: Token Expiry Date
-        description: T
+        description: The access token expiry date
         type: string
         examples:
           - 2023-04-06T07:12:10.421833+00:00
