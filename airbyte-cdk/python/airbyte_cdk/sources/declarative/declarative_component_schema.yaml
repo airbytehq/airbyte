@@ -1440,12 +1440,13 @@ definitions:
         title: Extraction Regex
         description: Optional regex to apply on the header to extract its value. The regex should define a capture group defining the wait time
         type: string
-        example:
+        examples:
           - "([-+]?\d+)"
       $parameters:
         type: object
         additionalProperties: true
   WaitUntilTimeFromHeader:
+    title: Wait Until Time Defined In Response Header
     description: Extract time at which we can retry the request from response header and wait for the difference between now and that time
     type: object
     required:
@@ -1456,13 +1457,26 @@ definitions:
         type: string
         enum: [WaitUntilTimeFromHeader]
       header:
+        title: Response Header
+        description: The name of the response header defining how long to wait before retrying
         type: string
+        examples:
+          - wait_time
       min_wait:
+        title: Minimum Wait Time
+        description: Minimum time to wait before retrying
         anyOf:
           - type: number
           - type: string
+        examples:
+          - 10
+          - "60"
       regex:
+        title: Extraction Regex
+        description: Optional regex to apply on the header to extract its value. The regex should define a capture group defining the wait time
         type: string
+        examples:
+          - "([-+]?\d+)"
       $parameters:
         type: object
         additionalProperties: true
