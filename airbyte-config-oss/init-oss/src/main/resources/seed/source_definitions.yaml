@@ -1678,13 +1678,18 @@
   sourceType: api
   releaseStage: alpha
 - name: QuickBooks
-  sourceDefinitionId: 29b409d9-30a5-4cc8-ad50-886eb846fea3
-  dockerRepository: airbyte/source-quickbooks-singer
-  dockerImageTag: 0.1.5
-  documentationUrl: https://docs.airbyte.com/integrations/sources/quickbooks-singer
-  icon: qb.svg
+  sourceDefinitionId: cf9c4355-b171-4477-8f2d-6c5cc5fc8b7e
+  dockerRepository: airbyte/source-quickbooks
+  dockerImageTag: 1.0.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/quickbooks
+  icon: quickbooks.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "sandbox-quickbooks.api.intuit.com"
+      - "quickbooks.api.intuit.com"
+      - "oauth.platform.intuit.com"
 - name: Railz
   sourceDefinitionId: 9b6cc0c0-da81-4103-bbfd-5279e18a849a
   dockerRepository: airbyte/source-railz
