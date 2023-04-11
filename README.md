@@ -59,10 +59,11 @@ compatible with flow:
       COPY --from=ghcr.io/estuary/airbyte-to-flow:dev /airbyte-to-flow ./
       ENTRYPOINT ["/airbyte/integration_code/airbyte-to-flow", "--connector-entrypoint", "python /airbyte/integration_code/main.py"]
       ```
-    3. Add these two lines to the end of the Dockerfile:
+    3. Add these three lines to the end of the Dockerfile:
       ```
       LABEL FLOW_RUNTIME_PROTOCOL=capture
       LABEL CONNECTOR_PROTOCOL=flow-capture
+      LABEL FLOW_RUNTIME_CODEC=json
       ```
 
 2. If you intend to patch the connector, these files can be placed in the root directory of the connector
