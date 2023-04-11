@@ -3,7 +3,7 @@
     {
       "stream": {
         "name": "purchases",
-        "namespace": "10m_users",
+        "namespace": "benchmark",
         "json_schema": {
           "type": "object",
           "properties": {
@@ -48,7 +48,7 @@
     {
       "stream": {
         "name": "users",
-        "namespace": "10m_users",
+        "namespace": "benchmark",
         "json_schema": {
           "type": "object",
           "properties": {
@@ -121,7 +121,7 @@
     {
       "stream": {
         "name": "products",
-        "namespace": "10m_users",
+        "namespace": "benchmark",
         "json_schema": {
           "type": "object",
           "properties": {
