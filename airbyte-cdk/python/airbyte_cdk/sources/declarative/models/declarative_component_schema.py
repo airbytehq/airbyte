@@ -318,7 +318,6 @@ class Schemas(BaseModel):
 
 class SessionTokenAuthenticator(BaseModel):
     type: Literal["SessionTokenAuthenticator"]
-    api_url: str
     header: str
     login_url: str
     session_token: Optional[str] = None
