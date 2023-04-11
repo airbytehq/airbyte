@@ -50,6 +50,8 @@ public class BytehouseDestinationAcceptanceTest extends DestinationAcceptanceTes
     final String jdbcUrl = String.format(DatabaseDriver.BYTEHOUSE.getUrlFormatString(),
         config.get(JdbcUtils.HOST_KEY).asText(),
         config.get(JdbcUtils.PORT_KEY).asInt());
+
+    BytehouseDestination.rewriteUrlParams(config);
     config.put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
 
     return config;
@@ -60,8 +62,7 @@ public class BytehouseDestinationAcceptanceTest extends DestinationAcceptanceTes
     // TODO return an invalid config which, when used to run the connector's check connection operation,
     // should result in a failed connection check
     final ObjectNode config = (ObjectNode) Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
-    config.put("password", "wrong password");
-    config.put(JdbcUtils.JDBC_URL_PARAMS_KEY, "");
+    config.put("api_key", "wrong key");
     return config;
   }
 
@@ -104,8 +105,8 @@ public class BytehouseDestinationAcceptanceTest extends DestinationAcceptanceTes
   private static JdbcDatabase getDatabase(final JsonNode config) {
     return new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.has(JdbcUtils.PASSWORD_KEY) ? config.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+            "bytehouse",
+            null,
             BytehouseDestination.DRIVER_CLASS,
             config.get(JdbcUtils.JDBC_URL_KEY).asText(),
             getConnectionProperties(config)),

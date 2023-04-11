@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.bytehouse;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
@@ -20,8 +19,6 @@ import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
 
@@ -89,13 +86,10 @@ public class BytehouseDestination extends AbstractJdbcDestination implements Des
             config.get(JdbcUtils.PORT_KEY).asInt()));
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.USERNAME_KEY, "bytehouse")
         .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
 
-    if (config.has(JdbcUtils.PASSWORD_KEY)) {
-      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
-    }
-
+//    ((ObjectNode)config).put(JdbcUtils.USERNAME_KEY, "bytehouse");
     rewriteUrlParams(config);
     if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
       configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
@@ -104,13 +98,11 @@ public class BytehouseDestination extends AbstractJdbcDestination implements Des
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  private final String ACCOUNT_KEY = "account";
-  private void rewriteUrlParams(JsonNode config) {
-    String account = config.get(ACCOUNT_KEY).asText();
-    String username = config.get(JdbcUtils.USERNAME_KEY).asText();
-    String password = config.get(JdbcUtils.PASSWORD_KEY).asText();
+  private static final String API_KEY = "api_key";
+  public static void rewriteUrlParams(JsonNode config) {
+    String apiKey = config.get(API_KEY).asText();
 
-    String extraParams = String.format("account=%s&user=%s&password=%s&secure=true", account, username, password);
+    String extraParams = String.format("api_key=%s&secure=true", apiKey);
     if (!config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
       ((ObjectNode)config).put(JdbcUtils.JDBC_URL_PARAMS_KEY, extraParams);
       return;
