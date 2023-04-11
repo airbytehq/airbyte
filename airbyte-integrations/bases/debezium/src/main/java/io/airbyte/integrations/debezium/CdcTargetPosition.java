@@ -5,6 +5,7 @@
 package io.airbyte.integrations.debezium;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.Map;
 
 /**
  * This interface is used to define the target position at the beginning of the sync so that once we
@@ -13,23 +14,25 @@ import com.fasterxml.jackson.databind.JsonNode;
  * we might end up syncing forever. In order to tackle that, we need to define a point to end at the
  * beginning of the sync
  */
-public interface CdcTargetPosition {
+public interface CdcTargetPosition<T> {
+
+  /**
+   * Reads a position value (ex: LSN) from a change event and compares it to target position
+   *
+   * @param valueAsJson json representation of a change event
+   * @return true if event position is equal or greater than target position, or if last snapshot
+   *         event
+   */
+  boolean reachedTargetPosition(final JsonNode valueAsJson);
 
   /**
    * Reads a position value (lsn) from a change event and compares it to target lsn
    *
-   * @param valueAsJson json representation of a change event
-   * @return true if event lsn is equal or greater than targer lsn, or if last snapshot event
+   * @param positionFromHeartbeat is the position extracted out of a heartbeat event (if the connector
+   *        supports heartbeat)
+   * @return true if heartbeat position is equal or greater than target position
    */
-  boolean reachedTargetPosition(JsonNode valueAsJson);
-
-  /**
-   * Checks if a specified lsn has reached the target lsn.
-   *
-   * @param lsn an lsn value
-   * @return true if lsn is equal or greater than target lsn
-   */
-  default boolean reachedTargetPosition(final Long lsn) {
+  default boolean reachedTargetPosition(final T positionFromHeartbeat) {
     throw new UnsupportedOperationException();
   }
 
@@ -41,5 +44,13 @@ public interface CdcTargetPosition {
   default boolean isHeartbeatSupported() {
     return false;
   }
+
+  /**
+   * Returns a position value from a heartbeat event offset.
+   *
+   * @param sourceOffset source offset params from heartbeat change event
+   * @return the heartbeat position in a heartbeat change event or null
+   */
+  T extractPositionFromHeartbeatOffset(final Map<String, ?> sourceOffset);
 
 }

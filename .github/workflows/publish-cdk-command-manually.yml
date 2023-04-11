@@ -293,7 +293,7 @@ jobs:
       - name: Update CDK version
         run: |
           echo ${{needs.bump-version.outputs.new_cdk_version}} > oss/airbyte-connector-builder-resources/CDK_VERSION
-          cd oss/airbyte-connector-builder
+          cd oss/airbyte-connector-builder-server
           pip install pip-tools
           pip-compile
           pip-compile --extra tests --output-file requirements-tests.txt

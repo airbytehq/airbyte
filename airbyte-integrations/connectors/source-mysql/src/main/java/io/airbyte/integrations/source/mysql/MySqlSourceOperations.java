@@ -46,7 +46,6 @@ import com.mysql.cj.result.Field;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.SourceOperations;
 import io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations;
-import io.airbyte.db.jdbc.DateTimeConverter;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -209,11 +208,6 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   @Override
   public boolean isCursorType(final MysqlType type) {
     return ALLOWED_CURSOR_TYPES.contains(type);
-  }
-
-  @Override
-  protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DateTimeConverter.convertToTimestamp(getObject(resultSet, index, LocalDateTime.class)));
   }
 
   @Override
