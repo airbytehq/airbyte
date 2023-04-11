@@ -152,6 +152,7 @@ definitions:
         type: object
         additionalProperties: true
   ConstantBackoffStrategy:
+    title: Constant Backoff
     description: Backoff strategy with a constant backoff interval
     type: object
     required:
@@ -162,9 +163,15 @@ definitions:
         type: string
         enum: [ConstantBackoffStrategy]
       backoff_time_in_seconds:
+        title: Backoff Time
+        description: Backoff time in seconds
         anyOf:
           - type: number
           - type: string
+        examples:
+          - 30
+          - 30.5
+          - "60"
       $parameters:
         type: object
         additionalProperties: true
@@ -636,7 +643,8 @@ definitions:
         type: object
         additionalProperties: true
   ExponentialBackoffStrategy:
-    description: Backoff strategy with an exponential backoff interval
+    title: Exponential Backoff
+    description: Backoff strategy with an exponential backoff interval. The interval is defined as factor * 2^attempt_count
     type: object
     required:
       - type
@@ -645,10 +653,16 @@ definitions:
         type: string
         enum: [ExponentialBackoffStrategy]
       factor:
+        title: Factor
+        description: Multiplicative constant applied on each retry
         anyOf:
           - type: number
           - type: string
         default: 5
+        examples:
+          - 5
+          - 5.5
+          - "10"
       $parameters:
         type: object
         additionalProperties: true
@@ -1264,7 +1278,8 @@ definitions:
         type: object
         additionalProperties: true
   WaitTimeFromHeader:
-    description: Extract wait time from http header
+    title: Wait Time Extracted From Response Header
+    description: Extract wait time from a HTTP header in the response
     type: object
     required:
       - type
@@ -1274,13 +1289,22 @@ definitions:
         type: string
         enum: [WaitTimeFromHeader]
       header:
+        title: Response Header
+        description: The name of the response header defining how long to wait before retrying
         type: string
+        examples:
+          - "Retry-After"
       regex:
+        title: Extraction Regex
+        description: Optional regex to apply on the header to extract its value. The regex should define a capture group defining the wait time
         type: string
+        examples:
+          - "([-+]?\d+)"
       $parameters:
         type: object
         additionalProperties: true
   WaitUntilTimeFromHeader:
+    title: Wait Until Time Defined In Response Header
     description: Extract time at which we can retry the request from response header and wait for the difference between now and that time
     type: object
     required:
@@ -1291,13 +1315,26 @@ definitions:
         type: string
         enum: [WaitUntilTimeFromHeader]
       header:
+        title: Response Header
+        description: The name of the response header defining how long to wait before retrying
         type: string
+        examples:
+          - wait_time
       min_wait:
+        title: Minimum Wait Time
+        description: Minimum time to wait before retrying
         anyOf:
           - type: number
           - type: string
+        examples:
+          - 10
+          - "60"
       regex:
+        title: Extraction Regex
+        description: Optional regex to apply on the header to extract its value. The regex should define a capture group defining the wait time
         type: string
+        examples:
+          - "([-+]?\d+)"
       $parameters:
         type: object
         additionalProperties: true
