@@ -68,7 +68,7 @@ def retry_connection_handler(**kwargs):
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
 
     def giveup_handler(exc):
-        if isinstance(exc, HubspotInvalidAuth) and TOKEN_EXPIRED_ERROR in exc.response:
+        if isinstance(exc, HubspotInvalidAuth) and TOKEN_EXPIRED_ERROR.lower() in exc.response.text.lower():
             return False
         if TOKEN_REFRESH_RETRIES_EXCEEDED_ERROR.lower() in exc.response.text.lower():
             return False
