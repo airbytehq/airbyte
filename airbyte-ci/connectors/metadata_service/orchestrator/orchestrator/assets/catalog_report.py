@@ -167,12 +167,3 @@ def all_destinations_dataframe(
         github_connector_folders=github_connector_folders,
         cached_specs=cached_specs,
     )
-
-
-@asset(required_resource_keys={"metadata_folder_blobs"}, group_name=GROUP_NAME)
-def metadata_directory_report(context):
-    metadata_folder_blobs = context.resources.metadata_folder_blobs
-    blobs = [blob.name for blob in metadata_folder_blobs if blob.name.endswith("metadata.yaml")]
-    blobs_df = pd.DataFrame(blobs)
-
-    return output_dataframe(blobs_df)

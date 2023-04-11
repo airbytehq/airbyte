@@ -11,7 +11,6 @@ from orchestrator.assets.catalog_report import (
     all_destinations_dataframe,
     connector_catalog_location_markdown,
     connector_catalog_location_html,
-    metadata_directory_report,
 )
 from orchestrator.assets.catalog import (
     oss_destinations_dataframe,
@@ -26,6 +25,7 @@ from orchestrator.assets.catalog import (
 from orchestrator.assets.metadata import (
     catalog_derived_metadata_definitions,
     valid_metadata_report_dataframe,
+    metadata_definitions,
 )
 
 from orchestrator.assets.dev import (
@@ -35,6 +35,7 @@ from orchestrator.assets.dev import (
     cloud_catalog_diff,
     cloud_catalog_diff_dataframe,
     oss_catalog_diff_dataframe,
+    metadata_directory_report,
 )
 
 from orchestrator.jobs.catalog import generate_catalog_markdown, generate_local_metadata_files, generate_catalog
@@ -66,6 +67,7 @@ ASSETS = [
     cloud_catalog_diff_dataframe,
     oss_catalog_diff_dataframe,
     metadata_directory_report,
+    metadata_definitions,
 ]
 
 RESOURCES = {

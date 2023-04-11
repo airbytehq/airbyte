@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from typing import List
 from dagster import Output, asset
+import yaml
 
 from metadata_service.models.generated.ConnectorMetadataDefinitionV1 import ConnectorMetadataDefinitionV1
 from orchestrator.utils.object_helpers import are_values_equal, merge_values
@@ -206,3 +207,19 @@ def catalog_derived_metadata_definitions(
     )
     all_definitions = sources_metadata_list + destinations_metadata_list
     return Output(all_definitions, metadata={"count": len(all_definitions)})
+
+@asset(required_resource_keys={"metadata_folder_blobs"}, group_name=GROUP_NAME)
+def metadata_definitions(context):
+    metadata_folder_blobs = context.resources.metadata_folder_blobs
+    blobs = [blob for blob in metadata_folder_blobs if blob.name.endswith("metadata.yaml")]
+
+    metadata_definitions = []
+    for blob in blobs:
+        yaml_string = blob.download_as_string().decode("utf-8")
+        metadata_dict = yaml.safe_load(yaml_string)
+        metadata_def = ConnectorMetadataDefinitionV1.parse_obj(metadata_dict)
+        metadata_definitions.append(metadata_def)
+
+    metadata_definitions_df = pd.DataFrame(metadata_definitions)
+
+    return output_dataframe(metadata_definitions_df)

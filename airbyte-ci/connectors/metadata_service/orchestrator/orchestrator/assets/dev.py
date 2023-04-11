@@ -253,3 +253,11 @@ def cloud_catalog_diff_dataframe(cloud_catalog_diff: dict) -> OutputDataFrame:
 def oss_catalog_diff_dataframe(oss_catalog_diff: dict) -> OutputDataFrame:
     diff_df = pd.DataFrame.from_dict(oss_catalog_diff)
     return output_dataframe(diff_df)
+
+@asset(required_resource_keys={"metadata_folder_blobs"}, group_name=GROUP_NAME)
+def metadata_directory_report(context):
+    metadata_folder_blobs = context.resources.metadata_folder_blobs
+    blobs = [blob.name for blob in metadata_folder_blobs if blob.name.endswith("metadata.yaml")]
+    blobs_df = pd.DataFrame(blobs)
+
+    return output_dataframe(blobs_df)
