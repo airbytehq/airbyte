@@ -51,6 +51,7 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -63,6 +64,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -103,11 +105,22 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
   protected AutoCloseableIterator<JsonNode> queryTableFullRefresh(final JdbcDatabase database,
                                                                   final List<String> columnNames,
                                                                   final String schemaName,
-                                                                  final String tableName) {
+                                                                  final String tableName,
+                                                                  final SyncMode syncMode,
+                                                                  final Optional<String> cursorField) {
     LOGGER.info("Queueing query for table: {}", tableName);
-    return queryTable(database, String.format("SELECT %s FROM %s",
-        enquoteIdentifierList(columnNames, getQuoteString()),
-        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())));
+    // This corresponds to the initial sync for in INCREMENTAL_MODE. The ordering of the records matters as intermediate state messages are emitted.
+    if (syncMode.equals(SyncMode.INCREMENTAL)) {
+      final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
+      return queryTable(database, String.format("SELECT %s FROM %s ORDER BY %s ASC",
+          enquoteIdentifierList(columnNames, getQuoteString()),
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField));
+    } else {
+      // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering of the records.
+      return queryTable(database, String.format("SELECT %s FROM %s",
+          enquoteIdentifierList(columnNames, getQuoteString()),
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())));
+    }
   }
 
   /**

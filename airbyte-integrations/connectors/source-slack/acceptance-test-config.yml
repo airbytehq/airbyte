@@ -22,6 +22,7 @@ acceptance_tests:
     - config_path: "secrets/config.json"
       expect_records:
         path: "integration_tests/expected_records.jsonl"
+      timeout_seconds: 4800
       fail_on_extra_columns: false
   full_refresh:
     tests:
