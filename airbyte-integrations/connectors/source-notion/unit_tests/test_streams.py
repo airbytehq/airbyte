@@ -47,7 +47,7 @@ def test_parse_response(patch_base_class, requests_mock):
 def test_request_headers(patch_base_class):
     stream = NotionStream(config=MagicMock())
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_headers = {"Notion-Version": "2021-08-16"}
+    expected_headers = {"Notion-Version": "2022-06-28"}
     assert stream.request_headers(**inputs) == expected_headers
 
 
