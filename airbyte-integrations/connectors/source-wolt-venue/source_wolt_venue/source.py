@@ -23,6 +23,7 @@ class WoltVenueStream(HttpStream, ABC):
         self.start_date = config.get("start_date")
         self.stop_date = pendulum.now().format("YYYY-MM-DDTHH:00:00")
         self.access_token = None
+        self.access_token_expires_at = None
         self.update_access_token()
 
         self.venues_mapping = venues_mapping
@@ -39,7 +40,11 @@ class WoltVenueStream(HttpStream, ABC):
         form_data = {"grant_type": "refresh_token", "refresh_token": self.refresh_token}
         url = "https://authentication.wolt.com/v1/wauth2/access_token"
         response = requests.post(url, data=form_data, verify=False)
-        self.access_token = response.json().get("access_token")
+        response_data = response.json()
+
+        expires_in = response_data.get("expires_in")
+        self.access_token_expires_at = pendulum.now().add(seconds=expires_in)
+        self.access_token = response_data.get("access_token")
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -66,6 +71,8 @@ class WoltVenueStream(HttpStream, ABC):
     def request_headers(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
+        if pendulum.now() >= self.access_token_expires_at:
+            self.update_access_token()
         return {"Authorization": f"Bearer {self.access_token}"}
 
     def request_params(

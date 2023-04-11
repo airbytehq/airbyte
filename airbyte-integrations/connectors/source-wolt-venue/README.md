@@ -59,8 +59,15 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 
 #### Build
 First, make sure you build the latest Docker image:
+
+```shell
+IMAGE_TAG="1.0.0"
 ```
-docker build . -t airbyte/source-wolt-venue:dev
+```
+docker build . -t airbyte/source-wolt-venue:$IMAGE_TAG  --platform linux/amd64
+
+docker tag airbyte/source-wolt-venue:$IMAGE_TAG askeladden/source-wolt-venue:$IMAGE_TAG
+docker push askeladden/source-wolt-venue:$IMAGE_TAG
 ```
 
 You can also build the connector image via Gradle:
