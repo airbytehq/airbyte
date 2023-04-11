@@ -77,162 +77,162 @@
     },
     "phases": {
       "type": ["null", "array"],
-      "items": [
-        {
-          "type": ["null", "object"],
-          "properties": {
-            "add_invoice_items": {
-              "type": ["null", "array"],
-              "items": {
-                "type": ["null", "object"],
-                "additionalProperties": true,
-                "properties": {
-                  "price": {
-                    "type": ["null", "string"]
-                  },
-                  "quantity": {
-                    "type": ["null", "string"]
-                  },
-                  "tax_rates": {
-                    "type": ["null", "array"],
-                    "items": {
-                      "type": ["null", "object"],
-                      "additionalProperties": true,
-                      "properties": {
-                        "id": {
-                          "type": ["null", "string"]
-                        },
-                        "object": {
-                          "type": ["null", "string"]
-                        },
-                        "active": {
-                          "type": ["null", "boolean"]
-                        },
-                        "country": {
-                          "type": ["null", "string"]
-                        },
-                        "created": {
-                          "type": ["null", "string"],
-                          "format": "datetime"
-                        },
-                        "display_name": {
-                          "type": ["null", "string"]
-                        },
-                        "inclusive": {
-                          "type": ["null", "boolean"]
-                        },
-                        "jurisdiction": {
-                          "type": ["null", "string"]
-                        },
-                        "livemode": {
-                          "type": ["null", "boolean"]
-                        },
-                        "metadata": {
-                          "type": ["null", "object"],
-                          "additionalProperties": true
-                        },
-                        "percentage": {
-                          "type": ["null", "number"]
-                        },
-                        "state": {
-                          "type": ["null", "string"]
-                        },
-                        "tax_type": {
-                          "type": ["null", "string"]
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "application_fee_percent": {
-              "type": ["null", "string"]
-            },
-            "billing_cycle_anchor": {
-              "type": ["null", "string"]
-            },
-            "billing_thresholds": {
-              "type": ["null", "string"]
-            },
-            "collection_method": {
-              "type": ["null", "string"]
-            },
-            "coupon": {
-              "type": ["null", "string"]
-            },
-            "currency": {
-              "type": ["null", "string"]
-            },
-            "default_payment_method": {
-              "type": ["null", "string"]
-            },
-            "default_tax_rates": {
-              "type": ["null", "array"],
-              "items": {
-                "type": ["null", "object"],
-                "additionalProperties": true
-              }
-            },
-            "description": {
-              "type": ["null", "string"]
-            },
-            "end_date": {
-              "type": ["null", "integer"]
-            },
-            "invoice_settings": {
-              "type": ["null", "string"]
-            },
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "add_invoice_items": {
+            "type": ["null", "array"],
             "items": {
-              "type": ["null", "array"],
-              "items": [
-                {
-                  "type": ["null", "object"],
-                  "properties": {
-                    "billing_thresholds": {
-                      "type": ["null", "string"]
-                    },
-                    "metadata": {
-                      "type": ["null", "object"]
-                    },
-                    "price": {
-                      "type": ["null", "string"]
-                    },
-                    "quantity": {
-                      "type": ["null", "integer"]
-                    },
-                    "tax_rates": {
-                      "type": ["null", "array"],
-                      "items": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "price": {
+                  "type": ["null", "string"]
+                },
+                "quantity": {
+                  "type": ["null", "string"]
+                },
+                "tax_rates": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "object"],
+                    "additionalProperties": true,
+                    "properties": {
+                      "id": {
+                        "type": ["null", "string"]
+                      },
+                      "object": {
+                        "type": ["null", "string"]
+                      },
+                      "active": {
+                        "type": ["null", "boolean"]
+                      },
+                      "country": {
+                        "type": ["null", "string"]
+                      },
+                      "created": {
+                        "type": ["null", "string"],
+                        "format": "datetime"
+                      },
+                      "display_name": {
+                        "type": ["null", "string"]
+                      },
+                      "inclusive": {
+                        "type": ["null", "boolean"]
+                      },
+                      "jurisdiction": {
+                        "type": ["null", "string"]
+                      },
+                      "livemode": {
+                        "type": ["null", "boolean"]
+                      },
+                      "metadata": {
                         "type": ["null", "object"],
                         "additionalProperties": true
+                      },
+                      "percentage": {
+                        "type": ["null", "number"]
+                      },
+                      "state": {
+                        "type": ["null", "string"]
+                      },
+                      "tax_type": {
+                        "type": ["null", "string"]
                       }
                     }
                   }
                 }
-              ]
-            },
-            "metadata": {
-              "type": ["null", "object"]
-            },
-            "on_behalf_of": {
-              "type": ["null", "string"]
-            },
-            "proration_behavior": {
-              "type": ["null", "string"]
-            },
-            "start_date": {
-              "type": ["null", "integer"]
-            },
-            "transfer_data": {
-              "type": ["null", "string"]
-            },
-            "trial_end": {
-              "type": ["null", "string"]
+              }
             }
+          },
+          "application_fee_percent": {
+            "type": ["null", "string"]
+          },
+          "billing_cycle_anchor": {
+            "type": ["null", "string"]
+          },
+          "billing_thresholds": {
+            "type": ["null", "string"]
+          },
+          "collection_method": {
+            "type": ["null", "string"]
+          },
+          "coupon": {
+            "type": ["null", "string"]
+          },
+          "currency": {
+            "type": ["null", "string"]
+          },
+          "default_payment_method": {
+            "type": ["null", "string"]
+          },
+          "default_tax_rates": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "additionalProperties": true
+            }
+          },
+          "description": {
+            "type": ["null", "string"]
+          },
+          "end_date": {
+            "type": ["null", "integer"]
+          },
+          "invoice_settings": {
+            "type": ["null", "string"]
+          },
+          "items": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "billing_thresholds": {
+                  "type": ["null", "string"]
+                },
+                "metadata": {
+                  "type": ["null", "object"],
+                  "additionalProperties": true
+                },
+                "price": {
+                  "type": ["null", "string"]
+                },
+                "quantity": {
+                  "type": ["null", "integer"]
+                },
+                "tax_rates": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "object"],
+                    "additionalProperties": true
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "type": ["null", "object"],
+            "additionalProperties": true
+          },
+          "on_behalf_of": {
+            "type": ["null", "string"]
+          },
+          "proration_behavior": {
+            "type": ["null", "string"]
+          },
+          "start_date": {
+            "type": ["null", "integer"]
+          },
+          "transfer_data": {
+            "type": ["null", "string"]
+          },
+          "trial_end": {
+            "type": ["null", "string"]
           }
         }
-      ]
+      }
     },
     "released_at": {
       "type": ["null", "string"]
