@@ -97,8 +97,8 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
 
   @Override
   public boolean isSnapshotEvent(final ChangeEvent<String, String> event) {
-    JsonNode isSnapshotEvent = Jsons.deserialize(event.value()).get("source").get("snapshot");
-    return isSnapshotEvent != null && isSnapshotEvent.asBoolean();
+    final SnapshotMetadata snapshotMetadata = SnapshotMetadata.fromString(Jsons.deserialize(event.value()).get("source").get("snapshot").asText());
+    return SnapshotMetadata.isSnapshotEventMetadata(snapshotMetadata);
   }
 
   @Override
