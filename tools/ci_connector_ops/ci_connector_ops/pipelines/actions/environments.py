@@ -4,11 +4,15 @@
 
 """This modules groups functions made to create reusable environments packaged in dagger containers."""
 
-from typing import List, Optional
+from __future__ import annotations
 
-from ci_connector_ops.pipelines.contexts import PipelineContext, ConnectorTestContext
+from typing import TYPE_CHECKING, List, Optional
+
 from ci_connector_ops.pipelines.utils import get_file_contents
 from dagger import CacheSharingMode, CacheVolume, Container, Directory, Secret
+
+if TYPE_CHECKING:
+    from ci_connector_ops.pipelines.contexts import ConnectorTestContext, PipelineContext
 
 PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
 
