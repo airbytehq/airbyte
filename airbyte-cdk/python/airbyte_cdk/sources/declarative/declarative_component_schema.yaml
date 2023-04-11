@@ -716,7 +716,8 @@ definitions:
         type: object
         additional_properties: true
   DefaultErrorHandler:
-    description: The default error handler. Default behavior includes only retrying server errors (HTTP 5XX) and too many requests (HTTP 429) with an exponential backoff
+    title: Default Error Handler
+    description: Component defining how to handle errors. Default behavior includes only retrying server errors (HTTP 5XX) and too many requests (HTTP 429) with an exponential backoff
     type: object
     required:
       - type
@@ -725,6 +726,8 @@ definitions:
         type: string
         enum: [DefaultErrorHandler]
       backoff_strategies:
+        title: Backoff Strategies
+        description: List of backoff strategies to use to determine how long to wait before retrying a retryable request
         type: array
         items:
           anyOf:
@@ -734,9 +737,17 @@ definitions:
             - "$ref": "#/definitions/WaitTimeFromHeader"
             - "$ref": "#/definitions/WaitUntilTimeFromHeader"
       max_retries:
+        title: Max Retry Count
+        description: The maximum number of time to retry a retryable request before giving up and failing
         type: integer
         default: 5
+        examples:
+          - 5
+          - 0
+          - 10
       response_filters:
+        title: Response Filters
+        description: List of response filters to iterate on when deciding how to handle an error
         type: array
         items:
           "$ref": "#/definitions/HttpResponseFilter"
