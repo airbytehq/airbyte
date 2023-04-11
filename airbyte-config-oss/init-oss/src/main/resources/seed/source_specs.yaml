@@ -3901,7 +3901,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.3.1"
+- dockerImage: "airbyte/source-facebook-marketing:0.3.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -4490,7 +4490,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.36"
+- dockerImage: "airbyte/source-file:0.2.37"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/file"
     connectionSpecification:
@@ -4532,9 +4532,8 @@
           examples:
           - "{}"
           - "{\"sep\": \" \"}"
-          - sep: "\t"
-            header: 0
-            names: "column1, column2"
+          - "{\"sep\": \"\t\", \"header\": 0, \"names\": [\"column1\", \"column2\"\
+            ] }"
         url:
           type: "string"
           title: "URL"
@@ -6893,7 +6892,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.5.1"
+- dockerImage: "airbyte/source-hubspot:0.6.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/hubspot"
     connectionSpecification:
@@ -7106,7 +7105,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-insightly:0.1.1"
+- dockerImage: "airbyte/source-insightly:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/insightly"
     connectionSpecification:
@@ -7335,7 +7334,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-jira:0.3.5"
+- dockerImage: "airbyte/source-jira:0.3.6"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/jira"
     connectionSpecification:
@@ -7359,9 +7358,11 @@
           type: "string"
           title: "Domain"
           examples:
-          - "domainname.atlassian.net"
-          pattern: "^[a-zA-Z0-9._-]*\\.atlassian\\.net$"
-          description: "The Domain for your Jira account, e.g. airbyteio.atlassian.net"
+          - "<your-domain>.atlassian.net"
+          - "<your-domain>.jira.com"
+          - "jira.<your-domain>.com"
+          description: "The Domain for your Jira account, e.g. airbyteio.atlassian.net,\
+            \ airbyteio.jira.com, jira.your-domain.com"
           order: 1
         email:
           type: "string"
@@ -8509,7 +8510,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-marketo:1.0.2"
+- dockerImage: "airbyte/source-marketo:1.0.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/marketo"
     connectionSpecification:
@@ -8557,6 +8558,7 @@
           examples:
           - "2020-09-25T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          format: "date-time"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -12746,62 +12748,85 @@
         oauthFlowOutputParameters:
         - - "token"
         - - "key"
-- dockerImage: "airbyte/source-quickbooks-singer:0.1.5"
+- dockerImage: "airbyte/source-quickbooks:1.0.0"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/sources/quickbooks-singer"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/quickbooks"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
-      title: "Source QuickBooks Singer Spec"
+      title: "Source QuickBooks Spec"
       type: "object"
       required:
-      - "client_id"
-      - "client_secret"
-      - "refresh_token"
-      - "realm_id"
-      - "user_agent"
+      - "credentials"
       - "start_date"
       - "sandbox"
-      additionalProperties: false
+      additionalProperties: true
       properties:
-        client_id:
-          type: "string"
-          title: "Client ID"
-          description: "Identifies which app is making the request. Obtain this value\
-            \ from the Keys tab on the app profile via My Apps on the developer site.\
-            \ There are two versions of this key: development and production."
-        client_secret:
-          description: " Obtain this value from the Keys tab on the app profile via\
-            \ My Apps on the developer site. There are two versions of this key: development\
-            \ and production."
-          title: "Client Secret"
-          type: "string"
-          airbyte_secret: true
-        refresh_token:
-          description: "A token used when refreshing the access token."
-          title: "Refresh Token"
-          type: "string"
-          airbyte_secret: true
-        realm_id:
-          description: "Labeled Company ID. The Make API Calls panel is populated\
-            \ with the realm id and the current access token."
-          title: "Realm ID"
-          type: "string"
-          airbyte_secret: true
-        user_agent:
-          type: "string"
-          title: "User Agent"
-          description: "Process and email for API logging purposes. Example: tap-quickbooks\
-            \ <api_user_email@your_company.com>."
+        credentials:
+          title: "Authorization Method"
+          type: "object"
+          order: 0
+          oneOf:
+          - type: "object"
+            title: "OAuth2.0"
+            required:
+            - "client_id"
+            - "client_secret"
+            - "refresh_token"
+            - "access_token"
+            - "token_expiry_date"
+            - "realm_id"
+            properties:
+              auth_type:
+                type: "string"
+                const: "oauth2.0"
+              client_id:
+                type: "string"
+                title: "Client ID"
+                description: "Identifies which app is making the request. Obtain this\
+                  \ value from the Keys tab on the app profile via My Apps on the\
+                  \ developer site. There are two versions of this key: development\
+                  \ and production."
+              client_secret:
+                description: " Obtain this value from the Keys tab on the app profile\
+                  \ via My Apps on the developer site. There are two versions of this\
+                  \ key: development and production."
+                title: "Client Secret"
+                type: "string"
+                airbyte_secret: true
+              refresh_token:
+                description: "A token used when refreshing the access token."
+                title: "Refresh Token"
+                type: "string"
+                airbyte_secret: true
+              access_token:
+                description: "Access token fot making authenticated requests."
+                title: "Access Token"
+                type: "string"
+                airbyte_secret: true
+              token_expiry_date:
+                type: "string"
+                title: "Token Expiry Date"
+                description: "The date-time when the access token should be refreshed."
+                format: "date-time"
+              realm_id:
+                description: "Labeled Company ID. The Make API Calls panel is populated\
+                  \ with the realm id and the current access token."
+                title: "Realm ID"
+                type: "string"
+                airbyte_secret: true
         start_date:
+          order: 1
           description: "The default value to use if no bookmark exists for an endpoint\
-            \ (rfc3339 date string). E.g, 2021-03-20T00:00:00Z. Any data before this\
-            \ date will not be replicated."
+            \ (rfc3339 date string). E.g, 2021-03-20T00:00:00+00:00. Any data before\
+            \ this date will not be replicated."
           title: "Start Date"
           type: "string"
-          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          format: "date-time"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[+-][0-9]{2}:[0-9]{2}"
           examples:
-          - "2021-03-20T00:00:00Z"
+          - "2021-03-20T00:00:00+00:00"
         sandbox:
+          order: 2
           description: "Determines whether to use the sandbox or production environment."
           title: "Sandbox"
           type: "boolean"
@@ -12809,6 +12834,60 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+    advanced_auth:
+      auth_flow_type: "oauth2.0"
+      predicate_key:
+      - "credentials"
+      - "auth_type"
+      predicate_value: "oauth2.0"
+      oauth_config_specification:
+        complete_oauth_output_specification:
+          type: "object"
+          additionalProperties: true
+          properties:
+            access_token:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "access_token"
+            refresh_token:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "refresh_token"
+            token_expiry_date:
+              type: "string"
+              format: "date-time"
+              path_in_connector_config:
+              - "credentials"
+              - "token_expiry_date"
+            realm_id:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "realm_id"
+        complete_oauth_server_input_specification:
+          type: "object"
+          additionalProperties: true
+          properties:
+            client_id:
+              type: "string"
+            client_secret:
+              type: "string"
+        complete_oauth_server_output_specification:
+          type: "object"
+          additionalProperties: true
+          properties:
+            client_id:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "client_id"
+            client_secret:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "client_secret"
 - dockerImage: "airbyte/source-railz:0.1.1"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -12841,7 +12920,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-recharge:0.2.7"
+- dockerImage: "airbyte/source-recharge:0.2.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recharge"
     connectionSpecification:
@@ -15585,7 +15664,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:3.0.0"
+- dockerImage: "airbyte/source-tiktok-marketing:3.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
@@ -15673,6 +15752,12 @@
           order: 2
           type: "string"
           format: "date"
+        attribution_window:
+          title: "Attribution Window"
+          description: "The attribution window in days."
+          default: 0
+          order: 3
+          type: "integer"
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: false
@@ -16215,7 +16300,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-twilio:0.2.0"
+- dockerImage: "airbyte/source-twilio:0.3.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/twilio"
     connectionSpecification:
