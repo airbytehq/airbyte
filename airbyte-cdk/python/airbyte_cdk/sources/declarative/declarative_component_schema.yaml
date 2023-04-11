@@ -166,6 +166,7 @@ definitions:
           - ["users"]
           - ["users", "contacts"]
   CompositeErrorHandler:
+    title: Composite Error Handler
     description: Error handler that sequentially iterates over a list of error handlers
     type: object
     required:
@@ -176,6 +177,8 @@ definitions:
         type: string
         enum: [CompositeErrorHandler]
       error_handlers:
+        title: Error Handlers
+        description: List of error handlers to iterate on to determine how to handle a failed response
         type: array
         items:
           anyOf:
