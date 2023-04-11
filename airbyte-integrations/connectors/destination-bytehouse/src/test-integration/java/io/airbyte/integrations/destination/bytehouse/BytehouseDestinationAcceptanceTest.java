@@ -17,18 +17,16 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class BytehouseDestinationAcceptanceTest extends DestinationAcceptanceTest {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(BytehouseDestinationAcceptanceTest.class);
 
   private ObjectNode config;
   private JdbcDatabase db;
@@ -40,26 +38,29 @@ public class BytehouseDestinationAcceptanceTest extends DestinationAcceptanceTes
 
   @Override
   protected JsonNode getConfig() {
-    // TODO: Generate the configuration JSON file to be used for running the destination during the test
+    // Generate the configuration JSON file to be used for running the destination during the test
     // configJson can either be static and read from secrets/config.json directly
     // or created in the setup method
-    if (config != null)
-      return config;
+    if (config != null) return config;
 
     config = (ObjectNode) Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
-    final String jdbcUrl = String.format(DatabaseDriver.BYTEHOUSE.getUrlFormatString(),
-        config.get(JdbcUtils.HOST_KEY).asText(),
-        config.get(JdbcUtils.PORT_KEY).asInt());
 
-    BytehouseDestination.rewriteUrlParams(config);
-    config.put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
+    var jdbcUrl = new StringBuilder(String.format(DatabaseDriver.BYTEHOUSE.getUrlFormatString(),
+        config.get(JdbcUtils.HOST_KEY).asText(),
+        config.get(JdbcUtils.PORT_KEY).asInt()));
+    var params = new ArrayList<>(BytehouseDestination.DEFAULT_PARAMETERS);
+    params.add("api_key=" + config.get(BytehouseDestination.API_KEY).asText());
+    jdbcUrl.append("?").append(String.join("&", params));
+
+//    BytehouseDestination.rewriteUrlParams(config);
+    config.put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
 
     return config;
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    // TODO return an invalid config which, when used to run the connector's check connection operation,
+    // return an invalid config which, when used to run the connector's check connection operation,
     // should result in a failed connection check
     final ObjectNode config = (ObjectNode) Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
     config.put("api_key", "wrong key");
@@ -74,10 +75,9 @@ public class BytehouseDestinationAcceptanceTest extends DestinationAcceptanceTes
                                            String namespace,
                                            JsonNode streamSchema)
       throws Exception {
-    // TODO Implement this method to retrieve records which written to the destination by the connector.
+    // Implement this method to retrieve records which written to the destination by the connector.
     // Records returned from this method will be compared against records provided to the connector
     // to verify they were written correctly
-    LOGGER.info("Retriving records, env: {}, stream: {}, namespace: {}", testEnv, streamName, namespace);
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
@@ -91,15 +91,7 @@ public class BytehouseDestinationAcceptanceTest extends DestinationAcceptanceTes
 
   @Override
   protected String getDefaultSchema(JsonNode config) throws Exception {
-    String schema = config.get(JdbcUtils.DATABASE_KEY).asText();
-    LOGGER.warn("default schema: " + schema);
-    System.out.println("default schema: " + schema);
-    return schema;
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
-    return false;
+    return config.get(JdbcUtils.DATABASE_KEY).asText();
   }
 
   private static JdbcDatabase getDatabase(final JsonNode config) {
@@ -121,13 +113,13 @@ public class BytehouseDestinationAcceptanceTest extends DestinationAcceptanceTes
 
   @Override
   protected void setup(TestDestinationEnv testEnv) {
-    // TODO Implement this method to run any setup actions needed before every test case
+    // Implement this method to run any setup actions needed before every test case
     this.db = getDatabase(getConfig());
   }
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {
-    // TODO Implement this method to run any cleanup actions needed after every test case
+    // Implement this method to run any cleanup actions needed after every test case
     try {
       String sql = String.format("TRUNCATE TABLE %s._airbyte_raw_exchange_rate", getConfig().get(JdbcUtils.DATABASE_KEY).asText());
       this.db.execute(sql);

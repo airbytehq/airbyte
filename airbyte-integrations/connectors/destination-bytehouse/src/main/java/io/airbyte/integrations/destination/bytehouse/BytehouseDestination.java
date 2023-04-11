@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.bytehouse;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
@@ -18,7 +19,9 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
 
@@ -31,6 +34,8 @@ public class BytehouseDestination extends AbstractJdbcDestination implements Des
   private static final Logger LOGGER = LoggerFactory.getLogger(BytehouseDestination.class);
 
   public static final String DRIVER_CLASS = DatabaseDriver.BYTEHOUSE.getDriverClassName();
+  public static final String DEFAULT_USERNAME = "bytehouse";
+  public static final List<String> DEFAULT_PARAMETERS = ImmutableList.of("user="+DEFAULT_USERNAME, "secure=true");
 
   public BytehouseDestination() {
     super(DRIVER_CLASS, new BytehouseSQLNameTransformer(), new BytehouseSqlOperations());
@@ -38,10 +43,6 @@ public class BytehouseDestination extends AbstractJdbcDestination implements Des
 
   public static void main(String[] args) throws Exception {
     new IntegrationRunner(new BytehouseDestination()).run(args);
-  }
-
-  private void log(Object obj) {
-    LOGGER.info(obj.toString(), BytehouseDestination.class);
   }
 
   @Override
@@ -85,12 +86,15 @@ public class BytehouseDestination extends AbstractJdbcDestination implements Des
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt()));
 
-    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put(JdbcUtils.USERNAME_KEY, "bytehouse")
-        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
+    var params = new ArrayList<>(DEFAULT_PARAMETERS);
+    params.add("api_key=" + config.get(API_KEY).asText());
+    jdbcUrl.append("?").append(String.join("&", params));
 
-//    ((ObjectNode)config).put(JdbcUtils.USERNAME_KEY, "bytehouse");
-    rewriteUrlParams(config);
+    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+        .put(JdbcUtils.USERNAME_KEY, DEFAULT_USERNAME)
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
+
+//    rewriteUrlParams(config);
     if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
       configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
@@ -98,7 +102,7 @@ public class BytehouseDestination extends AbstractJdbcDestination implements Des
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  private static final String API_KEY = "api_key";
+  public static final String API_KEY = "api_key";
   public static void rewriteUrlParams(JsonNode config) {
     String apiKey = config.get(API_KEY).asText();
 

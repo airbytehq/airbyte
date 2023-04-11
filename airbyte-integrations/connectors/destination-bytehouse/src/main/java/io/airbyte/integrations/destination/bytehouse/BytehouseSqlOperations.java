@@ -14,12 +14,8 @@ import java.nio.file.Files;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class BytehouseSqlOperations extends JdbcSqlOperations {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(BytehouseSqlOperations.class);
 
   @Override
   public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
@@ -63,7 +59,6 @@ public class BytehouseSqlOperations extends JdbcSqlOperations {
                                     final String schemaName,
                                     final String tmpTableName)
       throws SQLException {
-    LOGGER.info("actual size of batch: {}", records.size());
 
     if (records.isEmpty()) {
       return;
