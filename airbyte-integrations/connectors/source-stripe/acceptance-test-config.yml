@@ -74,4 +74,3 @@ acceptance_tests:
               bypass_reason: "URL changes upon each request for privacy/security"
             - name: hosted_invoice_url
               bypass_reason: "URL changes upon each request for privacy/security"
-              
