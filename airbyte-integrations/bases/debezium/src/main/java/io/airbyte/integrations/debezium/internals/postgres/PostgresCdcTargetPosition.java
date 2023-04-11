@@ -112,7 +112,7 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
     final String offset_lsn =
         offsetJson.get("lsn_commit") != null ? String.valueOf(offsetJson.get("lsn_commit")) : String.valueOf(offsetJson.get("lsn"));
     final String event_lsn = String.valueOf(Jsons.deserialize(event.value()).get("source").get("lsn"));
-    return Integer.parseInt(event_lsn) > Integer.parseInt(offset_lsn);
+    return Long.parseLong(event_lsn) > Long.parseLong(offset_lsn);
   }
 
   @Override
@@ -131,7 +131,7 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
     final String lsnB =
         offsetJsonB.get("lsn_commit") != null ? String.valueOf(offsetJsonB.get("lsn_commit")) : String.valueOf(offsetJsonB.get("lsn"));
 
-    return Integer.parseInt(lsnA) == Integer.parseInt(lsnB);
+    return Long.parseLong(lsnA) == Long.parseLong(lsnB);
   }
 
 }
