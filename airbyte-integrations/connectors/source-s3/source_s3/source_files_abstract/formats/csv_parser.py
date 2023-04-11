@@ -14,6 +14,7 @@ import six  # type: ignore[import]
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pyarrow import csv as pa_csv
+from pyarrow.lib import ArrowInvalid
 from source_s3.exceptions import S3Exception
 from source_s3.source_files_abstract.file_info import FileInfo
 from source_s3.utils import get_value_or_json_if_empty_string, run_in_external_process
@@ -242,6 +243,9 @@ class CsvParser(AbstractFileParser):
         while still_reading:
             try:
                 batch = streaming_reader.read_next_batch()
+            except ArrowInvalid as e:
+                error_message = "Possibly too small block size used. Please try to increase it"
+                raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error) from e
             except StopIteration:
                 still_reading = False
             else:
