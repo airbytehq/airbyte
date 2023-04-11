@@ -38,6 +38,15 @@
     },
     {
       "stream": {
+        "name": "conversation_messages",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "calls",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],
@@ -159,6 +168,24 @@
     {
       "stream": {
         "name": "conversations",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "flows",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "executions",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

@@ -370,7 +370,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:2.0.17"
+- dockerImage: "airbyte/source-alloydb:2.0.19"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -8601,7 +8601,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:1.0.10"
+- dockerImage: "airbyte/source-mssql:1.0.11"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
@@ -9478,7 +9478,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:2.0.13"
+- dockerImage: "airbyte/source-mysql:2.0.14"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -10344,7 +10344,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-notion:1.0.3"
+- dockerImage: "airbyte/source-notion:1.0.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/notion"
     connectionSpecification:
@@ -12072,7 +12072,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:2.0.18"
+- dockerImage: "airbyte/source-postgres:2.0.19"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -12748,62 +12748,85 @@
         oauthFlowOutputParameters:
         - - "token"
         - - "key"
-- dockerImage: "airbyte/source-quickbooks-singer:0.1.5"
+- dockerImage: "airbyte/source-quickbooks:2.0.0"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/sources/quickbooks-singer"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/quickbooks"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
-      title: "Source QuickBooks Singer Spec"
+      title: "Source QuickBooks Spec"
       type: "object"
       required:
-      - "client_id"
-      - "client_secret"
-      - "refresh_token"
-      - "realm_id"
-      - "user_agent"
+      - "credentials"
       - "start_date"
       - "sandbox"
-      additionalProperties: false
+      additionalProperties: true
       properties:
-        client_id:
-          type: "string"
-          title: "Client ID"
-          description: "Identifies which app is making the request. Obtain this value\
-            \ from the Keys tab on the app profile via My Apps on the developer site.\
-            \ There are two versions of this key: development and production."
-        client_secret:
-          description: " Obtain this value from the Keys tab on the app profile via\
-            \ My Apps on the developer site. There are two versions of this key: development\
-            \ and production."
-          title: "Client Secret"
-          type: "string"
-          airbyte_secret: true
-        refresh_token:
-          description: "A token used when refreshing the access token."
-          title: "Refresh Token"
-          type: "string"
-          airbyte_secret: true
-        realm_id:
-          description: "Labeled Company ID. The Make API Calls panel is populated\
-            \ with the realm id and the current access token."
-          title: "Realm ID"
-          type: "string"
-          airbyte_secret: true
-        user_agent:
-          type: "string"
-          title: "User Agent"
-          description: "Process and email for API logging purposes. Example: tap-quickbooks\
-            \ <api_user_email@your_company.com>."
+        credentials:
+          title: "Authorization Method"
+          type: "object"
+          order: 0
+          oneOf:
+          - type: "object"
+            title: "OAuth2.0"
+            required:
+            - "client_id"
+            - "client_secret"
+            - "refresh_token"
+            - "access_token"
+            - "token_expiry_date"
+            - "realm_id"
+            properties:
+              auth_type:
+                type: "string"
+                const: "oauth2.0"
+              client_id:
+                type: "string"
+                title: "Client ID"
+                description: "Identifies which app is making the request. Obtain this\
+                  \ value from the Keys tab on the app profile via My Apps on the\
+                  \ developer site. There are two versions of this key: development\
+                  \ and production."
+              client_secret:
+                description: " Obtain this value from the Keys tab on the app profile\
+                  \ via My Apps on the developer site. There are two versions of this\
+                  \ key: development and production."
+                title: "Client Secret"
+                type: "string"
+                airbyte_secret: true
+              refresh_token:
+                description: "A token used when refreshing the access token."
+                title: "Refresh Token"
+                type: "string"
+                airbyte_secret: true
+              access_token:
+                description: "Access token fot making authenticated requests."
+                title: "Access Token"
+                type: "string"
+                airbyte_secret: true
+              token_expiry_date:
+                type: "string"
+                title: "Token Expiry Date"
+                description: "The date-time when the access token should be refreshed."
+                format: "date-time"
+              realm_id:
+                description: "Labeled Company ID. The Make API Calls panel is populated\
+                  \ with the realm id and the current access token."
+                title: "Realm ID"
+                type: "string"
+                airbyte_secret: true
         start_date:
+          order: 1
           description: "The default value to use if no bookmark exists for an endpoint\
-            \ (rfc3339 date string). E.g, 2021-03-20T00:00:00Z. Any data before this\
-            \ date will not be replicated."
+            \ (rfc3339 date string). E.g, 2021-03-20T00:00:00+00:00. Any data before\
+            \ this date will not be replicated."
           title: "Start Date"
           type: "string"
+          format: "date-time"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           examples:
-          - "2021-03-20T00:00:00Z"
+          - "2021-03-20T00:00:00+00:00"
         sandbox:
+          order: 2
           description: "Determines whether to use the sandbox or production environment."
           title: "Sandbox"
           type: "boolean"
@@ -16223,7 +16246,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-twilio:0.2.0"
+- dockerImage: "airbyte/source-twilio:0.4.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/twilio"
     connectionSpecification:
