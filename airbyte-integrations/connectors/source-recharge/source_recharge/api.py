@@ -34,7 +34,7 @@ class RechargeStream(HttpStream, ABC):
         return self.name
 
     def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return self.name
 
@@ -45,8 +45,7 @@ class RechargeStream(HttpStream, ABC):
             return {"page": self.page_num}
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
-            **kwargs
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = {
             "limit": self.limit,
@@ -81,7 +80,7 @@ class RechargeStream(HttpStream, ABC):
         return super().should_retry(response)
 
     def stream_slices(
-            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         start_date = (stream_state or {}).get(self.cursor_field, self._start_date) if self.cursor_field else self._start_date
 
@@ -145,8 +144,7 @@ class Metafields(RechargeStream):
     """
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
-            **kwargs
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = {"limit": self.limit, "owner_resource": (stream_slice or {}).get("owner_resource")}
         if next_page_token:
@@ -155,12 +153,10 @@ class Metafields(RechargeStream):
         return params
 
     def stream_slices(
-            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         owner_resources = ["customer", "store", "subscription"]
-
-        for owner in owner_resources:
-            yield {"owner_resource": owner}
+        yield from [{"owner_resource": owner} for owner in owner_resources]
 
 
 class Onetimes(IncrementalRechargeStream):
