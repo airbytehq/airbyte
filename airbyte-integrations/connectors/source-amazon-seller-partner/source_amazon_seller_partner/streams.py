@@ -1248,3 +1248,98 @@ class FbaReimbursementsReports(ReportsAmazonSPStream):
     """
 
     name = "GET_FBA_REIMBURSEMENTS_DATA"
+
+
+class CatalogItems(AmazonSPStream, ABC):
+    _api_version = "2022-04-01"
+    next_page_token_field = "pageToken"
+    default_backoff_time = 60
+    primary_key = None
+    data_field = "items"
+    name = "CatalogItems"
+
+    _asins = []
+
+    def __init__(
+            self,
+            url_base: str,
+            aws_signature: AWSSignature,
+            replication_start_date: str,
+            marketplace_id: str,
+            period_in_days: Optional[int],
+            report_options: Optional[str],
+            advanced_stream_options: Optional[str],
+            max_wait_seconds: Optional[int],
+            replication_end_date: Optional[str],
+            *args,
+            **kwargs,
+    ):
+        super().__init__(
+            url_base,
+            aws_signature,
+            replication_start_date,
+            marketplace_id,
+            period_in_days,
+            report_options,
+            advanced_stream_options,
+            max_wait_seconds,
+            replication_end_date,
+            *args, **kwargs)
+        self._listing = MerchantListingsReports(
+            url_base,
+            aws_signature,
+            replication_start_date,
+            marketplace_id,
+            period_in_days,
+            report_options,
+            max_wait_seconds,
+            replication_end_date,
+            advanced_stream_options,
+            *args, **kwargs)
+
+    def read_records(self, *args, **kvargs) -> Iterable[Mapping[str, Any]]:
+        """
+        Iterate through list of asins. Request data for max 20 asins at a time
+        """
+        max_asins = 20
+        asins = []
+        self.logger.info("fetching ASINs from all listing reports .........")
+        for record in self._listing.read_records(sync_mode=SyncMode.full_refresh):
+            asins.append(record["asin1"])
+
+        asins = list(set(asins))
+        self.logger.info("number of ASINs: %d", len(asins))
+
+        while len(asins) > 0:
+            try:
+                self._asins = asins[:max_asins]
+                yield from super().read_records(*args, **kvargs)
+                asins = asins[max_asins:]
+            except Exception as err:
+                self.logger.info("some error occurred: %s", err)
+
+    def request_params(
+            self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = {
+            "marketplaceIds": self.marketplace_id,
+            "identifiersType": "ASIN",
+            "identifiers": ",".join(self._asins),
+            "includedData": ",".join(["attributes", "dimensions", "identifiers", "images", "productTypes", "relationships",
+                                      "salesRanks", "summaries"]),
+            "pageSize": 20,
+        }
+        return params
+
+    def path(self, **kwargs) -> str:
+        return f"catalog/{self._api_version}/items"
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        yield from response.json().get(self.data_field, [])
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        rate_limit = response.headers.get("x-amzn-RateLimit-Limit", 0)
+        if rate_limit:
+            return 1 / float(rate_limit)
+        else:
+            return self.default_backoff_time

@@ -1,0 +1,23 @@
+{
+  "title": "CatalogItems",
+  "description": "Catalog Items",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "numberOfResults": { "type": ["null", "number"] },
+    "items": {
+      "type": ["null", "array"],
+      "properties" : {
+        "asin":  {"type": ["null", "number"]},
+        "attributes":  {"type": ["null", "object"]},
+        "dimensions":  {"type": ["null", "array"]},
+        "identifiers":  {"type": ["null", "array"]},
+        "images":  {"type": ["null", "array"]},
+        "productTypes":  {"type": ["null", "array"]},
+        "relationships":  {"type": ["null", "array"]},
+        "salesRanks":  {"type": ["null", "array"]},
+        "summaries":  {"type": ["null", "array"]}
+      }
+    }
+  }
+}
