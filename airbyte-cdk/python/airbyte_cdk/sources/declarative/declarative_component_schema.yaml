@@ -966,6 +966,7 @@ definitions:
         type: object
         additionalProperties: true
   MinMaxDatetime:
+    title: Min-Max Datetime
     description: Compares the provided date against optional minimum or maximum times. The max_datetime serves as the ceiling and will be returned when datetime exceeds it. The min_datetime serves as the floor
     type: object
     required:
@@ -976,14 +977,36 @@ definitions:
         type: string
         enum: [MinMaxDatetime]
       datetime:
+        title: Datetime
+        description: Datetime value
         type: string
+        examples:
+          - 2021-01-01
+          - 2021-01-01T00:00:00Z
+          - "{{ config['start_time'] }}"
       datetime_format:
+        title: Datetime Format
+        description: Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty
         type: string
         default: ""
+        examples:
+          - %Y-%m-%dT%H:%M:%S.%f%"
+          - %Y-%m-%d
+          - %s
       max_datetime:
+        title: Max Datetime
+        description: Ceiling applied on the datetime value. Must be formatted with the datetime_format field
         type: string
+        examples:
+          - "2021-01-01T00:00:00Z"
+          - "2021-01-01"
       min_datetime:
+        title: Min Datetime
+        description: Floor applied on the datetime value. Must be formatted with the datetime_format field
         type: string
+        examples:
+          - "2010-01-01T00:00:00Z"
+          - "2010-01-01"
       $parameters:
         type: object
         additionalProperties: true
