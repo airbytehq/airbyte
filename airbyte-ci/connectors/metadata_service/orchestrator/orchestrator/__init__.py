@@ -37,7 +37,7 @@ from orchestrator.assets.dev import (
     oss_catalog_diff_dataframe,
 )
 
-from orchestrator.jobs.catalog import generate_catalog_markdown, generate_local_metadata_files
+from orchestrator.jobs.catalog import generate_catalog_markdown, generate_local_metadata_files, generate_catalog
 from orchestrator.sensors.catalog import catalog_updated_sensor, metadata_updated_sensor
 
 from orchestrator.config import REPORT_FOLDER, CATALOG_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME, METADATA_FOLDER
@@ -89,7 +89,7 @@ RESOURCES = {
 
 SENSORS = [
     catalog_updated_sensor(job=generate_catalog_markdown, resources_def=RESOURCES),
-    metadata_updated_sensor(job=generate_catalog_markdown, resources_def=RESOURCES)
+    metadata_updated_sensor(job=generate_catalog, resources_def=RESOURCES)
 ]
 
 SCHEDULES = []
