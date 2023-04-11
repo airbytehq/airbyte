@@ -68,15 +68,6 @@
         "group": "advanced",
         "pattern_descriptor": "key1=value1&key2=value2"
       },
-      "ssl": {
-        "title": "Connect using SSL",
-        "description": "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
-        "type": "boolean",
-        "default": false,
-        "order": 7,
-        "group": "security",
-        "always_show": true
-      },
       "ssl_mode": {
         "title": "SSL Modes",
         "description": "SSL connection modes. \n  Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"> in the docs</a>.",

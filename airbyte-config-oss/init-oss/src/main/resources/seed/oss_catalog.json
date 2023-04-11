@@ -20910,7 +20910,7 @@
     "sourceDefinitionId": "decd338e-5647-4c0b-adf4-da0e75f5a750",
     "name": "Postgres",
     "dockerRepository": "airbyte/source-postgres",
-    "dockerImageTag": "2.0.19",
+    "dockerImageTag": "2.0.20",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/postgres",
     "icon": "postgresql.svg",
     "sourceType": "database",
@@ -20983,15 +20983,6 @@
             "order": 6,
             "group": "advanced",
             "pattern_descriptor": "key1=value1&key2=value2"
-          },
-          "ssl": {
-            "title": "Connect using SSL",
-            "description": "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
-            "type": "boolean",
-            "default": false,
-            "order": 7,
-            "group": "security",
-            "always_show": true
           },
           "ssl_mode": {
             "title": "SSL Modes",
