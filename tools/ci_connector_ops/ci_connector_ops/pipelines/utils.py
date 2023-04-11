@@ -4,16 +4,15 @@
 import datetime
 import re
 import sys
-import click
 from pathlib import Path
-from typing import Optional, Set, Any, List, Callable
+from typing import Any, Callable, List, Optional, Set
 
-import asyncer
 import anyio
+import asyncer
+import click
 import git
 from ci_connector_ops.utils import DESTINATION_CONNECTOR_PATH_PREFIX, SOURCE_CONNECTOR_PATH_PREFIX, Connector, get_connector_name_from_path
-from dagger import Config, Connection, Container, QueryError, DaggerError
-
+from dagger import Config, Connection, Container, DaggerError, QueryError
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
@@ -111,7 +110,9 @@ def get_current_epoch_time() -> int:
     return round(datetime.datetime.utcnow().timestamp())
 
 
-async def get_modified_files_remote(current_git_branch: str, current_git_revision: str, diffed_branch: str = "origin/master") -> Set[str]:
+async def get_modified_files_in_branch_remote(
+    current_git_branch: str, current_git_revision: str, diffed_branch: str = "origin/master"
+) -> Set[str]:
     async with Connection(DAGGER_CONFIG) as dagger_client:
         modified_files = await (
             dagger_client.container()
@@ -139,17 +140,56 @@ async def get_modified_files_remote(current_git_branch: str, current_git_revisio
     return set(modified_files.split("\n"))
 
 
-def get_modified_files_local(current_git_revision: str, diffed_branch: str = "master") -> Set[str]:
+def get_modified_files_in_branch_local(current_git_revision: str, diffed_branch: str = "master") -> Set[str]:
     airbyte_repo = git.Repo()
     modified_files = airbyte_repo.git.diff("--diff-filter=MA", "--name-only", f"{diffed_branch}...{current_git_revision}").split("\n")
     return set(modified_files)
 
 
-def get_modified_files(current_git_branch: str, current_git_revision: str, diffed_branch: str, is_local: bool = True) -> Set[str]:
+def get_modified_files_in_branch(current_git_branch: str, current_git_revision: str, diffed_branch: str, is_local: bool = True) -> Set[str]:
     if is_local:
-        return get_modified_files_local(current_git_revision, diffed_branch)
+        return get_modified_files_in_branch_local(current_git_revision, diffed_branch)
     else:
-        return anyio.run(get_modified_files_remote, current_git_branch, current_git_revision, diffed_branch)
+        return anyio.run(get_modified_files_in_branch_remote, current_git_branch, current_git_revision, diffed_branch)
+
+
+async def get_modified_files_in_commit_remote(current_git_branch: str, current_git_revision: str) -> Set[str]:
+    async with Connection(DAGGER_CONFIG) as dagger_client:
+        modified_files = await (
+            dagger_client.container()
+            .from_("alpine/git:latest")
+            .with_workdir("/repo")
+            .with_exec(["init"])
+            .with_env_variable("CACHEBUSTER", current_git_revision)
+            .with_exec(
+                [
+                    "remote",
+                    "add",
+                    "--fetch",
+                    "--track",
+                    current_git_branch,
+                    "origin",
+                    AIRBYTE_REPO_URL,
+                ]
+            )
+            .with_exec(["checkout", "-t", f"origin/{current_git_branch}"])
+            .with_exec(["diff-tree", "--no-commit-id", "--name-only", current_git_revision, "-r"])
+            .stdout()
+        )
+    return set(modified_files.split("\n"))
+
+
+def get_modified_files_in_commit_local(current_git_revision: str) -> Set[str]:
+    airbyte_repo = git.Repo()
+    modified_files = airbyte_repo.git.diff_tree("--no-commit-id", "--name-only", current_git_revision, "-r").split("\n")
+    return set(modified_files)
+
+
+def get_modified_files_in_commit(current_git_branch: str, current_git_revision: str, is_local: bool = True) -> Set[str]:
+    if is_local:
+        return get_modified_files_in_commit_local(current_git_revision)
+    else:
+        return anyio.run(get_modified_files_in_commit_remote, current_git_branch, current_git_revision)
 
 
 def get_modified_connectors(modified_files: Set[str]) -> Set[Connector]:
@@ -158,6 +198,18 @@ def get_modified_connectors(modified_files: Set[str]) -> Set[Connector]:
         if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) or file_path.startswith(DESTINATION_CONNECTOR_PATH_PREFIX):
             modified_connectors.append(Connector(get_connector_name_from_path(file_path)))
     return set(modified_connectors)
+
+
+def get_modified_files_per_connector(modified_files: Set[str], filename: Optional[str] = None) -> dict[Connector, List[Path]]:
+    modified_files_per_connectors = {}
+    for file_path in modified_files:
+        if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) or file_path.startswith(DESTINATION_CONNECTOR_PATH_PREFIX):
+            if filename and not file_path.endswith(filename):
+                continue
+            connector = Connector(get_connector_name_from_path(file_path))
+            modified_files_per_connectors.setdefault(connector, [])
+            modified_files_per_connectors[connector].append(Path(file_path))
+    return modified_files_per_connectors
 
 
 class DaggerPipelineCommand(click.Command):

@@ -10,15 +10,12 @@ from typing import Tuple
 import anyio
 import click
 import dagger
-from ci_connector_ops.pipelines.contexts import ConnectorTestContext, CIContext
+from ci_connector_ops.pipelines.contexts import CIContext, ConnectorTestContext
 from ci_connector_ops.pipelines.github import update_commit_status_check
-from ci_connector_ops.pipelines.utils import (
-    get_modified_connectors,
-)
 from ci_connector_ops.pipelines.pipelines.connectors import run_connectors_test_pipelines
+from ci_connector_ops.pipelines.utils import get_modified_connectors
 from ci_connector_ops.utils import ConnectorLanguage, get_all_released_connectors
 from rich.logging import RichHandler
-
 
 # CONSTANTS
 
@@ -108,7 +105,7 @@ def test(
         connector_name (str): The connector technical name. E.G. source-pokeapi
     """
     connectors_under_test = get_all_released_connectors()
-    modified_connectors = get_modified_connectors(ctx.obj["modified_files"])
+    modified_connectors = get_modified_connectors(ctx.obj["modified_files_in_branch"])
     if modified:
         connectors_under_test = modified_connectors
     else:
