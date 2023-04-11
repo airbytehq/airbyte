@@ -6,7 +6,7 @@
       "type": "integer"
     },
     "id_lang": {
-      "type": "string"
+      "type": "integer"
     },
     "name": {
       "type": "string"

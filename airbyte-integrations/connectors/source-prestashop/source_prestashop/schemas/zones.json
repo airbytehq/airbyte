@@ -9,7 +9,7 @@
       "type": "string"
     },
     "active": {
-      "type": "string"
+      "type": "boolean"
     }
   }
 }

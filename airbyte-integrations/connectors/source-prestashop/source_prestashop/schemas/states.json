@@ -6,19 +6,19 @@
       "type": "integer"
     },
     "id_zone": {
-      "type": "string"
+      "type": "integer"
     },
     "id_country": {
-      "type": "string"
+      "type": "integer"
     },
     "iso_code": {
-      "type": "string"
+      "type": "integer"
     },
     "name": {
       "type": "string"
     },
     "active": {
-      "type": "string"
+      "type": "boolean"
     }
   }
 }

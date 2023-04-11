@@ -6,13 +6,13 @@
       "type": "integer"
     },
     "id_manufacturer": {
-      "type": "string"
+      "type": "integer"
     },
     "id_supplier": {
-      "type": "string"
+      "type": "integer"
     },
     "id_category_default": {
-      "type": "string"
+      "type": "integer"
     },
     "new": {
       "type": ["null", "string"]
@@ -21,28 +21,28 @@
       "type": "string"
     },
     "id_default_image": {
-      "type": "string"
+      "type": "integer"
     },
     "id_default_combination": {
       "type": ["integer", "string"]
     },
     "id_tax_rules_group": {
-      "type": "string"
+      "type": "integer"
     },
     "position_in_category": {
-      "type": "string"
+      "type": "integer"
     },
     "manufacturer_name": {
       "type": ["string", "boolean"]
     },
     "quantity": {
-      "type": "string"
+      "type": "integer"
     },
     "type": {
       "type": "string"
     },
     "id_shop_default": {
-      "type": "string"
+      "type": "integer"
     },
     "reference": {
       "type": "string"
@@ -66,7 +66,7 @@
       "type": "string"
     },
     "quantity_discount": {
-      "type": "string"
+      "type": "integer"
     },
     "ean13": {
       "type": "string"
@@ -87,7 +87,7 @@
       "type": "string"
     },
     "is_virtual": {
-      "type": "string"
+      "type": "boolean"
     },
     "state": {
       "type": "string"
@@ -120,7 +120,7 @@
       "type": "string"
     },
     "price": {
-      "type": "string"
+      "type": "number"
     },
     "wholesale_price": {
       "type": "string"

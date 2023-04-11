@@ -6,37 +6,37 @@
       "type": "integer"
     },
     "id_shop_group": {
-      "type": "string"
+      "type": "integer"
     },
     "id_shop": {
-      "type": "string"
+      "type": "integer"
     },
     "id_cart": {
-      "type": "string"
+      "type": "integer"
     },
     "id_product": {
-      "type": "string"
+      "type": "integer"
     },
     "id_product_attribute": {
-      "type": "string"
+      "type": "integer"
     },
     "id_currency": {
-      "type": "string"
+      "type": "integer"
     },
     "id_country": {
-      "type": "string"
+      "type": "integer"
     },
     "id_group": {
-      "type": "string"
+      "type": "integer"
     },
     "id_customer": {
-      "type": "string"
+      "type": "integer"
     },
     "id_specific_price_rule": {
-      "type": "string"
+      "type": "integer"
     },
     "price": {
-      "type": "string"
+      "type": "number"
     },
     "from_quantity": {
       "type": "string"

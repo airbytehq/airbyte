@@ -6,13 +6,13 @@
       "type": "integer"
     },
     "id_tax_rules_group": {
-      "type": "string"
+      "type": "integer"
     },
     "id_state": {
-      "type": "string"
+      "type": "integer"
     },
     "id_country": {
-      "type": "string"
+      "type": "integer"
     },
     "zipcode_from": {
       "type": "string"
@@ -21,7 +21,7 @@
       "type": "string"
     },
     "id_tax": {
-      "type": "string"
+      "type": "integer"
     },
     "behavior": {
       "type": "string"

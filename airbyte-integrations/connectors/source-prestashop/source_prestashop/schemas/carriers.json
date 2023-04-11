@@ -6,25 +6,25 @@
       "type": "integer"
     },
     "deleted": {
-      "type": "string"
+      "type": "integer"
     },
     "is_module": {
-      "type": "string"
+      "type": "integer"
     },
     "id_tax_rules_group": {
-      "type": "string"
+      "type": "integer"
     },
     "id_reference": {
-      "type": "string"
+      "type": "integer"
     },
     "name": {
       "type": "string"
     },
     "active": {
-      "type": "string"
+      "type": "boolean"
     },
     "is_free": {
-      "type": "string"
+      "type": "boolean"
     },
     "url": {
       "type": "string"

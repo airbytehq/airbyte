@@ -6,16 +6,16 @@
       "type": "integer"
     },
     "id_shop": {
-      "type": "string"
+      "type": "integer"
     },
     "id_country": {
-      "type": "string"
+      "type": "integer"
     },
     "id_currency": {
-      "type": "string"
+      "type": "integer"
     },
     "id_group": {
-      "type": "string"
+      "type": "integer"
     },
     "name": {
       "type": "string"
@@ -24,7 +24,7 @@
       "type": "string"
     },
     "price": {
-      "type": "string"
+      "type": "number"
     },
     "reduction": {
       "type": "string"

@@ -18,10 +18,10 @@
       "type": "string"
     },
     "active": {
-      "type": "string"
+      "type": "boolean"
     },
     "deleted": {
-      "type": "string"
+      "type": "boolean"
     }
   }
 }

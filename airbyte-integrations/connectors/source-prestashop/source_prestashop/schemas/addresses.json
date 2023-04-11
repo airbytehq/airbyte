@@ -6,22 +6,22 @@
       "type": "integer"
     },
     "id_customer": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "id_manufacturer": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "id_supplier": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "id_warehouse": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "id_country": {
-      "type": "string"
+      "type": "integer"
     },
     "id_state": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "alias": {
       "type": "string"
@@ -63,7 +63,7 @@
       "type": ["null", "string"]
     },
     "deleted": {
-      "type": "string"
+      "type": "boolean"
     },
     "date_add": {
       "type": "string",

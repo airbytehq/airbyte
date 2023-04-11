@@ -6,25 +6,25 @@
       "type": "integer"
     },
     "id_product": {
-      "type": "string"
+      "type": "integer"
     },
     "id_product_attribute": {
-      "type": "string"
+      "type": "integer"
     },
     "id_shop": {
-      "type": "string"
+      "type": "integer"
     },
     "id_shop_group": {
-      "type": "string"
+      "type": "integer"
     },
     "quantity": {
-      "type": "string"
+      "type": "integer"
     },
     "depends_on_stock": {
-      "type": "string"
+      "type": "boolean"
     },
     "out_of_stock": {
-      "type": "string"
+      "type": "boolean"
     },
     "location": {
       "type": "string"

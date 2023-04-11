@@ -6,10 +6,10 @@
       "type": "integer"
     },
     "id_country": {
-      "type": "string"
+      "type": "integer"
     },
     "id_state": {
-      "type": "string"
+      "type": "integer"
     },
     "hours": {
       "type": "string"
@@ -21,10 +21,10 @@
       "type": "string"
     },
     "latitude": {
-      "type": "string"
+      "type": "number"
     },
     "longitude": {
-      "type": "string"
+      "type": "number"
     },
     "phone": {
       "type": "string"
@@ -36,7 +36,7 @@
       "type": "string"
     },
     "active": {
-      "type": "string"
+      "type": "boolean"
     },
     "date_add": {
       "type": "string",

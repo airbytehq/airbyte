@@ -9,7 +9,7 @@
       "type": "string"
     },
     "deleted": {
-      "type": "string"
+      "type": "boolean"
     },
     "date_add": {
       "type": "string",

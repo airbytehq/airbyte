@@ -6,34 +6,34 @@
       "type": "integer"
     },
     "id_product": {
-      "type": "string"
+      "type": "integer"
     },
     "id_product_attribute": {
-      "type": "string"
+      "type": "integer"
     },
     "id_warehouse": {
-      "type": "string"
+      "type": "integer"
     },
     "id_currency": {
-      "type": "string"
+      "type": "integer"
     },
     "management_type": {
       "type": ["null", "string"]
     },
     "id_employee": {
-      "type": "string"
+      "type": "integer"
     },
     "id_stock": {
-      "type": "string"
+      "type": "integer"
     },
     "id_stock_mvt_reason": {
       "type": "string"
     },
     "id_order": {
-      "type": "string"
+      "type": "integer"
     },
     "id_supply_order": {
-      "type": "string"
+      "type": "integer"
     },
     "product_name": {
       "type": "boolean"

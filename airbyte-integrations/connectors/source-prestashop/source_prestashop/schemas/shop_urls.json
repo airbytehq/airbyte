@@ -6,10 +6,10 @@
       "type": "integer"
     },
     "id_shop": {
-      "type": "string"
+      "type": "integer"
     },
     "active": {
-      "type": "string"
+      "type": "boolean"
     },
     "main": {
       "type": "string"

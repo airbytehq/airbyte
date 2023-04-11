@@ -6,16 +6,16 @@
       "type": "integer"
     },
     "id_shop_group": {
-      "type": "string"
+      "type": "integer"
     },
     "id_category": {
-      "type": "string"
+      "type": "integer"
     },
     "active": {
-      "type": "string"
+      "type": "boolean"
     },
     "deleted": {
-      "type": "string"
+      "type": "boolean"
     },
     "name": {
       "type": "string"
