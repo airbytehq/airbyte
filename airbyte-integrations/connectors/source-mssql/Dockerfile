@@ -16,5 +16,5 @@ ENV APPLICATION source-mssql
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=1.0.10
+LABEL io.airbyte.version=1.0.11
 LABEL io.airbyte.name=airbyte/source-mssql
