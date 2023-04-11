@@ -36,10 +36,7 @@
           "type": ["null", "string"]
         },
         "version": {
-          "type": ["null", "array"],
-          "items": {
-            "type": ["null", "string"]
-          }
+          "type": ["null", "string"]
         }
       }
     },
