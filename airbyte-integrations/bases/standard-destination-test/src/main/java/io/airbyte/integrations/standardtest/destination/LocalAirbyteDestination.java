@@ -5,7 +5,7 @@
 package io.airbyte.integrations.standardtest.destination;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.WorkerDestinationConfig;
+import io.airbyte.configoss.WorkerDestinationConfig;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.protocol.models.AirbyteMessage;

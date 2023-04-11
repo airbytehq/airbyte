@@ -1,15 +1,19 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import datetime
 import re
 import sys
+import click
 from pathlib import Path
-from typing import Optional, Set
+from typing import Optional, Set, Any, List, Callable
 
+import asyncer
 import anyio
 import git
 from ci_connector_ops.utils import DESTINATION_CONNECTOR_PATH_PREFIX, SOURCE_CONNECTOR_PATH_PREFIX, Connector, get_connector_name_from_path
-from dagger import Config, Connection, Container, QueryError
+from dagger import Config, Connection, Container, QueryError, DaggerError
+
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
@@ -103,6 +107,10 @@ def get_current_git_revision() -> str:
     return git.Repo().head.object.hexsha
 
 
+def get_current_epoch_time() -> int:
+    return round(datetime.datetime.utcnow().timestamp())
+
+
 async def get_modified_files_remote(current_git_branch: str, current_git_revision: str, diffed_branch: str = "origin/master") -> Set[str]:
     async with Connection(DAGGER_CONFIG) as dagger_client:
         modified_files = await (
@@ -150,3 +158,33 @@ def get_modified_connectors(modified_files: Set[str]) -> Set[Connector]:
         if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) or file_path.startswith(DESTINATION_CONNECTOR_PATH_PREFIX):
             modified_connectors.append(Connector(get_connector_name_from_path(file_path)))
     return set(modified_connectors)
+
+
+class DaggerPipelineCommand(click.Command):
+    def invoke(self, ctx: click.Context) -> Any:
+        """Wrap parent invoke in a try catch suited to handle pipeline failures.
+        Args:
+            ctx (click.Context): The invocation context.
+        Raises:
+            e: Raise whatever exception that was caught.
+        Returns:
+            Any: The invocation return value.
+        """
+        command_name = self.name
+        click.secho(f"Running {command_name}...")
+        try:
+            pipeline_success = super().invoke(ctx)
+            if not pipeline_success:
+                raise DaggerError(f"{command_name} failed.")
+        except DaggerError as e:
+            click.secho(str(e), err=True, fg="red")
+            return sys.exit(1)
+
+
+async def execute_concurrently(steps: List[Callable], concurrency: int = 5):
+    semaphore = anyio.Semaphore(concurrency)
+    async with semaphore:
+        async with asyncer.create_task_group() as task_group:
+            tasks = [task_group.soonify(step)() for step in steps]
+
+        return [task.value for task in tasks]
