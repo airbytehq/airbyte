@@ -219,3 +219,24 @@ class ProjectDetail(SentryStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield response.json()
+
+
+class Releases(SentryIncremental):
+    """
+    Docs: https://docs.sentry.io/api/releases/list-an-organizations-releases/
+    """
+
+    primary_key = "id"
+    cursor_field = "dateCreated"
+
+    def __init__(self, organization: str, project: str, **kwargs):
+        super().__init__(**kwargs)
+        self._organization = organization
+
+    def path(
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> str:
+        return f"organizations/{self._organization}/releases/"

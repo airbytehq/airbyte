@@ -8,6 +8,7 @@ import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getError
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import datadog.trace.api.Trace;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
@@ -17,8 +18,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.config.StateWrapper;
-import io.airbyte.config.helpers.StateMessageHelper;
+import io.airbyte.configoss.StateWrapper;
+import io.airbyte.configoss.helpers.StateMessageHelper;
 import io.airbyte.db.AbstractDatabase;
 import io.airbyte.db.IncrementalUtils;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -30,6 +31,7 @@ import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
+import io.airbyte.integrations.util.ApmTraceUtils;
 import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
@@ -72,11 +74,16 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractDbSource<DataType, Database extends AbstractDatabase> extends
     BaseConnector implements Source, AutoCloseable {
 
+  public static final String CHECK_TRACE_OPERATION_NAME = "check-operation";
+  public static final String DISCOVER_TRACE_OPERATION_NAME = "discover-operation";
+  public static final String READ_TRACE_OPERATION_NAME = "read-operation";
+
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDbSource.class);
   // TODO: Remove when the flag is not use anymore
   private final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
   @Override
+  @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     try {
       final Database database = createDatabase(config);
@@ -86,6 +93,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
+      ApmTraceUtils.addExceptionToTrace(ex);
       final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(),
           ex.getExceptionMessage(), ex);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, message);
@@ -93,6 +101,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           .withStatus(Status.FAILED)
           .withMessage(message);
     } catch (final Exception e) {
+      ApmTraceUtils.addExceptionToTrace(e);
       LOGGER.info("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
@@ -103,6 +112,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   @Override
+  @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
     try {
       final Database database = createDatabase(config);
@@ -387,7 +397,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         // if no cursor is present then this is the first read for is the same as doing a full refresh read.
         estimateFullRefreshSyncSize(database, airbyteStream);
         airbyteMessageIterator = getFullRefreshStream(database, streamName, namespace,
-            selectedDatabaseFields, table, emittedAt);
+            selectedDatabaseFields, table, emittedAt, SyncMode.INCREMENTAL, Optional.of(cursorField));
       }
 
       final JsonSchemaPrimitive cursorType = IncrementalUtils.getCursorType(airbyteStream,
@@ -406,7 +416,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     } else if (airbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
       estimateFullRefreshSyncSize(database, airbyteStream);
       iterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields,
-          table, emittedAt);
+          table, emittedAt, SyncMode.FULL_REFRESH, Optional.empty());
     } else if (airbyteStream.getSyncMode() == null) {
       throw new IllegalArgumentException(
           String.format("%s requires a source sync mode", this.getClass()));
@@ -476,6 +486,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @param selectedDatabaseFields List of all interested database column names
    * @param table information in tabular format
    * @param emittedAt Time when data was emitted from the Source database
+   * @param syncMode The sync mode that this full refresh stream should be associated with.
    * @return AirbyteMessageIterator with all records for a database source
    */
   private AutoCloseableIterator<AirbyteMessage> getFullRefreshStream(final Database database,
@@ -483,10 +494,12 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                      final String namespace,
                                                                      final List<String> selectedDatabaseFields,
                                                                      final TableInfo<CommonField<DataType>> table,
-                                                                     final Instant emittedAt) {
+                                                                     final Instant emittedAt,
+                                                                     final SyncMode syncMode,
+                                                                     final Optional<String> cursorField) {
     final AutoCloseableIterator<JsonNode> queryStream =
         queryTableFullRefresh(database, selectedDatabaseFields, table.getNameSpace(),
-            table.getName());
+            table.getName(), syncMode, cursorField);
     return getMessageIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
   }
 
@@ -525,6 +538,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @param config database implementation-specific configuration.
    * @return database spec config
    */
+  @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
   public abstract JsonNode toDatabaseConfig(JsonNode config);
 
   /**
@@ -534,6 +548,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return database instance
    * @throws Exception might throw an error during connection to database
    */
+  @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
   protected abstract Database createDatabase(JsonNode config) throws Exception;
 
   /**
@@ -575,6 +590,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return list of the source tables
    * @throws Exception access to the database might lead to an exceptions.
    */
+  @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
   protected abstract List<TableInfo<CommonField<DataType>>> discoverInternal(
                                                                              final Database database)
       throws Exception;
@@ -617,12 +633,15 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @param columnNames interested column names
    * @param schemaName table namespace
    * @param tableName target table
+   * @param syncMode The sync mode that this full refresh stream should be associated with.
    * @return iterator with read data
    */
   protected abstract AutoCloseableIterator<JsonNode> queryTableFullRefresh(final Database database,
                                                                            final List<String> columnNames,
                                                                            final String schemaName,
-                                                                           final String tableName);
+                                                                           final String tableName,
+                                                                           final SyncMode syncMode,
+                                                                           final Optional<String> cursorField);
 
   /**
    * Read incremental data from a table. Incremental read should return only records where cursor

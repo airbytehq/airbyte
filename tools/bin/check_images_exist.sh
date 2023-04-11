@@ -77,7 +77,7 @@ function docker_tag_exists() {
 checkNormalizationImages() {
   echo -e "$blue_text""Checking Normalization images exist...""$default_text"
   local image_version;
-  definition_file_path=airbyte-config/init/src/main/resources/seed/destination_definitions.yaml
+  definition_file_path=airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml
   # -f True if file exists and is a regular file
   if ! test -f $definition_file_path; then
     echo -e "$red_text""Destination definition file not found at path! H4LP!!!""$default_text"
@@ -93,7 +93,7 @@ checkNormalizationImages() {
 
 checkConnectorImages() {
   echo -e "$blue_text""Checking connector images exist...""$default_text"
-  CONNECTOR_DEFINITIONS=$(grep "dockerRepository" -h -A1 airbyte-config/init/src/main/resources/seed/*.yaml | grep -v -- "^--$" | tr -d ' ')
+  CONNECTOR_DEFINITIONS=$(grep "dockerRepository" -h -A1 airbyte-config-oss/init-oss/src/main/resources/seed/*.yaml | grep -v -- "^--$" | tr -d ' ')
   [ -z "CONNECTOR_DEFINITIONS" ] && echo "ERROR: Could not find any connector definition." && exit 1
 
   while IFS=":" read -r _ REPO; do
