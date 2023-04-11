@@ -97,7 +97,7 @@ public class BytehouseDestinationAcceptanceTest extends DestinationAcceptanceTes
   private static JdbcDatabase getDatabase(final JsonNode config) {
     return new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            "bytehouse",
+            BytehouseDestination.DEFAULT_USERNAME,
             null,
             BytehouseDestination.DRIVER_CLASS,
             config.get(JdbcUtils.JDBC_URL_KEY).asText(),
