@@ -1,8 +1,13 @@
-package io.airbyte.integrations.source.mysql;
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
+package io.airbyte.integrations.debezium.internals.mysql;
 
 import java.util.Objects;
 
 public class MySqlCdcPosition {
+
   public final String fileName;
   public final Long position;
 
@@ -28,4 +33,5 @@ public class MySqlCdcPosition {
   public String toString() {
     return "FileName: " + fileName + ", Position : " + position;
   }
+
 }
