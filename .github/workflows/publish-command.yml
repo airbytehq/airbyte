@@ -308,7 +308,7 @@ jobs:
         with:
           command: |
             echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
-            ./tools/integrations/manage.sh publish airbyte-integrations/${{ matrix.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache ${{ github.event.inputs.pre-release && '--pre_release' }}
+            ./tools/integrations/manage.sh publish airbyte-integrations/${{ matrix.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache ${{ github.event.inputs.pre-release == 'true' && '--pre_release' }}
           attempt_limit: 3
           attempt_delay: 5000 in # ms
       - name: Update Integration Test Credentials after test run for ${{ github.event.inputs.connector }}
@@ -385,8 +385,6 @@ jobs:
           fi
           if [[ ${{ steps.auto-bump.outcome }} = "success" ]]; then
             echo "AUTO_BUMP_OUTCOME=:white_check_mark:" >> $GITHUB_ENV
-          elif [[ ${{ steps.auto-bump.outcome }} = "skipped" ]]; then
-            echo "AUTO_BUMP_OUTCOME=skipped" >> $GITHUB_ENV
           else
             echo "AUTO_BUMP_OUTCOME=:x:" >> $GITHUB_ENV
           fi
