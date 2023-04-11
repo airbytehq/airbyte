@@ -83,7 +83,68 @@
           "properties": {
             "add_invoice_items": {
               "type": ["null", "array"],
-              "items": {}
+              "items": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "price": {
+                    "type": ["null", "string"]
+                  },
+                  "quantity": {
+                    "type": ["null", "string"]
+                  },
+                  "tax_rates": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "object"],
+                      "additionalProperties": true,
+                      "properties": {
+                        "id": {
+                          "type": ["null", "string"]
+                        },
+                        "object": {
+                          "type": ["null", "string"]
+                        },
+                        "active": {
+                          "type": ["null", "boolean"]
+                        },
+                        "country": {
+                          "type": ["null", "string"]
+                        },
+                        "created": {
+                          "type": ["null", "string"],
+                          "format": "datetime"
+                        },
+                        "display_name": {
+                          "type": ["null", "string"]
+                        },
+                        "inclusive": {
+                          "type": ["null", "boolean"]
+                        },
+                        "jurisdiction": {
+                          "type": ["null", "string"]
+                        },
+                        "livemode": {
+                          "type": ["null", "boolean"]
+                        },
+                        "metadata": {
+                          "type": ["null", "object"],
+                          "additionalProperties": true
+                        },
+                        "percentage": {
+                          "type": ["null", "number"]
+                        },
+                        "state": {
+                          "type": ["null", "string"]
+                        },
+                        "tax_type": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             },
             "application_fee_percent": {
               "type": ["null", "string"]
@@ -108,7 +169,10 @@
             },
             "default_tax_rates": {
               "type": ["null", "array"],
-              "items": {}
+              "items": {
+                "type": ["null", "object"],
+                "additionalProperties": true
+              }
             },
             "description": {
               "type": ["null", "string"]
@@ -139,7 +203,10 @@
                     },
                     "tax_rates": {
                       "type": ["null", "array"],
-                      "items": {}
+                      "items": {
+                        "type": ["null", "object"],
+                        "additionalProperties": true
+                      }
                     }
                   }
                 }
