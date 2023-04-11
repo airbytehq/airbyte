@@ -5,12 +5,6 @@
     "company": {
       "type": ["string", "null"]
     },
-    "site": {
-      "type": ["string", "null"]
-    },
-    "billingStreet": {
-      "type": ["string", "null"]
-    },
     "billingCity": {
       "type": ["string", "null"]
     },
@@ -41,9 +35,6 @@
     "sicCode": {
       "type": ["string", "null"]
     },
-    "mktoCompanyNotes": {
-      "type": ["string", "null"]
-    },
     "externalCompanyId": {
       "type": ["string", "null"]
     },
@@ -68,13 +59,7 @@
     "isAnonymous": {
       "type": ["boolean", "null"]
     },
-    "salutation": {
-      "type": ["string", "null"]
-    },
     "firstName": {
-      "type": ["string", "null"]
-    },
-    "middleName": {
       "type": ["string", "null"]
     },
     "lastName": {
@@ -86,21 +71,11 @@
     "phone": {
       "type": ["string", "null"]
     },
-    "mobilePhone": {
-      "type": ["string", "null"]
-    },
-    "fax": {
-      "type": ["string", "null"]
-    },
     "title": {
       "type": ["string", "null"]
     },
     "contactCompany": {
       "type": ["string", "null"]
-    },
-    "dateOfBirth": {
-      "type": ["string", "null"],
-      "format": "date-time"
     },
     "address": {
       "type": ["string", "null"]
@@ -115,9 +90,6 @@
       "type": ["string", "null"]
     },
     "postalCode": {
-      "type": ["string", "null"]
-    },
-    "personTimeZone": {
       "type": ["string", "null"]
     },
     "originalSourceType": {
@@ -157,9 +129,6 @@
       "type": ["boolean", "null"]
     },
     "mktoDoNotCallCause": {
-      "type": ["string", "null"]
-    },
-    "doNotCallReason": {
       "type": ["string", "null"]
     },
     "marketingSuspended": {
@@ -210,9 +179,6 @@
     "emailSuspendedAt": {
       "type": ["string", "null"],
       "format": "date-time"
-    },
-    "department": {
-      "type": ["string", "null"]
     },
     "createdAt": {
       "type": ["string", "null"],
