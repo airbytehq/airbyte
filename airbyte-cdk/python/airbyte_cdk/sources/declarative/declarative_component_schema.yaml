@@ -179,6 +179,7 @@ definitions:
         type: object
         additionalProperties: true
   ConstantBackoffStrategy:
+    title: Constant Backoff
     description: Backoff strategy with a constant backoff interval
     type: object
     required:
@@ -189,9 +190,15 @@ definitions:
         type: string
         enum: [ConstantBackoffStrategy]
       backoff_time_in_seconds:
+        title: Backoff Time
+        description: Backoff time in seconds
         anyOf:
           - type: number
           - type: string
+        examples:
+          - 30
+          - 30.5
+          - "60"
       $parameters:
         type: object
         additionalProperties: true
