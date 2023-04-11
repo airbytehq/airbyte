@@ -82,8 +82,8 @@ jobs:
         run: echo "The connector provided has an invalid format!" && exit 1
       - name: Filter supported connectors
         if: |
-          "${{ (github.event.inputs.connector != 'connectors/source-postgres') 
-            && (github.event.inputs.connector != 'connectors/source-mysql') }}"
+          ${{ (github.event.inputs.connector != 'connectors/source-postgres') 
+            && (github.event.inputs.connector != 'connectors/source-mysql') }}
         run: echo "Only connectors/source-postgres and source-mysql currently supported by harness" && exit 1
       - name: Checkout Airbyte
         uses: actions/checkout@v3
