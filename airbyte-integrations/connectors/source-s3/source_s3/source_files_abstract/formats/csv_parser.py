@@ -62,7 +62,7 @@ class CsvParser(AbstractFileParser):
         field_value = format_.get(field_name)
         if not field_value and allow_empty:
             return
-        if len(field_value) != 1:
+        if field_value and len(field_value) != 1:
             return f"{field_name} should contain 1 character only"
         if field_value in disallow_values:
             return f"{field_name} can not be {field_value}"
