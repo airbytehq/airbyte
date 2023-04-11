@@ -126,11 +126,12 @@
                   }
                 ]
               },
-              "flatten_data": {
-                "title": "Flatten Data",
-                "description": "If true data will be flattened and won't be nested in the _airbyte_data field",
-                "type": "boolean",
-                "default": true
+              "flattening": {
+                "type": "string",
+                "title": "Flattening",
+                "description": "Whether the input json data should be normalized (flattened) in the output JSON Lines. Please refer to docs for details.",
+                "default": "Root level flattening",
+                "enum": ["No flattening", "Root level flattening"]
               }
             }
           }
