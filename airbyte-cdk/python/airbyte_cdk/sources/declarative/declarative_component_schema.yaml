@@ -793,6 +793,7 @@ definitions:
         type: object
         additionalProperties: true
   DpathExtractor:
+    title: Dpath Extractor
     description: Record extractor that searches a decoded response over a path defined as an array of fields
     type: object
     required:
@@ -803,9 +804,16 @@ definitions:
         type: string
         enum: [DpathExtractor]
       field_path:
+        title: Field Path
+        description: List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array
         type: array
         items:
           - type: string
+        examples:
+          - ["data"]
+          - ["data", "records"]
+          - ["data", "{{ parameters.name }}"]
+          - ["data", "*", "record"]
       decoder:
         "$ref": "#/definitions/JsonDecoder"
       $parameters:
