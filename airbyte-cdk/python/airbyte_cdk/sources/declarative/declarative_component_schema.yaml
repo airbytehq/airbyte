@@ -1230,7 +1230,8 @@ definitions:
         type: object
         additionalProperties: true
   PrimaryKey:
-    description: The stream field to be used to distinguish unique rows
+    title: Primary Key
+    description: The stream field to be used to distinguish unique records. Can either be a single field, an array of fields representing a composite key, or an array of arrays representing a composite key where the fields are nested fields
     anyOf:
       - type: string
       - type: array
@@ -1242,6 +1243,9 @@ definitions:
           items:
             type: string
     default: ""
+    examples:
+      - id
+      - ["code", "type"]
   RecordFilter:
     title: Record Filter
     description: Filter applied on a list of Records
