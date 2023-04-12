@@ -540,3 +540,18 @@ class Conversations(TwilioStream):
 
     def path(self, **kwargs):
         return self.name.title()
+
+
+class ConversationMessages(TwilioNestedStream):
+    """https://www.twilio.com/docs/conversations/api/conversation-message-resource#list-all-conversation-messages"""
+
+    parent_stream = Conversations
+    url_base = TWILIO_CONVERSATIONS_URL_BASE
+    uri_from_subresource = False
+    data_field = "messages"
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs):
+        return f"Conversations/{stream_slice['conversation_sid']}/Messages"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"conversation_sid": record["sid"]}
