@@ -13,5 +13,6 @@ data:
   license: MIT
   name: Convex
   releaseStage: alpha
+  connectorSubtype: api
   supportUrl: https://docs.airbyte.io/integrations/destinations/convex
 metadataSpecVersion: "1.0"

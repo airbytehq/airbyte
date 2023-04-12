@@ -4,6 +4,7 @@ data:
       enabled: true
     oss:
       enabled: true
+  releaseStage: alpha
   connectorSubtype: file
   connectorType: source
   definitionId: 2a8c41ae-8c23-4be0-a73f-2ab10ca1a820

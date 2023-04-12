@@ -12,6 +12,7 @@ data:
   icon: select.db
   license: MIT
   name: SelectDB
+  connectorSubtype: database
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/destinations/selectdb
 metadataSpecVersion: "1.0"
