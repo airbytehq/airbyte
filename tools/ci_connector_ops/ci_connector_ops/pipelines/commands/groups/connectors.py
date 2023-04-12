@@ -1,6 +1,9 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
+"""This module declares the CLI commands to run the connectors CI pipelines."""
+
 import logging
 import os
 import sys
@@ -10,15 +13,12 @@ from typing import Tuple
 import anyio
 import click
 import dagger
-from ci_connector_ops.pipelines.contexts import ConnectorTestContext, CIContext
+from ci_connector_ops.pipelines.contexts import CIContext, ConnectorTestContext
 from ci_connector_ops.pipelines.github import update_commit_status_check
-from ci_connector_ops.pipelines.utils import (
-    get_modified_connectors,
-)
 from ci_connector_ops.pipelines.pipelines.connectors import run_connectors_test_pipelines
+from ci_connector_ops.pipelines.utils import get_modified_connectors
 from ci_connector_ops.utils import ConnectorLanguage, get_all_released_connectors
 from rich.logging import RichHandler
-
 
 # CONSTANTS
 
@@ -34,6 +34,7 @@ logger = logging.getLogger(__name__)
 
 
 def validate_environment(is_local: bool, use_remote_secrets: bool):
+    """Check if the required environment variables exist."""
     if is_local:
         if not (os.getcwd().endswith("/airbyte") and Path(".git").is_dir()):
             raise click.UsageError("You need to run this command from the airbyte repository root.")
@@ -65,8 +66,7 @@ def connectors(
     ctx: click.Context,
     use_remote_secrets: str,
 ):
-    """A command group to gather all the connectors-ci command"""
-
+    """Group all the connectors-ci command."""
     validate_environment(ctx.obj["is_local"], use_remote_secrets)
 
     ctx.ensure_object(dict)
@@ -141,8 +141,6 @@ def test(
             ci_context=ctx.obj.get("ci_context"),
         )
         for connector in connectors_under_test
-        if connector.language
-        in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]  # TODO: remove this once we implement pipelines for Java connector
     ]
     try:
         anyio.run(run_connectors_test_pipelines, connectors_tests_contexts, concurrency)
