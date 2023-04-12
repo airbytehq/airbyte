@@ -1512,7 +1512,8 @@ definitions:
         type: object
         additionalProperties: true
   Spec:
-    description: A connection specification made up of information about the connector and how it can be configured
+    title: Spec
+    description: A source specification made up of connector metadata and how it can be configured
     type: object
     required:
       - type
@@ -1522,11 +1523,19 @@ definitions:
         type: string
         enum: [Spec]
       connection_specification:
+        title: Connection Specification
+        description: A connection specification describing how a the connector can be configured
         type: object
         additionalProperties: true
       documentation_url:
+        title: Documentation URL
+        description: URL of the connector's documentation page
         type: string
+        examples:
+          - "https://docs.airbyte.com/integrations/sources/dremio"
       advanced_auth:
+        title: Advanced Auth
+        description: Advanced specification for configuring the authentication flow
         "$ref": "#/definitions/AuthFlow"
   AuthFlow:
     title: "Auth flow"
