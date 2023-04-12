@@ -4,9 +4,13 @@
 
 package io.airbyte.integrations.source.relationaldb.state;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.configoss.StateWrapper;
+import io.airbyte.configoss.helpers.StateMessageHelper;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
+import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
@@ -211,6 +215,58 @@ public class StateGeneratorUtils {
 
   public static AirbyteStateMessage convertStateMessage(final io.airbyte.protocol.models.AirbyteStateMessage state) {
     return Jsons.object(Jsons.jsonNode(state), AirbyteStateMessage.class);
+  }
+
+  /**
+   * Deserializes the state represented as JSON into an object representation.
+   *
+   * @param initialStateJson The state as JSON.
+   * @Param supportedStateType the {@link AirbyteStateType} supported by this connector.
+   * @return The deserialized object representation of the state.
+   */
+  public static List<AirbyteStateMessage> deserializeInitialState(final JsonNode initialStateJson,
+                                                                  final boolean useStreamCapableState,
+                                                                  final AirbyteStateType supportedStateType) {
+    final Optional<StateWrapper> typedState = StateMessageHelper.getTypedState(initialStateJson,
+        useStreamCapableState);
+    return typedState.map((state) -> {
+      switch (state.getStateType()) {
+        case GLOBAL:
+          return List.of(StateGeneratorUtils.convertStateMessage(state.getGlobal()));
+        case STREAM:
+          return state.getStateMessages()
+              .stream()
+              .map(stateMessage -> StateGeneratorUtils.convertStateMessage(stateMessage)).toList();
+        case LEGACY:
+        default:
+          return List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
+              .withData(state.getLegacyState()));
+      }
+    }).orElse(generateEmptyInitialState(supportedStateType));
+  }
+
+  /**
+   * Generates an empty, initial state for use by the connector.
+   *
+   * @Param supportedStateType the {@link AirbyteStateType} supported by this connector.
+   * @return The empty, initial state.
+   */
+  private static List<AirbyteStateMessage> generateEmptyInitialState(final AirbyteStateType supportedStateType) {
+    // For backwards compatibility with existing connectors
+    if (supportedStateType == AirbyteStateType.LEGACY) {
+      return List.of(new AirbyteStateMessage()
+          .withType(AirbyteStateType.LEGACY)
+          .withData(Jsons.jsonNode(new DbState())));
+    } else if (supportedStateType == AirbyteStateType.GLOBAL) {
+      final AirbyteGlobalState globalState = new AirbyteGlobalState()
+          .withSharedState(Jsons.jsonNode(new CdcState()))
+          .withStreamStates(List.of());
+      return List.of(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState));
+    } else {
+      return List.of(new AirbyteStateMessage()
+          .withType(AirbyteStateType.STREAM)
+          .withStream(new AirbyteStreamState()));
+    }
   }
 
 }

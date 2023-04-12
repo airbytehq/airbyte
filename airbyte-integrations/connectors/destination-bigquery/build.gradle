@@ -35,6 +35,12 @@ dependencies {
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }
 
+tasks.named("airbyteDocker") {
+    // this is really inefficent (because base-normalization:airbyteDocker builds 9 docker images)
+    // but it's also just simple to implement
+    dependsOn project(':airbyte-integrations:bases:base-normalization').airbyteDocker
+}
+
 configurations.all {
   resolutionStrategy {
     // at time of writing: deps.toml declares google-cloud-storage 2.17.2
