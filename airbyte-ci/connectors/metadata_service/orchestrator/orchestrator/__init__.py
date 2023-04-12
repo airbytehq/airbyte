@@ -39,7 +39,8 @@ from orchestrator.assets.dev import (
 )
 
 from orchestrator.jobs.catalog import generate_catalog_markdown, generate_local_metadata_files, generate_catalog
-from orchestrator.sensors.catalog import catalog_updated_sensor, metadata_updated_sensor
+from orchestrator.sensors.catalog import catalog_updated_sensor
+from orchestrator.sensors.metadata import metadata_updated_sensor
 
 from orchestrator.config import REPORT_FOLDER, CATALOG_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME, METADATA_FOLDER
 
