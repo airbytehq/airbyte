@@ -71,7 +71,8 @@ abstract class AirbyteDockerTask extends DefaultTask {
     def dockerTask() {
         if (
             project.hasProperty('connectorAcceptanceTest.useLocalCdk') &&
-            project.properties["connectorAcceptanceTest.useLocalCdk"]
+            project.properties["connectorAcceptanceTest.useLocalCdk"] &&
+            project.parent.project.name.equals("connectors")
         ) {
             def scriptPath = Paths.get(rootDir.absolutePath, 'airbyte-integrations/scripts/build-connector-image-with-local-cdk.sh').toString()
             buildDockerfileWithLocalCdk(scriptPath, dockerfileName)

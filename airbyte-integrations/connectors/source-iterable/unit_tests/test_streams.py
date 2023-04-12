@@ -164,11 +164,22 @@ def test_iterable_export_stream_backoff_time():
     "status, json, expected",
     [
         (429, {}, True),
-        (500, {"msg": "...Please try again later...", "code": "Generic Error"}, True)
+        # for 500 - Generic error we should make 2 retry attempts
+        # and give up on third one!
+        (500, {"msg": "...Please try again later...1", "code": "Generic Error"}, True),
+        (500, {"msg": "...Please try again later...2", "code": "Generic Error"}, True),
+        # This one should return False
+        (500, {"msg": "...Please try again later...3", "code": "Generic Error"}, False)
     ],
+    ids=[
+        "Retry on 429",
+        "Retry on 500 - Generic (first)",
+        "Retry on 500 - Generic (second)",
+        "Retry on 500 - Generic (third)",
+    ]
 )
-def test_should_retry(status, json, expected, requests_mock):
-    stream = Lists(authenticator=NoAuth())
+def test_should_retry(status, json, expected, requests_mock, lists_stream):
+    stream = lists_stream
     url = f"{stream.url_base}/{stream.path()}"
     requests_mock.get(url, json=json, status_code=status)
     test_response = requests.get(url)
@@ -204,3 +215,40 @@ def test_stream_stops_on_401(mock_lists_resp):
         _ = list(users_stream.read_records(stream_slice=slice_, sync_mode=SyncMode.full_refresh))
     assert len(responses.calls) == 1
     assert slices > 1
+
+
+@responses.activate
+def test_listuser_stream_keep_working_on_500():
+    users_stream = ListUsers(authenticator=NoAuth())
+    responses.add(
+        responses.GET,
+        "https://api.iterable.com/api/lists",
+        json={"lists": [{"id": 1000}, {"id": 2000}]},
+        status=200
+    )
+    responses.add(
+        responses.GET,
+        "https://api.iterable.com/api/lists/getUsers?listId=1000",
+        json={
+            "msg": "An error occurred. Please try again later. If problem persists, please contact your CSM",
+            "code": "GenericError",
+            "params": None
+        },
+        status=500
+    )
+    responses.add(
+        responses.GET,
+        "https://api.iterable.com/api/lists/getUsers?listId=2000",
+        body="one@example.com\ntwo@example.com\nthree@example.com",
+        status=200
+    )
+    expected_records = [
+        {'email': 'one@example.com', 'listId': 2000},
+        {'email': 'two@example.com', 'listId': 2000},
+        {'email': 'three@example.com', 'listId': 2000}
+    ]
+
+    records = []
+    for stream_slice in users_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+        records += list(users_stream.read_records(stream_slice=stream_slice, sync_mode=SyncMode.full_refresh))
+    assert records == expected_records

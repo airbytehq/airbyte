@@ -4,7 +4,7 @@ worker container, such as a Destination container. This guide will assume use of
 however the steps could be applied to another IDE or debugger.
 
 ## Prerequisites
-You should have the airbyte repo downloaded and should be able to [run the platform locally](/deploying-airbyte/local-deployment).
+You should have the airbyte repo downloaded and should be able to [run the platform locally](https://docs.airbyte.com/deploying-airbyte/local-deployment).
 Also, if you're on macOS you will need to follow the installation steps for [Docker Mac Connect](https://github.com/chipmk/docker-mac-net-connect).
 
 ## Connecting your debugger
