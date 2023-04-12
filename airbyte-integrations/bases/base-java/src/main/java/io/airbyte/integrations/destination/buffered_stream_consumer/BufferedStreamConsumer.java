@@ -213,7 +213,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
    * Periodically flushes buffered data to destination storage when exceeding flush deadline. Also
    * resets the last time a flush occurred
    */
-  private void periodicBufferFlush() {
+  private void periodicBufferFlush() throws Exception {
     // When the last time the buffered has been flushed exceed the frequency, flush the current
     // buffer before receiving incoming AirbyteMessage
     if (Instant.now().isAfter(nextFlushDeadline)) {
@@ -223,6 +223,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         markStatesAsFlushedToDestination();
       } catch (final Exception e) {
         LOGGER.error("Periodic buffer flush failed", e);
+        throw e;
       }
     }
   }
