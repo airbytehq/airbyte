@@ -22,6 +22,7 @@ from requests.auth import AuthBase
 TWILIO_API_URL_BASE = "https://api.twilio.com"
 TWILIO_API_URL_BASE_VERSIONED = f"{TWILIO_API_URL_BASE}/2010-04-01/"
 TWILIO_MONITOR_URL_BASE = "https://monitor.twilio.com/v1/"
+TWILIO_STUDIO_API_BASE = "https://studio.twilio.com/v1/"
 TWILIO_CONVERSATIONS_URL_BASE = "https://conversations.twilio.com/v1/"
 
 
@@ -400,6 +401,33 @@ class ConferenceParticipants(TwilioNestedStream):
     data_field = "participants"
 
 
+class Flows(TwilioStream):
+    """
+    https://www.twilio.com/docs/studio/rest-api/flow#read-a-list-of-flows
+    """
+
+    url_base = TWILIO_STUDIO_API_BASE
+
+    def path(self, **kwargs):
+        return "Flows"
+
+
+class Executions(TwilioNestedStream):
+    """
+    https://www.twilio.com/docs/studio/rest-api/execution#read-a-list-of-executions
+    """
+
+    parent_stream = Flows
+    url_base = TWILIO_STUDIO_API_BASE
+    uri_from_subresource = False
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        return f"Flows/{ stream_slice['flow_sid'] }/Executions"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"flow_sid": record["sid"]}
+
+
 class OutgoingCallerIds(TwilioNestedStream):
     """https://www.twilio.com/docs/voice/api/outgoing-caller-ids#outgoingcallerids-list-resource"""
 
@@ -512,3 +540,18 @@ class Conversations(TwilioStream):
 
     def path(self, **kwargs):
         return self.name.title()
+
+
+class ConversationMessages(TwilioNestedStream):
+    """https://www.twilio.com/docs/conversations/api/conversation-message-resource#list-all-conversation-messages"""
+
+    parent_stream = Conversations
+    url_base = TWILIO_CONVERSATIONS_URL_BASE
+    uri_from_subresource = False
+    data_field = "messages"
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs):
+        return f"Conversations/{stream_slice['conversation_sid']}/Messages"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"conversation_sid": record["sid"]}

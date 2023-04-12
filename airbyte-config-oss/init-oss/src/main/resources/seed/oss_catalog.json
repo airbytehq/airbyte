@@ -5893,7 +5893,7 @@
     "destinationDefinitionId": "471e5cab-8ed1-49f3-ba11-79c687784737",
     "name": "S3 Glue",
     "dockerRepository": "airbyte/destination-s3-glue",
-    "dockerImageTag": "0.1.4",
+    "dockerImageTag": "0.1.5",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/s3-glue",
     "icon": "s3-glue.svg",
     "spec": {
@@ -5982,11 +5982,12 @@
                     }
                   } ]
                 },
-                "flatten_data": {
-                  "title": "Flatten Data",
-                  "description": "If true data will be flattened and won't be nested in the _airbyte_data field",
-                  "type": "boolean",
-                  "default": true
+                "flattening": {
+                  "type": "string",
+                  "title": "Flattening",
+                  "description": "Whether the input json data should be normalized (flattened) in the output JSON Lines. Please refer to docs for details.",
+                  "default": "Root level flattening",
+                  "enum": [ "No flattening", "Root level flattening" ]
                 }
               }
             } ],
@@ -8007,7 +8008,7 @@
     "sourceDefinitionId": "1fa90628-2b9e-11ed-a261-0242ac120002",
     "name": "AlloyDB for PostgreSQL",
     "dockerRepository": "airbyte/source-alloydb",
-    "dockerImageTag": "2.0.17",
+    "dockerImageTag": "2.0.19",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/alloydb",
     "icon": "alloydb.svg",
     "sourceType": "database",
@@ -12090,7 +12091,7 @@
     "sourceDefinitionId": "e7778cfc-e97c-4458-9ecb-b4f2bba8946c",
     "name": "Facebook Marketing",
     "dockerRepository": "airbyte/source-facebook-marketing",
-    "dockerImageTag": "0.3.1",
+    "dockerImageTag": "0.3.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/facebook-marketing",
     "icon": "facebook.svg",
     "sourceType": "api",
@@ -12565,7 +12566,7 @@
     "sourceDefinitionId": "778daa7c-feaf-4db6-96f3-70fd645acc77",
     "name": "File (CSV, JSON, Excel, Feather, Parquet)",
     "dockerRepository": "airbyte/source-file",
-    "dockerImageTag": "0.2.36",
+    "dockerImageTag": "0.2.37",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/file",
     "icon": "file.svg",
     "sourceType": "file",
@@ -12594,11 +12595,7 @@
             "type": "string",
             "title": "Reader Options",
             "description": "This should be a string in JSON format. It depends on the chosen file format to provide additional options and tune its behavior.",
-            "examples": [ "{}", "{\"sep\": \" \"}", {
-              "sep": "\t",
-              "header": 0,
-              "names": "column1, column2"
-            } ]
+            "examples": [ "{}", "{\"sep\": \" \"}", "{\"sep\": \"\t\", \"header\": 0, \"names\": [\"column1\", \"column2\"] }" ]
           },
           "url": {
             "type": "string",
@@ -13411,7 +13408,8 @@
     },
     "suggestedStreams": {
       "streams": [ "branches", "comments", "issues", "organizations", "pull_requests", "repositories", "stargazers", "tags", "teams", "users" ]
-    }
+    },
+    "maxSecondsBetweenMessages": 5400
   }, {
     "sourceDefinitionId": "5e6175e5-68e1-4c17-bff9-56103bbb0d80",
     "name": "Gitlab",
@@ -15134,7 +15132,7 @@
     "sourceDefinitionId": "36c891d9-4bd9-43ac-bad2-10e12756272c",
     "name": "HubSpot",
     "dockerRepository": "airbyte/source-hubspot",
-    "dockerImageTag": "0.5.0",
+    "dockerImageTag": "0.6.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/hubspot",
     "icon": "hubspot.svg",
     "sourceType": "api",
@@ -15152,7 +15150,8 @@
             "title": "Start date",
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
             "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
-            "examples": [ "2017-01-25T00:00:00Z" ]
+            "examples": [ "2017-01-25T00:00:00Z" ],
+            "format": "date-time"
           },
           "credentials": {
             "title": "Authentication",
@@ -15381,7 +15380,7 @@
     "sourceDefinitionId": "38f84314-fe6a-4257-97be-a8dcd942d693",
     "name": "Insightly",
     "dockerRepository": "airbyte/source-insightly",
-    "dockerImageTag": "0.1.1",
+    "dockerImageTag": "0.1.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/insightly",
     "icon": "insightly.svg",
     "sourceType": "api",
@@ -15590,7 +15589,7 @@
     "sourceDefinitionId": "2e875208-0c0b-4ee4-9e92-1cb3156ea799",
     "name": "Iterable",
     "dockerRepository": "airbyte/source-iterable",
-    "dockerImageTag": "0.1.26",
+    "dockerImageTag": "0.1.27",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/iterable",
     "icon": "iterable.svg",
     "sourceType": "api",
@@ -15695,7 +15694,7 @@
     "sourceDefinitionId": "68e63de2-bb83-4c7e-93fa-a8a9051e3993",
     "name": "Jira",
     "dockerRepository": "airbyte/source-jira",
-    "dockerImageTag": "0.3.4",
+    "dockerImageTag": "0.3.6",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/jira",
     "icon": "jira.svg",
     "sourceType": "api",
@@ -15718,9 +15717,8 @@
           "domain": {
             "type": "string",
             "title": "Domain",
-            "examples": [ "domainname.atlassian.net" ],
-            "pattern": "^[a-zA-Z0-9._-]*\\.atlassian\\.net$",
-            "description": "The Domain for your Jira account, e.g. airbyteio.atlassian.net",
+            "examples": [ "<your-domain>.atlassian.net", "<your-domain>.jira.com", "jira.<your-domain>.com" ],
+            "description": "The Domain for your Jira account, e.g. airbyteio.atlassian.net, airbyteio.jira.com, jira.your-domain.com",
             "order": 1
           },
           "email": {
@@ -17111,7 +17109,7 @@
     "sourceDefinitionId": "9e0556f4-69df-4522-a3fb-03264d36b348",
     "name": "Marketo",
     "dockerRepository": "airbyte/source-marketo",
-    "dockerImageTag": "1.0.2",
+    "dockerImageTag": "1.0.3",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/marketo",
     "icon": "marketo.svg",
     "sourceType": "api",
@@ -17152,7 +17150,8 @@
             "order": 2,
             "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
             "examples": [ "2020-09-25T00:00:00Z" ],
-            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+            "format": "date-time"
           }
         }
       },
@@ -17221,7 +17220,7 @@
     "sourceDefinitionId": "b5ea17b1-f170-46dc-bc31-cc744ca984c1",
     "name": "Microsoft SQL Server (MSSQL)",
     "dockerRepository": "airbyte/source-mssql",
-    "dockerImageTag": "1.0.10",
+    "dockerImageTag": "1.0.11",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mssql",
     "icon": "mssql.svg",
     "sourceType": "database",
@@ -18189,7 +18188,7 @@
     "sourceDefinitionId": "435bb9a5-7887-4809-aa58-28c27df0d7ad",
     "name": "MySQL",
     "dockerRepository": "airbyte/source-mysql",
-    "dockerImageTag": "2.0.13",
+    "dockerImageTag": "2.0.14",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mysql",
     "icon": "mysql.svg",
     "sourceType": "database",
@@ -18902,7 +18901,7 @@
     "sourceDefinitionId": "6e00b415-b02e-4160-bf02-58176a0ae687",
     "name": "Notion",
     "dockerRepository": "airbyte/source-notion",
-    "dockerImageTag": "1.0.3",
+    "dockerImageTag": "1.0.4",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/notion",
     "icon": "notion.svg",
     "sourceType": "api",
@@ -20911,7 +20910,7 @@
     "sourceDefinitionId": "decd338e-5647-4c0b-adf4-da0e75f5a750",
     "name": "Postgres",
     "dockerRepository": "airbyte/source-postgres",
-    "dockerImageTag": "2.0.18",
+    "dockerImageTag": "2.0.20",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/postgres",
     "icon": "postgresql.svg",
     "sourceType": "database",
@@ -20984,15 +20983,6 @@
             "order": 6,
             "group": "advanced",
             "pattern_descriptor": "key1=value1&key2=value2"
-          },
-          "ssl": {
-            "title": "Connect using SSL",
-            "description": "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
-            "type": "boolean",
-            "default": false,
-            "order": 7,
-            "group": "security",
-            "always_show": true
           },
           "ssl_mode": {
             "title": "SSL Modes",
@@ -21691,58 +21681,84 @@
     "custom": false,
     "releaseStage": "alpha"
   }, {
-    "sourceDefinitionId": "29b409d9-30a5-4cc8-ad50-886eb846fea3",
+    "sourceDefinitionId": "cf9c4355-b171-4477-8f2d-6c5cc5fc8b7e",
     "name": "QuickBooks",
-    "dockerRepository": "airbyte/source-quickbooks-singer",
-    "dockerImageTag": "0.1.5",
-    "documentationUrl": "https://docs.airbyte.com/integrations/sources/quickbooks-singer",
-    "icon": "qb.svg",
+    "dockerRepository": "airbyte/source-quickbooks",
+    "dockerImageTag": "2.0.0",
+    "documentationUrl": "https://docs.airbyte.com/integrations/sources/quickbooks",
+    "icon": "quickbooks.svg",
     "sourceType": "api",
     "spec": {
-      "documentationUrl": "https://docs.airbyte.com/integrations/sources/quickbooks-singer",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/quickbooks",
       "connectionSpecification": {
         "$schema": "http://json-schema.org/draft-07/schema#",
-        "title": "Source QuickBooks Singer Spec",
+        "title": "Source QuickBooks Spec",
         "type": "object",
-        "required": [ "client_id", "client_secret", "refresh_token", "realm_id", "user_agent", "start_date", "sandbox" ],
-        "additionalProperties": false,
+        "required": [ "credentials", "start_date", "sandbox" ],
+        "additionalProperties": true,
         "properties": {
-          "client_id": {
-            "type": "string",
-            "title": "Client ID",
-            "description": "Identifies which app is making the request. Obtain this value from the Keys tab on the app profile via My Apps on the developer site. There are two versions of this key: development and production."
-          },
-          "client_secret": {
-            "description": " Obtain this value from the Keys tab on the app profile via My Apps on the developer site. There are two versions of this key: development and production.",
-            "title": "Client Secret",
-            "type": "string",
-            "airbyte_secret": true
-          },
-          "refresh_token": {
-            "description": "A token used when refreshing the access token.",
-            "title": "Refresh Token",
-            "type": "string",
-            "airbyte_secret": true
-          },
-          "realm_id": {
-            "description": "Labeled Company ID. The Make API Calls panel is populated with the realm id and the current access token.",
-            "title": "Realm ID",
-            "type": "string",
-            "airbyte_secret": true
-          },
-          "user_agent": {
-            "type": "string",
-            "title": "User Agent",
-            "description": "Process and email for API logging purposes. Example: tap-quickbooks <api_user_email@your_company.com>."
+          "credentials": {
+            "title": "Authorization Method",
+            "type": "object",
+            "order": 0,
+            "oneOf": [ {
+              "type": "object",
+              "title": "OAuth2.0",
+              "required": [ "client_id", "client_secret", "refresh_token", "access_token", "token_expiry_date", "realm_id" ],
+              "properties": {
+                "auth_type": {
+                  "type": "string",
+                  "const": "oauth2.0"
+                },
+                "client_id": {
+                  "type": "string",
+                  "title": "Client ID",
+                  "description": "Identifies which app is making the request. Obtain this value from the Keys tab on the app profile via My Apps on the developer site. There are two versions of this key: development and production."
+                },
+                "client_secret": {
+                  "description": " Obtain this value from the Keys tab on the app profile via My Apps on the developer site. There are two versions of this key: development and production.",
+                  "title": "Client Secret",
+                  "type": "string",
+                  "airbyte_secret": true
+                },
+                "refresh_token": {
+                  "description": "A token used when refreshing the access token.",
+                  "title": "Refresh Token",
+                  "type": "string",
+                  "airbyte_secret": true
+                },
+                "access_token": {
+                  "description": "Access token fot making authenticated requests.",
+                  "title": "Access Token",
+                  "type": "string",
+                  "airbyte_secret": true
+                },
+                "token_expiry_date": {
+                  "type": "string",
+                  "title": "Token Expiry Date",
+                  "description": "The date-time when the access token should be refreshed.",
+                  "format": "date-time"
+                },
+                "realm_id": {
+                  "description": "Labeled Company ID. The Make API Calls panel is populated with the realm id and the current access token.",
+                  "title": "Realm ID",
+                  "type": "string",
+                  "airbyte_secret": true
+                }
+              }
+            } ]
           },
           "start_date": {
-            "description": "The default value to use if no bookmark exists for an endpoint (rfc3339 date string). E.g, 2021-03-20T00:00:00Z. Any data before this date will not be replicated.",
+            "order": 1,
+            "description": "The default value to use if no bookmark exists for an endpoint (rfc3339 date string). E.g, 2021-03-20T00:00:00+00:00. Any data before this date will not be replicated.",
             "title": "Start Date",
             "type": "string",
+            "format": "date-time",
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-            "examples": [ "2021-03-20T00:00:00Z" ]
+            "examples": [ "2021-03-20T00:00:00+00:00" ]
           },
           "sandbox": {
+            "order": 2,
             "description": "Determines whether to use the sandbox or production environment.",
             "title": "Sandbox",
             "type": "boolean",
@@ -21757,7 +21773,10 @@
     "tombstone": false,
     "public": true,
     "custom": false,
-    "releaseStage": "alpha"
+    "releaseStage": "alpha",
+    "allowedHosts": {
+      "hosts": [ "sandbox-quickbooks.api.intuit.com", "quickbooks.api.intuit.com", "oauth.platform.intuit.com" ]
+    }
   }, {
     "sourceDefinitionId": "9b6cc0c0-da81-4103-bbfd-5279e18a849a",
     "name": "Railz",
@@ -21808,7 +21827,7 @@
     "sourceDefinitionId": "45d2e135-2ede-49e1-939f-3e3ec357a65e",
     "name": "Recharge",
     "dockerRepository": "airbyte/source-recharge",
-    "dockerImageTag": "0.2.7",
+    "dockerImageTag": "0.2.8",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/recharge",
     "icon": "recharge.svg",
     "sourceType": "api",
@@ -25045,7 +25064,7 @@
     "sourceDefinitionId": "4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35",
     "name": "TikTok Marketing",
     "dockerRepository": "airbyte/source-tiktok-marketing",
-    "dockerImageTag": "2.0.6",
+    "dockerImageTag": "3.0.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/tiktok-marketing",
     "icon": "tiktok.svg",
     "sourceType": "api",
@@ -25139,13 +25158,12 @@
             "type": "string",
             "format": "date"
           },
-          "report_granularity": {
-            "title": "Report Aggregation Granularity",
-            "description": "The granularity used for aggregating performance data in reports. See <a href=\"https://docs.airbyte.com/integrations/sources/tiktok-marketing/#report-aggregation\">the docs</a>.",
-            "enum": [ "LIFETIME", "DAY", "HOUR" ],
+          "attribution_window": {
+            "title": "Attribution Window",
+            "description": "The attribution window in days.",
+            "default": 0,
             "order": 3,
-            "airbyte_hidden": true,
-            "type": "string"
+            "type": "integer"
           }
         }
       },
@@ -25798,7 +25816,7 @@
     "sourceDefinitionId": "b9dc6155-672e-42ea-b10d-9f1f1fb95ab1",
     "name": "Twilio",
     "dockerRepository": "airbyte/source-twilio",
-    "dockerImageTag": "0.2.0",
+    "dockerImageTag": "0.4.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/twilio",
     "icon": "twilio.svg",
     "sourceType": "api",
