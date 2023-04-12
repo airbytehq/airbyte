@@ -115,7 +115,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
 
     // Needed by normalization integration tests
     include ':airbyte-integrations:connectors:destination-bigquery'
-    include ':airbyte-integrations:connectors:destination-jdbc'
+    include ':airbyte-integrations:bases:base-destination-jdbc'
     include ':airbyte-integrations:connectors:destination-mysql'
     include ':airbyte-integrations:connectors:destination-postgres'
     include ':airbyte-integrations:connectors:destination-redshift'
