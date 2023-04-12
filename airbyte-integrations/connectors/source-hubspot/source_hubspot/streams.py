@@ -1649,7 +1649,7 @@ class Goals(CRMObjectIncrementalStream):
     entity = "goal_targets"
     last_modified_field = "hs_lastmodifieddate"
     primary_key = "id"
-    scopes = {"crm.objects.goal_targets.read"}
+    scopes = {"crm.objects.goals.read"}
 
 
 class LineItems(CRMObjectIncrementalStream):
