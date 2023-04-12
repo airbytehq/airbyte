@@ -1,14 +1,11 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
 from setuptools import find_packages, setup
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "requests_mock"
-]
+TEST_REQUIREMENTS = ["pytest~=6.1", "requests_mock"]
 
 setup(
     name="source_slack",

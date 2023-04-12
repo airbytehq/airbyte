@@ -6,3 +6,4 @@
 !secrets
 !spec.patch.json
 !oauth2.patch.json
+!documentation_url.patch.json

@@ -15,6 +15,7 @@ COPY $CODE_PATH ./$CODE_PATH
 COPY main.py ./
 COPY spec.patch.json ./
 COPY oauth2.patch.json ./
+COPY documentation_url.patch.json ./
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 COPY --from=ghcr.io/estuary/airbyte-to-flow:dev /airbyte-to-flow ./
