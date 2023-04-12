@@ -18,6 +18,7 @@ data
 **/gmon.out
 static_checker_reports/
 .vscode
+*.sqlite
 
 # Logs
 acceptance_tests_logs/
