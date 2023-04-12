@@ -1220,6 +1220,7 @@ definitions:
         type: object
         additionalProperties: true
   NoAuth:
+    title: No Authentication
     description: Authenticator for requests requiring no authentication
     type: object
     required:
@@ -1232,6 +1233,7 @@ definitions:
         type: object
         additionalProperties: true
   NoPagination:
+    title: No Pagination
     description: Pagination implementation that never returns a next page
     type: object
     required:
