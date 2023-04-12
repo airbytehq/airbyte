@@ -284,6 +284,8 @@ definitions:
           - "{{ response.data.has_more is false }}"
           - "{{ 'next' not in headers['link'] }}"
       decoder:
+        title: Decoder
+        description: Component decoding the response so records can be extracted
         "$ref": "#/definitions/JsonDecoder"
       $parameters:
         type: object
@@ -841,6 +843,8 @@ definitions:
           - "$ref": "#/definitions/OffsetIncrement"
           - "$ref": "#/definitions/PageIncrement"
       decoder:
+        title: Decoder
+        description: Component decoding the response so records can be extracted
         "$ref": "#/definitions/JsonDecoder"
       page_size_option:
         "$ref": "#/definitions/RequestOption"
@@ -876,6 +880,8 @@ definitions:
           - ["data", "{{ parameters.name }}"]
           - ["data", "*", "record"]
       decoder:
+        title: Decoder
+        description: Component decoding the response so records can be extracted
         "$ref": "#/definitions/JsonDecoder"
       $parameters:
         type: object
@@ -1137,6 +1143,7 @@ definitions:
         type: object
         additionalProperties: true
   JsonDecoder:
+    title: Json Decoder
     type: object
     required:
       - type
