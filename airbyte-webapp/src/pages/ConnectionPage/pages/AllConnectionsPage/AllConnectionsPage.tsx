@@ -124,6 +124,8 @@ const AllConnectionsPage: React.FC = () => {
   const onCreateClick = () => push(`${RoutePaths.SelectConnection}`);
   const onSetMessageId = (id: string) => setMessageId(id);
 
+  console.log(connections);
+
   return (
     <Suspense fallback={<LoadingPage position="relative" />}>
       {hasConnections() ? (

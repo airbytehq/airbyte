@@ -13,6 +13,7 @@ import useRouter from "hooks/useRouter";
 import { RoutePaths } from "../../pages/routePaths";
 import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
 import LastSyncCell from "./components/LastSyncCell";
+
 import { ITableDataItem, SortOrderEnum } from "./types";
 
 const SwitchContent = styled.div`

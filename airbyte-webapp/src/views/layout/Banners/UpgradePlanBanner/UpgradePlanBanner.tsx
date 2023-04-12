@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -6,9 +6,7 @@ import { Button } from "components";
 
 import { useUser } from "core/AuthContext";
 import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
-import { getPaymentStatus, PAYMENT_STATUS } from "core/Constants/statuses";
-import useRouter from "hooks/useRouter";
-import { RoutePaths } from "pages/routePaths";
+import { useAuthDetail } from "services/auth/AuthSpecificationService";
 import { useUserPlanDetail } from "services/payments/PaymentsService";
 
 import styles from "../banners.module.scss";
@@ -37,10 +35,16 @@ const Text = styled.div`
 `;
 
 export const UpgradePlanBanner: React.FC<IProps> = ({ onBillingPage }) => {
-  const { user } = useUser();
-  const { pathname } = useRouter();
+  const { user, updateUserStatus } = useUser();
+  const { status } = useAuthDetail();
   const userPlanDetail = useUserPlanDetail();
   const { expiresTime } = userPlanDetail;
+
+  useEffect(() => {
+    if (status && user.status !== status) {
+      updateUserStatus?.(status);
+    }
+  }, [status, updateUserStatus, user.status]);
 
   const remainingDaysForFreeTrial = (): number => {
     const currentDate: Date = new Date();
@@ -48,16 +52,6 @@ export const UpgradePlanBanner: React.FC<IProps> = ({ onBillingPage }) => {
     const diff = expiryDate.getTime() - currentDate.getTime();
     const diffDays = Math.ceil(diff / (1000 * 60 * 60 * 24));
     return diffDays;
-  };
-
-  const isUpgradePlanBanner = (): boolean => {
-    let showUpgradePlanBanner = false;
-    if (getPaymentStatus(user.status) === PAYMENT_STATUS.Free_Trial) {
-      if (!pathname.split("/").includes(RoutePaths.Payment)) {
-        showUpgradePlanBanner = true;
-      }
-    }
-    return showUpgradePlanBanner;
   };
 
   const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
@@ -73,25 +67,22 @@ export const UpgradePlanBanner: React.FC<IProps> = ({ onBillingPage }) => {
     }
   };
 
-  if (isUpgradePlanBanner()) {
-    return (
-      <>
-        <Banner className={styles.banner}>
-          <Text>
-            <FormattedMessage
-              id={
-                remainingDaysForFreeTrial() >= 0 ? "upgrade.plan.trialPeriod.countdown" : "upgrade.plan.trialPeriod.end"
-              }
-              values={{ count: remainingDaysForFreeTrial() }}
-            />
-          </Text>
-          <Button size="m" black onClick={() => onUpgradePlan()}>
-            <FormattedMessage id="upgrade.plan.btn" />
-          </Button>
-        </Banner>
-        {isAuthorized && <UnauthorizedModal onClose={() => setIsAuthorized(false)} />}
-      </>
-    );
-  }
-  return null;
+  return (
+    <>
+      <Banner className={styles.banner}>
+        <Text>
+          <FormattedMessage
+            id={
+              remainingDaysForFreeTrial() >= 0 ? "upgrade.plan.trialPeriod.countdown" : "upgrade.plan.trialPeriod.end"
+            }
+            values={{ count: remainingDaysForFreeTrial() }}
+          />
+        </Text>
+        <Button size="m" black onClick={() => onUpgradePlan()}>
+          <FormattedMessage id="upgrade.plan.btn" />
+        </Button>
+      </Banner>
+      {isAuthorized && <UnauthorizedModal onClose={() => setIsAuthorized(false)} />}
+    </>
+  );
 };

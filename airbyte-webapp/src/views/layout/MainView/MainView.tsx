@@ -120,13 +120,23 @@ const MainView: React.FC = (props) => {
     push(`/${RoutePaths.Settings}/${SettingsRoute.PlanAndBilling}`);
   };
 
+  const isUpgradePlanBanner = (): boolean => {
+    let showUpgradePlanBanner = false;
+    if (getPaymentStatus(user.status) === PAYMENT_STATUS.Free_Trial) {
+      if (!pathname.split("/").includes(RoutePaths.Payment)) {
+        showUpgradePlanBanner = true;
+      }
+    }
+    return showUpgradePlanBanner;
+  };
+
   return (
     <MainContainer>
       {isSidebar && <SideBar />}
       <Content backgroundColor={backgroundColor}>
         <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
           <React.Suspense fallback={<LoadingPage />}>
-            <UpgradePlanBanner onBillingPage={onBillingPage} />
+            {isUpgradePlanBanner() && <UpgradePlanBanner onBillingPage={onBillingPage} />}
             {usage !== undefined && usagePercentage > 0 && usagePercentage < 100 && (
               <SyncNotificationBanner usagePercentage={usagePercentage} onBillingPage={onBillingPage} />
             )}
