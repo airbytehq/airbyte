@@ -1383,6 +1383,7 @@ definitions:
         type: object
         additionalProperties: true
   RemoveFields:
+    title: Remove Fields
     description: A transformation which removes fields from a record. The fields removed are designated using FieldPointers. During transformation, if a field or any of its parents does not exist in the record, no error is thrown.
     type: object
     required:
@@ -1393,10 +1394,15 @@ definitions:
         type: string
         enum: [RemoveFields]
       field_pointers:
+        title: Field Paths
+        description:
         type: array
         items:
           items:
             type: string
+        examples:
+          - ["tags"]
+          - [["content", "html"], ["content", "plain_text"]]
   RequestPath:
     title: Request Path
     description: Specifies where in the request path a component's value should be inserted
