@@ -15,8 +15,8 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardCheckConnectionOutput.Status;
+import io.airbyte.configoss.StandardCheckConnectionOutput;
+import io.airbyte.configoss.StandardCheckConnectionOutput.Status;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -138,7 +138,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws SQLException {
-    TimeZone timeZone = TimeZone.getTimeZone("UTC");
+    final TimeZone timeZone = TimeZone.getTimeZone("UTC");
     TimeZone.setDefault(timeZone);
 
     return database.bufferedResultSetQuery(
@@ -184,7 +184,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     final JsonNode config = Jsons.deserialize(IOs.readFile(
         Path.of("secrets/internal_staging_config_no_active_warehouse.json")));
 
-    StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
+    final StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
 
     assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
     assertThat(standardCheckConnectionOutput.getMessage()).contains(NO_ACTIVE_WAREHOUSE_ERR_MSG);
@@ -196,7 +196,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     final JsonNode config = Jsons.deserialize(IOs.readFile(
         Path.of("secrets/config_no_text_schema_permission.json")));
 
-    StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
+    final StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
 
     assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
     assertThat(standardCheckConnectionOutput.getMessage()).contains(NO_USER_PRIVILEGES_ERR_MSG);
@@ -208,7 +208,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     final JsonNode config = Jsons.deserialize(IOs.readFile(
         Path.of("secrets/insert_ip_not_in_whitelist_config.json")));
 
-    StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
+    final StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
 
     assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
     assertThat(standardCheckConnectionOutput.getMessage()).contains(IP_NOT_IN_WHITE_LIST_ERR_MSG);

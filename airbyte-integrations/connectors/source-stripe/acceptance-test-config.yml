@@ -51,6 +51,8 @@ acceptance_tests:
               bypass_reason: "Fast changing data"
             - name: payment_method_details
               bypass_reason: "Randomly added network_token field to the record"
+            - name: source/wallet
+              bypass_reason: "Randomly added network_token field to the record"
           payment_intents:
             - name: receipt_url
               bypass_reason: "URL changes upon each request for privacy/security"
