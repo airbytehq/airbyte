@@ -14,7 +14,6 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 class RechargeStream(HttpStream, ABC):
-
     primary_key = "id"
     url_base = "https://api.rechargeapps.com/"
 
@@ -96,7 +95,6 @@ class RechargeStream(HttpStream, ABC):
 
 
 class IncrementalRechargeStream(RechargeStream, ABC):
-
     cursor_field = "updated_at"
 
     @property
@@ -145,10 +143,20 @@ class Metafields(RechargeStream):
     Metafields Stream: https://developer.rechargepayments.com/v1-shopify?python#list-metafields
     """
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = {"limit": self.limit, "owner_resource": (stream_slice or {}).get("owner_resource")}
+        if next_page_token:
+            params.update(next_page_token)
+
+        return params
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         owner_resources = ["customer", "store", "subscription"]
-        for owner in owner_resources:
-            yield from super().read_records(stream_slice={"owner_resource": owner}, **kwargs)
+        yield from [{"owner_resource": owner} for owner in owner_resources]
 
 
 class Onetimes(IncrementalRechargeStream):
