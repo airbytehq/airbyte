@@ -5,7 +5,7 @@ on:
   pull_request:
     # TODO (ben): Change to any connector change once the metadata service is in use
     paths:
-      - "airbyte-integrations/connectors/**/metadata.yml"
+      - "airbyte-integrations/connectors/**/metadata.yaml"
 jobs:
   metadata_service_ci:
     name: Validate Metadata Manifest for Connectors
