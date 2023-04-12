@@ -60,6 +60,7 @@ class SourceStripe(AbstractSource):
         }
         incremental_args = {**args, "lookback_window_days": config.get("lookback_window_days")}
         return [
+            Accounts(**args),
             BalanceTransactions(**incremental_args),
             BankAccounts(**args),
             Charges(**incremental_args),
@@ -84,5 +85,4 @@ class SourceStripe(AbstractSource):
             Transfers(**incremental_args),
             ExternalAccountBankAccounts(**args),
             ExternalAccountCards(**args),
-            Accounts(**incremental_args),
         ]

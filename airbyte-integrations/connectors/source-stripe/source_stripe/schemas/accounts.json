@@ -53,7 +53,6 @@
       }
     },
     "business_type": {
-      "enum": ["company", "government_entity", "individual", "non_profit"],
       "type": ["null", "string"]
     },
     "capabilities": {
@@ -61,87 +60,66 @@
       "additionalProperties": true,
       "properties": {
         "afterpay_clearpay_payments": {
-          "enum": ["active", "inactive", "pending"],
           "type": ["null", "string"]
         },
         "au_becs_debit_payments": {
-          "enum": ["active", "inactive", "pending"],
           "type": ["null", "string"]
         },
         "bacs_debit_payments": {
-          "enum": ["active", "inactive", "pending"],
           "type": ["null", "string"]
         },
         "bancontact_payments": {
-          "enum": ["active", "inactive", "pending"],
           "type": ["null", "string"]
         },
         "card_issuing": {
-          "enum": ["active", "inactive", "pending"],
           "type": ["null", "string"]
         },
         "card_payments": {
-          "enum": ["active", "inactive", "pending"],
           "type": ["null", "string"]
         },
         "cartes_bancaires_payments": {
-          "enum": ["active", "inactive", "pending"],
           "type": ["null", "string"]
         },
         "eps_payments": {
-          "enum": ["active", "inactive", "pending"],
           "type": ["null", "string"]
         },
         "fpx_payments": {
-          "enum": ["active", "inactive", "pending"],
           "type": ["null", "string"]
         },
         "giropay_payments": {
-          "enum": ["active", "inactive", "pending"],
           "type": ["null", "string"]
         },
         "grabpay_payments": {
-          "enum": ["active", "inactive", "pending"],
           "type": ["null", "string"]
         },
         "ideal_payments": {
-          "enum": ["active", "inactive", "pending"],
           "type": ["null", "string"]
         },
         "jcb_payments": {
-          "enum": ["active", "inactive", "pending"],
           "type": ["null", "string"]
         },
         "legacy_payments": {
-          "enum": ["active", "inactive", "pending"],
           "type": ["null", "string"]
         },
         "oxxo_payments": {
-          "enum": ["active", "inactive", "pending"],
           "type": ["null", "string"]
         },
         "p24_payments": {
-          "enum": ["active", "inactive", "pending"],
           "type": ["null", "string"]
         },
         "sepa_debit_payments": {
-          "enum": ["active", "inactive", "pending"],
           "type": ["null", "string"]
         },
         "sofort_payments": {
-          "enum": ["active", "inactive", "pending"],
           "type": ["null", "string"]
         },
         "tax_reporting_us_1099_k": {
-          "enum": ["active", "inactive", "pending"],
           "type": ["null", "string"]
         },
         "tax_reporting_us_1099_misc": {
-          "enum": ["active", "inactive", "pending"],
           "type": ["null", "string"]
         },
         "transfers": {
-          "enum": ["active", "inactive", "pending"],
           "type": ["null", "string"]
         }
       }
@@ -260,8 +238,7 @@
           "additionalProperties": true,
           "properties": {
             "date": {
-              "type": ["null", "string"],
-              "format": "unix-time"
+              "type": ["null", "string"]
             },
             "ip": {
               "type": ["null", "string"]
@@ -313,7 +290,6 @@
       "type": ["null", "string"]
     },
     "created": {
-      "format": "unix-time",
       "type": ["null", "integer"]
     },
     "default_currency": {
@@ -440,8 +416,7 @@
           }
         },
         "created": {
-          "type": ["null", "string"],
-          "format": "unix-time"
+          "type": ["null", "string"]
         },
         "dob": {
           "type": ["null", "object"],
@@ -831,8 +806,7 @@
       "additionalProperties": true,
       "properties": {
         "date": {
-          "type": ["null", "string"],
-          "format": "unix-time"
+          "type": ["null", "string"]
         },
         "ip": {
           "type": ["null", "string"]
