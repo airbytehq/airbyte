@@ -14,7 +14,7 @@ pip install -r requirements.txt
 This script will create one issue per GA connectors to migrate to `high` test strictness level.
 
 ### What it does:
-1. Find all GA connectors in `../../../../../airbyte-config/init/src/main/resources/seed/source_definitions.yaml`
+1. Find all GA connectors in `../../../../../airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml`
 2. Generate an issue content (title, body, labels, project), using `./templates/issue.md.j2`
 3. Find an already existing issue with the same title.
 4. Create the issue and return its url if it does not exist.
@@ -38,7 +38,7 @@ Issues are added to the following project: `SAT-high-test-strictness-level`
 This script will create one PR per GA connectors to migrate to `high` test strictness level.
 
 ### What it does:
-1. Iterate on all GA connectors in `../../../../../airbyte-config/init/src/main/resources/seed/source_definitions.yaml`
+1. Iterate on all GA connectors in `../../../../../airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml`
 2. Create a branch for each GA connector
 3. Locally migrate `acceptance_test_config.yml` to the latest format
 4. Commit and push the changes on this branch

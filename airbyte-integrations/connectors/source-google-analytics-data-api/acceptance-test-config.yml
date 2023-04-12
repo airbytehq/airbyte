@@ -1,40 +1,100 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-google-analytics-data-api:dev
+test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
       - spec_path: "source_google_analytics_data_api/spec.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "0.0.3"
   connection:
     tests:
       - config_path: "secrets/config.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
-        status: "failed"
+        status: "exception"
   discovery:
     tests:
       - config_path: "secrets/config.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "0.0.2"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: "traffic_sources"
+            bypass_reason: "The data contains business information"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
+        ignored_fields:
+          daily_active_users:
+            - name: uuid
+              bypass_reason: "dynamically created field"
+          weekly_active_users:
+            - name: uuid
+              bypass_reason: "dynamically created field"
+          four_weekly_active_users:
+            - name: uuid
+              bypass_reason: "dynamically created field"
+          devices:
+            - name: uuid
+              bypass_reason: "dynamically created field"
+            - name: averageSessionDuration
+              bypass_reason: "dynamic field"
+          locations:
+            - name: uuid
+              bypass_reason: "dynamically created field"
+            - name: averageSessionDuration
+              bypass_reason: "dynamic field"
+          pages:
+            - name: uuid
+              bypass_reason: "dynamically created field"
+            - name: screenPageViews
+              bypass_reason: "dynamically created field"
+            - name: bounceRate
+              bypass_reason: "dynamically created field"
+          website_overview:
+            - name: uuid
+              bypass_reason: "dynamically created field"
+            - name: averageSessionDuration
+              bypass_reason: "dynamically created field"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         ignored_fields:
-          "daily_active_users": ["uuid"]
-          "weekly_active_users": ["uuid"]
-          "four_weekly_active_users": ["uuid"]
-          "devices": ["uuid"]
-          "locations": ["uuid"]
-          "pages": ["uuid"]
-          "traffic_sources": ["uuid"]
-          "website_overview": ["uuid"]
+          daily_active_users:
+            - name: uuid
+              bypass_reason: "dynamically created field"
+          weekly_active_users:
+            - name: uuid
+              bypass_reason: "dynamically created field"
+          four_weekly_active_users:
+            - name: uuid
+              bypass_reason: "dynamically created field"
+          devices:
+            - name: uuid
+              bypass_reason: "dynamically created field"
+            - name: averageSessionDuration
+              bypass_reason: "dynamic field"
+          locations:
+            - name: uuid
+              bypass_reason: "dynamically created field"
+            - name: averageSessionDuration
+              bypass_reason: "dynamic field"
+          pages:
+            - name: uuid
+              bypass_reason: "dynamically created field"
+          traffic_sources:
+            - name: uuid
+              bypass_reason: "dynamically created field"
+            - name: averageSessionDuration
+              bypass_reason: "dynamically created field"
+          website_overview:
+            - name: uuid
+              bypass_reason: "dynamically created field"
+            - name: averageSessionDuration
+              bypass_reason: "dynamically created field"
   incremental:
     tests:
       - config_path: "secrets/config.json"

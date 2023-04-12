@@ -159,15 +159,17 @@ class TestOauth2Authenticator:
         resp.status_code = 200
         mocker.patch.object(resp, "json", return_value={"access_token": "access_token", "expires_in": 1000})
         mocker.patch.object(requests, "request", side_effect=mock_request, autospec=True)
-        token = oauth.refresh_access_token()
+        token, expires_in = oauth.refresh_access_token()
 
-        assert ("access_token", 1000) == token
+        assert isinstance(expires_in, int)
+        assert ("access_token", 1000) == (token, expires_in)
 
         # Test with expires_in as str
         mocker.patch.object(resp, "json", return_value={"access_token": "access_token", "expires_in": "2000"})
-        token = oauth.refresh_access_token()
+        token, expires_in = oauth.refresh_access_token()
 
-        assert ("access_token", 2000) == token
+        assert isinstance(expires_in, int)
+        assert ("access_token", 2000) == (token, expires_in)
 
     @pytest.mark.parametrize("error_code", (429, 500, 502, 504))
     def test_refresh_access_token_retry(self, error_code, requests_mock):
@@ -184,6 +186,7 @@ class TestOauth2Authenticator:
             ]
         )
         token, expires_in = oauth.refresh_access_token()
+        assert isinstance(expires_in, int)
         assert (token, expires_in) == ("token", 10)
         assert requests_mock.call_count == 3
 
