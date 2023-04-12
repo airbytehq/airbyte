@@ -224,7 +224,8 @@ definitions:
         type: object
         additionalProperties: true
   CursorPagination:
-    description: Pagination strategy that evaluates an interpolated string to define the next page token
+    title: Cursor Pagination
+    description: Pagination strategy that evaluates an interpolated string to define the next page to fetch
     type: object
     required:
       - type
@@ -234,11 +235,36 @@ definitions:
         type: string
         enum: [CursorPagination]
       cursor_value:
+        title: Cursor Value
+        description: Value of the cursor defining the next page to fetch
         type: string
+        interpolation_context:
+          - config
+          - headers
+          - last_records
+          - response
+        examples:
+          - "{{ headers.link.next.cursor }}"
+          - "{{ last_records[-1]['key'] }}"
+          - "{{ response['nextPage'] }}"
       page_size:
+        title: Page Size
+        description: The number of records to include in each pages
         type: integer
+        examples:
+          - 100
       stop_condition:
+        title: Stop Condition
+        description: Template string evaluating when to stop paginating
         type: string
+        interpolation_context:
+          - config
+          - headers
+          - last_records
+          - response
+        examples:
+          - "{{ response.data.has_more is false }}"
+          - "{{ 'next' not in headers['link'] }}"
       decoder:
         "$ref": "#/definitions/JsonDecoder"
       $parameters:
