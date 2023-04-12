@@ -1,5 +1,9 @@
 {
+  "required": ["start_date", "lookback_window", "join_channels", "credentials"],
   "properties": {
+    "start_date": {
+      "format": "date-time"
+    },
     "credentials": {
       "title": "Authentication mechanism",
       "description": "Choose how to authenticate into Slack",
@@ -27,7 +31,8 @@
             "client_id": {
               "type": "string",
               "title": "Client ID",
-              "description": "Slack client_id. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> if you need help finding this id."
+              "description": "Slack client_id. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> if you need help finding this id.",
+              "airbyte_secret": true
             },
             "client_secret": {
               "type": "string",

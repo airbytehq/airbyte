@@ -1,8 +1,8 @@
 {
     "provider": "slack",
-    "authUrlTemplate": "https://slack.com/oauth/v2/authorize?client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&response_type=code&state={{#urlencode}}{{{ state }}}{{/urlencode}}",
+    "authUrlTemplate": "https://slack.com/oauth/v2/authorize?client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&response_type=code&state={{#urlencode}}{{{ state }}}{{/urlencode}}&scope=channels:history%20channels:join%20channels:read%20files:read%20groups:read%20links:read%20reactions:read%20remote_files:read%20team:read%20usergroups:read%20users.profile:read%20users:read    ",
     "accessTokenUrlTemplate": "https://slack.com/api/oauth.v2.access",
     "accessTokenBody": "grant_type=authorization_code&client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&client_secret={{#urlencode}}{{{ client_secret }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&code={{#urlencode}}{{{ code }}}{{/urlencode}}",
     "accessTokenHeaders": {"content-type": "application/x-www-form-urlencoded"},
-    "accessTokenResponseMap": {"refresh_token": "/refresh_token"}
+    "accessTokenResponseMap": {"access_token": "/access_token"}
   }
