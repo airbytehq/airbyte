@@ -171,3 +171,8 @@ def test_request_params(config, stream, expected):
 def test_get_updated_state(config, last_record, current_state, expected):
     stream = OrderRefunds(config)
     assert stream.get_updated_state(current_state, last_record) == expected
+
+
+def test_parse_response_with_bad_json(config, response_with_bad_json):
+    stream = Customers(config)
+    assert list(stream.parse_response(response_with_bad_json)) == [{}]

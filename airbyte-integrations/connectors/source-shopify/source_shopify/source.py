@@ -13,6 +13,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from requests.exceptions import RequestException
 
 from .auth import ShopifyAuthenticator
 from .graphql import get_query_products
@@ -71,22 +72,29 @@ class ShopifyStream(HttpStream, ABC):
     @limiter.balance_rate_limit()
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if response.status_code is requests.codes.OK:
-            json_response = response.json()
-            records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
-            # transform method was implemented according to issue 4841
-            # Shopify API returns price fields as a string and it should be converted to number
-            # this solution designed to convert string into number, but in future can be modified for general purpose
-            if isinstance(records, dict):
-                # for cases when we have a single record as dict
+            try:
+                json_response = response.json()
+                records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
+                yield from self.produce_records(records)
+            except RequestException as e:
+                self.logger.warn(f"Unexpected error in `parse_ersponse`: {e}, the actual response data: {response.text}")
+                yield {}
+
+    def produce_records(self, records: Union[Iterable[Mapping[str, Any]], Mapping[str, Any]] = None) -> Iterable[Mapping[str, Any]]:
+        # transform method was implemented according to issue 4841
+        # Shopify API returns price fields as a string and it should be converted to number
+        # this solution designed to convert string into number, but in future can be modified for general purpose
+        if isinstance(records, dict):
+            # for cases when we have a single record as dict
+            # add shop_url to the record to make querying easy
+            records["shop_url"] = self.config["shop"]
+            yield self._transformer.transform(records)
+        else:
+            # for other cases
+            for record in records:
                 # add shop_url to the record to make querying easy
-                records["shop_url"] = self.config["shop"]
-                yield self._transformer.transform(records)
-            else:
-                # for other cases
-                for record in records:
-                    # add shop_url to the record to make querying easy
-                    record["shop_url"] = self.config["shop"]
-                    yield self._transformer.transform(record)
+                record["shop_url"] = self.config["shop"]
+                yield self._transformer.transform(record)
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 404:
@@ -428,18 +436,12 @@ class ProductsGraphQl(IncrementalShopifyStream):
     @limiter.balance_rate_limit(api_type=ApiTypeEnum.graphql.value)
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if response.status_code is requests.codes.OK:
-            json_response = response.json()["data"]["products"]["nodes"]
-            if isinstance(json_response, dict):
-                # for cases when we have a single record as dict
-                # add shop_url to the record to make querying easy
-                json_response["shop_url"] = self.config["shop"]
-                yield json_response
-            else:
-                # for other cases
-                for record in json_response:
-                    # add shop_url to the record to make querying easy
-                    record["shop_url"] = self.config["shop"]
-                    yield record
+            try:
+                json_response = response.json()["data"]["products"]["nodes"]
+                yield from self.produce_records(json_response)
+            except RequestException as e:
+                self.logger.warn(f"Unexpected error in `parse_ersponse`: {e}, the actual response data: {response.text}")
+                yield {}
 
 
 class MetafieldProducts(MetafieldShopifySubstream):
