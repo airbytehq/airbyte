@@ -778,6 +778,7 @@ definitions:
         type: object
         additional_properties: true
   DefaultPaginator:
+    title: Default Paginator
     description: Default pagination implementation to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token
     type: object
     required:
@@ -788,6 +789,8 @@ definitions:
         type: string
         enum: [DefaultPaginator]
       pagination_strategy:
+        title: Pagination Strategy
+        description: Strategy defining how records are paginated
         anyOf:
           - "$ref": "#/definitions/CursorPagination"
           - "$ref": "#/definitions/CustomPaginationStrategy"
