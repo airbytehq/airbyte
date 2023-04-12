@@ -1370,7 +1370,8 @@ definitions:
           items:
             type: string
   RequestPath:
-    description: A component that specifies where in the request path a component's value should be inserted into.
+    title: Request Path
+    description: Specifies where in the request path a component's value should be inserted
     type: object
     required:
       - type
@@ -1379,7 +1380,8 @@ definitions:
         type: string
         enum: [RequestPath]
   RequestOption:
-    description: A component that specifies the key field and where in the request a component's value should be inserted into.
+    title: Request Option
+    description: Specifies the key field and where in the request a component's value should be injected
     type: object
     required:
       - type
@@ -1390,9 +1392,19 @@ definitions:
         type: string
         enum: [RequestOption]
       field_name:
+        title: Configures which key should be used in the location that the descriptor is being injected into
         type: string
+        examples:
+          - segment_id
       inject_into:
+        title: Inject Into
+        description: Configures where the descriptor should be set on the HTTP requests
         enum:
+          - request_parameter
+          - header
+          - body_data
+          - body_json
+        examples:
           - request_parameter
           - header
           - body_data
