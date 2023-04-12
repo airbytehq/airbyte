@@ -30,6 +30,7 @@ properties:
 additionalProperties: false
 definitions:
   AddedFieldDefinition:
+    title: Definition Of Field To Add
     description: Defines the field to add on a record
     type: object
     required:
@@ -41,15 +42,30 @@ definitions:
         type: string
         enum: [AddedFieldDefinition]
       path:
+        title: Path
+        description: List of strings defining the path where to add the value on the record
         type: array
         items:
           type: string
+        examples:
+          - ["segment_id"]
+          - ["metadata", "segment_id"]
       value:
         type: string
+        interpolation_context:
+          - config
+          - record
+          - stream_slice
+          - stream_state
+        examples:
+          - "{{ record['updates'] }}"
+          - "{{ record['MetaData']['LastUpdatedTime'] }}"
+          - "{{ stream_slice['segment_id'] }}"
       $parameters:
         type: object
         additionalProperties: true
   AddFields:
+    title: Add Fields
     description: Transformation which adds field to an output record. The path of the added field can be nested.
     type: object
     required:
@@ -60,6 +76,8 @@ definitions:
         type: string
         enum: [AddFields]
       fields:
+        title: Fields
+        description: List of transformations (path and corresponding value) that will be added to the record
         type: array
         items:
           - "$ref": "#/definitions/AddedFieldDefinition"
