@@ -306,11 +306,11 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("year")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.INTEGER)
             // MySQL converts values in the ranges '0' - '69' to YEAR value in the range 2000 - 2069
             // and '70' - '99' to 1970 - 1999.
-            .addInsertValues("null", "'1997'", "'0'", "'50'", "'70'", "'80'", "'99'")
-            .addExpectedValues(null, "1997", "2000", "2050", "1970", "1980", "1999")
+            .addInsertValues("null", "'1997'", "'0'", "'50'", "'70'", "'80'", "'99'", "'00'", "'000'")
+            .addExpectedValues(null, "1997", "2000", "2050", "1970", "1980", "1999", "2000", "2000")
             .build());
 
     // char types can be string or binary, so they are tested separately
