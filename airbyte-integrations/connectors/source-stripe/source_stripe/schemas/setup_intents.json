@@ -16,9 +16,6 @@
     "cancellation_reason": {
       "type": ["null", "string"]
     },
-    "client_secret": {
-      "type": ["string"]
-    },
     "created": {
       "type": ["integer"]
     },
