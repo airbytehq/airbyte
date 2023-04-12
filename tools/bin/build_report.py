@@ -30,7 +30,7 @@ from slack_sdk import WebhookClient
 from slack_sdk.errors import SlackApiError
 
 # Global statics
-CONNECTOR_DEFINITIONS_DIR = "./airbyte-config/init/src/main/resources/seed"
+CONNECTOR_DEFINITIONS_DIR = "./airbyte-config-oss/init-oss/src/main/resources/seed"
 SOURCE_DEFINITIONS_YAML = f"{CONNECTOR_DEFINITIONS_DIR}/source_definitions.yaml"
 DESTINATION_DEFINITIONS_YAML = f"{CONNECTOR_DEFINITIONS_DIR}/destination_definitions.yaml"
 CONNECTORS_ROOT_PATH = "./airbyte-integrations/connectors"
