@@ -291,6 +291,9 @@ class NotaFiscal(IncrementalBlingBase):
     record_date_field_format = '%Y-%m-%d %H:%M:%S'
     api_date_filter_field = 'dataEmissao'
 
+    max_tries = 5
+    retry_interval = 60
+
     def __init__(
         self, 
         config: Mapping[str, Any], 
@@ -371,7 +374,11 @@ class NotaFiscal(IncrementalBlingBase):
         Otherwise, the JSON with all necessary attributes is built and will be ingested
         '''
 
-        response_json = response.json()
+        if response.status_code != 200:
+            logger.info('Handling error %s:', response.status_code)
+            response_json = self.handle_request(response).json()
+        else: 
+            response_json = response.json()
 
         if self.record_list_name not in response_json['retorno'].keys():
             self.end_of_pages = True
@@ -451,6 +458,10 @@ class NotaFiscal(IncrementalBlingBase):
             {
                 'situacao_filter': None,
                 'tipo_filter': 'tipo[E]'
+            },
+            {
+                'situacao_filter': None,
+                'tipo_filter': 'tipo[S]'
             }
         ]
 
@@ -458,6 +469,29 @@ class NotaFiscal(IncrementalBlingBase):
             value['index'] = index
 
         return dict_list
+
+    @property
+    def raise_on_http_errors(self) -> bool:
+        """
+        Override if needed. If set to False, allows opting-out of raising HTTP code exception.
+        """
+        return False
+    
+    def handle_request(self, response):
+        try_count = 1
+
+        while try_count < self.max_retries:
+            logger.info('Retry number: %s', try_count)
+            new_response = requests.get(response.url)
+
+            if new_response.status_code == 200:
+                logger.info('Success for url: %s', response.url)
+                return new_response
+            
+            try_count += 1
+            sleep(self.retry_interval)
+        
+        raise
 
 class SourceBling(AbstractSource):
 
