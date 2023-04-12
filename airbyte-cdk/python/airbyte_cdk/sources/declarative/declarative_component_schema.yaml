@@ -889,7 +889,8 @@ definitions:
         type: object
         additionalProperties: true
   HttpRequester:
-    description: Default implementation of a requester
+    title: HTTP Requester
+    description: Requester submitting HTTP requests and extracting records from the response
     type: object
     required:
       - type
@@ -899,14 +900,31 @@ definitions:
       type:
         type: string
         enum: [HttpRequester]
-      path:
-        description: The specific endpoint to fetch data from for a resource.
-        type: string
       url_base:
-        description: The root of the API source.
+        title: Base URL
+        description: Base URL of the API source
         type: string
+        interpolation_context:
+          - config
+        examples:
+          - "https://connect.squareup.com/v2"
+          - "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
+      path:
+        Path: Path
+        description: The specific endpoint to fetch data from for a resource
+        type: string
+        interpolation_context:
+          - config
+          - next_page_token
+          - stream_state
+          - stream_slice
+        examples:
+          - "/products"
+          - "/quotes/{{ stream_slice['id'] }}/quote_line_groups"
+          - "/trades/{{ config['symbol_id'] }}/history"
       authenticator:
-        description: Authenticator component that defines how to authenticate to the source.
+        title: Authenticator
+        description: Authentication method to use for requests sent to the API"
         anyOf:
           - "$ref": "#/definitions/ApiKeyAuthenticator"
           - "$ref": "#/definitions/BasicHttpAuthenticator"
@@ -917,12 +935,14 @@ definitions:
           - "$ref": "#/definitions/NoAuth"
           - "$ref": "#/definitions/SessionTokenAuthenticator"
       error_handler:
+        title: Error Handler
         description: Error handler component that defines how to handle errors.
         anyOf:
           - "$ref": "#/definitions/DefaultErrorHandler"
           - "$ref": "#/definitions/CustomErrorHandler"
           - "$ref": "#/definitions/CompositeErrorHandler"
       http_method:
+        title: HTTP Method
         description: The HTTP method used to fetch data from the source (can be GET or POST).
         anyOf:
           - type: string
@@ -932,33 +952,73 @@ definitions:
               - POST
         default: GET
       request_body_data:
+        title: Request Body Payload (Non-JSON)
         description: Specifies how to populate the body of the request with a non-JSON payload. If returns a ready text that it will be sent as is. If returns a dict that it will be converted to a urlencoded form.
         anyOf:
           - type: string
           - type: object
             additionalProperties:
               type: string
+        interpolation_context:
+          - next_page_token
+          - stream_slice
+          - stream_state
+        examples:
+          - |
+            [{"clause": {"type": "timestamp", "operator": 10, "parameters":
+                [{"value": {{ stream_slice['start_time'] | int * 1000 }} },
+                 {"value": {{ stream_slice['end_time'] | int * 1000 + (86400000 - 1) }} }
+                ]
+            
+              }, "orderBy": 1, "columnName": "Timestamp"}]/
       request_body_json:
+        title: Request Body JSON Payload
         description: Specifies how to populate the body of the request with a JSON payload.
         anyOf:
           - type: string
           - type: object
             additionalProperties:
               type: string
+        interpolation_context:
+          - next_page_token
+          - stream_slice
+          - stream_state
+        examples:
+          - sort_order: "ASC"
+            sort_field: "CREATED_AT"
+          - key: "{{ config['value'] }}"
       request_headers:
-        description: Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
+        title: Request Headers
+        description: Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method
         anyOf:
           - type: string
           - type: object
             additionalProperties:
               type: string
+        interpolation_context:
+          - next_page_token
+          - stream_slice
+          - stream_state
+        examples:
+          - Output-Format: JSON
+          - Version: "{{ config['version'] }}"
       request_parameters:
+        title: Query Parameters
         description: Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
         anyOf:
           - type: string
           - type: object
             additionalProperties:
               type: string
+        interpolation_context:
+          - next_page_token
+          - stream_slice
+          - stream_state
+        examples:
+         - unit: "day"
+         - query: 'last_event_time BETWEEN TIMESTAMP "{{ stream_slice.start_time }}" AND TIMESTAMP "{{ stream_slice.end_time }}"'
+         - searchIn: "{{ ','.join(config.get('search_in', [])) }}"
+         - sort_by[asc]: updated_at
       $parameters:
         type: object
         additionalProperties: true
