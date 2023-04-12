@@ -22,12 +22,20 @@ DEFAULT_MAXIMUM_NUMBER_OF_SLICES = 5
 DEFAULT_MAX_RECORDS = 100
 
 
-def read_stream(source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog) -> AirbyteMessage:
+def get_limits(config: Mapping[str, Any]):
+    command_config = config.get("__test_read_config", {})
+    max_pages_per_slice = command_config.get("max_pages_per_slice", DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE) or DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE
+    max_slices = command_config.get("max_slices", DEFAULT_MAXIMUM_NUMBER_OF_SLICES) or DEFAULT_MAXIMUM_NUMBER_OF_SLICES
+    max_records = command_config.get("max_records", DEFAULT_MAX_RECORDS) or DEFAULT_MAX_RECORDS
+    return {
+        "max_pages_per_slice": max_pages_per_slice,
+        "max_records": max_records,
+        "max_slices": max_slices,
+    }
+
+
+def read_stream(source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, max_pages_per_slice: int, max_slices: int, max_records: int) -> AirbyteMessage:
     try:
-        command_config = config.get("__test_read_config", {})
-        max_pages_per_slice = command_config.get("max_pages_per_slice", DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE)
-        max_slices = command_config.get("max_slices", DEFAULT_MAXIMUM_NUMBER_OF_SLICES)
-        max_records = command_config.get("max_records", DEFAULT_MAX_RECORDS)
         handler = MessageGrouper(max_pages_per_slice, max_slices)
         stream_name = configured_catalog.streams[0].stream.name  # The connector builder only supports a single stream
         stream_read = handler.get_message_groups(source, config, configured_catalog, max_records)

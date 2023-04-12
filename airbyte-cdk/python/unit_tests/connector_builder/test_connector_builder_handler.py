@@ -10,7 +10,14 @@ from unittest.mock import patch
 
 import pytest
 from airbyte_cdk import connector_builder
-from airbyte_cdk.connector_builder.connector_builder_handler import list_streams, resolve_manifest
+from airbyte_cdk.connector_builder.connector_builder_handler import (
+    DEFAULT_MAX_RECORDS,
+    DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE,
+    DEFAULT_MAXIMUM_NUMBER_OF_SLICES,
+    get_limits,
+    list_streams,
+    resolve_manifest,
+)
 from airbyte_cdk.connector_builder.main import handle_connector_builder_request, handle_request, read_stream
 from airbyte_cdk.connector_builder.models import LogMessage, StreamRead, StreamReadSlicesInner, StreamReadSlicesInnerPagesInner
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog
@@ -469,3 +476,19 @@ def create_mock_declarative_stream(http_stream):
     declarative_stream = mock.Mock(spec=DeclarativeStream, autospec=True)
     declarative_stream.retriever = http_stream
     return declarative_stream
+
+
+@pytest.mark.parametrize(
+    "test_name, config, expected_max_records, expected_max_slices, expected_max_pages_per_slice",
+    [
+        ("test_no_test_read_config", {}, DEFAULT_MAX_RECORDS, DEFAULT_MAXIMUM_NUMBER_OF_SLICES, DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE),
+        ("test_no_values_set", {"__test_read_config": {}}, DEFAULT_MAX_RECORDS, DEFAULT_MAXIMUM_NUMBER_OF_SLICES, DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE),
+        ("test_values_are_set", {"__test_read_config": {"max_slices": 1, "max_pages_per_slice": 2, "max_records": 3}}, 3, 1, 2),
+    ],
+)
+def test_get_limits(test_name, config, expected_max_records, expected_max_slices, expected_max_pages_per_slice):
+    limits = get_limits(config)
+    max_pages_per_slice, max_records, max_slices = limits["max_pages_per_slice"], limits["max_records"], limits["max_slices"]
+    assert max_records == expected_max_records
+    assert max_pages_per_slice == expected_max_pages_per_slice
+    assert max_slices == expected_max_slices
