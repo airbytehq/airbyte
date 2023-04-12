@@ -19,6 +19,7 @@ from .graphql import get_query_products
 from .transform import DataTypeEnforcer
 from .utils import SCOPES_MAPPING, ApiTypeEnum
 from .utils import EagerlyCachedStreamState as stream_state_cache
+from .utils import ErrorAccessScopes
 from .utils import ShopifyRateLimiter as limiter
 
 
@@ -117,12 +118,9 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         return 0 if self.cursor_field == "id" else ""
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {
-            self.cursor_field: max(
-                latest_record.get(self.cursor_field, self.default_state_comparison_value),
-                current_stream_state.get(self.cursor_field, self.default_state_comparison_value),
-            )
-        }
+        last_record_value = latest_record.get(self.cursor_field) or self.default_state_comparison_value
+        current_state_value = current_stream_state.get(self.cursor_field) or self.default_state_comparison_value
+        return {self.cursor_field: max(last_record_value, current_state_value)}
 
     @stream_state_cache.cache_stream_state
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
@@ -825,9 +823,14 @@ class SourceShopify(AbstractSource):
     @staticmethod
     def get_user_scopes(config):
         session = requests.Session()
+        url = f"https://{config['shop']}.myshopify.com/admin/oauth/access_scopes.json"
         headers = config["authenticator"].get_auth_header()
-        response = session.get(f"https://{config['shop']}.myshopify.com/admin/oauth/access_scopes.json", headers=headers).json()
-        return response["access_scopes"]
+        response = session.get(url, headers=headers).json()
+        access_scopes = response.get("access_scopes")
+        if access_scopes:
+            return access_scopes
+        else:
+            raise ErrorAccessScopes(f"Reason: {response}")
 
     @staticmethod
     def format_name(name):
