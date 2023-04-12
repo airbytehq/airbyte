@@ -1153,6 +1153,7 @@ definitions:
         type: string
         enum: [NoPagination]
   OffsetIncrement:
+    title: Offset Increment (Limit-Offset)
     description: Pagination strategy that returns the number of records reads so far and returns it as the next page token
     type: object
     required:
@@ -1163,10 +1164,16 @@ definitions:
         type: string
         enum: [OffsetIncrement]
       page_size:
-        description: The number of records to request
+        title: Page Size
+        description: The number of records to include in each pages
         anyOf:
           - type: integer
           - type: string
+        interpolation_context:
+          - config
+        examples:
+          - 100
+          - "{{ config['page_size'] }}"
       $parameters:
         type: object
         additionalProperties: true
