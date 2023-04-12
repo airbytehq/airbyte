@@ -1,0 +1,5 @@
+locations:
+  - location_name: metadata_service_orchestrator
+    code_source:
+      package_name: orchestrator
+
