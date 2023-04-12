@@ -25,7 +25,7 @@ Available commands:
   scaffold
   test <integration_root_path>
   build  <integration_root_path> [<run_tests>]
-  publish  <integration_root_path> [<run_tests>] [--publish_spec_to_cache] [--publish_spec_to_cache_with_key_file <path to keyfile>]
+  publish  <integration_root_path> [<run_tests>] [--publish_spec_to_cache] [--publish_spec_to_cache_with_key_file <path to keyfile>] [--pre_release]
   publish_external  <image_name> <image_version>
 "
 
@@ -195,12 +195,17 @@ cmd_publish() {
 
   local run_tests=$1; shift || run_tests=true
   local publish_spec_to_cache
+  local pre_release
   local spec_cache_writer_sa_key_file
 
   while [ $# -ne 0 ]; do
     case "$1" in
     --publish_spec_to_cache)
       publish_spec_to_cache=true
+      shift 1
+      ;;
+    --pre_release)
+      pre_release=true
       shift 1
       ;;
     --publish_spec_to_cache_with_key_file)
@@ -222,7 +227,7 @@ cmd_publish() {
 
   # setting local variables for docker image versioning
   local image_name; image_name=$(_get_docker_image_name "$path"/Dockerfile)
-  local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile)
+  local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile "$pre_release")
   local versioned_image=$image_name:$image_version
   local latest_image="$image_name" # don't include ":latest", that's assumed here
   local build_arch="linux/amd64,linux/arm64"
@@ -253,7 +258,13 @@ cmd_publish() {
 
   echo "image_name $image_name"
   echo "versioned_image $versioned_image"
-  echo "latest_image $latest_image"
+
+  if [ "$pre_release" == "true" ]
+  then
+    echo "will skip updating latest_image $latest_image tag due to pre_release"
+  else
+    echo "latest_image $latest_image"
+  fi
 
   # before we start working sanity check that this version has not been published yet, so that we do not spend a lot of
   # time building, running tests to realize this version is a duplicate.
@@ -282,10 +293,12 @@ cmd_publish() {
       -f docker-compose.build.yaml                                       \
       --push
 
-    VERSION=latest GIT_REVISION=$GIT_REVISION docker buildx bake \
-      --set "*.platform=$build_arch"                             \
-      -f docker-compose.build.yaml                               \
-      --push
+    if [ "$pre_release" != "true" ]; then
+      VERSION=latest GIT_REVISION=$GIT_REVISION docker buildx bake \
+        --set "*.platform=$build_arch"                             \
+        -f docker-compose.build.yaml                               \
+        --push
+    fi
 
     docker buildx rm connector-buildx
 
@@ -304,14 +317,21 @@ cmd_publish() {
       local arch_versioned_image=$image_name:`echo $arch | sed "s/\//-/g"`-$image_version
       echo "Publishing new version ($arch_versioned_image) from $path"
       docker buildx build -t $arch_versioned_image --platform $arch --push $path
-      docker manifest create $latest_image --amend $arch_versioned_image
       docker manifest create $versioned_image --amend $arch_versioned_image
+
+      if [ "$pre_release" != "true" ]; then
+        docker manifest create $latest_image --amend $arch_versioned_image
+      fi
+
     done
 
-    docker manifest push $latest_image
     docker manifest push $versioned_image
-    docker manifest rm $latest_image
     docker manifest rm $versioned_image
+
+    if [ "$pre_release" != "true" ]; then
+      docker manifest push $latest_image
+      docker manifest rm $latest_image
+    fi
 
     # delete the temporary image tags made with arch_versioned_image
     sleep 10
