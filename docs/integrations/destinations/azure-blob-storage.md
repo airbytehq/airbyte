@@ -19,20 +19,22 @@ The Airbyte Azure Blob Storage destination allows you to sync data to Azure Blob
 
 ## Configuration
 
-| Parameter | Type | Notes |
-| :--- | :---: | :--- |
-| Endpoint Domain Name | string | This is Azure Blob Storage endpoint domain name. Leave default value \(or leave it empty if run container from command line\) to use Microsoft native one. |
-| Azure blob storage container \(Bucket\) Name | string | A name of the Azure blob storage container. If not exists - will be created automatically. If leave empty, then will be created automatically airbytecontainer+timestamp. |
-| Azure Blob Storage account name | string | The account's name of the Azure Blob Storage. |
-| The Azure blob storage account key | string | Azure blob storage account key. Example: `abcdefghijklmnopqrstuvwxyz/0123456789+ABCDEFGHIJKLMNOPQRSTUVWXYZ/0123456789%++sampleKey==`. |
-| Azure Blob Storage output buffer size | integer | Azure Blob Storage output buffer size, in megabytes. Example: 5 |
-| Format | object | Format specific configuration. See below for details. |
+| Parameter                                    | Type    | Notes                                                                                                                                                                     |
+|:---------------------------------------------|:-------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Endpoint Domain Name                         | string  | This is Azure Blob Storage endpoint domain name. Leave default value \(or leave it empty if run container from command line\) to use Microsoft native one.                |
+| Azure blob storage container \(Bucket\) Name | string  | A name of the Azure blob storage container. If not exists - will be created automatically. If leave empty, then will be created automatically airbytecontainer+timestamp. |
+| Azure Blob Storage account name              | string  | The account's name of the Azure Blob Storage.                                                                                                                             |
+| The Azure blob storage account key           | string  | Azure blob storage account key. Example: `abcdefghijklmnopqrstuvwxyz/0123456789+ABCDEFGHIJKLMNOPQRSTUVWXYZ/0123456789%++sampleKey==`.                                     |
+| Azure Blob Storage output buffer size        | integer | Azure Blob Storage output buffer size, in megabytes. Example: 5                                                                                                           |
+| Azure Blob Storage spill size                | integer | Azure Blob Storage spill size, in megabytes. Example: 500. After exceeding threshold connector will create new blob with incremented sequence number 'prefix_name'_seq+1  |
+| Format                                       | object  | Format specific configuration. See below for details.                                                                                                                     |
 
 ⚠️ Please note that under "Full Refresh Sync" mode, data in the configured blob will be wiped out before each sync. We recommend you to provision a dedicated Azure Blob Storage Container resource for this sync to prevent unexpected data deletion from misconfiguration. ⚠️
 
 ## Output Schema
 
-Each stream will be outputted to its dedicated Blob according to the configuration. The complete datastore of each stream includes all the output files under that Blob. You can think of the Blob as equivalent of a Table in the database world.
+Each stream will be outputted to its dedicated Blob according to the configuration. The complete datastore of each stream includes all the output files under that Blob. You can think of the Blob as equivalent of a Table in the database world. 
+If stream replication exceeds configured threshold data will continue to be replicated in a new blob file for better read performance
 
 * Under Full Refresh Sync mode, old output files will be purged before new files are created.
 * Under Incremental - Append Sync mode, new output files will be added that only contain the new data.
@@ -138,12 +140,13 @@ They will be like this in the output file:
 
 ## CHANGELOG
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.6 | 2022-08-08 | [\#15318](https://github.com/airbytehq/airbyte/pull/15318) | Support per-stream state |
-| 0.1.5 | 2022-06-16 | [\#13852](https://github.com/airbytehq/airbyte/pull/13852) | Updated stacktrace format for any trace message errors |
-| 0.1.4 | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
-| 0.1.3 | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
-| 0.1.2 | 2022-01-20 | [\#9682](https://github.com/airbytehq/airbyte/pull/9682) | Each data synchronization for each stream is written to a new blob to the folder with stream name. |
-| 0.1.1 | 2021-12-29 | [\#9190](https://github.com/airbytehq/airbyte/pull/9190) | Added BufferedOutputStream wrapper to blob output stream to improve performance and fix issues with 50,000 block limit. Also disabled autoflush on PrintWriter. |
-| 0.1.0 | 2021-08-30 | [\#5332](https://github.com/airbytehq/airbyte/pull/5332) | Initial release with JSONL and CSV output. |
+| Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
+|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.0   | 2023-01-18 | [\#15318](https://github.com/airbytehq/airbyte/pull/21467) | Support spilling of objects exceeding configured size threshold                                                                                                 |
+| 0.1.6   | 2022-08-08 | [\#15318](https://github.com/airbytehq/airbyte/pull/15318) | Support per-stream state                                                                                                                                        |
+| 0.1.5   | 2022-06-16 | [\#13852](https://github.com/airbytehq/airbyte/pull/13852) | Updated stacktrace format for any trace message errors                                                                                                          |
+| 0.1.4   | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820)   | Improved 'check' operation performance                                                                                                                          |
+| 0.1.3   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256)   | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                                                                                    |
+| 0.1.2   | 2022-01-20 | [\#9682](https://github.com/airbytehq/airbyte/pull/9682)   | Each data synchronization for each stream is written to a new blob to the folder with stream name.                                                              |
+| 0.1.1   | 2021-12-29 | [\#9190](https://github.com/airbytehq/airbyte/pull/9190)   | Added BufferedOutputStream wrapper to blob output stream to improve performance and fix issues with 50,000 block limit. Also disabled autoflush on PrintWriter. |
+| 0.1.0   | 2021-08-30 | [\#5332](https://github.com/airbytehq/airbyte/pull/5332)   | Initial release with JSONL and CSV output.                                                                                                                      |

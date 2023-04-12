@@ -1,0 +1,255 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "Quote Line Group",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": ["integer", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "sub_total": {
+      "type": ["integer", "null"]
+    },
+    "total": {
+      "type": ["integer", "null"]
+    },
+    "credits_applied": {
+      "type": ["integer", "null"]
+    },
+    "amount_paid": {
+      "type": ["integer", "null"]
+    },
+    "amount_due": {
+      "type": ["integer", "null"]
+    },
+    "charge_event": {
+      "type": ["string", "null"],
+      "enum": [
+        "immediate", "subscription_creation", "trial_start",
+        "subscription_change", "subscription_renewal", "subscription_cancel"
+      ]
+    },
+    "billing_cycle_number": {
+      "type": ["integer", "null"]
+    },
+    "line_items": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "id": {
+            "type": ["string", "null"]
+          },
+          "subscription_id": {
+            "type": ["string", "null"]
+          },
+          "date_from": {
+            "type": ["integer", "null"]
+          },
+          "date_to": {
+            "type": ["integer", "null"]
+          },
+          "unit_amount": {
+            "type": ["integer", "null"]
+          },
+          "quantity": {
+            "type": ["integer", "null"]
+          },
+          "amount": {
+            "type": ["integer", "null"]
+          },
+          "pricing_model": {
+            "type": ["string", "null"],
+            "enum": ["flat_fee", "per_unit", "tiered", "volume", "stairstep"]
+          },
+          "is_taxed": {
+            "type": ["boolean", "null"]
+          },
+          "tax_amount": {
+            "type": ["integer", "null"]
+          },
+          "tax_rate": {
+            "type": ["number", "null"]
+          },
+          "unit_amount_in_decimal": {
+            "type": ["string", "null"]
+          },
+          "quantity_in_decimal": {
+            "type": ["string", "null"]
+          },
+          "amount_in_decimal": {
+            "type": ["string", "null"]
+          },
+          "discount_amount": {
+            "type": ["integer", "null"]
+          },
+          "item_level_discount_amount": {
+            "type": ["integer", "null"]
+          },
+          "reference_line_item_id": {
+            "type": ["string", "null"]
+          },
+          "description": {
+            "type": ["string", "null"]
+          },
+          "entity_description": {
+            "type": ["string", "null"]
+          },
+          "entity_type": {
+            "type": ["string", "null"],
+            "enum": ["adhoc", "plan_item_price", "addon_item_price", "charge_item_price"]
+          },
+          "tax_exempt_reason": {
+            "type": ["string", "null"],
+            "enum": [
+              "tax_not_configured", "region_non_taxable", "export", "customer_exempt", "product_exempt",
+              "zero_rated", "reverse_charge", "high_value_physical_goods", "zero_value_item"
+            ]
+          },
+          "entity_id": {
+            "type": ["string", "null"]
+          },
+          "customer_id": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "discounts": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "amount": {
+            "type": ["integer", "null"]
+          },
+          "description": {
+            "type": ["string", "null"]
+          },
+          "line_item_id": {
+            "type": ["string", "null"]
+          },
+          "entity_type": {
+            "type": ["string", "null"],
+            "enum": [
+              "item_level_coupon", "document_level_coupon", "promotional_credits",
+              "prorated_credits", "item_level_discount", "document_level_discount"
+            ]
+          },
+          "discount_type": {
+            "type": ["string", "null"],
+            "enum": ["fixed_amount", "percentage"]
+          },
+          "entity_id": {
+            "type": ["string", "null"]
+          },
+          "coupon_set_code": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "line_item_discounts": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "line_item_id": {
+            "type": ["string", "null"]
+          },
+          "discount_type": {
+            "type": ["string", "null"],
+            "enum": [
+              "item_level_coupon", "document_level_coupon", "promotional_credits",
+              "prorated_credits", "item_level_discount", "document_level_discount"
+            ]
+          },
+          "entity_id": {
+            "type": ["string", "null"]
+          },
+          "discount_amount": {
+            "type": ["integer", "null"]
+          }
+        }
+      }
+    },
+    "taxes": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "name": {
+            "type": ["string", "null"]
+          },
+          "amount": {
+            "type": ["integer", "null"]
+          },
+          "description": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "line_item_taxes": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "line_item_id": {
+            "type": ["string", "null"]
+          },
+          "tax_name": {
+            "type": ["string", "null"]
+          },
+          "tax_rate": {
+            "type": ["number", "null"]
+          },
+          "is_partial_tax_applied": {
+            "type": ["boolean", "null"]
+          },
+          "is_non_compliance_tax": {
+            "type": ["boolean", "null"]
+          },
+          "taxable_amount": {
+            "type": ["integer", "null"]
+          },
+          "tax_amount": {
+            "type": ["integer", "null"]
+          },
+          "tax_juris_type": {
+            "type": ["string", "null"],
+            "enum": ["country", "federal", "state", "county", "city", "special", "unincorporated", "other"]
+          },
+          "tax_juris_name": {
+            "type": ["string", "null"]
+          },
+          "tax_juris_code": {
+            "type": ["string", "null"]
+          },
+          "tax_amount_in_local_currency": {
+            "type": ["integer", "null"]
+          },
+          "local_currency_code": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}
