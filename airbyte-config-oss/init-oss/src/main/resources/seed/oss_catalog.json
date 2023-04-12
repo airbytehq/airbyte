@@ -8996,7 +8996,7 @@
     "custom": false,
     "releaseStage": "generally_available",
     "allowedHosts": {
-      "hosts": [ "*.amplitude.com" ]
+      "hosts": [ "amplitude.com", "analytics.eu.amplitude.com" ]
     }
   }, {
     "sourceDefinitionId": "47f17145-fe20-4ef5-a548-e29b048adf84",
