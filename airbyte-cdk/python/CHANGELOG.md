@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.34.1
+set slice and pages limit when reading from the connector builder module
+
 ## 0.34.0
 Low-Code CDK: Enable use of SingleUseRefreshTokenAuthenticator
 
