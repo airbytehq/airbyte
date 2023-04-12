@@ -1,6 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+"""This module groups functions to interact with remote storage services like S3 or GCS."""
+
 from pathlib import Path
 
 from ci_connector_ops.pipelines.utils import with_exit_code
@@ -20,7 +22,6 @@ async def upload_to_s3(dagger_client: Client, file_to_upload_path: Path, key: st
         int: Exit code of the upload process.
     """
     s3_uri = f"s3://{bucket}/{key}"
-    dagger_client = dagger_client.pipeline(f"Upload {file_to_upload_path} to {s3_uri}")
     file_to_upload: File = dagger_client.host().directory(".", include=[str(file_to_upload_path)]).file(str(file_to_upload_path))
     aws_access_key_id: Secret = dagger_client.host().env_variable("AWS_ACCESS_KEY_ID").secret()
     aws_secret_access_key: Secret = dagger_client.host().env_variable("AWS_SECRET_ACCESS_KEY").secret()

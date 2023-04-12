@@ -1,18 +1,18 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+"""This module groups the functions to run full pipelines for connector testing."""
+
 import itertools
 from typing import List
 
 import anyio
 import asyncer
 import dagger
-from ci_connector_ops.pipelines import checks, tests
+from ci_connector_ops.pipelines import tests
 from ci_connector_ops.pipelines.bases import ConnectorTestReport
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
-from ci_connector_ops.pipelines.utils import (
-    DAGGER_CONFIG,
-)
+from ci_connector_ops.pipelines.utils import DAGGER_CONFIG
 
 # CONSTANTS
 
@@ -24,7 +24,8 @@ GITHUB_GLOBAL_DESCRIPTION = "Running connectors tests"
 
 
 async def run(context: ConnectorTestContext, semaphore: anyio.Semaphore) -> ConnectorTestReport:
-    """Runs a CI pipeline for a single connector.
+    """Run a CI pipeline for a single connector.
+
     A visual DAG can be found on the README.md file of the pipelines modules.
 
     Args:
@@ -37,19 +38,18 @@ async def run(context: ConnectorTestContext, semaphore: anyio.Semaphore) -> Conn
         async with context:
             async with asyncer.create_task_group() as task_group:
                 tasks = [
-                    task_group.soonify(checks.QaChecks(context).run)(),
-                    task_group.soonify(checks.CodeFormatChecks(context).run)(),
+                    task_group.soonify(tests.run_qa_checks)(context),
+                    task_group.soonify(tests.run_code_format_checks)(context),
                     task_group.soonify(tests.run_all_tests)(context),
                 ]
             results = list(itertools.chain(*(task.value for task in tasks)))
-
             context.test_report = ConnectorTestReport(context, steps_results=results)
 
         return context.test_report
 
 
 async def run_connectors_test_pipelines(contexts: List[ConnectorTestContext], concurrency: int = 5):
-    """Runs a CI pipeline for all the connectors passed.
+    """Run a CI pipeline for all the connectors passed.
 
     Args:
         contexts (List[ConnectorTestContext]): List of connector test contexts for which a CI pipeline needs to be run.

@@ -1,33 +1,38 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
+"""Module declaring context related classes."""
+
 import logging
 import os
 from datetime import datetime
 from enum import Enum
+from glob import glob
 from types import TracebackType
-from typing import Optional
+from typing import List, Optional
 
 from anyio import Path
 from asyncer import asyncify
-from dagger import Client, Directory
-
 from ci_connector_ops.pipelines.actions import remote_storage, secrets
 from ci_connector_ops.pipelines.bases import ConnectorTestReport, TestReport
 from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL
 from ci_connector_ops.utils import Connector
+from dagger import Client, Directory
 
 
-# create an enum for ci context values which can be ["manual", "pull_request", "nightly_builds"]
-# and use it in the context class
 class CIContext(str, Enum):
+    """An enum for Ci context values which can be ["manual", "pull_request", "nightly_builds"]."""
+
     MANUAL = "manual"
     PULL_REQUEST = "pull_request"
     NIGHTLY_BUILDS = "nightly_builds"
 
 
 class ContextState(Enum):
+    """Enum to characterize the current context state, values are used for external representation on GitHub commit checks."""
+
     INITIALIZED = {"github_state": "pending", "description": "Pipelines are being initialized..."}
     RUNNING = {"github_state": "pending", "description": "Pipelines are running..."}
     ERROR = {"github_state": "error", "description": "Something went wrong while running the Pipelines."}
@@ -36,6 +41,22 @@ class ContextState(Enum):
 
 
 class PipelineContext:
+    """The pipeline context is used to store configuration for a specific pipeline run."""
+
+    DEFAULT_EXCLUDED_FILES = (
+        [".git"]
+        + glob("**/build", recursive=True)
+        + glob("**/.venv", recursive=True)
+        + glob("**/secrets", recursive=True)
+        + glob("**/__pycache__", recursive=True)
+        + glob("**/*.egg-info", recursive=True)
+        + glob("**/.vscode", recursive=True)
+        + glob("**/.pytest_cache", recursive=True)
+        + glob("**/.eggs", recursive=True)
+        + glob("**/.mypy_cache", recursive=True)
+        + glob("**/.DS_Store", recursive=True)
+    )
+
     def __init__(
         self,
         pipeline_name: str,
@@ -46,6 +67,17 @@ class PipelineContext:
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
     ):
+        """Initialize a pipeline context.
+
+        Args:
+            pipeline_name (str): The pipeline name.
+            is_local (bool): Whether the context is for a local run or a CI run.
+            git_branch (str): The current git branch name.
+            git_revision (str): The current git revision, commit hash.
+            gha_workflow_run_url (Optional[str], optional): URL to the github action workflow run. Only valid for CI run. Defaults to None.
+            pipeline_start_timestamp (Optional[int], optional): Timestamp at which the pipeline started. Defaults to None.
+            ci_context (Optional[str], optional): Pull requests, workflow dispatch or nightly build. Defaults to None.
+        """
         self.pipeline_name = pipeline_name
         self.is_local = is_local
         self.git_branch = git_branch
@@ -59,46 +91,40 @@ class PipelineContext:
         self.logger = logging.getLogger(self.pipeline_name)
         self.dagger_client = None
         self._test_report = None
-
         update_commit_status_check(**self.github_commit_status)
 
     @property
-    def dagger_client(self) -> Client:
+    def dagger_client(self) -> Client:  # noqa D102
         return self._dagger_client
 
     @dagger_client.setter
-    def dagger_client(self, dagger_client: Client):
+    def dagger_client(self, dagger_client: Client):  # noqa D102
         self._dagger_client = dagger_client
 
     @property
-    def is_ci(self):
+    def is_ci(self):  # noqa D102
         return self.is_local is False
 
     @property
-    def is_pr(self):
+    def is_pr(self):  # noqa D102
         return self.ci_context == CIContext.PULL_REQUEST
 
     @property
-    def repo(self):
+    def repo(self):  # noqa D102
         return self.dagger_client.git(AIRBYTE_REPO_URL, keep_git_dir=True)
 
     @property
-    def test_report(self) -> TestReport:
+    def test_report(self) -> TestReport:  # noqa D102
         return self._test_report
 
     @test_report.setter
-    def test_report(self, test_report: TestReport):
+    def test_report(self, test_report: TestReport):  # noqa D102
         self._test_report = test_report
         self.state = ContextState.SUCCESSFUL if test_report.success else ContextState.FAILURE
 
-    def get_repo_dir(self, subdir=".", exclude=None, include=None) -> Directory:
-        if self.is_local:
-            return self.dagger_client.host().directory(subdir, exclude=exclude, include=include)
-        else:
-            return self.repo.branch(self.git_branch).tree().directory(subdir)
-
     @property
     def github_commit_status(self) -> dict:
+        """Build a dictionary used as kwargs to the update_commit_status_check function."""
         return {
             "sha": self.git_revision,
             "state": self.state.value["github_state"],
@@ -109,14 +135,72 @@ class PipelineContext:
             "logger": self.logger,
         }
 
+    def get_repo_dir(self, subdir: str = ".", exclude: Optional[List[str]] = None, include: Optional[List[str]] = None) -> Directory:
+        """Get a directory from the current repository.
+
+        If running in the CI:
+        The directory is extracted from the git branch.
+
+        If running locally:
+        The directory is extracted from your host file system.
+        A couple of files or directories that could corrupt builds are exclude by default (check DEFAULT_EXCLUDED_FILES).
+
+        Args:
+            subdir (str, optional): Path to the subdirectory to get. Defaults to "." to get the full repository.
+            exclude ([List[str], optional): List of files or directories to exclude from the directory. Defaults to None.
+            include ([List[str], optional): List of files or directories to include in the directory. Defaults to None.
+
+        Returns:
+            Directory: The selected repo directory.
+        """
+        if self.is_local:
+            if exclude is None:
+                exclude = self.DEFAULT_EXCLUDED_FILES
+            else:
+                exclude += self.DEFAULT_EXCLUDED_FILES
+                exclude = list(set(exclude))
+            if subdir != ".":
+                subdir = f"{subdir}/" if not subdir.endswith("/") else subdir
+                exclude = [f.replace(subdir, "") for f in exclude if subdir in f]
+            return self.dagger_client.host().directory(subdir, exclude=exclude, include=include)
+        else:
+            return self.repo.branch(self.git_branch).tree().directory(subdir)
+
     async def __aenter__(self):
+        """Perform setup operation for the PipelineContext.
+
+        Updates the current commit status on Github.
+
+        Raises:
+            Exception: An error is raised when the context was not initialized with a Dagger client
+        Returns:
+            PipelineContext: A running instance of the PipelineContext.
+        """
         if self.dagger_client is None:
             raise Exception("A Pipeline can't be entered with an undefined dagger_client")
         self.state = ContextState.RUNNING
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         return self
 
-    async def __aexit__(self, exception_type, exception_value, traceback) -> bool:
+    async def __aexit__(
+        self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType]
+    ) -> bool:
+        """Perform teardown operation for the PipelineContext.
+
+        On the context exit the following operations will happen:
+            - Log the error value if an error was handled.
+            - Log the test report.
+            - Update the commit status check on GitHub if running in a CI environment.
+
+        It should gracefully handle all the execution errors that happened and always upload a test report and update commit status check.
+
+        Args:
+            exception_type (Optional[type[BaseException]]): The exception type if an exception was raised in the context execution, None otherwise.
+            exception_value (Optional[BaseException]): The exception value if an exception was raised in the context execution, None otherwise.
+            traceback (Optional[TracebackType]): The traceback if an exception was raised in the context execution, None otherwise.
+        Returns:
+            bool: Whether the teardown operation ran successfully.
+        """
         if exception_value:
             self.logger.error("An error was handled by the Pipeline", exc_info=True)
             self.state = ContextState.ERROR
@@ -152,6 +236,19 @@ class ConnectorTestContext(PipelineContext):
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
     ):
+        """Initialize a connector test context.
+
+        Args:
+            connector (Connector): The connector under test.
+            is_local (bool): Whether the context is for a local run or a CI run.
+            git_branch (str): The current git branch name.
+            git_revision (str): The current git revision, commit hash.
+            use_remote_secrets (bool, optional): Whether to download secrets for GSM or use the local secrets. Defaults to True.
+            connector_acceptance_test_image (Optional[str], optional): The image to use to run connector acceptance tests. Defaults to DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE.
+            gha_workflow_run_url (Optional[str], optional): URL to the github action workflow run. Only valid for CI run. Defaults to None.
+            pipeline_start_timestamp (Optional[int], optional): Timestamp at which the pipeline started. Defaults to None.
+            ci_context (Optional[str], optional): Pull requests, workflow dispatch or nightly build. Defaults to None.
+        """
         pipeline_name = f"CI test for {connector.technical_name}"
 
         self.connector = connector
@@ -172,36 +269,46 @@ class ConnectorTestContext(PipelineContext):
         )
 
     @property
-    def secrets_dir(self) -> Directory:
+    def secrets_dir(self) -> Directory:  # noqa D102
         return self._secrets_dir
 
     @secrets_dir.setter
-    def secrets_dir(self, secrets_dir: Directory):
+    def secrets_dir(self, secrets_dir: Directory):  # noqa D102
         self._secrets_dir = secrets_dir
 
     @property
-    def updated_secrets_dir(self) -> Directory:
+    def updated_secrets_dir(self) -> Directory:  # noqa D102
         return self._updated_secrets_dir
 
     @updated_secrets_dir.setter
-    def updated_secrets_dir(self, updated_secrets_dir: Directory):
+    def updated_secrets_dir(self, updated_secrets_dir: Directory):  # noqa D102
         self._updated_secrets_dir = updated_secrets_dir
 
     @property
-    def connector_acceptance_test_source_dir(self) -> Directory:
+    def connector_acceptance_test_source_dir(self) -> Directory:  # noqa D102
         return self.get_repo_dir("airbyte-integrations/bases/connector-acceptance-test")
 
     @property
-    def should_save_updated_secrets(self):
+    def should_save_updated_secrets(self):  # noqa D102
         return self.use_remote_secrets and self.updated_secrets_dir is not None
 
     def get_connector_dir(self, exclude=None, include=None) -> Directory:
+        """Get the connector under test source code directory.
+
+        Args:
+            exclude ([List[str], optional): List of files or directories to exclude from the directory. Defaults to None.
+            include ([List[str], optional): List of files or directories to include in the directory. Defaults to None.
+
+        Returns:
+            Directory: The connector under test source code directory.
+        """
         return self.get_repo_dir(str(self.connector.code_directory), exclude=exclude, include=include)
 
     async def __aexit__(
         self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType]
     ) -> bool:
-        """Performs teardown operation for the ConnectorTestContext.
+        """Perform teardown operation for the ConnectorTestContext.
+
         On the context exit the following operations will happen:
             - Upload updated connector secrets back to Google Secret Manager
             - Write a test report in JSON format locally and to S3 if running in a CI environment
@@ -212,7 +319,7 @@ class ConnectorTestContext(PipelineContext):
             exception_value (Optional[BaseException]): The exception value if an exception was raised in the context execution, None otherwise.
             traceback (Optional[TracebackType]): The traceback if an exception was raised in the context execution, None otherwise.
         Returns:
-            bool: Wether the teardown operation ran successfully.
+            bool: Whether the teardown operation ran successfully.
         """
         if exception_value:
             self.logger.error("An error got handled by the ConnectorTestContext", exc_info=True)
@@ -222,7 +329,6 @@ class ConnectorTestContext(PipelineContext):
             self.state = ContextState.ERROR
             self.test_report = ConnectorTestReport(self, [])
 
-        self.dagger_client = self.dagger_client.pipeline(f"Teardown {self.connector.technical_name}")
         if self.should_save_updated_secrets:
             await secrets.upload(self)
 
