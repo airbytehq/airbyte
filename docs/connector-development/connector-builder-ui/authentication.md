@@ -1,12 +1,12 @@
 # Authentication
 
-Almost every API requires some form of authentication when issuing requests so the API provider can check whether the caller (in this case the connector) has permission to fetch data. The authentication feature provides a secure way to configure authentication using a variety of methods.
+Authentication is about providing some form of confidental secret (credentials, password, token, key) to the API provider that identifies the caller (in this case the connector). It allows the provider to check whether the caller is known and has sufficient permission to fetch data. The authentication feature provides a secure way to configure authentication using a variety of methods.
 
 The credentials itself (e.g. username and password) are _not_ specified as part of the connector, instead they are part of the source configration that is specified by the end user when setting up a source based on the connector. During development, it's possible to provide testing credentials in the "Testing values" menu, but those are not saved along with the connector. Credentials that are part of the source configuration are stored in a secure way in your Airbyte instance while the connector configuration is saved in the regular database.
 
 In the "Authentication" section on the "Global Configuration" page in the connector builder, the authentication method can be specified. This configuration is shared for all streams - it's not possible to use different authentication methods for different streams in the same connector.
 
-If your API doesn't need authentication, leave it set at "No auth". This means the connector will be able to make requests to the API without providing any credentials which is possible for some public APIs or private APIs only available in local networks.
+If your API doesn't need authentication, leave it set at "No auth". This means the connector will be able to make requests to the API without providing any credentials which might be the case for some public open APIs or private APIs only available in local networks.
 
 ## Authentication methods
 
@@ -170,6 +170,15 @@ curl -X GET \
   -H "X-Metabase-Session: <session-token>" \
   http://<base url>/<stream path>
 ```
+
+If the session token is specified as part of the source configuration, the "Validate session url" is requested with the existing token to check for validity:
+```
+curl -X GET \
+  -H "X-Metabase-Session: <session-token>" \
+  http://<base url>/user/current
+```
+
+If this request returns an HTTP status code that's not in the range of 400 to 600, the token is considered valid and records are fetched.
 
 ## Reference
 
