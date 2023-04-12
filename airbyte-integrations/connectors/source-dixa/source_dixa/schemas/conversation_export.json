@@ -163,6 +163,9 @@
     "status": {
       "type": ["null", "string"]
     },
+    "transferee_number": {
+      "type": ["null", "string"]
+    },
     "updated_at": {
       "type": ["null", "integer"]
     },
@@ -180,6 +183,30 @@
     },
     "anonymized_at": {
       "type": ["null", "integer"]
-    }
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+           "attribute_id": {
+               "type": ["null", "string"],
+               "format": "uuid"
+           },
+           "identifier": {
+               "type": ["null", "string"]
+           },
+           "value": {
+               "type": ["null", "string"]
+           },
+           "data_type": {
+               "type": ["null", "string"]
+           },
+           "archived": {
+               "type": ["null", "boolean"]
+           }
+         }
+       }
+     }
   }
 }
