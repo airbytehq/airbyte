@@ -1223,6 +1223,7 @@ definitions:
         type: object
         additionalProperties: true
   RecordSelector:
+    title: Record Selector
     description: Responsible for translating an HTTP response into a list of records by extracting records from the response and optionally filtering records based on a heuristic.
     type: object
     required:
@@ -1237,6 +1238,8 @@ definitions:
           - "$ref": "#/definitions/CustomRecordExtractor"
           - "$ref": "#/definitions/DpathExtractor"
       record_filter:
+        title: Record Filter
+        description: Responsible for filtering records to be emitted by the Source
         "$ref": "#/definitions/RecordFilter"
       $parameters:
         type: object
