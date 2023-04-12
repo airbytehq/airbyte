@@ -1,13 +1,13 @@
 from pydash.collections import find
 
-from orchestrator.assets.catalog_assets import (
+from orchestrator.assets.catalog import (
     oss_destinations_dataframe,
     cloud_destinations_dataframe,
     oss_sources_dataframe,
     cloud_sources_dataframe,
 )
 
-from orchestrator.assets.metadata_assets import catalog_derived_metadata_definitions
+from orchestrator.assets.metadata import catalog_derived_metadata_definitions
 
 
 def test_no_missing_ids(oss_catalog_dict, cloud_catalog_dict):

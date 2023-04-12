@@ -37,13 +37,13 @@ class IterableGenericErrorHandler:
 
     def handle(self, response: requests.Response, stream_name: str, last_slice: Mapping[str, Any] = {}) -> bool:
         # error pattern to check
-        code_pattern = "Generic Error"
+        code_patterns = ["Generic Error", "GenericError"]
         msg_pattern = "Please try again later"
         # prepare warning message
         warning_msg = f"Generic Server Error occured for stream: `{stream_name}`. "
         # For cases when there is a slice to go with, but server returns Generic Error - Please try again
         # we reetry 2 times, then skipp the record and move on with warning message.
-        if response.json().get("code") == code_pattern and msg_pattern in response.json().get("msg"):
+        if response.json().get("code") in code_patterns and msg_pattern in response.json().get("msg"):
             self.error_count += 1
             setattr(self, "raise_on_http_errors", False)
             if self.error_count > self.max_retry:
