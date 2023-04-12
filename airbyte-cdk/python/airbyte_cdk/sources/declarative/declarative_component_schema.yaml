@@ -1084,6 +1084,7 @@ definitions:
         type: object
         additionalProperties: true
   InlineSchemaLoader:
+    title: Inline Schema Loader
     description: Loads a schema that is defined directly in the manifest file
     type: object
     required:
@@ -1093,8 +1094,11 @@ definitions:
         type: string
         enum: [InlineSchemaLoader]
       schema:
+        title: Schema
+        description: Describes a streams' schema
         type: object
   JsonFileSchemaLoader:
+    title: Json File Schema Loader
     description: Loads the schema from a json file
     type: object
     required:
@@ -1104,7 +1108,13 @@ definitions:
         type: string
         enum: [JsonFileSchemaLoader]
       file_path:
+        title: File Path
+        description: Path to the JSON file defining the schema. The path is relative to the connector module's root
         type: string
+        example:
+          - "./schemas/users.json"
+      interpolation_context:
+        - config
       $parameters:
         type: object
         additionalProperties: true
@@ -1410,6 +1420,7 @@ definitions:
           - body_data
           - body_json
   Schemas:
+    title: Schemas
     description: The stream schemas representing the shape of the data emitted by the stream
     type: object
     additionalProperties: true
