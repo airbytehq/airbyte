@@ -427,6 +427,7 @@ class Plans(IncrementalStripeStream):
         params["expand[]"] = ["data.tiers"]
         return params
 
+
 class Products(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/products/list
