@@ -1,9 +1,7 @@
-echo $@
-
 /airbyte/base.sh $@
 
-# if test $AIRBYTE_MATERIALIZATION_MODE = 'LEGACY_NORMALIZATION'
-# then
-#   # TODO parse args. or maybe just be ok with hardcoding these filenames?
-  /airbyte/entrypoint.sh run --config destination_config.json --catalog destination_catalog.json --integration-type bigquery
-# fi
+if test $1 = 'write' # && test $AIRBYTE_MATERIALIZATION_MODE = 'LEGACY_NORMALIZATION'
+then
+  # TODO parse args maybe? entrypoint.sh will reject unrecognized args... but `write` currently only accepts config and catalog anyway
+  /airbyte/entrypoint.sh run ${@:2} --integration-type bigquery
+fi
