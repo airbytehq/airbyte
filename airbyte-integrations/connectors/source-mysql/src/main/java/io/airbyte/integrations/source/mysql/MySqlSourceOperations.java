@@ -168,7 +168,6 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       // e.g. MEDIUMINT UNSIGNED
       final MysqlType literalType = MysqlType.getByName(field.get(INTERNAL_COLUMN_TYPE_NAME).asText());
       final int columnSize = field.get(INTERNAL_COLUMN_SIZE).asInt();
-      LOGGER.info("*** node {} literal {}[{}]", field.get(INTERNAL_COLUMN_TYPE_NAME).asText(), literalType, columnSize);
       switch (literalType) {
         // BIT(1) and TINYINT(1) are interpreted as boolean
         case BIT, TINYINT -> {
