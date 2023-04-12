@@ -43,7 +43,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mysql.cj.MysqlType;
 import com.mysql.cj.jdbc.result.ResultSetMetaData;
 import com.mysql.cj.result.Field;
-import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.SourceOperations;
 import io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations;
 import io.airbyte.protocol.models.JsonSchemaType;
