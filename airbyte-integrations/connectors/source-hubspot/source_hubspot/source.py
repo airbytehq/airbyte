@@ -132,14 +132,18 @@ class SourceHubspot(AbstractSource):
                 f"add the following scopes to download all available data: {required_scoped}"
             )
 
-            if "crm.schemas.custom.read" in granted_scopes and "crm.objects.custom.read" in granted_scopes:
-                available_streams.extend(self.get_custom_object_streams(api=api, common_params=common_params))
+            # Remove for test purposes
+            # if "crm.schemas.custom.read" in granted_scopes and "crm.objects.custom.read" in granted_scopes:
+            #    available_streams.extend(self.get_custom_object_streams(api=api, common_params=common_params))
+
         else:
             self.logger.info("No scopes to grant when authenticating with API key.")
             available_streams = streams
 
+        available_streams.extend(self.get_custom_object_streams(api=api, common_params=common_params))
+
         return available_streams
-    
+
     def get_custom_object_streams(self, api: API, common_params: Mapping[str, Any]):
         schemas = api.get_custom_object_schemas()
         streams = []

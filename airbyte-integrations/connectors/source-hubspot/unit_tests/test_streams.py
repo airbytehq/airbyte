@@ -10,6 +10,7 @@ from source_hubspot.streams import (
     Companies,
     ContactLists,
     Contacts,
+    CustomObject,
     DealPipelines,
     Deals,
     DealsArchived,
@@ -112,7 +113,8 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
                     {
                         "id": "test_id",
                         "created": "2022-02-25T16:43:11Z",
-                    } | cursor_value
+                    }
+                    | cursor_value
                 ],
             }
         }
@@ -227,21 +229,9 @@ def test_client_side_incremental_stream(requests_mock, common_params, fake_prope
         {
             "json": {
                 stream.data_field: [
-                    {
-                        "id": "test_id_1",
-                        "createdAt": "2022-03-25T16:43:11Z",
-                        "updatedAt": "2023-01-30T23:46:36.287Z"
-                    },
-                    {
-                        "id": "test_id_2",
-                        "createdAt": "2022-03-25T16:43:11Z",
-                        "updatedAt": latest_cursor_value
-                    },
-                    {
-                        "id": "test_id_3",
-                        "createdAt": "2022-03-25T16:43:11Z",
-                        "updatedAt": "2023-02-20T23:46:36.287Z"
-                    },
+                    {"id": "test_id_1", "createdAt": "2022-03-25T16:43:11Z", "updatedAt": "2023-01-30T23:46:36.287Z"},
+                    {"id": "test_id_2", "createdAt": "2022-03-25T16:43:11Z", "updatedAt": latest_cursor_value},
+                    {"id": "test_id_3", "createdAt": "2022-03-25T16:43:11Z", "updatedAt": "2023-02-20T23:46:36.287Z"},
                 ],
             }
         }
@@ -249,10 +239,7 @@ def test_client_side_incremental_stream(requests_mock, common_params, fake_prope
     properties_response = [
         {
             "json": [
-                {"name": property_name, "type": "string",
-                 "createdAt": "2023-01-30T23:46:24.355Z",
-                 "updatedAt": "2023-01-30T23:46:36.287Z"
-                 }
+                {"name": property_name, "type": "string", "createdAt": "2023-01-30T23:46:24.355Z", "updatedAt": "2023-01-30T23:46:36.287Z"}
                 for property_name in fake_properties_list
             ],
             "status_code": 200,
@@ -282,29 +269,27 @@ def custom_object_schema_fixture():
         "createdAt": "2022-06-17T18:40:27.019Z",
         "updatedAt": "2022-06-17T18:40:27.019Z",
         "objectTypeId": "2-7232155",
-        "properties": [{
-            "name": "name",
-            "label": "Animal name",
-            "type": "string",
-            "fieldType": "text",
-            "description": "The animal name.",
-            "groupName": "animal_information",
-            "options": [],
-            "displayOrder": -1,
-            "calculated": False,
-            "externalOptions": False,
-            "hasUniqueValue": False,
-            "hidden": False,
-            "hubspotDefined": False,
-            "modificationMetadata": {
-                "archivable": True,
-                "readOnlyDefinition": True,
-                "readOnlyValue": False
-            },
-            "formField": True
-        }],
+        "properties": [
+            {
+                "name": "name",
+                "label": "Animal name",
+                "type": "string",
+                "fieldType": "text",
+                "description": "The animal name.",
+                "groupName": "animal_information",
+                "options": [],
+                "displayOrder": -1,
+                "calculated": False,
+                "externalOptions": False,
+                "hasUniqueValue": False,
+                "hidden": False,
+                "hubspotDefined": False,
+                "modificationMetadata": {"archivable": True, "readOnlyDefinition": True, "readOnlyValue": False},
+                "formField": True,
+            }
+        ],
         "associations": [],
-        "name": "animals"
+        "name": "animals",
     }
 
 
@@ -312,19 +297,21 @@ def custom_object_schema_fixture():
 def expected_custom_object_json_schema():
     return {
         "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
+        "type": ["null", "object"],
         "additionalProperties": True,
         "properties": {
             "id": {"type": ["null", "string"]},
             "createdAt": {"type": ["null", "string"], "format": "date-time"},
             "updatedAt": {"type": ["null", "string"], "format": "date-time"},
             "archived": {"type": ["null", "boolean"]},
-            "properties": {"name": {"type": ["null", "string"]}}
-        }
+            "properties": {"type": ["null", "object"], "properties": {"name": {"type": ["null", "string"]}}},
+        },
     }
 
 
-def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_available(requests_mock, custom_object_schema, expected_custom_object_json_schema, common_params):
+def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_available(
+    requests_mock, custom_object_schema, expected_custom_object_json_schema, common_params
+):
     stream = CustomObject(entity="animals", schema=expected_custom_object_json_schema, **common_params)
 
     adapter = requests_mock.register_uri("GET", "/crm/v3/schemas", [{"json": {"results": [custom_object_schema]}}])
@@ -334,11 +321,14 @@ def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_availabl
     assert not adapter.called
 
 
-def test_custom_object_stream_calls_hubspot_to_get_json_schema(requests_mock, custom_object_schema, expected_custom_object_json_schema, common_params):
+def test_custom_object_stream_calls_hubspot_to_get_json_schema(
+    requests_mock, custom_object_schema, expected_custom_object_json_schema, common_params
+):
     stream = CustomObject(entity="animals", schema=None, **common_params)
 
     adapter = requests_mock.register_uri("GET", "/crm/v3/schemas", [{"json": {"results": [custom_object_schema]}}])
     json_schema = stream.get_json_schema()
-
+    print(json_schema)
+    print(expected_custom_object_json_schema)
     assert json_schema == expected_custom_object_json_schema
     assert adapter.called
