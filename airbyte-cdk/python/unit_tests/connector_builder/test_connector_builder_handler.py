@@ -11,9 +11,11 @@ from unittest.mock import patch
 import pytest
 from airbyte_cdk import connector_builder
 from airbyte_cdk.connector_builder.connector_builder_handler import (
-    DEFAULT_MAX_RECORDS,
     DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE,
     DEFAULT_MAXIMUM_NUMBER_OF_SLICES,
+    DEFAULT_MAXIMUM_RECORDS,
+    TestReadLimits,
+    create_source,
     get_limits,
     list_streams,
     resolve_manifest,
@@ -160,7 +162,8 @@ def test_resolve_manifest(valid_resolve_manifest_config_file):
     command = "resolve_manifest"
     config["__command"] = command
     source = ManifestDeclarativeSource(MANIFEST)
-    resolved_manifest = handle_connector_builder_request(source, command, config, create_configured_catalog("dummy_stream"))
+    limits = TestReadLimits()
+    resolved_manifest = handle_connector_builder_request(source, command, config, create_configured_catalog("dummy_stream"), limits)
 
     expected_resolved_manifest = {
         "type": "DeclarativeSource",
@@ -323,9 +326,10 @@ def test_read():
             emitted_at=1,
         ),
     )
+    limits = TestReadLimits()
     with patch("airbyte_cdk.connector_builder.message_grouper.MessageGrouper.get_message_groups", return_value=stream_read):
         output_record = handle_connector_builder_request(
-            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG)
+            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), limits
         )
         output_record.record.emitted_at = 1
         assert output_record == expected_airbyte_message
@@ -341,7 +345,8 @@ def test_read_returns_error_response(mock_from_exception):
     mock_from_exception.return_value = stack_trace
 
     source = MockManifestDeclarativeSource()
-    response = read_stream(source, TEST_READ_CONFIG, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG))
+    limits = TestReadLimits()
+    response = read_stream(source, TEST_READ_CONFIG, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), limits)
 
     expected_stream_read = StreamRead(logs=[LogMessage("error_message - a stack trace", "ERROR")],
                                       slices=[StreamReadSlicesInner(
@@ -456,8 +461,9 @@ def test_list_streams_integration_test():
     command = "list_streams"
     config["__command"] = command
     source = ManifestDeclarativeSource(MANIFEST)
+    limits = TestReadLimits()
 
-    list_streams = handle_connector_builder_request(source, command, config, None)
+    list_streams = handle_connector_builder_request(source, command, config, None, limits)
 
     assert list_streams.record.data == {
         "streams": [{"name": "stream_with_custom_requester", "url": "https://api.sendgrid.com/v3/marketing/lists"}]
@@ -481,14 +487,28 @@ def create_mock_declarative_stream(http_stream):
 @pytest.mark.parametrize(
     "test_name, config, expected_max_records, expected_max_slices, expected_max_pages_per_slice",
     [
-        ("test_no_test_read_config", {}, DEFAULT_MAX_RECORDS, DEFAULT_MAXIMUM_NUMBER_OF_SLICES, DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE),
-        ("test_no_values_set", {"__test_read_config": {}}, DEFAULT_MAX_RECORDS, DEFAULT_MAXIMUM_NUMBER_OF_SLICES, DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE),
+        ("test_no_test_read_config", {}, DEFAULT_MAXIMUM_RECORDS, DEFAULT_MAXIMUM_NUMBER_OF_SLICES, DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE),
+        ("test_no_values_set", {"__test_read_config": {}}, DEFAULT_MAXIMUM_RECORDS, DEFAULT_MAXIMUM_NUMBER_OF_SLICES, DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE),
         ("test_values_are_set", {"__test_read_config": {"max_slices": 1, "max_pages_per_slice": 2, "max_records": 3}}, 3, 1, 2),
     ],
 )
 def test_get_limits(test_name, config, expected_max_records, expected_max_slices, expected_max_pages_per_slice):
     limits = get_limits(config)
-    max_pages_per_slice, max_records, max_slices = limits["max_pages_per_slice"], limits["max_records"], limits["max_slices"]
-    assert max_records == expected_max_records
-    assert max_pages_per_slice == expected_max_pages_per_slice
-    assert max_slices == expected_max_slices
+    assert limits.max_records == expected_max_records
+    assert limits.max_pages_per_slice == expected_max_pages_per_slice
+    assert limits.max_slices == expected_max_slices
+
+
+def test_create_source():
+    max_records = 3
+    max_pages_per_slice = 2
+    max_slices = 1
+    limits = TestReadLimits(max_records, max_pages_per_slice, max_slices)
+
+    config = {"__injected_declarative_manifest": MANIFEST}
+
+    source = create_source(config, limits)
+
+    assert isinstance(source, ManifestDeclarativeSource)
+    assert source._constructor._limit_pages_fetched_per_slice == limits.max_pages_per_slice
+    assert source._constructor._limit_slices_fetched == limits.max_slices

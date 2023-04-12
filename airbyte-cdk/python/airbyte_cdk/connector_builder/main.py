@@ -7,23 +7,18 @@ import sys
 from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.connector import BaseConnector
-from airbyte_cdk.connector_builder.connector_builder_handler import get_limits, list_streams, read_stream, resolve_manifest
+from airbyte_cdk.connector_builder.connector_builder_handler import (
+    TestReadLimits,
+    create_source,
+    get_limits,
+    list_streams,
+    read_stream,
+    resolve_manifest,
+)
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
-from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-
-
-def create_source(config: Mapping[str, Any], limits: Mapping[str, Any]) -> ManifestDeclarativeSource:
-    manifest = config.get("__injected_declarative_manifest")
-    max_pages_per_slice, max_slices = limits["max_pages_per_slice"], limits["max_slices"]
-    return ManifestDeclarativeSource(
-        source_config=manifest, component_factory=ModelToComponentFactory(
-            emit_connector_builder_messages=True,
-            limit_pages_fetched_per_slice=max_pages_per_slice,
-            limit_slices_fetched=max_slices)
-    )
 
 
 def get_config_and_catalog_from_args(args: List[str]) -> Tuple[str, Mapping[str, Any], Optional[ConfiguredAirbyteCatalog]]:
@@ -54,14 +49,13 @@ def get_config_and_catalog_from_args(args: List[str]) -> Tuple[str, Mapping[str,
 
 
 def handle_connector_builder_request(
-    source: ManifestDeclarativeSource, command: str, config: Mapping[str, Any], catalog: Optional[ConfiguredAirbyteCatalog], limits: Mapping[str, int]
+    source: ManifestDeclarativeSource, command: str, config: Mapping[str, Any], catalog: Optional[ConfiguredAirbyteCatalog], limits: TestReadLimits
 ):
     if command == "resolve_manifest":
         return resolve_manifest(source)
     elif command == "test_read":
         assert catalog is not None, "`test_read` requires a valid `ConfiguredAirbyteCatalog`, got None."
-        max_pages_per_slice, max_records, max_slices = limits["max_pages_per_slice"], limits["max_records"], limits["max_slices"]
-        return read_stream(source, config, catalog, max_pages_per_slice, max_slices, max_records)
+        return read_stream(source, config, catalog, limits)
     elif command == "list_streams":
         return list_streams(source, config)
     else:
