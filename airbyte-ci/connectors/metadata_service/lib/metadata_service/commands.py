@@ -1,6 +1,9 @@
-import click
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 import pathlib
 
+import click
 from metadata_service.validators.metadata_validator import validate_metadata_file
 
 
@@ -12,7 +15,7 @@ def metadata_service():
 @metadata_service.command(help="Validate a given metadata YAML file.")
 @click.argument("file_path", type=click.Path(exists=True, path_type=pathlib.Path))
 def validate(file_path: pathlib.Path):
-    file_path = file_path if not file_path.is_dir() else file_path / "metadata.yml"
+    file_path = file_path if not file_path.is_dir() else file_path / "metadata.yaml"
 
     click.echo(f"Validating {file_path}...")
 
