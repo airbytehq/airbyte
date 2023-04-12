@@ -199,6 +199,20 @@ class Connector:
             logging.warning(f"No {ACCEPTANCE_TEST_CONFIG_FILE_NAME} file found for {self.technical_name}")
             return None
 
+    @property
+    def supports_normalization(self) -> bool:
+        return self.definition and self.definition.get("normalizationConfig") is not None
+
+    @property
+    def normalization_repository(self) -> Optional[str]:
+        if self.supports_normalization:
+            return f"{self.definition['normalizationConfig']['normalizationRepository']}"
+
+    @property
+    def normalization_tag(self) -> Optional[str]:
+        if self.supports_normalization:
+            return f"{self.definition['normalizationConfig']['normalizationTag']}"
+
     def get_secret_manager(self, gsm_credentials: str):
         return SecretsManager(connector_name=self.technical_name, gsm_credentials=gsm_credentials)
 
