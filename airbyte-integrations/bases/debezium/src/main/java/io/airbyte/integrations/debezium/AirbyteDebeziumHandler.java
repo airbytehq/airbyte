@@ -74,7 +74,7 @@ public class AirbyteDebeziumHandler<T> {
         queue,
         targetPosition,
         tableSnapshotPublisher::hasClosed,
-        tableSnapshotPublisher::close,
+        new DebeziumShutdownProcedure<>(queue, tableSnapshotPublisher::close, tableSnapshotPublisher::hasClosed),
         firstRecordWaitTime);
 
     return AutoCloseableIterators.concatWithEagerClose(AutoCloseableIterators
@@ -106,7 +106,7 @@ public class AirbyteDebeziumHandler<T> {
         queue,
         targetPosition,
         publisher::hasClosed,
-        publisher::close,
+        new DebeziumShutdownProcedure<>(queue, publisher::close, publisher::hasClosed),
         firstRecordWaitTime);
 
     final Duration syncCheckpointDuration =
@@ -114,9 +114,10 @@ public class AirbyteDebeziumHandler<T> {
             : DebeziumStateDecoratingIterator.SYNC_CHECKPOINT_DURATION;
     final Long syncCheckpointRecords = config.get("sync_checkpoint_records") != null ? config.get("sync_checkpoint_records").asLong()
         : DebeziumStateDecoratingIterator.SYNC_CHECKPOINT_RECORDS;
-    return AutoCloseableIterators.fromIterator(new DebeziumStateDecoratingIterator(
+    return AutoCloseableIterators.fromIterator(new DebeziumStateDecoratingIterator<>(
         eventIterator,
         cdcStateHandler,
+        targetPosition,
         cdcMetadataInjector,
         emittedAt,
         offsetManager,

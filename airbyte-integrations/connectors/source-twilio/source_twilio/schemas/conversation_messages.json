@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "sid": {
+      "type": ["null", "string"]
+    },
+    "account_sid": {
+      "type": ["null", "string"]
+    },
+    "conversation_sid": {
+      "type": ["null", "string"]
+    },
+    "body": {
+      "type": ["null", "string"]
+    },
+    "media": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "sid": {
+            "type": ["null", "string"]
+          },
+          "size": {
+            "type": ["null", "integer"]
+          },
+          "content_type": {
+            "type": ["null", "string"]
+          },
+          "filename": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "author": {
+      "type": ["null", "string"]
+    },
+    "participant_sid": {
+      "type": ["null", "string"]
+    },
+    "attributes": {
+      "type": ["null", "string"]
+    },
+    "date_created": {
+      "type": ["null", "string"]
+    },
+    "date_updated": {
+      "type": ["null", "string"]
+    },
+    "index": {
+      "type": ["null", "integer"]
+    },
+    "delivery": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "total": {
+          "type": ["null", "integer"]
+        },
+        "sent": {
+          "type": ["null", "string"]
+        },
+        "delivered": {
+          "type": ["null", "string"]
+        },
+        "read": {
+          "type": ["null", "string"]
+        },
+        "failed": {
+          "type": ["null", "string"]
+        },
+        "undelivered": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "content_sid": {
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "links": {
+      "type": ["null", "object"],
+      "properties": {
+        "delivery_receipts": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}
