@@ -36,6 +36,8 @@ class MeliInvoices(HttpStream):
         self.aws_access_key_id = config["aws_access_key_id"]
         self.aws_secret_access_key = config["aws_secret_access_key"]
         self.access_token = self.get_access_token()
+
+        logger.info(f"Processing period: {self.year_month }")
     
     def get_access_token(self):
         # Meli URL to get the access_token
@@ -81,15 +83,19 @@ class MeliInvoices(HttpStream):
 
         response = requests.request("POST", url, headers=headers, data=payload)
 
-        access_token = response.json()["access_token"] 
-        new_refresh_token = response.json()["refresh_token"]
+        try:
+            access_token = response.json()["access_token"] 
+            new_refresh_token = response.json()["refresh_token"]
 
-        if new_refresh_token != refresh_token:
-            # Updating Credstash with new refresh token
-            bash_command = f"credstash put {self.credstash_key} {new_refresh_token}"
-            process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE)
-
-        return access_token
+            if new_refresh_token != refresh_token:
+                # Updating Credstash with new refresh token
+                bash_command = f"credstash put {self.credstash_key} {new_refresh_token}"
+                process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE)
+            
+            return access_token
+        
+        except Exception as e:
+            logger.error(e)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
