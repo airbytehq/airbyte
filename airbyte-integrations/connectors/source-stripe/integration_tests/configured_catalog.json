@@ -2,6 +2,20 @@
   "streams": [
     {
       "stream": {
+        "name": "accounts",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["created"],
+      "primary_key": [["id"]]
+    },
+    {
+      "stream": {
         "name": "balance_transactions",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -296,20 +310,6 @@
     {
       "stream": {
         "name": "transfers",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["created"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"],
-      "primary_key": [["id"]]
-    },
-    {
-      "stream": {
-        "name": "accounts",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,

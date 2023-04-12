@@ -1,214 +1,853 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
   "type": "object",
   "properties": {
     "business_profile": {
-      "description": "Business information about the account.",
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "properties": {
+        "mcc": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "product_description": {
+          "type": ["null", "string"]
+        },
+        "support_address": {
+          "type": ["null", "object"],
+          "properties": {
+            "city": {
+              "type": ["null", "string"]
+            },
+            "country": {
+              "type": ["null", "string"]
+            },
+            "line1": {
+              "type": ["null", "string"]
+            },
+            "line2": {
+              "type": ["null", "string"]
+            },
+            "postal_code": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "support_email": {
+          "type": ["null", "string"]
+        },
+        "support_phone": {
+          "type": ["null", "string"]
+        },
+        "support_url": {
+          "type": ["null", "string"]
+        },
+        "url": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "business_type": {
-      "description": "The business type.",
       "enum": ["company", "government_entity", "individual", "non_profit"],
       "type": ["null", "string"]
     },
     "capabilities": {
-      "description": "",
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "afterpay_clearpay_payments": {
-          "description": "The status of the Afterpay Clearpay capability of the account, or whether the account can directly process Afterpay Clearpay charges.",
           "enum": ["active", "inactive", "pending"],
-          "type": "string"
+          "type": ["null", "string"]
         },
         "au_becs_debit_payments": {
-          "description": "The status of the BECS Direct Debit (AU) payments capability of the account, or whether the account can directly process BECS Direct Debit (AU) charges.",
           "enum": ["active", "inactive", "pending"],
-          "type": "string"
+          "type": ["null", "string"]
         },
         "bacs_debit_payments": {
-          "description": "The status of the Bacs Direct Debits payments capability of the account, or whether the account can directly process Bacs Direct Debits charges.",
           "enum": ["active", "inactive", "pending"],
-          "type": "string"
+          "type": ["null", "string"]
         },
         "bancontact_payments": {
-          "description": "The status of the Bancontact payments capability of the account, or whether the account can directly process Bancontact charges.",
           "enum": ["active", "inactive", "pending"],
-          "type": "string"
+          "type": ["null", "string"]
         },
         "card_issuing": {
-          "description": "The status of the card issuing capability of the account, or whether you can use Issuing to distribute funds on cards",
           "enum": ["active", "inactive", "pending"],
-          "type": "string"
+          "type": ["null", "string"]
         },
         "card_payments": {
-          "description": "The status of the card payments capability of the account, or whether the account can directly process credit and debit card charges.",
           "enum": ["active", "inactive", "pending"],
-          "type": "string"
+          "type": ["null", "string"]
         },
         "cartes_bancaires_payments": {
-          "description": "The status of the Cartes Bancaires payments capability of the account, or whether the account can directly process Cartes Bancaires card charges in EUR currency.",
           "enum": ["active", "inactive", "pending"],
-          "type": "string"
+          "type": ["null", "string"]
         },
         "eps_payments": {
-          "description": "The status of the EPS payments capability of the account, or whether the account can directly process EPS charges.",
           "enum": ["active", "inactive", "pending"],
-          "type": "string"
+          "type": ["null", "string"]
         },
         "fpx_payments": {
-          "description": "The status of the FPX payments capability of the account, or whether the account can directly process FPX charges.",
           "enum": ["active", "inactive", "pending"],
-          "type": "string"
+          "type": ["null", "string"]
         },
         "giropay_payments": {
-          "description": "The status of the giropay payments capability of the account, or whether the account can directly process giropay charges.",
           "enum": ["active", "inactive", "pending"],
-          "type": "string"
+          "type": ["null", "string"]
         },
         "grabpay_payments": {
-          "description": "The status of the GrabPay payments capability of the account, or whether the account can directly process GrabPay charges.",
           "enum": ["active", "inactive", "pending"],
-          "type": "string"
+          "type": ["null", "string"]
         },
         "ideal_payments": {
-          "description": "The status of the iDEAL payments capability of the account, or whether the account can directly process iDEAL charges.",
           "enum": ["active", "inactive", "pending"],
-          "type": "string"
+          "type": ["null", "string"]
         },
         "jcb_payments": {
-          "description": "The status of the JCB payments capability of the account, or whether the account (Japan only) can directly process JCB credit card charges in JPY currency.",
           "enum": ["active", "inactive", "pending"],
-          "type": "string"
+          "type": ["null", "string"]
         },
         "legacy_payments": {
-          "description": "The status of the legacy payments capability of the account.",
           "enum": ["active", "inactive", "pending"],
-          "type": "string"
+          "type": ["null", "string"]
         },
         "oxxo_payments": {
-          "description": "The status of the OXXO payments capability of the account, or whether the account can directly process OXXO charges.",
           "enum": ["active", "inactive", "pending"],
-          "type": "string"
+          "type": ["null", "string"]
         },
         "p24_payments": {
-          "description": "The status of the P24 payments capability of the account, or whether the account can directly process P24 charges.",
           "enum": ["active", "inactive", "pending"],
-          "type": "string"
+          "type": ["null", "string"]
         },
         "sepa_debit_payments": {
-          "description": "The status of the SEPA Direct Debits payments capability of the account, or whether the account can directly process SEPA Direct Debits charges.",
           "enum": ["active", "inactive", "pending"],
-          "type": "string"
+          "type": ["null", "string"]
         },
         "sofort_payments": {
-          "description": "The status of the Sofort payments capability of the account, or whether the account can directly process Sofort charges.",
           "enum": ["active", "inactive", "pending"],
-          "type": "string"
+          "type": ["null", "string"]
         },
         "tax_reporting_us_1099_k": {
-          "description": "The status of the tax reporting 1099-K (US) capability of the account.",
           "enum": ["active", "inactive", "pending"],
-          "type": "string"
+          "type": ["null", "string"]
         },
         "tax_reporting_us_1099_misc": {
-          "description": "The status of the tax reporting 1099-MISC (US) capability of the account.",
           "enum": ["active", "inactive", "pending"],
-          "type": "string"
+          "type": ["null", "string"]
         },
         "transfers": {
-          "description": "The status of the transfers capability of the account, or whether your platform can transfer funds to the account.",
           "enum": ["active", "inactive", "pending"],
-          "type": "string"
+          "type": ["null", "string"]
         }
-      },
-      "title": "AccountCapabilities",
-      "type": "object"
+      }
     },
     "charges_enabled": {
-      "description": "Whether the account can create live charges.",
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "company": {
-      "type": "object"
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "address": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "city": {
+              "type": ["null", "string"]
+            },
+            "country": {
+              "type": ["null", "string"]
+            },
+            "line1": {
+              "type": ["null", "string"]
+            },
+            "line2": {
+              "type": ["null", "string"]
+            },
+            "postal_code": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "address_kana": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "city": {
+              "type": ["null", "string"]
+            },
+            "country": {
+              "type": ["null", "string"]
+            },
+            "line1": {
+              "type": ["null", "string"]
+            },
+            "line2": {
+              "type": ["null", "string"]
+            },
+            "postal_code": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            },
+            "town": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "address_kanji": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "city": {
+              "type": ["null", "string"]
+            },
+            "country": {
+              "type": ["null", "string"]
+            },
+            "line1": {
+              "type": ["null", "string"]
+            },
+            "line2": {
+              "type": ["null", "string"]
+            },
+            "postal_code": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            },
+            "town": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "directors_provided": {
+          "type": ["null", "boolean"]
+        },
+        "executives_provided": {
+          "type": ["null", "boolean"]
+        },
+        "export_license_id": {
+          "type": ["null", "string"]
+        },
+        "export_purpose_code": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "name_kana": {
+          "type": ["null", "string"]
+        },
+        "name_kanji": {
+          "type": ["null", "string"]
+        },
+        "owners_provided": {
+          "type": ["null", "boolean"]
+        },
+        "ownership_declaration": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "date": {
+              "type": ["null", "string"],
+              "format": "unix-time"
+            },
+            "ip": {
+              "type": ["null", "string"]
+            },
+            "user_agent": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "phone": {
+          "type": ["null", "string"]
+        },
+        "structure": {
+          "type": ["null", "string"]
+        },
+        "tax_id_provided": {
+          "type": ["null", "boolean"]
+        },
+        "tax_id_registrar": {
+          "type": ["null", "string"]
+        },
+        "vat_id_provided": {
+          "type": ["null", "boolean"]
+        },
+        "verification": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "document": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "back": {
+                  "type": ["null", "string"]
+                },
+                "details": {
+                  "type": ["null", "string"]
+                },
+                "details_code": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "country": {
-      "description": "The account's country.",
-      "type": "string"
+      "type": ["null", "string"]
     },
     "created": {
-      "description": "Time at which the object was created. Measured in seconds since the Unix epoch.",
       "format": "unix-time",
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "default_currency": {
-      "description": "Three-letter ISO currency code representing the default currency for the account. This must be a currency that [Stripe supports in the account's country](https://stripe.com/docs/payouts).",
-      "type": "string"
+      "type": ["null", "string"]
     },
     "details_submitted": {
-      "description": "Whether account details have been submitted. Standard accounts cannot receive payouts before this is true.",
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "email": {
-      "description": "An email address associated with the account. You can treat this as metadata: it is not used for authentication or messaging account holders.",
       "type": ["null", "string"]
     },
     "external_accounts": {
-      "description": "External accounts (bank accounts and debit cards) currently attached to this account",
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "data": {
-          "description": "The list contains all external accounts that have been attached to the Stripe account. These may be bank accounts or cards.",
-          "type": "array"
+          "type": ["null", "array"]
         },
         "has_more": {
-          "description": "True if this list has another page of items after this one that can be fetched.",
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "object": {
-          "description": "String representing the object's type. Objects of the same type share the same value. Always has the value `list`.",
           "enum": ["list"],
-          "type": "string"
+          "type": ["null", "string"]
         },
         "url": {
-          "description": "The URL where this list can be accessed.",
-          "type": "string"
+          "type": ["null", "string"]
         }
-      },
-      "required": ["data", "has_more", "object", "url"],
-      "title": "ExternalAccountList",
-      "type": "object"
+      }
     },
     "id": {
-      "description": "Unique identifier for the object.",
-      "type": "string"
+      "type": ["null", "string"]
     },
     "individual": {
-      "type": "object"
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "object": {
+          "type": ["null", "string"],
+          "enum": ["person"]
+        },
+        "account": {
+          "type": ["null", "string"]
+        },
+        "address": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "city": {
+              "type": ["null", "string"]
+            },
+            "country": {
+              "type": ["null", "string"]
+            },
+            "line1": {
+              "type": ["null", "string"]
+            },
+            "line2": {
+              "type": ["null", "string"]
+            },
+            "postal_code": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "address_kana": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "city": {
+              "type": ["null", "string"]
+            },
+            "country": {
+              "type": ["null", "string"]
+            },
+            "line1": {
+              "type": ["null", "string"]
+            },
+            "line2": {
+              "type": ["null", "string"]
+            },
+            "postal_code": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            },
+            "town": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "address_kanji": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "city": {
+              "type": ["null", "string"]
+            },
+            "country": {
+              "type": ["null", "string"]
+            },
+            "line1": {
+              "type": ["null", "string"]
+            },
+            "line2": {
+              "type": ["null", "string"]
+            },
+            "postal_code": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            },
+            "town": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "created": {
+          "type": ["null", "string"],
+          "format": "unix-time"
+        },
+        "dob": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "day": {
+              "type": ["null", "number"]
+            },
+            "month": {
+              "type": ["null", "number"]
+            },
+            "year": {
+              "type": ["null", "number"]
+            }
+          }
+        },
+        "email": {
+          "type": ["null", "string"]
+        },
+        "first_name": {
+          "type": ["null", "string"]
+        },
+        "first_name_kane": {
+          "type": ["null", "string"]
+        },
+        "first_name_kanji": {
+          "type": ["null", "string"]
+        },
+        "full_name_aliases": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "full_requirements": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "alternatives": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "alternative_fields_due": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "string"]
+                  }
+                },
+                "original_fields_due": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            },
+            "currently_due": {
+              "type": ["null", "string"]
+            },
+            "errors": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "code": {
+                    "type": ["null", "string"]
+                  },
+                  "reason": {
+                    "type": ["null", "string"]
+                  },
+                  "requirement": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            },
+            "eventually_due": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            },
+            "past_due": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            },
+            "pending_verification": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "gender": {
+          "type": ["null", "string"]
+        },
+        "id_number_provided": {
+          "type": ["null", "boolean"]
+        },
+        "id_number_secondary_provided": {
+          "type": ["null", "boolean"]
+        },
+        "last_name": {
+          "type": ["null", "string"]
+        },
+        "last_name_kana": {
+          "type": ["null", "string"]
+        },
+        "last_name_kanji": {
+          "type": ["null", "string"]
+        },
+        "maiden_name": {
+          "type": ["null", "string"]
+        },
+        "metadata": {
+          "type": ["null", "object"],
+          "additionalProperties": true
+        },
+        "nationality": {
+          "type": ["null", "string"]
+        },
+        "phone": {
+          "type": ["null", "string"]
+        },
+        "political_exposure": {
+          "type": ["null", "string"]
+        },
+        "registered_address": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "city": {
+              "type": ["null", "string"]
+            },
+            "country": {
+              "type": ["null", "string"]
+            },
+            "line1": {
+              "type": ["null", "string"]
+            },
+            "line2": {
+              "type": ["null", "string"]
+            },
+            "postal_code": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "relationship": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "director": {
+              "type": ["null", "boolean"]
+            },
+            "executive": {
+              "type": ["null", "boolean"]
+            },
+            "owner": {
+              "type": ["null", "boolean"]
+            },
+            "percent_ownership": {
+              "type": ["null", "number"]
+            },
+            "representative": {
+              "type": ["null", "boolean"]
+            },
+            "title": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "requirements": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "alternatives": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "alternative_fields_due": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "string"]
+                  }
+                },
+                "original_fields_due": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            },
+            "currently_due": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            },
+            "errors": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "code": {
+                    "type": ["null", "string"]
+                  },
+                  "reason": {
+                    "type": ["null", "string"]
+                  },
+                  "requirement": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            },
+            "eventually_due": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            },
+            "past_due": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            },
+            "pending_verification": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "ssn_last_4_provided": {
+          "type": ["null", "boolean"]
+        },
+        "verification": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "additional_document": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "back": {
+                  "type": ["null", "string"]
+                },
+                "details": {
+                  "type": ["null", "string"]
+                },
+                "details_code": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "details": {
+              "type": ["null", "string"]
+            },
+            "details_code": {
+              "type": ["null", "string"]
+            },
+            "document": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "back": {
+                  "type": ["null", "string"]
+                },
+                "details": {
+                  "type": ["null", "string"]
+                },
+                "details_code": {
+                  "type": ["null", "string"]
+                },
+                "front": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "status": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
     },
     "metadata": {
-      "description": "Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
-      "type": "object"
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "object": {
-      "description": "String representing the object's type. Objects of the same type share the same value.",
       "enum": ["account"],
-      "type": "string"
+      "type": ["null", "string"]
     },
     "payouts_enabled": {
-      "description": "Whether Stripe can send payouts to this account.",
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "requirements": {
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "alternatives": {
+          "type": ["null", "array"],
+          "items": {
+            "additionalProperties": true,
+            "properties": {
+              "alternative_fields_due": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              },
+              "original_fields_due": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "currently_due": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "disabled_reason": {
+          "type": ["null", "string"]
+        },
+        "errors": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "code": {
+                "type": ["null", "string"]
+              },
+              "reason": {
+                "type": ["null", "string"]
+              },
+              "requirement": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "eventually_due": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "past_due": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "pending_verification": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
     },
     "settings": {
-      "description": "Options for customizing how the account functions within Stripe.",
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "tos_acceptance": {
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "date": {
+          "type": ["null", "string"],
+          "format": "unix-time"
+        },
+        "ip": {
+          "type": ["null", "string"]
+        },
+        "service_agreement": {
+          "type": ["null", "string"]
+        },
+        "user_agent": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "type": {
-      "description": "The Stripe account type. Can be `standard`, `express`, or `custom`.",
       "enum": ["custom", "express", "standard"],
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }
