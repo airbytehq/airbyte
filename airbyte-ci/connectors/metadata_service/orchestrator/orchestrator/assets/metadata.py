@@ -208,10 +208,11 @@ def catalog_derived_metadata_definitions(
     all_definitions = sources_metadata_list + destinations_metadata_list
     return Output(all_definitions, metadata={"count": len(all_definitions)})
 
+
 @asset(required_resource_keys={"metadata_folder_blobs"}, group_name=GROUP_NAME)
 def metadata_definitions(context):
     metadata_folder_blobs = context.resources.metadata_folder_blobs
-    blobs = [blob for blob in metadata_folder_blobs if blob.name.endswith("metadata.yaml")]
+    blobs = [blob for blob in metadata_folder_blobs if blob.name.endswith("metadata.yml")]
 
     metadata_definitions = []
     for blob in blobs:

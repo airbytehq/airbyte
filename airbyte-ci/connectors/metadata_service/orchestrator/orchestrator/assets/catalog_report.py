@@ -2,7 +2,6 @@ import pandas as pd
 from dagster import MetadataValue, Output, asset
 
 from orchestrator.templates.render import render_connector_catalog_locations_html, render_connector_catalog_locations_markdown
-from orchestrator.utils.dagster_helpers import output_dataframe
 
 GROUP_NAME = "catalog_reports"
 
@@ -149,6 +148,7 @@ def all_sources_dataframe(
         github_connector_folders=github_connector_folders,
         cached_specs=cached_specs,
     )
+
 
 @asset(group_name=GROUP_NAME)
 def all_destinations_dataframe(

@@ -19,5 +19,6 @@ def deserialize_composite_etag_cursor(etag_cursor: Optional[str]) -> List[str]:
 
     return etag_cursor.split(CURSOR_SEPARATOR)
 
+
 def serialize_composite_etag_cursor(etags: List[str]):
     return CURSOR_SEPARATOR.join(etags)

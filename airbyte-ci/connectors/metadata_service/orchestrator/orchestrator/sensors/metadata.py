@@ -27,8 +27,7 @@ def metadata_updated_sensor(job, resources_def) -> SensorDefinition:
             context.log.info(f"Old etag cursor: {etag_cursor}")
 
             metadata_folder_blobs = resources.metadata_folder_blobs
-            ## TODO, yaml vs yml
-            new_etag_cursors = [blob.etag for blob in metadata_folder_blobs if blob.name.endswith("metadata.yaml")]
+            new_etag_cursors = [blob.etag for blob in metadata_folder_blobs if blob.name.endswith("metadata.yml")]
             new_etag_cursor_set = set(new_etag_cursors)
             context.log.info(f"New etag cursor: {new_etag_cursor_set}")
 

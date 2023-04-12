@@ -85,6 +85,7 @@ def gcs_file_blob(resource_context: InitResourceContext) -> storage.Blob:
 
     return gcs_file_blob
 
+
 @resource(
     required_resource_keys={"gcs_bucket_manager"},
     config_schema={

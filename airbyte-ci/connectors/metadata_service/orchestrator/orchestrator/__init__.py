@@ -92,7 +92,7 @@ RESOURCES = {
 
 SENSORS = [
     catalog_updated_sensor(job=generate_catalog_markdown, resources_def=RESOURCES),
-    metadata_updated_sensor(job=generate_catalog, resources_def=RESOURCES)
+    metadata_updated_sensor(job=generate_catalog, resources_def=RESOURCES),
 ]
 
 SCHEDULES = []
