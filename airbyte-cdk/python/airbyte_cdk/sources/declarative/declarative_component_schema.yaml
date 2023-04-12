@@ -491,6 +491,7 @@ definitions:
         type: object
         additionalProperties: true
   DatetimeBasedCursor:
+    title: Datetime Based Cursor
     description: Cursor to provide incremental capabilities over datetime
     type: object
     required:
@@ -506,40 +507,68 @@ definitions:
         type: string
         enum: [DatetimeBasedCursor]
       cursor_field:
+        title: Cursor Field
         description: The location of the value on a record that will be used as a bookmark during sync
         type: string
+        examples:
+          - "created_at"
+          - "{{ config['record_cursor'] }}"
       datetime_format:
+        title: Datetime Format
         description: The format of the datetime
         type: string
+        examples:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
       cursor_granularity:
+        title: Cursor Granularity
         description: Smallest increment the datetime_format has (ISO 8601 duration) that is used to ensure the start of a slice does not overlap with the end of the previous one
         type: string
+        examples:
+          - "PT1S"
       end_datetime:
+        title: End Datetime
         description: The datetime that determines the last record that should be synced
         anyOf:
           - type: string
           - "$ref": "#/definitions/MinMaxDatetime"
       start_datetime:
+        title: Start Datetime
         description: The datetime that determines the earliest record that should be synced
         anyOf:
           - type: string
           - "$ref": "#/definitions/MinMaxDatetime"
       step:
+        title: Step
         description: The size of the time window (ISO8601 duration)
         type: string
+        examples:
+          - "P1W"
+          - "{{ config['step_increment'] }}"
       end_time_option:
+        title: End Time Option
         description: Request option for end time
         "$ref": "#/definitions/RequestOption"
       lookback_window:
+        title: Lookback Window
         description: How many days before start_datetime to read data for (ISO8601 duration)
         type: string
+        examples:
+          - "P1D"
+          - "P{{ config['lookback_days'] }}D"
       partition_field_end:
+        title: Partition Field End
         description: Partition start time field
         type: string
+        examples:
+          - "ending_time"
       partition_field_start:
+        title: Partition Field Start
         description: Partition end time field
         type: string
+        examples:
+          - "starting_time"
       start_time_option:
+        title: Start Time Option
         description: Request option for start time
         "$ref": "#/definitions/RequestOption"
       $parameters:
@@ -1024,7 +1053,7 @@ definitions:
                 [{"value": {{ stream_slice['start_time'] | int * 1000 }} },
                  {"value": {{ stream_slice['end_time'] | int * 1000 + (86400000 - 1) }} }
                 ]
-            
+
               }, "orderBy": 1, "columnName": "Timestamp"}]/
       request_body_json:
         title: Request Body JSON Payload
@@ -1070,10 +1099,10 @@ definitions:
           - stream_slice
           - stream_state
         examples:
-         - unit: "day"
-         - query: 'last_event_time BETWEEN TIMESTAMP "{{ stream_slice.start_time }}" AND TIMESTAMP "{{ stream_slice.end_time }}"'
-         - searchIn: "{{ ','.join(config.get('search_in', [])) }}"
-         - sort_by[asc]: updated_at
+          - unit: "day"
+          - query: 'last_event_time BETWEEN TIMESTAMP "{{ stream_slice.start_time }}" AND TIMESTAMP "{{ stream_slice.end_time }}"'
+          - searchIn: "{{ ','.join(config.get('search_in', [])) }}"
+          - sort_by[asc]: updated_at
       $parameters:
         type: object
         additionalProperties: true
@@ -1183,7 +1212,8 @@ definitions:
         type: string
         enum: [JsonDecoder]
   ListPartitionRouter:
-    description: Partition router that is used to retrieve records that have been partitioned according to a list of values
+    title: List Partition Router
+    description: A Partition router that specifies a list of attributes where each attribute describes a portion of the complete data set for a stream. During a sync, each value is iterated over and can be used as input to outbound API requests.
     type: object
     required:
       - type
@@ -1194,14 +1224,26 @@ definitions:
         type: string
         enum: [ListPartitionRouter]
       cursor_field:
+        title: Cursor Field
+        description: While iterating over list values, the name of field used to reference a list value.
         type: string
+        examples:
+          - "section"
+          - "{{ config['section_key'] }}"
       values:
+        title: Values
+        description: The list of attributes being iterated over and used as input for the requests made to the source API.
         anyOf:
           - type: string
           - type: array
             items:
               type: string
+        examples:
+          - ["section_a", "section_b", "section_c"]
+          - "{{ config['sections'] }}"
       request_option:
+        title: Request Option
+        description: A request option describing where the list value should be injected into and under what field name if applicable.
         "$ref": "#/definitions/RequestOption"
       $parameters:
         type: object
@@ -1447,7 +1489,8 @@ definitions:
         type: object
         additionalProperties: true
   ParentStreamConfig:
-    description: Describes how to create a stream slice from a parent stream
+    title: Parent Stream Config
+    description: Describes how to construct partitions from the records retrieved from the parent stream.
     type: object
     required:
       - type
@@ -1459,12 +1502,26 @@ definitions:
         type: string
         enum: [ParentStreamConfig]
       parent_key:
+        title: Parent Key
+        description: The primary key of records from the parent stream that will be used during the retrieval of records for the current substream. This parent identifier field is typically a characteristic of the child records being extracted from the source API.
         type: string
+        examples:
+          - "id"
+          - "{{ config['parent_record_id'] }}"
       stream:
+        title: Stream
+        description:
         "$ref": "#/definitions/DeclarativeStream"
       partition_field:
+        title: Partition Field
+        description: While iterating over parent records during a sync, the parent_key value can be referenced by using this field.
         type: string
+        examples:
+          - "parent_id"
+          - "{{ config['parent_partition_field'] }}"
       request_option:
+        title: Request Option
+        description: A request option describing where the parent key value should be injected into and under what field name if applicable.
         "$ref": "#/definitions/RequestOption"
       $parameters:
         type: object
@@ -1672,8 +1729,9 @@ definitions:
           - "$ref": "#/definitions/DefaultPaginator"
           - "$ref": "#/definitions/NoPagination"
       partition_router:
+        title: Partition Router
+        description: PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.
         default: []
-        description: StreamSlicer component that describes how to partition the stream, enabling incremental syncs and checkpointing.
         anyOf:
           - "$ref": "#/definitions/CustomPartitionRouter"
           - "$ref": "#/definitions/ListPartitionRouter"
@@ -1714,7 +1772,8 @@ definitions:
         description: Advanced specification for configuring the authentication flow
         "$ref": "#/definitions/AuthFlow"
   SubstreamPartitionRouter:
-    description: Partition router that is used to retrieve records that have been partitioned according to records from the specified parent streams
+    title: Substream Partition Router
+    description: Partition router that is used to retrieve records that have been partitioned according to records from the specified parent streams. An example of a parent stream is automobile brands and the substream would be the various car models associated with each branch.
     type: object
     required:
       - type
@@ -1724,6 +1783,8 @@ definitions:
         type: string
         enum: [SubstreamPartitionRouter]
       parent_stream_configs:
+        title: Parent Stream Configs
+        description: Specifies which parent streams are being iterated over and how parent records should be used to partition the child stream data set.
         type: array
         items:
           "$ref": "#/definitions/ParentStreamConfig"
