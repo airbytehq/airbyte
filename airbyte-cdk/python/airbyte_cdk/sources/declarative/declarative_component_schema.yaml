@@ -1397,7 +1397,7 @@ definitions:
         enum: [RemoveFields]
       field_pointers:
         title: Field Paths
-        description:
+        description: Array of paths defining the field to remove. Each item is an array whose field describe the path of a field to remove
         type: array
         items:
           items:
