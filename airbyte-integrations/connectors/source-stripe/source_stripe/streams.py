@@ -422,6 +422,10 @@ class Plans(IncrementalStripeStream):
     def path(self, **kwargs):
         return "plans"
 
+    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        params = super().request_params(stream_slice=stream_slice, **kwargs)
+        params["expand[]"] = ["data.tiers"]
+        return params
 
 class Products(IncrementalStripeStream):
     """
