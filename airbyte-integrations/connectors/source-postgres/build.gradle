@@ -4,8 +4,7 @@ plugins {
     id 'airbyte-integration-test-java'
     id 'airbyte-performance-test-java'
     id 'airbyte-connector-acceptance-test'
-    id 'org.gradle.test-retry' version '1.5.2'
- }
+}
 
 application {
     mainClass = 'io.airbyte.integrations.source.postgres.PostgresSource'
@@ -39,14 +38,4 @@ dependencies {
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     performanceTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-}
-
-// Some tests using testcontainers are flaky. 
-// The test-retry plugin will retry failing tests 3 times
-test {
-    retry {
-        maxRetries.set(3)
-        maxFailures.set(20)
-        failOnPassedAfterRetry.set(false)
-    }
 }
