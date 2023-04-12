@@ -5,6 +5,8 @@ import { theme } from "theme";
 import { LoadingPage } from "components";
 import { CreateStepTypes } from "components/ConnectionStep";
 
+import { useUser } from "core/AuthContext";
+import { getPaymentStatus, PAYMENT_STATUS } from "core/Constants/statuses";
 import { useHealth } from "hooks/services/Health";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
@@ -41,6 +43,7 @@ const hasCurrentStep = (state: unknown): state is { currentStep: string } => {
 };
 
 const MainView: React.FC = (props) => {
+  const { user } = useUser();
   const { healthData } = useHealth();
   const { usage } = healthData;
   const { pathname, location, push } = useRouter();
