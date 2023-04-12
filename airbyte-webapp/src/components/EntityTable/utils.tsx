@@ -91,14 +91,9 @@ export const getConnectionTableData = (
     return {
       connectionId: connection.connectionId,
       name: connection.name,
-      entityName:
-        type === "connection"
-          ? `${connection.source?.sourceName}` // `${connection.source?.sourceName} - ${connection.source?.name}`
-          : connection[connectType]?.name || "",
+      entityName: type === "connection" ? `${connection.source?.sourceName}` : connection[connectType]?.name || "",
       connectorName:
-        type === "connection"
-          ? `${connection.destination?.destinationName}` // `${connection.destination?.destinationName} - ${connection.destination?.name}`
-          : connection[connectType]?.name || "",
+        type === "connection" ? `${connection.destination?.destinationName}` : connection[connectType]?.name || "",
       lastSync: connection.latestSyncJobCreatedAt,
       enabled: connection.status === ConnectionStatus.active,
       schedule: connection.scheduleData?.basicSchedule,

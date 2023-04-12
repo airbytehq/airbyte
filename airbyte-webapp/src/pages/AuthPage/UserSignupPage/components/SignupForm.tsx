@@ -9,6 +9,7 @@ import { useConfig } from "config";
 import { useUser } from "core/AuthContext";
 import useRouter from "hooks/useRouter";
 import { LOCALES } from "locales";
+import { AuthRead } from "services/auth/AuthService";
 import { useUserAsyncAction } from "services/users/UsersService";
 
 import { BottomBlock, FieldItem, Form, RowFieldItem } from "../../components/FormComponents";
@@ -172,11 +173,11 @@ export const SignupForm: React.FC = () => {
           password,
           confirmPassword,
         })
-          .then((response: any) => {
+          .then((response: AuthRead) => {
             setUser?.(response?.data);
           })
-          .catch((error: any) => {
-            console.log(error);
+          .catch((error: Error) => {
+            console.error(error);
           });
       }}
       validateOnBlur

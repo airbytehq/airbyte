@@ -1,7 +1,7 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import _ from "lodash";
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -86,23 +86,26 @@ const AllConnectionsPage: React.FC = () => {
 
   const { connections, total, pageSize } = useFilteredConnectionList(filters);
 
-  const onSelectFilter = (
-    filterType: "pageCurrent" | "status" | "sourceDefinitionId" | "destinationDefinitionId",
-    filterValue: number | string
-  ) => {
-    if (filterType === "status" || filterType === "sourceDefinitionId" || filterType === "destinationDefinitionId") {
-      setFilters({ ...filters, [filterType]: filterValue, pageCurrent: 1 });
-    } else if (filterType === "pageCurrent") {
-      setFilters({ ...filters, [filterType]: filterValue as number });
-    }
-  };
+  const onSelectFilter = useCallback(
+    (
+      filterType: "pageCurrent" | "status" | "sourceDefinitionId" | "destinationDefinitionId",
+      filterValue: number | string
+    ) => {
+      if (filterType === "status" || filterType === "sourceDefinitionId" || filterType === "destinationDefinitionId") {
+        setFilters({ ...filters, [filterType]: filterValue, pageCurrent: 1 });
+      } else if (filterType === "pageCurrent") {
+        setFilters({ ...filters, [filterType]: filterValue as number });
+      }
+    },
+    [filters]
+  );
 
-  const hasConnections = (): boolean => {
+  const hasConnections = useCallback((): boolean => {
     if (_.isEqual(initialFiltersState, filters) && total === 0) {
       return false;
     }
     return true;
-  };
+  }, [filters, total]);
 
   useEffect(() => {
     if (hasConnections()) {
@@ -118,7 +121,7 @@ const AllConnectionsPage: React.FC = () => {
 
   const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
 
-  const onCreateClick = () => push(`${RoutePaths.SelectConnection}`); // ConnectionNew
+  const onCreateClick = () => push(`${RoutePaths.SelectConnection}`);
   const onSetMessageId = (id: string) => setMessageId(id);
 
   console.log(connections);
@@ -129,7 +132,6 @@ const AllConnectionsPage: React.FC = () => {
         <>
           <MessageBox message={messageId} onClose={() => setMessageId("")} type="info" position="center" />
           <MainPageWithScroll
-            // withPadding
             headTitle={<HeadTitle titles={[{ id: "connection.pageTitle" }]} />}
             pageTitle={
               <PageTitle
@@ -148,7 +150,6 @@ const AllConnectionsPage: React.FC = () => {
               />
             }
           >
-            {/* <Separator /> */}
             <DDsContainer>
               <DDContainer margin="0 24px 0 0">
                 <DropDown

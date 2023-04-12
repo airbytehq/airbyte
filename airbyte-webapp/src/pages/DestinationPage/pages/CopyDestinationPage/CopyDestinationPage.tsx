@@ -1,4 +1,4 @@
-import React, { useState } from "react"; // useMemo
+import React, { useState } from "react";
 import styled from "styled-components";
 
 import { ConnectionStep, CreateStepTypes } from "components/ConnectionStep";
@@ -11,11 +11,6 @@ import TestConnection from "views/Connector/TestConnection";
 
 import { RoutePaths } from "../../../routePaths";
 import DestinationCopy from "./components/DestinationCopy";
-
-// const Container = styled.div`
-//   display: flex;
-//   flex-direction: column;
-// `;
 
 const ContainerPadding = styled.div`
   padding: 0px 0px 0px 70px;

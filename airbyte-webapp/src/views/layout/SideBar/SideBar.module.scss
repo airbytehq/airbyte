@@ -19,21 +19,15 @@
   background-color: transparent;
   appearance: none;
   border: none;
-
-  // color: colors.$grey-30;
   color: #4f46e5;
   width: 100%;
   cursor: pointer;
   box-sizing: border-box;
   padding-left: 54px;
-
-  // border-radius: 12px;
   height: 50px;
   display: flex;
   flex-direction: row;
   align-items: center;
-
-  // justify-content: center;
   font-weight: normal;
   font-size: 12px;
   line-height: 15px;
@@ -56,10 +50,6 @@
     flex-direction: row;
     box-sizing: border-box;
     padding-left: 54px;
-
-    // justify-content: center;
-    //  align-items: center;
-    // background-color: #eae9ff;
     color: colors.$black;
     transition: variables.$transition-out;
 
@@ -71,12 +61,6 @@
       border-radius: 0;
     }
   }
-
-  // &.inActiveSetting {
-  //   background: #eff0f5;
-  //   border-radius: 6px;
-  //   width: 80%;
-  // }
 
   &.active {
     color: #4f46e5;

@@ -1,4 +1,3 @@
-// import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 import { faSync } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { Suspense, useMemo } from "react";

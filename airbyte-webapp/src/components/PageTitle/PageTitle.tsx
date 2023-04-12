@@ -15,15 +15,10 @@ interface PageTitleProps {
 
 export const MainContainer = styled.div<{ withLine?: boolean; withPadding?: boolean }>`
   padding: ${({ withPadding }) => (withPadding ? `24px 38px` : "0")};
-  // padding-top: 35px;
   border-bottom: ${({ withLine }) => (withLine ? `1px solid #D1D5DB` : "none")};
   position: relative;
   z-index: 2;
   color: ${({ theme }) => theme.darkPrimaryColor};
-  // display: flex;
-  // flex-direction: row;
-  // justify-content: space-between;
-  // align-items: center;
   //flex-direction: column;
 `;
 

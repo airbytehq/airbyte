@@ -5,8 +5,6 @@ import { theme } from "theme";
 import { LoadingPage } from "components";
 import { CreateStepTypes } from "components/ConnectionStep";
 
-import { useUser } from "core/AuthContext";
-import { getPaymentStatus, PAYMENT_STATUS } from "core/Constants/statuses";
 import { useHealth } from "hooks/services/Health";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
@@ -45,7 +43,6 @@ const hasCurrentStep = (state: unknown): state is { currentStep: string } => {
 const MainView: React.FC = (props) => {
   const { healthData } = useHealth();
   const { usage } = healthData;
-  const { user } = useUser();
   const { pathname, location, push } = useRouter();
   const [usagePercentage, setUsagePercentage] = useState<number>(0);
   const [isSidebar, setIsSidebar] = useState<boolean>(true);
@@ -57,9 +54,6 @@ const MainView: React.FC = (props) => {
     }
   }, [usage]);
 
-  // TODO: not the proper solution but works for now
-  // const isSidebar =
-  //   !pathname.split("/").includes(RoutePaths.Payment) && !pathname.split("/").includes(RoutePaths.PaymentError);
   const hasSidebarRoutes: string[] = useMemo(
     () => [
       RoutePaths.Source,
@@ -75,6 +69,9 @@ const MainView: React.FC = (props) => {
       RoutePaths.Notifications,
       RoutePaths.Configurations,
       RoutePaths.Language,
+      RoutePaths.Password,
+      RoutePaths.Account,
+      RoutePaths.Support,
     ],
     []
   );

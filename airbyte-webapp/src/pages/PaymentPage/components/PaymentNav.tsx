@@ -4,6 +4,8 @@ import styled from "styled-components";
 
 import { RightArrowHeadIcon } from "components/icons/RightArrowHeadIcon";
 
+import { getKeyProp } from "utils/common";
+
 import { PaymentSteps } from "../PaymentPage";
 
 interface IProps {
@@ -51,7 +53,7 @@ const PaymentNav: React.FC<IProps> = ({ steps, currentStep }) => {
     <Navbar>
       <StepsContent>
         {steps.map((step, index) => (
-          <>
+          <React.Fragment key={getKeyProp(step)}>
             <Step isActive={step === currentStep}>
               <FormattedMessage id={setStep(step)} />
             </Step>
@@ -60,7 +62,7 @@ const PaymentNav: React.FC<IProps> = ({ steps, currentStep }) => {
                 <RightArrowHeadIcon />
               </ArrowIconContainer>
             )}
-          </>
+          </React.Fragment>
         ))}
       </StepsContent>
     </Navbar>

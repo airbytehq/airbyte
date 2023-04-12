@@ -3,6 +3,7 @@ import styled from "styled-components";
 
 interface IProps {
   height?: string;
+  keyProp?: string;
 }
 
 const MySeparator = styled.div<IProps>`
@@ -10,6 +11,6 @@ const MySeparator = styled.div<IProps>`
   height: ${({ height }) => (height ? height : "20px")};
 `;
 
-export const Separator: React.FC<IProps> = ({ height }) => {
-  return <MySeparator height={height} />;
+export const Separator: React.FC<IProps> = ({ height, keyProp }) => {
+  return <MySeparator height={height} key={keyProp} />;
 };

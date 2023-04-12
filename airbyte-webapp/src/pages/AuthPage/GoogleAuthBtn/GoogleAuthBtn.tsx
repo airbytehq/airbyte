@@ -3,6 +3,7 @@ import React from "react";
 import styled from "styled-components";
 
 import { useUser } from "core/AuthContext";
+import { IAuthUser } from "core/AuthContext/authenticatedUser";
 import { useAuthenticationService } from "services/auth/AuthSpecificationService";
 
 interface IProps {
@@ -27,11 +28,11 @@ export const GoogleAuthBtn: React.FC<IProps> = ({ buttonText }) => {
         onSuccess={(credentialsResponse) => {
           auth
             .googleAuth(credentialsResponse.credential as string, user?.lang)
-            .then((res) => {
+            .then((res: IAuthUser) => {
               setUser?.(res);
             })
-            .catch((err) => {
-              console.log(err);
+            .catch((err: Error) => {
+              console.error(err);
             });
         }}
         onError={() => {

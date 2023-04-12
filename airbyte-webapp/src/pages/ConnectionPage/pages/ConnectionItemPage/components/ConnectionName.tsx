@@ -40,13 +40,6 @@ const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
     await updateConnectionAsync();
   };
 
-  // const onBlur: React.FocusEventHandler<HTMLInputElement> = (event) => {
-  //   event.stopPropagation();
-  //   setEditingState(false);
-  //   setConnectionName(name);
-  //    await updateConnectionAsync();
-  // };
-
   const updateConnectionAsync = async () => {
     const connectionNameTrimmed = connectionName?.trim();
     if (!connectionNameTrimmed || connection.name === connectionNameTrimmed) {

@@ -2,14 +2,13 @@ import React, { useCallback, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import {} from "components";
 import { BigButton, ButtonRows } from "components/base/Button/BigButton";
 import HeadTitle from "components/HeadTitle";
 import MainPageWithScroll from "components/MainPageWithScroll";
 
 import { useUser } from "core/AuthContext";
 import { getPaymentStatus, PAYMENT_STATUS } from "core/Constants/statuses";
-import { GetUpgradeSubscriptionDetail } from "core/domain/payment";
+import { CreateSunscriptionUrl, GetUpgradeSubscriptionDetail, UpgradeSubscription } from "core/domain/payment";
 import { ProductOptionItem } from "core/domain/product";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
@@ -52,12 +51,8 @@ const PaymentPage: React.FC = () => {
   const { updateUserStatus, user } = useUser();
   const userPlanDetail = useUserPlanDetail();
   const { selectedProduct } = userPlanDetail;
-  // const packagesDetail = usePackagesDetail();
-  // const { productItem } = packagesDetail;
   const packagesMap = usePackagesMap();
   const productOptions = useProductOptions();
-
-  // console.log(product);
 
   useEffect(() => {
     if (!selectedProduct && product === undefined) {
@@ -82,8 +77,8 @@ const PaymentPage: React.FC = () => {
       getPaymentStatus(user.status) === PAYMENT_STATUS.Pause_Subscription
     ) {
       onGetUpgradeSubscription({ productItemId: product?.id as string })
-        .then((response: any) => {
-          const detail: GetUpgradeSubscriptionDetail = response?.data;
+        .then((res: UpgradeSubscription) => {
+          const detail = res?.data;
           setPlanDetail(detail);
           setPaymentLoading(false);
           setCurrentStep(PaymentSteps.BILLING_PAYMENT);
@@ -93,9 +88,9 @@ const PaymentPage: React.FC = () => {
         });
     } else {
       onCreateSubscriptionURL(product?.id as string)
-        .then((response: any) => {
+        .then((res: CreateSunscriptionUrl) => {
           setPaymentLoading(false);
-          window.open(response.data, "_self");
+          window.open(res.data, "_self");
         })
         .catch(() => {
           setPaymentLoading(false);
@@ -152,8 +147,6 @@ const PaymentPage: React.FC = () => {
               productPrice={Number(product?.price)}
               selectedProductPrice={selectedProduct?.price as number}
               planDetail={planDetail}
-              // onUpgradePlan={onUpgradePlan}
-              // updatePlanLoading={updatePlanLoading}
             />
           )}
         </MainView>

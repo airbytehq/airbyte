@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
-// import { useConfig } from "config";
-
 import { Action, Namespace } from "core/analytics";
 import { useUser } from "core/AuthContext";
 import { SyncSchema } from "core/domain/catalog";
@@ -45,7 +43,6 @@ interface ConnectorProps {
 }
 
 function useSourceService() {
-  // const { apiUrl } = useConfig();
   const { removeUser } = useUser();
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
   return useInitService(
@@ -149,8 +146,8 @@ const useCloneSource = () => {
     onSuccess: (data) => {
       analyticsService.track(Namespace.SOURCE, Action.CLONE, {
         actionDescription: "Source clone",
-        connector_source: data.name, // ctx.source.sourceConfiguration?.name,
-        connector_source_definition_id: data.sourceDefinitionId, // ctx.source.sourceDefinitionId,
+        connector_source: data.name,
+        connector_source_definition_id: data.sourceDefinitionId,
       });
 
       queryClient.setQueryData(sourcesKeys.lists(), (lst: SourceList | undefined) => ({

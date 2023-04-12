@@ -1,6 +1,5 @@
 import React, { useMemo } from "react";
 
-// import { useConfig } from "config";
 import { useUser } from "core/AuthContext";
 import { AuthService } from "services/auth/AuthService";
 
@@ -12,7 +11,6 @@ import { RequestMiddleware } from "./request/RequestMiddleware";
 import { useGetService, useInjectServices } from "./servicesProvider";
 
 export const ApiServices: React.FC = React.memo(({ children }) => {
-  // const config = useConfig();
   const { removeUser } = useUser();
   const middlewares = useGetService<RequestMiddleware[]>("DefaultRequestMiddlewares");
 

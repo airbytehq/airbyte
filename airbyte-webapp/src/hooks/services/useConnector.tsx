@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { useMutation } from "react-query";
 
-// import { useConfig } from "config";
 import { useUser } from "core/AuthContext";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { Connector } from "core/domain/connector";
@@ -79,7 +78,6 @@ const useConnector = (): ConnectorService => {
 };
 
 function useGetDestinationService(): DestinationService {
-  // const { apiUrl } = useConfig();
   const { removeUser } = useUser();
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
@@ -90,7 +88,6 @@ function useGetDestinationService(): DestinationService {
 }
 
 function useGetSourceService(): SourceService {
-  // const { apiUrl } = useConfig();
   const { removeUser } = useUser();
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 

@@ -24,7 +24,7 @@ const IconContainer = styled.div<{
   justify-content: center;
 `;
 
-export const NotificationFlag: React.FC<IProps> = ({ isActive, onClick, isLoading }) => {
+export const NotificationFlag: React.FC<IProps> = React.memo(({ isActive, onClick, isLoading }) => {
   return (
     <Tooltip
       control={
@@ -44,4 +44,4 @@ export const NotificationFlag: React.FC<IProps> = ({ isActive, onClick, isLoadin
       <FormattedMessage id={isActive ? "notification.status.enabled" : "notification.status.disabled"} />
     </Tooltip>
   );
-};
+});
