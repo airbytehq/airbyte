@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import logging
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
@@ -129,3 +129,9 @@ class DeclarativeStream(Stream):
         """
         # this is not passing the cursor field because it is known at init time
         return self.retriever.stream_slices(sync_mode=sync_mode, stream_state=stream_state)
+
+
+@dataclass
+class DeclarativeStreamTestReadDecorator(DeclarativeStream):
+    def log_slice_message(self, logger: logging.Logger):
+        return True

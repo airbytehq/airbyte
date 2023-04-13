@@ -4,6 +4,7 @@
 
 
 import inspect
+import json
 import logging
 import typing
 from abc import ABC, abstractmethod
@@ -11,7 +12,8 @@ from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import airbyte_cdk.sources.utils.casing as casing
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteStream, AirbyteTraceMessage, SyncMode
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteStream, AirbyteTraceMessage, Level, SyncMode
+from airbyte_cdk.models import Type as MessageType
 
 # list of all possible HTTP methods which can be used for sending of request bodies
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
@@ -74,6 +76,8 @@ class Stream(ABC):
     """
     Base abstract class for an Airbyte Stream. Makes no assumption of the Stream's underlying transport protocol.
     """
+
+    SLICE_LOG_PREFIX = "slice:"
 
     # Use self.logger in subclasses to log any messages
     @property
@@ -246,6 +250,21 @@ class Stream(ABC):
         :return: An updated state object
         """
         return {}
+
+    def start_of_slice_messages(self, logger: logging.Logger, stream_slice: Mapping[str, Any]) -> typing.Iterator[AirbyteMessage]:
+        if self.log_slice_message(logger):
+            yield AirbyteMessage(
+                type=MessageType.LOG,
+                log=AirbyteLogMessage(level=Level.INFO, message=f"{self.SLICE_LOG_PREFIX}{json.dumps(stream_slice, default=str)}"),
+            )
+
+    def log_slice_message(self, logger: logging.Logger):
+        """
+
+        :param logger:
+        :return:
+        """
+        return logger.isEnabledFor(logging.DEBUG)
 
     @staticmethod
     def _wrapped_primary_key(keys: Optional[Union[str, List[str], List[List[str]]]]) -> Optional[List[List[str]]]:
