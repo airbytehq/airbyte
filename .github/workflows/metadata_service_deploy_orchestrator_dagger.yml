@@ -1,0 +1,31 @@
+name: Connector metadata service deploy orchestrator
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - "airbyte-ci/connectors/metadata_service/orchestrator/**"
+jobs:
+  connector_metadata_service_orchestrator_deploy:
+    name: Connector metadata service deploy orchestrator
+    runs-on: medium-runner
+    env:
+      CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Run test for the metadata orchestrator
+        id: metadata-orchestrator-test-pipeline
+        uses: ./.github/actions/run-dagger-pipeline
+        with:
+          subcommand: "metadata test orchestrator"
+          context: "pull_request"
+      - name: Run test for the metadata orchestrator
+        id: metadata-orchestrator-deploy-orchestrator-pipeline
+        uses: ./.github/actions/run-dagger-pipeline
+        with:
+          subcommand: "metadata deploy-orchestrator"
+        env:
+          DAGSTER_CLOUD_API_TOKEN: ${{ secrets.DAGSTER_CLOUD_METADATA_API_TOKEN }}
