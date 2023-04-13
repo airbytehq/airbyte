@@ -112,6 +112,7 @@ METRIC_RESPONSE_WITHOUT_ASIN_PK = b64decode(
 """
 )
 
+
 def setup_responses(init_response=None, init_response_products=None, init_response_brands=None, status_response=None, metric_response=None):
     if init_response:
         responses.add(responses.POST, re.compile(r"https://advertising-api.amazon.com/sd/[a-zA-Z]+/report"), body=init_response, status=202)
