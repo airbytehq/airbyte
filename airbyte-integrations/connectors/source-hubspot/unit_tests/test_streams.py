@@ -328,7 +328,5 @@ def test_custom_object_stream_calls_hubspot_to_get_json_schema(
 
     adapter = requests_mock.register_uri("GET", "/crm/v3/schemas", [{"json": {"results": [custom_object_schema]}}])
     json_schema = stream.get_json_schema()
-    print(json_schema)
-    print(expected_custom_object_json_schema)
     assert json_schema == expected_custom_object_json_schema
     assert adapter.called
