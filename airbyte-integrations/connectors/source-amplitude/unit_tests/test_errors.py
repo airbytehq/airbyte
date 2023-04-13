@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -14,7 +14,11 @@ class MockRequest:
 
 
 def test_incremental_http_error_handler(mocker):
-    stream = Events(start_date="2021-01-01T00:00:00Z", data_region="Standard Server")
+    stream = Events(
+        start_date="2021-01-01T00:00:00Z",
+        data_region="Standard Server",
+        event_time_interval={"size_unit": "days", "size": 1}
+    )
     stream_slice = stream.stream_slices()[0]
 
     mock_response = MockRequest(404)

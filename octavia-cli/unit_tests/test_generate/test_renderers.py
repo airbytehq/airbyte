@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from pathlib import Path
@@ -355,7 +355,7 @@ class TestConnectionRenderer:
                     "source_configuration_path": mock_source.configuration_path,
                     "destination_configuration_path": mock_destination.configuration_path,
                     "catalog": connection_renderer.catalog_to_yaml.return_value,
-                    "supports_normalization": connection_renderer.destination.definition.supports_normalization,
+                    "supports_normalization": connection_renderer.destination.definition.normalization_config.supported,
                     "supports_dbt": connection_renderer.destination.definition.supports_dbt,
                 }
             )
@@ -375,7 +375,7 @@ class TestConnectionRenderer:
                 "source_configuration_path": connection_renderer.source.configuration_path,
                 "destination_configuration_path": connection_renderer.destination.configuration_path,
                 "catalog": connection_renderer.catalog_to_yaml.return_value,
-                "supports_normalization": connection_renderer.destination.definition.supports_normalization,
+                "supports_normalization": connection_renderer.destination.definition.normalization_config.supported,
                 "supports_dbt": connection_renderer.destination.definition.supports_dbt,
             }
         )

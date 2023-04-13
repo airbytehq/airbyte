@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.avro;
@@ -16,7 +16,9 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -225,11 +227,12 @@ public class JsonToAvroSchemaConverter {
 
     final Schema fieldSchema;
     switch (fieldType) {
-      case INTEGER_V1, NUMBER_V1, BOOLEAN_V1, STRING_V1, BINARY_DATA_V1 -> fieldSchema = Schema.create(fieldType.getAvroType());
+      case INTEGER_V1, NUMBER_V1, BOOLEAN_V1, STRING_V1, TIME_WITH_TIMEZONE_V1, BINARY_DATA_V1 -> fieldSchema =
+          Schema.create(fieldType.getAvroType());
       case DATE_V1 -> fieldSchema = LogicalTypes.date().addToSchema(Schema.create(Schema.Type.INT));
       case TIMESTAMP_WITH_TIMEZONE_V1, TIMESTAMP_WITHOUT_TIMEZONE_V1 -> fieldSchema = LogicalTypes.timestampMicros()
           .addToSchema(Schema.create(Schema.Type.LONG));
-      case TIME_WITH_TIMEZONE_V1, TIME_WITHOUT_TIMEZONE_V1 -> fieldSchema = LogicalTypes.timeMicros().addToSchema(Schema.create(Schema.Type.LONG));
+      case TIME_WITHOUT_TIMEZONE_V1 -> fieldSchema = LogicalTypes.timeMicros().addToSchema(Schema.create(Schema.Type.LONG));
       case INTEGER_V0, NUMBER_V0, NUMBER_INT_V0, NUMBER_BIGINT_V0, NUMBER_FLOAT_V0, BOOLEAN_V0 -> fieldSchema =
           Schema.create(fieldType.getAvroType());
       case STRING_V0 -> {
@@ -249,7 +252,7 @@ public class JsonToAvroSchemaConverter {
         final Optional<JsonNode> combinedRestriction = getCombinedRestriction(fieldDefinition);
         final List<Schema> unionTypes =
             parseJsonTypeUnion(fieldName, fieldNamespace, (ArrayNode) combinedRestriction.get(), appendExtraProps, addStringToLogicalTypes);
-        fieldSchema = Schema.createUnion(unionTypes);
+        fieldSchema = createUnionAndCheckLongTypesDuplications(unionTypes);
       }
       case ARRAY -> {
         final JsonNode items = fieldDefinition.get("items");
@@ -468,6 +471,26 @@ public class JsonToAvroSchemaConverter {
       }
       return Schema.createUnion(nonNullFieldTypes);
     }
+  }
+
+  /**
+   * Method checks unionTypes list for content. If we have both "long" and "long-timestamp" types then
+   * it keeps the "long" only. Need to do it for Schema creation otherwise it would fail with a
+   * duplicated types exception.
+   *
+   * @param unionTypes - list of union types
+   * @return new Schema
+   */
+  private Schema createUnionAndCheckLongTypesDuplications(List<Schema> unionTypes) {
+    Predicate<Schema> isALong = type -> type.getType() == Schema.Type.LONG;
+    Predicate<Schema> isPlainLong = isALong.and(type -> Objects.isNull(type.getLogicalType()));
+    Predicate<Schema> isTimestampMicrosLong =
+        isALong.and(type -> Objects.nonNull(type.getLogicalType()) && "timestamp-micros".equals(type.getLogicalType().getName()));
+
+    boolean hasPlainLong = unionTypes.stream().anyMatch(isPlainLong);
+    boolean hasTimestampMicrosLong = unionTypes.stream().anyMatch(isTimestampMicrosLong);
+    Predicate<Schema> removeTimestampType = type -> !(hasPlainLong && hasTimestampMicrosLong && isTimestampMicrosLong.test(type));
+    return Schema.createUnion(unionTypes.stream().filter(removeTimestampType).collect(Collectors.toList()));
   }
 
 }

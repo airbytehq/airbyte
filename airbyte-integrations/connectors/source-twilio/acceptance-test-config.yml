@@ -24,7 +24,6 @@ acceptance_tests:
           # reference: https://github.com/airbytehq/airbyte/pull/20430
           - name: "accounts"
             bypass_reason: "expected records could not be provided without field bypassing, skipping for now. Read #TODO above."
-            #
           - name: "alerts"
             bypass_reason: "alerts are transient - they emerge and disappear from time to time"
           - name: "dependent_phone_numbers"
@@ -42,6 +41,7 @@ acceptance_tests:
           - name: "usage_records"
             bypass_reason: "very volatile data"
         timeout_seconds: 600
+        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: "secrets/config.json"
@@ -57,8 +57,9 @@ acceptance_tests:
         timeout_seconds: 3600
   full_refresh:
     tests:
-      - config_path: "secrets/config.json"
-        # `constant_records_catalog.json` does not contain the available phone numbers streams,
-        # as they may change on each request
+      - config_path:
+          "secrets/config.json"
+          # `constant_records_catalog.json` does not contain the available phone numbers streams,
+          # as they may change on each request
         configured_catalog_path: "integration_tests/constant_records_catalog.json"
         timeout_seconds: 3600

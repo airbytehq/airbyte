@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
@@ -46,14 +46,12 @@ import com.mysql.cj.result.Field;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.SourceOperations;
 import io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations;
-import io.airbyte.db.jdbc.DateTimeConverter;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Set;
@@ -213,21 +211,6 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   }
 
   @Override
-  protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DateTimeConverter.convertToDate(getObject(resultSet, index, LocalDate.class)));
-  }
-
-  @Override
-  protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime.class)));
-  }
-
-  @Override
-  protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DateTimeConverter.convertToTimestamp(getObject(resultSet, index, LocalDateTime.class)));
-  }
-
-  @Override
   public JsonSchemaType getAirbyteType(final MysqlType mysqlType) {
     return switch (mysqlType) {
       case
@@ -279,18 +262,6 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       // https://github.com/airbytehq/airbyte/pull/15504
       LOGGER.warn("Exception occurred while trying to parse value for timestamp column the new way, trying the old way", e);
       preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
-    }
-  }
-
-  @Override
-  protected void setTime(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    try {
-      preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
-    } catch (final DateTimeParseException e) {
-      LOGGER.warn("Exception occurred while trying to parse value for time column the new way, trying the old way", e);
-      // This is just for backward compatibility for connectors created on versions before PR
-      // https://github.com/airbytehq/airbyte/pull/15504
-      super.setTime(preparedStatement, parameterIndex, value);
     }
   }
 

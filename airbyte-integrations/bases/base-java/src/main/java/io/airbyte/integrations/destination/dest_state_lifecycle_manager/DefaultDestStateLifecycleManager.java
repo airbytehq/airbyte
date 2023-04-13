@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.dest_state_lifecycle_manager;
@@ -111,8 +111,23 @@ public class DefaultDestStateLifecycleManager implements DestStateLifecycleManag
   }
 
   @Override
+  public void markPendingAsCommitted() {
+    internalStateManagerSupplier.get().markPendingAsCommitted();
+  }
+
+  @Override
+  public void clearCommitted() {
+    internalStateManagerSupplier.get().clearCommitted();
+  }
+
+  @Override
   public Queue<AirbyteMessage> listCommitted() {
     return internalStateManagerSupplier.get().listCommitted();
+  }
+
+  @Override
+  public boolean supportsPerStreamFlush() {
+    return internalStateManagerSupplier.get().supportsPerStreamFlush();
   }
 
 }

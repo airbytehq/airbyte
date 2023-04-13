@@ -8,8 +8,8 @@ from typing import Any, Dict, Text, List
 CONNECTORS_PATH = "./airbyte-integrations/connectors/"
 NORMALIZATION_PATH = "./airbyte-integrations/bases/base-normalization/"
 DOC_PATH = "docs/integrations/"
-SOURCE_DEFINITIONS_PATH = "./airbyte-config/init/src/main/resources/seed/source_definitions.yaml"
-DESTINATION_DEFINITIONS_PATH = "./airbyte-config/init/src/main/resources/seed/destination_definitions.yaml"
+SOURCE_DEFINITIONS_PATH = "./airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml"
+DESTINATION_DEFINITIONS_PATH = "./airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml"
 IGNORE_LIST = [
     # Java
     "/src/test/","/src/test-integration/", "/src/testFixtures/",
@@ -46,7 +46,7 @@ def main():
 
     # Get changed files
     changed_files = get_changed_files(git_diff_file_path)
-    # Get changed modules. e.g. source-acceptance-test from airbyte-integrations/bases/
+    # Get changed modules. e.g. connector-acceptance-test from airbyte-integrations/bases/
     # or destination-mysql from airbyte-integrations/connectors/
     changed_modules = get_changed_modules(changed_files)
 

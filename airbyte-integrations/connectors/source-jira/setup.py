@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -9,7 +9,7 @@ MAIN_REQUIREMENTS = ["airbyte-cdk~=0.14", "requests==2.25.1", "pendulum~=2.1.2"]
 
 TEST_REQUIREMENTS = [
     "pytest==6.2.5",
-    "source-acceptance-test",
+    "connector-acceptance-test",
     "responses~=0.22.0",
 ]
 
