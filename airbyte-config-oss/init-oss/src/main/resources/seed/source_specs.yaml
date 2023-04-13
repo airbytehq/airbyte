@@ -370,7 +370,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:2.0.19"
+- dockerImage: "airbyte/source-alloydb:2.0.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -444,15 +444,6 @@
           order: 6
           group: "advanced"
           pattern_descriptor: "key1=value1&key2=value2"
-        ssl:
-          title: "Connect using SSL"
-          description: "Encrypt data using SSL. When activating SSL, please select\
-            \ one of the connection modes."
-          type: "boolean"
-          default: false
-          order: 7
-          group: "security"
-          always_show: true
         ssl_mode:
           title: "SSL Modes"
           description: "SSL connection modes. \n  Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"\
@@ -518,7 +509,7 @@
                 order: 0
               ca_certificate:
                 type: "string"
-                title: "CA certificate"
+                title: "CA Certificate"
                 description: "CA certificate"
                 airbyte_secret: true
                 multiline: true
@@ -530,6 +521,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client Key"
@@ -537,6 +529,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -570,6 +563,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client Key"
@@ -577,6 +571,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -9464,7 +9459,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:2.0.14"
+- dockerImage: "airbyte/source-mysql:2.0.15"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -9579,6 +9574,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client key"
@@ -9588,6 +9584,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -9621,6 +9618,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client key"
@@ -9630,6 +9628,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -12058,7 +12057,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:2.0.20"
+- dockerImage: "airbyte/source-postgres:2.0.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -12197,7 +12196,7 @@
                 order: 0
               ca_certificate:
                 type: "string"
-                title: "CA certificate"
+                title: "CA Certificate"
                 description: "CA certificate"
                 airbyte_secret: true
                 multiline: true
@@ -12209,6 +12208,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client Key"
@@ -12216,6 +12216,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -12249,6 +12250,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client Key"
@@ -12256,6 +12258,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
