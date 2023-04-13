@@ -28402,6 +28402,43 @@
     "allowedHosts": {
       "hosts": [ "api-metrica.yandex.net" ]
     }
+  },  {
+    "sourceDefinitionId": "",
+    "name": "Yotpo",
+    "dockerRepository": "airbyte/source-yotpo",
+    "dockerImageTag": "1.0.0",
+    "documentationUrl": "https://docs.airbyte.com/integrations/sources/yotpo",
+    "icon": "yotpo.svg",
+    "sourceType": "api",
+    "spec": {
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/yotpo",
+      "connectionSpecification": {
+        "$schema": "https://json-schema.org/draft-07/schema#",
+        "title": "Yotpo Spec",
+        "type": "object",
+        "required": [ "auth_token", "counter_id", "start_date" ],
+        "additionalProperties": true,
+        "properties": {
+          "auth_token": {
+            "type": "string",
+            "title": "Authentication Token",
+            "description": "Your Yandex Metrica API access token",
+            "airbyte_secret": true,
+            "order": 0
+          }
+        }
+      },
+      "supportsNormalization": false,
+      "supportsDBT": false,
+      "supported_destination_sync_modes": [ ]
+    },
+    "tombstone": false,
+    "public": true,
+    "custom": false,
+    "releaseStage": "alpha",
+    "allowedHosts": {
+      "hosts": [ "api.yotpo.com" ]
+    }
   }, {
     "sourceDefinitionId": "9c74c2d7-531a-4ebf-b6d8-6181f805ecdc",
     "name": "Younium",
