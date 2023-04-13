@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 00405b19-9768-4e0c-b1ae-9fc2ee2b2a8c
+  dockerImageTag: 0.2.8
+  dockerRepository: airbyte/source-looker
+  githubIssueLabel: source-looker
+  icon: looker.svg
+  license: MIT
+  name: Looker
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/looker
+metadataSpecVersion: "1.0"
