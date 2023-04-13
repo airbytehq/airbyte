@@ -8008,7 +8008,7 @@
     "sourceDefinitionId": "1fa90628-2b9e-11ed-a261-0242ac120002",
     "name": "AlloyDB for PostgreSQL",
     "dockerRepository": "airbyte/source-alloydb",
-    "dockerImageTag": "2.0.19",
+    "dockerImageTag": "2.0.21",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/alloydb",
     "icon": "alloydb.svg",
     "sourceType": "database",
@@ -8082,15 +8082,6 @@
             "group": "advanced",
             "pattern_descriptor": "key1=value1&key2=value2"
           },
-          "ssl": {
-            "title": "Connect using SSL",
-            "description": "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
-            "type": "boolean",
-            "default": false,
-            "order": 7,
-            "group": "security",
-            "always_show": true
-          },
           "ssl_mode": {
             "title": "SSL Modes",
             "description": "SSL connection modes. \n  Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"> in the docs</a>.",
@@ -8158,7 +8149,7 @@
                 },
                 "ca_certificate": {
                   "type": "string",
-                  "title": "CA certificate",
+                  "title": "CA Certificate",
                   "description": "CA certificate",
                   "airbyte_secret": true,
                   "multiline": true,
@@ -8170,7 +8161,8 @@
                   "description": "Client certificate",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 2
+                  "order": 2,
+                  "always_show": true
                 },
                 "client_key": {
                   "type": "string",
@@ -8178,7 +8170,8 @@
                   "description": "Client key",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 3
+                  "order": 3,
+                  "always_show": true
                 },
                 "client_key_password": {
                   "type": "string",
@@ -8213,7 +8206,8 @@
                   "description": "Client certificate",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 2
+                  "order": 2,
+                  "always_show": true
                 },
                 "client_key": {
                   "type": "string",
@@ -8221,7 +8215,8 @@
                   "description": "Client key",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 3
+                  "order": 3,
+                  "always_show": true
                 },
                 "client_key_password": {
                   "type": "string",
@@ -18175,7 +18170,7 @@
     "sourceDefinitionId": "435bb9a5-7887-4809-aa58-28c27df0d7ad",
     "name": "MySQL",
     "dockerRepository": "airbyte/source-mysql",
-    "dockerImageTag": "2.0.14",
+    "dockerImageTag": "2.0.15",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mysql",
     "icon": "mysql.svg",
     "sourceType": "database",
@@ -18286,7 +18281,8 @@
                   "description": "Client certificate (this is not a required field, but if you want to use it, you will need to add the <b>Client key</b> as well)",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 2
+                  "order": 2,
+                  "always_show": true
                 },
                 "client_key": {
                   "type": "string",
@@ -18294,7 +18290,8 @@
                   "description": "Client key (this is not a required field, but if you want to use it, you will need to add the <b>Client certificate</b> as well)",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 3
+                  "order": 3,
+                  "always_show": true
                 },
                 "client_key_password": {
                   "type": "string",
@@ -18328,7 +18325,8 @@
                   "description": "Client certificate (this is not a required field, but if you want to use it, you will need to add the <b>Client key</b> as well)",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 2
+                  "order": 2,
+                  "always_show": true
                 },
                 "client_key": {
                   "type": "string",
@@ -18336,7 +18334,8 @@
                   "description": "Client key (this is not a required field, but if you want to use it, you will need to add the <b>Client certificate</b> as well)",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 3
+                  "order": 3,
+                  "always_show": true
                 },
                 "client_key_password": {
                   "type": "string",
@@ -20897,7 +20896,7 @@
     "sourceDefinitionId": "decd338e-5647-4c0b-adf4-da0e75f5a750",
     "name": "Postgres",
     "dockerRepository": "airbyte/source-postgres",
-    "dockerImageTag": "2.0.20",
+    "dockerImageTag": "2.0.21",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/postgres",
     "icon": "postgresql.svg",
     "sourceType": "database",
@@ -21038,7 +21037,7 @@
                 },
                 "ca_certificate": {
                   "type": "string",
-                  "title": "CA certificate",
+                  "title": "CA Certificate",
                   "description": "CA certificate",
                   "airbyte_secret": true,
                   "multiline": true,
@@ -21050,7 +21049,8 @@
                   "description": "Client certificate",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 2
+                  "order": 2,
+                  "always_show": true
                 },
                 "client_key": {
                   "type": "string",
@@ -21058,7 +21058,8 @@
                   "description": "Client key",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 3
+                  "order": 3,
+                  "always_show": true
                 },
                 "client_key_password": {
                   "type": "string",
@@ -21093,7 +21094,8 @@
                   "description": "Client certificate",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 2
+                  "order": 2,
+                  "always_show": true
                 },
                 "client_key": {
                   "type": "string",
@@ -21101,7 +21103,8 @@
                   "description": "Client key",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 3
+                  "order": 3,
+                  "always_show": true
                 },
                 "client_key_password": {
                   "type": "string",

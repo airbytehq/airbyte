@@ -321,6 +321,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                   |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.21  | 2022-04-12 | [25131](https://github.com/airbytehq/airbyte/pull/25131)   | Make Client Certificate and Client Key always show                                                                                        |
 | 2.0.19  | 2022-04-11 | [24656](https://github.com/airbytehq/airbyte/pull/24656)   | CDC minor refactor                                                                                                                        |
 | 2.0.17  | 2022-04-05 | [24622](https://github.com/airbytehq/airbyte/pull/24622)   | Allow streams not in CDC publication to be synced in Full-refresh mode                                                                    |
 | 2.0.15  | 2022-04-04 | [24833](https://github.com/airbytehq/airbyte/pull/24833)   | Disallow the "disable" SSL Modes; fix Debezium retry policy configuration                                                                 |

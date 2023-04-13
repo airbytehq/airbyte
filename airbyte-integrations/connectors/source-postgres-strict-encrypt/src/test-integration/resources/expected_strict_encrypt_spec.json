@@ -141,7 +141,7 @@
               },
               "ca_certificate": {
                 "type": "string",
-                "title": "CA certificate",
+                "title": "CA Certificate",
                 "description": "CA certificate",
                 "airbyte_secret": true,
                 "multiline": true,
@@ -153,7 +153,8 @@
                 "description": "Client certificate",
                 "airbyte_secret": true,
                 "multiline": true,
-                "order": 2
+                "order": 2,
+                "always_show": true
               },
               "client_key": {
                 "type": "string",
@@ -161,7 +162,8 @@
                 "description": "Client key",
                 "airbyte_secret": true,
                 "multiline": true,
-                "order": 3
+                "order": 3,
+                "always_show": true
               },
               "client_key_password": {
                 "type": "string",
@@ -197,7 +199,8 @@
                 "description": "Client certificate",
                 "airbyte_secret": true,
                 "multiline": true,
-                "order": 2
+                "order": 2,
+                "always_show": true
               },
               "client_key": {
                 "type": "string",
@@ -205,7 +208,8 @@
                 "description": "Client key",
                 "airbyte_secret": true,
                 "multiline": true,
-                "order": 3
+                "order": 3,
+                "always_show": true
               },
               "client_key_password": {
                 "type": "string",
