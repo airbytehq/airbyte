@@ -1,0 +1,10 @@
+{
+    "properties": {
+        "notify_on_subscribe": {
+            "default": "false"
+          },
+          "notify_on_unsubscribe": {
+            "default": "false"
+          }
+    }
+}
