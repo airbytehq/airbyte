@@ -2,10 +2,6 @@
 
 This page contains the setup guide and reference information for the Postgres source connector for CDC and non-CDC workflows.
 
-:::note
-The Postgres source performs best on small databases (under 100GB).
-:::
-
 ## When to use Postgres with CDC
 
 Configure Postgres with CDC if:
