@@ -318,7 +318,7 @@ cmd_publish() {
       # Thanks to gradle, destinstaions which need normalization will already have built base-normalization's "build" artifacts
       if [[ "$image_name" == *"destination-"* ]]; then
         if [ -f "airbyte-integrations/bases/base-normalization/build/sshtunneling.sh" ]; then
-          docker buildx build -t airbyte/normalization-base:dev --platform $arch --load airbyte-integrations/bases/base-normalization
+          docker buildx build -t airbyte/normalization:dev --platform $arch --load airbyte-integrations/bases/base-normalization
         fi
       fi
 
