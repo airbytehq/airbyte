@@ -1,0 +1,20 @@
+@startuml
+class follower_details {
+  .. fields ..
+  #handler-采集的twitter用户名
+  #id-关注记录id
+  #profile_image_url-用户头像
+  #timestamp-任务时间
+  #username-用户的twitter用户名
+  #created_at-?
+  #verified-tweet转发次数
+  #followers_count-被关注的用户数
+  #following_count-本人关注的用户数
+  #tweet_count-推文的数量
+  #listed_count-list count
+  #protected-protected
+  #name-用户的昵称
+  #description-描述
+  #verified_type-verified_type
+}
+@enduml

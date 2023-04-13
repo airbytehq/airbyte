@@ -1,0 +1,15 @@
+@startuml
+class twitter_tweet_metrics {
+  .. fields ..
+  #tweet_id-tweet_id
+  #handler-爬取的用户twitter用户名
+  #timestamp-任务时间
+  #tweet_time-tweet发布时间
+  #text-tweet内容
+  #retweet_count-tweet转发次数
+  #reply_count-tweet回复次数
+  #like_count-tweet喜欢次数
+  #quote_count-tweet quote_count
+  #impression_count-tweet impression_count
+}
+@enduml

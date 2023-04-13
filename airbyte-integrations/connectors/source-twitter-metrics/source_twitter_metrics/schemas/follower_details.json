@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "handler": {
+      "type": ["null", "string"]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "profile_image_url": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "username": {
+      "type": ["null", "string"]
+    },
+    "verified": {
+      "type": ["null", "boolean"]
+    },
+    "followers_count": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "following_count": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "tweet_count": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "listed_count": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "protected": {
+      "type": ["null", "boolean"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "verified_type": {
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -1,0 +1,15 @@
+@startuml
+class user_detail {
+  .. fields ..
+  #handler-爬取的用户twitter用户名
+  #id-用户ID
+  #timestamp-任务时间
+  #description-用户的描述
+  #profile_image_url-用户的头像
+  #followers_count-被关注的用户数
+  #following_count-本人关注的用户数
+  #tweet_count-推文的数量
+  #listed_count-list count
+  #name-用户的昵称
+}
+@enduml
