@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.zenloop.com
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: f1e4c7f6-db5c-4035-981f-d35ab4998794
+  dockerImageTag: 0.1.6
+  dockerRepository: airbyte/source-zenloop
+  githubIssueLabel: source-zenloop
+  icon: zenloop.svg
+  license: MIT
+  name: Zenloop
+  releaseStage: beta
+  supportUrl: https://docs.airbyte.com/integrations/sources/zenloop
+metadataSpecVersion: "1.0"
