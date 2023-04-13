@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import gzip
@@ -24,6 +24,7 @@ class AverageSessionLengthRecordExtractor(RecordExtractor):
     Create records from complex response structure
     Issue: https://github.com/airbytehq/airbyte/issues/23145
     """
+
     def extract_records(self, response: requests.Response) -> List[Record]:
         response_data = response.json().get("data", [])
         if response_data:
@@ -42,6 +43,7 @@ class ActiveUsersRecordExtractor(RecordExtractor):
     Create records from complex response structure
     Issue: https://github.com/airbytehq/airbyte/issues/23145
     """
+
     def extract_records(self, response: requests.Response) -> List[Record]:
         response_data = response.json().get("data", [])
         if response_data:
@@ -60,6 +62,7 @@ class EventsExtractor(RecordExtractor):
     Response for event stream is a zip file with a list of gziped json files inside it.
     Issue: https://github.com/airbytehq/airbyte/issues/23144
     """
+
     config: Config
     parameters: InitVar[Mapping[str, Any]]
 
