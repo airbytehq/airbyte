@@ -12,13 +12,12 @@ public class ChangeEventWithMetadata {
 
   private final ChangeEvent<String, String> event;
   private final JsonNode eventValueAsJson;
-  private final boolean isSnapshotEvent;
+  private final SnapshotMetadata snapshotMetadata;
 
   public ChangeEventWithMetadata(final ChangeEvent<String, String> event) {
     this.event = event;
     this.eventValueAsJson = Jsons.deserialize(event.value());
-    this.isSnapshotEvent = SnapshotMetadata.isSnapshotEventMetadata(
-        SnapshotMetadata.fromString(this.eventValueAsJson.get("source").get("snapshot").asText()));
+    this.snapshotMetadata = SnapshotMetadata.fromString(eventValueAsJson.get("source").get("snapshot").asText());
   }
 
   public ChangeEvent<String, String> event() {
@@ -30,7 +29,11 @@ public class ChangeEventWithMetadata {
   }
 
   public boolean isSnapshotEvent() {
-    return isSnapshotEvent;
+    return SnapshotMetadata.isSnapshotEventMetadata(snapshotMetadata);
+  }
+
+  public SnapshotMetadata snapshotMetadata() {
+    return snapshotMetadata;
   }
 
 }

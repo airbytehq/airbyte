@@ -131,7 +131,7 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
       hasSnapshotFinished = !changeEventWithMetadata.isSnapshotEvent();
 
       // if the last record matches the target file position, it is time to tell the producer to shutdown.
-      if (targetPosition.reachedTargetPosition(changeEventWithMetadata.eventValueAsJson())) {
+      if (targetPosition.reachedTargetPosition(changeEventWithMetadata)) {
         requestClose("Closing: Change event reached target position");
       }
       this.tsLastHeartbeat = null;

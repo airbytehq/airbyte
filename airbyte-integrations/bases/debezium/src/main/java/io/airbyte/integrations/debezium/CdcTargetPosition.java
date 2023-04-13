@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.debezium;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.debezium.internals.ChangeEventWithMetadata;
 import java.util.Map;
 
@@ -20,11 +19,11 @@ public interface CdcTargetPosition<T> {
   /**
    * Reads a position value (ex: LSN) from a change event and compares it to target position
    *
-   * @param valueAsJson json representation of a change event
+   * @param changeEventWithMetadata change event from Debezium with extra calculated metadata
    * @return true if event position is equal or greater than target position, or if last snapshot
    *         event
    */
-  boolean reachedTargetPosition(final JsonNode valueAsJson);
+  boolean reachedTargetPosition(final ChangeEventWithMetadata changeEventWithMetadata);
 
   /**
    * Reads a position value (lsn) from a change event and compares it to target lsn

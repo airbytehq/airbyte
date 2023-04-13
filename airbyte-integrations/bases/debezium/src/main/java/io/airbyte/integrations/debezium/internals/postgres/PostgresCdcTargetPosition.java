@@ -54,16 +54,14 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
   }
 
   @Override
-  public boolean reachedTargetPosition(final JsonNode valueAsJson) {
-    final SnapshotMetadata snapshotMetadata = SnapshotMetadata.fromString(valueAsJson.get("source").get("snapshot").asText());
-
-    if (SnapshotMetadata.isSnapshotEventMetadata(snapshotMetadata)) {
+  public boolean reachedTargetPosition(final ChangeEventWithMetadata changeEventWithMetadata) {
+    if (changeEventWithMetadata.isSnapshotEvent()) {
       return false;
-    } else if (SnapshotMetadata.LAST == snapshotMetadata) {
+    } else if (SnapshotMetadata.LAST == changeEventWithMetadata.snapshotMetadata()) {
       LOGGER.info("Signalling close because Snapshot is complete");
       return true;
     } else {
-      final PgLsn eventLsn = extractLsn(valueAsJson);
+      final PgLsn eventLsn = extractLsn(changeEventWithMetadata.eventValueAsJson());
       boolean isEventLSNAfter = targetLsn.compareTo(eventLsn) <= 0;
       if (isEventLSNAfter) {
         LOGGER.info("Signalling close because record's LSN : " + eventLsn + " is after target LSN : " + targetLsn);
