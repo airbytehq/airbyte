@@ -360,7 +360,7 @@ class Client:
             return current_type
         if dtype == object:
             return "string"
-        if dtype in number_types and (not current_type or current_type in number_types):
+        if dtype in number_types and (not current_type or current_type == "number"):
             return "number"
         if dtype == "bool" and (not current_type or current_type == "boolean"):
             return "boolean"
