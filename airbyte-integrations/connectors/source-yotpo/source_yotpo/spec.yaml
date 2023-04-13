@@ -7,6 +7,7 @@ connectionSpecification:
     - access_token
     - app_key
     - date_from
+    - email
   additionalProperties: true
   properties:
     access_token:
@@ -22,3 +23,8 @@ connectionSpecification:
       title: Date From Filter
       type: string
       description: Date time filter for incremental filter, Specify which date to extract from.
+    email:
+      title: Registered email address
+      type: string
+      description: Email address registered with yotpo.
+      default: example@gmail.com
