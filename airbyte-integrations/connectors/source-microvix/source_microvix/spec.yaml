@@ -1,0 +1,48 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Microvix Spec
+  type: object
+  required:
+    - user
+    - password
+    - chave
+    - cnpj
+    - merchant
+    - start_date
+  properties:
+    user:
+      title: Microvix User
+      type: string
+      description: Microvix User
+      order: 0
+    password:
+      title: Microvix Password
+      type: string
+      description: Microvix Password
+      airbytesecret: true
+      order: 1
+    chave:
+      title: Microvix Chave
+      type: string
+      description: Microvix Chave
+      airbytesecret: true
+      order: 2
+    cnpj:
+      title: Merchant Cnpj
+      type: string
+      description: Merchant Cnpj
+      order: 3
+    merchant:
+      title: Merchant Code
+      type: string
+      description: "Merchant code with 5 characters length"
+      order: 4
+      examples:
+        - "BRXYZ"
+        - "MXABC"
+    start_date:
+      title: Start Date (DD/MM/YYYY format)
+      type: string
+      description: Start replication date
+      order: 5
