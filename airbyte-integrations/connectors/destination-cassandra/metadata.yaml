@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 707456df-6f4f-4ced-b5c6-03f73bcad1c5
+  dockerImageTag: 0.1.4
+  dockerRepository: airbyte/destination-cassandra
+  githubIssueLabel: destination-cassandra
+  icon: cassandra.svg
+  license: MIT
+  name: Cassandra
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/cassandra
+metadataSpecVersion: "1.0"
