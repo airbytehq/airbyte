@@ -406,7 +406,7 @@ class TestIncrementalFileStream:
         stream_instance = IncrementalFileStreamS3(
             dataset="dummy", provider={"bucket": "test-test"}, format={}, path_pattern="**/prefix*.csv"
         )
-        stream_instance._list_bucket = MagicMock()
+        stream_instance.filepath_iterator = MagicMock()
 
         records = []
         slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh)
@@ -442,10 +442,10 @@ class TestIncrementalFileStream:
         stream_instance = IncrementalFileStreamS3(
             dataset="dummy", provider={"bucket": "test-test"}, format={}, path_pattern="**/prefix*.csv"
         )
-        stream_instance._list_bucket = MagicMock()
+        stream_instance.filepath_iterator = MagicMock()
 
         records = []
-        slices = stream_instance.stream_slices(sync_mode=SyncMode.incremental)
+        slices = stream_instance.stream_slices(sync_mode=SyncMode.incremental, stream_state={})
 
         for slice in slices:
             records.extend(list(stream_instance.read_records(stream_slice=slice, sync_mode=SyncMode.incremental)))
@@ -635,7 +635,7 @@ class TestIncrementalFileStream:
             format={"filetype": "csv"},
             path_pattern="**/prefix*.csv"
         )
-        mocker.patch.object(stream_instance, "_list_bucket", MagicMock(return_value=[]))
+        mocker.patch.object(stream_instance, "filepath_iterator", MagicMock(return_value=[]))
         assert stream_instance.get_json_schema() == {
             "properties": {
                 "_ab_additional_properties": {"type": "object"},

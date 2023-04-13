@@ -3,8 +3,9 @@
 #
 
 
-from typing import Callable, Iterator
+from typing import Any, Iterator, Mapping
 
+import pendulum
 from boto3 import session as boto3session
 from botocore import UNSIGNED
 from botocore.config import Config
@@ -20,15 +21,18 @@ class IncrementalFileStreamS3(IncrementalFileStream):
     def storagefile_class(self) -> type:
         return S3File
 
-    def _list_bucket(self, accept_key: Callable = lambda k: True) -> Iterator[FileInfo]:
+    def filepath_iterator(self, stream_state: Mapping[str, Any] = None) -> Iterator[FileInfo]:
         """
-        Wrapper for boto3's list_objects_v2 so we can handle pagination, filter by lambda func and operate with or without credentials
+        :yield: url filepath to use in S3File()
+        """
+        prefix = self._provider.get("path_prefix")
+        if prefix is None:
+            prefix = ""
 
-        :param accept_key: lambda function to allow filtering return keys, e.g. lambda k: not k.endswith('/'), defaults to lambda k: True
-        :yield: key (name) of each object
-        """
+        msg = f"Iterating S3 bucket '{self._provider['bucket']}'"
+        self.logger.info(msg + f" with prefix: '{prefix}' " if prefix != "" else msg)
+
         provider = self._provider
-
         client_config = None
         if S3File.use_aws_account(provider):
             session = boto3session.Session(
@@ -44,7 +48,9 @@ class IncrementalFileStreamS3(IncrementalFileStream):
             # list_objects_v2 doesn't like a None value for ContinuationToken
             # so we don't set it if we don't have one.
             if ctoken:
-                kwargs = dict(Bucket=provider["bucket"], Prefix=provider.get("path_prefix", ""), ContinuationToken=ctoken)  # type: ignore[unreachable]
+                kwargs = dict(
+                    Bucket=provider["bucket"], Prefix=provider.get("path_prefix", ""), ContinuationToken=ctoken
+                )  # type: ignore[unreachable]
             else:
                 kwargs = dict(Bucket=provider["bucket"], Prefix=provider.get("path_prefix", ""))
             response = client.list_objects_v2(**kwargs)
@@ -54,25 +60,16 @@ class IncrementalFileStreamS3(IncrementalFileStream):
                 pass
             else:
                 for file in content:
-                    key = file["Key"]
-                    if accept_key(key) and file.get("LastModified") > self.start_date:
-                        yield FileInfo(key=key, last_modified=file["LastModified"], size=file["Size"])
+                    if self.is_not_folder(file) and self.filter_by_last_modified_date(file, stream_state):
+                        yield FileInfo(key=file["Key"], last_modified=file["LastModified"], size=file["Size"])
             ctoken = response.get("NextContinuationToken", None)
             if not ctoken:
                 break
 
-    def filepath_iterator(self) -> Iterator[FileInfo]:
-        """
-        See _list_bucket() for logic of interacting with S3
+    @staticmethod
+    def is_not_folder(file) -> bool:
+        return not file["Key"].endswith("/")
 
-        :yield: url filepath to use in S3File()
-        """
-        prefix = self._provider.get("path_prefix")
-        if prefix is None:
-            prefix = ""
-
-        msg = f"Iterating S3 bucket '{self._provider['bucket']}'"
-        self.logger.info(msg + f" with prefix: '{prefix}' " if prefix != "" else msg)
-
-        # filter out 'folders', we just want actual blobs
-        yield from self._list_bucket(accept_key=lambda k: not k.endswith("/"))
+    def filter_by_last_modified_date(self, file: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None):
+        cursor_date = pendulum.parse(stream_state.get(self.cursor_field)) if stream_state else self.start_date
+        return file.get("LastModified") > cursor_date
