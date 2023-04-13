@@ -1,10 +1,10 @@
 # Authentication
 
-Authentication is about providing some form of confidental secret (credentials, password, token, key) to the API provider that identifies the caller (in this case the connector). It allows the provider to check whether the caller is known and has sufficient permission to fetch data. The authentication feature provides a secure way to configure authentication using a variety of methods.
+Authentication allows the connection to check whether it has sufficient permission to fetch data. The authentication feature provides a secure way to configure authentication using a variety of methods.
 
 The credentials itself (e.g. username and password) are _not_ specified as part of the connector, instead they are part of the source configration that is specified by the end user when setting up a source based on the connector. During development, it's possible to provide testing credentials in the "Testing values" menu, but those are not saved along with the connector. Credentials that are part of the source configuration are stored in a secure way in your Airbyte instance while the connector configuration is saved in the regular database.
 
-In the "Authentication" section on the "Global Configuration" page in the connector builder, the authentication method can be specified. This configuration is shared for all streams - it's not possible to use different authentication methods for different streams in the same connector.
+In the "Authentication" section on the "Global Configuration" page in the connector builder, the authentication method can be specified. This configuration is shared for all streams - it's not possible to use different authentication methods for different streams in the same connector. In case your API uses multiple or custom authentication methods, you can use the [low-code CDK](/connector-development/config-based/low-code-cdk-overview) or [Python CDK](/connector-development/cdk-python/).
 
 If your API doesn't need authentication, leave it set at "No auth". This means the connector will be able to make requests to the API without providing any credentials which might be the case for some public open APIs or private APIs only available in local networks.
 
@@ -12,7 +12,7 @@ If your API doesn't need authentication, leave it set at "No auth". This means t
 
 Check the documentation of the API you want to integrate for the used authentication method. The following ones are supported in the connector builder:
 * [Basic HTTP](#basic-http)
-* [Bearer](#bearer)
+* [Bearer Token](#bearer-token)
 * [API Key](#api-key)
 * [OAuth](#oauth)
 
@@ -30,11 +30,11 @@ The Basic HTTP authentication method is a standard and doesn't require any furth
 
 #### Example
 
-The [Greenhouse API](https://developers.greenhouse.io/harvest.html#introduction) is an API using basic auth.
+The [Greenhouse API](https://developers.greenhouse.io/harvest.html#introduction) is an API using basic authentication.
 
 Sometimes, only a username and no password is required, like for the [Chargebee API](https://apidocs.chargebee.com/docs/api/auth?prod_cat_ver=2) - in these cases simply leave the password input empty.
 
-In the basic auth scheme, the supplied username and password are concatenated with a colon `:` and encoded using the base64 algorithm. For username `user` and password `passwd`, the base64-encoding of `user:passwd` is `dXNlcjpwYXNzd2Q=`.
+In the basic authentication scheme, the supplied username and password are concatenated with a colon `:` and encoded using the base64 algorithm. For username `user` and password `passwd`, the base64-encoding of `user:passwd` is `dXNlcjpwYXNzd2Q=`.
 
 When fetching records, this string is sent as part of the `Authorization` header:
 ```
@@ -43,7 +43,7 @@ curl -X GET \
   https://harvest.greenhouse.io/v1/<stream path>
 ```
 
-### Bearer
+### Bearer Token
 
 If requests are authenticated using Bearer authentication, the documentation will probably mention "bearer token" or "token authentication". In this scheme, the `Authorization` header of the HTTP request is set to `Bearer <token>`.
 
@@ -70,7 +70,7 @@ This form of authentication is often called "(custom) header authentication".
 
 The [CoinAPI.io API](https://docs.coinapi.io/market-data/rest-api#authorization) is using API key authentication via the `X-CoinAPI-Key` header.
 
-When fetching records, the api token is sent along as the configured header:
+When fetching records, the api token is included in the request using the configured header:
 ```
 curl -X GET \
   -H "X-CoinAPI-Key: <api-key>" \
@@ -79,12 +79,11 @@ curl -X GET \
 
 ### OAuth
 
-The OAuth authentication method implements authentication using an OAuth2.0 flow with a refresh token grant type.
+The OAuth authentication method implements authentication using an [OAuth2.0 flow with a refresh token grant type](https://oauth.net/2/grant-types/refresh-token/).
 
-In this scheme the OAuth endpoint of an API is called with a long-lived refresh token provided as part of the source configuration to obtain a short-lived access token that's used to make requests actually extracting records. If the access token expires, a new one is requested automatically.
+In this scheme the OAuth endpoint of an API is called with a long-lived refresh token provided as part of the source configuration to obtain a short-lived access token that's used to make requests actually extracting records. If the access token expires, the connection will automatically request a new one.
 
-It needs to be configured with the endpoint to call to obtain access tokens with the refresh token. OAuth client id/secret and the refresh token are provided via "Testing values" in the connector builder as well as part of the source configuration when configuring connections.
-
+The connector needs to be configured with the endpoint to call to obtain access tokens with the refresh token. OAuth client id/secret and the refresh token are provided via "Testing values" in the connector builder as well as part of the source configuration when configuring connections.
 
 Depending on how the refresh endpoint is implemented exactly, additional configuration might be necessary to specify how to request an access token with the right permissions (configuring OAuth scopes and grant type) and how to extract the access token and the expiry date out of the response (configuring expiry date format and property name as well as the access key property name):
 * Scopes - if not specified, no scopes are sent along with the refresh token request
@@ -93,7 +92,7 @@ Depending on how the refresh endpoint is implemented exactly, additional configu
 * Token expire property date format - if not specified, the expiry property is interpreted as the number of seconds the access token will be valid
 * Access token property name - the name of the property in the response that contains the access token to do requests. If not specified, it's set to `access_token`
 
-If the refresh token itself isn't long lived but expires after a short amount of time and needs to be refresh as well or if other grant types like PKCE are required, it's not possible to use the connector builder with OAuth authentication - check out the [compatibility guide](http://localhost:3000/connector-development/config-based/connector-builder-compatibility#oauth) for more information.
+If the API uses a short-lived refresh token that expires after a short amount of time and needs to be refreshed as well or if other grant types like PKCE are required, it's not possible to use the connector builder with OAuth authentication - check out the [compatibility guide](/connector-development/config-based/connector-builder-compatibility#oauth) for more information.
 
 Keep in mind that the OAuth authentication method does not implement a single-click authentication experience for the end user configuring the connector - it will still be necessary to obtain client id, client secret and refresh token from the API and manually enter them into the configuration form.
 
@@ -127,6 +126,24 @@ curl -X GET \
   -H "Authorization: Bearer <access-token>" \
   https://connect.squareup.com/v2/<stream path>
 ```
+
+### Other authentication methods
+
+If your API is not using one of the natively supported authentication methods, it's still possible to build an Airbyte connector as described below.
+
+#### Access token as query or body parameter
+
+Some APIs require to include the access token in different parts of the request (for example as a request parameter). For example, the [Breezometer API](https://docs.breezometer.com/api-documentation/introduction/#authentication) is using this kind of authentication. In these cases it's also possible to configure authentication manually:
+* Add a user input as secret field on the "User inputs" page (e.g. named `api_key`)
+* On the stream page, add a new "Request parameter"
+* As key, configure the name of the query parameter the API requires (e.g. named `key`)
+* As value, configure a placeholder for the created user input (e.g. `{{ config['api_key'] }}`)
+
+The same approach can be used to add the token to the request body.
+
+#### Custom authentication methods
+
+Some APIs require complex custom authentication schemes involving signing requests or doing multiple requests to authenticate. In these cases, it's required to use the [low-code CDK](/connector-development/config-based/low-code-cdk-overview) or [Python CDK](/connector-development/cdk-python/).
 
 ## Reference
 
