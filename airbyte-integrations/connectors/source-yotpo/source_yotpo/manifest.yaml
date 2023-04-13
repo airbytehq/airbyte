@@ -81,6 +81,31 @@ definitions:
     $parameters:
       path: "/apps/{{ config['app_key'] }}/reviews"
 
+  reviews_bottomline_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["response"]
+      paginator:
+        type: NoPagination
+      requester:
+        type: HttpRequester
+        url_base: "https://api.yotpo.com"
+        http_method: "GET"
+        request_parameters:
+          utoken: "{{ config['access_token'] }}"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['access_token'] }}"
+    name: "reviews_bottomline"
+    $parameters:
+      path: "/products/{{ config['app_key'] }}/yotpo_site_reviews/bottomline"
+
+
   top_reviews_stream:
     type: DeclarativeStream
     retriever:
@@ -130,6 +155,7 @@ streams:
   - "#/definitions/privacy_data_stream"
   - "#/definitions/privacy_user_stream"
   - "#/definitions/reviews_stream"
+  - "#/definitions/reviews_bottomline_stream"
   - "#/definitions/top_reviews_stream"
   - "#/definitions/webhooks_stream"
 
@@ -139,5 +165,6 @@ check:
     - "privacy_data"
     - "privacy_user"
     - "reviews"
+    - "reviews_bottomline"
     - "top_reviews"
     - "webhooks"
