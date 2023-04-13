@@ -14,5 +14,5 @@ ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
 
 
-LABEL io.airbyte.version=1.0.2
+LABEL io.airbyte.version=1.0.3
 LABEL io.airbyte.name=airbyte/source-amazon-ads

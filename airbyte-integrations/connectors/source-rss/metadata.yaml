@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 0efee448-6948-49e2-b786-17db50647908
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-rss
+  githubIssueLabel: source-rss
+  icon: rss.svg
+  license: MIT
+  name: RSS
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/rss
+metadataSpecVersion: "1.0"
