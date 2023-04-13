@@ -55,7 +55,7 @@ def with_python_base(context: PipelineContext, python_image_name: str = "python:
         context.dagger_client.container()
         .from_(python_image_name)
         .with_mounted_cache("/root/.cache/pip", pip_cache, sharing=CacheSharingMode.LOCKED)
-        .with_mounted_directory("/tools", context.get_repo_dir("tools", include=["ci_credentials", "ci_common_utils"], exclude=[".venv"]))
+        .with_mounted_directory("/tools", context.get_repo_dir("tools", include=["ci_credentials", "ci_common_utils"]))
         .with_exec(["pip", "install", "--upgrade", "pip"])
     )
 
@@ -452,23 +452,9 @@ def with_poetry(context: PipelineContext) -> Container:
     python_with_poetry = with_pip_packages(python_with_git, ["poetry"])
 
     poetry_cache: CacheVolume = context.dagger_client.cache_volume("poetry_cache")
-    poetry_with_cache = python_with_poetry.with_mounted_cache("/root/.cache/pypoetry", poetry_cache, sharing=CacheSharingMode.PRIVATE)
+    poetry_with_cache = python_with_poetry.with_mounted_cache("/root/.cache/pypoetry", poetry_cache, sharing=CacheSharingMode.SHARED)
 
     return poetry_with_cache
-
-
-def with_pipx(base_python_container: Container) -> Container:
-    """Installs pipx in a python container.
-
-    Args:
-       base_python_container (Container): The container to install pipx on.
-
-    Returns:
-        Container: A python environment with pipx installed.
-    """
-    python_with_pipx = with_pip_packages(base_python_container, ["pipx"]).with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
-
-    return python_with_pipx
 
 
 def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_path: str) -> Container:
@@ -487,24 +473,6 @@ def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_p
         .with_workdir(f"/src/{module_path}")
         .with_exec(poetry_install_dependencies_cmd)
     )
-
-
-def with_pipx_module(context: PipelineContext, parent_dir_path: str, module_path: str, include: List[str]) -> Container:
-    """Installs a pipx module
-
-    Args:
-        context (PipelineContext): The current pipeline context
-    Returns:
-        Container: A python environment with dependencies installed using pipx.
-    """
-    pipx_include = [module_path] + include
-    pipx_install_dependencies_cmd = ["pipx", "install", module_path]
-    src = context.get_repo_dir(parent_dir_path, exclude=DEFAULT_PYTHON_EXCLUDE, include=pipx_include)
-
-    python_base_environment = with_python_base(context, "python:3.9")
-    python_with_pipx = with_pipx(python_base_environment)
-
-    return python_with_pipx.with_mounted_directory("/src", src).with_workdir("/src").with_exec(pipx_install_dependencies_cmd)
 
 
 def with_integration_base(context: PipelineContext, jdk_version: str = "17.0.4") -> Container:
