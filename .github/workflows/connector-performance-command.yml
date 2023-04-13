@@ -81,8 +81,9 @@ jobs:
         if: steps.regex.outputs.first_match != github.event.inputs.connector
         run: echo "The connector provided has an invalid format!" && exit 1
       - name: Filter supported connectors
-        if: "${{ github.event.inputs.connector != 'connectors/source-postgres' }}"
-        run: echo "Only connectors/source-postgres currently supported by harness" && exit 1
+        if: "${{ github.event.inputs.connector != 'connectors/source-postgres' && 
+              github.event.inputs.connector != 'connectors/source-mysql' }}"
+        run: echo "Only connectors/source-postgres and source-mysql currently supported by harness" && exit 1
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
@@ -117,8 +118,9 @@ jobs:
         run: |
           echo "Building... ${{github.event.inputs.connector}}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY # this is a blank line
-          echo "Running ./gradlew :airbyte-integrations:connectors:source-postgres:build -x check" 
-          ./gradlew :airbyte-integrations:connectors:source-postgres:build -x check
+          connector_name=$(echo ${{ github.event.inputs.connector }} | cut -d / -f 2)
+          echo "Running ./gradlew :airbyte-integrations:connectors:$connector_name:build -x check" 
+          ./gradlew :airbyte-integrations:connectors:$connector_name:build -x check
       - name: KIND Kubernetes Cluster Setup
         uses: helm/kind-action@v1.4.0
         with:
@@ -133,7 +135,8 @@ jobs:
           suffix: '"}}'
         run: |
           kubectl apply -f ./tools/bin/admin-service-account.yaml
-          kind load docker-image airbyte/source-postgres:dev --name chart-testing
+          connector_name=$(echo $CONN | cut -d / -f 2)
+          kind load docker-image airbyte/$connector_name:dev --name chart-testing
           kind load docker-image airbyte/source-harness:dev --name chart-testing
           export CONNECTOR_IMAGE_NAME=${CONN/connectors/airbyte}:dev
           export DATASET=$DS

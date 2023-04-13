@@ -19,7 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 public class Main {
 
-  private static final String CREDENTIALS_PATH = "secrets/%s_credentials.json";
+  private static final String CREDENTIALS_PATH = "secrets/%s_%s_credentials.json";
 
   public static void main(final String[] args) {
     log.info("args: {}", Arrays.toString(args));
@@ -32,9 +32,15 @@ public class Main {
         image = args[0];
         dataset = args[1];
       }
+      default -> {
+        log.info("unexpected arguments");
+        System.exit(1);
+      }
     }
 
-    final Path credsPath = Path.of(CREDENTIALS_PATH.formatted(dataset));
+    final String connector = image.substring(image.indexOf("/") + 1, image.indexOf(":"));
+    log.info("Connector name: {}", connector);
+    final Path credsPath = Path.of(CREDENTIALS_PATH.formatted(connector, dataset));
 
     if (!Files.exists(credsPath)) {
       throw new IllegalStateException("{module-root}/" + credsPath + " not found. Must provide path to a source-harness credentials file.");
@@ -44,7 +50,7 @@ public class Main {
 
     final JsonNode catalog;
     try {
-      catalog = getCatalog(dataset);
+      catalog = getCatalog(dataset, connector);
     } catch (final IOException ex) {
       throw new IllegalStateException("Failed to read catalog", ex);
     }
@@ -86,9 +92,9 @@ public class Main {
     System.exit(0);
   }
 
-  static JsonNode getCatalog(final String dataset) throws IOException {
+  static JsonNode getCatalog(final String dataset, final String connector) throws IOException {
     final ObjectMapper objectMapper = new ObjectMapper();
-    final String catalogFilename = "catalogs/%s_catalog.json".formatted(dataset);
+    final String catalogFilename = "catalogs/%s/%s_catalog.json".formatted(connector, dataset);
     final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(catalogFilename);
     return objectMapper.readTree(is);
   }
