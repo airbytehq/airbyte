@@ -6,14 +6,12 @@ from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteStream,
     AirbyteStreamStatus,
-    AirbyteStreamStatusTraceMessage,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
     SyncMode,
-    TraceType
+    TraceType,
 )
 from airbyte_cdk.models import Type as MessageType
-
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 
 stream = AirbyteStream(name="name", namespace="namespace", json_schema={}, supported_sync_modes=[SyncMode.full_refresh])
