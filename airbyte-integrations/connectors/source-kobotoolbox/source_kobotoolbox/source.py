@@ -24,16 +24,15 @@ stream_json_schema = {
                 "null",
             ]
         },
-        "_submission_time": {"type": ["string", "null"]},
+        "endtime": {"type": ["string", "null"]}
     },
 }
 
-
 class KoboToolStream(HttpStream, IncrementalMixin):
     primary_key = "_id"
-    cursor_field = "_submission_time"
-    submission_date_format = "%Y-%m-%dT%H:%M:%S"
-    start_date_format = "%Y-%m-%d"
+    cursor_field = "endtime"
+    # submission_date_format = "%Y-%m-%dT%H:%M:%S"
+    # end_time_format = "%Y-%m-%dT%H:%M:%S.%.3f%z"
 
     def __init__(self, config: Mapping[str, Any], form_id, schema, name, api_url, pagination_limit, auth_token, **kwargs):
         super().__init__()
@@ -58,7 +57,7 @@ class KoboToolStream(HttpStream, IncrementalMixin):
         s = s.strip()
         return s if len(s) > 0 else self.form_id
 
-    # State will be a dict : {'_submission_time': '2023-03-03'}
+    # State will be a dict : {'endtime': '2023-03-15T00:00:00.000+05:30'}
 
     @property
     def state(self) -> Mapping[str, Any]:
@@ -79,7 +78,6 @@ class KoboToolStream(HttpStream, IncrementalMixin):
     ) -> MutableMapping[str, Any]:
 
         params = {"start": 0, "limit": self.PAGINATION_LIMIT, "sort": json.dumps({self.cursor_field: 1})}
-        # submission_time = datetime.strptime(self.state[self.cursor_field], self.submission_date_format)
         params["query"] = json.dumps({self.cursor_field: {"$gte": self.state[self.cursor_field]}})
 
         if next_page_token:

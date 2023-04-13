@@ -4,15 +4,16 @@
 
 from unittest.mock import Mock
 
-import pytest
+import json
 import requests
+import pytest
 from source_kobotoolbox.source import KoboToolStream
 
 API_URL = "https://kf.kobotoolbox.org/api/v2"
 PAGINATION_LIMIT = 30000
 
 stream_config = {
-    "config": {"username": "username", "password": "my_password"},
+    "config": {"username": "username", "password": "my_password", "start_time": "2023-03-15T00:00:00.000+05:30"},
     "form_id": "my_form_id",
     "schema": {},
     "name": "my_form",
@@ -20,6 +21,8 @@ stream_config = {
     "pagination_limit": PAGINATION_LIMIT,
     "auth_token": "my_token_123"
 }
+
+CURSOR = 'endtime'
 
 
 @pytest.mark.parametrize('config', [(stream_config)])
@@ -37,7 +40,12 @@ def test_json_schema(config):
 @pytest.mark.parametrize('config, next_page_token', [(stream_config, None)])
 def test_request_params(config, next_page_token):
     stream = KoboToolStream(**config)
-    assert stream.request_params({}, None, next_page_token) == {'start': 0, 'limit': config['pagination_limit']}
+    assert stream.request_params({}, None, next_page_token) == {
+        'start': 0, 
+        'limit': config['pagination_limit'], 
+        "sort": json.dumps({CURSOR: 1}),
+        "query": json.dumps({CURSOR: {"$gte": config['config']['start_time']}})
+    }
 
 
 @pytest.mark.parametrize('config, total_records, params, next_page_token', [

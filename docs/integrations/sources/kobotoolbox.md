@@ -44,7 +44,8 @@ The Kobotoolbox connector supports **forms** as the streams.
 
 ## Note
 
-Normalization mode of data is not supported.
+- Normalization mode of data is not supported.
+- For incremental sync please make sure your that you have selected MetaData "start time" and "end time" in kobo form settings.
 
 ## Connector-specific features
 
