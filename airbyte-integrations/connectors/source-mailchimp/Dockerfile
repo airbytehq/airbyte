@@ -11,7 +11,7 @@ RUN pip install .
 COPY documentation_url.patch.json ./
 COPY spec.patch.json ./
 COPY oauth2.patch.json ./
-COPY streams/email_activity.pk.json ./streams/email_activity.pk.json
+COPY streams/* ./streams/
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 COPY --from=ghcr.io/estuary/airbyte-to-flow:dev /airbyte-to-flow ./

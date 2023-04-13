@@ -1,0 +1,7 @@
+{
+    "properties": {
+        "type": {
+            "enum": null
+        }
+    }
+}
