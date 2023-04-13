@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import csv
@@ -332,7 +332,7 @@ class MarketoExportStatus(MarketoStream):
 class Leads(MarketoExportBase):
     """
     Return list of all leeds.
-    API Docs: http://developers.marketo.com/rest-api/bulk-extract/bulk-lead-extract/
+    API Docs: https://developers.marketo.com/rest-api/bulk-extract/bulk-lead-extract/
     """
 
     cursor_field = "updatedAt"
@@ -349,7 +349,7 @@ class Activities(MarketoExportBase):
     """
     Base class for all the activities streams,
     provides functionality for dynamically created classes as streams of data.
-    API Docs: http://developers.marketo.com/rest-api/bulk-extract/bulk-activity-extract/
+    API Docs: https://developers.marketo.com/rest-api/bulk-extract/bulk-activity-extract/
     """
 
     primary_key = "marketoGUID"
@@ -411,7 +411,7 @@ class Activities(MarketoExportBase):
 class ActivityTypes(MarketoStream):
     """
     Return list of all activity types.
-    API Docs: http://developers.marketo.com/rest-api/lead-database/activities/#describe
+    API Docs: https://developers.marketo.com/rest-api/lead-database/activities/#describe
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -421,7 +421,7 @@ class ActivityTypes(MarketoStream):
 class Programs(IncrementalMarketoStream):
     """
     Return list of all programs.
-    API Docs: http://developers.marketo.com/rest-api/assets/programs/#by_date_range
+    API Docs: https://developers.marketo.com/rest-api/assets/programs/#by_date_range
     """
 
     cursor_field = "updatedAt"
@@ -486,14 +486,14 @@ class Programs(IncrementalMarketoStream):
 class Campaigns(SemiIncrementalMarketoStream):
     """
     Return list of all campaigns.
-    API Docs: http://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Campaigns/getCampaignsUsingGET
+    API Docs: https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Campaigns/getCampaignsUsingGET
     """
 
 
 class Lists(SemiIncrementalMarketoStream):
     """
     Return list of all lists.
-    API Docs: http://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListsUsingGET
+    API Docs: https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListsUsingGET
     """
 
 

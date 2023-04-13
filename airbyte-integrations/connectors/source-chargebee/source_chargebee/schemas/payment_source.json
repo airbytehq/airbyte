@@ -1,0 +1,223 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "Payment Source",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["string", "null"]
+    },
+    "resource_version": {
+      "type": ["integer", "null"]
+    },
+    "updated_at": {
+      "type": ["integer", "null"]
+    },
+    "created_at": {
+      "type": ["integer", "null"]
+    },
+    "customer_id": {
+      "type": ["string", "null"]
+    },
+    "type": {
+      "type": ["string", "null"],
+      "enum": [
+        "card", "paypal_express_checkout", "amazon_payments", "direct_debit", "generic", "alipay", "unionpay",
+        "apple_pay", "wechat_pay", "ideal", "google_pay", "sofort", "bancontact", "giropay", "dotpay", "upi",
+        "netbanking_emandates"
+      ]
+    },
+    "reference_id": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": ["string", "null"],
+      "enum": [
+        "valid",
+        "expiring",
+        "expired",
+        "invalid",
+        "pending_verification"
+      ]
+    },
+    "gateway": {
+      "type": ["string", "null"],
+      "enum": [
+        "chargebee", "chargebee_payments", "stripe", "wepay", "braintree", "authorize_net", "paypal_pro", "pin",
+        "eway", "eway_rapid", "worldpay", "balanced_payments", "beanstream", "bluepay", "elavon", "first_data_global",
+        "hdfc", "migs", "nmi", "ogone", "paymill", "paypal_payflow_pro", "sage_pay", "tco", "wirecard",
+        "amazon_payments", "paypal_express_checkout", "gocardless", "adyen", "orbital", "moneris_us",
+        "moneris", "bluesnap", "cybersource", "vantiv", "checkout_com", "paypal", "ingenico_direct", "exact", "mollie",
+        "quickbooks", "razorpay", "global_payments", "bank_of_america", "not_applicable"
+      ]
+    },
+    "gateway_account_id": {
+      "type": ["string", "null"]
+    },
+    "ip_address": {
+      "type": ["string", "null"]
+    },
+    "issuing_country": {
+      "type": ["string", "null"]
+    },
+    "deleted": {
+      "type": ["boolean", "null"]
+    },
+    "business_entity_id": {
+      "type": ["string", "null"]
+    },
+    "card": {
+      "type": ["object", "null"],
+      "properties": {
+        "first_name": {
+          "type": ["string", "null"]
+        },
+        "last_name": {
+          "type": ["string", "null"]
+        },
+        "iin": {
+          "type": ["string", "null"]
+        },
+        "last4": {
+          "type": ["string", "null"]
+        },
+        "brand": {
+          "type": ["string", "null"],
+          "enum": [
+            "visa", "mastercard", "american_express", "discover", "jcb",
+            "diners_club", "other", "bancontact", "not_applicable"
+          ]
+        },
+        "funding_type": {
+          "type": ["string", "null"],
+          "enum": ["credit", "dedit", "prepaid", "not_known", "not_applicable"]
+        },
+        "expiry_month": {
+          "type": ["integer", "null"]
+        },
+        "expiry_year": {
+          "type": ["integer", "null"]
+        },
+        "billing_addr1": {
+          "type": ["string", "null"]
+        },
+        "billing_addr2": {
+          "type": ["string", "null"]
+        },
+        "billing_city": {
+          "type": ["string", "null"]
+        },
+        "billing_state_code": {
+          "type": ["string", "null"]
+        },
+        "billing_state": {
+          "type": ["string", "null"]
+        },
+        "billing_country": {
+          "type": ["string", "null"]
+        },
+        "billing_zip": {
+          "type": ["string", "null"]
+        },
+        "masked_number": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "bank_account": {
+      "type": ["object", "null"],
+      "properties": {
+        "last4": {
+          "type": ["string", "null"]
+        },
+        "name_on_account": {
+          "type": ["string", "null"]
+        },
+        "first_name": {
+          "type": ["string", "null"]
+        },
+        "last_name": {
+          "type": ["string", "null"]
+        },
+        "bank_name": {
+          "type": ["string", "null"]
+        },
+        "mandate_id": {
+          "type": ["string", "null"]
+        },
+        "account_type": {
+          "type": ["string", "null"],
+          "enum": ["checking", "savings", "business_checking", "current"]
+        },
+        "echeck_type": {
+          "type": ["string", "null"],
+          "enum": ["web", "ppd", "ccd"]
+        },
+        "account_holder_type": {
+          "type": ["string", "null"],
+          "enum": ["individual", "company"]
+        },
+        "email": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "amazon_payment": {
+      "type": ["object", "null"],
+      "properties": {
+        "email": {
+          "type": ["string", "null"]
+        },
+        "agreement_id": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "upi": {
+      "type": ["object", "null"],
+      "properties": {
+        "vpa": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "paypal": {
+      "type": ["object", "null"],
+      "properties": {
+        "email": {
+          "type": ["string", "null"]
+        },
+        "agreement_id": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "mandates": {
+      "type": ["object", "null"],
+      "properties": {
+        "id": {
+          "type": ["string", "null"]
+        },
+        "subscription_id": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+            "type": ["integer", "null"]
+          }
+      }
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

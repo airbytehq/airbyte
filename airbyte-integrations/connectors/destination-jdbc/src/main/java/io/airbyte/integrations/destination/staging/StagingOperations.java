@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.staging;
@@ -12,8 +12,9 @@ import java.util.UUID;
 import org.joda.time.DateTime;
 
 /**
- * Staging operations focuses on the SQL queries that are needed to success move data into a staging environment like GCS or S3. In general, the
- * reference of staging is the usage of an object storage for the purposes of efficiently uploading bulk data to destinations
+ * Staging operations focuses on the SQL queries that are needed to success move data into a staging
+ * environment like GCS or S3. In general, the reference of staging is the usage of an object
+ * storage for the purposes of efficiently uploading bulk data to destinations
  */
 public interface StagingOperations extends SqlOperations {
 
@@ -57,11 +58,11 @@ public interface StagingOperations extends SqlOperations {
    * @param schemaName name of schema
    */
   void copyIntoTableFromStage(JdbcDatabase database,
-                                 String stageName,
-                                 String stagingPath,
-                                 List<String> stagedFiles,
-                                 String tableName,
-                                 String schemaName)
+                              String stageName,
+                              String stagingPath,
+                              List<String> stagedFiles,
+                              String tableName,
+                              String schemaName)
       throws Exception;
 
   /**

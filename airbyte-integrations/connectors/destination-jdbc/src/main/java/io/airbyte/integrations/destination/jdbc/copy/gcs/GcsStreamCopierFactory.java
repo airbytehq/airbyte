@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy.gcs;
@@ -8,7 +8,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
@@ -29,7 +29,7 @@ public abstract class GcsStreamCopierFactory implements StreamCopierFactory<GcsC
                              final GcsConfig gcsConfig,
                              final String stagingFolder,
                              final ConfiguredAirbyteStream configuredStream,
-                             final ExtendedNameTransformer nameTransformer,
+                             final StandardNameTransformer nameTransformer,
                              final JdbcDatabase db,
                              final SqlOperations sqlOperations) {
     try {
@@ -61,7 +61,7 @@ public abstract class GcsStreamCopierFactory implements StreamCopierFactory<GcsC
                                       Storage storageClient,
                                       JdbcDatabase db,
                                       GcsConfig gcsConfig,
-                                      ExtendedNameTransformer nameTransformer,
+                                      StandardNameTransformer nameTransformer,
                                       SqlOperations sqlOperations)
       throws Exception;
 

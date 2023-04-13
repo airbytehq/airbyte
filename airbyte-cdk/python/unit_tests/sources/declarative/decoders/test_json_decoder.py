@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -13,4 +13,4 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 def test_json_decoder(requests_mock, response_body, expected_json):
     requests_mock.register_uri("GET", "https://airbyte.io/", text=response_body)
     response = requests.get("https://airbyte.io/")
-    assert JsonDecoder(options={}).decode(response) == expected_json
+    assert JsonDecoder(parameters={}).decode(response) == expected_json

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from enum import Enum
@@ -165,6 +165,9 @@ METRICS_MAP = {
 }
 
 
+METRICS_TYPE_TO_ID_MAP = {"campaigns": "campaignId", "adGroups": "adGroupId", "productAds": "adId", "targets": "targetId", "asins": "asin"}
+
+
 class Tactics(str, Enum):
     T00001 = "T00001"
     T00020 = "T00020"
@@ -181,6 +184,7 @@ class SponsoredDisplayReportStream(ReportStream):
         return f"/sd/{record_type}/report"
 
     metrics_map = METRICS_MAP
+    metrics_type_to_id_map = METRICS_TYPE_TO_ID_MAP
 
     def _get_init_report_body(self, report_date: str, record_type: str, profile):
         if record_type == RecordType.ASINS and profile.accountInfo.type == "vendor":

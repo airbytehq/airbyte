@@ -1,0 +1,26 @@
+data:
+  allowedHosts:
+    hosts:
+      - bingads.microsoft.com
+      - login.microsoftonline.com
+      - login.live.com
+      - login.windows-ppe.net
+      - ads.microsoft.com
+      - api.ads.microsoft.com
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
+  dockerImageTag: 0.1.18
+  dockerRepository: airbyte/source-bing-ads
+  githubIssueLabel: source-bing-ads
+  icon: bingads.svg
+  license: MIT
+  name: Bing Ads
+  releaseStage: generally_available
+  supportUrl: https://docs.airbyte.com/integrations/sources/bing-ads
+metadataSpecVersion: "1.0"
