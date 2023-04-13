@@ -156,5 +156,6 @@ class HttpRequester(Requester):
         # FIXME: this should be declarative
         return False
 
+    @property
     def max_retries(self) -> Optional[int]:
-        return self.error_handler.max_retries()
+        return self.error_handler.max_retries
