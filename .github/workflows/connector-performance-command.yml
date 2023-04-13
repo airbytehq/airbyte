@@ -106,7 +106,7 @@ jobs:
       - name: Source or Destination harness
         id: which-harness
         run: |
-          the_harness="source-harness"
+          the_harness="$(echo ${{github.event.inputs.connector}} | sed 's/.*\///; s/-.*//')"-harness
           echo "harness_type=$the_harness" >> "$GITHUB_OUTPUT"
       - name: Write source-harness credentials
         run: |
