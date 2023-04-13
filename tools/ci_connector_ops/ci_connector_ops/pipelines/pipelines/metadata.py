@@ -101,7 +101,6 @@ class DeployOrchestratorStep(Step):
             .with_entrypoint(["bash"])
             .with_exec(["deploy_to_prod.sh"])
         )
-        # poetry_run_exec = self.poetry_run_container.with_exec(poetry_run_args)
         return await self.get_step_result(container_to_run)
 
 
