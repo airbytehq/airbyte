@@ -11,8 +11,8 @@ import io.airbyte.db.PgLsn;
 import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
+import io.airbyte.integrations.debezium.internals.ChangeEventWithMetadata;
 import io.airbyte.integrations.debezium.internals.SnapshotMetadata;
-import io.debezium.engine.ChangeEvent;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Objects;
@@ -96,13 +96,7 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
   }
 
   @Override
-  public boolean isSnapshotEvent(final ChangeEvent<String, String> event) {
-    final SnapshotMetadata snapshotMetadata = SnapshotMetadata.fromString(Jsons.deserialize(event.value()).get("source").get("snapshot").asText());
-    return SnapshotMetadata.isSnapshotEventMetadata(snapshotMetadata);
-  }
-
-  @Override
-  public boolean isRecordBehindOffset(final Map<String, String> offset, final ChangeEvent<String, String> event) {
+  public boolean isRecordBehindOffset(final Map<String, String> offset, final ChangeEventWithMetadata event) {
     if (offset.size() != 1) {
       return false;
     }
@@ -111,7 +105,7 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
 
     final String offset_lsn =
         offsetJson.get("lsn_commit") != null ? String.valueOf(offsetJson.get("lsn_commit")) : String.valueOf(offsetJson.get("lsn"));
-    final String event_lsn = String.valueOf(Jsons.deserialize(event.value()).get("source").get("lsn"));
+    final String event_lsn = String.valueOf(event.eventValueAsJson().get("source").get("lsn"));
     return Long.parseLong(event_lsn) > Long.parseLong(offset_lsn);
   }
 

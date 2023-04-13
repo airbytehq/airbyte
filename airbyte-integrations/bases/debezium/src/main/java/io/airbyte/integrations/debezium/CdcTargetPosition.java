@@ -5,7 +5,7 @@
 package io.airbyte.integrations.debezium;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.debezium.engine.ChangeEvent;
+import io.airbyte.integrations.debezium.internals.ChangeEventWithMetadata;
 import java.util.Map;
 
 /**
@@ -55,16 +55,6 @@ public interface CdcTargetPosition<T> {
   T extractPositionFromHeartbeatOffset(final Map<String, ?> sourceOffset);
 
   /**
-   * This function indicates if the event is part of the snapshot or not.
-   *
-   * @param event Event from the CDC load
-   * @return Returns `true` when the DB event is part of the snapshot load. Otherwise, returns `false`
-   */
-  default boolean isSnapshotEvent(final ChangeEvent<String, String> event) {
-    return true;
-  }
-
-  /**
    * This function checks if the event we are processing in the loop is already behind the offset so
    * the process can safety save the state.
    *
@@ -72,7 +62,7 @@ public interface CdcTargetPosition<T> {
    * @param event Event from the CDC load
    * @return Returns `true` when the record is behind the offset. Otherwise, it returns `false`
    */
-  default boolean isRecordBehindOffset(final Map<String, String> offset, final ChangeEvent<String, String> event) {
+  default boolean isRecordBehindOffset(final Map<String, String> offset, final ChangeEventWithMetadata event) {
     return false;
   }
 
