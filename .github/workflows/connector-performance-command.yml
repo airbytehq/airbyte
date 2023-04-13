@@ -119,7 +119,9 @@ jobs:
         run: |
           echo "Building... source-harness" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          ./gradlew :airbyte-integrations:connectors-performance:source-harness:build -x check
+          ./gradlew :airbyte-integrations:connectors-performance:$HARNESS_TYPE:build -x check
+        env:
+          HARNESS_TYPE: ${{ steps.which-harness.outputs.harness_type }}
       - name: build connector
         shell: bash
         run: |
