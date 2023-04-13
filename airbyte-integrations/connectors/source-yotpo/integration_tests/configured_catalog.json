@@ -11,6 +11,15 @@
     },
     {
       "stream": {
+        "name": "top_reviews",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "webhooks",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]

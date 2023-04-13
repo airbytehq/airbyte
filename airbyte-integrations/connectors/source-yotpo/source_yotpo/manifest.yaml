@@ -61,6 +61,30 @@ definitions:
     $parameters:
       path: "/apps/{{ config['app_key'] }}/reviews"
 
+  top_reviews_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["reviews"]
+      paginator:
+        type: NoPagination
+      requester:
+        type: HttpRequester
+        url_base: "https://api.yotpo.com/"
+        http_method: "GET"
+        request_parameters:
+          utoken: "{{ config['access_token'] }}"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['access_token'] }}"
+    name: "top_reviews"
+    $parameters:
+      path: "/apps/{{ config['app_key'] }}/top_reviews"
+
   webhooks_stream:
     type: DeclarativeStream
     retriever:
@@ -87,11 +111,12 @@ definitions:
 
 streams:
   - "#/definitions/reviews_stream"
+  - "#/definitions/top_reviews_stream"
   - "#/definitions/webhooks_stream"
 
 check:
   type: CheckStream
   stream_names:
     - "reviews"
+    - "top_reviews"
     - "webhooks"
-
