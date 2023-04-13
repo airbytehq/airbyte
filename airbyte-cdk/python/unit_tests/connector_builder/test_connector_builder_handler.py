@@ -37,6 +37,7 @@ from airbyte_cdk.models import Type
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
+from airbyte_cdk.sources.declarative.retrievers import SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from unit_tests.connector_builder.utils import create_configured_catalog
@@ -572,3 +573,7 @@ def test_read_source(mock_http_stream):
         first_page, second_page = pages[0], pages[1]
         assert len(first_page["records"]) == _page_size
         assert len(second_page["records"]) == 1
+
+    streams = source.streams(config)
+    for s in streams:
+        assert isinstance(s.retriever, SimpleRetrieverTestReadDecorator)
