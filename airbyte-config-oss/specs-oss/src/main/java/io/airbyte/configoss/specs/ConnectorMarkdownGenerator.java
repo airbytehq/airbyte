@@ -105,13 +105,16 @@ public class ConnectorMarkdownGenerator {
       final String releaseStage = definition.get("releaseStage") != null ? definition.get("releaseStage").asText() : "unknown";
       final String documentationUrl = definition.get("documentationUrl") != null ? definition.get("documentationUrl").asText() : "";
       final String docLink = !documentationUrl.equals("") ? "[docs](" + documentationUrl + ")" : "missing";
-      final String issuesLabel = "connectors/" + (codeName.contains("source-") ? "source" : "destination") + "/" + codeName.replace("source-", "").replace("destination-", "");
-      final String issuesLink = "[" + issuesLabel + "](https://github.com/" + githubOrgProject + "/issues?q=is:open+is:issue+label:" + issuesLabel + ")";
+      final String issuesLabel = "connectors/" + (codeName.contains("source-") ? "source" : "destination") + "/"
+          + codeName.replace("source-", "").replace("destination-", "");
+      final String issuesLink =
+          "[" + issuesLabel + "](https://github.com/" + githubOrgProject + "/issues?q=is:open+is:issue+label:" + issuesLabel + ")";
       // https://github.com/airbytehq/airbyte/issues?q=is:open+is:issue+label:connectors/destination/mysql
-      final String codeLink = "["+ codeName + "](" + githubCodeBase + "/" + codeName + ")";
+      final String codeLink = "[" + codeName + "](" + githubCodeBase + "/" + codeName + ")";
       final String id = "<small>`" + definition.get(type.toLowerCase() + "DefinitionId").asText() + "`</small>";
 
-      bodyParts.add("| **" + name + "** | " + iconLink + " | " + type + " | " + dockerImage + " | " + releaseStage + " | " + docLink + " | " + issuesLink + " | "
+      bodyParts.add("| **" + name + "** | " + iconLink + " | " + type + " | " + dockerImage + " | " + releaseStage + " | " + docLink + " | "
+          + issuesLink + " | "
           + codeLink + " | " + id + " |");
     }
 
