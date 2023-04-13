@@ -18,7 +18,6 @@ class WoocommerceSubscriptionStream(HttpStream, ABC):
 
     def __init__(self, config):
         super().__init__()
-        print(config)
         self.shop = config.get('shop', '')
         self.consumer_key = config.get('consumer_key', '')
         self.consumer_secret = config.get('consumer_secret', '')
