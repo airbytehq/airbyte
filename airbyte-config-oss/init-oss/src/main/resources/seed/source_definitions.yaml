@@ -2428,7 +2428,7 @@
   allowedHosts:
     hosts:
       - "*"
-  maxSecondsBetweenMessages: 43200
+  maxSecondsBetweenMessages: 64800
 - name: Zuora
   sourceDefinitionId: 3dc3037c-5ce8-4661-adc2-f7a9e3c5ece5
   dockerRepository: airbyte/source-zuora
