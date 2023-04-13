@@ -237,7 +237,7 @@ class AbstractSource(Source, ABC):
         has_slices = False
         for _slice in slices:
             has_slices = True
-            if logger.isEnabledFor(logging.DEBUG):
+            if self.log_slice_message(logger):
                 yield AirbyteMessage(
                     type=MessageType.LOG,
                     log=AirbyteLogMessage(level=Level.INFO, message=f"{self.SLICE_LOG_PREFIX}{json.dumps(_slice, default=str)}"),
