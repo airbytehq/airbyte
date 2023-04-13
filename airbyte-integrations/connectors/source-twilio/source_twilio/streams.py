@@ -553,7 +553,7 @@ class ConversationParticipants(TwilioNestedStream):
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs):
         return f"Conversations/{stream_slice['conversation_sid']}/Participants"
-    
+
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {"conversation_sid": record["sid"]}
 

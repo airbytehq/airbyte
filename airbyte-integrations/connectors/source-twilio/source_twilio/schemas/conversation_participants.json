@@ -16,12 +16,7 @@
       "type": ["null", "string"]
     },
     "attributes": {
-      "type": ["null", "object"],
-      "properties": {
-        "role": {
-          "type": ["null", "string"]
-        }
-      }
+      "type": ["null", "string"]
     },
     "messaging_binding": {
       "type": ["null", "object"],
