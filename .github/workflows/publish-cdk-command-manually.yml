@@ -70,7 +70,7 @@ jobs:
       - name: Update CDK version
         run: |
           PREVIOUS_VERSION=$(cat oss/airbyte-connector-builder-resources/CDK_VERSION)
-          sed -i "s/${PREVIOUS_VERSION}/${needs.bump-version.outputs.new_cdk_version}/g" oss/airbyte-connector-atelier-server/Dockerfile
+          sed -i "s/${PREVIOUS_VERSION}/0.0.0/g" oss/airbyte-connector-atelier-server/Dockerfile
           echo ${{needs.bump-version.outputs.new_cdk_version}} > oss/airbyte-connector-builder-resources/CDK_VERSION
           cd oss/airbyte-connector-builder-server
           pip install pip-tools
@@ -163,7 +163,6 @@ jobs:
     name: Stop Build EC2 Runner
     needs:
       - start-publish-docker-image-runner-0 # required to get output from the start-runner job
-      - publish-docker-image # required to wait when the main job is done
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS credentials
