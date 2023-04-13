@@ -8,6 +8,8 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 import json
+import xmltodict
+import re
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -46,31 +48,6 @@ class MicrovixBase(HttpStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
 
         return None
-    
-    
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-
-        response_json = eval(json.loads(json.dumps(response.content.decode("utf-8"))))
-
-        item_list = []
-
-        for item in response_json[self.record_list_name]:
-            item_json = {
-                "data":item,
-                "merchant": self.merchant.upper(),
-                "source": "BR_MICROVIX",
-                "type": f"{self.merchant.lower()}_notafiscal",
-                "id": item[self.record_primary_key],
-                "timeline": "historic",
-                "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
-                "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
-                "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
-                "sensible": False
-            }
-
-            item_list.append(item_json)
-
-        return item_list
     
     @property
     def http_method(self) -> str:
@@ -184,6 +161,49 @@ class XmlDocumentos(MicrovixBase):
             return {self.cursor_field: max(latest_record_date, current_stream_state_date)}
 
         return {self.cursor_field: latest_record_date}
+    
+    def parse_xml(self, xml):
+        if xml.strip() == "": return {}
+
+        for tag in re.findall(r'<(.+?)>', xml):
+            if ('=') in tag:
+                new_tag = tag
+                values_to_replace = set([value.split(' ')[0] for value in set(tag.split('=')[1:])])
+                for value in values_to_replace:
+                    original_value = value
+                    new_value = f'"{original_value}"'
+
+                    new_tag = new_tag.replace(original_value, new_value)
+                
+                xml = xml.replace(f"<{tag}>", "<"+new_tag.replace('?"', '"?')+">")
+                    
+        return xmltodict.parse(xml.strip())
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+
+        response_json = eval(json.loads(json.dumps(response.content.decode("utf-8"))))
+
+        item_list = []
+
+        for item in response_json[self.record_list_name]:
+            item_json = {
+                "data":item,
+                "data_xml": self.parse_xml(item['xml']),
+                "data_xml_distribuicao": self.parse_xml(item['xmlDistribuicao']),
+                "merchant": self.merchant.upper(),
+                "source": "BR_MICROVIX",
+                "type": f"{self.merchant.lower()}_notafiscal",
+                "id": item[self.record_primary_key],
+                "timeline": "historic",
+                "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                "sensible": False
+            }
+
+            item_list.append(item_json)
+
+        return item_list
     
 
 class SourceMicrovix(AbstractSource):
