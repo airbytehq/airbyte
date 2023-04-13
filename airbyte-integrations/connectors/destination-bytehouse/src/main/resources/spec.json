@@ -39,6 +39,7 @@
         "title": "API Key",
         "description": "The API key of your account",
         "type": "string",
+        "airbyte_secret": true,
         "order": 3
       },
       "jdbc_url_params" : {
