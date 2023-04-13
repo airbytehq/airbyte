@@ -215,7 +215,6 @@ class ModelToComponentFactory:
         if model.__class__ not in self.PYDANTIC_MODEL_TO_CONSTRUCTOR:
             raise ValueError(f"{model.__class__} with attributes {model} is not a valid component type")
         component_constructor = self.PYDANTIC_MODEL_TO_CONSTRUCTOR.get(model.__class__)
-        print(f"model: {model} KWARGS: {kwargs}")
         return component_constructor(model=model, config=config, **kwargs)
 
     @staticmethod
