@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: e300ece7-b073-43a3-852e-8aff36a57f13
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-k6-cloud
+  githubIssueLabel: source-k6-cloud
+  icon: k6cloud.svg
+  license: MIT
+  name: K6 Cloud
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/k6-cloud
+metadataSpecVersion: "1.0"

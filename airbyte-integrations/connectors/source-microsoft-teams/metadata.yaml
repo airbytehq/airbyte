@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: eaf50f04-21dd-4620-913b-2a83f5635227
+  dockerImageTag: 0.2.5
+  dockerRepository: airbyte/source-microsoft-teams
+  githubIssueLabel: source-microsoft-teams
+  icon: microsoft-teams.svg
+  license: MIT
+  name: Microsoft teams
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/microsoft-teams
+metadataSpecVersion: "1.0"

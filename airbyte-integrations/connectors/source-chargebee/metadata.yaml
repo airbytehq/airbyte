@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*.chargebee.com"
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 686473f1-76d9-4994-9cc7-9b13da46147c
+  dockerImageTag: 0.2.3
+  dockerRepository: airbyte/source-chargebee
+  githubIssueLabel: source-chargebee
+  icon: chargebee.svg
+  license: MIT
+  name: Chargebee
+  releaseStage: generally_available
+  supportUrl: https://docs.airbyte.com/integrations/sources/chargebee
+metadataSpecVersion: "1.0"
