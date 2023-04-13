@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 5db8292c-5f5a-11ed-9b6a-0242ac120002
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-weatherstack
+  githubIssueLabel: source-weatherstack
+  icon: weatherstack.svg
+  license: MIT
+  name: Weatherstack
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/weatherstack
+metadataSpecVersion: "1.0"
