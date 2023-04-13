@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 311a7a27-3fb5-4f7e-8265-5e4afe258b66
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-clickup-api
+  githubIssueLabel: source-clickup-api
+  icon: clickup.svg
+  license: MIT
+  name: ClickUp
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/click-up
+metadataSpecVersion: "1.0"
