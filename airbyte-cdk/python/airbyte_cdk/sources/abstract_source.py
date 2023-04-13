@@ -277,6 +277,14 @@ class AbstractSource(Source, ABC):
             checkpoint = self._checkpoint_state(stream_instance, stream_state, state_manager)
             yield checkpoint
 
+    def log_slice_message(self, logger: logging.Logger):
+        """
+
+        :param logger:
+        :return:
+        """
+        return logger.isEnabledFor(logging.DEBUG)
+
     def _read_full_refresh(
         self,
         logger: logging.Logger,
@@ -290,7 +298,7 @@ class AbstractSource(Source, ABC):
         )
         total_records_counter = 0
         for _slice in slices:
-            if logger.isEnabledFor(logging.DEBUG):
+            if self.log_slice_message(logger):
                 yield AirbyteMessage(
                     type=MessageType.LOG,
                     log=AirbyteLogMessage(level=Level.INFO, message=f"{self.SLICE_LOG_PREFIX}{json.dumps(_slice, default=str)}"),
