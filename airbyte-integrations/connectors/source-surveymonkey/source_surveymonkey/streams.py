@@ -110,7 +110,6 @@ class SurveymonkeyStream(HttpStream, ABC):
 
 
 class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
-
     state_checkpoint_interval = 1000
 
     @property
@@ -128,7 +127,6 @@ class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
 
 
 class SurveyIds(IncrementalSurveymonkeyStream):
-
     cursor_field = "date_modified"
 
     def path(self, **kwargs) -> str:
@@ -258,8 +256,9 @@ class SurveyResponses(SurveyIDSliceMixin, IncrementalSurveymonkeyStream):
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["sort_order"] = "ASC"
         params["sort_by"] = self.cursor_field
-        params["per_page"] = 100  # Max of 100 allowed per page. We use the highest
-                                  # possible value to reduce the number of API calls.
+        # Max of 100 allowed per page. We use the highest
+        # possible value to reduce the number of API calls.
+        params["per_page"] = 100
 
         since_value_surv = stream_state.get(stream_slice["survey_id"])
         if since_value_surv:
