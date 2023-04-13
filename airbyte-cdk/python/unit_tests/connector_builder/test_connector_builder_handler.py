@@ -5,7 +5,6 @@
 import copy
 import dataclasses
 import json
-import logging
 from unittest import mock
 from unittest.mock import patch
 
@@ -23,7 +22,18 @@ from airbyte_cdk.connector_builder.connector_builder_handler import (
 )
 from airbyte_cdk.connector_builder.main import handle_connector_builder_request, handle_request, read_stream
 from airbyte_cdk.connector_builder.models import LogMessage, StreamRead, StreamReadSlicesInner, StreamReadSlicesInnerPagesInner
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type, AirbyteLogMessage, Level
+from airbyte_cdk.models import (
+    AirbyteLogMessage,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    Level,
+    SyncMode,
+)
+from airbyte_cdk.models import Type
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
@@ -524,10 +534,14 @@ def test_create_source():
     assert source._constructor._limit_pages_fetched_per_slice == limits.max_pages_per_slice
     assert source._constructor._limit_slices_fetched == limits.max_slices
 
+
 def request_log_message(request: dict) -> AirbyteMessage:
     return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=f"request:{json.dumps(request)}"))
+
+
 def response_log_message(response: dict) -> AirbyteMessage:
     return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=f"response:{json.dumps(response)}"))
+
 
 @patch.object(HttpStream, "_read_pages", return_value=[
     request_log_message({}),

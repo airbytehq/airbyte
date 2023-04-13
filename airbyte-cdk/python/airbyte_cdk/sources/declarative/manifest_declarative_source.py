@@ -36,7 +36,13 @@ class ManifestDeclarativeSource(DeclarativeSource):
 
     VALID_TOP_LEVEL_FIELDS = {"check", "definitions", "schemas", "spec", "streams", "type", "version"}
 
-    def __init__(self, source_config: ConnectionDefinition, debug: bool = False, component_factory: ModelToComponentFactory = None):
+    def __init__(
+        self,
+        source_config: ConnectionDefinition,
+        debug: bool = False,
+        emit_connector_builder_messages: bool = False,
+        component_factory: ModelToComponentFactory = None,
+    ):
         """
         :param source_config(Mapping[str, Any]): The manifest of low-code components that describe the source connector
         :param debug(bool): True if debug mode is enabled
@@ -53,6 +59,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         propagated_source_config = ManifestComponentTransformer().propagate_types_and_parameters("", resolved_source_config, {})
         self._source_config = propagated_source_config
         self._debug = debug
+        self._emit_connector_builder_messages = emit_connector_builder_messages
         self._constructor = component_factory if component_factory else ModelToComponentFactory()
 
         self._validate_source()
@@ -66,7 +73,9 @@ class ManifestDeclarativeSource(DeclarativeSource):
         check = self._source_config["check"]
         if "type" not in check:
             check["type"] = "CheckStream"
-        check_stream = self._constructor.create_component(CheckStreamModel, check, dict())
+        check_stream = self._constructor.create_component(
+            CheckStreamModel, check, dict(), emit_connector_builder_messages=self._emit_connector_builder_messages
+        )
         if isinstance(check_stream, ConnectionChecker):
             return check_stream
         else:
@@ -119,8 +128,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         yield from super().read(logger, config, catalog, state)
 
     def log_slice_message(self, logger: logging.Logger):
-        # Commented so the unit tests fail
-        return self._constructor._emit_connector_builder_messages or super(self).log_slice_message(logger)
+        return self._emit_connector_builder_messages or super(self).log_slice_message(logger)
 
     def _configure_logger_level(self, logger: logging.Logger):
         """

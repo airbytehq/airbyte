@@ -117,7 +117,6 @@ class ModelToComponentFactory:
         self._init_mappings()
         self._limit_pages_fetched_per_slice = limit_pages_fetched_per_slice
         self._limit_slices_fetched = limit_slices_fetched
-        self._emit_connector_builder_messages = emit_connector_builder_messages
 
     def _init_mappings(self):
         self.PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
@@ -176,7 +175,15 @@ class ModelToComponentFactory:
         # Needed for the case where we need to perform a second parse on the fields of a custom component
         self.TYPE_NAME_TO_MODEL = {cls.__name__: cls for cls in self.PYDANTIC_MODEL_TO_CONSTRUCTOR}
 
-    def create_component(self, model_type: Type[BaseModel], component_definition: ComponentDefinition, config: Config, **kwargs) -> type:
+    def create_component(
+        self,
+        model_type: Type[BaseModel],
+        component_definition: ComponentDefinition,
+        config: Config,
+        *,
+        emit_connector_builder_messages: bool = False,
+        **kwargs,
+    ) -> type:
         """
         Takes a given Pydantic model type and Mapping representing a component definition and creates a declarative component and
         subcomponents which will be used at runtime. This is done by first parsing the mapping into a Pydantic model and then creating
@@ -185,6 +192,7 @@ class ModelToComponentFactory:
         :param model_type: The type of declarative component that is being initialized
         :param component_definition: The mapping that represents a declarative component
         :param config: The connector config that is provided by the customer
+        :param emit_connector_builder_messages:
         :return: The declarative component to be used at runtime
         """
 
@@ -197,12 +205,17 @@ class ModelToComponentFactory:
         if not isinstance(declarative_component_model, model_type):
             raise ValueError(f"Expected {model_type.__name__} component, but received {declarative_component_model.__class__.__name__}")
 
-        return self._create_component_from_model(model=declarative_component_model, config=config, **kwargs)
+        return self._create_component_from_model(
+            model=declarative_component_model,
+            config=config,
+            **{**kwargs, **{"emit_connector_builder_messages": emit_connector_builder_messages}},
+        )
 
     def _create_component_from_model(self, model: BaseModel, config: Config, **kwargs) -> Any:
         if model.__class__ not in self.PYDANTIC_MODEL_TO_CONSTRUCTOR:
             raise ValueError(f"{model.__class__} with attributes {model} is not a valid component type")
         component_constructor = self.PYDANTIC_MODEL_TO_CONSTRUCTOR.get(model.__class__)
+        print(f"model: {model} KWARGS: {kwargs}")
         return component_constructor(model=model, config=config, **kwargs)
 
     @staticmethod
@@ -296,7 +309,7 @@ class ModelToComponentFactory:
                     model_value["type"] = derived_type
 
             if self._is_component(model_value):
-                model_args[model_field] = self._create_nested_component(model, model_field, model_value, config)
+                model_args[model_field] = self._create_nested_component(model, model_field, model_value, config, **kwargs)
             elif isinstance(model_value, list):
                 vals = []
                 for v in model_value:
@@ -305,7 +318,7 @@ class ModelToComponentFactory:
                         if derived_type:
                             v["type"] = derived_type
                     if self._is_component(v):
-                        vals.append(self._create_nested_component(model, model_field, v, config))
+                        vals.append(self._create_nested_component(model, model_field, v, config, **kwargs))
                     else:
                         vals.append(v)
                 model_args[model_field] = vals
@@ -351,7 +364,7 @@ class ModelToComponentFactory:
         else:
             return []
 
-    def _create_nested_component(self, model, model_field: str, model_value: Any, config: Config) -> Any:
+    def _create_nested_component(self, model, model_field: str, model_value: Any, config: Config, **kwargs) -> Any:
         type_name = model_value.get("type", None)
         if not type_name:
             # If no type is specified, we can assume this is a dictionary object which can be returned instead of a subcomponent
@@ -371,7 +384,7 @@ class ModelToComponentFactory:
                 constructor_kwargs = inspect.getfullargspec(model_constructor).kwonlyargs
                 model_parameters = model_value.get("$parameters", {})
                 matching_parameters = {kwarg: model_parameters[kwarg] for kwarg in constructor_kwargs if kwarg in model_parameters}
-                return self._create_component_from_model(model=parsed_model, config=config, **matching_parameters)
+                return self._create_component_from_model(model=parsed_model, config=config, **matching_parameters, **kwargs)
             except TypeError as error:
                 missing_parameters = self._extract_missing_parameters(error)
                 if missing_parameters:
@@ -432,7 +445,9 @@ class ModelToComponentFactory:
             parameters=model.parameters,
         )
 
-    def create_declarative_stream(self, model: DeclarativeStreamModel, config: Config, **kwargs) -> DeclarativeStream:
+    def create_declarative_stream(
+        self, model: DeclarativeStreamModel, config: Config, emit_connector_builder_messages: bool, **kwargs
+    ) -> DeclarativeStream:
         # When constructing a declarative stream, we assemble the incremental_sync component and retriever's partition_router field
         # components if they exist into a single CartesianProductStreamSlicer. This is then passed back as an argument when constructing the
         # Retriever. This is done in the declarative stream not the retriever to support custom retrievers. The custom create methods in
@@ -441,7 +456,13 @@ class ModelToComponentFactory:
 
         primary_key = model.primary_key.__root__ if model.primary_key else None
         retriever = self._create_component_from_model(
-            model=model.retriever, config=config, name=model.name, primary_key=primary_key, stream_slicer=combined_slicers
+            model=model.retriever,
+            config=config,
+            name=model.name,
+            primary_key=primary_key,
+            stream_slicer=combined_slicers,
+            emit_connector_builder_messages=emit_connector_builder_messages,
+            **kwargs,
         )
 
         cursor_field = model.incremental_sync.cursor_field if model.incremental_sync else None
@@ -522,7 +543,7 @@ class ModelToComponentFactory:
             parameters=model.parameters,
         )
 
-    def create_default_paginator(self, model: DefaultPaginatorModel, config: Config, *, url_base: str) -> DefaultPaginator:
+    def create_default_paginator(self, model: DefaultPaginatorModel, config: Config, *, url_base: str, **kwargs) -> DefaultPaginator:
         decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
         page_size_option = (
             self._create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
@@ -553,10 +574,10 @@ class ModelToComponentFactory:
     def create_exponential_backoff_strategy(model: ExponentialBackoffStrategyModel, config: Config) -> ExponentialBackoffStrategy:
         return ExponentialBackoffStrategy(factor=model.factor, parameters=model.parameters, config=config)
 
-    def create_http_requester(self, model: HttpRequesterModel, config: Config, *, name: str) -> HttpRequester:
+    def create_http_requester(self, model: HttpRequesterModel, config: Config, *, name: str, **kwargs) -> HttpRequester:
         authenticator = self._create_component_from_model(model=model.authenticator, config=config) if model.authenticator else None
         error_handler = (
-            self._create_component_from_model(model=model.error_handler, config=config)
+            self._create_component_from_model(model=model.error_handler, config=config, **kwargs)
             if model.error_handler
             else DefaultErrorHandler(backoff_strategies=[], response_filters=[], config=config, parameters=model.parameters)
         )
@@ -695,7 +716,7 @@ class ModelToComponentFactory:
         return PageIncrement(page_size=model.page_size, start_from_page=model.start_from_page, parameters=model.parameters)
 
     def create_parent_stream_config(self, model: ParentStreamConfigModel, config: Config, **kwargs) -> ParentStreamConfig:
-        declarative_stream = self._create_component_from_model(model.stream, config=config)
+        declarative_stream = self._create_component_from_model(model.stream, config=config, **kwargs)
         request_option = self._create_component_from_model(model.request_option, config=config) if model.request_option else None
         return ParentStreamConfig(
             parent_key=model.parent_key,
@@ -750,6 +771,7 @@ class ModelToComponentFactory:
         config: Config,
         *,
         name: str,
+        emit_connector_builder_messages: bool,
         primary_key: Optional[Union[str, List[str], List[List[str]]]],
         stream_slicer: Optional[StreamSlicer],
     ) -> SimpleRetriever:
@@ -762,7 +784,7 @@ class ModelToComponentFactory:
             else NoPagination(parameters={})
         )
 
-        if self._limit_slices_fetched or self._emit_connector_builder_messages:
+        if self._limit_slices_fetched or emit_connector_builder_messages:
             return SimpleRetrieverTestReadDecorator(
                 name=name,
                 paginator=paginator,
@@ -799,7 +821,7 @@ class ModelToComponentFactory:
         if model.parent_stream_configs:
             parent_stream_configs.extend(
                 [
-                    self._create_component_from_model(model=parent_stream_config, config=config)
+                    self._create_component_from_model(model=parent_stream_config, config=config, **kwargs)
                     for parent_stream_config in model.parent_stream_configs
                 ]
             )
