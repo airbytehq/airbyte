@@ -105,7 +105,8 @@ public class ConnectorMarkdownGenerator {
       final String releaseStage = definition.get("releaseStage") != null ? definition.get("releaseStage").asText() : "unknown";
       final String documentationUrl = definition.get("documentationUrl") != null ? definition.get("documentationUrl").asText() : "";
       final String docLink = !documentationUrl.equals("") ? "[docs](" + documentationUrl + ")" : "missing";
-      // we are trying to build a string like connectors/destination/mysql.  we need to determine if this is a source or destination, lower-case, and then append back some stuff
+      // we are trying to build a string like connectors/destination/mysql. we need to determine if this
+      // is a source or destination, lower-case, and then append back some stuff
       final String issuesLabel = "connectors/" + (codeName.contains("source-") ? "source" : "destination") + "/"
           + codeName.replace("source-", "").replace("destination-", "");
       final String issuesLink =
