@@ -11,6 +11,7 @@ from ci_connector_ops.pipelines.pipelines.metadata import (
     run_metadata_orchestrator_test_pipeline,
     run_metadata_upload_pipeline,
     run_metadata_validation_pipeline,
+    run_metadata_orchestrator_deploy_pipeline,
 )
 from ci_connector_ops.pipelines.utils import DaggerPipelineCommand, get_all_metadata_files, get_modified_metadata_files
 from rich.logging import RichHandler
@@ -94,6 +95,20 @@ def upload(ctx: click.Context, gcs_bucket_name: str, gcs_credentials: str, modif
         metadata_to_upload,
         gcs_bucket_name,
         gcs_credentials,
+    )
+
+
+@metadata.command(cls=DaggerPipelineCommand, help="Deploy the metadata service orchestrator to production")
+@click.pass_context
+def deploy_orchestrator(ctx: click.Context):
+    return anyio.run(
+        run_metadata_orchestrator_deploy_pipeline,
+        ctx.obj["is_local"],
+        ctx.obj["git_branch"],
+        ctx.obj["git_revision"],
+        ctx.obj.get("gha_workflow_run_url"),
+        ctx.obj.get("pipeline_start_timestamp"),
+        ctx.obj.get("ci_context"),
     )
 
 

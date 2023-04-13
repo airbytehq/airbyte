@@ -2,11 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import uuid
+import os
 from pathlib import Path
 from typing import Optional, Set
 
 import dagger
-from ci_connector_ops.pipelines.actions.environments import with_poetry_module
+from ci_connector_ops.pipelines.actions.environments import with_poetry_module, with_python_base, with_pip_packages
 from ci_connector_ops.pipelines.bases import Step, StepStatus, TestReport
 from ci_connector_ops.pipelines.contexts import PipelineContext
 from ci_connector_ops.pipelines.utils import DAGGER_CONFIG, METADATA_FILE_NAME, execute_concurrently
@@ -79,6 +80,29 @@ class MetadataUpload(PoetryRun):
                 self.GCS_CREDENTIALS_CONTAINER_PATH,
             ]
         )
+
+
+class DeployOrchestratorStep(Step):
+    def __init__(self, context: PipelineContext, title: str, parent_dir_path: str, module_path: str, dagster_cloud_api_token):
+        self.title = title
+        super().__init__(context)
+        self.parent_dir = self.context.get_repo_dir(parent_dir_path)
+        self.module_path = module_path
+        self.dagster_cloud_api_token = dagster_cloud_api_token
+
+    async def _run(self) -> StepStatus:
+        python_base = with_python_base(self.context)
+        python_with_dependencies = with_pip_packages(python_base, ["dagster-cloud==1.2.6", "poetry2setup"])
+
+        container_to_run = (
+            python_with_dependencies.with_mounted_directory("/src", self.parent_dir)
+            .with_workdir(f"/src/{self.module_path}")
+            .with_env_variable("DAGSTER_CLOUD_API_TOKEN", self.dagster_cloud_api_token)
+            .with_entrypoint(["bash"])
+            .with_exec(["deploy_to_prod.sh"])
+        )
+        # poetry_run_exec = self.poetry_run_container.with_exec(poetry_run_args)
+        return await self.get_step_result(container_to_run)
 
 
 async def run_metadata_validation_pipeline(
@@ -212,3 +236,42 @@ async def run_metadata_upload_pipeline(
             pipeline_context.test_report = TestReport(pipeline_context, results)
 
         return pipeline_context.test_report.success
+
+
+async def run_metadata_orchestrator_deploy_pipeline(
+    is_local: bool,
+    git_branch: str,
+    git_revision: str,
+    gha_workflow_run_url: Optional[str],
+    pipeline_start_timestamp: Optional[int],
+    ci_context: Optional[str],
+) -> bool:
+    # Get the DAGSTER_CLOUD_API_TOKEN from the environment
+    dagster_cloud_api_token = os.environ.get("DAGSTER_CLOUD_API_TOKEN")
+    if not dagster_cloud_api_token:
+        raise ValueError("DAGSTER_CLOUD_API_TOKEN not found in environment")
+
+    metadata_pipeline_context = PipelineContext(
+        pipeline_name="Metadata Service Orchestrator Unit Test Pipeline",
+        is_local=is_local,
+        git_branch=git_branch,
+        git_revision=git_revision,
+        gha_workflow_run_url=gha_workflow_run_url,
+        pipeline_start_timestamp=pipeline_start_timestamp,
+        ci_context=ci_context,
+    )
+
+    async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
+        metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
+
+        async with metadata_pipeline_context:
+            deploy_orch_step = DeployOrchestratorStep(
+                context=metadata_pipeline_context,
+                title="Deploy Metadata Orchestrator to Dagster Cloud",
+                parent_dir_path=METADATA_DIR,
+                module_path=METADATA_ORCHESTRATOR_MODULE_PATH,
+                dagster_cloud_api_token=dagster_cloud_api_token,
+            )
+            result = await deploy_orch_step.run()
+            metadata_pipeline_context.test_report = TestReport(pipeline_context=metadata_pipeline_context, steps_results=[result])
+    return metadata_pipeline_context.test_report.success
