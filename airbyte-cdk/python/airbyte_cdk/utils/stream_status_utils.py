@@ -9,7 +9,7 @@ from airbyte_cdk.models import AirbyteMessage, AirbyteStreamStatusTraceMessage, 
 from airbyte_cdk.models import Type as MessageType
 
 
-def as_airbyte_message(self, stream, current_status, successful) -> AirbyteMessage:
+def as_airbyte_message(stream, current_status, successful) -> AirbyteMessage:
     """
     Builds an AirbyteStreamStatusTraceMessage for the provided stream
     """
