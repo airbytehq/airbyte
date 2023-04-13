@@ -120,7 +120,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
 
     def log_slice_message(self, logger: logging.Logger):
         # Commented so the unit tests fail
-        #return self._constructor._emit_connector_builder_messages or super(self).log_slice_message(logger)
+        # return self._constructor._emit_connector_builder_messages or super(self).log_slice_message(logger)
         return super(self).log_slice_message(logger)
 
     def _configure_logger_level(self, logger: logging.Logger):
