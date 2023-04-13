@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mssql;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getIdentifierWithQuoting;
@@ -15,6 +16,7 @@ import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
@@ -30,6 +32,7 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
+import io.airbyte.integrations.debezium.internals.mssql.MssqlCdcTargetPosition;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.mssql.MssqlCdcHelper.SnapshotIsolation;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
@@ -40,6 +43,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.SyncMode;
+import io.debezium.connector.sqlserver.Lsn;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.JDBCType;
@@ -51,6 +55,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,11 +67,19 @@ import org.slf4j.LoggerFactory;
 public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlSource.class);
-
+  public static final String DESCRIBE_TABLE_QUERY =
+      """
+      sp_columns "%s"
+      """;
+  public static final String NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY =
+      """
+        SELECT CAST(IIF(EXISTS(SELECT TOP 1 1 FROM "%s"."%s" WHERE "%s" IS NULL), 1, 0) AS BIT) AS %s
+      """;
   static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.getDriverClassName();
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
   public static final String CDC_LSN = "_ab_cdc_lsn";
+  public static final String CDC_EVENT_SERIAL_NO = "_ab_cdc_event_serial_no";
   private static final String HIERARCHYID = "hierarchyid";
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
   private List<String> schemas;
@@ -83,15 +96,28 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public AutoCloseableIterator<JsonNode> queryTableFullRefresh(final JdbcDatabase database,
                                                                final List<String> columnNames,
                                                                final String schemaName,
-                                                               final String tableName) {
+                                                               final String tableName,
+                                                               final SyncMode syncMode,
+                                                               final Optional<String> cursorField) {
     LOGGER.info("Queueing query for table: {}", tableName);
+    // This corresponds to the initial sync for in INCREMENTAL_MODE. The ordering of the records matters as intermediate state messages are emitted.
+    if (syncMode.equals(SyncMode.INCREMENTAL)) {
+      final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
+      final String newIdentifiers = getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
+      final String preparedSqlQuery =
+          String.format("SELECT %s FROM %s ORDER BY %s ASC", newIdentifiers,
+              getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField);
+      LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
+      return queryTable(database, preparedSqlQuery);
+    } else {
+      // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering of the records.
+      final String newIdentifiers = getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
+      final String preparedSqlQuery =
+          String.format("SELECT %s FROM %s", newIdentifiers, getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()));
 
-    final String newIdentifiers = getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
-    final String preparedSqlQuery =
-        String.format("SELECT %s FROM %s", newIdentifiers, getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()));
-
-    LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
-    return queryTable(database, preparedSqlQuery);
+      LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
+      return queryTable(database, preparedSqlQuery);
+    }
   }
 
   /**
@@ -177,6 +203,14 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       configBuilder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, mssqlConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
     }
 
+    final Map<String, String> additionalParams = new HashMap<>();
+    additionalParameters.forEach(param -> {
+      final int i = param.indexOf('=');
+      additionalParams.put(param.substring(0, i), param.substring(i + 1));
+    });
+
+    configBuilder.putAll(additionalParams);
+
     return Jsons.jsonNode(configBuilder.build());
   }
 
@@ -229,6 +263,46 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       LOGGER.info("No schemas explicitly set on UI to process, so will process all of existing schemas in DB");
       return internals;
     }
+  }
+
+  @Override
+  protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName)
+      throws SQLException {
+
+    boolean nullValExist = false;
+    final String resultColName = "nullValue";
+    final String descQuery = String.format(DESCRIBE_TABLE_QUERY, tableName);
+    final Optional<JsonNode> field = database.bufferedResultSetQuery(conn -> conn.createStatement()
+        .executeQuery(descQuery),
+        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet))
+        .stream()
+        .peek(x -> LOGGER.info("MsSQL Table Structure {}, {}, {}", x.toString(), schema, tableName))
+        .filter(x -> x.get("TABLE_OWNER") != null)
+        .filter(x -> x.get("COLUMN_NAME") != null)
+        .filter(x -> x.get("TABLE_OWNER").asText().equals(schema))
+        .filter(x -> x.get("COLUMN_NAME").asText().equalsIgnoreCase(columnName))
+        .findFirst();
+    if (field.isPresent()) {
+      final JsonNode jsonNode = field.get();
+      final JsonNode isNullable = jsonNode.get("IS_NULLABLE");
+      if (isNullable != null) {
+        if (isNullable.asText().equalsIgnoreCase("YES")) {
+          final String query = String.format(NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY,
+              schema, tableName, columnName, resultColName);
+
+          LOGGER.debug("null value query: {}", query);
+          final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(query),
+              resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+          Preconditions.checkState(jsonNodes.size() == 1);
+          nullValExist = jsonNodes.get(0).get(resultColName).booleanValue();
+          LOGGER.info("null cursor value for MsSQL source : {}, shema {} , tableName {}, columnName {} ", nullValExist, schema, tableName,
+              columnName);
+        }
+      }
+    }
+    // return !nullValExist;
+    // will enable after we have sent comms to users this affects
+    return true;
   }
 
   private boolean isTableInRequestedSchema(final TableInfo<CommonField<JDBCType>> tableInfo) {
@@ -371,16 +445,16 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     if (MssqlCdcHelper.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);
       final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
-      final AirbyteDebeziumHandler handler =
-          new AirbyteDebeziumHandler(sourceConfig,
+      final AirbyteDebeziumHandler<Lsn> handler =
+          new AirbyteDebeziumHandler<>(sourceConfig,
               MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText()), true, firstRecordWaitTime);
 
       final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
           new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
           new MssqlCdcStateHandler(stateManager),
           new MssqlCdcConnectorMetadataInjector(),
-          MssqlCdcHelper.getDebeziumProperties(sourceConfig, catalog),
-          emittedAt);
+          MssqlCdcHelper.getDebeziumProperties(database, catalog),
+          emittedAt, true);
 
       return Collections.singletonList(incrementalIteratorSupplier.get());
     } else {
@@ -426,6 +500,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     properties.set(CDC_LSN, stringType);
     properties.set(CDC_UPDATED_AT, stringType);
     properties.set(CDC_DELETED_AT, stringType);
+    properties.set(CDC_EVENT_SERIAL_NO, stringType);
 
     return stream;
   }

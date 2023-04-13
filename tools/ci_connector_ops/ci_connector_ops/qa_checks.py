@@ -74,7 +74,7 @@ def check_changelog_entry_is_updated(connector: Connector) -> bool:
 
 def check_connector_icon_is_available(connector: Connector) -> bool:
     """Check an SVG icon exists for a connector in
-    in airbyte-config/init/src/main/resources/icons/<connector-name>.svg
+    in airbyte-config-oss/init-oss/src/main/resources/icons/<connector-name>.svg
 
     Args:
         connector (Connector): a Connector dataclass instance.
@@ -198,6 +198,9 @@ def run_qa_checks():
     if not connector_technical_name.startswith("source-") and not connector_technical_name.startswith("destination-"):
         print("No QA check to run as this is not a connector.")
         sys.exit(0)
+    if connector_technical_name.endswith("-strict-encrypt"):
+        connector_technical_name = connector_technical_name.replace("-strict-encrypt", "")
+        print("Checking connector " + connector_technical_name + " due to strict-encrypt")
     connector = Connector(connector_technical_name)
     print(f"Running QA checks for {connector_technical_name}:{connector.version}")
     qa_check_results = {qa_check.__name__: qa_check(connector) for qa_check in QA_CHECKS}

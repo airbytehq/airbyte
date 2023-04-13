@@ -1,0 +1,22 @@
+data:
+  allowedHosts:
+    hosts:
+      - accounts.google.com
+      - googleads.googleapis.com
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
+  dockerImageTag: 0.2.13
+  dockerRepository: airbyte/source-google-ads
+  githubIssueLabel: source-google-ads
+  icon: google-adwords.svg
+  license: MIT
+  name: Google Ads
+  releaseStage: generally_available
+  supportUrl: https://docs.airbyte.com/integrations/sources/google-ads
+metadataSpecVersion: "1.0"

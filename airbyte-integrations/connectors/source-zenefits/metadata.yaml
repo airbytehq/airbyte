@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 8baba53d-2fe3-4e33-bc85-210d0eb62884
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-zenefits
+  githubIssueLabel: source-zenefits
+  icon: zenefits.svg
+  license: MIT
+  name: Zenefits
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/zenefits
+metadataSpecVersion: "1.0"

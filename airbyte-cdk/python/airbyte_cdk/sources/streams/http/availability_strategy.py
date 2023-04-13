@@ -31,7 +31,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
           resolve the unavailability, if possible.
         """
         try:
-            # Some streams need a stream slice to read records (e.g. if they have a SubstreamSlicer)
+            # Some streams need a stream slice to read records (e.g. if they have a SubstreamPartitionRouter)
             # Streams that don't need a stream slice will return `None` as their first stream slice.
             stream_slice = get_first_stream_slice(stream)
         except StopIteration:

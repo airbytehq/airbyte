@@ -21,3 +21,7 @@ class DestinationType(Enum):
     @classmethod
     def from_string(cls, string_value: str) -> "DestinationType":
         return DestinationType[string_value.upper()]
+
+    @staticmethod
+    def testable_destinations():
+        return [dest for dest in list(DestinationType) if dest != DestinationType.DUCKDB]
