@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: fb141f29-be2a-450b-a4f2-2cd203a00f84
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-rd-station-marketing
+  githubIssueLabel: source-rd-station-marketing
+  icon: rdstation.svg
+  license: MIT
+  name: RD Station Marketing
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/rd-station-marketing
+metadataSpecVersion: "1.0"
