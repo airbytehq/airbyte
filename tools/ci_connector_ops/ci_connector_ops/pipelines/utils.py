@@ -8,6 +8,7 @@ import datetime
 import re
 import sys
 import unicodedata
+from glob import glob
 from pathlib import Path
 from typing import Any, Callable, List, Optional, Set
 
@@ -17,9 +18,11 @@ import click
 import git
 from ci_connector_ops.utils import DESTINATION_CONNECTOR_PATH_PREFIX, SOURCE_CONNECTOR_PATH_PREFIX, Connector, get_connector_name_from_path
 from dagger import Config, Connection, Container, DaggerError, File, QueryError
+from more_itertools import chunked
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
+METADATA_FILE_NAME = "metadata.yaml"
 
 
 # This utils will probably be redundant once https://github.com/dagger/dagger/issues/3764 is implemented
@@ -216,16 +219,12 @@ def get_modified_connectors(modified_files: Set[str]) -> Set[Connector]:
     return set(modified_connectors)
 
 
-def get_modified_files_per_connector(modified_files: Set[str], filename: Optional[str] = None) -> dict[Connector, List[Path]]:
-    modified_files_per_connectors = {}
-    for file_path in modified_files:
-        if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) or file_path.startswith(DESTINATION_CONNECTOR_PATH_PREFIX):
-            if filename and not file_path.endswith(filename):
-                continue
-            connector = Connector(get_connector_name_from_path(file_path))
-            modified_files_per_connectors.setdefault(connector, [])
-            modified_files_per_connectors[connector].append(Path(file_path))
-    return modified_files_per_connectors
+def get_modified_metadata_files(modified_files: Set[str]) -> Set[Path]:
+    return {Path(f) for f in modified_files if f.endswith(METADATA_FILE_NAME) and f.startswith("airbyte-integrations/connectors")}
+
+
+def get_all_metadata_files() -> Set[Path]:
+    return {Path(metadata_file) for metadata_file in glob("airbyte-integrations/connectors/**/metadata.yaml", recursive=True)}
 
 
 def slugify(value: Any, allow_unicode: bool = False):
@@ -302,10 +301,11 @@ class DaggerPipelineCommand(click.Command):
             return sys.exit(1)
 
 
-async def execute_concurrently(steps: List[Callable], concurrency: int = 5):
-    semaphore = anyio.Semaphore(concurrency)
-    async with semaphore:
+async def execute_concurrently(steps: List[Callable], concurrency=5):
+    tasks = []
+    # Asyncer does not have builtin semaphore, so control concurrency via chunks of steps
+    # Anyio has semaphores but does not have the soonify method which allow access to results via the value task attribute.
+    for chunk in chunked(steps, concurrency):
         async with asyncer.create_task_group() as task_group:
-            tasks = [task_group.soonify(step)() for step in steps]
-
-        return [task.value for task in tasks]
+            tasks += [task_group.soonify(step)() for step in chunk]
+    return [task.value for task in tasks]

@@ -12,8 +12,7 @@ from ci_connector_ops.pipelines.pipelines.metadata import (
     run_metadata_upload_pipeline,
     run_metadata_validation_pipeline,
 )
-from ci_connector_ops.pipelines.utils import DaggerPipelineCommand, get_modified_connectors, get_modified_files_per_connector
-from ci_connector_ops.utils import get_all_released_connectors
+from ci_connector_ops.pipelines.utils import DaggerPipelineCommand, get_all_metadata_files, get_modified_metadata_files
 from rich.logging import RichHandler
 
 logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
@@ -32,19 +31,20 @@ def metadata(ctx: click.Context):
 
 
 @metadata.command(cls=DaggerPipelineCommand, help="Commands related to validating the metadata files.")
+@click.option("--modified-only/--all", default=True)
 @click.pass_context
-def validate(ctx: click.Context):
-    modified_files = ctx.obj["modified_files_in_branch"]
-    modified_connectors = get_modified_connectors(modified_files)
+def validate(ctx: click.Context, modified_only: bool):
+    if modified_only:
+        modified_files = ctx.obj["modified_files_in_branch"]
+        metadata_to_validate = get_modified_metadata_files(modified_files)
+        if not metadata_to_validate:
+            click.secho("No modified metadata found. Skipping metadata validation.")
+            return
+    else:
+        click.secho("Will run metadata validation on all the metadata files found in the repo.")
+        metadata_to_validate = get_all_metadata_files()
 
-    if not modified_connectors:
-        click.secho("No modified connectors found. Skipping metadata validation.")
-        return
-
-    metadata_connectors = [connector.technical_name for connector in modified_connectors]
-    metadata_source_paths = [connector.code_directory for connector in modified_connectors]
-
-    click.secho(f"Validating metadata for the following connectors: {', '.join(metadata_connectors)}")
+    click.secho(f"Will validate {len(metadata_to_validate)} metadata files.")
 
     return anyio.run(
         run_metadata_validation_pipeline,
@@ -54,7 +54,7 @@ def validate(ctx: click.Context):
         ctx.obj.get("gha_workflow_run_url"),
         ctx.obj.get("pipeline_start_timestamp"),
         ctx.obj.get("ci_context"),
-        metadata_source_paths,
+        metadata_to_validate,
     )
 
 
@@ -74,17 +74,14 @@ def upload(ctx: click.Context, gcs_bucket_name: str, gcs_credentials: str, modif
             click.secho("Not on the master branch. Skipping metadata upload.")
             return
         modified_files = ctx.obj["modified_files_in_commit"]
-        modified_metadata_per_connector = get_modified_files_per_connector(modified_files, "metadata.yaml")
-        if not modified_metadata_per_connector:
+        metadata_to_upload = get_modified_metadata_files(modified_files)
+        if not metadata_to_upload:
             click.secho("No modified metadata found. Skipping metadata upload.")
             return
-        connectors = list(modified_metadata_per_connector.keys())
     else:
-        connectors = get_all_released_connectors()
+        metadata_to_upload = get_all_metadata_files()
 
-    connectors_name = [c.technical_name for c in connectors]
-
-    click.secho(f"Uploading metadata for the following connectors: {', '.join(connectors_name)}")
+    click.secho(f"Will upload {len(metadata_to_upload)} metadata files.")
 
     return anyio.run(
         run_metadata_upload_pipeline,
@@ -94,7 +91,7 @@ def upload(ctx: click.Context, gcs_bucket_name: str, gcs_credentials: str, modif
         ctx.obj.get("gha_workflow_run_url"),
         ctx.obj.get("pipeline_start_timestamp"),
         ctx.obj.get("ci_context"),
-        connectors,
+        metadata_to_upload,
         gcs_bucket_name,
         gcs_credentials,
     )
