@@ -8,7 +8,7 @@ data:
   connectorType: destination
   definitionId: 68f351a7-2745-4bef-ad7f-996b8e51bb8c
   dockerImageTag: 0.1.6
-  dockerRepository: airbyte/destination-elasticsearch
+  dockerRepository: airbyte/destination-elasticsearch-strict-encrypt
   githubIssueLabel: destination-elasticsearch
   icon: elasticsearch.svg
   license: MIT

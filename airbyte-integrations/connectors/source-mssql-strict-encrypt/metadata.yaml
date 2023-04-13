@@ -12,7 +12,7 @@ data:
   connectorType: source
   definitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   dockerImageTag: 1.0.9
-  dockerRepository: airbyte/source-mssql
+  dockerRepository: airbyte/source-mssql-strict-encrypt
   githubIssueLabel: source-mssql
   icon: mssql.svg
   license: MIT
