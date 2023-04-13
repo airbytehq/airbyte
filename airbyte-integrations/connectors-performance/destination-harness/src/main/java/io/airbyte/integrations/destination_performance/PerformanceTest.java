@@ -53,6 +53,7 @@ public class PerformanceTest {
 
   public static final Set<Integer> PORTS = Set.of(PORT1, PORT2, PORT3, PORT4);
 
+  public static final double MEGABYTE = Math.pow(1024, 2);
   private final String imageName;
   private final JsonNode config;
   private final ConfiguredAirbyteCatalog catalog;
@@ -160,14 +161,14 @@ public class PerformanceTest {
 
       }
 
-      if (counter > 0 && counter % 1_000_000 == 0) {
-        log.info("current throughput: {} total MB {}", (totalBytes / 1_000_000.0) / ((System.currentTimeMillis() - start) / 1000.0),
-            totalBytes / 1_000_000.0);
+      if (counter > 0 && counter % MEGABYTE == 0) {
+        log.info("current throughput: {} total MB {}", (totalBytes / MEGABYTE) / ((System.currentTimeMillis() - start) / 1000.0),
+            totalBytes / MEGABYTE);
       }
     }
     log.info("Test ended successfully");
     final var end = System.currentTimeMillis();
-    final var totalMB = totalBytes / 1_000_000.0;
+    final var totalMB = totalBytes / MEGABYTE;
     final var totalTimeSecs = (end - start) / 1000.0;
     final var rps = counter / totalTimeSecs;
     log.info("total secs: {}. total MB read: {}, rps: {}, throughput: {}", totalTimeSecs, totalMB, rps, totalMB / totalTimeSecs);
