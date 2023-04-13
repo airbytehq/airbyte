@@ -1,0 +1,25 @@
+data:
+  catalogs:
+    cloud:
+      dockerImageTag: 0.3.26
+      dockerRepository: airbyte/destination-postgres-strict-encrypt
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 25c5221d-dce2-4163-ade9-739ef790f503
+  dockerImageTag: 0.3.27
+  dockerRepository: airbyte/destination-postgres
+  githubIssueLabel: destination-postgres
+  icon: postgresql.svg
+  license: MIT
+  name: Postgres
+  normalizationConfig:
+    normalizationIntegrationType: postgres
+    normalizationRepository: airbyte/normalization
+    normalizationTag: 0.4.0
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/postgres
+  supportsDbt: true
+metadataSpecVersion: "1.0"

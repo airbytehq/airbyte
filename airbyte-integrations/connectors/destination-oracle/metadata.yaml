@@ -1,0 +1,24 @@
+data:
+  catalogs:
+    cloud:
+      dockerRepository: airbyte/destination-oracle-strict-encrypt
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 3986776d-2319-4de9-8af8-db14c0996e72
+  dockerImageTag: 0.1.19
+  dockerRepository: airbyte/destination-oracle
+  githubIssueLabel: destination-oracle
+  icon: oracle.svg
+  license: MIT
+  name: Oracle
+  normalizationConfig:
+    normalizationIntegrationType: oracle
+    normalizationRepository: airbyte/normalization-oracle
+    normalizationTag: 0.4.0
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/oracle
+  supportsDbt: true
+metadataSpecVersion: "1.0"

@@ -59,7 +59,7 @@ BASIC_AUTH_USERNAME=airbyte
 BASIC_AUTH_PASSWORD=password
 ```
 
-Follow web app UI instructions to set up a source, destination, and connection to replicate data. Connections support the most popular sync modes: full refresh, incremental, and change database data captures.
+Follow web app UI instructions to set up a source, destination, and connection to replicate data. Connections support the most popular sync modes: full refresh, incremental and change data capture for databases.
 
 Read the [Airbyte docs](https://docs.airbyte.com).
 
@@ -109,6 +109,6 @@ See the [LICENSE](docs/project-overview/licenses/) file for licensing informatio
 - [GitHub](https://github.com/airbytehq/airbyte) for code, issues and pull requests
 - [Youtube](https://www.youtube.com/c/AirbyteHQ) for videos on data engineering
 - [Newsletter](https://airbyte.com/newsletter) for product updates and data news
-- [Blog](https://airbyte.com/blog) for data insigts articles, tutorials and updates
+- [Blog](https://airbyte.com/blog) for data insights articles, tutorials and updates
 - [Docs](https://docs.airbyte.com/) for Airbyte features
 - [Roadmap](https://app.harvestr.io/roadmap/view/pQU6gdCyc/launch-week-roadmap) for planned features

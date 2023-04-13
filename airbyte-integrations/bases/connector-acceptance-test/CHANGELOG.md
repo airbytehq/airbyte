@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.0
+Basic read test: add validation that fails if undeclared columns are present in records. Add `fail_on_extra_fields` input parameter to ignore this failure if desired.
+
+## 0.8.0
+Spec tests: Make sure grouping and ordering properties are used in a consistent way.
+
+## 0.7.2
+TestConnection: assert that a check with `exception` status emits a trace message.
+
+## 0.7.1
+Discovery backward compatibility tests: handle errors on previous connectors catalog retrieval. Return None when the discovery failed. It should unblock the situation when tests fails even if you bypassed backward compatibility tests.
+
 ## 0.7.0
 Basic read test: add `ignored_fields`, change configuration format by adding optional `bypass_reason` [#22996](https://github.com/airbytehq/airbyte/pull/22996)
 

@@ -17,5 +17,8 @@
     "someId": {
       "timeframe_start": "2022-01-01T00:00:00Z"
     }
+  },
+  "invoices": {
+    "invoice_date": "2022-01-01T00:00:00Z"
   }
 }
