@@ -20,9 +20,13 @@ connectionSpecification:
       type: string
       description: App key found at settings (Ref- https://settings.yotpo.com/#/general_settings)
     date_from:
-      title: Date From Filter
+      title: Date-From Filter
       type: string
       description: Date time filter for incremental filter, Specify which date to extract from.
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$"
+      examples:
+        - "2022-03-01T00:00:00.000Z"
+      format: "date-time"
     email:
       title: Registered email address
       type: string
