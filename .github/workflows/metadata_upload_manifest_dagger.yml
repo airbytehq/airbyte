@@ -1,11 +1,11 @@
-name: Metadata Service CI
+name: Upload modified metadata files to GCS
 
 on:
   push:
     branches:
       - master
 jobs:
-  metadata_service_ci:
+  upload_modified_metadata_files_to_gcs:
     name: Upload modified metadata files to GCS
     runs-on: medium-runner
     steps:
