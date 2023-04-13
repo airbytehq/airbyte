@@ -159,4 +159,3 @@ class Requester(RequestOptionsProvider):
         Specifies maximum amount of retries for backoff policy. Return None for no limit.
         :return:
         """
-
