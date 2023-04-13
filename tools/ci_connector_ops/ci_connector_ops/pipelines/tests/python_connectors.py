@@ -61,7 +61,7 @@ class ConnectorPackageInstall(Step):
             Tuple[StepResult, Container]: Failure or success of the package installation and the connector under test container (with the connector package installed).
         """
         connector_under_test = await environments.with_installed_airbyte_connector(self.context)
-        return await self.get_step_result(connector_under_test), connector_under_test
+        return (await self.get_step_result(connector_under_test)), connector_under_test
 
 
 class UnitTests(PytestStep):
