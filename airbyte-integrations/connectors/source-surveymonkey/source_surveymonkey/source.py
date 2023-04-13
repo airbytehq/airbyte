@@ -17,7 +17,6 @@ from .streams import SurveyPages, SurveyQuestions, SurveyResponses, Surveys
 
 
 class SourceSurveymonkey(AbstractSource):
-
     SCOPES = {"responses_read_detail", "surveys_read", "users_read"}
 
     @classmethod
@@ -34,11 +33,6 @@ class SourceSurveymonkey(AbstractSource):
                 if not credentials.get("access_token"):
                     return False, "access_token in credentials is not provided"
 
-                if not credentials.get("client_id"):
-                    return False, "client_id in credentials is not provided"
-
-                if not credentials.get("client_secret"):
-                    return False, "client_secret in credentials is not provided"
         return True, None
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
