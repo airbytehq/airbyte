@@ -5893,7 +5893,7 @@
     "destinationDefinitionId": "471e5cab-8ed1-49f3-ba11-79c687784737",
     "name": "S3 Glue",
     "dockerRepository": "airbyte/destination-s3-glue",
-    "dockerImageTag": "0.1.4",
+    "dockerImageTag": "0.1.5",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/s3-glue",
     "icon": "s3-glue.svg",
     "spec": {
@@ -5982,11 +5982,12 @@
                     }
                   } ]
                 },
-                "flatten_data": {
-                  "title": "Flatten Data",
-                  "description": "If true data will be flattened and won't be nested in the _airbyte_data field",
-                  "type": "boolean",
-                  "default": true
+                "flattening": {
+                  "type": "string",
+                  "title": "Flattening",
+                  "description": "Whether the input json data should be normalized (flattened) in the output JSON Lines. Please refer to docs for details.",
+                  "default": "Root level flattening",
+                  "enum": [ "No flattening", "Root level flattening" ]
                 }
               }
             } ],
@@ -8007,7 +8008,7 @@
     "sourceDefinitionId": "1fa90628-2b9e-11ed-a261-0242ac120002",
     "name": "AlloyDB for PostgreSQL",
     "dockerRepository": "airbyte/source-alloydb",
-    "dockerImageTag": "2.0.17",
+    "dockerImageTag": "2.0.19",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/alloydb",
     "icon": "alloydb.svg",
     "sourceType": "database",
@@ -17219,7 +17220,7 @@
     "sourceDefinitionId": "b5ea17b1-f170-46dc-bc31-cc744ca984c1",
     "name": "Microsoft SQL Server (MSSQL)",
     "dockerRepository": "airbyte/source-mssql",
-    "dockerImageTag": "1.0.10",
+    "dockerImageTag": "1.0.11",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mssql",
     "icon": "mssql.svg",
     "sourceType": "database",
@@ -18187,7 +18188,7 @@
     "sourceDefinitionId": "435bb9a5-7887-4809-aa58-28c27df0d7ad",
     "name": "MySQL",
     "dockerRepository": "airbyte/source-mysql",
-    "dockerImageTag": "2.0.13",
+    "dockerImageTag": "2.0.14",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mysql",
     "icon": "mysql.svg",
     "sourceType": "database",
@@ -18900,7 +18901,7 @@
     "sourceDefinitionId": "6e00b415-b02e-4160-bf02-58176a0ae687",
     "name": "Notion",
     "dockerRepository": "airbyte/source-notion",
-    "dockerImageTag": "1.0.3",
+    "dockerImageTag": "1.0.4",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/notion",
     "icon": "notion.svg",
     "sourceType": "api",
@@ -20909,7 +20910,7 @@
     "sourceDefinitionId": "decd338e-5647-4c0b-adf4-da0e75f5a750",
     "name": "Postgres",
     "dockerRepository": "airbyte/source-postgres",
-    "dockerImageTag": "2.0.18",
+    "dockerImageTag": "2.0.20",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/postgres",
     "icon": "postgresql.svg",
     "sourceType": "database",
@@ -20982,15 +20983,6 @@
             "order": 6,
             "group": "advanced",
             "pattern_descriptor": "key1=value1&key2=value2"
-          },
-          "ssl": {
-            "title": "Connect using SSL",
-            "description": "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
-            "type": "boolean",
-            "default": false,
-            "order": 7,
-            "group": "security",
-            "always_show": true
           },
           "ssl_mode": {
             "title": "SSL Modes",
@@ -21692,7 +21684,7 @@
     "sourceDefinitionId": "cf9c4355-b171-4477-8f2d-6c5cc5fc8b7e",
     "name": "QuickBooks",
     "dockerRepository": "airbyte/source-quickbooks",
-    "dockerImageTag": "1.0.0",
+    "dockerImageTag": "2.0.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/quickbooks",
     "icon": "quickbooks.svg",
     "sourceType": "api",
@@ -21762,7 +21754,7 @@
             "title": "Start Date",
             "type": "string",
             "format": "date-time",
-            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[+-][0-9]{2}:[0-9]{2}",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
             "examples": [ "2021-03-20T00:00:00+00:00" ]
           },
           "sandbox": {
@@ -21776,63 +21768,7 @@
       },
       "supportsNormalization": false,
       "supportsDBT": false,
-      "supported_destination_sync_modes": [ ],
-      "advanced_auth": {
-        "auth_flow_type": "oauth2.0",
-        "predicate_key": [ "credentials", "auth_type" ],
-        "predicate_value": "oauth2.0",
-        "oauth_config_specification": {
-          "complete_oauth_output_specification": {
-            "type": "object",
-            "additionalProperties": true,
-            "properties": {
-              "access_token": {
-                "type": "string",
-                "path_in_connector_config": [ "credentials", "access_token" ]
-              },
-              "refresh_token": {
-                "type": "string",
-                "path_in_connector_config": [ "credentials", "refresh_token" ]
-              },
-              "token_expiry_date": {
-                "type": "string",
-                "format": "date-time",
-                "path_in_connector_config": [ "credentials", "token_expiry_date" ]
-              },
-              "realm_id": {
-                "type": "string",
-                "path_in_connector_config": [ "credentials", "realm_id" ]
-              }
-            }
-          },
-          "complete_oauth_server_input_specification": {
-            "type": "object",
-            "additionalProperties": true,
-            "properties": {
-              "client_id": {
-                "type": "string"
-              },
-              "client_secret": {
-                "type": "string"
-              }
-            }
-          },
-          "complete_oauth_server_output_specification": {
-            "type": "object",
-            "additionalProperties": true,
-            "properties": {
-              "client_id": {
-                "type": "string",
-                "path_in_connector_config": [ "credentials", "client_id" ]
-              },
-              "client_secret": {
-                "type": "string",
-                "path_in_connector_config": [ "credentials", "client_secret" ]
-              }
-            }
-          }
-        }
-      }
+      "supported_destination_sync_modes": [ ]
     },
     "tombstone": false,
     "public": true,
@@ -21891,7 +21827,7 @@
     "sourceDefinitionId": "45d2e135-2ede-49e1-939f-3e3ec357a65e",
     "name": "Recharge",
     "dockerRepository": "airbyte/source-recharge",
-    "dockerImageTag": "0.2.8",
+    "dockerImageTag": "0.2.9",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/recharge",
     "icon": "recharge.svg",
     "sourceType": "api",
@@ -24516,7 +24452,7 @@
     "sourceDefinitionId": "e094cb9a-26de-4645-8761-65c0c425d1de",
     "name": "Stripe",
     "dockerRepository": "airbyte/source-stripe",
-    "dockerImageTag": "3.0.5",
+    "dockerImageTag": "3.1.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/stripe",
     "icon": "stripe.svg",
     "sourceType": "api",
@@ -25880,7 +25816,7 @@
     "sourceDefinitionId": "b9dc6155-672e-42ea-b10d-9f1f1fb95ab1",
     "name": "Twilio",
     "dockerRepository": "airbyte/source-twilio",
-    "dockerImageTag": "0.3.0",
+    "dockerImageTag": "0.4.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/twilio",
     "icon": "twilio.svg",
     "sourceType": "api",

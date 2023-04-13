@@ -370,7 +370,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:2.0.17"
+- dockerImage: "airbyte/source-alloydb:2.0.19"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -8601,7 +8601,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:1.0.10"
+- dockerImage: "airbyte/source-mssql:1.0.11"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
@@ -9478,7 +9478,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:2.0.13"
+- dockerImage: "airbyte/source-mysql:2.0.14"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -10344,7 +10344,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-notion:1.0.3"
+- dockerImage: "airbyte/source-notion:1.0.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/notion"
     connectionSpecification:
@@ -12072,7 +12072,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:2.0.18"
+- dockerImage: "airbyte/source-postgres:2.0.20"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -12146,15 +12146,6 @@
           order: 6
           group: "advanced"
           pattern_descriptor: "key1=value1&key2=value2"
-        ssl:
-          title: "Connect using SSL"
-          description: "Encrypt data using SSL. When activating SSL, please select\
-            \ one of the connection modes."
-          type: "boolean"
-          default: false
-          order: 7
-          group: "security"
-          always_show: true
         ssl_mode:
           title: "SSL Modes"
           description: "SSL connection modes. \n  Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"\
@@ -12748,7 +12739,7 @@
         oauthFlowOutputParameters:
         - - "token"
         - - "key"
-- dockerImage: "airbyte/source-quickbooks:1.0.0"
+- dockerImage: "airbyte/source-quickbooks:2.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/quickbooks"
     connectionSpecification:
@@ -12822,7 +12813,7 @@
           title: "Start Date"
           type: "string"
           format: "date-time"
-          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[+-][0-9]{2}:[0-9]{2}"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           examples:
           - "2021-03-20T00:00:00+00:00"
         sandbox:
@@ -12834,60 +12825,6 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-    advanced_auth:
-      auth_flow_type: "oauth2.0"
-      predicate_key:
-      - "credentials"
-      - "auth_type"
-      predicate_value: "oauth2.0"
-      oauth_config_specification:
-        complete_oauth_output_specification:
-          type: "object"
-          additionalProperties: true
-          properties:
-            access_token:
-              type: "string"
-              path_in_connector_config:
-              - "credentials"
-              - "access_token"
-            refresh_token:
-              type: "string"
-              path_in_connector_config:
-              - "credentials"
-              - "refresh_token"
-            token_expiry_date:
-              type: "string"
-              format: "date-time"
-              path_in_connector_config:
-              - "credentials"
-              - "token_expiry_date"
-            realm_id:
-              type: "string"
-              path_in_connector_config:
-              - "credentials"
-              - "realm_id"
-        complete_oauth_server_input_specification:
-          type: "object"
-          additionalProperties: true
-          properties:
-            client_id:
-              type: "string"
-            client_secret:
-              type: "string"
-        complete_oauth_server_output_specification:
-          type: "object"
-          additionalProperties: true
-          properties:
-            client_id:
-              type: "string"
-              path_in_connector_config:
-              - "credentials"
-              - "client_id"
-            client_secret:
-              type: "string"
-              path_in_connector_config:
-              - "credentials"
-              - "client_secret"
 - dockerImage: "airbyte/source-railz:0.1.1"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -12920,7 +12857,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-recharge:0.2.8"
+- dockerImage: "airbyte/source-recharge:0.2.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recharge"
     connectionSpecification:
@@ -15149,7 +15086,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-stripe:3.0.5"
+- dockerImage: "airbyte/source-stripe:3.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
     connectionSpecification:
@@ -16300,7 +16237,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-twilio:0.3.0"
+- dockerImage: "airbyte/source-twilio:0.4.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/twilio"
     connectionSpecification:

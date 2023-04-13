@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+"""This module is the CLI entrypoint to the airbyte-ci commands."""
+
 import click
 from ci_connector_ops.pipelines.contexts import CIContext
 from ci_connector_ops.pipelines.utils import (
@@ -39,7 +41,7 @@ def airbyte_ci(
     gha_workflow_run_id: str,
     ci_context: str,
     pipeline_start_timestamp: int,
-):
+):  # noqa D103
     ctx.ensure_object(dict)
     ctx.obj["is_local"] = is_local
     ctx.obj["git_branch"] = git_branch
