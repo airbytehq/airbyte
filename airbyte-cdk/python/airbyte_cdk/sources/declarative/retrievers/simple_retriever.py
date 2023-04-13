@@ -417,6 +417,13 @@ class SimpleRetriever(Retriever, HttpStream):
     ) -> Iterable[StreamData]:
         yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
 
+    @property
+    def max_retries(self) -> Union[int, None]:
+        """
+        Override if needed. Specifies maximum amount of retries for backoff policy. Return None for no limit.
+        """
+        return self.requester.max_retries
+
 
 @dataclass
 class SimpleRetrieverTestReadDecorator(SimpleRetriever):

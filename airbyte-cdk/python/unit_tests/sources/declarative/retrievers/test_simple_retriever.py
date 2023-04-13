@@ -39,6 +39,7 @@ def test_simple_retriever_full(mock_http_stream):
     requester = MagicMock()
     request_params = {"param": "value"}
     requester.get_request_params.return_value = request_params
+    requester.max_retries = 3
 
     paginator = MagicMock()
     next_page_token = {"cursor": "cursor_value"}
@@ -117,6 +118,8 @@ def test_simple_retriever_full(mock_http_stream):
 
     [r for r in retriever.read_records(SyncMode.full_refresh)]
     paginator.reset.assert_called()
+
+    assert retriever.max_retries == 3
 
 
 @patch.object(HttpStream, "_read_pages", return_value=iter([*request_response_logs, *records]))

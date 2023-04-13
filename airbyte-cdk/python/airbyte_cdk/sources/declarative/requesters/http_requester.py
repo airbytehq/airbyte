@@ -155,3 +155,6 @@ class HttpRequester(Requester):
     def use_cache(self) -> bool:
         # FIXME: this should be declarative
         return False
+
+    def max_retries(self) -> Optional[int]:
+        return self.error_handler.max_retries()

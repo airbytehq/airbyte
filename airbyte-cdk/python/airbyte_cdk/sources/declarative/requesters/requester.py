@@ -151,3 +151,12 @@ class Requester(RequestOptionsProvider):
         """
         If True, all records will be cached.
         """
+
+    @property
+    @abstractmethod
+    def max_retries(self) -> Optional[int]:
+        """
+        Specifies maximum amount of retries for backoff policy. Return None for no limit.
+        :return:
+        """
+
