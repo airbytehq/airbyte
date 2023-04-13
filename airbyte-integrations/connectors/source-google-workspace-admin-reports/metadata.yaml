@@ -1,0 +1,19 @@
+data:
+  catalogs:
+    cloud:
+      dockerImageTag: 0.1.4
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: ed9dfefa-1bbc-419d-8c5e-4d78f0ef6734
+  dockerImageTag: 0.1.8
+  dockerRepository: airbyte/source-google-workspace-admin-reports
+  githubIssueLabel: source-google-workspace-admin-reports
+  icon: googleworkpace.svg
+  license: MIT
+  name: Google Workspace Admin Reports
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/google-workspace-admin-reports
+metadataSpecVersion: "1.0"

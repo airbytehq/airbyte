@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: ba15ac82-5c6a-4fb2-bf24-925c23a1180c
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-gocardless
+  githubIssueLabel: source-gocardless
+  icon: gocardless.svg
+  license: MIT
+  name: GoCardless
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/gocardless
+metadataSpecVersion: "1.0"

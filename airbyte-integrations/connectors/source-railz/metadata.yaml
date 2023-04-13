@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 9b6cc0c0-da81-4103-bbfd-5279e18a849a
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-railz
+  githubIssueLabel: source-railz
+  icon: railz.svg
+  license: MIT
+  name: Railz
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/railz
+metadataSpecVersion: "1.0"

@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: db385323-9333-4fec-bec3-9e0ca9326c90
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-alpha-vantage
+  githubIssueLabel: source-alpha-vantage
+  icon: alpha-vantage.svg
+  license: MIT
+  name: Alpha Vantage
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/alpha-vantage
+metadataSpecVersion: "1.0"

@@ -1,0 +1,29 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
+  dockerImageTag: 1.2.19
+  dockerRepository: airbyte/destination-bigquery
+  githubIssueLabel: destination-bigquery
+  icon: bigquery.svg
+  license: MIT
+  name: BigQuery
+  normalizationConfig:
+    normalizationIntegrationType: bigquery
+    normalizationRepository: airbyte/normalization
+    normalizationTag: 0.4.0
+  releaseStage: generally_available
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 1Gi
+          memory_request: 1Gi
+  supportUrl: https://docs.airbyte.com/integrations/destinations/bigquery
+  supportsDbt: true
+metadataSpecVersion: "1.0"
