@@ -1,27 +1,13 @@
 version: "0.29.0"
 
 definitions:
-  requester:
+  privacy_stream_requester:
     type: HttpRequester
-    url_base: "https://api.yotpo.com/v1"
+    url_base: "https://api.yotpo.com/privacy"
     http_method: "GET"
-    authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config['access_token'] }}"
-
-  base_stream:
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
-      paginator:
-        type: NoPagination
-      requester:
-        $ref: "#/definitions/requester"
+    request_parameters:
+      utoken: "{{ config['access_token'] }}"
+      email: "{{ config['email'] }}"
 
   privacy_data_stream:
     type: DeclarativeStream
@@ -35,18 +21,27 @@ definitions:
       paginator:
         type: NoPagination
       requester:
-        type: HttpRequester
-        url_base: "https://api.yotpo.com/privacy"
-        http_method: "GET"
-        request_parameters:
-          utoken: "{{ config['access_token'] }}"
-          email: "{{ config['email'] }}"
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['access_token'] }}"
+        $ref: "#/definitions/privacy_stream_requester"
     name: "privacy_data"
     $parameters:
       path: "/data/exists"
+  
+  privacy_user_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["status"]
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/privacy_stream_requester"
+    name: "privacy_user"
+    $parameters:
+      path: "/data"
 
   reviews_stream:
     type: DeclarativeStream
@@ -127,15 +122,13 @@ definitions:
         http_method: "GET"
         request_parameters:
           utoken: "{{ config['access_token'] }}"
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['access_token'] }}"
     name: "webhooks"
     $parameters:
       path: "/apps/{{ config['app_key'] }}/webhooks"
 
 streams:
   - "#/definitions/privacy_data_stream"
+  - "#/definitions/privacy_user_stream"
   - "#/definitions/reviews_stream"
   - "#/definitions/top_reviews_stream"
   - "#/definitions/webhooks_stream"
@@ -144,6 +137,7 @@ check:
   type: CheckStream
   stream_names:
     - "privacy_data"
+    - "privacy_user"
     - "reviews"
     - "top_reviews"
     - "webhooks"
