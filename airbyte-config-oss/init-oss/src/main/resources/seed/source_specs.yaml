@@ -1314,11 +1314,11 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.1.24"
+- dockerImage: "airbyte/source-amplitude:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amplitude"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Amplitude Spec"
       type: "object"
       required:
@@ -1355,29 +1355,15 @@
             \ data before this date will not be replicated."
           examples:
           - "2021-01-25T00:00:00Z"
-        event_time_interval:
-          type: "object"
-          title: "Event Stream Time Interval"
-          description: "Amplitude event stream time interval"
-          required:
-          - "size_unit"
-          - "size"
-          properties:
-            size_unit:
-              type: "string"
-              title: "Events Time Interval Size Unit"
-              description: "Amplitude event stream's interval size unit"
-              enum:
-              - "days"
-              - "hours"
-              - "weeks"
-              - "months"
-              default: "days"
-            size:
-              type: "integer"
-              title: "Events Time Interval Size"
-              description: "Amplitude event stream's interval size unit"
-              default: 1
+        request_time_range:
+          type: "integer"
+          title: "Request time range"
+          description: "According to <a href=\"https://www.docs.developers.amplitude.com/analytics/apis/export-api/#considerations\"\
+            >Considerations</a> too big time range in request can cause a timeout\
+            \ error. In this case, set shorter time interval in hours."
+          default: 24
+          minimum: 1
+          maximum: 8760
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -12072,7 +12058,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:2.0.19"
+- dockerImage: "airbyte/source-postgres:2.0.20"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -12146,15 +12132,6 @@
           order: 6
           group: "advanced"
           pattern_descriptor: "key1=value1&key2=value2"
-        ssl:
-          title: "Connect using SSL"
-          description: "Encrypt data using SSL. When activating SSL, please select\
-            \ one of the connection modes."
-          type: "boolean"
-          default: false
-          order: 7
-          group: "security"
-          always_show: true
         ssl_mode:
           title: "SSL Modes"
           description: "SSL connection modes. \n  Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"\
@@ -12866,7 +12843,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-recharge:0.2.8"
+- dockerImage: "airbyte/source-recharge:0.2.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recharge"
     connectionSpecification:
@@ -15095,7 +15072,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-stripe:3.0.5"
+- dockerImage: "airbyte/source-stripe:3.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
     connectionSpecification:
@@ -15207,7 +15184,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-surveymonkey:0.1.15"
+- dockerImage: "airbyte/source-surveymonkey:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/surveymonkey"
     connectionSpecification:

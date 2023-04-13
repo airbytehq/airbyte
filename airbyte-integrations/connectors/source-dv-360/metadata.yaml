@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 1356e1d9-977f-4057-ad4b-65f25329cf61
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-dv-360
+  githubIssueLabel: source-dv-360
+  icon: dv360.svg
+  license: MIT
+  name: DV 360
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/dv-360
+metadataSpecVersion: "1.0"
