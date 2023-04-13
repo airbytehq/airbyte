@@ -12,7 +12,6 @@ import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
-import io.debezium.engine.ChangeEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

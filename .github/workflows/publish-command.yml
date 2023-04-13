@@ -28,6 +28,10 @@ on:
         description: "Should run tests when publishing"
         required: true
         default: "true"
+      pre-release:
+        description: "Should publish a pre-release version"
+        required: true
+        default: false
 
 jobs:
   ## Gradle Build
@@ -256,7 +260,7 @@ jobs:
           python3 -m virtualenv venv
           source venv/bin/activate
       - name: Install yq
-        if: github.event.inputs.auto-bump-version == 'true' && success()
+        if: github.event.inputs.auto-bump-version == 'true' && github.event.inputs.pre-release != 'true' && success()
         run: |
           sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64
           sudo add-apt-repository ppa:rmescandon/yq
@@ -285,7 +289,7 @@ jobs:
           source tools/lib/lib.sh
           DOCKERFILE=airbyte-integrations/${{ matrix.connector }}/Dockerfile
           echo "IMAGE_NAME=$(echo ${{ matrix.connector }} | cut -d"/" -f2)" >> $GITHUB_ENV
-          echo "IMAGE_VERSION=$(_get_docker_image_version ${DOCKERFILE})" >> $GITHUB_ENV
+          echo "IMAGE_VERSION=$(_get_docker_image_version ${DOCKERFILE} ${{ github.event.inputs.pre-release }})" >> $GITHUB_ENV
       - name: Prepare Sentry
         if: startsWith(matrix.connector, 'connectors')
         uses: Wandalen/wretry.action@master
@@ -304,7 +308,7 @@ jobs:
         with:
           command: |
             echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
-            ./tools/integrations/manage.sh publish airbyte-integrations/${{ matrix.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache
+            ./tools/integrations/manage.sh publish airbyte-integrations/${{ matrix.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache ${{ github.event.inputs.pre-release == 'true' && '--pre_release' || '' }}
           attempt_limit: 3
           attempt_delay: 5000 in # ms
       - name: Update Integration Test Credentials after test run for ${{ github.event.inputs.connector }}
@@ -331,7 +335,7 @@ jobs:
           SENTRY_ORG: airbytehq
           SENTRY_PROJECT: connector-incident-management
       - name: Check if connector in definitions yaml
-        if: github.event.inputs.auto-bump-version == 'true' && success()
+        if: github.event.inputs.auto-bump-version == 'true' && github.event.inputs.pre-release != 'true' && success()
         run: |
           connector="airbyte/${{ env.IMAGE_NAME }}"
           definitionpath=./airbyte-config-oss/init-oss/src/main/resources/seed/
@@ -341,7 +345,7 @@ jobs:
           then exit 1
           fi
       - name: Bump version in definitions yaml
-        if: github.event.inputs.auto-bump-version == 'true' && success()
+        if: github.event.inputs.auto-bump-version == 'true' && github.event.inputs.pre-release != 'true' && success()
         run: |
           connector="airbyte/${{ env.IMAGE_NAME }}"
           definitionpath=./airbyte-config-oss/init-oss/src/main/resources/seed/
@@ -352,7 +356,7 @@ jobs:
           else yq e "(.[] | select(.name == \"$sourcename\").dockerImageTag)|=\"${{ env.IMAGE_VERSION }}\"" -i "$definitionpath"source_definitions.yaml
           fi
       - name: Run gradle process changes
-        if: github.event.inputs.auto-bump-version == 'true' && success()
+        if: github.event.inputs.auto-bump-version == 'true' && github.event.inputs.pre-release != 'true' && success()
         uses: Wandalen/wretry.action@master
         with:
           command: ./gradlew :airbyte-config-oss:init-oss:processResources
@@ -364,7 +368,7 @@ jobs:
           git config user.name 'Octavia Squidington III'
           git config user.email 'octavia-squidington-iii@users.noreply.github.com'
       - name: git commit and push
-        if: github.event.inputs.auto-bump-version == 'true' && success()
+        if: github.event.inputs.auto-bump-version == 'true' && github.event.inputs.pre-release != 'true' && success()
         run: |
           git add -u
           git commit -m "auto-bump connector version"
