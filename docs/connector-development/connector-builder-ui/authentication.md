@@ -15,7 +15,6 @@ Check the documentation of the API you want to integrate for the used authentica
 * [Bearer](#bearer)
 * [API Key](#api-key)
 * [OAuth](#oauth)
-* [Session token](#session-token)
 
 Select the matching authentication method for your API and check the sections below for more information about individual methods.
 
@@ -128,57 +127,6 @@ curl -X GET \
   -H "Authorization: Bearer <access-token>" \
   https://connect.squareup.com/v2/<stream path>
 ```
-
-
-### Session token
-
-The session token authentication method is the right choice if the API requires a consumer to send a request to "log in", returning a session token which can be used to send request actually extracting records.
-
-Username and password are supplied as "Testing values" / as part of the source configuration and are sent to the configured "Login url" as a JSON body with a `username` and a `password` property. The "Session token response key" specifies where to find the session token in the log-in response. The "Header" specifies in which HTTP header field the session token has to be injected.
-
-Besides specifying username and password, the session token authentication method also allows 
-
-to directly specify the session token via the source configuration. In this case, the "Validate session url" is used to check whether the provided session token is still valid.
-
-#### Example
-
-The [Metabase API](https://www.metabase.com/learn/administration/metabase-api#authenticate-your-requests-with-a-session-token) is providing a session authentication scheme.
-
-In this case, the authentication method has to be configured like this:
-* "Login url" is `session`
-* "Session token response key" is `id`
-* "Header" is `X-Metabase-Session`
-* "Validate session url" is `user/current`
-
-When running a sync, the connector is first sending username and password to the `session` 
-endpoint:
-```
-curl -X POST \
-  -H "Content-Type: application/json" \
-  -d '{"username": "<username>", "password": "<password>"}' \
-  http://<base url>/session
-```
-
-The response is a JSON object containing an `id` property:
-```
- {"id":"<session-token>"}
-```
-
-When fetching records, the session token is sent along as the `X-Metabase-Session` header:
-```
-curl -X GET \
-  -H "X-Metabase-Session: <session-token>" \
-  http://<base url>/<stream path>
-```
-
-If the session token is specified as part of the source configuration, the "Validate session url" is requested with the existing token to check for validity:
-```
-curl -X GET \
-  -H "X-Metabase-Session: <session-token>" \
-  http://<base url>/user/current
-```
-
-If this request returns an HTTP status code that's not in the range of 400 to 600, the token is considered valid and records are fetched.
 
 ## Reference
 
