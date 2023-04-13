@@ -255,7 +255,7 @@ class SurveyResponses(SurveyIDSliceMixin, IncrementalSurveymonkeyStream):
         if next_page_token:
             return next_page_token
 
-        params = super().request_params(stream_state=stream_state, **kwargs)
+        params = super().request_params(stream_state=stream_state)
         params["sort_order"] = "ASC"
         params["sort_by"] = self.cursor_field
         params["per_page"] = 100  # Max of 100 allowed per page. We use the highest
