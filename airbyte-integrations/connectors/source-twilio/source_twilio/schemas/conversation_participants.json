@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "account_sid": {
+      "type": ["null", "string"]
+    },
+    "conversation_sid": {
+      "type": ["null", "string"]
+    },
+    "sid": {
+      "type": ["null", "string"]
+    },
+    "identity": {
+      "type": ["null", "string"]
+    },
+    "attributes": {
+      "type": ["null", "string"]
+    },
+    "messaging_binding": {
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "address": {
+          "type": ["null", "string"]
+        },
+        "proxy_address": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "role_sid": {
+      "type": ["null", "string"]
+    },
+    "date_created": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "date_updated": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "last_read_message_index": {
+      "type": ["null", "string"]
+    },
+    "last_read_timestamp": {
+      "type": ["null", "string"]
+    }
+  }
+}
