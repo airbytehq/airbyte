@@ -7,7 +7,6 @@ from airbyte_cdk.models import (
     AirbyteStream,
     AirbyteStreamStatus,
     AirbyteStreamStatusTraceMessage,
-    AirbyteTraceMessage,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
     SyncMode,
@@ -75,4 +74,3 @@ def test_stopped_failed_as_message():
     assert airbyte_message.trace.stream_status.stream_descriptor.namespace == configured_stream.stream.namespace
     assert airbyte_message.trace.stream_status.status == stream_status
     assert airbyte_message.trace.stream_status.success is False
-
