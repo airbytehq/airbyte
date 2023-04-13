@@ -23,6 +23,31 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
 
+  privacy_data_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["response"]
+      paginator:
+        type: NoPagination
+      requester:
+        type: HttpRequester
+        url_base: "https://api.yotpo.com/privacy"
+        http_method: "GET"
+        request_parameters:
+          utoken: "{{ config['access_token'] }}"
+          email: "{{ config['email'] }}"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['access_token'] }}"
+    name: "privacy_data"
+    $parameters:
+      path: "/data/exists"
+
   reviews_stream:
     type: DeclarativeStream
     retriever:
@@ -110,6 +135,7 @@ definitions:
       path: "/apps/{{ config['app_key'] }}/webhooks"
 
 streams:
+  - "#/definitions/privacy_data_stream"
   - "#/definitions/reviews_stream"
   - "#/definitions/top_reviews_stream"
   - "#/definitions/webhooks_stream"
@@ -117,6 +143,7 @@ streams:
 check:
   type: CheckStream
   stream_names:
+    - "privacy_data"
     - "reviews"
     - "top_reviews"
     - "webhooks"
