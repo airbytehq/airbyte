@@ -219,7 +219,7 @@ class SurveyQuestions(SurveyIDSliceMixin, SurveymonkeyStream):
 
 class SurveyResponses(SurveyIDSliceMixin, IncrementalSurveymonkeyStream):
     """
-    Docs: https://developer.surveymonkey.com/api/v3/#survey-responses
+    Docs: https://developer.surveymonkey.com/api/v3/#api-endpoints-survey-responses
     """
 
     cursor_field = "date_modified"
@@ -249,7 +249,12 @@ class SurveyResponses(SurveyIDSliceMixin, IncrementalSurveymonkeyStream):
         current_stream_state[survey_id] = {self.cursor_field: state_value}
         return current_stream_state
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        if next_page_token:
+            return next_page_token
+
         params = super().request_params(stream_state=stream_state, **kwargs)
         params["sort_order"] = "ASC"
         params["sort_by"] = self.cursor_field
