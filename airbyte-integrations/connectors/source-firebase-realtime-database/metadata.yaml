@@ -1,0 +1,20 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*"
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: source
+  definitionId: acb5f973-a565-441e-992f-4946f3e65662
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-firebase-realtime-database
+  githubIssueLabel: source-firebase-realtime-database
+  license: MIT
+  name: Firebase Realtime Database
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.io/integrations/sources/firebase-realtime-database
+metadataSpecVersion: "1.0"
