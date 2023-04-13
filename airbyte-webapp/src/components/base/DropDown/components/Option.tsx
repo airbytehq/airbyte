@@ -36,7 +36,7 @@ export const OptionView = styled.div<{
   color: ${({ isSelected, theme }) => (isSelected ? theme.primaryColor : theme.textColor)};
   background: ${({ isSelected, theme }) => (isSelected ? theme.primaryColor12 : theme.whiteColor)};
   border: none;
-  padding: 10px 16px;
+  padding: 10px 26px 10px 16px;
   font-size: 14px;
   line-height: 19px;
 
