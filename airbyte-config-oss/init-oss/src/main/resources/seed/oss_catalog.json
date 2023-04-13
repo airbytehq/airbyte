@@ -8925,14 +8925,14 @@
     "sourceDefinitionId": "fa9f58c6-2d03-4237-aaa4-07d75e0c1396",
     "name": "Amplitude",
     "dockerRepository": "airbyte/source-amplitude",
-    "dockerImageTag": "0.1.24",
+    "dockerImageTag": "0.2.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/amplitude",
     "icon": "amplitude.svg",
     "sourceType": "api",
     "spec": {
       "documentationUrl": "https://docs.airbyte.com/integrations/sources/amplitude",
       "connectionSpecification": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "title": "Amplitude Spec",
         "type": "object",
         "required": [ "api_key", "secret_key", "start_date" ],
@@ -8964,26 +8964,13 @@
             "description": "UTC date and time in the format 2021-01-25T00:00:00Z. Any data before this date will not be replicated.",
             "examples": [ "2021-01-25T00:00:00Z" ]
           },
-          "event_time_interval": {
-            "type": "object",
-            "title": "Event Stream Time Interval",
-            "description": "Amplitude event stream time interval",
-            "required": [ "size_unit", "size" ],
-            "properties": {
-              "size_unit": {
-                "type": "string",
-                "title": "Events Time Interval Size Unit",
-                "description": "Amplitude event stream's interval size unit",
-                "enum": [ "days", "hours", "weeks", "months" ],
-                "default": "days"
-              },
-              "size": {
-                "type": "integer",
-                "title": "Events Time Interval Size",
-                "description": "Amplitude event stream's interval size unit",
-                "default": 1
-              }
-            }
+          "request_time_range": {
+            "type": "integer",
+            "title": "Request time range",
+            "description": "According to <a href=\"https://www.docs.developers.amplitude.com/analytics/apis/export-api/#considerations\">Considerations</a> too big time range in request can cause a timeout error. In this case, set shorter time interval in hours.",
+            "default": 24,
+            "minimum": 1,
+            "maximum": 8760
           }
         }
       },
@@ -8996,7 +8983,7 @@
     "custom": false,
     "releaseStage": "generally_available",
     "allowedHosts": {
-      "hosts": [ "*.amplitude.com" ]
+      "hosts": [ "amplitude.com", "analytics.eu.amplitude.com" ]
     }
   }, {
     "sourceDefinitionId": "47f17145-fe20-4ef5-a548-e29b048adf84",
