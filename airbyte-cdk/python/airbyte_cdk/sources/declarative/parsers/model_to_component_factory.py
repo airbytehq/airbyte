@@ -19,7 +19,7 @@ from airbyte_cdk.sources.declarative.auth.token import (
 )
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
-from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream, DeclarativeStreamTestReadDecorator
+from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
@@ -458,29 +458,16 @@ class ModelToComponentFactory:
         if model.transformations:
             for transformation_model in model.transformations:
                 transformations.append(self._create_component_from_model(model=transformation_model, config=config))
-        if self._emit_connector_builder_messages:
-            return DeclarativeStreamTestReadDecorator(
-                name=model.name,
-                primary_key=primary_key,
-                retriever=retriever,
-                schema_loader=schema_loader,
-                stream_cursor_field=cursor_field or "",
-                transformations=transformations,
-                config=config,
-                parameters=model.parameters,
-            )
-        else:
-            return DeclarativeStream(
-                name=model.name,
-                primary_key=primary_key,
-                retriever=retriever,
-                schema_loader=schema_loader,
-                stream_cursor_field=cursor_field or "",
-                transformations=transformations,
-                config=config,
-                parameters=model.parameters,
-            )
-
+        return DeclarativeStream(
+            name=model.name,
+            primary_key=primary_key,
+            retriever=retriever,
+            schema_loader=schema_loader,
+            stream_cursor_field=cursor_field or "",
+            transformations=transformations,
+            config=config,
+            parameters=model.parameters,
+        )
 
     def _merge_stream_slicers(self, model: DeclarativeStreamModel, config: Config) -> Optional[StreamSlicer]:
         incremental_sync = (
