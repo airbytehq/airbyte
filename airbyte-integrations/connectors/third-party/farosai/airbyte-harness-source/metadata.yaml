@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 6fe89830-d04d-401b-aad6-6552ffa5c4af
+  dockerImageTag: 0.1.23
+  dockerRepository: farosai/airbyte-harness-source
+  githubIssueLabel: farosai/airbyte-harness-source
+  icon: harness.svg
+  license: MIT
+  name: Harness
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/harness
+metadataSpecVersion: "1.0"

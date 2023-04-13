@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 2af123bf-0aaf-4e0d-9784-cb497f23741a
+  dockerImageTag: 0.2.6
+  dockerRepository: airbyte/source-appstore-singer
+  githubIssueLabel: source-appstore-singer
+  icon: appstore.svg
+  license: MIT
+  name: Appstore
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/appstore
+metadataSpecVersion: "1.0"

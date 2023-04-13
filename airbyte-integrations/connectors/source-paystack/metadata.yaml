@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.paystack.co
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 193bdcb8-1dd9-48d1-aade-91cadfd74f9b
+  dockerImageTag: 0.1.3
+  dockerRepository: airbyte/source-paystack
+  githubIssueLabel: source-paystack
+  icon: paystack.svg
+  license: MIT
+  name: Paystack
+  releaseStage: beta
+  supportUrl: https://docs.airbyte.com/integrations/sources/paystack
+metadataSpecVersion: "1.0"

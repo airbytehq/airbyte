@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: d99e9ace-8621-46c2-9144-76ae4751d64b
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-dremio
+  githubIssueLabel: source-dremio
+  icon: dremio.svg
+  license: MIT
+  name: Dremio
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/dremio
+metadataSpecVersion: "1.0"

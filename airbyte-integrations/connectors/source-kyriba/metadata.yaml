@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 547dc08e-ab51-421d-953b-8f3745201a8c
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-kyriba
+  githubIssueLabel: source-kyriba
+  icon: kyriba.svg
+  license: MIT
+  name: Kyriba
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/kyriba
+metadataSpecVersion: "1.0"

@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 46b25e70-c980-4590-a811-8deaf50ee09f
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-emailoctopus
+  githubIssueLabel: source-emailoctopus
+  icon: emailoctopus.svg
+  license: MIT
+  name: EmailOctopus
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/emailoctopus
+metadataSpecVersion: "1.0"

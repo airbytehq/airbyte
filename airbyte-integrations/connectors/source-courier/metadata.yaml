@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 0541b2cd-2367-4986-b5f1-b79ff55439e4
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-courier
+  githubIssueLabel: source-courier
+  icon: courier.svg
+  license: MIT
+  name: Courier
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/courier
+metadataSpecVersion: "1.0"

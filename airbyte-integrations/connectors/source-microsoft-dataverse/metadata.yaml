@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 9220e3de-3b60-4bb2-a46f-046d59ea235a
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-microsoft-dataverse
+  githubIssueLabel: source-microsoft-dataverse
+  icon: microsoftdataverse.svg
+  license: MIT
+  name: Microsoft Dataverse
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/microsoft-dataverse
+metadataSpecVersion: "1.0"

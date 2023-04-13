@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - ${domain}
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: d60a46d4-709f-4092-a6b7-2457f7d455f5
+  dockerImageTag: 0.3.1
+  dockerRepository: airbyte/source-prestashop
+  githubIssueLabel: source-prestashop
+  icon: prestashop.svg
+  license: MIT
+  name: PrestaShop
+  releaseStage: beta
+  supportUrl: https://docs.airbyte.com/integrations/sources/prestashop
+metadataSpecVersion: "1.0"

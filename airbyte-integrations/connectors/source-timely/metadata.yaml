@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: bc617b5f-1b9e-4a2d-bebe-782fd454a771
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-timely
+  githubIssueLabel: source-timely
+  icon: timely.svg
+  license: MIT
+  name: Timely
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/timely
+metadataSpecVersion: "1.0"

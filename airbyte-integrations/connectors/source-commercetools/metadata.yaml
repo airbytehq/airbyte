@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 008b2e26-11a3-11ec-82a8-0242ac130003
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-commercetools
+  githubIssueLabel: source-commercetools
+  icon: commercetools.svg
+  license: MIT
+  name: Commercetools
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/commercetools
+metadataSpecVersion: "1.0"

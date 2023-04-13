@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 80fddd16-17bd-4c0c-bf4a-80df7863fc9d
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-xkcd
+  githubIssueLabel: source-xkcd
+  icon: xkcd.svg
+  license: MIT
+  name: xkcd
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/xkcd
+metadataSpecVersion: "1.0"

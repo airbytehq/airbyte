@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: d60f5393-f99e-4310-8d05-b1876820f40e
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-pivotal-tracker
+  githubIssueLabel: source-pivotal-tracker
+  icon: pivotal-tracker.svg
+  license: MIT
+  name: Pivotal Tracker
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/pivotal-tracker
+metadataSpecVersion: "1.0"

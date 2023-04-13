@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*"
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
+  dockerImageTag: 1.0.3
+  dockerRepository: airbyte/source-gitlab
+  githubIssueLabel: source-gitlab
+  icon: gitlab.svg
+  license: MIT
+  name: Gitlab
+  releaseStage: beta
+  supportUrl: https://docs.airbyte.com/integrations/sources/gitlab
+metadataSpecVersion: "1.0"

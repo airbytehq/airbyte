@@ -1,0 +1,23 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 06ec60c7-7468-45c0-91ac-174f6e1a788b
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/destination-tidb
+  githubIssueLabel: destination-tidb
+  icon: tidb.svg
+  license: MIT
+  name: TiDB
+  normalizationConfig:
+    normalizationIntegrationType: tidb
+    normalizationRepository: airbyte/normalization-tidb
+    normalizationTag: 0.4.0
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/tidb
+  supportsDbt: true
+metadataSpecVersion: "1.0"

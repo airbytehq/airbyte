@@ -4,6 +4,7 @@
 import pathlib
 
 import click
+
 from metadata_service.gcs_upload import upload_metadata_to_gcs
 from metadata_service.validators.metadata_validator import validate_metadata_file
 from pydantic import ValidationError

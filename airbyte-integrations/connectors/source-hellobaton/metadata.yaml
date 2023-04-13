@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 492b56d1-937c-462e-8076-21ad2031e784
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-hellobaton
+  githubIssueLabel: source-hellobaton
+  icon: hellobaton.svg
+  license: MIT
+  name: Hellobaton
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/hellobaton
+metadataSpecVersion: "1.0"

@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 99878c90-0fbd-46d3-9d98-ffde879d17fc
+  dockerImageTag: 0.1.2
+  dockerRepository: airbyte/destination-aws-datalake
+  githubIssueLabel: destination-aws-datalake
+  icon: awsdatalake.svg
+  license: MIT
+  name: AWS Datalake
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/aws-datalake
+metadataSpecVersion: "1.0"

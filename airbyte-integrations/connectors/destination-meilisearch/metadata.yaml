@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: destination
+  definitionId: af7c921e-5892-4ff2-b6c1-4a5ab258fb7e
+  dockerImageTag: 1.0.0
+  dockerRepository: airbyte/destination-meilisearch
+  githubIssueLabel: destination-meilisearch
+  icon: meilisearch.svg
+  license: MIT
+  name: MeiliSearch
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/meilisearch
+metadataSpecVersion: "1.0"

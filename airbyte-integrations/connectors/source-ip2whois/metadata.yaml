@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: f23b7b7c-d705-49a3-9042-09add3b104a5
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-ip2whois
+  githubIssueLabel: source-ip2whois
+  icon: ip2whois.svg
+  license: MIT
+  name: IP2Whois
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/ip2whois
+metadataSpecVersion: "1.0"

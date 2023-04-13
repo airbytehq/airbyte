@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 7cf88806-25f5-4e1a-b422-b2fa9e1b0090
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-elasticsearch
+  githubIssueLabel: source-elasticsearch
+  icon: elasticsearch.svg
+  license: MIT
+  name: Elasticsearch
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/elasticsearch
+metadataSpecVersion: "1.0"

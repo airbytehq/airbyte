@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: cd06e646-31bf-4dc8-af48-cbc6530fcad3
+  dockerImageTag: 0.1.2
+  dockerRepository: airbyte/source-kustomer-singer
+  githubIssueLabel: source-kustomer-singer
+  icon: kustomer.svg
+  license: MIT
+  name: Kustomer
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/kustomer
+metadataSpecVersion: "1.0"

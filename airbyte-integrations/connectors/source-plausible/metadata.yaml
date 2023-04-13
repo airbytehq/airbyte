@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 603ba446-3d75-41d7-92f3-aba901f8b897
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-plausible
+  githubIssueLabel: source-plausible
+  icon: plausible.svg
+  license: MIT
+  name: Plausible
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/plausible
+metadataSpecVersion: "1.0"

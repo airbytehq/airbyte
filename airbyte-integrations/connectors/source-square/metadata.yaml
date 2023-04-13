@@ -1,0 +1,22 @@
+data:
+  allowedHosts:
+    hosts:
+      - connect.squareupsandbox.com
+      - connect.squareup.com
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 77225a51-cd15-4a13-af02-65816bd0ecf4
+  dockerImageTag: 0.2.2
+  dockerRepository: airbyte/source-square
+  githubIssueLabel: source-square
+  icon: square.svg
+  license: MIT
+  name: Square
+  releaseStage: beta
+  supportUrl: https://docs.airbyte.com/integrations/sources/square
+metadataSpecVersion: "1.0"

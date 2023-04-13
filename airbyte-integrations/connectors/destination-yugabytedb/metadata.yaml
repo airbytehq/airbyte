@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 2300fdcf-a532-419f-9f24-a014336e7966
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/destination-yugabytedb
+  githubIssueLabel: destination-yugabytedb
+  icon: yugabytedb.svg
+  license: MIT
+  name: YugabyteDB
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/yugabytedb
+metadataSpecVersion: "1.0"

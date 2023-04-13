@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 6ec2acea-7fd1-4378-b403-41a666e0c028
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-mailjet-sms
+  githubIssueLabel: source-mailjet-sms
+  icon: mailjetsms.svg
+  license: MIT
+  name: Mailjet SMS
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/mailjet-sms
+metadataSpecVersion: "1.0"

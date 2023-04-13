@@ -1,0 +1,17 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: false
+  connectorSubtype: file
+  connectorType: destination
+  definitionId: a7bcc9d8-13b3-4e49-b80d-d020b90045e3
+  dockerImageTag: 0.2.7
+  dockerRepository: airbyte/destination-dev-null
+  githubIssueLabel: destination-dev-null
+  license: MIT
+  name: End-to-End Testing (/dev/null)
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.io/integrations/destinations/e2e-test
+metadataSpecVersion: "1.0"

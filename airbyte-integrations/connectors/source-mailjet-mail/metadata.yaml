@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 56582331-5de2-476b-b913-5798de77bbdf
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-mailjet-mail
+  githubIssueLabel: source-mailjet-mail
+  icon: mailjetmail.svg
+  license: MIT
+  name: Mailjet Mail
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/mailjet-mail
+metadataSpecVersion: "1.0"

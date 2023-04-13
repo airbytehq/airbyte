@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: d4d3fef9-e319-45c2-881a-bd02ce44cc9f
+  dockerImageTag: 0.1.4
+  dockerRepository: airbyte/destination-redis
+  githubIssueLabel: destination-redis
+  icon: redis.svg
+  license: MIT
+  name: Redis
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/redis
+metadataSpecVersion: "1.0"

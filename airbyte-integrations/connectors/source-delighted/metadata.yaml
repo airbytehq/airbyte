@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.delighted.com
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: cc88c43f-6f53-4e8a-8c4d-b284baaf9635
+  dockerImageTag: 0.2.2
+  dockerRepository: airbyte/source-delighted
+  githubIssueLabel: source-delighted
+  icon: delighted.svg
+  license: MIT
+  name: Delighted
+  releaseStage: beta
+  supportUrl: https://docs.airbyte.com/integrations/sources/delighted
+metadataSpecVersion: "1.0"

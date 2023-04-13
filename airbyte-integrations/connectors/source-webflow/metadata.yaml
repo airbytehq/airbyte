@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: ef580275-d9a9-48bb-af5e-db0f5855be04
+  dockerImageTag: 0.1.2
+  dockerRepository: airbyte/source-webflow
+  githubIssueLabel: source-webflow
+  icon: webflow.svg
+  license: MIT
+  name: Webflow
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/webflow
+metadataSpecVersion: "1.0"

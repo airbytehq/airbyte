@@ -1,0 +1,22 @@
+data:
+  allowedHosts:
+    hosts:
+      - ${subdomain}.apilayer.com
+      - apilayer.com
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: e2b40e36-aa0e-4bed-b41b-bcea6fa348b1
+  dockerImageTag: 1.2.8
+  dockerRepository: airbyte/source-exchange-rates
+  githubIssueLabel: source-exchange-rates
+  icon: exchangeratesapi.svg
+  license: MIT
+  name: Exchange Rates Api
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/exchangeratesapi
+metadataSpecVersion: "1.0"

@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: file
+  connectorType: source
+  definitionId: a827c52e-791c-4135-a245-e233c5255199
+  dockerImageTag: 0.1.2
+  dockerRepository: airbyte/source-sftp
+  githubIssueLabel: source-sftp
+  icon: sftp.svg
+  license: MIT
+  name: SFTP
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/sftp
+metadataSpecVersion: "1.0"

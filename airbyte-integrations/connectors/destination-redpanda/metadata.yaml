@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 825c5ee3-ed9a-4dd1-a2b6-79ed722f7b13
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-redpanda
+  githubIssueLabel: destination-redpanda
+  icon: redpanda.svg
+  license: MIT
+  name: Redpanda
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/redpanda
+metadataSpecVersion: "1.0"

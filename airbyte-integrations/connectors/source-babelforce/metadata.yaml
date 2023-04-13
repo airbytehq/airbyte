@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 971c3e1e-78a5-411e-ad56-c4052b50876b
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-babelforce
+  githubIssueLabel: source-babelforce
+  icon: babelforce.svg
+  license: MIT
+  name: Babelforce
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/babelforce
+metadataSpecVersion: "1.0"

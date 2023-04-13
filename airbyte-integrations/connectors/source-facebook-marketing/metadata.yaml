@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - graph.facebook.com
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
+  dockerImageTag: 0.3.1
+  dockerRepository: airbyte/source-facebook-marketing
+  githubIssueLabel: source-facebook-marketing
+  icon: facebook.svg
+  license: MIT
+  name: Facebook Marketing
+  releaseStage: generally_available
+  supportUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
+metadataSpecVersion: "1.0"

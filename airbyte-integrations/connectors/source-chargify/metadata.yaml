@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 9b2d3607-7222-4709-9fa2-c2abdebbdd88
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-chargify
+  githubIssueLabel: source-chargify
+  icon: chargify.svg
+  license: MIT
+  name: Chargify
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/chargify
+metadataSpecVersion: "1.0"

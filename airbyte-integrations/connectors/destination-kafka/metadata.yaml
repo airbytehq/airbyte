@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 9f760101-60ae-462f-9ee6-b7a9dafd454d
+  dockerImageTag: 0.1.10
+  dockerRepository: airbyte/destination-kafka
+  githubIssueLabel: destination-kafka
+  icon: kafka.svg
+  license: MIT
+  name: Kafka
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/kafka
+metadataSpecVersion: "1.0"

@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: c4cfaeda-c757-489a-8aba-859fb08b6970
+  dockerImageTag: 0.1.2
+  dockerRepository: airbyte/source-us-census
+  githubIssueLabel: source-us-census
+  icon: uscensus.svg
+  license: MIT
+  name: US Census
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/us-census
+metadataSpecVersion: "1.0"

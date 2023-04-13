@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 60c24725-00ae-490c-991d-55b78c3197e0
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-klarna
+  githubIssueLabel: source-klarna
+  icon: klarna.svg
+  license: MIT
+  name: Klarna
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/klarna
+metadataSpecVersion: "1.0"

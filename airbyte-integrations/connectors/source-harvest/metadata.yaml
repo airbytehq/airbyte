@@ -1,0 +1,22 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.harvestapp.com
+  catalogs:
+    cloud:
+      dockerImageTag: 0.1.16
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: fe2b4084-3386-4d3b-9ad6-308f61a6f1e6
+  dockerImageTag: 0.1.17
+  dockerRepository: airbyte/source-harvest
+  githubIssueLabel: source-harvest
+  icon: harvest.svg
+  license: MIT
+  name: Harvest
+  releaseStage: generally_available
+  supportUrl: https://docs.airbyte.com/integrations/sources/harvest
+metadataSpecVersion: "1.0"

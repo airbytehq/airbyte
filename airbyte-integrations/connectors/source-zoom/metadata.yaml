@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: cbfd9856-1322-44fb-bcf1-0b39b7a8e92e
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-zoom
+  githubIssueLabel: source-zoom
+  icon: zoom.svg
+  license: MIT
+  name: Zoom
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.io/integrations/sources/zoom
+metadataSpecVersion: "1.0"

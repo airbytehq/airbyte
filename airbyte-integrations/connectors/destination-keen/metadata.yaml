@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: destination
+  definitionId: 81740ce8-d764-4ea7-94df-16bb41de36ae
+  dockerImageTag: 0.2.4
+  dockerRepository: airbyte/destination-keen
+  githubIssueLabel: destination-keen
+  icon: chargify.svg
+  license: MIT
+  name: Chargify (Keen)
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/keen
+metadataSpecVersion: "1.0"

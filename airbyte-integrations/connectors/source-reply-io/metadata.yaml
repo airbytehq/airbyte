@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 8cc6537e-f8a6-423c-b960-e927af76116e
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-reply-io
+  githubIssueLabel: source-reply-io
+  icon: reply-io.svg
+  license: MIT
+  name: Reply.io
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/reply-io
+metadataSpecVersion: "1.0"

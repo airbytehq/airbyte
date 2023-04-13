@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 8e1ae2d2-4790-44d3-9d83-75b3fc3940ff
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-datascope
+  githubIssueLabel: source-datascope
+  icon: datascope.svg
+  license: MIT
+  name: Datascope
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/datascope
+metadataSpecVersion: "1.0"

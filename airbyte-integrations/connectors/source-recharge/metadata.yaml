@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.rechargeapps.com
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 45d2e135-2ede-49e1-939f-3e3ec357a65e
+  dockerImageTag: 0.2.7
+  dockerRepository: airbyte/source-recharge
+  githubIssueLabel: source-recharge
+  icon: recharge.svg
+  license: MIT
+  name: Recharge
+  releaseStage: generally_available
+  supportUrl: https://docs.airbyte.com/integrations/sources/recharge
+metadataSpecVersion: "1.0"

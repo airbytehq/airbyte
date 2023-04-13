@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 77d5ca6b-d345-4dce-ba1e-1935a75778b8
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-open-exchange-rates
+  githubIssueLabel: source-open-exchange-rates
+  icon: airbyte.svg
+  license: MIT
+  name: Open Exchange Rates
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/open-exchange-rates
+metadataSpecVersion: "1.0"

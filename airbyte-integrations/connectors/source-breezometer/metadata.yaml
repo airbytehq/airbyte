@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 7c37685e-8512-4901-addf-9afbef6c0de9
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-breezometer
+  githubIssueLabel: source-breezometer
+  icon: breezometer.svg
+  license: MIT
+  name: Breezometer
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/breezometer
+metadataSpecVersion: "1.0"

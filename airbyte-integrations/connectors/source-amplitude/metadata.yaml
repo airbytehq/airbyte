@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*.amplitude.com"
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: fa9f58c6-2d03-4237-aaa4-07d75e0c1396
+  dockerImageTag: 0.1.24
+  dockerRepository: airbyte/source-amplitude
+  githubIssueLabel: source-amplitude
+  icon: amplitude.svg
+  license: MIT
+  name: Amplitude
+  releaseStage: generally_available
+  supportUrl: https://docs.airbyte.com/integrations/sources/amplitude
+metadataSpecVersion: "1.0"

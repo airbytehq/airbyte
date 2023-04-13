@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: f96bb511-5e3c-48fc-b408-547953cd81a4
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-launchdarkly
+  githubIssueLabel: source-launchdarkly
+  icon: launchdarkly.svg
+  license: MIT
+  name: LaunchDarkly
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/launchdarkly
+metadataSpecVersion: "1.0"

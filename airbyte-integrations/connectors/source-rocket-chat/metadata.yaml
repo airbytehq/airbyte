@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 921d9608-3915-450b-8078-0af18801ea1b
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-rocket-chat
+  githubIssueLabel: source-rocket-chat
+  icon: rocket-chat.svg
+  license: MIT
+  name: Rocket.chat
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/rocket-chat
+metadataSpecVersion: "1.0"

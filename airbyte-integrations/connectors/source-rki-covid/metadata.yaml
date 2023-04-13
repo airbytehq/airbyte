@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: d78e5de0-aa44-4744-aa4f-74c818ccfe19
+  dockerImageTag: 0.1.2
+  dockerRepository: airbyte/source-rki-covid
+  githubIssueLabel: source-rki-covid
+  icon: rki.svg
+  license: MIT
+  name: RKI Covid
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/rki-covid
+metadataSpecVersion: "1.0"

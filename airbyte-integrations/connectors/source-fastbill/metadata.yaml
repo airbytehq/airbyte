@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: eb3e9c1c-0467-4eb7-a172-5265e04ccd0a
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-fastbill
+  githubIssueLabel: source-fastbill
+  icon: fastbill.svg
+  license: MIT
+  name: Fastbill
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/fastbill
+metadataSpecVersion: "1.0"

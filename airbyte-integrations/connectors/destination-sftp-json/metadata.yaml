@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: file
+  connectorType: destination
+  definitionId: e9810f61-4bab-46d2-bb22-edfc902e0644
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-sftp-json
+  githubIssueLabel: destination-sftp-json
+  icon: sftp.svg
+  license: MIT
+  name: SFTP-JSON
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/sftp-json
+metadataSpecVersion: "1.0"

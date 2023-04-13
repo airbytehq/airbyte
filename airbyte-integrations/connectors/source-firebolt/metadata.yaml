@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: source
+  definitionId: 6f2ac653-8623-43c4-8950-19218c7caf3d
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/source-firebolt
+  githubIssueLabel: source-firebolt
+  icon: firebolt.svg
+  license: MIT
+  name: Firebolt
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/firebolt
+metadataSpecVersion: "1.0"

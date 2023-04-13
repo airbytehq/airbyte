@@ -1,0 +1,24 @@
+data:
+  catalogs:
+    cloud:
+      dockerRepository: airbyte/destination-mysql-strict-encrypt
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: ca81ee7c-3163-4246-af40-094cc31e5e42
+  dockerImageTag: 0.1.20
+  dockerRepository: airbyte/destination-mysql
+  githubIssueLabel: destination-mysql
+  icon: mysql.svg
+  license: MIT
+  name: MySQL
+  normalizationConfig:
+    normalizationIntegrationType: mysql
+    normalizationRepository: airbyte/normalization-mysql
+    normalizationTag: 0.4.0
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/mysql
+  supportsDbt: true
+metadataSpecVersion: "1.0"

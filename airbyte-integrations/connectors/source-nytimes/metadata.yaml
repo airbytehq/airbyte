@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 0fae6a9a-04eb-44d4-96e1-e02d3dbc1d83
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-nytimes
+  githubIssueLabel: source-nytimes
+  icon: nytimes.svg
+  license: MIT
+  name: New York Times
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/nytimes
+metadataSpecVersion: "1.0"

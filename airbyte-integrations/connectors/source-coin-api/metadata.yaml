@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 919984ef-53a2-479b-8ffe-9c1ddb9fc3f3
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-coin-api
+  githubIssueLabel: source-coin-api
+  icon: coinapi.svg
+  license: MIT
+  name: Coin API
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/coin-api
+metadataSpecVersion: "1.0"
