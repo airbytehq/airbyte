@@ -4,10 +4,8 @@
 
 package io.airbyte.integrations.debezium.internals;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.AbstractIterator;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
@@ -129,18 +127,18 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
         continue;
       }
 
-      final JsonNode eventValueAsJson = Jsons.deserialize(next.value());
-      hasSnapshotFinished = hasSnapshotFinished(eventValueAsJson);
+      final ChangeEventWithMetadata changeEventWithMetadata = new ChangeEventWithMetadata(next);
+      hasSnapshotFinished = !changeEventWithMetadata.isSnapshotEvent();
 
       // if the last record matches the target file position, it is time to tell the producer to shutdown.
-      if (targetPosition.reachedTargetPosition(eventValueAsJson)) {
+      if (targetPosition.reachedTargetPosition(changeEventWithMetadata.eventValueAsJson())) {
         requestClose("Closing: Change event reached target position");
       }
       this.tsLastHeartbeat = null;
       this.lastHeartbeatPosition = null;
       this.receivedFirstRecord = true;
       this.maxInstanceOfNoRecordsFound = 0;
-      return new ChangeEventWithMetadata(next, eventValueAsJson, !hasSnapshotFinished);
+      return changeEventWithMetadata;
     }
 
     if (!signalledDebeziumEngineShutdown) {
@@ -158,9 +156,9 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
       if (event == null || isHeartbeatEvent(event)) {
         continue;
       }
-      final JsonNode eventValueAsJson = Jsons.deserialize(event.value());
-      hasSnapshotFinished = hasSnapshotFinished(eventValueAsJson);
-      return new ChangeEventWithMetadata(event, eventValueAsJson, !hasSnapshotFinished);
+      final ChangeEventWithMetadata changeEventWithMetadata = new ChangeEventWithMetadata(event);
+      hasSnapshotFinished = !changeEventWithMetadata.isSnapshotEvent();
+      return changeEventWithMetadata;
     }
     throwExceptionIfSnapshotNotFinished();
     return endOfData();
@@ -201,11 +199,6 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
     LOGGER.debug("Time since last hb_pos change {}s", timeElapsedSinceLastHeartbeatTs.toSeconds());
     // wait time for no change in heartbeat position is half of initial waitTime
     return timeElapsedSinceLastHeartbeatTs.compareTo(this.firstRecordWaitTime.dividedBy(2)) > 0;
-  }
-
-  private boolean hasSnapshotFinished(final JsonNode eventAsJson) {
-    final SnapshotMetadata snapshotMetadata = SnapshotMetadata.fromString(eventAsJson.get("source").get("snapshot").asText());
-    return !SnapshotMetadata.isSnapshotEventMetadata(snapshotMetadata);
   }
 
   private void requestClose(final String closeLogMessage) {

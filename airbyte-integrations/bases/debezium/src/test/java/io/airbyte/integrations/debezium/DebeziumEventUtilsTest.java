@@ -50,7 +50,7 @@ class DebeziumEventUtilsTest {
     final String resource = MoreResources.readResource(resourceName);
     when(mocked.value()).thenReturn(resource);
 
-    return new ChangeEventWithMetadata(mocked, Jsons.deserialize(resource), false);
+    return new ChangeEventWithMetadata(mocked);
   }
 
   private static AirbyteMessage createAirbyteMessage(final String stream, final Instant emittedAt, final String resourceName) throws IOException {
