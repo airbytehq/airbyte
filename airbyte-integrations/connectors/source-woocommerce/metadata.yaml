@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - ${domain}
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 2a2552ca-9f78-4c1c-9eb7-4d0dc66d72df
+  dockerImageTag: 0.2.2
+  dockerRepository: airbyte/source-woocommerce
+  githubIssueLabel: source-woocommerce
+  icon: woocommerce.svg
+  license: MIT
+  name: WooCommerce
+  releaseStage: beta
+  supportUrl: https://docs.airbyte.com/integrations/sources/woocommerce
+metadataSpecVersion: "1.0"
