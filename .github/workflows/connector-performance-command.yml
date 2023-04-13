@@ -82,8 +82,9 @@ jobs:
         run: echo "The connector provided has an invalid format!" && exit 1
       - name: Filter supported connectors
         if: "${{ github.event.inputs.connector != 'connectors/source-postgres' && 
-              github.event.inputs.connector != 'connectors/source-mysql' }}"
-        run: echo "Only connectors/source-postgres and source-mysql currently supported by harness" && exit 1
+              github.event.inputs.connector != 'connectors/source-mysql' &&
+              github.event.inputs.connector != 'connectors/destination-snowflake' }}"
+        run: echo "Only connectors/source-postgres, source-mysql and destination-snowflake currently supported by harness" && exit 1
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
@@ -102,11 +103,17 @@ jobs:
         # all CI python packages have the prefix "ci_"
         run: |
           pip install --quiet -e ./tools/ci_*
+      - name: Source or Destination harness
+        id: which-harness
+        run: |
+          the_harness="source-harness"
+          echo "harness_type=$the_harness" >> "$GITHUB_OUTPUT"
       - name: Write source-harness credentials
         run: |
-          ci_credentials connectors-performance/source-harness write-to-storage
+          ci_credentials connectors-performance/$HARNESS_TYPE write-to-storage
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          HARNESS_TYPE: ${{ steps.which-harness.outputs.harness_type }}
       - name: build harness
         shell: bash
         run: |
