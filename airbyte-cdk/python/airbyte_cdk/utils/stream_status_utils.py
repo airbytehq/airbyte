@@ -20,7 +20,9 @@ def as_airbyte_message(self, stream, current_status, successful) -> AirbyteMessa
         type=TraceType.STREAM_STATUS,
         emitted_at=now_millis,
         stream_status=AirbyteStreamStatusTraceMessage(
-            stream_descriptor=StreamDescriptor(name=stream.stream.name, namespace=stream.stream.namespace), status=current_status, success=successful
+            stream_descriptor=StreamDescriptor(name=stream.stream.name, namespace=stream.stream.namespace),
+            status=current_status,
+            success=successful,
         ),
     )
 
