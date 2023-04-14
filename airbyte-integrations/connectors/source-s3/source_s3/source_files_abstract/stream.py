@@ -318,11 +318,8 @@ class IncrementalFileStream(FileStream, ABC):
         return self.ab_last_mod_col
 
     @staticmethod
-    def file_in_history(file_info: FileInfo, history: dict) -> bool:
-        for slot in history.values():
-            if file_info.key in slot:
-                return file_info.key in slot
-        return False
+    def file_in_history(file_key: str, history: dict) -> bool:
+        return any(file_key in slot for slot in history.values())
 
     def _get_datetime_from_stream_state(self, stream_state: Mapping[str, Any] = None) -> datetime:
         """
@@ -406,27 +403,6 @@ class IncrementalFileStream(FileStream, ABC):
 
         return self.size_history_balancer(state_dict)
 
-    def need_to_skip_file(self, stream_state, file_info):
-        """
-        Skip this file if last_mod is earlier than our cursor value from state and already in history
-        or skip this file if last_mod plus delta is earlier than our cursor value
-        """
-        file_in_history_and_last_modified_is_earlier_than_cursor_value = (
-            stream_state is not None
-            and self.cursor_field in stream_state.keys()
-            and file_info.last_modified <= self._get_datetime_from_stream_state(stream_state)
-            and self.file_in_history(file_info, stream_state.get("history", {}))
-        )
-
-        file_is_not_in_history_and_last_modified_plus_buffer_days_is_earlier_than_cursor_value = file_info.last_modified + timedelta(
-            days=self.buffer_days
-        ) < self._get_datetime_from_stream_state(stream_state) and not self.file_in_history(file_info, stream_state.get("history", {}))
-
-        return (
-            file_in_history_and_last_modified_is_earlier_than_cursor_value
-            or file_is_not_in_history_and_last_modified_plus_buffer_days_is_earlier_than_cursor_value
-        )
-
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Dict[str, Any]]]:
@@ -448,9 +424,6 @@ class IncrementalFileStream(FileStream, ABC):
             prev_file_last_mod: datetime = None  # init variable to hold previous iterations last modified
             grouped_files_by_time: List[Dict[str, Any]] = []
             for file_info in self.get_time_ordered_file_infos(stream_state=str(stream_state)):
-                if self.need_to_skip_file(stream_state, file_info):
-                    continue
-
                 # check if this file belongs in the next slice, if so yield the current slice before this file
                 if (prev_file_last_mod is not None) and (file_info.last_modified != prev_file_last_mod):
                     yield {"files": grouped_files_by_time}

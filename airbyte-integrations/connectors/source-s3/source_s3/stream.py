@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
+from datetime import timedelta
 from typing import Any, Iterator, Mapping
 
 import pendulum
@@ -72,4 +72,20 @@ class IncrementalFileStreamS3(IncrementalFileStream):
 
     def filter_by_last_modified_date(self, file: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None):
         cursor_date = pendulum.parse(stream_state.get(self.cursor_field)) if stream_state else self.start_date
-        return file.get("LastModified") > cursor_date
+
+        file_in_history_and_last_modified_is_earlier_than_cursor_value = (
+            stream_state is not None
+            and self.cursor_field in stream_state.keys()
+            and file.get("LastModified") <= self._get_datetime_from_stream_state(stream_state)
+            and self.file_in_history(file["Key"], stream_state.get("history", {}))
+        )
+
+        file_is_not_in_history_and_last_modified_plus_buffer_days_is_earlier_than_cursor_value = file.get("LastModified") + timedelta(
+            days=self.buffer_days
+        ) < self._get_datetime_from_stream_state(stream_state) and not self.file_in_history(file["Key"], stream_state.get("history", {}))
+
+        return (
+            file.get("LastModified") > cursor_date
+            and not file_in_history_and_last_modified_is_earlier_than_cursor_value
+            and not file_is_not_in_history_and_last_modified_plus_buffer_days_is_earlier_than_cursor_value
+        )
