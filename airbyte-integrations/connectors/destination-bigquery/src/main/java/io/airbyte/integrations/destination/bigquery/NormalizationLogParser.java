@@ -8,6 +8,7 @@ package io.airbyte.integrations.destination.bigquery;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage.FailureType;
@@ -31,6 +32,9 @@ import org.apache.logging.log4j.util.Strings;
  * <p>
  * does mostly the same thing as {@link io.airbyte.workers.normalization.NormalizationAirbyteStreamFactory}. That class is not actively developed, and
  * will be deleted after all destinations run normalization in-connector.
+ * <p>
+ * Aggregates all error logs and emits them as a single trace message at the end. If the underlying process emits any trace messages, they are passed
+ * through immediately.
  */
 public class NormalizationLogParser {
 
@@ -44,49 +48,85 @@ public class NormalizationLogParser {
     return dbtErrors;
   }
 
-  private Stream<AirbyteMessage> toMessages(final String line) {
+  @VisibleForTesting
+  Stream<AirbyteMessage> toMessages(final String line) {
     if (Strings.isEmpty(line)) {
       return Stream.of(logMessage(Level.INFO, ""));
     }
-
     final Optional<JsonNode> json = Jsons.tryDeserialize(line);
     if (json.isPresent()) {
-      final Optional<AirbyteMessage> message = Jsons.tryObject(json.get(), AirbyteMessage.class);
-      if (message.isPresent()) {
-        // This line is already an AirbyteMessage; we can just return it directly
-        // (these messages come from the transform_config / transform_catalog scripts)
-        return message.stream();
-      } else {
-        // This line is a JSON-format dbt log. We need to extract the message and wrap it in a logmessage
-        // And if it's an error, we also need to collect it into dbtErrors
-        JsonNode jsonLine = json.get();
-        final String logLevel = (jsonLine.getNodeType() == JsonNodeType.NULL || jsonLine.get("level").isNull())
-                                ? ""
-                                : jsonLine.get("level").asText();
-        String logMsg = jsonLine.get("msg").isNull() ? "" : jsonLine.get("msg").asText();
-        Level level;
-        switch (logLevel) {
-          case "debug" -> level = Level.DEBUG;
-          case "info" -> level = Level.INFO;
-          case "warn" -> level = Level.WARN;
-          case "error" -> {
-            level = Level.ERROR;
-            dbtErrors.add(logMsg);
-          }
-          default -> {
-            level = Level.INFO;
-            logMsg = jsonLine.toPrettyString();
-          }
-        }
-        return Stream.of(logMessage(level, logMsg));
-      }
+      return jsonToMessage(json.get());
     } else {
-      // This line is not in JSON at all; we need to wrap it inside a logMessagee
-      if (line.contains("[error]")) {
-        // Super hacky thing - for versions of dbt that don't support json output, this is how we find their error logs
-        dbtErrors.add(line);
+      return nonJsonLineToMessage(line);
+    }
+  }
+
+  /**
+   * Wrap the line in an AirbyteLogMessage, and do very naive dbt error log detection.
+   * <p>
+   * This is needed for dbt < 1.0.0, which don't support json-format logs.
+   */
+  private Stream<AirbyteMessage> nonJsonLineToMessage(final String line) {
+    // Super hacky thing to try and detect error lines
+    if (line.contains("[error]")) {
+      dbtErrors.add(line);
+    }
+    return Stream.of(logMessage(Level.INFO, line));
+  }
+
+  /**
+   * There are two cases here: Either the json is already an AirbyteMessage (and we should just emit it without change),
+   * or it's dbt json log, and we need to do some extra work to convert it to a log message + aggregate error logs.
+   */
+  private Stream<AirbyteMessage> jsonToMessage(final JsonNode json) {
+    final Optional<AirbyteMessage> message = Jsons.tryObject(json, AirbyteMessage.class);
+    if (message.isPresent()) {
+      // This line is already an AirbyteMessage; we can just return it directly
+      // (these messages come from the transform_config / transform_catalog scripts)
+      return message.stream();
+    } else {
+      /*
+       This line is a JSON-format dbt log. We need to extract the message and wrap it in a logmessage
+       And if it's an error, we also need to collect it into dbtErrors.
+       Example log message, formatted for readability:
+       {
+         "code": "A001",
+         "data": {
+           "v": "=1.0.9"
+         },
+         "invocation_id": "3f9a0b9f-9623-4c25-8708-1f6ae851e738",
+         "level": "info",
+         "log_version": 1,
+         "msg": "Running with dbt=1.0.9",
+         "node_info": {},
+         "pid": 65,
+         "thread_name": "MainThread",
+         "ts": "2023-04-12T21:03:23.079315Z",
+         "type": "log_line"
+       }
+       */
+      JsonNode jsonLine = json;
+      final String logLevel = (jsonLine.getNodeType() == JsonNodeType.NULL || jsonLine.get("level").isNull())
+                              ? ""
+                              : jsonLine.get("level").asText();
+      String logMsg = jsonLine.get("msg").isNull() ? "" : jsonLine.get("msg").asText();
+      Level level;
+      switch (logLevel) {
+        case "debug" -> level = Level.DEBUG;
+        case "info" -> level = Level.INFO;
+        case "warn" -> level = Level.WARN;
+        case "error" -> {
+          // This is also not _amazing_, but we make the assumption that all error logs should be emitted in the trace message
+          // In practice, this seems to be a valid assumption.
+          level = Level.ERROR;
+          dbtErrors.add(logMsg);
+        }
+        default -> {
+          level = Level.INFO;
+          logMsg = jsonLine.toPrettyString();
+        }
       }
-      return Stream.of(logMessage(Level.INFO, line));
+      return Stream.of(logMessage(level, logMsg));
     }
   }
 
