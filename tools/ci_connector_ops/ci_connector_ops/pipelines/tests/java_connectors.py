@@ -50,7 +50,10 @@ class BuildOrPullNormalization(Step):
             build_normalization_container = environments.with_normalization(self.context, self.normalization_dockerfile)
         else:
             build_normalization_container = self.context.dagger_client.container().from_(self.normalization_image)
-
+        if self.context.is_ci:
+            build_normalization_container = environments.with_authenticated_to_docker_hub(
+                self.context, build_normalization_container, self.normalization_image.split(":")[0]
+            )
         try:
             export_success = await build_normalization_container.export(f"{self.host_image_export_dir_path}/{normalization_local_tar_path}")
             if export_success:
