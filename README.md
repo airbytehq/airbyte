@@ -22,22 +22,25 @@ to build and check the spec
 flowctl-go api spec --image ghcr.io/estuary/source-intercom:local | jq
 ```
 
-To check the discovered bindings of a connector, you can use
-`flowctl-go discover`
+To test the connector in your local flow setup, you can push the connector with
+a personal tag. First you need to login docker to `ghcr.io`, to do this you need
+to create a [github personal
+access
+token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+with access to push to our container registry. Once you have this token, you can
+login using the command below:
 
 ```
-flowctl-go discover --image ghcr.io/estuary/source-intercom:local
+echo '<YOUR-TOKEN>' | docker login ghcr.io -u <YOUR-GITHUB-USERNAME> --password-stdin
 ```
 
-Fill in the config file at `acmeCo/source-intercom.config.yaml`
-and run discover again
+Then you can push the connector by passing `-p` to `local.build.sh`. This
+command will push the docker container with a tag unique to your codespace which will
+be printed at the end.
 
 ```
-flowctl-go discover --image ghcr.io/estuary/source-intercom:local
+./local-build.sh -p source-intercom
 ```
-
-You can now check the discovered bindings in `acmeCo` and make sure that
-the discovered bindings match your expectations
 
 ## Pulling a new connector
 
