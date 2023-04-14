@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: ed799e2b-2158-4c66-8da4-b40fe63bc72a
+  dockerImageTag: 0.3.2
+  dockerRepository: airbyte/source-plaid
+  githubIssueLabel: source-plaid
+  icon: plaid.svg
+  license: MIT
+  name: Plaid
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/plaid
+metadataSpecVersion: "1.0"

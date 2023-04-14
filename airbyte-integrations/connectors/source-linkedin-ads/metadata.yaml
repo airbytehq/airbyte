@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.linkedin.com
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 137ece28-5434-455c-8f34-69dc3782f451
+  dockerImageTag: 0.1.15
+  dockerRepository: airbyte/source-linkedin-ads
+  githubIssueLabel: source-linkedin-ads
+  icon: linkedin.svg
+  license: MIT
+  name: LinkedIn Ads
+  releaseStage: generally_available
+  supportUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
+metadataSpecVersion: "1.0"

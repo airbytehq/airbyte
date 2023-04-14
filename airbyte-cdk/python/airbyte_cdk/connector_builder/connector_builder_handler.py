@@ -14,23 +14,51 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
+from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE = 5
 DEFAULT_MAXIMUM_NUMBER_OF_SLICES = 5
-DEFAULT_MAX_RECORDS = 100
+DEFAULT_MAXIMUM_RECORDS = 100
+
+MAX_PAGES_PER_SLICE_KEY = "max_pages_per_slice"
+MAX_SLICES_KEY = "max_slices"
+MAX_RECORDS_KEY = "max_records"
 
 
-def read_stream(source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog) -> AirbyteMessage:
+@dataclasses.dataclass
+class TestReadLimits:
+    max_records: int = dataclasses.field(default=DEFAULT_MAXIMUM_RECORDS)
+    max_pages_per_slice: int = dataclasses.field(default=DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE)
+    max_slices: int = dataclasses.field(default=DEFAULT_MAXIMUM_NUMBER_OF_SLICES)
+
+
+def get_limits(config: Mapping[str, Any]) -> TestReadLimits:
+    command_config = config.get("__test_read_config", {})
+    max_pages_per_slice = command_config.get(MAX_PAGES_PER_SLICE_KEY) or DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE
+    max_slices = command_config.get(MAX_SLICES_KEY) or DEFAULT_MAXIMUM_NUMBER_OF_SLICES
+    max_records = command_config.get(MAX_RECORDS_KEY) or DEFAULT_MAXIMUM_RECORDS
+    return TestReadLimits(max_records, max_pages_per_slice, max_slices)
+
+
+def create_source(config: Mapping[str, Any], limits: TestReadLimits) -> ManifestDeclarativeSource:
+    manifest = config["__injected_declarative_manifest"]
+    return ManifestDeclarativeSource(
+        emit_connector_builder_messages=True,
+        source_config=manifest,
+        component_factory=ModelToComponentFactory(
+            emit_connector_builder_messages=True,
+            limit_pages_fetched_per_slice=limits.max_pages_per_slice,
+            limit_slices_fetched=limits.max_slices)
+    )
+
+
+def read_stream(source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, limits: TestReadLimits) -> AirbyteMessage:
     try:
-        command_config = config.get("__test_read_config", {})
-        max_pages_per_slice = command_config.get("max_pages_per_slice", DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE)
-        max_slices = command_config.get("max_slices", DEFAULT_MAXIMUM_NUMBER_OF_SLICES)
-        max_records = command_config.get("max_records", DEFAULT_MAX_RECORDS)
-        handler = MessageGrouper(max_pages_per_slice, max_slices)
+        handler = MessageGrouper(limits.max_pages_per_slice, limits.max_slices)
         stream_name = configured_catalog.streams[0].stream.name  # The connector builder only supports a single stream
-        stream_read = handler.get_message_groups(source, config, configured_catalog, max_records)
+        stream_read = handler.get_message_groups(source, config, configured_catalog, limits.max_records)
         return AirbyteMessage(
             type=MessageType.RECORD,
             record=AirbyteRecordMessage(data=dataclasses.asdict(stream_read), stream=stream_name, emitted_at=_emitted_at()),
