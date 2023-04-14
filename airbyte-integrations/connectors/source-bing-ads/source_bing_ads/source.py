@@ -367,6 +367,9 @@ class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
 
     report_columns = [
         *primary_key,
+        "AccountName",
+        "CampaignName",
+        "CampaignType",
         "CampaignStatus",
         "Impressions",
         "Clicks",
@@ -451,6 +454,10 @@ class AdPerformanceReport(ReportsMixin, BingAdsStream):
 
     report_columns = [
         *primary_key,
+        "AccountName",
+        "CampaignName",
+        "CampaignType",
+        "AdGroupName",
         "Impressions",
         "Clicks",
         "Ctr",
@@ -519,6 +526,11 @@ class AdGroupPerformanceReport(ReportsMixin, BingAdsStream):
 
     report_columns = [
         *primary_key,
+        "AccountName",
+        "CampaignName",
+        "CampaignType",
+        "AdGroupName",
+        "AdGroupType",
         "Impressions",
         "Clicks",
         "Ctr",
@@ -602,6 +614,9 @@ class KeywordPerformanceReport(ReportsMixin, BingAdsStream):
 
     report_columns = [
         *primary_key,
+        "AccountName",
+        "CampaignName",
+        "AdGroupName",
         "Keyword",
         "KeywordStatus",
         "Impressions",
@@ -679,6 +694,8 @@ class AccountPerformanceReport(ReportsMixin, BingAdsStream):
 
     report_columns = [
         *primary_key,
+        "AccountName",
+        "AccountNumber",
         "PhoneImpressions",
         "PhoneCalls",
         "Clicks",
