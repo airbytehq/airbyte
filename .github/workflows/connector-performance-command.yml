@@ -117,7 +117,7 @@ jobs:
       - name: build harness
         shell: bash
         run: |
-          echo "Building... source-harness" >> $GITHUB_STEP_SUMMARY
+          echo "Building... $HARNESS_TYPE" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           ./gradlew :airbyte-integrations:connectors-performance:$HARNESS_TYPE:build -x check
         env:
@@ -142,11 +142,12 @@ jobs:
           DS: ${{ github.event.inputs.dataset }}
           prefix: '{"type":"LOG","log":{"level":"INFO","message":"INFO i.a.i.p.PerformanceTest(runTest):165'
           suffix: '"}}'
+          HARNESS_TYPE: ${{ steps.which-harness.outputs.harness_type }}
         run: |
           kubectl apply -f ./tools/bin/admin-service-account.yaml
           connector_name=$(echo $CONN | cut -d / -f 2)
           kind load docker-image airbyte/$connector_name:dev --name chart-testing
-          kind load docker-image airbyte/source-harness:dev --name chart-testing
+          kind load docker-image airbyte/$HARNESS_TYPE:dev --name chart-testing
           export CONNECTOR_IMAGE_NAME=${CONN/connectors/airbyte}:dev
           export DATASET=$DS
           envsubst < ./tools/bin/source-harness-process.yaml | kubectl create -f -
