@@ -52,6 +52,8 @@ jobs:
           CI_GIT_REVISION: ${{ github.sha }}
           CI_CONTEXT: "manual"
           CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Run airbyte-ci connectors test [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         run: |
@@ -69,3 +71,5 @@ jobs:
           CI_GIT_REVISION: ${{ github.event.pull_request.head.sha }}
           CI_CONTEXT: "pull_request"
           CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}

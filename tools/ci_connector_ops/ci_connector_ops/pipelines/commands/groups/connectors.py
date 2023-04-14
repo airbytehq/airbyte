@@ -46,6 +46,8 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
             "AWS_DEFAULT_REGION",
             "TEST_REPORTS_BUCKET_NAME",
             "CI_GITHUB_ACCESS_TOKEN",
+            "DOCKER_HUB_USERNAME",
+            "DOCKER_HUB_PASSWORD",
         ]
         for required_env_var in required_env_vars_for_ci:
             if os.getenv(required_env_var) is None:
