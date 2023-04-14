@@ -14,12 +14,9 @@ import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.configoss.StateWrapper;
-import io.airbyte.configoss.helpers.StateMessageHelper;
 import io.airbyte.db.AbstractDatabase;
 import io.airbyte.db.IncrementalUtils;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -27,7 +24,6 @@ import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.InvalidCursorInfoUtil.InvalidCursorInfo;
-import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
@@ -42,7 +38,6 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -140,9 +135,10 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                     final ConfiguredAirbyteCatalog catalog,
                                                     final JsonNode state)
       throws Exception {
+    final AirbyteStateType supportedStateType = getSupportedStateType(config);
     final StateManager stateManager =
-        StateManagerFactory.createStateManager(getSupportedStateType(config),
-            deserializeInitialState(state, config, featureFlags.useStreamCapableState()), catalog);
+        StateManagerFactory.createStateManager(supportedStateType,
+            StateGeneratorUtils.deserializeInitialState(state, featureFlags.useStreamCapableState(), supportedStateType), catalog);
     final Instant emittedAt = Instant.now();
 
     final Database database = createDatabase(config);
@@ -671,46 +667,6 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return list of fields that could be used as cursors
    */
   protected abstract boolean isCursorType(DataType type);
-
-  /**
-   * Deserializes the state represented as JSON into an object representation.
-   *
-   * @param initialStateJson The state as JSON.
-   * @param config The connector configuration.
-   * @return The deserialized object representation of the state.
-   */
-  protected List<AirbyteStateMessage> deserializeInitialState(final JsonNode initialStateJson,
-                                                              final JsonNode config,
-                                                              final boolean useStreamCapableState) {
-    final Optional<StateWrapper> typedState = StateMessageHelper.getTypedState(initialStateJson,
-        useStreamCapableState);
-    return typedState.map((state) -> {
-      switch (state.getStateType()) {
-        case GLOBAL:
-          return List.of(StateGeneratorUtils.convertStateMessage(state.getGlobal()));
-        case STREAM:
-          return state.getStateMessages()
-              .stream()
-              .map(stateMessage -> StateGeneratorUtils.convertStateMessage(stateMessage)).toList();
-        case LEGACY:
-        default:
-          return List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
-              .withData(state.getLegacyState()));
-      }
-    }).orElse(generateEmptyInitialState(config));
-  }
-
-  /**
-   * Generates an empty, initial state for use by the connector.
-   *
-   * @param config The connector configuration.
-   * @return The empty, initial state.
-   */
-  protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
-    // For backwards compatibility with existing connectors
-    return List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
-        .withData(Jsons.jsonNode(new DbState())));
-  }
 
   /**
    * Returns the {@link AirbyteStateType} supported by this connector.

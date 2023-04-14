@@ -370,7 +370,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:2.0.17"
+- dockerImage: "airbyte/source-alloydb:2.0.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -444,15 +444,6 @@
           order: 6
           group: "advanced"
           pattern_descriptor: "key1=value1&key2=value2"
-        ssl:
-          title: "Connect using SSL"
-          description: "Encrypt data using SSL. When activating SSL, please select\
-            \ one of the connection modes."
-          type: "boolean"
-          default: false
-          order: 7
-          group: "security"
-          always_show: true
         ssl_mode:
           title: "SSL Modes"
           description: "SSL connection modes. \n  Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"\
@@ -518,7 +509,7 @@
                 order: 0
               ca_certificate:
                 type: "string"
-                title: "CA certificate"
+                title: "CA Certificate"
                 description: "CA certificate"
                 airbyte_secret: true
                 multiline: true
@@ -530,6 +521,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client Key"
@@ -537,6 +529,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -570,6 +563,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client Key"
@@ -577,6 +571,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -822,7 +817,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-ads:1.0.2"
+- dockerImage: "airbyte/source-amazon-ads:1.0.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-ads"
     connectionSpecification:
@@ -1314,11 +1309,11 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.1.24"
+- dockerImage: "airbyte/source-amplitude:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amplitude"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Amplitude Spec"
       type: "object"
       required:
@@ -1355,29 +1350,15 @@
             \ data before this date will not be replicated."
           examples:
           - "2021-01-25T00:00:00Z"
-        event_time_interval:
-          type: "object"
-          title: "Event Stream Time Interval"
-          description: "Amplitude event stream time interval"
-          required:
-          - "size_unit"
-          - "size"
-          properties:
-            size_unit:
-              type: "string"
-              title: "Events Time Interval Size Unit"
-              description: "Amplitude event stream's interval size unit"
-              enum:
-              - "days"
-              - "hours"
-              - "weeks"
-              - "months"
-              default: "days"
-            size:
-              type: "integer"
-              title: "Events Time Interval Size"
-              description: "Amplitude event stream's interval size unit"
-              default: 1
+        request_time_range:
+          type: "integer"
+          title: "Request time range"
+          description: "According to <a href=\"https://www.docs.developers.amplitude.com/analytics/apis/export-api/#considerations\"\
+            >Considerations</a> too big time range in request can cause a timeout\
+            \ error. In this case, set shorter time interval in hours."
+          default: 24
+          minimum: 1
+          maximum: 8760
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -3901,7 +3882,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.3.1"
+- dockerImage: "airbyte/source-facebook-marketing:0.3.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -4289,7 +4270,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-facebook-pages:0.2.3"
+- dockerImage: "airbyte/source-facebook-pages:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-pages"
     connectionSpecification:
@@ -4490,7 +4471,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.36"
+- dockerImage: "airbyte/source-file:0.2.38"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/file"
     connectionSpecification:
@@ -4532,9 +4513,8 @@
           examples:
           - "{}"
           - "{\"sep\": \" \"}"
-          - sep: "\t"
-            header: 0
-            names: "column1, column2"
+          - "{\"sep\": \"\t\", \"header\": 0, \"names\": [\"column1\", \"column2\"\
+            ] }"
         url:
           type: "string"
           title: "URL"
@@ -6893,7 +6873,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.5.2"
+- dockerImage: "airbyte/source-hubspot:0.6.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/hubspot"
     connectionSpecification:
@@ -7335,7 +7315,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-jira:0.3.5"
+- dockerImage: "airbyte/source-jira:0.3.6"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/jira"
     connectionSpecification:
@@ -7359,9 +7339,11 @@
           type: "string"
           title: "Domain"
           examples:
-          - "domainname.atlassian.net"
-          pattern: "^[a-zA-Z0-9._-]*\\.atlassian\\.net$"
-          description: "The Domain for your Jira account, e.g. airbyteio.atlassian.net"
+          - "<your-domain>.atlassian.net"
+          - "<your-domain>.jira.com"
+          - "jira.<your-domain>.com"
+          description: "The Domain for your Jira account, e.g. airbyteio.atlassian.net,\
+            \ airbyteio.jira.com, jira.your-domain.com"
           order: 1
         email:
           type: "string"
@@ -8600,7 +8582,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:1.0.10"
+- dockerImage: "airbyte/source-mssql:1.0.11"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
@@ -9477,7 +9459,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:2.0.13"
+- dockerImage: "airbyte/source-mysql:2.0.15"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -9592,6 +9574,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client key"
@@ -9601,6 +9584,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -9634,6 +9618,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client key"
@@ -9643,6 +9628,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -10343,7 +10329,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-notion:1.0.3"
+- dockerImage: "airbyte/source-notion:1.0.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/notion"
     connectionSpecification:
@@ -12071,7 +12057,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:2.0.18"
+- dockerImage: "airbyte/source-postgres:2.0.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -12145,15 +12131,6 @@
           order: 6
           group: "advanced"
           pattern_descriptor: "key1=value1&key2=value2"
-        ssl:
-          title: "Connect using SSL"
-          description: "Encrypt data using SSL. When activating SSL, please select\
-            \ one of the connection modes."
-          type: "boolean"
-          default: false
-          order: 7
-          group: "security"
-          always_show: true
         ssl_mode:
           title: "SSL Modes"
           description: "SSL connection modes. \n  Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"\
@@ -12219,7 +12196,7 @@
                 order: 0
               ca_certificate:
                 type: "string"
-                title: "CA certificate"
+                title: "CA Certificate"
                 description: "CA certificate"
                 airbyte_secret: true
                 multiline: true
@@ -12231,6 +12208,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client Key"
@@ -12238,6 +12216,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -12271,6 +12250,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client Key"
@@ -12278,6 +12258,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -12747,62 +12728,85 @@
         oauthFlowOutputParameters:
         - - "token"
         - - "key"
-- dockerImage: "airbyte/source-quickbooks-singer:0.1.5"
+- dockerImage: "airbyte/source-quickbooks:2.0.0"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/sources/quickbooks-singer"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/quickbooks"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
-      title: "Source QuickBooks Singer Spec"
+      title: "Source QuickBooks Spec"
       type: "object"
       required:
-      - "client_id"
-      - "client_secret"
-      - "refresh_token"
-      - "realm_id"
-      - "user_agent"
+      - "credentials"
       - "start_date"
       - "sandbox"
-      additionalProperties: false
+      additionalProperties: true
       properties:
-        client_id:
-          type: "string"
-          title: "Client ID"
-          description: "Identifies which app is making the request. Obtain this value\
-            \ from the Keys tab on the app profile via My Apps on the developer site.\
-            \ There are two versions of this key: development and production."
-        client_secret:
-          description: " Obtain this value from the Keys tab on the app profile via\
-            \ My Apps on the developer site. There are two versions of this key: development\
-            \ and production."
-          title: "Client Secret"
-          type: "string"
-          airbyte_secret: true
-        refresh_token:
-          description: "A token used when refreshing the access token."
-          title: "Refresh Token"
-          type: "string"
-          airbyte_secret: true
-        realm_id:
-          description: "Labeled Company ID. The Make API Calls panel is populated\
-            \ with the realm id and the current access token."
-          title: "Realm ID"
-          type: "string"
-          airbyte_secret: true
-        user_agent:
-          type: "string"
-          title: "User Agent"
-          description: "Process and email for API logging purposes. Example: tap-quickbooks\
-            \ <api_user_email@your_company.com>."
+        credentials:
+          title: "Authorization Method"
+          type: "object"
+          order: 0
+          oneOf:
+          - type: "object"
+            title: "OAuth2.0"
+            required:
+            - "client_id"
+            - "client_secret"
+            - "refresh_token"
+            - "access_token"
+            - "token_expiry_date"
+            - "realm_id"
+            properties:
+              auth_type:
+                type: "string"
+                const: "oauth2.0"
+              client_id:
+                type: "string"
+                title: "Client ID"
+                description: "Identifies which app is making the request. Obtain this\
+                  \ value from the Keys tab on the app profile via My Apps on the\
+                  \ developer site. There are two versions of this key: development\
+                  \ and production."
+              client_secret:
+                description: " Obtain this value from the Keys tab on the app profile\
+                  \ via My Apps on the developer site. There are two versions of this\
+                  \ key: development and production."
+                title: "Client Secret"
+                type: "string"
+                airbyte_secret: true
+              refresh_token:
+                description: "A token used when refreshing the access token."
+                title: "Refresh Token"
+                type: "string"
+                airbyte_secret: true
+              access_token:
+                description: "Access token fot making authenticated requests."
+                title: "Access Token"
+                type: "string"
+                airbyte_secret: true
+              token_expiry_date:
+                type: "string"
+                title: "Token Expiry Date"
+                description: "The date-time when the access token should be refreshed."
+                format: "date-time"
+              realm_id:
+                description: "Labeled Company ID. The Make API Calls panel is populated\
+                  \ with the realm id and the current access token."
+                title: "Realm ID"
+                type: "string"
+                airbyte_secret: true
         start_date:
+          order: 1
           description: "The default value to use if no bookmark exists for an endpoint\
-            \ (rfc3339 date string). E.g, 2021-03-20T00:00:00Z. Any data before this\
-            \ date will not be replicated."
+            \ (rfc3339 date string). E.g, 2021-03-20T00:00:00+00:00. Any data before\
+            \ this date will not be replicated."
           title: "Start Date"
           type: "string"
+          format: "date-time"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           examples:
-          - "2021-03-20T00:00:00Z"
+          - "2021-03-20T00:00:00+00:00"
         sandbox:
+          order: 2
           description: "Determines whether to use the sandbox or production environment."
           title: "Sandbox"
           type: "boolean"
@@ -12842,7 +12846,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-recharge:0.2.8"
+- dockerImage: "airbyte/source-recharge:0.2.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recharge"
     connectionSpecification:
@@ -15071,7 +15075,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-stripe:3.0.5"
+- dockerImage: "airbyte/source-stripe:3.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
     connectionSpecification:
@@ -15183,7 +15187,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-surveymonkey:0.1.15"
+- dockerImage: "airbyte/source-surveymonkey:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/surveymonkey"
     connectionSpecification:
@@ -16222,7 +16226,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-twilio:0.2.0"
+- dockerImage: "airbyte/source-twilio:0.5.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/twilio"
     connectionSpecification:

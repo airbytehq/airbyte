@@ -1,0 +1,22 @@
+data:
+  allowedHosts:
+    hosts:
+      - ${subdomain}.zendesk.com
+      - zendesk.com
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
+  dockerImageTag: 0.2.27
+  dockerRepository: airbyte/source-zendesk-support
+  githubIssueLabel: source-zendesk-support
+  icon: zendesk-support.svg
+  license: MIT
+  name: Zendesk Support
+  releaseStage: generally_available
+  supportUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
+metadataSpecVersion: "1.0"
