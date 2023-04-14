@@ -6,6 +6,7 @@ package io.airbyte.commons.stream;
 
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus;
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.Optional;
@@ -17,12 +18,12 @@ public class AirbyteStreamStatusHolder {
 
   private final AirbyteStreamNameNamespacePair airbyteStream;
 
-  private final io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus airbyteStreamStatus;
+  private final AirbyteStreamStatus airbyteStreamStatus;
 
   private final Optional<Boolean> success;
 
   public AirbyteStreamStatusHolder(final AirbyteStreamNameNamespacePair airbyteStream,
-                             final io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus airbyteStreamStatus,
+                             final AirbyteStreamStatus airbyteStreamStatus,
                              final Optional<Boolean> success) {
     this.airbyteStream = airbyteStream;
     this.airbyteStreamStatus = airbyteStreamStatus;

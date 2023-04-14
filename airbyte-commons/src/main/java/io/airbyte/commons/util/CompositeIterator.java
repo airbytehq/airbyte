@@ -8,6 +8,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -145,26 +146,26 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
   private void emitRunningStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream) {
     airbyteStream.ifPresent(s -> {
       LOGGER.info("RUNNING -> {}", s);
-      emitStreamStatus(s, io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.RUNNING, Optional.empty());
+      emitStreamStatus(s, AirbyteStreamStatus.RUNNING, Optional.empty());
     });
   }
 
   private void emitStartStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream) {
     airbyteStream.ifPresent(s -> {
       LOGGER.info("STARTING -> {}", s);
-      emitStreamStatus(s, io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED, Optional.empty());
+      emitStreamStatus(s, AirbyteStreamStatus.STARTED, Optional.empty());
     });
   }
 
   private void emitStopStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream, final boolean successful) {
     airbyteStream.ifPresent(s -> {
       LOGGER.info("STOPPING({}) -> {}", successful, s);
-      emitStreamStatus(s, io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STOPPED, Optional.of(successful));
+      emitStreamStatus(s, AirbyteStreamStatus.STOPPED, Optional.of(successful));
     });
   }
 
   private void emitStreamStatus(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
-                                final io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus airbyteStreamStatus,
+                                final AirbyteStreamStatus airbyteStreamStatus,
                                 final Optional<Boolean> success) {
     // TODO This method will also take in the status enum and create an AirbyteStreamStatus object to
     // send to the consumer, if present
