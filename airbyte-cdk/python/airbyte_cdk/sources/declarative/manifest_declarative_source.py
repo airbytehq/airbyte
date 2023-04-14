@@ -60,7 +60,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         self._source_config = propagated_source_config
         self._debug = debug
         self._emit_connector_builder_messages = emit_connector_builder_messages
-        self._constructor = component_factory if component_factory else ModelToComponentFactory()
+        self._constructor = component_factory if component_factory else ModelToComponentFactory(emit_connector_builder_messages)
 
         self._validate_source()
 

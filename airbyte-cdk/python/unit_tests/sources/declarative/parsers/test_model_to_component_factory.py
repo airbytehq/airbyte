@@ -1312,7 +1312,7 @@ def test_simple_retriever_emit_log_messages():
         "requester": {"type": "HttpRequester", "name": "list", "url_base": "orange.com", "path": "/v1/api"},
     }
 
-    connector_builder_factory = ModelToComponentFactory()
+    connector_builder_factory = ModelToComponentFactory(emit_connector_builder_messages=True)
     retriever = connector_builder_factory.create_component(
         model_type=SimpleRetrieverModel,
         component_definition=simple_retriever_model,
@@ -1320,7 +1320,6 @@ def test_simple_retriever_emit_log_messages():
         name="Test",
         primary_key="id",
         stream_slicer=None,
-        emit_connector_builder_messages=True
     )
 
     assert isinstance(retriever, SimpleRetrieverTestReadDecorator)
