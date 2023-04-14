@@ -9,6 +9,8 @@ from unittest import mock
 from unittest.mock import patch
 
 import pytest
+import requests
+
 from airbyte_cdk import connector_builder
 from airbyte_cdk.connector_builder.connector_builder_handler import (
     DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE,
@@ -543,12 +545,31 @@ def request_log_message(request: dict) -> AirbyteMessage:
 def response_log_message(response: dict) -> AirbyteMessage:
     return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=f"response:{json.dumps(response)}"))
 
+def create_request():
+    url = "https://example.com/api"
+    headers = {'Content-Type': 'application/json'}
+    return requests.Request('POST', url, headers=headers, json={"key": "value"}).prepare()
 
-@patch.object(HttpStream, "_read_pages", return_value=[
-    request_log_message({}),
-    response_log_message({}),
-    {"id": 0}, {"id": 1}, request_log_message({}), response_log_message({}), {"id": 2}])
+
+def create_response(body):
+    response = requests.Response()
+    response.status_code = 200
+    response._content = bytes(json.dumps(body), "utf-8")
+    response.headers["Content-Type"] = "application/json"
+    return response
+
+@patch.object(HttpStream, "_fetch_next_page", return_value=(
+        create_request(),
+        create_response({
+            "result": [{"id": 1}, {"id": 2}],
+            "_metadata": {}
+        })))
 def test_read_source(mock_http_stream):
+    """
+    This test sort of acts as an integration test for the connector builder with the caveat that
+    this does not test that the request log and response log messages are emitted.
+    Instead, this tests that the stream's retriever is a SimpleTestRestDecorator, which is known to emit the log messages
+    """
     max_records = 100
     max_pages_per_slice = 2
     max_slices = 3
