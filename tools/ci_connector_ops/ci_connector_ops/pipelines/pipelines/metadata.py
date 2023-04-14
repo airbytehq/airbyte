@@ -8,7 +8,7 @@ from typing import Optional, Set
 
 import dagger
 from ci_connector_ops.pipelines.actions.environments import with_poetry_module, with_python_base, with_pip_packages
-from ci_connector_ops.pipelines.bases import Step, StepStatus, TestReport
+from ci_connector_ops.pipelines.bases import Step, StepStatus, TestReport, run_steps
 from ci_connector_ops.pipelines.contexts import PipelineContext
 from ci_connector_ops.pipelines.utils import DAGGER_CONFIG, METADATA_FILE_NAME, execute_concurrently
 
@@ -124,6 +124,19 @@ class DeployOrchestrator(Step):
         return await self.get_step_result(container_to_run)
 
 
+class TestOrchestrator(PoetryRun):
+    def __init__(self, context: PipelineContext):
+        super().__init__(
+            context=context,
+            title="Test Metadata Orchestrator",
+            parent_dir_path=METADATA_DIR,
+            module_path=METADATA_ORCHESTRATOR_MODULE_PATH,
+        )
+
+    async def _run(self) -> StepStatus:
+        return await super()._run(["pytest"])
+
+
 async def run_metadata_validation_pipeline(
     is_local: bool,
     git_branch: str,
@@ -208,13 +221,8 @@ async def run_metadata_orchestrator_test_pipeline(
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
         async with metadata_pipeline_context:
-            test_orch_step = PoetryRun(
-                context=metadata_pipeline_context,
-                title="Test Metadata Service Orchestrator",
-                parent_dir_path=METADATA_DIR,
-                module_path=METADATA_ORCHESTRATOR_MODULE_PATH,
-            )
-            result = await test_orch_step.run(["pytest"])
+            test_orch_step = TestOrchestrator(context=metadata_pipeline_context)
+            result = await test_orch_step.run()
             metadata_pipeline_context.test_report = TestReport(pipeline_context=metadata_pipeline_context, steps_results=[result])
 
     return metadata_pipeline_context.test_report.success
@@ -279,7 +287,10 @@ async def run_metadata_orchestrator_deploy_pipeline(
         metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
 
         async with metadata_pipeline_context:
-            deploy_orch_step = DeployOrchestrator(context=metadata_pipeline_context)
-            result = await deploy_orch_step.run()
-            metadata_pipeline_context.test_report = TestReport(pipeline_context=metadata_pipeline_context, steps_results=[result])
+            steps = [
+                TestOrchestrator(context=metadata_pipeline_context),
+                DeployOrchestrator(context=metadata_pipeline_context)
+            ]
+            steps_results = await run_steps(steps)
+            metadata_pipeline_context.test_report = TestReport(pipeline_context=metadata_pipeline_context, steps_results=steps_results)
     return metadata_pipeline_context.test_report.success

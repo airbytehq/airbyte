@@ -73,11 +73,16 @@ class StepStatus(Enum):
 class Step(ABC):
     """An abstract class to declare and run pipeline step."""
 
-    title: ClassVar
+    title: ClassVar[str]
+    skip_step: ClassVar[bool] = False
+    parallel: ClassVar[bool] = False
+    started_at: ClassVar[datetime]
 
-    def __init__(self, context: ConnectorTestContext) -> None:  # noqa D107
+    def __init__(self, context: ConnectorTestContext, skip_step: bool = False, parallel: bool = False) -> None:  # noqa D107
         self.context = context
         self.host_image_export_dir_path = "." if self.context.is_ci else "/tmp"
+        self.skip_step = skip_step
+        self.parallel = parallel
 
     async def run(self, *args, **kwargs) -> StepResult:
         """Public method to run the step. It output a step result.
@@ -87,6 +92,7 @@ class Step(ABC):
         Returns:
             StepResult: The step result following the step run.
         """
+        self.started_at = datetime.utcnow()
         try:
             return await self._run(*args, **kwargs)
         except QueryError as e:
@@ -269,7 +275,12 @@ class TestReport:
             step.stylize(step_result.status.get_rich_style())
             result = Text(step_result.status.value)
             result.stylize(step_result.status.get_rich_style())
-            step_results_table.add_row(step, result, f"{round((self.created_at - step_result.created_at).total_seconds())}s")
+
+            if step_result.status is StepStatus.SKIPPED:
+                step_results_table.add_row(step, result, "N/A")
+            else:
+                run_time_seconds = round((step_result.created_at-step_result.step.started_at).total_seconds())
+                step_results_table.add_row(step, result, f"{run_time_seconds}s")
 
         to_render = [step_results_table]
         if self.failed_steps:
@@ -353,3 +364,31 @@ class ConnectorTestReport(TestReport):
 
         main_panel = Panel(Group(*to_render), title=main_panel_title, subtitle=duration_subtitle)
         console.print(main_panel)
+
+async def run_steps(steps: List[Step], results: List[StepResult] = []) -> List[StepResult]:
+    # If there are no steps to run, return the results
+    if not steps:
+        return results
+
+    # If any of the previous steps failed, skip the remaining steps
+    if any(result.status == StepStatus.FAILURE for result in results):
+        skipped_results = [step.skip() for step in steps]
+        return results + skipped_results
+
+    steps_to_run, remaining_steps = [], []
+
+    # Add all next parallel steps in an unbroken chunk to the list of steps to run
+    for step in steps:
+        steps_to_run.append(step)
+        if not step.parallel:
+            break
+
+    remaining_steps = steps[len(steps_to_run):]
+
+    async with asyncer.create_task_group() as task_group:
+        tasks = [
+            task_group.soonify(step_to_run.run)() for step_to_run in steps_to_run
+        ]
+
+    new_results = [task.value for task in tasks]
+    return await run_steps(remaining_steps, results + new_results)
