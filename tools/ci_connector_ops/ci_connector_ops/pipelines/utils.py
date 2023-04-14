@@ -8,6 +8,7 @@ import datetime
 import re
 import sys
 import unicodedata
+from glob import glob
 from pathlib import Path
 from typing import Any, Callable, List, Optional, Set
 
@@ -17,9 +18,11 @@ import click
 import git
 from ci_connector_ops.utils import DESTINATION_CONNECTOR_PATH_PREFIX, SOURCE_CONNECTOR_PATH_PREFIX, Connector, get_connector_name_from_path
 from dagger import Config, Connection, Container, DaggerError, File, QueryError
+from more_itertools import chunked
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
+METADATA_FILE_NAME = "metadata.yaml"
 
 
 # This utils will probably be redundant once https://github.com/dagger/dagger/issues/3764 is implemented
@@ -122,7 +125,9 @@ def get_current_epoch_time() -> int:  # noqa D103
     return round(datetime.datetime.utcnow().timestamp())
 
 
-async def get_modified_files_remote(current_git_branch: str, current_git_revision: str, diffed_branch: str = "origin/master") -> Set[str]:
+async def get_modified_files_in_branch_remote(
+    current_git_branch: str, current_git_revision: str, diffed_branch: str = "origin/master"
+) -> Set[str]:
     """Use git diff to spot the modified files on the remote branch."""
     async with Connection(DAGGER_CONFIG) as dagger_client:
         modified_files = await (
@@ -151,19 +156,58 @@ async def get_modified_files_remote(current_git_branch: str, current_git_revisio
     return set(modified_files.split("\n"))
 
 
-def get_modified_files_local(current_git_revision: str, diffed_branch: str = "master") -> Set[str]:
+def get_modified_files_in_branch_local(current_git_revision: str, diffed_branch: str = "master") -> Set[str]:
     """Use git diff to spot the modified files on the local branch."""
     airbyte_repo = git.Repo()
     modified_files = airbyte_repo.git.diff("--diff-filter=MA", "--name-only", f"{diffed_branch}...{current_git_revision}").split("\n")
     return set(modified_files)
 
 
-def get_modified_files(current_git_branch: str, current_git_revision: str, diffed_branch: str, is_local: bool = True) -> Set[str]:
+def get_modified_files_in_branch(current_git_branch: str, current_git_revision: str, diffed_branch: str, is_local: bool = True) -> Set[str]:
     """Retrieve the list of modified files on the branch."""
     if is_local:
-        return get_modified_files_local(current_git_revision, diffed_branch)
+        return get_modified_files_in_branch_local(current_git_revision, diffed_branch)
     else:
-        return anyio.run(get_modified_files_remote, current_git_branch, current_git_revision, diffed_branch)
+        return anyio.run(get_modified_files_in_branch_remote, current_git_branch, current_git_revision, diffed_branch)
+
+
+async def get_modified_files_in_commit_remote(current_git_branch: str, current_git_revision: str) -> Set[str]:
+    async with Connection(DAGGER_CONFIG) as dagger_client:
+        modified_files = await (
+            dagger_client.container()
+            .from_("alpine/git:latest")
+            .with_workdir("/repo")
+            .with_exec(["init"])
+            .with_env_variable("CACHEBUSTER", current_git_revision)
+            .with_exec(
+                [
+                    "remote",
+                    "add",
+                    "--fetch",
+                    "--track",
+                    current_git_branch,
+                    "origin",
+                    AIRBYTE_REPO_URL,
+                ]
+            )
+            .with_exec(["checkout", "-t", f"origin/{current_git_branch}"])
+            .with_exec(["diff-tree", "--no-commit-id", "--name-only", current_git_revision, "-r"])
+            .stdout()
+        )
+    return set(modified_files.split("\n"))
+
+
+def get_modified_files_in_commit_local(current_git_revision: str) -> Set[str]:
+    airbyte_repo = git.Repo()
+    modified_files = airbyte_repo.git.diff_tree("--no-commit-id", "--name-only", current_git_revision, "-r").split("\n")
+    return set(modified_files)
+
+
+def get_modified_files_in_commit(current_git_branch: str, current_git_revision: str, is_local: bool = True) -> Set[str]:
+    if is_local:
+        return get_modified_files_in_commit_local(current_git_revision)
+    else:
+        return anyio.run(get_modified_files_in_commit_remote, current_git_branch, current_git_revision)
 
 
 def get_modified_connectors(modified_files: Set[str]) -> Set[Connector]:
@@ -173,6 +217,14 @@ def get_modified_connectors(modified_files: Set[str]) -> Set[Connector]:
         if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) or file_path.startswith(DESTINATION_CONNECTOR_PATH_PREFIX):
             modified_connectors.append(Connector(get_connector_name_from_path(file_path)))
     return set(modified_connectors)
+
+
+def get_modified_metadata_files(modified_files: Set[str]) -> Set[Path]:
+    return {Path(f) for f in modified_files if f.endswith(METADATA_FILE_NAME) and f.startswith("airbyte-integrations/connectors")}
+
+
+def get_all_metadata_files() -> Set[Path]:
+    return {Path(metadata_file) for metadata_file in glob("airbyte-integrations/connectors/**/metadata.yaml", recursive=True)}
 
 
 def slugify(value: Any, allow_unicode: bool = False):
@@ -249,10 +301,11 @@ class DaggerPipelineCommand(click.Command):
             return sys.exit(1)
 
 
-async def execute_concurrently(steps: List[Callable], concurrency: int = 5):
-    semaphore = anyio.Semaphore(concurrency)
-    async with semaphore:
+async def execute_concurrently(steps: List[Callable], concurrency=5):
+    tasks = []
+    # Asyncer does not have builtin semaphore, so control concurrency via chunks of steps
+    # Anyio has semaphores but does not have the soonify method which allow access to results via the value task attribute.
+    for chunk in chunked(steps, concurrency):
         async with asyncer.create_task_group() as task_group:
-            tasks = [task_group.soonify(step)() for step in steps]
-
-        return [task.value for task in tasks]
+            tasks += [task_group.soonify(step)() for step in chunk]
+    return [task.value for task in tasks]

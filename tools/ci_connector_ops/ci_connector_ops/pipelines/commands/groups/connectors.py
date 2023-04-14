@@ -108,7 +108,7 @@ def test(
         connector_name (str): The connector technical name. E.G. source-pokeapi
     """
     connectors_under_test = get_all_released_connectors()
-    modified_connectors = get_modified_connectors(ctx.obj["modified_files"])
+    modified_connectors = get_modified_connectors(ctx.obj["modified_files_in_branch"])
     if modified:
         connectors_under_test = modified_connectors
     else:

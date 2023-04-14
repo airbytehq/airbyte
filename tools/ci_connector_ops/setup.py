@@ -46,6 +46,7 @@ PIPELINES_REQUIREMENTS = [
     "dagger-io==0.5.0",
     "asyncer",
     "anyio",
+    "more-itertools",
 ]
 
 setup(
