@@ -273,6 +273,7 @@ async def publish_connector_image(
     connector_version = await get_version_from_dockerfile(dockerfile)
     if is_pre_release:
         tag = f"{connector_version}-dev.{context.git_revision[:10]}"
+        connector_container = connector_container.with_label("io.airbyte.branch", context.git_branch)
     else:
         tag = connector_version
     image_name = f"{context.docker_registry}/{context.connector.technical_name}:{tag}"
