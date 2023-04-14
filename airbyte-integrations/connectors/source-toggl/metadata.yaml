@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 7e7c844f-2300-4342-b7d3-6dd7992593cd
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-toggl
+  githubIssueLabel: source-toggl
+  icon: toggl.svg
+  license: MIT
+  name: Toggl
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/toggl
+metadataSpecVersion: "1.0"

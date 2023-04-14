@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: destination
+  definitionId: 6d1d66d4-26ab-4602-8d32-f85894b04955
+  dockerImageTag: 0.1.5
+  dockerRepository: airbyte/destination-kinesis
+  githubIssueLabel: destination-kinesis
+  icon: kinesis.svg
+  license: MIT
+  name: Kinesis
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/kinesis
+metadataSpecVersion: "1.0"

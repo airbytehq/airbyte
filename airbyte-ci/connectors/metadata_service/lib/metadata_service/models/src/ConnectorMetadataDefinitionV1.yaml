@@ -59,6 +59,7 @@ properties:
           - database
           - file
           - custom
+          - message_queue
           - unknown
       releaseStage:
         type: string
