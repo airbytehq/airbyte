@@ -59,9 +59,6 @@ def with_python_base(context: PipelineContext, python_image_name: str = "python:
         .with_exec(["pip", "install", "--upgrade", "pip"])
     )
 
-    if context.is_ci:
-        base_container = with_authenticated_to_docker_hub(context, base_container, python_image_name.split(":")[0])
-
     return base_container
 
 
@@ -344,7 +341,7 @@ async def with_connector_acceptance_test(context: ConnectorTestContext, connecto
         cat_container = context.dagger_client.container().from_(context.connector_acceptance_test_image)
     shared_tmp_volume = ("/tmp", context.dagger_client.cache_volume("share-tmp-cat"))
 
-    cat = (
+    return (
         with_bound_docker_host(context, cat_container, shared_tmp_volume, docker_service_name="cat")
         .with_entrypoint([])
         .with_exec(["pip", "install", "pytest-custom_exit_code"])
@@ -354,8 +351,6 @@ async def with_connector_acceptance_test(context: ConnectorTestContext, connecto
         .with_entrypoint(["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "--suppress-tests-failed-exit-code"])
         .with_exec(["--acceptance-test-config", "/test_input"])
     )
-    if context.is_ci:
-        return with_authenticated_to_docker_hub(context, cat, context.connector_acceptance_test_image.split(":")[0])
 
 
 def with_gradle(
@@ -418,12 +413,9 @@ def with_gradle(
         .with_workdir("/airbyte")
     )
     if bind_to_docker_host:
-        openjdk_with_docker = with_bound_docker_host(
-            context, openjdk_with_docker, shared_tmp_volume, docker_service_name=docker_service_name
-        )
-    if context.is_ci:
-        openjdk_with_docker = with_authenticated_to_docker_hub(context, openjdk_with_docker, "openjdk")
-    return openjdk_with_docker
+        return with_bound_docker_host(context, openjdk_with_docker, shared_tmp_volume, docker_service_name=docker_service_name)
+    else:
+        return openjdk_with_docker
 
 
 async def load_image_to_docker_host(
@@ -535,7 +527,8 @@ async def with_airbyte_java_connector(context: ConnectorTestContext, connector_j
     application = context.connector.technical_name
     java_base = await with_java_base(context)
     enable_sentry = await should_enable_sentry(dockerfile)
-    java_connector = (
+
+    return (
         java_base.with_workdir("/airbyte")
         .with_env_variable("APPLICATION", application)
         .with_file(f"{application}.tar", connector_java_tar_file)
@@ -546,12 +539,9 @@ async def with_airbyte_java_connector(context: ConnectorTestContext, connector_j
         .with_env_variable("ENABLE_SENTRY", str(enable_sentry).lower())
         .with_entrypoint("/airbyte/base.sh")
     )
-    if context.is_ci:
-        return with_authenticated_to_docker_hub(context, java_connector, f"airbyte/{application}")
-    return java_connector
 
 
-def with_normalization(context: ConnectorTestContext, normalization_dockerfile_name: str) -> Container:
+def with_normalization(context, normalization_dockerfile_name: str) -> Container:
     normalization_directory = context.get_repo_dir("airbyte-integrations/bases/base-normalization")
     sshtunneling_file = context.get_repo_dir(
         "airbyte-connector-test-harnesses/acceptance-test-harness/src/main/resources", include="sshtunneling.sh"
@@ -559,9 +549,3 @@ def with_normalization(context: ConnectorTestContext, normalization_dockerfile_n
     normalization_directory_with_build = normalization_directory.with_new_directory("build")
     normalization_directory_with_sshtunneling = normalization_directory_with_build.with_file("build/sshtunneling.sh", sshtunneling_file)
     return normalization_directory_with_sshtunneling.docker_build(normalization_dockerfile_name)
-
-
-def with_authenticated_to_docker_hub(context: ConnectorTestContext, container: Container, docker_image_name: str) -> Container:
-    docker_hub_username: str = context.dagger_client.host().env_variable("DOCKER_HUB_USERNAME").value()
-    docker_hub_password: Secret = context.dagger_client.host().env_variable("DOCKER_HUB_PASSWORD").secret()
-    return container.with_registry_auth(f"docker.io/{docker_image_name}:latest", docker_hub_username, docker_hub_password)
