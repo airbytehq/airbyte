@@ -1,4 +1,5 @@
 set -e
+set -o pipefail
 
 /airbyte/base.sh $@
 

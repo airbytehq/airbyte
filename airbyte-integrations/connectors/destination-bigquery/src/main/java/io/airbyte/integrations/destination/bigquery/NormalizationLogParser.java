@@ -28,42 +28,36 @@ import org.apache.logging.log4j.util.Strings;
  * A simple wrapper for base-normalization logs. Reads messages off of stdin and sticks them into appropriate AirbyteMessages (log or trace), then
  * dumps those messages to stdout
  * <p>
- * does mostly the same thing as {@link io.airbyte.workers.normalization.NormalizationAirbyteStreamFactory}. That class is not actively developed,
- * and will be deleted after all destinations run normalization in-connector.
+ * does mostly the same thing as {@link io.airbyte.workers.normalization.NormalizationAirbyteStreamFactory}. That class is not actively developed, and
+ * will be deleted after all destinations run normalization in-connector.
  */
 public class NormalizationLogParser {
 
   private final List<String> dbtErrors = new ArrayList<>();
 
   public Stream<AirbyteMessage> create(final BufferedReader bufferedReader) {
-    return bufferedReader
-        .lines()
-        .flatMap(this::wrap);
+    return bufferedReader.lines().flatMap(this::toMessages);
   }
 
   public List<String> getDbtErrors() {
     return dbtErrors;
   }
 
-  private Stream<AirbyteMessage> wrap(final String line) {
+  private Stream<AirbyteMessage> toMessages(final String line) {
     if (Strings.isEmpty(line)) {
-      return Stream.of(new AirbyteMessage()
-          .withType(Type.LOG)
-          .withLog(new AirbyteLogMessage().withLevel(Level.INFO).withMessage(line)));
+      return Stream.of(logMessage(Level.INFO, ""));
     }
 
     final Optional<JsonNode> json = Jsons.tryDeserialize(line);
-    if (json.isEmpty()) {
-      final AirbyteMessage logMessage = new AirbyteMessage()
-          .withType(Type.LOG)
-          .withLog(new AirbyteLogMessage().withLevel(Level.INFO).withMessage(line));
-      if (line.contains("[error]")) {
-        dbtErrors.add(line);
-      }
-      return Stream.of(logMessage);
-    } else {
+    if (json.isPresent()) {
       final Optional<AirbyteMessage> message = Jsons.tryObject(json.get(), AirbyteMessage.class);
-      if (message.isEmpty()) {
+      if (message.isPresent()) {
+        // This line is already an AirbyteMessage; we can just return it directly
+        // (these messages come from the transform_config / transform_catalog scripts)
+        return message.stream();
+      } else {
+        // This line is a JSON-format dbt log. We need to extract the message and wrap it in a logmessage
+        // And if it's an error, we also need to collect it into dbtErrors
         JsonNode jsonLine = json.get();
         final String logLevel = (jsonLine.getNodeType() == JsonNodeType.NULL || jsonLine.get("level").isNull())
                                 ? ""
@@ -83,14 +77,24 @@ public class NormalizationLogParser {
             logMsg = jsonLine.toPrettyString();
           }
         }
-        AirbyteMessage logMessage = new AirbyteMessage().withType(Type.LOG).withLog(new AirbyteLogMessage()
-            .withLevel(level)
-            .withMessage(logMsg));
-        return Stream.of(logMessage);
-      } else {
-        return message.stream();
+        return Stream.of(logMessage(level, logMsg));
       }
+    } else {
+      // This line is not in JSON at all; we need to wrap it inside a logMessagee
+      if (line.contains("[error]")) {
+        // Super hacky thing - for versions of dbt that don't support json output, this is how we find their error logs
+        dbtErrors.add(line);
+      }
+      return Stream.of(logMessage(Level.INFO, line));
     }
+  }
+
+  private static AirbyteMessage logMessage(Level level, String message) {
+    return new AirbyteMessage()
+        .withType(Type.LOG)
+        .withLog(new AirbyteLogMessage()
+            .withLevel(level)
+            .withMessage(message));
   }
 
   public static void main(String[] args) {
