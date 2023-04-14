@@ -66,6 +66,7 @@ class PipelineContext:
         gha_workflow_run_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
+        is_ci_optional: bool = False,
     ):
         """Initialize a pipeline context.
 
@@ -87,6 +88,7 @@ class PipelineContext:
         self.created_at = datetime.utcnow()
         self.ci_context = ci_context
         self.state = ContextState.INITIALIZED
+        self.is_ci_optional = is_ci_optional
 
         self.logger = logging.getLogger(self.pipeline_name)
         self.dagger_client = None
@@ -133,6 +135,7 @@ class PipelineContext:
             "context": self.pipeline_name,
             "should_send": self.is_pr,
             "logger": self.logger,
+            "is_optional": self.is_ci_optional,
         }
 
     def get_repo_dir(self, subdir: str = ".", exclude: Optional[List[str]] = None, include: Optional[List[str]] = None) -> Directory:
@@ -266,6 +269,8 @@ class ConnectorTestContext(PipelineContext):
             gha_workflow_run_url=gha_workflow_run_url,
             pipeline_start_timestamp=pipeline_start_timestamp,
             ci_context=ci_context,
+            # TODO: remove this once stable and our default pipeline
+            is_ci_optional=True,
         )
 
     @property
