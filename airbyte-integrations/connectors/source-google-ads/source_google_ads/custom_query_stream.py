@@ -65,7 +65,7 @@ class CustomQueryMixin:
             if google_data_type == "ENUM":
                 field_value = {"type": "string", "enum": list(node.enum_values)}
                 if node.is_repeated:
-                    field_value = {"type": ["null", "array"], "items": field_value.copy()}
+                    field_value = {"type": ["null", "array"], "items": field_value}
             elif google_data_type == "MESSAGE":
                 # Represents protobuf message and could be anything, set custom
                 # attribute "protobuf_message" to convert it to a string (or
