@@ -55,8 +55,12 @@ class ClaroshopBase(HttpStream):
 
     def get_credentials_url(self,api_keys):
         keys = json.loads(base64.b64decode(api_keys))
-        now = datetime.now(pytz.timezone('America/Mexico_City'))
+        # now = datetime.now(pytz.timezone('America/Mexico_City'))
+        now = datetime.now(pytz.timezone('Etc/GMT+5'))
+        # now = datetime.now(pytz.timezone('America/Mexico_City'))
         timestamp = now.strftime('%Y-%m-%dT%H:%M:%S')
+        # timestamp = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')
+        logger.info(timestamp)
         a_string = keys['public_key'] + timestamp + keys['private_key']
         signature = hashlib.sha256(a_string.encode('utf-8')).hexdigest()
 
@@ -198,6 +202,7 @@ class Pedidos(ClaroshopBase):
 
     endpoint_name = 'pedidosfiltros'
     record_key_name = 'pedido'
+    record_list_name = 'pedidos'
     record_primary_key = 'nopedido'
     record_date_field = 'fechaautorizacion'
 
@@ -335,6 +340,7 @@ class PedidosDetalle(Pedidos):
 
     endpoint_name = 'pedidosfiltros'
     record_key_name = 'pedido'
+    record_list_name = 'pedidosDetalle'
     record_primary_key = 'nopedido'
     record_date_field = 'fechacolocado'
 
