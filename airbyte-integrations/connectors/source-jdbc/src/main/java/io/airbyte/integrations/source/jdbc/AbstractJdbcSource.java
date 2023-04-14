@@ -433,7 +433,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
    * @throws SQLException
    */
   @Override
-  protected void logDatabaseData(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog)
+  protected void logPreSyncDebugData(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog)
       throws SQLException {
     LOGGER.info("Data source product recognized as {}:{}",
         database.getMetaData().getDatabaseProductName(),

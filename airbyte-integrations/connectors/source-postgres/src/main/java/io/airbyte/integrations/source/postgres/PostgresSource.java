@@ -202,16 +202,10 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     return Set.of("pg_stat_statements", "pg_stat_statements_info");
   }
 
-  /**
-   * {@inheritDoc}
-   * @param database database instance
-   * @param catalog schema of the incoming messages.
-   * @throws SQLException
-   */
   @Override
-  protected void logDatabaseData(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog)
+  protected void logPreSyncDebugData(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog)
       throws SQLException {
-    super.logDatabaseData(database, catalog);
+    super.logPreSyncDebugData(database, catalog);
     PostgresQueryUtils.logXminStatus(database);
   }
 

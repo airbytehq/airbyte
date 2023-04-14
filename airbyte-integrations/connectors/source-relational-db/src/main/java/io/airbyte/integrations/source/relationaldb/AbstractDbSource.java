@@ -143,7 +143,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
     final Database database = createDatabase(config);
 
-    logDatabaseData(database, catalog);
+    logPreSyncDebugData(database, catalog);
 
     final Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo =
         discoverWithoutSystemTables(database)
@@ -550,12 +550,13 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   protected abstract Database createDatabase(JsonNode config) throws Exception;
 
   /**
-   * Gets and log relevant and useful database metadata such as DB product/version, index names and definition. Called during the sync method.
-   * @param database database instance
-   * @param catalog schema of the incoming messages.
-   * @throws Exception might throw an error during connection to database
+   * Gets and log relevant and useful database metadata such as DB product/version, index names and definition. Called before syncing data.
+   * Any logged information should be scoped to the configured catalog and database.
+   *
+   * @param database given database instance.
+   * @param catalog configured catalog.
    */
-  protected void logDatabaseData(final Database database, final ConfiguredAirbyteCatalog catalog) throws Exception {}
+  protected void logPreSyncDebugData(final Database database, final ConfiguredAirbyteCatalog catalog) throws Exception {}
 
   /**
    * Configures a list of operations that can be used to check the connection to the source.

@@ -41,6 +41,9 @@ public class PostgresQueryUtils {
             pg_relation_size('%s') AS %s;
       """;
 
+  /**
+   * Creates query to understand the Xmin status.
+   */
   public static final String XMIN_STATUS_QUERY =
       """
             select (txid_snapshot_xmin(txid_current_snapshot()) >> 32) AS num_wraparound,
