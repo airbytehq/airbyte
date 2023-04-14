@@ -2,7 +2,7 @@
 
 Authentication allows the connection to check whether it has sufficient permission to fetch data. The authentication feature provides a secure way to configure authentication using a variety of methods.
 
-The credentials itself (e.g. username and password) are _not_ specified as part of the connector, instead they are part of the source configration that is specified by the end user when setting up a source based on the connector. During development, it's possible to provide testing credentials in the "Testing values" menu, but those are not saved along with the connector. Credentials that are part of the source configuration are stored in a secure way in your Airbyte instance while the connector configuration is saved in the regular database.
+The credentials itself (e.g. username and password) are _not_ specified as part of the connector, instead they are part of the configuration that is specified by the end user when setting up a source based on the connector. During development, it's possible to provide testing credentials in the "Testing values" menu, but those are not saved along with the connector. Credentials that are part of the source configuration are stored in a secure way in your Airbyte instance while the connector configuration is saved in the regular database.
 
 In the "Authentication" section on the "Global Configuration" page in the connector builder, the authentication method can be specified. This configuration is shared for all streams - it's not possible to use different authentication methods for different streams in the same connector. In case your API uses multiple or custom authentication methods, you can use the [low-code CDK](/connector-development/config-based/low-code-cdk-overview) or [Python CDK](/connector-development/cdk-python/).
 
@@ -26,7 +26,7 @@ If requests are authenticated using the Basic HTTP authentication method, the do
 - "Authorization: Basic"
 - "Base64"
 
-The Basic HTTP authentication method is a standard and doesn't require any further configuration. Username and password are set via "Testing values" in the connector builder and as part of the source configuration when configuring connections.
+The Basic HTTP authentication method is a standard and doesn't require any further configuration. Username and password are set via "Testing values" in the connector builder and by the end user when configuring this connector as a Source.
 
 #### Example
 
@@ -47,7 +47,7 @@ curl -X GET \
 
 If requests are authenticated using Bearer authentication, the documentation will probably mention "bearer token" or "token authentication". In this scheme, the `Authorization` header of the HTTP request is set to `Bearer <token>`.
 
-Like the Basic HTTP authentication it does not require further configuration. The bearer token can be set via "Testing values" in the connector builder as well as paert of the source configuration when configuring connections.
+Like the Basic HTTP authentication it does not require further configuration. The bearer token can be set via "Testing values" in the connector builder and by the end user when configuring this connector as a Source.
 
 #### Example
 
@@ -62,9 +62,9 @@ curl -X GET \
 
 ### API Key
 
-The API key authentication method is similar to the Bearer authentication but allows to configure as which HTTP header the API key is sent as part of the request. The http header name is part of the connector definition while the API key itself can be set via "Testing values" in the connector builder as well as part of the source configuration when configuring connections.
+The API key authentication method is similar to the Bearer authentication but allows to configure as which HTTP header the API key is sent as part of the request. The http header name is part of the connector definition while the API key itself can be set via "Testing values" in the connector builder as well as when configuring this connector as a Source.
 
-This form of authentication is often called "(custom) header authentication".
+This form of authentication is often called "(custom) header authentication". It only supports setting the token to an HTTP header, for other cases, see the ["Other authentication methods" section](#access-token-as-query-or-body-parameter)
 
 #### Example
 
@@ -81,14 +81,14 @@ curl -X GET \
 
 The OAuth authentication method implements authentication using an [OAuth2.0 flow with a refresh token grant type](https://oauth.net/2/grant-types/refresh-token/).
 
-In this scheme the OAuth endpoint of an API is called with a long-lived refresh token provided as part of the source configuration to obtain a short-lived access token that's used to make requests actually extracting records. If the access token expires, the connection will automatically request a new one.
+In this scheme the OAuth endpoint of an API is called with a long-lived refresh token that's provided by the end user when configuring this connector as a Source. The refresh token is used to obtain a short-lived access token that's used to make requests actually extracting records. If the access token expires, the connection will automatically request a new one.
 
-The connector needs to be configured with the endpoint to call to obtain access tokens with the refresh token. OAuth client id/secret and the refresh token are provided via "Testing values" in the connector builder as well as part of the source configuration when configuring connections.
+The connector needs to be configured with the endpoint to call to obtain access tokens with the refresh token. OAuth client id/secret and the refresh token are provided via "Testing values" in the connector builder as well as when configuring this connector as a Source.
 
 Depending on how the refresh endpoint is implemented exactly, additional configuration might be necessary to specify how to request an access token with the right permissions (configuring OAuth scopes and grant type) and how to extract the access token and the expiry date out of the response (configuring expiry date format and property name as well as the access key property name):
-* Scopes - if not specified, no scopes are sent along with the refresh token request
-* Grant type - if not specified, it's set to `refresh_token`
-* Token expiry property name - if not specified, it's set to `expires_in`
+* Scopes - the [OAuth scopes](https://oauth.net/2/scope/) the access token will have access to. if not specified, no scopes are sent along with the refresh token request
+* Grant type - the OAuth grant type to request. This should be set to the string mapping to the [refresh token grant type](https://oauth.net/2/grant-types/refresh-token/). If not specified, it's set to `refresh_token` which is the right value in most cases.
+* Token expiry property name - the name of the property in the response that contains token expiry information. If not specified, it's set to `expires_in`
 * Token expire property date format - if not specified, the expiry property is interpreted as the number of seconds the access token will be valid
 * Access token property name - the name of the property in the response that contains the access token to do requests. If not specified, it's set to `access_token`
 
