@@ -59,6 +59,8 @@ class SourceFacebookMarketing(AbstractSource):
         try:
             config = self._validate_and_transform(config)
 
+            if config.end_date > pendulum.now():
+                return False, "Date range can not be in the future."
             if config.end_date < config.start_date:
                 return False, "end_date must be equal or after start_date."
 
