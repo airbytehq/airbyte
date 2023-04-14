@@ -223,7 +223,6 @@ def get_modified_metadata_files(modified_files: Set[str]) -> Set[Path]:
     return {Path(f) for f in modified_files if f.endswith(METADATA_FILE_NAME) and f.startswith("airbyte-integrations/connectors")}
 
 
-# TODO use it in metadata-service/lib
 def get_all_metadata_files() -> Set[Path]:
     return {Path(metadata_file) for metadata_file in glob("airbyte-integrations/connectors/**/metadata.yaml", recursive=True)}
 
