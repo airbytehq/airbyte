@@ -64,6 +64,8 @@ acceptance_tests:
           pivot_report:
             - name: uuid
               bypass_reason: "dynamically created field"
+            - name: sessions
+              bypass_reason: "volatile data"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
