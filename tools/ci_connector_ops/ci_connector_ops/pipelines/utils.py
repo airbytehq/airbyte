@@ -264,10 +264,16 @@ async def execute_concurrently(steps: List[Callable], concurrency: int = 5):
 
 
 async def publish_connector_image(
-    context: ConnectorTestContext, connector_container: Container, platform_variants: Sequence[Container] = None
+    context: ConnectorTestContext,
+    connector_container: Container,
+    platform_variants: Sequence[Container] = None,
+    is_pre_release: bool = True,
 ) -> str:
     dockerfile = context.get_connector_dir(include=["Dockerfile"]).file("Dockerfile")
     connector_version = await get_version_from_dockerfile(dockerfile)
-    tag = f"{connector_version}-dev.{context.git_revision[:10]}"
+    if is_pre_release:
+        tag = f"{connector_version}-dev.{context.git_revision[:10]}"
+    else:
+        tag = connector_version
     image_name = f"{context.docker_registry}/{context.connector.technical_name}:{tag}"
     return await connector_container.publish(f"docker.io/{image_name}")
