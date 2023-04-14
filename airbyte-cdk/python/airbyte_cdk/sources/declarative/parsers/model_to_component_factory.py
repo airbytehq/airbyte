@@ -192,7 +192,7 @@ class ModelToComponentFactory:
         :param model_type: The type of declarative component that is being initialized
         :param component_definition: The mapping that represents a declarative component
         :param config: The connector config that is provided by the customer
-        :param emit_connector_builder_messages:
+        :param emit_connector_builder_messages: Flag specifying whether the source must emit log messages at the start of the slice
         :return: The declarative component to be used at runtime
         """
 
@@ -206,9 +206,7 @@ class ModelToComponentFactory:
             raise ValueError(f"Expected {model_type.__name__} component, but received {declarative_component_model.__class__.__name__}")
 
         return self._create_component_from_model(
-            model=declarative_component_model,
-            config=config,
-            **{**kwargs, **{"emit_connector_builder_messages": emit_connector_builder_messages}},
+            model=declarative_component_model, config=config, emit_connector_builder_messages=emit_connector_builder_messages, **kwargs
         )
 
     def _create_component_from_model(self, model: BaseModel, config: Config, **kwargs) -> Any:

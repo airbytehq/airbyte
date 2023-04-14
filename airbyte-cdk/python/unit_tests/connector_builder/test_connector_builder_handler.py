@@ -10,7 +10,6 @@ from unittest.mock import patch
 
 import pytest
 import requests
-
 from airbyte_cdk import connector_builder
 from airbyte_cdk.connector_builder.connector_builder_handler import (
     DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE,
@@ -545,30 +544,35 @@ def request_log_message(request: dict) -> AirbyteMessage:
 def response_log_message(response: dict) -> AirbyteMessage:
     return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=f"response:{json.dumps(response)}"))
 
-def create_request():
+
+def _create_request():
     url = "https://example.com/api"
     headers = {'Content-Type': 'application/json'}
     return requests.Request('POST', url, headers=headers, json={"key": "value"}).prepare()
 
 
-def create_response(body):
+def _create_response(body):
     response = requests.Response()
     response.status_code = 200
     response._content = bytes(json.dumps(body), "utf-8")
     response.headers["Content-Type"] = "application/json"
     return response
 
-@patch.object(HttpStream, "_fetch_next_page", return_value=(
-        create_request(),
-        create_response({
-            "result": [{"id": 1}, {"id": 2}],
-            "_metadata": {}
-        })))
+
+def _create_page(response_body):
+    return _create_request(), _create_response(response_body)
+
+
+@patch.object(HttpStream, "_fetch_next_page", side_effect=(_create_page({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), _create_page({"result": [{"id": 2}],"_metadata": {}})) * 5)
 def test_read_source(mock_http_stream):
     """
-    This test sort of acts as an integration test for the connector builder with the caveat that
-    this does not test that the request log and response log messages are emitted.
-    Instead, this tests that the stream's retriever is a SimpleTestRestDecorator, which is known to emit the log messages
+    This test sort of acts as an integration test for the connector builder.
+
+    Each slice has two pages
+    The first page has two records
+    The second page one record
+
+    The response._metadata.next field in the first page tells the paginator to fetch the next page.
     """
     max_records = 100
     max_pages_per_slice = 2
