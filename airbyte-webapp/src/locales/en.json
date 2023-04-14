@@ -655,6 +655,7 @@
   "sidebar.DaspireSetting": "Settings",
   "sidebar.DaspireSignOut": "Sign out",
   "upgrade.plan.trialPeriod.countdown": "You’re using the trial version of Daspire. Your trial ends in {count} days.",
+  "upgrade.plan.trialPeriod.countdown.today": "You’re using the trial version of Daspire. Your trial ends today.",
   "upgrade.plan.trialPeriod.end": "You don’t have an active plan. Upgrade now to continue sync your data.",
   "upgrade.plan.btn": "Upgrade Now",
   "unauthorized.modal.text1": "You’re not authorized to make the change.",
