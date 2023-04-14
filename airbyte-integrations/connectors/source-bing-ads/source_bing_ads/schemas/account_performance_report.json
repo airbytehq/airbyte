@@ -31,6 +31,12 @@
     "BidMatchType": {
       "type": ["null", "string"]
     },
+    "AccountName": {
+      "type": ["null", "string"]
+    },
+    "AccountNumber": {
+      "type": ["null", "string"]
+    },
     "PhoneImpressions": {
       "type": ["null", "integer"]
     },
