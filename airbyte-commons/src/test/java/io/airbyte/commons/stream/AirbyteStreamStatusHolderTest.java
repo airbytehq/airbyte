@@ -55,4 +55,5 @@ class AirbyteStreamStatusHolderTest {
         .withNamespace(airbyteStreamNameAndNamespacePair.getNamespace()), traceMessage.getStreamStatus().getStreamDescriptor());
     assertEquals(success.get(), traceMessage.getStreamStatus().getSuccess());
   }
+
 }
