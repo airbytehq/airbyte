@@ -6,7 +6,7 @@ package io.airbyte.commons.util;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
-import io.airbyte.commons.stream.AirbyteStreamStatus;
+import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -40,14 +40,14 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CompositeIterator.class);
 
-  private final Optional<Consumer<AirbyteStreamStatus>> airbyteStreamStatusConsumer;
+  private final Optional<Consumer<AirbyteStreamStatusHolder>> airbyteStreamStatusConsumer;
   private final List<AutoCloseableIterator<T>> iterators;
 
   private int i;
   private boolean firstRead;
   private boolean hasClosed;
 
-  CompositeIterator(final List<AutoCloseableIterator<T>> iterators, final Consumer<AirbyteStreamStatus> airbyteStreamStatusConsumer) {
+  CompositeIterator(final List<AutoCloseableIterator<T>> iterators, final Consumer<AirbyteStreamStatusHolder> airbyteStreamStatusConsumer) {
     Preconditions.checkNotNull(iterators);
 
     this.airbyteStreamStatusConsumer = Optional.ofNullable(airbyteStreamStatusConsumer);
@@ -163,10 +163,12 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
     });
   }
 
-  private void emitStreamStatus(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair, final io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus airbyteStreamStatus, final Optional<Boolean> success) {
+  private void emitStreamStatus(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
+                                final io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus airbyteStreamStatus,
+                                final Optional<Boolean> success) {
     // TODO This method will also take in the status enum and create an AirbyteStreamStatus object to
     // send to the consumer, if present
-    airbyteStreamStatusConsumer.ifPresent(c -> c.accept(new AirbyteStreamStatus(airbyteStreamNameNamespacePair, airbyteStreamStatus, success)));
+    airbyteStreamStatusConsumer.ifPresent(c -> c.accept(new AirbyteStreamStatusHolder(airbyteStreamNameNamespacePair, airbyteStreamStatus, success)));
   }
 
 }

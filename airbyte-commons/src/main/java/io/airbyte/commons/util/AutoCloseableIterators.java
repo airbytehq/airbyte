@@ -6,7 +6,7 @@ package io.airbyte.commons.util;
 
 import com.google.common.collect.Iterators;
 import io.airbyte.commons.concurrency.VoidCallable;
-import io.airbyte.commons.stream.AirbyteStreamStatus;
+import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.util.Iterator;
 import java.util.List;
@@ -175,7 +175,7 @@ public class AutoCloseableIterators {
   }
 
   @SafeVarargs
-  public static <T> CompositeIterator<T> concatWithEagerClose(final Consumer<AirbyteStreamStatus> airbyteStreamStatusConsumer,
+  public static <T> CompositeIterator<T> concatWithEagerClose(final Consumer<AirbyteStreamStatusHolder> airbyteStreamStatusConsumer,
                                                               final AutoCloseableIterator<T>... iterators) {
     return concatWithEagerClose(List.of(iterators), airbyteStreamStatusConsumer);
   }
@@ -186,7 +186,7 @@ public class AutoCloseableIterators {
   }
 
   public static <T> CompositeIterator<T> concatWithEagerClose(final List<AutoCloseableIterator<T>> iterators,
-                                                              final Consumer<AirbyteStreamStatus> airbyteStreamStatusConsumer) {
+                                                              final Consumer<AirbyteStreamStatusHolder> airbyteStreamStatusConsumer) {
     return new CompositeIterator<>(iterators, airbyteStreamStatusConsumer);
   }
 

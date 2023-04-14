@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.base;
 
-import io.airbyte.commons.stream.AirbyteStreamStatus;
+import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage.FailureType;
 import io.airbyte.protocol.models.v0.AirbyteEstimateTraceMessage;
@@ -45,8 +45,8 @@ public final class AirbyteTraceMessageUtility {
     emitMessage(makeErrorTraceAirbyteMessage(e, displayMessage, failureType));
   }
 
-  public static void emitStreamStatusTrace(final AirbyteStreamStatus airbyteStreamStatus) {
-    emitMessage(makeStreamStatusTraceAirbyteMessage(airbyteStreamStatus));
+  public static void emitStreamStatusTrace(final AirbyteStreamStatusHolder airbyteStreamStatusHolder) {
+    emitMessage(makeStreamStatusTraceAirbyteMessage(airbyteStreamStatusHolder));
   }
 
   // todo: handle the other types of trace message we'll expect in the future, see
@@ -77,8 +77,8 @@ public final class AirbyteTraceMessageUtility {
                 .withStackTrace(ExceptionUtils.getStackTrace(e))));
   }
 
-  private static AirbyteMessage makeStreamStatusTraceAirbyteMessage(final AirbyteStreamStatus airbyteStreamStatus) {
-    return makeAirbyteMessageFromTraceMessage(airbyteStreamStatus.toTraceMessage());
+  private static AirbyteMessage makeStreamStatusTraceAirbyteMessage(final AirbyteStreamStatusHolder airbyteStreamStatusHolder) {
+    return makeAirbyteMessageFromTraceMessage(airbyteStreamStatusHolder.toTraceMessage());
   }
 
   private static AirbyteMessage makeAirbyteMessageFromTraceMessage(final AirbyteTraceMessage airbyteTraceMessage) {
