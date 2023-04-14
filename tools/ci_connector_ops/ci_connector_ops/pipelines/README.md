@@ -125,7 +125,7 @@ The new metadata service also uses dagger for its reproducible CI pipeline.
 
 To see all available commands run
 ```bash
-airbyte-ci metadata-service --help
+airbyte-ci metadata --help
 ```
 
 For example to run the unit tests for the metadata service library you can run
@@ -133,6 +133,11 @@ For example to run the unit tests for the metadata service library you can run
 airbyte-ci metadata test lib
 ```
 
+For example to upload all the connector metadata files to GCS:
+```bash
+# You should set a valid JSON service account in the GCS_CREDENTIALS env var before uploading the files.
+airbyte-ci metadata upload <target-bucket> --all
+```
 ## Questions for the Dagger team
 
 ### Remaining questions:
