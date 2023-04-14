@@ -45,11 +45,13 @@ def test_upload(mocker, valid_metadata_yaml_files, uploaded):
     result = runner.invoke(
         commands.upload, [metadata_file_path, "my-bucket", "-sa", metadata_file_path]
     )  # Using valid_metadata_yaml_files[0] as SA because it exists...
-    assert result.exit_code == 0
     if uploaded:
         commands.click.secho.assert_called_with(f"The metadata file {metadata_file_path} was uploaded to blob_id.", color="green")
+        assert result.exit_code == 0
     else:
         commands.click.secho.assert_called_with(f"The metadata file {metadata_file_path} was not uploaded.", color="yellow")
+        # We exit with 5 status code to share with the CI pipeline that the upload was skipped.
+        assert result.exit_code == 5
 
 
 @pytest.mark.parametrize(
