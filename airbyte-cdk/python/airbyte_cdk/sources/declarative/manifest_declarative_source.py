@@ -130,7 +130,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         yield from super().read(logger, config, catalog, state)
 
     def should_log_slice_message(self, logger: logging.Logger):
-        return self._emit_connector_builder_messages or super(self).should_log_slice_message(logger)
+        return self._emit_connector_builder_messages or super().should_log_slice_message(logger)
 
     def _configure_logger_level(self, logger: logging.Logger):
         """
