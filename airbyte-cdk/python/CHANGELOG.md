@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.34.3
+low-code: fix typo in ManifestDeclarativeSource
+
 ## 0.34.2
 Emit slice log messages when running the connector builder
 
