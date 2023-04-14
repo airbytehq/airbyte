@@ -563,7 +563,7 @@ def _create_page(response_body):
     return _create_request(), _create_response(response_body)
 
 
-@patch.object(HttpStream, "_fetch_next_page", side_effect=(_create_page({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), _create_page({"result": [{"id": 2}],"_metadata": {"next": "next"}})) * 5)
+@patch.object(HttpStream, "_fetch_next_page", side_effect=(_create_page({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), _create_page({"result": [{"id": 2}],"_metadata": {"next": "next"}})) * 10)
 def test_read_source(mock_http_stream):
     """
     This test sort of acts as an integration test for the connector builder.
@@ -604,20 +604,11 @@ def test_read_source(mock_http_stream):
         assert isinstance(s.retriever, SimpleRetrieverTestReadDecorator)
 
 
-@patch.object(HttpStream, "_fetch_next_page", side_effect=(_create_page({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), )* 5)
-def test_read_source_single_page(mock_http_stream):
-    """
-    This test sort of acts as an integration test for the connector builder.
-
-    Each slice has two pages
-    The first page has two records
-    The second page one record
-
-    The response._metadata.next field in the first page tells the paginator to fetch the next page.
-    """
+@patch.object(HttpStream, "_fetch_next_page", side_effect=(_create_page({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), _create_page({"result": [{"id": 2}],"_metadata": {"next": "next"}})))
+def test_read_source_single_page_single_slice(mock_http_stream):
     max_records = 100
     max_pages_per_slice = 1
-    max_slices = 3
+    max_slices = 1
     limits = TestReadLimits(max_records, max_pages_per_slice, max_slices)
 
     catalog = ConfiguredAirbyteCatalog(streams=[
