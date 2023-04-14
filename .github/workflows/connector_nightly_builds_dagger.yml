@@ -25,6 +25,11 @@ jobs:
       - name: Get start timestamp
         id: get-start-timestamp
         run: echo "::set-output name=start-timestamp::$(date +%s)"
+      - name: Login to DockerHub
+        run: "docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}"
+        env:
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
