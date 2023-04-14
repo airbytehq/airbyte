@@ -18,6 +18,7 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -99,7 +100,7 @@ public class NormalizationLogParser {
 
   public static void main(String[] args) {
     final NormalizationLogParser normalizationLogParser = new NormalizationLogParser();
-    final Stream<AirbyteMessage> airbyteMessageStream = normalizationLogParser.create(new BufferedReader(new InputStreamReader(System.in)));
+    final Stream<AirbyteMessage> airbyteMessageStream = normalizationLogParser.create(new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8)));
     airbyteMessageStream.forEachOrdered(message -> System.out.println(Jsons.serialize(message)));
 
     final List<String> errors = normalizationLogParser.getDbtErrors();
