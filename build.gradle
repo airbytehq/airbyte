@@ -533,7 +533,7 @@ publishing {
 
             from components.versionCatalog
             // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
-            // e.g. the subproject :airbyte-example:example-models is imported at io.airbyte.airbyte-config:config-persistence:<version-number>.
+            // e.g. the subproject :airbyte-example:example-models is imported at io.airbyte.airbyte-config-oss:config-persistence:<version-number>.
         }
     }
     repositories.add(rootProject.repositories.getByName('cloudrepo'))

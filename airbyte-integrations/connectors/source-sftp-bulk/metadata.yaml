@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: file
+  connectorType: source
+  definitionId: 31e3242f-dee7-4cdc-a4b8-8e06c5458517
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-sftp-bulk
+  githubIssueLabel: source-sftp-bulk
+  icon: sftp.svg
+  license: MIT
+  name: SFTP Bulk
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/sftp-bulk
+metadataSpecVersion: "1.0"
