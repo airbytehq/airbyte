@@ -86,6 +86,9 @@ pub enum Error {
 
     #[error("go.estuary.dev/uzQS5j: Unknown operation: {0}")]
     UnknownOperation(String),
+
+    #[error("go.estuary.dev/x2W2J5: Connector has been idle")]
+    IdleConnector,
 }
 
 pub fn raise_err<T>(message: &str) -> Result<T, std::io::Error> {

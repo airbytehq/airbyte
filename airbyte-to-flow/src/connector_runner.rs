@@ -1,7 +1,7 @@
 use std::{pin::Pin, sync::{Arc}, ops::DerefMut};
 
 use flow_cli_common::LogArgs;
-use futures::{channel::oneshot, stream, StreamExt, TryStreamExt};
+use futures::{channel::{oneshot,mpsc}, stream, StreamExt, TryStreamExt};
 use tokio::{io::{AsyncWrite, copy}, process::{ChildStdout, ChildStdin, Child}, sync::Mutex};
 use tokio_util::io::{ReaderStream, StreamReader};
 
@@ -87,6 +87,33 @@ pub async fn run_airbyte_source_connector(
         bytes::Bytes::from([&bytes[..],&[NEWLINE]].concat())
     });
 
+    // A channel to ping whenever a response is received from the connector
+    // this allows us to monitor connectors for long inactivity and restart the connector
+    // since it is a known issue that airbyte connectors can "hang"
+    // see https://github.com/airbytehq/airbyte/issues/14499
+    // https://github.com/airbytehq/airbyte/issues/11252
+    // https://github.com/airbytehq/airbyte/issues/11792
+    let (mut ping_sender, mut ping_receiver) = mpsc::channel::<()>(1);
+    let monitored_response_stream = adapted_response_stream.inspect_ok(move |_| {
+        let _ = ping_sender.try_send(());
+    });
+
+    // 10 minute timeout on ping
+    let ping_timeout_task = async move {
+        loop {
+            tokio::select! {
+                Some(_) = ping_receiver.next() => { continue },
+                _ = tokio::time::sleep(tokio::time::Duration::from_secs(60 * 10)) => {
+                    tracing::warn!("connector has been idle for the past 10 minutes. restarting.");
+                    break
+                }
+            }
+        }
+
+        let r: Result<(), Error> = Err(Error::IdleConnector);
+        r
+    };
+
     let response_write = flow_write_stream();
 
     // Once the underlying connector has finished writing and has EOFd, then we don't need to wait anymore
@@ -96,7 +123,7 @@ pub async fn run_airbyte_source_connector(
     let streaming_all_task = streaming_all(
         adapted_request_stream,
         child_stdin,
-        Box::pin(adapted_response_stream),
+        Box::pin(monitored_response_stream),
         response_write.clone(),
         response_finished_sender,
     );
@@ -148,6 +175,10 @@ pub async fn run_airbyte_source_connector(
     tokio::select! {
         Err(e) = streaming_all_task => Err(e),
         resp = exit_status_task => resp,
+        // In case of a ping timeout, we do not report an error,
+        // just exit and let the connector restart, since an idle connector
+        // is not always an error.
+        Err(_) = ping_timeout_task => Ok(())
     }?;
 
     tracing::debug!("airbyte-to-flow: connector_runner done");
