@@ -237,7 +237,7 @@ class AbstractSource(Source, ABC):
         has_slices = False
         for _slice in slices:
             has_slices = True
-            if self.log_slice_message(logger):
+            if self.should_log_slice_message(logger):
                 yield AirbyteMessage(
                     type=MessageType.LOG,
                     log=AirbyteLogMessage(level=Level.INFO, message=f"{self.SLICE_LOG_PREFIX}{json.dumps(_slice, default=str)}"),
@@ -277,7 +277,7 @@ class AbstractSource(Source, ABC):
             checkpoint = self._checkpoint_state(stream_instance, stream_state, state_manager)
             yield checkpoint
 
-    def log_slice_message(self, logger: logging.Logger):
+    def should_log_slice_message(self, logger: logging.Logger):
         """
 
         :param logger:
@@ -298,7 +298,7 @@ class AbstractSource(Source, ABC):
         )
         total_records_counter = 0
         for _slice in slices:
-            if self.log_slice_message(logger):
+            if self.should_log_slice_message(logger):
                 yield AirbyteMessage(
                     type=MessageType.LOG,
                     log=AirbyteLogMessage(level=Level.INFO, message=f"{self.SLICE_LOG_PREFIX}{json.dumps(_slice, default=str)}"),
