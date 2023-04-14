@@ -117,7 +117,7 @@ jobs:
       - name: build harness
         shell: bash
         run: |
-          echo "Building... $HARNESS_TYPE" >> $GITHUB_STEP_SUMMARY
+          echo "Building..." $HARNESS_TYPE >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           ./gradlew :airbyte-integrations:connectors-performance:$HARNESS_TYPE:build -x check
         env:
@@ -150,8 +150,8 @@ jobs:
           kind load docker-image airbyte/$HARNESS_TYPE:dev --name chart-testing
           export CONNECTOR_IMAGE_NAME=${CONN/connectors/airbyte}:dev
           export DATASET=$DS
-          envsubst < ./tools/bin/source-harness-process.yaml | kubectl create -f -
-          POD=$(kubectl get pod -l app=source-harness -o jsonpath="{.items[0].metadata.name}")
+          envsubst < ./tools/bin/run-harness-process.yaml | kubectl create -f -
+          POD=$(kubectl get pod -l app=$HARNESS_TYPE -o jsonpath="{.items[0].metadata.name}")
           kubectl wait --for=condition=Ready --timeout=20s "pod/$POD"
           kubectl logs --follow $POD
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
