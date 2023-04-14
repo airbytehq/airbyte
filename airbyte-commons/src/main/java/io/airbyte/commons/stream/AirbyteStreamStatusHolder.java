@@ -36,7 +36,8 @@ public class AirbyteStreamStatusHolder {
         .withStreamDescriptor(new StreamDescriptor().withName(airbyteStream.getName()).withNamespace(airbyteStream.getNamespace()))
         .withStatus(airbyteStreamStatus);
     success.ifPresent(s -> streamStatusTraceMessage.withSuccess(s));
-    return traceMessage.withEmittedAt(Long.valueOf(System.currentTimeMillis()).doubleValue()).withStreamStatus(streamStatusTraceMessage)
+    return traceMessage.withEmittedAt(Long.valueOf(System.currentTimeMillis()).doubleValue())
+        .withStreamStatus(streamStatusTraceMessage)
         .withType(AirbyteTraceMessage.Type.STREAM_STATUS);
   }
 
