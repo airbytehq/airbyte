@@ -864,3 +864,108 @@ def test_read_manifest_declarative_source_no_pagination_no_incremental(mock_http
     assert len(output_data) == 2
     assert output_data[0].record.data == {"ABC": 0}
     assert output_data[1].record.data == {"AED": 1}
+
+
+@patch.object(HttpStream, "_fetch_next_page", side_effect=(_create_page({"rates": [{"ABC": 0}, {"AED": 1}],"_metadata": {"next": "next"}}), _create_page({"rates": [{"USD": 2}],"_metadata": {}})) * 10)
+def test_read_manifest_declarative_source_with_pagination_no_incremental(mock_http_stream):
+    _stream_name = "Rates"
+    manifest = {
+        "version": "0.34.2",
+        "type": "DeclarativeSource",
+        "check": {
+            "type": "CheckStream",
+            "stream_names": [
+                "Rates"
+            ]
+        },
+        "streams": [
+            {
+                "type": "DeclarativeStream",
+                "name": "Rates",
+                "primary_key": [],
+                "schema_loader": {
+                    "type": "InlineSchemaLoader",
+                    "schema": {
+                        "$schema": "http://json-schema.org/schema#",
+                        "properties": {
+                            "ABC": {
+                                "type": "number"
+                            },
+                            "AED": {
+                                "type": "number"
+                            },
+                            "USD": {
+                                "type": "number"
+                            },
+                        },
+                        "type": "object"
+                    }
+                },
+                "retriever": {
+                    "type": "SimpleRetriever",
+                    "requester": {
+                        "type": "HttpRequester",
+                        "url_base": "https://api.apilayer.com",
+                        "path": "/exchangerates_data/latest",
+                        "http_method": "GET",
+                        "request_parameters": {},
+                        "request_headers": {},
+                        "request_body_json": {},
+                        "authenticator": {
+                            "type": "ApiKeyAuthenticator",
+                            "header": "apikey",
+                            "api_token": "{{ config['api_key'] }}"
+                        }
+                    },
+                    "record_selector": {
+                        "type": "RecordSelector",
+                        "extractor": {
+                            "type": "DpathExtractor",
+                            "field_path": [
+                                "rates"
+                            ]
+                        }
+                    },
+                    "paginator": {
+                        "type": "DefaultPaginator",
+                        "page_size": 2,
+                        "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
+                        "page_token_option": {"inject_into": "path", "type": "RequestPath"},
+                        "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}", "page_size": 2},
+                    },
+                }
+            }
+        ],
+        "spec": {
+            "connection_specification": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "required": [
+                    "api_key"
+                ],
+                "properties": {
+                    "api_key": {
+                        "type": "string",
+                        "title": "API Key",
+                        "airbyte_secret": True
+                    }
+                },
+                "additionalProperties": True
+            },
+            "documentation_url": "https://example.org",
+            "type": "Spec"
+        }
+    }
+    config = {"__injected_declarative_manifest": manifest}
+
+    catalog = ConfiguredAirbyteCatalog(streams=[
+        ConfiguredAirbyteStream(stream=AirbyteStream(name=_stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]), sync_mode=SyncMode.full_refresh, destination_sync_mode=DestinationSyncMode.append)
+    ])
+
+    source = ManifestDeclarativeSource(source_config=config.get("__injected_declarative_manifest"))
+    output_data = list(source.read(logger, config, catalog, {}))
+
+    assert len(output_data) == 3
+    assert output_data[0].record.data == {"ABC": 0}
+    assert output_data[1].record.data == {"AED": 1}
+    assert output_data[2].record.data == {"USD": 2}
