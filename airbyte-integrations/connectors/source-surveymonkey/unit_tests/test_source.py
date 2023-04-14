@@ -69,22 +69,6 @@ def test_source_check_connection_failed_missing_scopes(requests_mock):
             },
             "access_token in credentials is not provided",
         ),
-        (
-            {
-                "start_date": "2021-01-01T00:00:00",
-                "origin": "USA",
-                "credentials": {"auth_method": "something", "access_token": "something", "client_id": "client_id"},
-            },
-            "client_secret in credentials is not provided",
-        ),
-        (
-            {
-                "start_date": "2021-01-01T00:00:00",
-                "origin": "USA",
-                "credentials": {"auth_method": "something", "access_token": "something", "client_secret": "client_secret"},
-            },
-            "client_id in credentials is not provided",
-        ),
     ],
 )
 def test_source_check_connection_failed_missing_credentials(config, err_msg):

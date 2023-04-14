@@ -4,7 +4,7 @@
 
 The Glassfrog source supports only Full Refresh syncs. This source can sync data for the [Glassfrog API](https://documenter.getpostman.com/view/1014385/glassfrog-api-v3/2SJViY).
 
-This Source Connector is based on the [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
+This Source Connector is based on the [Airbyte CDK](https://docs.airbyte.com/connector-development/cdk-python).
 
 ### Output schema
 
