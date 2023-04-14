@@ -28,6 +28,7 @@ class CIContext(str, Enum):
     MANUAL = "manual"
     PULL_REQUEST = "pull_request"
     NIGHTLY_BUILDS = "nightly_builds"
+    MASTER = "master"
 
 
 class ContextState(Enum):
