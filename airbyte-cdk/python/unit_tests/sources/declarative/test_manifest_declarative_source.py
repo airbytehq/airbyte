@@ -6,7 +6,7 @@ import json
 import logging
 import os
 import sys
-from unittest.mock import patch, call
+from unittest.mock import call, patch
 
 import pytest
 import requests
