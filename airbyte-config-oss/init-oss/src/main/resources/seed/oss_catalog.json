@@ -694,7 +694,7 @@
     "destinationDefinitionId": "22f6c74f-5699-40ff-833c-4a879ea40133",
     "name": "BigQuery",
     "dockerRepository": "airbyte/destination-bigquery",
-    "dockerImageTag": "1.2.19",
+    "dockerImageTag": "1.2.20",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/bigquery",
     "icon": "bigquery.svg",
     "spec": {
@@ -717,7 +717,7 @@
             "description": "The location of the dataset. Warning: Changes made after creation will not be applied. Read more <a href=\"https://cloud.google.com/bigquery/docs/locations\">here</a>.",
             "title": "Dataset Location",
             "order": 1,
-            "enum": [ "US", "EU", "asia-east1", "asia-east2", "asia-northeast1", "asia-northeast2", "asia-northeast3", "asia-south1", "asia-south2", "asia-southeast1", "asia-southeast2", "australia-southeast1", "australia-southeast2", "europe-central2", "europe-north1", "europe-west1", "europe-west2", "europe-west3", "europe-west4", "europe-west6", "northamerica-northeast1", "northamerica-northeast2", "southamerica-east1", "southamerica-west1", "us-central1", "us-east1", "us-east4", "us-west1", "us-west2", "us-west3", "us-west4" ]
+            "enum": [ "US", "EU", "asia-east1", "asia-east2", "asia-northeast1", "asia-northeast2", "asia-northeast3", "asia-south1", "asia-south2", "asia-southeast1", "asia-southeast2", "australia-southeast1", "australia-southeast2", "europe-central1", "europe-central2", "europe-north1", "europe-southwest1", "europe-west1", "europe-west2", "europe-west3", "europe-west4", "europe-west6", "europe-west7", "europe-west8", "europe-west9", "me-west1", "northamerica-northeast1", "northamerica-northeast2", "southamerica-east1", "southamerica-west1", "us-central1", "us-east1", "us-east2", "us-east3", "us-east4", "us-east5", "us-west1", "us-west2", "us-west3", "us-west4" ]
           },
           "dataset_id": {
             "type": "string",
@@ -862,7 +862,7 @@
     "destinationDefinitionId": "079d5540-f236-4294-ba7c-ade8fd918496",
     "name": "BigQuery (denormalized typed struct)",
     "dockerRepository": "airbyte/destination-bigquery-denormalized",
-    "dockerImageTag": "1.2.19",
+    "dockerImageTag": "1.2.20",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/bigquery",
     "icon": "bigquery.svg",
     "spec": {
@@ -983,7 +983,7 @@
             "title": "Dataset Location",
             "default": "US",
             "order": 4,
-            "enum": [ "US", "EU", "asia-east1", "asia-east2", "asia-northeast1", "asia-northeast2", "asia-northeast3", "asia-south1", "asia-south2", "asia-southeast1", "asia-southeast2", "australia-southeast1", "australia-southeast2", "europe-central2", "europe-north1", "europe-west1", "europe-west2", "europe-west3", "europe-west4", "europe-west6", "northamerica-northeast1", "northamerica-northeast2", "southamerica-east1", "southamerica-west1", "us-central1", "us-east1", "us-east4", "us-west1", "us-west2", "us-west3", "us-west4" ]
+            "enum": [ "US", "EU", "asia-east1", "asia-east2", "asia-northeast1", "asia-northeast2", "asia-northeast3", "asia-south1", "asia-south2", "asia-southeast1", "asia-southeast2", "australia-southeast1", "australia-southeast2", "europe-central1", "europe-central2", "europe-north1", "europe-southwest1", "europe-west1", "europe-west2", "europe-west3", "europe-west4", "europe-west6", "europe-west7", "europe-west8", "europe-west9", "me-west1", "northamerica-northeast1", "northamerica-northeast2", "southamerica-east1", "southamerica-west1", "us-central1", "us-east1", "us-east2", "us-east3", "us-east4", "us-east5", "us-west1", "us-west2", "us-west3", "us-west4" ]
           },
           "big_query_client_buffer_size_mb": {
             "title": "Google BigQuery Client Chunk Size",
@@ -8008,7 +8008,7 @@
     "sourceDefinitionId": "1fa90628-2b9e-11ed-a261-0242ac120002",
     "name": "AlloyDB for PostgreSQL",
     "dockerRepository": "airbyte/source-alloydb",
-    "dockerImageTag": "2.0.19",
+    "dockerImageTag": "2.0.21",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/alloydb",
     "icon": "alloydb.svg",
     "sourceType": "database",
@@ -8082,15 +8082,6 @@
             "group": "advanced",
             "pattern_descriptor": "key1=value1&key2=value2"
           },
-          "ssl": {
-            "title": "Connect using SSL",
-            "description": "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
-            "type": "boolean",
-            "default": false,
-            "order": 7,
-            "group": "security",
-            "always_show": true
-          },
           "ssl_mode": {
             "title": "SSL Modes",
             "description": "SSL connection modes. \n  Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"> in the docs</a>.",
@@ -8158,7 +8149,7 @@
                 },
                 "ca_certificate": {
                   "type": "string",
-                  "title": "CA certificate",
+                  "title": "CA Certificate",
                   "description": "CA certificate",
                   "airbyte_secret": true,
                   "multiline": true,
@@ -8170,7 +8161,8 @@
                   "description": "Client certificate",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 2
+                  "order": 2,
+                  "always_show": true
                 },
                 "client_key": {
                   "type": "string",
@@ -8178,7 +8170,8 @@
                   "description": "Client key",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 3
+                  "order": 3,
+                  "always_show": true
                 },
                 "client_key_password": {
                   "type": "string",
@@ -8213,7 +8206,8 @@
                   "description": "Client certificate",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 2
+                  "order": 2,
+                  "always_show": true
                 },
                 "client_key": {
                   "type": "string",
@@ -8221,7 +8215,8 @@
                   "description": "Client key",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 3
+                  "order": 3,
+                  "always_show": true
                 },
                 "client_key_password": {
                   "type": "string",
@@ -8481,7 +8476,7 @@
     "sourceDefinitionId": "c6b0a29e-1da9-4512-9002-7bfd0cba2246",
     "name": "Amazon Ads",
     "dockerRepository": "airbyte/source-amazon-ads",
-    "dockerImageTag": "1.0.2",
+    "dockerImageTag": "1.0.3",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/amazon-ads",
     "icon": "amazonads.svg",
     "sourceType": "api",
@@ -8925,14 +8920,14 @@
     "sourceDefinitionId": "fa9f58c6-2d03-4237-aaa4-07d75e0c1396",
     "name": "Amplitude",
     "dockerRepository": "airbyte/source-amplitude",
-    "dockerImageTag": "0.1.24",
+    "dockerImageTag": "0.2.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/amplitude",
     "icon": "amplitude.svg",
     "sourceType": "api",
     "spec": {
       "documentationUrl": "https://docs.airbyte.com/integrations/sources/amplitude",
       "connectionSpecification": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "title": "Amplitude Spec",
         "type": "object",
         "required": [ "api_key", "secret_key", "start_date" ],
@@ -8964,26 +8959,13 @@
             "description": "UTC date and time in the format 2021-01-25T00:00:00Z. Any data before this date will not be replicated.",
             "examples": [ "2021-01-25T00:00:00Z" ]
           },
-          "event_time_interval": {
-            "type": "object",
-            "title": "Event Stream Time Interval",
-            "description": "Amplitude event stream time interval",
-            "required": [ "size_unit", "size" ],
-            "properties": {
-              "size_unit": {
-                "type": "string",
-                "title": "Events Time Interval Size Unit",
-                "description": "Amplitude event stream's interval size unit",
-                "enum": [ "days", "hours", "weeks", "months" ],
-                "default": "days"
-              },
-              "size": {
-                "type": "integer",
-                "title": "Events Time Interval Size",
-                "description": "Amplitude event stream's interval size unit",
-                "default": 1
-              }
-            }
+          "request_time_range": {
+            "type": "integer",
+            "title": "Request time range",
+            "description": "According to <a href=\"https://www.docs.developers.amplitude.com/analytics/apis/export-api/#considerations\">Considerations</a> too big time range in request can cause a timeout error. In this case, set shorter time interval in hours.",
+            "default": 24,
+            "minimum": 1,
+            "maximum": 8760
           }
         }
       },
@@ -8996,7 +8978,7 @@
     "custom": false,
     "releaseStage": "generally_available",
     "allowedHosts": {
-      "hosts": [ "*.amplitude.com" ]
+      "hosts": [ "amplitude.com", "analytics.eu.amplitude.com" ]
     }
   }, {
     "sourceDefinitionId": "47f17145-fe20-4ef5-a548-e29b048adf84",
@@ -12299,7 +12281,7 @@
     "sourceDefinitionId": "010eb12f-837b-4685-892d-0a39f76a98f5",
     "name": "Facebook Pages",
     "dockerRepository": "airbyte/source-facebook-pages",
-    "dockerImageTag": "0.2.3",
+    "dockerImageTag": "0.2.4",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/facebook-pages",
     "icon": "facebook.svg",
     "sourceType": "api",
@@ -12566,7 +12548,7 @@
     "sourceDefinitionId": "778daa7c-feaf-4db6-96f3-70fd645acc77",
     "name": "File (CSV, JSON, Excel, Feather, Parquet)",
     "dockerRepository": "airbyte/source-file",
-    "dockerImageTag": "0.2.37",
+    "dockerImageTag": "0.2.38",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/file",
     "icon": "file.svg",
     "sourceType": "file",
@@ -18188,7 +18170,7 @@
     "sourceDefinitionId": "435bb9a5-7887-4809-aa58-28c27df0d7ad",
     "name": "MySQL",
     "dockerRepository": "airbyte/source-mysql",
-    "dockerImageTag": "2.0.14",
+    "dockerImageTag": "2.0.15",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mysql",
     "icon": "mysql.svg",
     "sourceType": "database",
@@ -18299,7 +18281,8 @@
                   "description": "Client certificate (this is not a required field, but if you want to use it, you will need to add the <b>Client key</b> as well)",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 2
+                  "order": 2,
+                  "always_show": true
                 },
                 "client_key": {
                   "type": "string",
@@ -18307,7 +18290,8 @@
                   "description": "Client key (this is not a required field, but if you want to use it, you will need to add the <b>Client certificate</b> as well)",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 3
+                  "order": 3,
+                  "always_show": true
                 },
                 "client_key_password": {
                   "type": "string",
@@ -18341,7 +18325,8 @@
                   "description": "Client certificate (this is not a required field, but if you want to use it, you will need to add the <b>Client key</b> as well)",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 2
+                  "order": 2,
+                  "always_show": true
                 },
                 "client_key": {
                   "type": "string",
@@ -18349,7 +18334,8 @@
                   "description": "Client key (this is not a required field, but if you want to use it, you will need to add the <b>Client certificate</b> as well)",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 3
+                  "order": 3,
+                  "always_show": true
                 },
                 "client_key_password": {
                   "type": "string",
@@ -20910,7 +20896,7 @@
     "sourceDefinitionId": "decd338e-5647-4c0b-adf4-da0e75f5a750",
     "name": "Postgres",
     "dockerRepository": "airbyte/source-postgres",
-    "dockerImageTag": "2.0.20",
+    "dockerImageTag": "2.0.21",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/postgres",
     "icon": "postgresql.svg",
     "sourceType": "database",
@@ -21051,7 +21037,7 @@
                 },
                 "ca_certificate": {
                   "type": "string",
-                  "title": "CA certificate",
+                  "title": "CA Certificate",
                   "description": "CA certificate",
                   "airbyte_secret": true,
                   "multiline": true,
@@ -21063,7 +21049,8 @@
                   "description": "Client certificate",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 2
+                  "order": 2,
+                  "always_show": true
                 },
                 "client_key": {
                   "type": "string",
@@ -21071,7 +21058,8 @@
                   "description": "Client key",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 3
+                  "order": 3,
+                  "always_show": true
                 },
                 "client_key_password": {
                   "type": "string",
@@ -21106,7 +21094,8 @@
                   "description": "Client certificate",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 2
+                  "order": 2,
+                  "always_show": true
                 },
                 "client_key": {
                   "type": "string",
@@ -21114,7 +21103,8 @@
                   "description": "Client key",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 3
+                  "order": 3,
+                  "always_show": true
                 },
                 "client_key_password": {
                   "type": "string",
@@ -24580,7 +24570,7 @@
     "sourceDefinitionId": "badc5925-0485-42be-8caa-b34096cb71b5",
     "name": "SurveyMonkey",
     "dockerRepository": "airbyte/source-surveymonkey",
-    "dockerImageTag": "0.1.15",
+    "dockerImageTag": "0.1.16",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/surveymonkey",
     "icon": "surveymonkey.svg",
     "sourceType": "api",
@@ -25816,7 +25806,7 @@
     "sourceDefinitionId": "b9dc6155-672e-42ea-b10d-9f1f1fb95ab1",
     "name": "Twilio",
     "dockerRepository": "airbyte/source-twilio",
-    "dockerImageTag": "0.4.0",
+    "dockerImageTag": "0.5.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/twilio",
     "icon": "twilio.svg",
     "sourceType": "api",
@@ -27634,7 +27624,7 @@
     "allowedHosts": {
       "hosts": [ "*" ]
     },
-    "maxSecondsBetweenMessages": 43200
+    "maxSecondsBetweenMessages": 64800
   }, {
     "sourceDefinitionId": "3dc3037c-5ce8-4661-adc2-f7a9e3c5ece5",
     "name": "Zuora",
