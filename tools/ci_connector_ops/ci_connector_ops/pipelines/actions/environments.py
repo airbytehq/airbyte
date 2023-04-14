@@ -15,6 +15,7 @@ from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Se
 if TYPE_CHECKING:
     from ci_connector_ops.pipelines.contexts import ConnectorTestContext, PipelineContext
 
+
 PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
 
 CONNECTOR_TESTING_REQUIREMENTS = [
