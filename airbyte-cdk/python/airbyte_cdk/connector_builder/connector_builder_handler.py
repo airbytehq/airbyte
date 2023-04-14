@@ -45,7 +45,9 @@ def get_limits(config: Mapping[str, Any]) -> TestReadLimits:
 def create_source(config: Mapping[str, Any], limits: TestReadLimits) -> ManifestDeclarativeSource:
     manifest = config["__injected_declarative_manifest"]
     return ManifestDeclarativeSource(
-        source_config=manifest, component_factory=ModelToComponentFactory(
+        emit_connector_builder_messages=True,
+        source_config=manifest,
+        component_factory=ModelToComponentFactory(
             emit_connector_builder_messages=True,
             limit_pages_fetched_per_slice=limits.max_pages_per_slice,
             limit_slices_fetched=limits.max_slices)
