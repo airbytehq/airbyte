@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import List, Optional, Tuple
@@ -152,6 +152,7 @@ def get_api_client(
     if not has_existing_authorization_headers:
         basic_auth_token = client_configuration.get_basic_auth_token()
         api_http_headers.append(ApiHttpHeader("Authorization", basic_auth_token))
+    api_http_headers.append(ApiHttpHeader("X-Airbyte-Analytic-Source", "octavia-cli"))
     set_api_headers_on_api_client(api_client, api_http_headers)
     check_api_health(api_client)
     return api_client

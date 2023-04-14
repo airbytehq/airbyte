@@ -1,0 +1,42 @@
+documentationUrl: https://docs.airbyte.io/integrations/sources/weatherstack
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Weatherstack Spec
+  type: object
+  required:
+    - access_key
+    - query
+    - historical_date
+  properties:
+    is_paid_account:
+      order: 0
+      title: Is Paid Account
+      description: >-
+        Toggle if you're using a <a
+        href="https://weatherstack.com/product">Paid subscription</a>
+      type: boolean
+      default: false
+    access_key:
+      order: 1
+      type: string
+      description: API access key used to retrieve data from the Weatherstack API.(https://weatherstack.com/product)
+      airbyte_secret: true
+    query:
+      order: 2
+      type: string
+      description:
+        A location to query such as city, IP, latitudeLongitude, or zipcode.
+        Multiple locations with semicolon seperated if using a professional plan or higher.
+        For more info- (https://weatherstack.com/documentation#query_parameter)
+      examples:
+        - New York
+        - London
+        - "98101"
+    historical_date:
+      order: 3
+      type: string
+      description: This is required for enabling the Historical date API with format- (YYYY-MM-DD). * Note, only supported by paid accounts
+      examples:
+        - "2015-01-21"
+      default": "2000-01-01"
+      pattern: "[0-9]{4}-[0-9]{2}-[0-9]{2}"

@@ -1,12 +1,20 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.mongodb;
 
 import static java.util.Arrays.asList;
 import static org.bson.BsonType.ARRAY;
+import static org.bson.BsonType.DATE_TIME;
+import static org.bson.BsonType.DECIMAL128;
 import static org.bson.BsonType.DOCUMENT;
+import static org.bson.BsonType.DOUBLE;
+import static org.bson.BsonType.INT32;
+import static org.bson.BsonType.INT64;
+import static org.bson.BsonType.OBJECT_ID;
+import static org.bson.BsonType.STRING;
+import static org.bson.BsonType.TIMESTAMP;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,14 +28,15 @@ import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.DataTypeUtils;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.TreeNode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.bson.BsonBinary;
 import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
@@ -40,7 +49,13 @@ import org.bson.BsonString;
 import org.bson.BsonTimestamp;
 import org.bson.BsonType;
 import org.bson.Document;
-import org.bson.codecs.*;
+import org.bson.codecs.BsonCodecProvider;
+import org.bson.codecs.BsonValueCodecProvider;
+import org.bson.codecs.DocumentCodecProvider;
+import org.bson.codecs.IterableCodecProvider;
+import org.bson.codecs.JsonObjectCodecProvider;
+import org.bson.codecs.MapCodecProvider;
+import org.bson.codecs.ValueCodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.jsr310.Jsr310CodecProvider;
 import org.bson.types.Decimal128;
@@ -52,6 +67,29 @@ import org.slf4j.LoggerFactory;
 public class MongoUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoUtils.class);
+
+  // Shared constants
+  public static final String MONGODB_SERVER_URL = "mongodb://%s%s:%s/%s?authSource=admin&ssl=%s";
+  public static final String MONGODB_CLUSTER_URL = "mongodb+srv://%s%s/%s?retryWrites=true&w=majority&tls=true";
+  public static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=admin&directConnection=false&ssl=true";
+  public static final String USER = "user";
+  public static final String INSTANCE_TYPE = "instance_type";
+  public static final String INSTANCE = "instance";
+  public static final String CLUSTER_URL = "cluster_url";
+  public static final String SERVER_ADDRESSES = "server_addresses";
+  public static final String REPLICA_SET = "replica_set";
+
+  // MongodbDestination specific constants
+  public static final String AUTH_TYPE = "auth_type";
+  public static final String AUTHORIZATION = "authorization";
+  public static final String LOGIN_AND_PASSWORD = "login/password";
+  public static final String AIRBYTE_DATA_HASH = "_airbyte_data_hash";
+
+  // MongodbSource specific constants
+  public static final String AUTH_SOURCE = "auth_source";
+  public static final String PRIMARY_KEY = "_id";
+  public static final Set<BsonType> ALLOWED_CURSOR_TYPES = Set.of(DOUBLE, STRING, DOCUMENT, OBJECT_ID, DATE_TIME,
+      INT32, TIMESTAMP, INT64, DECIMAL128);
 
   private static final String MISSING_TYPE = "missing";
   private static final String NULL_TYPE = "null";
@@ -134,6 +172,14 @@ public class MongoUtils {
     reader.readEndDocument();
 
     return jsonNodes;
+  }
+
+  /**
+   * Determines whether TLS/SSL should be enabled for a standalone instance of MongoDB.
+   */
+  public static boolean tlsEnabledForStandaloneInstance(final JsonNode config, final JsonNode instanceConfig) {
+    return config.has(JdbcUtils.TLS_KEY) ? config.get(JdbcUtils.TLS_KEY).asBoolean()
+        : (instanceConfig.has(JdbcUtils.TLS_KEY) ? instanceConfig.get(JdbcUtils.TLS_KEY).asBoolean() : true);
   }
 
   public static void transformToStringIfMarked(final ObjectNode jsonNodes, final List<String> columnNames, final String fieldName) {

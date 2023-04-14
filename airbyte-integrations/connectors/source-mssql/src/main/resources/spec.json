@@ -72,9 +72,7 @@
             "properties": {
               "ssl_method": {
                 "type": "string",
-                "const": "unencrypted",
-                "enum": ["unencrypted"],
-                "default": "unencrypted"
+                "const": "unencrypted"
               }
             }
           },
@@ -85,9 +83,7 @@
             "properties": {
               "ssl_method": {
                 "type": "string",
-                "const": "encrypted_trust_server_certificate",
-                "enum": ["encrypted_trust_server_certificate"],
-                "default": "encrypted_trust_server_certificate"
+                "const": "encrypted_trust_server_certificate"
               }
             }
           },
@@ -98,9 +94,7 @@
             "properties": {
               "ssl_method": {
                 "type": "string",
-                "const": "encrypted_verify_certificate",
-                "enum": ["encrypted_verify_certificate"],
-                "default": "encrypted_verify_certificate"
+                "const": "encrypted_verify_certificate"
               },
               "hostNameInCertificate": {
                 "title": "Host Name In Certificate",
@@ -127,8 +121,6 @@
               "method": {
                 "type": "string",
                 "const": "STANDARD",
-                "enum": ["STANDARD"],
-                "default": "STANDARD",
                 "order": 0
               }
             }
@@ -141,8 +133,6 @@
               "method": {
                 "type": "string",
                 "const": "CDC",
-                "enum": ["CDC"],
-                "default": "CDC",
                 "order": 0
               },
               "data_to_sync": {

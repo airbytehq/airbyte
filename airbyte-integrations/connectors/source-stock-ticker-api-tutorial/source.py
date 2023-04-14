@@ -33,7 +33,7 @@ from datetime import timedelta
 def read(config, catalog):
     # Assert required configuration was provided
     if "api_key" not in config or "stock_ticker" not in config:
-        log("Input config must contain the properties 'api_key' and 'stock_ticker'")
+        log_error("Input config must contain the properties 'api_key' and 'stock_ticker'")
         sys.exit(1)
 
     # Find the stock_prices stream if it is present in the input catalog
@@ -43,22 +43,22 @@ def read(config, catalog):
             stock_prices_stream = configured_stream
 
     if stock_prices_stream is None:
-        log("No streams selected")
+        log_error("No streams selected")
         return
 
     # We only support full_refresh at the moment, so verify the user didn't ask for another sync mode
     if stock_prices_stream["sync_mode"] != "full_refresh":
-        log("This connector only supports full refresh syncs! (for now)")
+        log_error("This connector only supports full refresh syncs! (for now)")
         sys.exit(1)
 
     # If we've made it this far, all the configuration is good and we can pull the last 7 days of market data
     response = _call_api(ticker=config["stock_ticker"], token = config["api_key"])
     if response.status_code != 200:
         # In a real scenario we'd handle this error better :)
-        log("Failure occurred when calling Polygon.io API")
+        log_error("Failure occurred when calling Polygon.io API")
         sys.exit(1)
     else:
-        # Stock prices are returned sorted by by date in ascending order
+        # Stock prices are returned sorted by date in ascending order
         # We want to output them one by one as AirbyteMessages
         results = response.json()["results"]
         for result in results:
@@ -83,7 +83,7 @@ def _call_api(ticker, token):
 def check(config):
     # Assert required configuration was provided
     if "api_key" not in config or "stock_ticker" not in config:
-        log("Input config must contain the properties 'api_key' and 'stock_ticker'")
+        log_error("Input config must contain the properties 'api_key' and 'stock_ticker'")
         sys.exit(1)
     else:
         # Validate input configuration by attempting to get the daily closing prices of the input stock ticker
@@ -104,6 +104,12 @@ def check(config):
 
 def log(message):
     log_json = {"type": "LOG", "log": message}
+    print(json.dumps(log_json))
+
+
+def log_error(error_message):
+    current_time_in_ms = int(datetime.datetime.now().timestamp()) * 1000
+    log_json = {"type": "TRACE", "trace": {"type": "ERROR", "emitted_at": current_time_in_ms, "error": {"message": error_message}}}
     print(json.dumps(log_json))
 
 

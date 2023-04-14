@@ -1,0 +1,30 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/rocket-chat
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Rocket Chat Spec
+  type: object
+  required:
+    - token
+    - user_id
+    - endpoint
+  additionalProperties: true
+  properties:
+    endpoint:
+      title: Endpoint
+      type: string
+      description: Your rocket.chat instance URL.
+      examples:
+        - https://airbyte-connector-poc.rocket.chat
+        - https://hey.yoursite.com
+    token:
+      title: Token
+      type: string
+      description: >-
+        Your API Token. See <a
+        href="https://developer.rocket.chat/reference/api/rest-api/endpoints/other-important-endpoints/access-tokens-endpoints">here</a>. The token is
+        case sensitive.
+      airbyte_secret: true
+    user_id:
+      title: User ID.
+      type: string
+      description: Your User Id.

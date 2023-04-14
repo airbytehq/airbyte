@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import MagicMock
@@ -28,14 +28,6 @@ STREAM_NAME = "my_stream"
         (
             "test_data_to_airbyte_record",
             {"id": 0, "field_A": 1.0, "field_B": "airbyte"},
-            AirbyteMessage(
-                type=MessageType.RECORD,
-                record=AirbyteRecordMessage(stream="my_stream", data={"id": 0, "field_A": 1.0, "field_B": "airbyte"}, emitted_at=NOW),
-            ),
-        ),
-        (
-            "test_record_to_airbyte_record",
-            AirbyteRecordMessage(stream="my_stream", data={"id": 0, "field_A": 1.0, "field_B": "airbyte"}, emitted_at=NOW),
             AirbyteMessage(
                 type=MessageType.RECORD,
                 record=AirbyteRecordMessage(stream="my_stream", data={"id": 0, "field_A": 1.0, "field_B": "airbyte"}, emitted_at=NOW),

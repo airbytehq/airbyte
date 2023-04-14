@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.databricks;
 
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 
-public class DatabricksNameTransformer extends ExtendedNameTransformer {
+public class DatabricksNameTransformer extends StandardNameTransformer {
 
   @Override
   public String convertStreamName(final String input) {

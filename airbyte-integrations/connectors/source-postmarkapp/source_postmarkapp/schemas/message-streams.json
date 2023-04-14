@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "ID": {
+      "type": "string"
+    },
+    "ServerID": {
+      "type": "integer"
+    },
+    "Name": {
+      "type": "string"
+    },
+    "Description": {
+      "type": "string"
+    },
+    "MessageStreamType": {
+      "type": "string"
+    },
+    "CreatedAt": {
+      "type": "string"
+    },
+    "UpdatedAt": {
+      "type": "null"
+    },
+    "ArchivedAt": {
+      "type": "null"
+    },
+    "ExpectedPurgeDate": {
+      "type": "null"
+    },
+    "SubscriptionManagementConfiguration": {
+      "type": "object",
+      "properties": {
+        "UnsubscribeHandlingType": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

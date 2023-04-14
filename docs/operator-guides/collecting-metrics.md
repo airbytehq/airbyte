@@ -45,7 +45,7 @@ Run the following commands to have it up and running.
    2. Change `OTEL_COLLECTOR_ENDPOINT` to `"http://host.docker.internal:4317"` because Open Telemetry 
    Collector has enabled port forward from localhost:4317 to container port 4317. To send data to Collector container port 4317, we want to need to export data to physical machine's localhost:4317, which in docker will be represented as `http://host.docker.internal:4317`. 
    > Do *not* use `localhost:4317` or you will send data to the same container where Airbyte Worker is running.
-   3. Start Airbyte server by running `docker-compose up` under airbyte repository. Go to `localhost:8000` to visit Airbyte and start a sync, then go to `localhost:9090` to access Prometheus - you should be able to see the metrics there. Alternatively, 
+   3. Start Airbyte server by running `docker compose up` under airbyte repository. Go to `localhost:8000` to visit Airbyte and start a sync, then go to `localhost:9090` to access Prometheus - you should be able to see the metrics there. Alternatively,
 
 ### Run Opentelemetry and Airbyte on kubernetes
 
@@ -266,3 +266,5 @@ Configure two additional env vars to the Datadog endpoint:
 ## Metrics
 Visit [OssMetricsRegistry.java](https://github.com/airbytehq/airbyte/blob/master/airbyte-metrics/metrics-lib/src/main/java/io/airbyte/metrics/lib/OssMetricsRegistry.java) to get a complete list of metrics Airbyte is sending.
 
+## Additional information
+Suppose you are looking for a non-production way of collecting metrics with dbt and Metabase, the tutorial [Airbyte Monitoring with dbt and Metabase](https://airbyte.com/blog/airbyte-monitoring-with-dbt-and-metabase) by accessing Airbyte's Postgres DB. The source code is open on [airbytehq/open-data-stack](https://github.com/airbytehq/open-data-stack). Think of it as an exploratory for data analysts and data engineers of building a dashboard on top of the existing Airbyte Postgres database versus the Prometheus more for DevOps engineers in production.

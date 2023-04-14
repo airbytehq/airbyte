@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from http import HTTPStatus
@@ -29,15 +29,6 @@ def test_next_page_token(patch_base_class):
     inputs = {"response": MagicMock()}
     expected_token = None
     assert stream.next_page_token(**inputs) == expected_token
-
-
-# def test_parse_response(patch_base_class):
-#     stream = RkiCovidStream()
-#     # TODO: replace this with your input parameters
-#     inputs = {"response": MagicMock()}
-#     # TODO: replace this with your expected parced object
-#     expected_parsed_object = {}
-#     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
 def test_request_headers(patch_base_class):

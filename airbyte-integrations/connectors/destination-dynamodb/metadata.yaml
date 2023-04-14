@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 8ccd8909-4e99-4141-b48d-4984b70b2d89
+  dockerImageTag: 0.1.7
+  dockerRepository: airbyte/destination-dynamodb
+  githubIssueLabel: destination-dynamodb
+  icon: dynamodb.svg
+  license: MIT
+  name: DynamoDB
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/dynamodb
+metadataSpecVersion: "1.0"

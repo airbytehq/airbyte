@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorType: destination
+  definitionId: 50a559a7-6323-4e33-8aa0-51dfd9dfadac
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-selectdb
+  githubIssueLabel: destination-selectdb
+  icon: select.db
+  license: MIT
+  name: SelectDB
+  connectorSubtype: database
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/selectdb
+metadataSpecVersion: "1.0"

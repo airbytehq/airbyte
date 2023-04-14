@@ -1,0 +1,47 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "items",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "required": ["published"],
+          "properties": {
+            "title": {
+              "type": ["null", "string"]
+            },
+            "link": {
+              "type": ["null", "string"]
+            },
+            "description": {
+              "type": ["null", "string"]
+            },
+            "author": {
+              "type": ["null", "string"]
+            },
+            "category": {
+              "type": ["null", "string"]
+            },
+            "comments": {
+              "type": ["null", "string"]
+            },
+            "enclosure": {
+              "type": ["null", "string"]
+            },
+            "guid": {
+              "type": ["null", "string"]
+            },
+            "published": {
+              "type": ["string"],
+              "format": "date-time"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

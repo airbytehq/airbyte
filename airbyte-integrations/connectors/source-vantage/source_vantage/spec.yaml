@@ -1,0 +1,16 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/vantage
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Vantage Spec
+  type: object
+  required:
+    - access_token
+  additionalProperties: true
+  properties:
+    access_token:
+      title: API Access Token
+      type: string
+      description: >-
+        Your API Access token. See <a
+        href="https://vantage.readme.io/reference/authentication">here</a>.
+      airbyte_secret: true

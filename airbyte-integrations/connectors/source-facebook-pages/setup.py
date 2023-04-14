@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -9,10 +9,7 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk",
 ]
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "source-acceptance-test",
-]
+TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock~=3.6.1", "connector-acceptance-test", "requests-mock"]
 
 setup(
     name="source_facebook_pages",
@@ -21,7 +18,7 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json"]},
+    package_data={"": ["*.json", "*.yaml", "schemas/*.json", "schemas/shared/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },

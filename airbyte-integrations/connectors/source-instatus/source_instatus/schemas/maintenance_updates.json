@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "message": {
+      "type": ["null", "string"]
+    },
+    "messageHtml": {
+      "type": ["null", "string"]
+    },
+    "notify": {
+      "type": ["null", "boolean"]
+    },
+    "started": {
+      "type": ["null", "string"], "format": "date-time"
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "maintenance": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {"type": ["null", "string"]},
+        "name": {"type": ["null", "string"]},
+        "start": {"type": ["null", "string"], "format": "date-time"},
+        "status": {"type": ["null", "string"]},
+        "components": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": {"type": ["null", "string"]},
+              "name": {"type": ["null", "string"]},
+              "status": {"type": ["null", "string"]},
+              "showUptime": {"type": ["null", "boolean"]},
+              "site": {
+                "type": ["null", "object"],
+                "properties": {
+                  "id": {"type": ["null", "string"]},
+                  "name": {"type": ["null", "string"]},
+                  "subdomain": {"type": ["null", "string"]},
+                  "color": {"type": ["null", "string"]},
+                  "logoUrl": {"type": ["null", "string"]},
+                  "publicEmail": {"type": ["null", "string"]}
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

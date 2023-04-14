@@ -1,0 +1,18 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "Status": {
+      "type": ["null", "string"]
+    },
+    "Name": {
+      "type": ["null", "string"]
+    },
+    "ContactGroupID": {
+      "type": ["string"]
+    },
+    "HasValidationErrors": {
+      "type": ["null", "boolean"]
+    }
+  },
+  "additionalProperties": true
+}

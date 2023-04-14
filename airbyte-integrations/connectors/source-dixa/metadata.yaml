@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 0b5c867e-1b12-4d02-ab74-97b2184ff6d7
+  dockerImageTag: 0.1.3
+  dockerRepository: airbyte/source-dixa
+  githubIssueLabel: source-dixa
+  icon: dixa.svg
+  license: MIT
+  name: Dixa
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/dixa
+metadataSpecVersion: "1.0"

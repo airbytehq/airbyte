@@ -60,16 +60,16 @@ according to the frequency you set.
 
 ## **How frequently can Airbyte sync data?**
 
-You can adjust the load time to run as frequent as every five minutes and as infrequent as every 24 hours.
+You can adjust the load time to run as frequent as every hour or as infrequent as once a year using [Cron expressions](https://docs.airbyte.com/cloud/managing-airbyte-cloud/edit-stream-configuration). 
 
-## **Why wouldn’t I choose to load all of my data every five minutes?**
+## **Why wouldn’t I choose to load all of my data more frequently?**
 
-While frequent data loads will give you more up-to-date data, there are a few reasons you wouldn’t want to load your data every five minutes, including:
+While frequent data loads will give you more up-to-date data, there are a few reasons you wouldn’t want to load your too frequently, including:
 
 * Higher API usage may cause you to hit a limit that could impact other systems that rely on that API.
 * Higher cost of loading data into your warehouse.
 * More frequent delays, resulting in increased delay notification emails. For instance, if the data source generally takes several hours to 
-  update but you choose five-minute increments, you may receive a delay notification every sync.
+  update but you wanted five-minute increments, you may receive a delay notification every sync.
 
 Generally is recommended setting the incremental loads to every hour to help limit API calls.
 

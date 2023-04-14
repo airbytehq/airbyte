@@ -5,7 +5,7 @@
     "title": "Elasticsearch Connection Configuration",
     "type": "object",
     "required": ["endpoint"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "endpoint": {
         "title": "Server Endpoint",
@@ -19,7 +19,7 @@
         "oneOf": [
           {
             "title": "None",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "description": "No authentication will be used",
             "required": ["method"],
             "properties": {
@@ -31,7 +31,7 @@
           },
           {
             "title": "Api Key/Secret",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "description": "Use a api key and secret combination to authenticate",
             "required": ["method", "apiKeyId", "apiKeySecret"],
             "properties": {
@@ -54,7 +54,7 @@
           },
           {
             "title": "Username/Password",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "description": "Basic auth header with a username and password",
             "required": ["method", "username", "password"],
             "properties": {

@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "example": "AWS",
+      "description": "The common name of the provider."
+    },
+    "description": {
+      "type": "string",
+      "example": "Amazon Web Services",
+      "description": "The full descriptive name of the provider."
+    }
+  },
+  "description": "Providers model",
+  "$schema": "http://json-schema.org/schema#"
+}

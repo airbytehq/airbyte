@@ -1,0 +1,24 @@
+# This action will try to match git commit author (GITHUB_ACTOR) with Slack user
+# and add it to GITHUB_OUTPUT
+# Following env variables should be provided.
+# Provided by Github:
+#   GITHUB_ACTOR: commit author
+#   GITHUB_REPOSITORY: name of the repo we check the commit author, e.g. "airbytehq/airbyte-cloud"
+# Required:
+#   AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.AIRBYTE_TEAM_BOT_SLACK_TOKEN }}
+#   GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+name: "Match Github user to Slack user"
+description: "Match Github user to Slack by email or full name in Github profile."
+outputs:
+  slack_user_ids:
+    description: "Comma separated slack user IDs that match to GITHUB_ACTOR (Github username)"
+    value: ${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}
+runs:
+  using: "composite"
+  steps:
+    - name: Match github user to slack user
+      id: match-github-to-slack-user
+      run: |
+        ./tools/bin/match_github_user_to_slack
+      shell: bash

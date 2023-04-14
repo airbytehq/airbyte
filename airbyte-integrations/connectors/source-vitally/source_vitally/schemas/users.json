@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "createdAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "externalId": {
+      "type": ["null", "string"]
+    },
+    "accounts": {
+      "type": ["null", "array"]
+    },
+    "organizations": {
+      "type": ["null", "array"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "avatar": {
+      "type": ["null", "string"]
+    },
+    "traits": {
+      "type": ["null", "object"]
+    },
+    "firstKnown": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "lastSeenTimestamp": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "lastInboundMessageTimestamp": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "lastOutboundMessageTimestamp": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "npsLastScore": {
+      "type": ["null", "number"]
+    },
+    "npsLastFeedback": {
+      "type": ["null", "string"]
+    },
+    "npsLastRespondedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "unsubscribedFromConversations": {
+      "type": ["null", "boolean"]
+    },
+    "deactivatedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "segments": {
+      "type": ["null", "array"]
+    },
+    "joinDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

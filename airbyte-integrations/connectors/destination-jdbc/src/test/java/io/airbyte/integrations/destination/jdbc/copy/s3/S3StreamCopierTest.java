@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy.s3;
@@ -16,7 +16,7 @@ import static org.mockito.Mockito.verify;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.common.collect.Lists;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.csv.CsvSheetGenerator;
@@ -24,10 +24,10 @@ import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
 import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
 import io.airbyte.integrations.destination.s3.util.CompressionType;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.DestinationSyncMode;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -133,7 +133,7 @@ public class S3StreamCopierTest {
         s3Client,
         db,
         new S3CopyConfig(true, S3_CONFIG),
-        new ExtendedNameTransformer(),
+        new StandardNameTransformer(),
         sqlOperations,
         CONFIGURED_STREAM,
         UPLOAD_TIME,
@@ -234,7 +234,7 @@ public class S3StreamCopierTest {
         db,
         // Explicitly disable purgeStagingData
         new S3CopyConfig(false, S3_CONFIG),
-        new ExtendedNameTransformer(),
+        new StandardNameTransformer(),
         sqlOperations,
         CONFIGURED_STREAM,
         UPLOAD_TIME,

@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "address": {
+      "type": "object",
+      "properties": {
+        "street": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "null"
+        },
+        "postal_code": {
+          "type": "string"
+        },
+        "country": {
+          "type": "null"
+        }
+      }
+    },
+    "assignee_id": {
+      "type": "integer"
+    },
+    "contact_type_id": {
+      "type": "integer"
+    },
+    "details": {
+      "type": "string"
+    },
+    "email_domain": {
+      "type": "string"
+    },
+    "socials": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {}
+    },
+    "websites": {
+      "type": "array",
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "interaction_count": {
+      "type": "integer"
+    },
+    "date_created": {
+      "type": "integer"
+    },
+    "date_modified": {
+      "type": "integer"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "endpoint": "Test Mocked API Server",
+  "iban": "REPLACEME",
+  "organization_slug": "REPLACEME",
+  "secret_key": "REPLACEME",
+  "start_date": "2022-11-04"
+}
