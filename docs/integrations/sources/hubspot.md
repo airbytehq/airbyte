@@ -22,7 +22,7 @@ You can use OAuth, API key, or Private App to authenticate your HubSpot account.
 | `engagements_emails`        | `sales-email-read`                                                                                           |
 | `forms`                     | `forms`                                                                                                      |
 | `form_submissions`          | `forms`                                                                                                      |
-| `goals`                     | `crm.objects.goal_targets.read`                                                                              |
+| `goals`                     | `crm.objects.goals.read`                                                                              |
 | `line_items`                | `e-commerce`                                                                                                 |
 | `owners`                    | `crm.objects.owners.read`                                                                                    |
 | `products`                  | `e-commerce`                                                                                                 |
