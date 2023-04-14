@@ -23,8 +23,8 @@ public class AirbyteStreamStatusHolder {
   private final Optional<Boolean> success;
 
   public AirbyteStreamStatusHolder(final AirbyteStreamNameNamespacePair airbyteStream,
-                             final AirbyteStreamStatus airbyteStreamStatus,
-                             final Optional<Boolean> success) {
+                                   final AirbyteStreamStatus airbyteStreamStatus,
+                                   final Optional<Boolean> success) {
     this.airbyteStream = airbyteStream;
     this.airbyteStreamStatus = airbyteStreamStatus;
     this.success = success;
