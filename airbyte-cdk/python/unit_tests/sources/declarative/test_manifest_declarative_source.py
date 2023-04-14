@@ -6,7 +6,7 @@ import json
 import logging
 import os
 import sys
-from typing import List, Mapping, Any
+from typing import Any, List, Mapping
 from unittest.mock import call, patch
 
 import pytest
