@@ -115,10 +115,9 @@ class DeployOrchestrator(Step):
 
         container_to_run = (
             python_with_dependencies.with_mounted_directory("/src", parent_dir)
-            .with_workdir(f"/src/{METADATA_ORCHESTRATOR_MODULE_PATH}")
             .with_secret_variable("DAGSTER_CLOUD_API_TOKEN", dagster_cloud_api_token_secret)
-            .with_entrypoint(["bash", "-c"])
-            .with_exec(["poetry2setup", ">>", "setup.py"])
+            .with_workdir(f"/src/{METADATA_ORCHESTRATOR_MODULE_PATH}")
+            .with_exec(["/bin/sh", "-c", "poetry2setup >> setup.py"])
             .with_exec(deploy_dagster_command)
         )
         return await self.get_step_result(container_to_run)
