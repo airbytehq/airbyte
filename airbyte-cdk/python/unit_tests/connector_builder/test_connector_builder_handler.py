@@ -563,7 +563,7 @@ def _create_page(response_body):
     return _create_request(), _create_response(response_body)
 
 
-@patch.object(HttpStream, "_fetch_next_page", side_effect=(_create_page({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), _create_page({"result": [{"id": 2}],"_metadata": {}})) * 5)
+@patch.object(HttpStream, "_fetch_next_page", side_effect=(_create_page({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), _create_page({"result": [{"id": 2}],"_metadata": {"next": "next"}})) * 5)
 def test_read_source(mock_http_stream):
     """
     This test sort of acts as an integration test for the connector builder.
@@ -598,6 +598,46 @@ def test_read_source(mock_http_stream):
         first_page, second_page = pages[0], pages[1]
         assert len(first_page["records"]) == _page_size
         assert len(second_page["records"]) == 1
+
+    streams = source.streams(config)
+    for s in streams:
+        assert isinstance(s.retriever, SimpleRetrieverTestReadDecorator)
+
+
+@patch.object(HttpStream, "_fetch_next_page", side_effect=(_create_page({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), )* 5)
+def test_read_source_single_page(mock_http_stream):
+    """
+    This test sort of acts as an integration test for the connector builder.
+
+    Each slice has two pages
+    The first page has two records
+    The second page one record
+
+    The response._metadata.next field in the first page tells the paginator to fetch the next page.
+    """
+    max_records = 100
+    max_pages_per_slice = 1
+    max_slices = 3
+    limits = TestReadLimits(max_records, max_pages_per_slice, max_slices)
+
+    catalog = ConfiguredAirbyteCatalog(streams=[
+        ConfiguredAirbyteStream(stream=AirbyteStream(name=_stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]), sync_mode=SyncMode.full_refresh, destination_sync_mode=DestinationSyncMode.append)
+    ])
+
+    config = {"__injected_declarative_manifest": MANIFEST}
+
+    source = create_source(config, limits)
+
+    output_data = read_stream(source, config, catalog, limits).record.data
+    slices = output_data["slices"]
+
+    assert len(slices) == max_slices
+    for s in slices:
+        pages = s["pages"]
+        assert len(pages) == max_pages_per_slice
+
+        first_page = pages[0]
+        assert len(first_page["records"]) == _page_size
 
     streams = source.streams(config)
     for s in streams:
