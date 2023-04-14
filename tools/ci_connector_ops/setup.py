@@ -43,13 +43,14 @@ QA_ENGINE_REQUIREMENTS = [
 ]
 
 PIPELINES_REQUIREMENTS = [
-    "dagger-io==0.4.2",
+    "dagger-io==0.5.0",
     "asyncer",
     "anyio",
+    "more-itertools",
 ]
 
 setup(
-    version="0.2.0",
+    version="0.2.1",
     name="ci_connector_ops",
     description="Packaged maintained by the connector operations team to perform CI for connectors",
     author="Airbyte",

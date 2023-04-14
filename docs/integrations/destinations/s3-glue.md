@@ -245,6 +245,7 @@ Output files can be compressed. The default option is GZIP compression. If compr
 
 | Version | Date       | Pull Request                                             | Subject                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 0.1.5   | 2023-04-11 | [25048](https://github.com/airbytehq/airbyte/pull/25048) | Fix config schema to support new JSONL flattening configuration interface               |
 | 0.1.4   | 2023-03-10 | [23950](https://github.com/airbytehq/airbyte/pull/23950) | Fix schema syntax error for struct fields and handle missing `items` in array fields    |
 | 0.1.3   | 2023-02-10 | [22822](https://github.com/airbytehq/airbyte/pull/22822) | Fix data type for _ab_emitted_at column in table definition                             |
 | 0.1.2   | 2023-02-01 | [22220](https://github.com/airbytehq/airbyte/pull/22220) | Fix race condition in test, table metadata, add Airbyte sync fields to table definition |
