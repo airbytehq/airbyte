@@ -33,11 +33,13 @@ logger = logging.getLogger(__name__)
 # HELPERS
 
 
-def validate_environment(is_local: bool, use_remote_secrets: bool):
+def validate_environment(is_local: bool, use_remote_secrets: bool, docker_registry: str):
     """Check if the required environment variables exist."""
     if is_local:
         if not (os.getcwd().endswith("/airbyte") and Path(".git").is_dir()):
             raise click.UsageError("You need to run this command from the airbyte repository root.")
+        if docker_registry == "airbyte":
+            raise click.UsageError("You should not use the airbyte docker hub registry when running locally. Please use a personal one.")
     else:
         required_env_vars_for_ci = [
             "GCP_GSM_CREDENTIALS",
@@ -60,17 +62,16 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
 
 
 @click.group(help="Commands related to connectors and connector acceptance tests.")
-@click.option("--use-remote-secrets", default=True)  # specific to connectors
+@click.option("--use-remote-secrets", default=True)
+@click.option("--docker-registry", default="airbyte")
 @click.pass_context
-def connectors(
-    ctx: click.Context,
-    use_remote_secrets: str,
-):
+def connectors(ctx: click.Context, use_remote_secrets: str, docker_registry: str):
     """Group all the connectors-ci command."""
-    validate_environment(ctx.obj["is_local"], use_remote_secrets)
+    validate_environment(ctx.obj["is_local"], use_remote_secrets, docker_registry)
 
     ctx.ensure_object(dict)
     ctx.obj["use_remote_secrets"] = use_remote_secrets
+    ctx.obj["docker_registry"] = docker_registry
 
     update_commit_status_check(
         ctx.obj["git_revision"],
@@ -135,6 +136,7 @@ def test(
             ctx.obj["is_local"],
             ctx.obj["git_branch"],
             ctx.obj["git_revision"],
+            ctx.obj["docker_registry"],
             ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),

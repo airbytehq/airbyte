@@ -12,9 +12,9 @@ from ci_connector_ops.pipelines.actions import environments, secrets
 from ci_connector_ops.pipelines.bases import Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.pipelines.tests.common import AcceptanceTests
-from ci_connector_ops.pipelines.utils import slugify
+from ci_connector_ops.pipelines.utils import publish_connector_image, slugify
 from ci_connector_ops.utils import Connector
-from dagger import CacheVolume, Container, Directory, File, QueryError
+from dagger import CacheVolume, Directory, File, QueryError
 
 
 class BuildOrPullNormalization(Step):
@@ -44,24 +44,17 @@ class BuildOrPullNormalization(Step):
         self.normalization_dockerfile = self.DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING.get(context.connector, "Dockerfile")
         self.title = f"Build {self.normalization_image}" if self.use_dev_normalization else f"Pull {self.normalization_image}"
 
-    async def _run(self) -> Tuple[StepResult, File]:
-        normalization_local_tar_path = f"{slugify(self.normalization_image)}.tar"
+    async def _run(self) -> Tuple[StepResult, str]:
         if self.use_dev_normalization:
             build_normalization_container = environments.with_normalization(self.context, self.normalization_dockerfile)
         else:
-            build_normalization_container = self.context.dagger_client.container().from_(self.normalization_image)
+            normalization_image_ref = self.normalization_image
 
         try:
-            export_success = await build_normalization_container.export(f"{self.host_image_export_dir_path}/{normalization_local_tar_path}")
-            if export_success:
-                exported_file = (
-                    self.context.dagger_client.host()
-                    .directory(self.host_image_export_dir_path, include=[normalization_local_tar_path])
-                    .file(normalization_local_tar_path)
-                )
-                return StepResult(self, StepStatus.SUCCESS), exported_file
-            else:
-                return StepResult(self, StepStatus.FAILURE, stderr="The normalization container could not be exported"), None
+            name_without_registry_and_tag = self.normalization_image.split("/")[-1].split(":")[0]
+            image_name = f"docker.io/{self.context.docker_registry}/{name_without_registry_and_tag}:{self.context.git_revision}"
+            normalization_image_ref = await build_normalization_container.publish(image_name)
+            return StepResult(self, StepStatus.SUCCESS), normalization_image_ref
         except QueryError as e:
             return StepResult(self, StepStatus.FAILURE, stderr=str(e)), None
 
@@ -185,29 +178,11 @@ class BuildConnectorImage(GradleTask):
     """
     A step to build a Java connector image using the build Gradle task.
 
-    Export the image as a tar archive to host.
+    Publishes the image to a docker registry tagged with the current git revision.
     """
 
     title = "Build Connector Image"
     gradle_task_name = "distTar"
-
-    async def _export_connector_image(self, connector: Container) -> Optional[File]:
-        """Save the connector image to the host filesystem as a tar archive.
-
-        Returns:
-            Optional[File]: The file object holding the tar archive on the host.
-        """
-        connector_image_tar = f"{self.context.connector.technical_name}.tar"
-        export_success = await connector.export(f"{self.host_image_export_dir_path}/{connector_image_tar}")
-        if export_success:
-            exported_file = (
-                self.context.dagger_client.host()
-                .directory(self.host_image_export_dir_path, include=[connector_image_tar])
-                .file(connector_image_tar)
-            )
-            return exported_file
-        else:
-            return None
 
     async def build_tar(self) -> File:
         distTar = (
@@ -230,16 +205,13 @@ class BuildConnectorImage(GradleTask):
             )
         return distTar.file(tar_files[0])
 
-    async def _run(self) -> Tuple[StepResult, Optional[File]]:
+    async def _run(self) -> Tuple[StepResult, Optional[str]]:
         try:
             tar_file = await self.build_tar()
             java_connector = await environments.with_airbyte_java_connector(self.context, tar_file)
             step_result = await self.get_step_result(java_connector)
-            connector_image_tar_file = await self._export_connector_image(java_connector)
-
-            if connector_image_tar_file is None:
-                step_result = StepResult(self, StepStatus.FAILURE, stderr="The java connector could not be exported to the host FS.")
-            return step_result, connector_image_tar_file
+            connector_image_ref = await publish_connector_image(self.context, java_connector)
+            return step_result, connector_image_ref
         except QueryError as e:
             return StepResult(self, StepStatus.FAILURE, stderr=str(e)), None
 
@@ -250,28 +222,28 @@ class IntegrationTestJava(GradleTask):
     title = "Integration tests"
     gradle_task_name = "integrationTestJava"
 
-    async def _load_normalization_image(self, normalization_tar_file: File):
+    async def _load_normalization_image(self, normalization_image_ref: str):
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
-        self.context.logger.info("Load the normalization image to the docker host.")
-        await environments.load_image_to_docker_host(
-            self.context, normalization_tar_file, normalization_image_tag, docker_service_name=self.docker_service_name
+        self.context.logger.info("Pull the normalization image to the docker host.")
+        await environments.pull_image_to_docker_host(
+            self.context, normalization_image_ref, normalization_image_tag, docker_service_name=self.docker_service_name
         )
-        self.context.logger.info("Successfully loaded the normalization image to the docker host.")
+        self.context.logger.info("Successfully pulled the normalization image to the docker host.")
 
-    async def _load_connector_image(self, connector_tar_file: File):
+    async def _load_connector_image(self, connector_image_ref: str):
         connector_image_tag = f"airbyte/{self.context.connector.technical_name}:dev"
-        self.context.logger.info("Load the connector image to the docker host")
-        await environments.load_image_to_docker_host(
-            self.context, connector_tar_file, connector_image_tag, docker_service_name=self.docker_service_name
+        self.context.logger.info("Pull the connector image to the docker host")
+        await environments.pull_image_to_docker_host(
+            self.context, connector_image_ref, connector_image_tag, docker_service_name=self.docker_service_name
         )
-        self.context.logger.info("Successfully loaded the connector image to the docker host.")
+        self.context.logger.info("Successfully pulled the connector image to the docker host.")
 
-    async def _run(self, connector_tar_file: File, normalization_tar_file: Optional[File]) -> StepResult:
+    async def _run(self, connector_image_ref: str, normalization_image_ref: Optional[str]) -> StepResult:
         try:
             async with anyio.create_task_group() as tg:
-                if normalization_tar_file:
-                    tg.start_soon(self._load_normalization_image, normalization_tar_file)
-                tg.start_soon(self._load_connector_image, connector_tar_file)
+                if normalization_image_ref:
+                    tg.start_soon(self._load_normalization_image, normalization_image_ref)
+                tg.start_soon(self._load_connector_image, connector_image_ref)
             return await super()._run()
         except QueryError as e:
             return StepResult(self, StepStatus.FAILURE, stderr=str(e)), None
@@ -302,10 +274,10 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
     integration_tests_java_step = IntegrationTestJava(context)
     acceptance_tests_step = AcceptanceTests(context)
 
-    normalization_tar_file = None
+    normalization_image_ref = None
     if build_normalization_step:
         context.logger.info("Run build normalization step.")
-        build_normalization_results, normalization_tar_file = await build_normalization_step.run()
+        build_normalization_results, normalization_image_ref = await build_normalization_step.run()
         if build_normalization_results.status is StepStatus.FAILURE:
             return step_results + [
                 build_normalization_results,
@@ -318,7 +290,8 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
         step_results.append(build_normalization_results)
 
     context.logger.info("Run build connector step")
-    build_connector_results, connector_image_tar_file = await build_connector_step.run()
+    build_connector_results, connector_image_ref = await build_connector_step.run()
+
     if build_connector_results.status is StepStatus.FAILURE:
         return step_results + [
             build_connector_results,
@@ -344,9 +317,9 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
     step_results.append(unit_test_results)
 
     context.logger.info("Start acceptance tests.")
-    acceptance_test_results = await acceptance_tests_step.run(connector_image_tar_file)
+    acceptance_test_results = await acceptance_tests_step.run(connector_image_ref)
     step_results.append(acceptance_test_results)
     context.logger.info("Start integration tests.")
-    integration_test_results = await integration_tests_java_step.run(connector_image_tar_file, normalization_tar_file)
+    integration_test_results = await integration_tests_java_step.run(connector_image_ref, normalization_image_ref)
     step_results.append(integration_test_results)
     return step_results

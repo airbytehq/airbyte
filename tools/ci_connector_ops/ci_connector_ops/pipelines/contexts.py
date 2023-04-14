@@ -230,6 +230,7 @@ class ConnectorTestContext(PipelineContext):
         is_local: bool,
         git_branch: bool,
         git_revision: bool,
+        docker_registry: str,
         use_remote_secrets: bool = True,
         connector_acceptance_test_image: Optional[str] = DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE,
         gha_workflow_run_url: Optional[str] = None,
@@ -254,7 +255,7 @@ class ConnectorTestContext(PipelineContext):
         self.connector = connector
         self.use_remote_secrets = use_remote_secrets
         self.connector_acceptance_test_image = connector_acceptance_test_image
-
+        self.docker_registry = docker_registry
         self._secrets_dir = None
         self._updated_secrets_dir = None
 

@@ -4,12 +4,14 @@
 
 """This module groups util function used in pipelines."""
 
+from __future__ import annotations
+
 import datetime
 import re
 import sys
 import unicodedata
 from pathlib import Path
-from typing import Any, Callable, List, Optional, Set
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Sequence, Set
 
 import anyio
 import asyncer
@@ -17,6 +19,9 @@ import click
 import git
 from ci_connector_ops.utils import DESTINATION_CONNECTOR_PATH_PREFIX, SOURCE_CONNECTOR_PATH_PREFIX, Connector, get_connector_name_from_path
 from dagger import Config, Connection, Container, DaggerError, File, QueryError
+
+if TYPE_CHECKING:
+    from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
@@ -256,3 +261,13 @@ async def execute_concurrently(steps: List[Callable], concurrency: int = 5):
             tasks = [task_group.soonify(step)() for step in steps]
 
         return [task.value for task in tasks]
+
+
+async def publish_connector_image(
+    context: ConnectorTestContext, connector_container: Container, platform_variants: Sequence[Container] = None
+) -> str:
+    dockerfile = context.get_connector_dir(include=["Dockerfile"]).file("Dockerfile")
+    connector_version = await get_version_from_dockerfile(dockerfile)
+    tag = f"{connector_version}-dev.{context.git_revision[:10]}"
+    image_name = f"{context.docker_registry}/{context.connector.technical_name}:{tag}"
+    return await connector_container.publish(f"docker.io/{image_name}")

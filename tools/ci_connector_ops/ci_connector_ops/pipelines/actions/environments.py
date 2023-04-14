@@ -323,17 +323,17 @@ def with_docker_cli(
     return with_bound_docker_host(context, docker_cli, shared_volume, docker_service_name)
 
 
-async def with_connector_acceptance_test(context: ConnectorTestContext, connector_under_test_image_tar: File) -> Container:
+async def with_connector_acceptance_test(context: ConnectorTestContext, connector_under_test_image_ref: str) -> Container:
     """Create a container to run connector acceptance tests, bound to a persistent docker host.
 
     Args:
         context (ConnectorTestContext): The current connector test context.
-        connector_under_test_image_tar (File): The file containing the tar archive the image of the connector under test.
+            connector_under_test_image_ref (str): The image ref holding the connector under test built image.
     Returns:
         Container: A container with connector acceptance tests installed.
     """
     connector_under_test_image_name = context.connector.acceptance_test_config["connector_image"]
-    await load_image_to_docker_host(context, connector_under_test_image_tar, connector_under_test_image_name, docker_service_name="cat")
+    await pull_image_to_docker_host(context, connector_under_test_image_ref, connector_under_test_image_name, docker_service_name="cat")
 
     if context.connector_acceptance_test_image.endswith(":dev"):
         cat_container = context.connector_acceptance_test_source_dir.docker_build()
@@ -437,6 +437,15 @@ async def load_image_to_docker_host(
     if "sha256:" in image_load_output:
         image_id = image_load_output.replace("\n", "").replace("Loaded image ID: sha256:", "")
         await docker_cli.with_exec(["docker", "tag", image_id, image_tag]).exit_code()
+
+
+async def pull_image_to_docker_host(
+    context: ConnectorTestContext, connector_image_ref: str, image_tag: str, docker_service_name: Optional[str] = None
+):
+
+    docker_cli = with_docker_cli(context, docker_service_name=docker_service_name)
+    await docker_cli.with_exec(["docker", "pull", connector_image_ref]).stdout()
+    await docker_cli.with_exec(["docker", "tag", connector_image_ref, image_tag]).exit_code()
 
 
 def with_poetry(context: PipelineContext) -> Container:

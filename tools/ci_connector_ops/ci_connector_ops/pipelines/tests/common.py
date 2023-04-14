@@ -4,13 +4,11 @@
 
 """This module groups steps made to run tests agnostic to a connector language."""
 
-from typing import Optional
 
 import asyncer
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.bases import PytestStep, Step, StepResult, StepStatus
 from ci_connector_ops.utils import DESTINATION_DEFINITIONS_FILE_PATH, SOURCE_DEFINITIONS_FILE_PATH
-from dagger import File
 
 
 class QaChecks(Step):
@@ -52,11 +50,11 @@ class AcceptanceTests(PytestStep):
 
     title = "Acceptance tests"
 
-    async def _run(self, connector_under_test_image_tar: Optional[File]) -> StepResult:
+    async def _run(self, connector_under_test_image_ref: str) -> StepResult:
         """Run the acceptance test suite on a connector dev image. Build the connector acceptance test image if the tag is :dev.
 
         Args:
-            connector_under_test_image_tar (File): The file holding the tar archive of the connector image.
+            connector_under_test_image_ref (str): The image ref holding the connector under test built image.
 
         Returns:
             StepResult: Failure or success of the acceptances tests with stdout and stderr.
@@ -64,7 +62,7 @@ class AcceptanceTests(PytestStep):
         if not self.context.connector.acceptance_test_config:
             return StepResult(self, StepStatus.SKIPPED)
 
-        cat_container = await environments.with_connector_acceptance_test(self.context, connector_under_test_image_tar)
+        cat_container = await environments.with_connector_acceptance_test(self.context, connector_under_test_image_ref)
         secret_dir = cat_container.directory("/test_input/secrets")
 
         async with asyncer.create_task_group() as task_group:
