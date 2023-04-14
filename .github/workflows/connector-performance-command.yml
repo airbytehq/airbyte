@@ -150,8 +150,10 @@ jobs:
           kind load docker-image airbyte/$HARNESS_TYPE:dev --name chart-testing
           export CONNECTOR_IMAGE_NAME=${CONN/connectors/airbyte}:dev
           export DATASET=$DS
+          envsubst < ./tools/bin/run-harness-process.yaml
           export HARNESS=$HARNESS_TYPE
           envsubst < ./tools/bin/run-harness-process.yaml | kubectl create -f -
+          kubectl get pod
           echo "harness is ${{ steps.which-harness.outputs.harness_type }}"
           POD=$(kubectl get pod -l app=$HARNESS -o jsonpath="{.items[0].metadata.name}")
           kubectl wait --for=condition=Ready --timeout=20s "pod/$POD"
