@@ -231,5 +231,4 @@ public abstract class JdbcDatabase extends SqlDatabase {
   }
 
   public abstract DatabaseMetaData getMetaData() throws SQLException;
-
 }

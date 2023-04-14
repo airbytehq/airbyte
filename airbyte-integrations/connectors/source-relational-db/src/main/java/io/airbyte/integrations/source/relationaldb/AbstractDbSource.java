@@ -143,6 +143,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
     final Database database = createDatabase(config);
 
+    logDatabaseData(database, catalog);
+
     final Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo =
         discoverWithoutSystemTables(database)
             .stream()
@@ -546,6 +548,14 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    */
   @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
   protected abstract Database createDatabase(JsonNode config) throws Exception;
+
+  /**
+   * Gets and log relevant and useful database metadata such as DB product/version, index names and definition. Called during the sync method.
+   * @param database database instance
+   * @param catalog schema of the incoming messages.
+   * @throws Exception might throw an error during connection to database
+   */
+  protected void logDatabaseData(final Database database, final ConfiguredAirbyteCatalog catalog) throws Exception {}
 
   /**
    * Configures a list of operations that can be used to check the connection to the source.
