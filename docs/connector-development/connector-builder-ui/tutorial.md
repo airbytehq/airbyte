@@ -24,7 +24,7 @@ The output schema of our stream will look like the following:
 }
 ```
 
-## Exchange Rates API Setup
+## Setting up Exchange Rates API key
 
 Before we get started, you'll need to generate an API access key for the Exchange Rates API.
 This can be done by signing up for the Free tier plan on [Exchange Rates API](https://exchangeratesapi.io/):
@@ -34,23 +34,25 @@ This can be done by signing up for the Free tier plan on [Exchange Rates API](ht
 3. Once you're signed in, visit https://apilayer.com/marketplace/exchangerates_data-api#documentation-tab and click "Live Demo"
 4. Inside that editor, you'll see an API key. This is your API key.
 
-## Requirements
+## Setting up the environment
 
-- An Exchange Rates API key
-- An Airbyte Cloud account or an OSS Airbyte deployment version 0.43.0 or greater
+Besides an Exchange Rates API key, only a browser and an up-to-date running Airbyte instance is required. There are two ways to accomplish this:
+* Coming soon: Sign up on [cloud.airbyte.com](https://cloud.airbyte.com/)
+* Download and run Airbyte [on your own infrastructure](https://github.com/airbytehq/airbyte#quick-start). Make sure you are runninging version 0.43.0 or later
 
-## The connector builder project
+## Creating a connector builder project
 
 When developing a connector using the connector builder UI, the current state is saved in a connector builder project. These projects are saved as part of the Airbyte workspace and separate from your source configurations and connections. In the last step of this tutorial you will publish the connector builder project to make it ready to use in connections to run syncs.
 
 To get started, follow the following steps:
+* Visit the Airbyte UI in your browser
 * Go to the connector builder page by clicking the "Builder" item in the left hand navigation bar
 * Select "Start from scratch" to start a new connector builder project
 * Set the connector name to "Exchange rates"
 
-Your connector builder project is now set up. The next steps describe how to configure your connector to extract records from the Exchange rates API
+Your connector builder project is now set up. The next steps describe how to configure your connector to extract records from the Exchange Rates API.
 
-## Global configuration
+## Setting up global configuration
 
 On the "global configuration" page, general settings applying to all streams are configured - the base URL requests are sent to as well as configuration for how to authenticate with the API server.
 
@@ -60,7 +62,7 @@ On the "global configuration" page, general settings applying to all streams are
 
 The actual API Key you copied from apilayer.com will not be part of the connector itself - instead it will be set as part of the source configuration when configuring a connection based on your connector in a later step.
 
-## Setup and test a stream
+## Setting up and testing a stream
 
 Now that you configured how to talk the API, let's set up the stream of records that will be sent to a destination later on. To do so, click the button with the plus icon next to the "Streams" section in the side menu and fill out the form:
 * Set the name to "Rates"
@@ -97,6 +99,8 @@ Each stream of a connector needs to declare how emitted records will look like (
 
 By default, the stream schema is set to a simple object with unspecified properties. However, the connector builder can infer the schema based on the test read you just issued. To use the infered schema, switch to the "Detected schema" tab and click the "Import schema" button.
 
+The warning icon disappears indicating that the declared schema of your stream matches the test data.
+
 ## Making the stream configurable
 
 The exchange rate API supports configuring a different base currency via request parameter - let's make this part of the user inputs that can be controlled by the user of the connector when configuring a source, similar to the API key.
@@ -106,7 +110,6 @@ To do so, follow these steps:
 * Set the key to `base`
 * For the value, click the user icon in the input and select "New user input"
 * Set the name to "Base"
-* As hint, set "A base currency like USD or EUR"
 
 Now your connector has a second configuration input. To test it, click the "Testing values" button again, set the "Base" to `USD`. Then, click the "Test" button again to issue a new test read.
 
@@ -125,7 +128,7 @@ The record should update to use USD as the base currency:
 }
 ```
 
-## Incremental reads
+## Adding incremental reads
 
 We now have a working implementation of a connector reading the latest exchange rates for a given currency.
 In this section, we'll update the source to read historical data instead of only reading the latest exchange rates.
@@ -145,11 +148,11 @@ To configure your connector to request every day individually, follow these step
 * Set a start date (like `2023-03-03`) in the "Testing values" menu
 * Hit the "Test" button to trigger a new test read
 
-Now, you should see a dropdown above the records view that lets you step through the daily exchange rates. Note that in the connector builder at most 5 slices are requested to speed up testing. During a proper sync the full time range between your configured start date and the current day will be executed.
+Now, you should see a dropdown above the records view that lets you step through the daily exchange rates along with the requests performed to fetch this data. Note that in the connector builder at most 5 slices are requested to speed up testing. During a proper sync the full time range between your configured start date and the current day will be executed.
 
-When used in a connection, the connector will make sure exchange rates for the same day are not requested multiple times - the date of the last fetched record will be stored and the next scheduled sync will pick up where the previous one stopped.
+When used in a connection, the connector will make sure exchange rates for the same day are not requested multiple times - the date of the last fetched record will be stored and the next scheduled sync will pick up from where the previous one stopped.
 
-## Transformations
+## Adding transformations
 
 Note that a warning icon should show next to the "Detected schema" tab - using the per-date endpoint instead of the latest endpoint slightly changed the shape of the records by adding a `historical` property. As we don't need this property in our destination, we can remove it using a transformation.
 
@@ -161,7 +164,7 @@ To do so, follow these steps:
 
 The `historical` property in the records tab and the schema warning should disappear.
 
-## Publish and sync
+## Publishing and syncing
 
 So far, the connector is only configured as part of the connector builder project. To make it possible to use it in actual connections, you need to publish the connector. This captures the current state of the configuration and makes the connector available as a custom connector within the current Airbyte workspace.
 
@@ -172,18 +175,18 @@ To use the connector for a proper sync, follow these steps:
 * Set API Key, base currency and start date for the sync - to avoid a large number of requests, set the start date to one week in the past
 * Click "Set up source" and wait for the connection check to validate the provided configuration is valid
 * Set up a destination - to keep things simple let's choose the "E2E Testing" destination type
-* Click "Set up destination"
+* Click "Set up destination", keeping the default configurations
 * Wait for Airbyte to check the record schema, then click "Set up connection" - this will create the connection and kick off the first sync
 * After a short while, the sync should complete successfully
 
 Congratulations! You just completed the following steps:
-* Configure a connector to extract currency exchange data from a HTTP-based API:
+* Configured a production-ready connector to extract currency exchange data from an HTTP-based API:
   * Configurable API key, start date and base currency
   * Incremental sync to keep the number of requests small
   * Schema declaration to enable normalization in the destination
-* Test whether the connector works correctly in the UI
-* Make the working connector available to configure sources in the workspace
-* Set up a connection using the published connector to sync data from the exchange rates API
+* Tested whether the connector works correctly in the UI
+* Made the working connector available to configure sources in the workspace
+* Set up a connection using the published connector and synced data from the Exchange Rates API
 
 ## Next steps
 
@@ -196,4 +199,4 @@ This tutorial didn't go into depth about all features that can be used in the co
 * Partitioning
 * Schema declaration
 
-Not every possible API can be consumed by connectors configured in the connector builder. The [compatibility guide](/connector-development/config-based/connector-builder-compatibility#oauth) can help determining whether another technology can be used to integrate an API with the Airbyte platform.
+Not every possible API can be consumed by connectors configured in the connector builder. The [compatibility guide](/connector-development/config-based/connector-builder-compatibility#oauth) can help determining whether another technology should be used to integrate an API with the Airbyte platform.
