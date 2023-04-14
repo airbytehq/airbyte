@@ -179,6 +179,26 @@
     },
     "forum_topic_id": {
       "type": ["null", "integer"]
+    },
+    "custom_status_id": {
+      "type": ["null", "integer"]
+    },
+    "fields": {
+      "type": ["null", "array"],
+      "items": {
+          "type": ["null", "object"],
+          "properties": {
+              "id": {
+                "type": ["null", "integer"]
+              },
+              "value": {
+                "type": ["null", "boolean", "string"]
+              }
+          }
+      }
+    },
+    "from_messaging_channel": {
+      "type": ["null", "boolean"]
     }
   },
   "type": ["null", "object"]
