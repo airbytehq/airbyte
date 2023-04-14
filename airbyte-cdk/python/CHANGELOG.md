@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.34.2
+Emit slice log messages when running the connector builder
+
 ## 0.34.1
 set slice and pages limit when reading from the connector builder module
 
