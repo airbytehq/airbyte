@@ -16,7 +16,6 @@ import pytz
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams import Stream
-from frozendict import frozendict
 from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
 
 from .file_info import FileInfo
@@ -158,7 +157,7 @@ class FileStream(Stream, ABC):
                 yield file_info
 
     @lru_cache(maxsize=None)
-    def get_time_ordered_file_infos(self, stream_state: frozendict = None) -> List[FileInfo]:
+    def get_time_ordered_file_infos(self, stream_state: str = None) -> List[FileInfo]:
         """
         Iterates through pattern_matched_filepath_iterator(), acquiring FileInfo objects
         with last_modified property of each file to return in time ascending order.
@@ -166,6 +165,7 @@ class FileStream(Stream, ABC):
 
         :return: list in time-ascending order
         """
+        stream_state = eval(stream_state) if stream_state else None
         return sorted(
             self.pattern_matched_filepath_iterator(self.filepath_iterator(stream_state=stream_state)),
             key=lambda file_info: file_info.last_modified,
@@ -447,7 +447,7 @@ class IncrementalFileStream(FileStream, ABC):
             # logic here is to bundle all files with exact same last modified timestamp together in each slice
             prev_file_last_mod: datetime = None  # init variable to hold previous iterations last modified
             grouped_files_by_time: List[Dict[str, Any]] = []
-            for file_info in self.get_time_ordered_file_infos(stream_state=frozendict(stream_state)):
+            for file_info in self.get_time_ordered_file_infos(stream_state=str(stream_state)):
                 if self.need_to_skip_file(stream_state, file_info):
                     continue
 
