@@ -98,7 +98,16 @@ def upload(ctx: click.Context, gcs_bucket_name: str, gcs_credentials: str, modif
     )
 
 
-@metadata.command(cls=DaggerPipelineCommand, help="Deploy the metadata service orchestrator to production")
+
+
+# DEPLOY GROUP
+
+@metadata.group(help="Commands related to deploying components of the metadata service.")
+@click.pass_context
+def deploy(ctx: click.Context):
+    pass
+
+@deploy.command(cls=DaggerPipelineCommand, name="orchestrator", help="Deploy the metadata service orchestrator to production")
 @click.pass_context
 def deploy_orchestrator(ctx: click.Context):
     return anyio.run(
@@ -121,9 +130,9 @@ def test(ctx: click.Context):
     pass
 
 
-@test.command(cls=DaggerPipelineCommand, help="Run tests for the metadata service library.")
+@test.command(cls=DaggerPipelineCommand, name="lib", help="Run tests for the metadata service library.")
 @click.pass_context
-def lib(ctx: click.Context):
+def test_lib(ctx: click.Context):
     return anyio.run(
         run_metadata_lib_test_pipeline,
         ctx.obj["is_local"],
@@ -135,9 +144,9 @@ def lib(ctx: click.Context):
     )
 
 
-@test.command(cls=DaggerPipelineCommand, help="Run tests for the metadata service orchestrator.")
+@test.command(cls=DaggerPipelineCommand, name="orchestrator", help="Run tests for the metadata service orchestrator.")
 @click.pass_context
-def orchestrator(ctx: click.Context):
+def test_orchestrator(ctx: click.Context):
     return anyio.run(
         run_metadata_orchestrator_test_pipeline,
         ctx.obj["is_local"],
@@ -150,4 +159,4 @@ def orchestrator(ctx: click.Context):
 
 
 if __name__ == "__main__":
-    lib()
+    test_lib()

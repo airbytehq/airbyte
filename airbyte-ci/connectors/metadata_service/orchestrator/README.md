@@ -124,5 +124,5 @@ dagster-cloud config
 ### Deploying the orchestrator
 ```bash
 cd orchestrator
-DAGSTER_CLOUD_API_TOKEN=<YOU-DAGSTER-CLOUD-TOKEN> ./deploy_to_prod.sh
+DAGSTER_CLOUD_API_TOKEN=<YOU-DAGSTER-CLOUD-TOKEN> airbyte-ci metadata deploy orchestrator
 ```

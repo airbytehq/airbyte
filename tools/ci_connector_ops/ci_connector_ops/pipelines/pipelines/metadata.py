@@ -82,24 +82,44 @@ class MetadataUpload(PoetryRun):
         )
 
 
-class DeployOrchestratorStep(Step):
-    def __init__(self, context: PipelineContext, title: str, parent_dir_path: str, module_path: str, dagster_cloud_api_token):
-        self.title = title
-        super().__init__(context)
-        self.parent_dir = self.context.get_repo_dir(parent_dir_path)
-        self.module_path = module_path
-        self.dagster_cloud_api_token = dagster_cloud_api_token
+class DeployOrchestrator(Step):
+    title = "Deploy Metadata Orchestrator to Dagster Cloud"
 
     async def _run(self) -> StepStatus:
+        parent_dir = self.context.get_repo_dir(METADATA_DIR)
         python_base = with_python_base(self.context)
         python_with_dependencies = with_pip_packages(python_base, ["dagster-cloud==1.2.6", "poetry2setup"])
+        dagster_cloud_api_token_secret: dagger.Secret = (
+            self.context
+            .dagger_client
+            .host()
+            .env_variable("DAGSTER_CLOUD_METADATA_API_TOKEN")
+            .secret()
+        )
+
+        deploy_dagster_command = [
+            "dagster-cloud",
+            "serverless",
+            "deploy-python-executable",
+            "--location-name",
+            "metadata_service_orchestrator",
+            "--location-file",
+            "dagster_cloud.yaml",
+            "--organization",
+            "airbyte-connectors",
+            "--deployment",
+            "prod",
+            "--python-version",
+            "3.9",
+        ]
 
         container_to_run = (
-            python_with_dependencies.with_mounted_directory("/src", self.parent_dir)
-            .with_workdir(f"/src/{self.module_path}")
-            .with_env_variable("DAGSTER_CLOUD_API_TOKEN", self.dagster_cloud_api_token)
-            .with_entrypoint(["bash"])
-            .with_exec(["deploy_to_prod.sh"])
+            python_with_dependencies.with_mounted_directory("/src", parent_dir)
+            .with_workdir(f"/src/{METADATA_ORCHESTRATOR_MODULE_PATH}")
+            .with_secret_variable("DAGSTER_CLOUD_API_TOKEN", dagster_cloud_api_token_secret)
+            .with_entrypoint(["bash", "-c"])
+            .with_exec(["poetry2setup", ">>", "setup.py"])
+            .with_exec(deploy_dagster_command)
         )
         return await self.get_step_result(container_to_run)
 
@@ -245,11 +265,6 @@ async def run_metadata_orchestrator_deploy_pipeline(
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
 ) -> bool:
-    # Get the DAGSTER_CLOUD_API_TOKEN from the environment
-    dagster_cloud_api_token = os.environ.get("DAGSTER_CLOUD_API_TOKEN")
-    if not dagster_cloud_api_token:
-        raise ValueError("DAGSTER_CLOUD_API_TOKEN not found in environment")
-
     metadata_pipeline_context = PipelineContext(
         pipeline_name="Metadata Service Orchestrator Unit Test Pipeline",
         is_local=is_local,
@@ -264,13 +279,7 @@ async def run_metadata_orchestrator_deploy_pipeline(
         metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
 
         async with metadata_pipeline_context:
-            deploy_orch_step = DeployOrchestratorStep(
-                context=metadata_pipeline_context,
-                title="Deploy Metadata Orchestrator to Dagster Cloud",
-                parent_dir_path=METADATA_DIR,
-                module_path=METADATA_ORCHESTRATOR_MODULE_PATH,
-                dagster_cloud_api_token=dagster_cloud_api_token,
-            )
+            deploy_orch_step = DeployOrchestrator(context=metadata_pipeline_context)
             result = await deploy_orch_step.run()
             metadata_pipeline_context.test_report = TestReport(pipeline_context=metadata_pipeline_context, steps_results=[result])
     return metadata_pipeline_context.test_report.success
