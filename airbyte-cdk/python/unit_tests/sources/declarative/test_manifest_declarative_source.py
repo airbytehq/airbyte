@@ -6,7 +6,7 @@ import json
 import logging
 import os
 import sys
-from typing import List
+from typing import List, Mapping, Any
 from unittest.mock import call, patch
 
 import pytest
@@ -1145,16 +1145,15 @@ def _create_page(response_body):
 ])
 def test_read_manifest_declarative_source(test_name, manifest, pages, expected_records, expected_calls):
     _stream_name = "Rates"
-    config = {"__injected_declarative_manifest": manifest}
     with patch.object(HttpStream, "_fetch_next_page", side_effect=pages) as mock_http_stream:
-        output_data = [message.record.data for message in _run_read(config, _stream_name)]
+        output_data = [message.record.data for message in _run_read(manifest, _stream_name)]
         assert expected_records == output_data
         mock_http_stream.assert_has_calls(expected_calls)
 
 
-def _run_read(config, stream_name) -> List[AirbyteMessage]:
-    source = ManifestDeclarativeSource(source_config=config.get("__injected_declarative_manifest"))
+def _run_read(manifest: Mapping[str, Any], stream_name: str) -> List[AirbyteMessage]:
+    source = ManifestDeclarativeSource(source_config=manifest)
     catalog = ConfiguredAirbyteCatalog(streams=[
         ConfiguredAirbyteStream(stream=AirbyteStream(name=stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]), sync_mode=SyncMode.full_refresh, destination_sync_mode=DestinationSyncMode.append)
     ])
-    return list(source.read(logger, config, catalog, {}))
+    return list(source.read(logger, {}, catalog, {}))
