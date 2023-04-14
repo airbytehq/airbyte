@@ -8,7 +8,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-import datetime
+from datetime import datetime, timedelta
 import pytz
 import time
 import tempfile
@@ -17,10 +17,9 @@ import os
 import json
 import csv
 
-# Basic full refresh stream
 
 class DoordashStream(HttpStream, ABC):
-    url_base = 'https://openapi.doordash.com/dataexchange/v1/reports/'
+    url_base = 'https://openapi.doordash.com/dataexchange/v1/reports'
 
     def __init__(self, config: Mapping[str, any], *args, **kwargs):
         self.start_date_from_config = config.get('start_date')
@@ -53,14 +52,16 @@ class IncrementalDoordashStream(DoordashStream):
         store_ids: List[int] = [], report_type: str = "ORDER_DETAIL"
     ) -> Optional[Mapping]:        
         start_date = self.start_date_from_config        
-        if stream_state.get('active_date_utc'):
-            start_date = stream_state.get('active_date_utc')
+        if stream_state.get('ACTIVE_DATE_UTC'):
+            start_date = stream_state.get('ACTIVE_DATE_UTC')
 
         # To capture all the changes on the DoorDash side, we would always go back 7 days. The dedup process
         # on the destination side will handle all the clean up.
-        start_date -= datetime.timedelta(days=7)
+        temp_date = datetime.strptime(start_date, "%Y-%m-%d")
+        temp_date = temp_date - timedelta(days=7)
+        start_date = temp_date.astimezone(pytz.utc).strftime("%Y-%m-%d")
 
-        end_date = datetime.datetime.now().astimezone(pytz.utc).strftime("%Y-%m-%d")
+        end_date = datetime.now().astimezone(pytz.utc).strftime("%Y-%m-%d")
 
         request_json = { 
             "store_ids": store_ids,
@@ -74,10 +75,10 @@ class IncrementalDoordashStream(DoordashStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None    
 
-
 class OrderDetails(IncrementalDoordashStream):
-    cursor_field = "active_date_utc"
+    cursor_field = "ACTIVE_DATE_UTC"
     primary_key = "dd_order_number"
+    http_method = "POST"
 
     def path(self, **kwargs) -> str:
         return ""
@@ -88,15 +89,17 @@ class OrderDetails(IncrementalDoordashStream):
         # Initial create report request would provide a report ID.
         report_id = response.json()['report_id']
         self.logger.info(f"Create report request completed. Report ID: {report_id}.")
-        get_report_url = f"{self.url_base}{report_id}/reportlink"
+        get_report_url = f"{self.url_base}/{report_id}/reportlink"
 
-        # Check every 5 seconds to see if the report is ready for download. Loop until it's ready. Also 
+        # Check to see if the report is ready for download with an exponential backoff. Loop until it's ready. Also 
         # provide a way out of the loop if it takes more than 10 minutes.
+        delay = 1
         time_start = time.time()
         time_current = time_start
         get_report_response = requests.get(get_report_url, headers=self.authenticator.get_auth_header())
         while get_report_response.json()['report_status'] != 'SUCCEEDED' and time_current - time_start < 600: 
-            time.sleep(5)
+            time.sleep(delay)
+            delay += delay
             get_report_response = requests.get(get_report_url, headers=self.authenticator.get_auth_header())
             time_current = time.time()
 
@@ -109,7 +112,7 @@ class OrderDetails(IncrementalDoordashStream):
         # Download the report as a temp file.        
         report_link = get_report_response.json()['report_link']
         self.logger.info(f'Report ready for download. URL: {report_link}.')
-        report_download_response = requests.get(report_link)
+        report_download_response = requests.get(report_link, headers=self.authenticator.get_auth_header())
         with tempfile.TemporaryDirectory() as temp_dir:
             with tempfile.TemporaryFile(dir=temp_dir, suffix='.zip') as report_zip_file:
                 report_zip_file.write(report_download_response.content)
@@ -131,7 +134,7 @@ class OrderDetails(IncrementalDoordashStream):
 
                             # Yield return each row as a json record.
                             for row in csv_reader:
-                                yield json.dumps(row)
+                                yield row
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -143,7 +146,7 @@ class OrderDetails(IncrementalDoordashStream):
 class SourceDoordash(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            url_base = 'https://openapi.doordash.com/dataexchange/v1/reports/'
+            url_base = 'https://openapi.doordash.com/dataexchange/v1/reports'
             auth = TokenAuthenticator(token=config['api_key'])
             body = { 
                 "store_ids": [],
