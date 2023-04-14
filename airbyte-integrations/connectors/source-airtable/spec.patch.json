@@ -1,0 +1,38 @@
+{
+      "properties": {
+        "credentials": {
+          "title": "Authentication",
+          "type": "object",
+          "discriminator": {
+            "propertyName": "auth_method"
+          },
+          "oneOf": [
+            {
+              "type": "object",
+              "title": "OAuth2.0",
+              "x-oauth2-provider": "airtable",
+              "required": ["client_id", "client_secret", "refresh_token"],
+              "properties": {
+                "auth_method": {
+                  "type": "string",
+                  "const": "oauth2.0",
+                  "default": "oauth2.0"
+                } 
+              }
+            },
+            {
+              "title": "Personal Access Token",
+              "type": "object",
+              "required": ["api_key"],
+              "properties": {
+                "auth_method": {
+                  "type": "string",
+                  "const": "api_key",
+                  "default": "api_key"
+                }
+              }
+            }
+          ]
+        }
+      } 
+}
