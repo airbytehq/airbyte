@@ -29,13 +29,13 @@ def safe_log(logger: Optional[Logger], message: str, level: str = "info") -> Non
 
 
 def update_commit_status_check(
-    sha: str, state: str, target_url: str, description: str, context: str, should_send=True, logger: Logger = None
+    sha: str, state: str, target_url: str, description: str, context: str, is_optional=False, should_send=True, logger: Logger = None
 ):
     """Call the GitHub API to create commit status check.
 
     Args:
         sha (str): Hash of the commit for which you want to create a status check.
-        state (str): The check state (success, failure, pendint)
+        state (str): The check state (success, failure, pending)
         target_url (str): The URL to attach to the commit check for details.
         description (str): Description of the check that is run.
         context (str): Name of the Check context e.g: source-pokeapi tests
@@ -56,10 +56,17 @@ def update_commit_status_check(
             console.print(e)
         return
 
+    # If the check is optional, we don't want to fail the build if it fails.
+    # Instead, we want to mark it as a warning.
+    # Unfortunately, Github doesn't have a warning state, so we use success instead.
+    if is_optional and state == "failure":
+        state = "success"
+        description = f"[WARNING] optional check failed {context}: {description}"
+
     airbyte_repo.get_commit(sha=sha).create_status(
         state=state,
         target_url=target_url,
         description=description,
         context=context,
     )
-    safe_log(logger, f"Created {state} status for commit {sha} on Github in {context} context.")
+    safe_log(logger, f"Created {state} status for commit {sha} on Github in {context} context with desc: {description}.")

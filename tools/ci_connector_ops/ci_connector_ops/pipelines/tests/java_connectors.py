@@ -161,7 +161,6 @@ class GradleTask(Step, ABC):
         return command
 
     async def _run(self) -> StepResult:
-
         connector_under_test = (
             environments.with_gradle(
                 self.context, self.build_include, docker_service_name=self.docker_service_name, bind_to_docker_host=self.BIND_TO_DOCKER_HOST
