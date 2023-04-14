@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  generateName: run-source-harness
+  generateName: run-performance-harness
   labels:
-    app: source-harness
+    app: performance-harness
 spec:
   containers:
   - name: main
