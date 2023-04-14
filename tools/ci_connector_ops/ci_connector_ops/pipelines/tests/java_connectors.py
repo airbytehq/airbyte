@@ -101,7 +101,7 @@ class GradleTask(Step, ABC):
     ]
 
     DESTINATION_BUILD_INCLUDE = [
-        "airbyte-integrations/connectors/destination-jdbc",
+        "airbyte-integrations/bases/bases-destination-jdbc",
         # destination-bigquery uses utils from destination gcs
         "airbyte-integrations/connectors/destination-gcs",
     ]
