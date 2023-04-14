@@ -6,7 +6,7 @@ import json
 import logging
 import os
 import sys
-from unittest.mock import patch
+from unittest.mock import patch, call
 
 import pytest
 import requests
@@ -865,6 +865,10 @@ def test_read_manifest_declarative_source_no_pagination_no_incremental(mock_http
     assert output_data[0].record.data == {"ABC": 0}
     assert output_data[1].record.data == {"AED": 1}
 
+    mock_http_stream.assert_has_calls([
+        call({}, {}, None),
+    ])
+
 
 @patch.object(HttpStream, "_fetch_next_page", side_effect=(_create_page({"rates": [{"ABC": 0}, {"AED": 1}],"_metadata": {"next": "next"}}), _create_page({"rates": [{"USD": 2}],"_metadata": {}})) * 10)
 def test_read_manifest_declarative_source_with_pagination_no_incremental(mock_http_stream):
@@ -969,6 +973,11 @@ def test_read_manifest_declarative_source_with_pagination_no_incremental(mock_ht
     assert output_data[0].record.data == {"ABC": 0}
     assert output_data[1].record.data == {"AED": 1}
     assert output_data[2].record.data == {"USD": 2}
+
+    mock_http_stream.assert_has_calls([
+        call({}, {}, None),
+        call({}, {}, {"next_page_token": "next"}),
+    ])
 
 
 @patch.object(HttpStream, "_fetch_next_page", side_effect=(
@@ -1078,3 +1087,8 @@ def test_read_manifest_declarative_source_no_pagination_with_partition_router(mo
     assert output_data[0].record.data == {"ABC": 0, "partition": 0}
     assert output_data[1].record.data == {"AED": 1, "partition": 0}
     assert output_data[2].record.data == {"ABC": 2, "partition": 1}
+
+    mock_http_stream.assert_has_calls([
+        call({"partition": "0"}, {}, None),
+        call({"partition": "1"}, {}, None),
+    ])
