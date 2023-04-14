@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 5b9cb09e-1003-4f9c-983d-5779d1b2cd51
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-mailgun
+  githubIssueLabel: source-mailgun
+  icon: mailgun.svg
+  license: MIT
+  name: Mailgun
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/mailgun
+metadataSpecVersion: "1.0"
