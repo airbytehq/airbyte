@@ -46,8 +46,7 @@ public final class AirbyteTraceMessageUtility {
   }
 
   public static void emitStreamStatusTrace(final AirbyteStreamStatus airbyteStreamStatus) {
-    // TODO This is where the actual stream status trace message will be created and emitted from the
-    // provided data
+    emitMessage(makeStreamStatusTraceAirbyteMessage(airbyteStreamStatus));
   }
 
   // todo: handle the other types of trace message we'll expect in the future, see
@@ -76,6 +75,10 @@ public final class AirbyteTraceMessageUtility {
                 .withMessage(displayMessage)
                 .withInternalMessage(e.toString())
                 .withStackTrace(ExceptionUtils.getStackTrace(e))));
+  }
+
+  private static AirbyteMessage makeStreamStatusTraceAirbyteMessage(final AirbyteStreamStatus airbyteStreamStatus) {
+    return makeAirbyteMessageFromTraceMessage(airbyteStreamStatus.toTraceMessage());
   }
 
   private static AirbyteMessage makeAirbyteMessageFromTraceMessage(final AirbyteTraceMessage airbyteTraceMessage) {

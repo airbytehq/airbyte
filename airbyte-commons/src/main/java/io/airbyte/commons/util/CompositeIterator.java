@@ -145,28 +145,28 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
   private void emitRunningStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream) {
     airbyteStream.ifPresent(s -> {
       LOGGER.info("RUNNING -> {}", s);
-      emitStreamStatus(s);
+      emitStreamStatus(s, io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.RUNNING, Optional.empty());
     });
   }
 
   private void emitStartStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream) {
     airbyteStream.ifPresent(s -> {
       LOGGER.info("STARTING -> {}", s);
-      emitStreamStatus(s);
+      emitStreamStatus(s, io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED, Optional.empty());
     });
   }
 
   private void emitStopStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream, final boolean successful) {
     airbyteStream.ifPresent(s -> {
       LOGGER.info("STOPPING({}) -> {}", successful, s);
-      emitStreamStatus(s);
+      emitStreamStatus(s, io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STOPPED, Optional.of(successful));
     });
   }
 
-  private void emitStreamStatus(final AirbyteStreamNameNamespacePair airbyteStream) {
+  private void emitStreamStatus(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair, final io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus airbyteStreamStatus, final Optional<Boolean> success) {
     // TODO This method will also take in the status enum and create an AirbyteStreamStatus object to
     // send to the consumer, if present
-    airbyteStreamStatusConsumer.ifPresent(c -> c.accept(new AirbyteStreamStatus(airbyteStream)));
+    airbyteStreamStatusConsumer.ifPresent(c -> c.accept(new AirbyteStreamStatus(airbyteStreamNameNamespacePair, airbyteStreamStatus, success)));
   }
 
 }
