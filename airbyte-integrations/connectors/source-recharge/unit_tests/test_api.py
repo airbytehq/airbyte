@@ -34,7 +34,6 @@ def config():
 
 
 class TestCommon:
-
     main = RechargeStream
 
     @pytest.mark.parametrize(
@@ -211,10 +210,10 @@ class TestFullRefreshStreams:
     @pytest.mark.parametrize(
         "stream_cls, next_page_token, stream_state, stream_slice, expected",
         [
-            (Collections, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max":"2021-08-15T00:00:00Z"}),
-            (Metafields, {"page": 2}, {"updated_at": "2030-01-01"}, {}, {"limit": 250, "page": 2, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max":"2021-08-15T00:00:00Z"}),
-            (Products, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max":"2021-08-15T00:00:00Z"}),
-            (Shop, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max":"2021-08-15T00:00:00Z"}),
+            (Collections, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max": "2021-08-15T00:00:00Z"}),
+            (Metafields, {"page": 2}, {"updated_at": "2030-01-01"}, {}, {"limit": 250, "owner_resource": None, "page": 2}),
+            (Products, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max": "2021-08-15T00:00:00Z"}),
+            (Shop, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max": "2021-08-15T00:00:00Z"}),
         ],
     )
     def test_request_params(self, config, stream_cls, next_page_token, stream_state, stream_slice, expected):
@@ -310,13 +309,16 @@ class TestIncrementalStreams:
     @pytest.mark.parametrize(
         "stream_cls, next_page_token, stream_state, stream_slice, expected",
         [
-            (Addresses, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max":"2021-08-15T00:00:00Z"}),
-            (Charges, {"page": 2}, {"updated_at": "2030-01-01"}, {}, {"limit": 250, "page": 2, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max":"2021-08-15T00:00:00Z"}),
-            (Customers, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max":"2021-08-15T00:00:00Z"}),
-            (Discounts, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max":"2021-08-15T00:00:00Z"}),
-            (Onetimes, {"page": 2}, {"updated_at": "2030-01-01"}, {}, {"limit": 250, "page": 2, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max":"2021-08-15T00:00:00Z"}),
-            (Orders, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max":"2021-08-15T00:00:00Z"}),
-            (Subscriptions, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max":"2021-08-15T00:00:00Z"}),
+            (Addresses, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max": "2021-08-15T00:00:00Z"}),
+            (Charges, {"page": 2}, {"updated_at": "2030-01-01"}, {},
+             {"limit": 250, "page": 2, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max": "2021-08-15T00:00:00Z"}),
+            (Customers, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max": "2021-08-15T00:00:00Z"}),
+            (Discounts, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max": "2021-08-15T00:00:00Z"}),
+            (Onetimes, {"page": 2}, {"updated_at": "2030-01-01"}, {},
+             {"limit": 250, "page": 2, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max": "2021-08-15T00:00:00Z"}),
+            (Orders, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max": "2021-08-15T00:00:00Z"}),
+            (Subscriptions, None, {}, {},
+             {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z", "updated_at_max": "2021-08-15T00:00:00Z"}),
         ],
     )
     def test_request_params(self, config, stream_cls, next_page_token, stream_state, stream_slice, expected):

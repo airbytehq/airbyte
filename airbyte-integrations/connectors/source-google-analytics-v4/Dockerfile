@@ -5,9 +5,9 @@ RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /airbyte/integration_code
 COPY setup.py ./
-RUN pip install .
 COPY source_google_analytics_v4 ./source_google_analytics_v4
 COPY main.py ./
+RUN pip install .
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]

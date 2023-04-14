@@ -15,6 +15,7 @@ You can use OAuth, API key, or Private App to authenticate your HubSpot account.
 | `contacts_list_memberships` | `crm.objects.contacts.read`                                                                                  |
 | `deal_pipelines`            | either the `crm.objects.contacts.read` scope \(to fetch deals pipelines\) or the `tickets` scope.            |
 | `deals`                     | `crm.objects.deals.read`, `crm.schemas.deals.read`                                                           |
+| `deals_archived`            | `crm.objects.deals.read`, `crm.schemas.deals.read`                                                           |
 | `email_events`              | `content`                                                                                                    |
 | `email_subscriptions`       | `content`                                                                                                    |
 | `engagements`               | `crm.objects.companies.read`, `crm.objects.contacts.read`, `crm.objects.deals.read`, `tickets`, `e-commerce` |
@@ -69,6 +70,8 @@ The HubSpot source connector supports the following streams:
 * [Contacts List Memberships](https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts)
 * [Deal Pipelines](https://developers.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type) \(Client-Side Incremental\)
 * [Deals](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
+  * Records that have been deleted (archived) and stored in HubSpot's recycle bin will only be kept for 90 days, see [response from HubSpot Team](https://community.hubspot.com/t5/APIs-Integrations/Archived-deals-deleted-or-different/m-p/714157)
+* [Deals Archived](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
 * [Email Events](https://developers.hubspot.com/docs/methods/email/get_events) \(Incremental\)
 * [Email Subscriptions](https://developers.hubspot.com/docs/methods/email/get_subscriptions)
 * [Engagements](https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements) \(Incremental\)
@@ -134,6 +137,7 @@ Now that you have set up the Hubspot source connector, check out the following H
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.0   | 2023-04-07 | [24980](https://github.com/airbytehq/airbyte/pull/24980) | Add new stream `DealsArchived`                                                                                                                             |
 | 0.5.2   | 2023-04-07 | [24915](https://github.com/airbytehq/airbyte/pull/24915) | Fix field key parsing (replace whitespace with uderscore)                                                                                                  |
 | 0.5.1   | 2023-04-05 | [22982](https://github.com/airbytehq/airbyte/pull/22982) | Specified date formatting in specification                                                                                                                 |
 | 0.5.0   | 2023-03-30 | [24711](https://github.com/airbytehq/airbyte/pull/24711) | Add incremental sync support for `campaigns`, `deal_pipelines`, `ticket_pipelines`, `forms`, `form_submissions`, `form_submissions`, `workflows`, `owners` |
