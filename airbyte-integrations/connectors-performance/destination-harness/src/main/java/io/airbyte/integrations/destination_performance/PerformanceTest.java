@@ -13,7 +13,6 @@ import io.airbyte.config.AllowedHosts;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.WorkerDestinationConfig;
-import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
@@ -22,24 +21,27 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.internal.DefaultAirbyteDestination;
-import io.airbyte.workers.internal.DefaultAirbyteSource;
-import io.airbyte.workers.internal.HeartbeatMonitor;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -80,22 +82,13 @@ public class PerformanceTest {
         .withCpuRequest("2.5")
         .withMemoryLimit("2Gi")
         .withMemoryRequest("2Gi");
-    final var heartbeatMonitor = new HeartbeatMonitor(Duration.ofMillis(1));
     final var allowedHosts = new AllowedHosts().withHosts(List.of("*"));
-    final var integrationLauncher =
-        new AirbyteIntegrationLauncher("1", 0, this.imageName, processFactory, resourceReqs, allowedHosts, false, new EnvVariableFeatureFlags());
-    final var source = new DefaultAirbyteSource(integrationLauncher, new EnvVariableFeatureFlags(), heartbeatMonitor);
     final var jobRoot = "/";
-    final WorkerSourceConfig sourceConfig = new WorkerSourceConfig()
-        .withSourceConnectionConfiguration(this.config)
-        .withState(null)
-        .withCatalog(convertProtocolObject(this.catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
 
-    /////////// destiantion ///////////
     final var dstIntegtationLauncher = new AirbyteIntegrationLauncher(
         "2",
         0,
-        "airbyte/destination-dev-null:0.2.7",
+        this.imageName,
         processFactory,
         resourceReqs,
         allowedHosts,
@@ -105,74 +98,72 @@ public class PerformanceTest {
     final WorkerDestinationConfig dstConfig = new WorkerDestinationConfig()
         .withDestinationConnectionConfiguration(
             Jsons.jsonNode(Collections.singletonMap("type", "SILENT")));
+    log.info("Destination starting");
     destination.start(dstConfig, Path.of(jobRoot));
 
-    // final ConcurrentHashMap<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>>
-    // validationErrors = new ConcurrentHashMap();
-    // final Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields = new HashMap();
-    // final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields = new HashMap();
-    // final Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields = new HashMap();
-    // populateStreamToAllFields(this.catalog, streamToAllFields);
-    // final String streamName0 = sourceConfig.getCatalog().getStreams().get(0).getStream().getName();
-    // final String streamNamespace0 =
-    // sourceConfig.getCatalog().getStreams().get(0).getStream().getNamespace();
-    // final String streamName1 = sourceConfig.getCatalog().getStreams().get(1).getStream().getName();
-    // final String streamNamespace1 =
-    // sourceConfig.getCatalog().getStreams().get(1).getStream().getNamespace();
-    // final String streamName2 = sourceConfig.getCatalog().getStreams().get(2).getStream().getName();
-    // final String streamNamespace2 =
-    // sourceConfig.getCatalog().getStreams().get(2).getStream().getNamespace();
+    BufferedReader reader = new BufferedReader(new InputStreamReader(new URL("https://storage.googleapis.com/airbyte-performance-testing-public/sample-data/faker_1m/users.csv").openStream(), StandardCharsets.UTF_8));
 
-    // final var recordSchemaValidator = new RecordSchemaValidator(
-    // Map.of(
-    // new AirbyteStreamNameNamespacePair(streamName0, streamNamespace0),
-    // sourceConfig.getCatalog().getStreams().get(0).getStream().getJsonSchema(),
-    // new AirbyteStreamNameNamespacePair(streamName1, streamNamespace1),
-    // sourceConfig.getCatalog().getStreams().get(1).getStream().getJsonSchema(),
-    // new AirbyteStreamNameNamespacePair(streamName2, streamNamespace2),
-    // sourceConfig.getCatalog().getStreams().get(2).getStream().getJsonSchema()),
-    // true);
-
-    log.info("Destination starting");
-    source.start(sourceConfig, Path.of(jobRoot));
     var totalBytes = 0.0;
     var counter = 0L;
+    final Pattern pattern = Pattern.compile(",");
     final var start = System.currentTimeMillis();
+
     log.info("Starting Test");
-    while (!source.isFinished()) {
-      final Optional<AirbyteMessage> airbyteMessageOptional = source.attemptRead();
-      if (airbyteMessageOptional.isPresent()) {
-        final AirbyteMessage airbyteMessage = airbyteMessageOptional.get();
-
-        if (airbyteMessage.getRecord() != null) {
-          totalBytes += Jsons.getEstimatedByteSize(airbyteMessage.getRecord().getData());
-          counter++;
-
-          // validateSchema(recordSchemaValidator, streamToAllFields, unexpectedFields, validationErrors,
-          // airbyteMessage);
-          // airbyteMessage.getRecord().setStream(airbyteMessage.getRecord().getStream() + "SUFFIX");
-          // ((ObjectNode) airbyteMessage.getRecord().getData()).retain("id", "user_id", "product_id",
-          // "added_to_cart_at", "purchased_at", "name",
-          // "email",
-          // "title", "gender", "height", "language", "blood_type", "created_at", "occupation", "updated_at",
-          // "nationality");
-          // destination.accept(airbyteMessage);
+    final var columns = Arrays.asList(pattern.split(reader.readLine()));
+    while (!destination.isFinished()) {
+      try(reader) {
+        final var row = Arrays.asList(pattern.split(reader.readLine()));
+        assert (row.size() == columns.size());
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        Iterator<String> rowIterator = row.iterator();
+        Iterator<String> colIterator = columns.iterator();
+        ArrayList<String> combined = new ArrayList<>(columns.size());
+        while (colIterator.hasNext() && rowIterator.hasNext()) {
+          combined.add("\"%s\":\"%s\"".formatted(colIterator.next(), rowIterator.next()));
         }
+        sb.append(String.join(",", combined));
+        sb.append("}");
+        final String recordString = sb.toString();
+        totalBytes += recordString.length();
 
+        final AirbyteMessage airbyteMessage = new AirbyteMessage().withRecord(new AirbyteRecordMessage()
+          .withStream(catalog.getStreams().get(0).getStream().getName())
+          .withNamespace(catalog.getStreams().get(0).getStream().getNamespace())
+          .withData(Jsons.deserialize(recordString)));
+        destination.accept(airbyteMessage);
       }
+
+
 
       if (counter > 0 && counter % MEGABYTE == 0) {
         log.info("current throughput: {} total MB {}", (totalBytes / MEGABYTE) / ((System.currentTimeMillis() - start) / 1000.0),
             totalBytes / MEGABYTE);
       }
     }
+
     log.info("Test ended successfully");
     final var end = System.currentTimeMillis();
     final var totalMB = totalBytes / MEGABYTE;
     final var totalTimeSecs = (end - start) / 1000.0;
     final var rps = counter / totalTimeSecs;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     log.info("total secs: {}. total MB read: {}, rps: {}, throughput: {}", totalTimeSecs, totalMB, rps, totalMB / totalTimeSecs);
-    source.close();
+    destination.close();
   }
 
   private static void populateStreamToAllFields(final ConfiguredAirbyteCatalog catalog,
