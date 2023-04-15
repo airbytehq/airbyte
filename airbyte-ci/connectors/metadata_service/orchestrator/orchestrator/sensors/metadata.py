@@ -1,5 +1,5 @@
 from dagster import sensor, RunRequest, SkipReason, SensorDefinition, SensorEvaluationContext, build_resources, DefaultSensorStatus
-from orchestrator.utils.dagster_helpers import deserialize_composite_etag_cursor, serialize_composite_etag_cursor
+from orchestrator.utils.dagster_helpers import deserialize_composite_etags_cursor, serialize_composite_etags_cursor
 
 
 def metadata_updated_sensor(job, resources_def) -> SensorDefinition:
@@ -20,25 +20,24 @@ def metadata_updated_sensor(job, resources_def) -> SensorDefinition:
         with build_resources(resources_def) as resources:
             context.log.info("Got resources for gcs_metadata_updated_sensor")
 
-            etag_cursor_raw = context.cursor or None
-            etag_cursor = deserialize_composite_etag_cursor(etag_cursor_raw)
-            etag_cursor_set = set(etag_cursor)
+            etags_cursor_raw = context.cursor or None
+            etags_cursor = deserialize_composite_etags_cursor(etags_cursor_raw)
+            etags_cursor_set = set(etags_cursor)
 
-            context.log.info(f"Old etag cursor: {etag_cursor}")
+            context.log.info(f"Old etag cursor: {etags_cursor}")
 
-            metadata_folder_blobs = resources.metadata_folder_blobs
-            new_etag_cursors = [blob.etag for blob in metadata_folder_blobs if blob.name.endswith("metadata.yml")]
-            new_etag_cursor_set = set(new_etag_cursors)
-            context.log.info(f"New etag cursor: {new_etag_cursor_set}")
+            metadata_file_blobs = resources.metadata_file_blobs
+            new_etags_cursor_set = {blob.etag for blob in metadata_file_blobs}
+            context.log.info(f"New etag cursor: {new_etags_cursor_set}")
 
             # Note: ETAGs are GCS's way of providing a version number for a file
             # Another option would be to use the last modified date or MD5 hash
-            if etag_cursor_set == new_etag_cursor_set:
+            if etags_cursor_set == new_etags_cursor_set:
                 context.log.info("No new updated_metadata_files in GCS bucket")
                 return SkipReason("No new updated_metadata_files in GCS bucket")
 
-            serialized_new_etag_cursor = serialize_composite_etag_cursor(new_etag_cursors)
-            context.update_cursor(serialized_new_etag_cursor)
+            serialized_new_etags_cursor = serialize_composite_etags_cursor(list(new_etags_cursor_set))
+            context.update_cursor(serialized_new_etags_cursor)
             context.log.info("New updated_metadata_files in GCS bucket")
             return RunRequest(run_key="updated_metadata_files")
 

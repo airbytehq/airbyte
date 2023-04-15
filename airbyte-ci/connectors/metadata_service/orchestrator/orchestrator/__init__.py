@@ -42,7 +42,8 @@ from orchestrator.jobs.catalog import generate_catalog_markdown, generate_local_
 from orchestrator.sensors.catalog import catalog_updated_sensor
 from orchestrator.sensors.metadata import metadata_updated_sensor
 
-from orchestrator.config import REPORT_FOLDER, CATALOG_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME, METADATA_FOLDER
+from orchestrator.config import REPORT_FOLDER, CATALOG_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME
+from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
 
 ASSETS = [
     oss_destinations_dataframe,
@@ -82,12 +83,10 @@ RESOURCES = {
         }
     ),
     "gcs_bucket_manager": gcs_bucket_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}}),
-    "catalog_report_directory_manager": gcs_file_manager.configured(
-        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "gcs_prefix": REPORT_FOLDER}
-    ),
-    "metadata_folder_blobs": gcs_directory_blobs.configured({"gcs_prefix": METADATA_FOLDER}),
-    "latest_oss_catalog_gcs_file": gcs_file_blob.configured({"gcs_prefix": CATALOG_FOLDER, "gcs_filename": "oss_catalog.json"}),
-    "latest_cloud_catalog_gcs_file": gcs_file_blob.configured({"gcs_prefix": CATALOG_FOLDER, "gcs_filename": "cloud_catalog.json"}),
+    "catalog_report_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REPORT_FOLDER}),
+    "metadata_file_blobs": gcs_directory_blobs.configured({"prefix": METADATA_FOLDER, "suffix": METADATA_FILE_NAME}),
+    "latest_oss_catalog_gcs_file": gcs_file_blob.configured({"prefix": CATALOG_FOLDER, "gcs_filename": "oss_catalog.json"}),
+    "latest_cloud_catalog_gcs_file": gcs_file_blob.configured({"prefix": CATALOG_FOLDER, "gcs_filename": "cloud_catalog.json"}),
 }
 
 SENSORS = [

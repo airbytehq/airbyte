@@ -255,10 +255,10 @@ def oss_catalog_diff_dataframe(oss_catalog_diff: dict) -> OutputDataFrame:
     return output_dataframe(diff_df)
 
 
-@asset(required_resource_keys={"metadata_folder_blobs"}, group_name=GROUP_NAME)
+@asset(required_resource_keys={"metadata_file_blobs"}, group_name=GROUP_NAME)
 def metadata_directory_report(context):
-    metadata_folder_blobs = context.resources.metadata_folder_blobs
-    blobs = [blob.name for blob in metadata_folder_blobs if blob.name.endswith("metadata.yaml")]
+    metadata_file_blobs = context.resources.metadata_file_blobs
+    blobs = [blob.name for blob in metadata_file_blobs if blob.name.endswith("metadata.yaml")]
     blobs_df = pd.DataFrame(blobs)
 
     return output_dataframe(blobs_df)
