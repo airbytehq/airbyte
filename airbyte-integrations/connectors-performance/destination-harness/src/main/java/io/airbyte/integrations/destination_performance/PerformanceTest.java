@@ -34,6 +34,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -112,9 +113,12 @@ public class PerformanceTest {
 
     log.info("Starting Test {}", destination.isFinished());
     final var columns = Arrays.asList(pattern.split(reader.readLine()));
+    log.info("*** columns {}", columns);
     while (!destination.isFinished()) {
       try (reader) {
+        log.info("*** reading row");
         final var row = Arrays.asList(pattern.split(reader.readLine()));
+        log.info("*** row {}", row);
         assert (row.size() == columns.size());
         StringBuilder sb = new StringBuilder();
         sb.append("{");
