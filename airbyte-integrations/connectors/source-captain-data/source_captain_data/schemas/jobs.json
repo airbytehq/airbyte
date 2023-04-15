@@ -6,7 +6,7 @@
       "type": ["null", "array"]
     },
     "configuration": {
-      "type": ["null", "array"]
+      "type": ["null", "object"]
     },
     "error_message": {
       "type": ["null", "string"]
@@ -15,6 +15,9 @@
       "type": ["null", "string"]
     },
     "main_job_uid": {
+      "type": ["null", "string"]
+    },
+    "main_job_name": {
       "type": ["null", "string"]
     },
     "name": {

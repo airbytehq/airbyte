@@ -12,7 +12,7 @@
       "type": ["null", "integer"]
     },
     "steps": {
-      "type": ["null", "a"]
+      "type": ["null", "array"]
     },
     "template_uid": {
       "type": ["null", "string"]
