@@ -1,4 +1,4 @@
-FROM airbyte/integration-base-java:20230210 AS build
+FROM airbyte/integration-base-java:dev AS build
 WORKDIR /airbyte
 
 ENV APPLICATION destination-harness
@@ -7,7 +7,7 @@ COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1 && rm -rf ${APPLICATION}.tar
 
-FROM airbyte/integration-base-java:20230210
+FROM airbyte/integration-base-java:dev
 ARG TARGETARCH
 WORKDIR /airbyte
 
