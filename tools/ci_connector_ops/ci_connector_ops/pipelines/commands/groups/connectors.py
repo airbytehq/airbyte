@@ -15,8 +15,8 @@ import click
 import dagger
 from ci_connector_ops.pipelines.contexts import CIContext, ConnectorTestContext
 from ci_connector_ops.pipelines.github import update_commit_status_check
-from ci_connector_ops.pipelines.pipelines.connectors import run_connectors_test_pipelines
-from ci_connector_ops.pipelines.utils import get_modified_connectors
+from ci_connector_ops.pipelines.pipelines.connectors import run_connectors_test_pipelines, run_connector_build_pipeline
+from ci_connector_ops.pipelines.utils import get_modified_connectors, DaggerPipelineCommand
 from ci_connector_ops.utils import ConnectorLanguage, get_all_released_connectors
 from rich.logging import RichHandler
 
@@ -165,6 +165,23 @@ def test(
             logger=logger,
         )
 
+
+@connectors.command(cls=DaggerPipelineCommand, help="Build all images for a connector")
+@click.option(
+    "--name", required=True, type=str
+)
+@click.pass_context
+def build(ctx: click.Context, name: str):
+    return anyio.run(
+        run_connector_build_pipeline,
+        ctx.obj["is_local"],
+        ctx.obj["git_branch"],
+        ctx.obj["git_revision"],
+        ctx.obj.get("gha_workflow_run_url"),
+        ctx.obj.get("pipeline_start_timestamp"),
+        ctx.obj.get("ci_context"),
+        name,
+    )
 
 if __name__ == "__main__":
     test()

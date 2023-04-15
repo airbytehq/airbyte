@@ -4,14 +4,14 @@
 """This module groups the functions to run full pipelines for connector testing."""
 
 import itertools
-from typing import List
+from typing import List, Optional
 
 import anyio
 import asyncer
 import dagger
 from ci_connector_ops.pipelines import tests
-from ci_connector_ops.pipelines.bases import ConnectorTestReport
-from ci_connector_ops.pipelines.contexts import ConnectorTestContext
+from ci_connector_ops.pipelines.bases import ConnectorTestReport, TestReport
+from ci_connector_ops.pipelines.contexts import ConnectorTestContext, PipelineContext
 from ci_connector_ops.pipelines.utils import DAGGER_CONFIG
 
 # CONSTANTS
@@ -61,3 +61,38 @@ async def run_connectors_test_pipelines(contexts: List[ConnectorTestContext], co
             for context in contexts:
                 context.dagger_client = dagger_client.pipeline(f"{context.connector.technical_name} - Test Pipeline")
                 tg.start_soon(run, context, semaphore)
+
+
+async def run_connector_build_pipeline(
+    is_local: bool,
+    git_branch: str,
+    git_revision: str,
+    gha_workflow_run_url: Optional[str],
+    pipeline_start_timestamp: Optional[int],
+    ci_context: Optional[str],
+    name: str,
+) -> bool:
+    build_pipeline_context = PipelineContext(
+        pipeline_name=f"Connector Build Pipeline: {name}",
+        is_local=is_local,
+        git_branch=git_branch,
+        git_revision=git_revision,
+        gha_workflow_run_url=gha_workflow_run_url,
+        pipeline_start_timestamp=pipeline_start_timestamp,
+        ci_context=ci_context,
+    )
+
+    async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
+        build_pipeline_context.dagger_client = dagger_client.pipeline(build_pipeline_context.pipeline_name)
+        async with build_pipeline_context:
+            # TODO
+            # - Figure out language mapping
+            # - Get single connector building
+            # - Get single python connector building with buildx
+            # - Get single java connector building with buildx
+            # - Get all connectors building with buildx
+            build_step = None
+            result = await build_step.run()
+            build_pipeline_context.test_report = TestReport(pipeline_context=build_pipeline_context, steps_results=[result])
+
+    return build_pipeline_context.test_report.success
