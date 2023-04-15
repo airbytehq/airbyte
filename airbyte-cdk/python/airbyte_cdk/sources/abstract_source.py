@@ -349,4 +349,4 @@ class AbstractSource(Source, ABC):
         """
         Emits a new AirbyteStreamStatusTraceMessage
         """
-        print(stream_status_as_airbyte_message(stream, AirbyteStreamStatus.RUNNING, None).json(exclude_unset=True))
+        yield stream_status_as_airbyte_message(stream, AirbyteStreamStatus.RUNNING, None)
