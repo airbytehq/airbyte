@@ -101,7 +101,9 @@ public class PerformanceTest {
     log.info("Destination starting");
     destination.start(dstConfig, Path.of(jobRoot));
 
-    BufferedReader reader = new BufferedReader(new InputStreamReader(new URL("https://storage.googleapis.com/airbyte-performance-testing-public/sample-data/faker_1m/users.csv").openStream(), StandardCharsets.UTF_8));
+    BufferedReader reader = new BufferedReader(new InputStreamReader(
+        new URL("https://storage.googleapis.com/airbyte-performance-testing-public/sample-data/faker_1m/users.csv").openStream(),
+        StandardCharsets.UTF_8));
 
     var totalBytes = 0.0;
     var counter = 0L;
@@ -111,7 +113,7 @@ public class PerformanceTest {
     log.info("Starting Test");
     final var columns = Arrays.asList(pattern.split(reader.readLine()));
     while (!destination.isFinished()) {
-      try(reader) {
+      try (reader) {
         final var row = Arrays.asList(pattern.split(reader.readLine()));
         assert (row.size() == columns.size());
         StringBuilder sb = new StringBuilder();
@@ -128,13 +130,11 @@ public class PerformanceTest {
         totalBytes += recordString.length();
 
         final AirbyteMessage airbyteMessage = new AirbyteMessage().withRecord(new AirbyteRecordMessage()
-          .withStream(catalog.getStreams().get(0).getStream().getName())
-          .withNamespace(catalog.getStreams().get(0).getStream().getNamespace())
-          .withData(Jsons.deserialize(recordString)));
+            .withStream(catalog.getStreams().get(0).getStream().getName())
+            .withNamespace(catalog.getStreams().get(0).getStream().getNamespace())
+            .withData(Jsons.deserialize(recordString)));
         destination.accept(airbyteMessage);
       }
-
-
 
       if (counter > 0 && counter % MEGABYTE == 0) {
         log.info("current throughput: {} total MB {}", (totalBytes / MEGABYTE) / ((System.currentTimeMillis() - start) / 1000.0),
@@ -147,20 +147,6 @@ public class PerformanceTest {
     final var totalMB = totalBytes / MEGABYTE;
     final var totalTimeSecs = (end - start) / 1000.0;
     final var rps = counter / totalTimeSecs;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     log.info("total secs: {}. total MB read: {}, rps: {}, throughput: {}", totalTimeSecs, totalMB, rps, totalMB / totalTimeSecs);
     destination.close();
