@@ -108,7 +108,7 @@ jobs:
         run: |
           the_harness="$(echo ${{github.event.inputs.connector}} | sed 's/.*\///; s/-.*//')"-harness
           echo "harness_type=$the_harness" >> "$GITHUB_OUTPUT"
-      - name: Write source-harness credentials
+      - name: Write harness credentials
         run: |
           ci_credentials connectors-performance/$HARNESS_TYPE write-to-storage
         env:
@@ -133,7 +133,7 @@ jobs:
       - name: KIND Kubernetes Cluster Setup
         uses: helm/kind-action@v1.4.0
         with:
-          config: ./tools/bin/source-harness-kind-cluster-config.yaml
+          config: "./tools/bin/${{ steps.which-harness.outputs.harness_type }}-kind-cluster-config.yaml"
       - name: Run harness
         id: run-harness
         shell: bash
