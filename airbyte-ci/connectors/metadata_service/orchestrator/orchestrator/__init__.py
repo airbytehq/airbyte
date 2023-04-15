@@ -1,36 +1,45 @@
 from dagster import Definitions
 
-from .resources.gcp_resources import gcp_gcs_client, gcs_bucket_manager, gcs_file_manager, gcs_file_blob
-from .resources.github_resources import github_client, github_connector_repo, github_connectors_directory
-from .resources.local_resources import simple_local_file_manager
+from orchestrator.resources.gcp import gcp_gcs_client, gcs_bucket_manager, gcs_file_manager, gcs_file_blob
+from orchestrator.resources.github import github_client, github_connector_repo, github_connectors_directory
+from orchestrator.resources.local import simple_local_file_manager
 
-from .assets.github_assets import github_connector_folders
-from .assets.spec_cache_assets import cached_specs
-from .assets.catalog_report_assets import (
+from orchestrator.assets.github import github_connector_folders
+from orchestrator.assets.spec_cache import cached_specs
+from orchestrator.assets.catalog_report import (
     all_sources_dataframe,
     all_destinations_dataframe,
     connector_catalog_location_markdown,
     connector_catalog_location_html,
 )
-from .assets.catalog_assets import (
+from orchestrator.assets.catalog import (
     oss_destinations_dataframe,
     cloud_destinations_dataframe,
     oss_sources_dataframe,
     cloud_sources_dataframe,
     latest_oss_catalog_dict,
     latest_cloud_catalog_dict,
+    oss_catalog_from_metadata,
+    cloud_catalog_from_metadata,
 )
-from .assets.metadata_assets import (
+from orchestrator.assets.metadata import (
     catalog_derived_metadata_definitions,
-    valid_metadata_list,
+    valid_metadata_report_dataframe,
 )
 
-from .assets.dev_assets import persist_metadata_definitions, overrode_metadata_definitions
+from orchestrator.assets.dev import (
+    persist_metadata_definitions,
+    overrode_metadata_definitions,
+    oss_catalog_diff,
+    cloud_catalog_diff,
+    cloud_catalog_diff_dataframe,
+    oss_catalog_diff_dataframe,
+)
 
-from .jobs.catalog_jobs import generate_catalog_markdown, generate_local_metadata_files
-from .sensors.catalog_sensors import catalog_updated_sensor
+from orchestrator.jobs.catalog import generate_catalog_markdown, generate_local_metadata_files
+from orchestrator.sensors.catalog import catalog_updated_sensor
 
-from .config import REPORT_FOLDER, CATALOG_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME
+from orchestrator.config import REPORT_FOLDER, CATALOG_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME
 
 ASSETS = [
     oss_destinations_dataframe,
@@ -45,10 +54,16 @@ ASSETS = [
     connector_catalog_location_html,
     github_connector_folders,
     catalog_derived_metadata_definitions,
-    valid_metadata_list,
+    valid_metadata_report_dataframe,
     persist_metadata_definitions,
     overrode_metadata_definitions,
     cached_specs,
+    oss_catalog_diff,
+    oss_catalog_from_metadata,
+    cloud_catalog_diff,
+    cloud_catalog_from_metadata,
+    cloud_catalog_diff_dataframe,
+    oss_catalog_diff_dataframe,
 ]
 
 RESOURCES = {

@@ -1,0 +1,300 @@
+version: "0.34.0"
+
+definitions:
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_quickbooks/schemas/{{ parameters.name }}.json"
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - "QueryResponse"
+        - "{{ parameters.table_name }}"
+  requester:
+    type: HttpRequester
+    url_base: "{{ 'https://sandbox-quickbooks.api.intuit.com' if config.sandbox else 'https://quickbooks.api.intuit.com' }}"
+    http_method: "GET"
+    request_parameters:
+      query: "SELECT * FROM {{ parameters.table_name }} WHERE Metadata.LastUpdatedTime > '{{ stream_slice.start_time }}' AND Metadata.LastUpdatedTime <= '{{ stream_slice.end_time }}' {{ parameters.additional_where }} ORDER BY Metadata.LastUpdatedTime ASC STARTPOSITION {{ (next_page_token.next_page_token or 0) + 1 }} MAXRESULTS {{ (config.max_results or '200') | int }}"
+    request_headers:
+      "Accept": "application/json"
+      "User-Agent": "airbyte-connector"
+    authenticator:
+      type: SingleUseRefreshTokenOAuthAuthenticator
+      token_refresh_endpoint: "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: OffsetIncrement
+        page_size: "{{ (config.max_results or '5') | int }}"
+    requester:
+      $ref: "#/definitions/requester"
+  base_stream:
+    primary_key: "Id"
+    retriever:
+      $ref: "#/definitions/retriever"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: "source_quickbooks.CustomDatetimeBasedCursor"
+      cursor_field: "airbyte_cursor"
+      start_datetime: "{{ config.start_date }}"
+      end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_granularity: "PT0S"
+      step: "P30D"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: [ "airbyte_cursor" ]
+            value: "{{ record.MetaData.LastUpdatedTime }}"
+    $parameters:
+      path: "/v3/company/{{ config.credentials.realm_id }}/query"
+      table_name: "BillPayment"
+
+  accounts:
+    $ref: "#/definitions/base_stream"
+    name: "accounts"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "Account"
+      additional_where: "AND Active IN (true, false)"
+
+  bill_payments:
+    $ref: "#/definitions/base_stream"
+    name: "bill_payments"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "BillPayment"
+
+  bills:
+    $ref: "#/definitions/base_stream"
+    name: "bills"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "Bill"
+
+  budgets:
+    $ref: "#/definitions/base_stream"
+    name: "budgets"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "Budget"
+      additional_where: "AND Active IN (true, false)"
+
+  classes:
+    $ref: "#/definitions/base_stream"
+    name: "classes"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "Class"
+      additional_where: "AND Active IN (true, false)"
+
+  credit_memos:
+    $ref: "#/definitions/base_stream"
+    name: "credit_memos"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "CreditMemo"
+
+  customers:
+    $ref: "#/definitions/base_stream"
+    name: "customers"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "Customer"
+      additional_where: "AND Active IN (true, false)"
+
+  departments:
+    $ref: "#/definitions/base_stream"
+    name: "departments"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "Department"
+      additional_where: "AND Active IN (true, false)"
+
+  deposits:
+    $ref: "#/definitions/base_stream"
+    name: "deposits"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "Deposit"
+
+  employees:
+    $ref: "#/definitions/base_stream"
+    name: "employees"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "Employee"
+      additional_where: "AND Active IN (true, false)"
+
+  estimates:
+    $ref: "#/definitions/base_stream"
+    name: "estimates"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "Estimate"
+
+  invoices:
+    $ref: "#/definitions/base_stream"
+    name: "invoices"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "Invoice"
+
+  items:
+    $ref: "#/definitions/base_stream"
+    name: "items"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "Item"
+      additional_where: "AND Active IN (true, false)"
+
+  journal_entries:
+    $ref: "#/definitions/base_stream"
+    name: "journal_entries"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "JournalEntry"
+
+  payment_methods:
+    $ref: "#/definitions/base_stream"
+    name: "payment_methods"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "PaymentMethod"
+      additional_where: "AND Active IN (true, false)"
+
+  payments:
+    $ref: "#/definitions/base_stream"
+    name: "payments"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "Payment"
+
+  purchase_orders:
+    $ref: "#/definitions/base_stream"
+    name: "purchase_orders"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "PurchaseOrder"
+
+  purchases:
+    $ref: "#/definitions/base_stream"
+    name: "purchases"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "Purchase"
+
+  refund_receipts:
+    $ref: "#/definitions/base_stream"
+    name: "refund_receipts"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "RefundReceipt"
+
+  sales_receipts:
+    $ref: "#/definitions/base_stream"
+    name: "sales_receipts"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "SalesReceipt"
+
+  tax_agencies:
+    $ref: "#/definitions/base_stream"
+    name: "tax_agencies"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "TaxAgency"
+
+  tax_codes:
+    $ref: "#/definitions/base_stream"
+    name: "tax_codes"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "TaxCode"
+      additional_where: "AND Active IN (true, false)"
+
+  tax_rates:
+    $ref: "#/definitions/base_stream"
+    name: "tax_rates"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "TaxRate"
+      additional_where: "AND Active IN (true, false)"
+
+  terms:
+    $ref: "#/definitions/base_stream"
+    name: "terms"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "Term"
+      additional_where: "AND Active IN (true, false)"
+
+  time_activities:
+    $ref: "#/definitions/base_stream"
+    name: "time_activities"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "TimeActivity"
+
+  transfers:
+    $ref: "#/definitions/base_stream"
+    name: "transfers"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "Transfer"
+
+  vendor_credits:
+    $ref: "#/definitions/base_stream"
+    name: "vendor_credits"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "VendorCredit"
+
+  vendors:
+    $ref: "#/definitions/base_stream"
+    name: "vendors"
+    $parameters:
+      $ref: "#/definitions/base_stream/$parameters"
+      table_name: "Vendor"
+      additional_where: "AND Active IN (true, false)"
+
+streams:
+  - "#/definitions/accounts"
+  - "#/definitions/bill_payments"
+  - "#/definitions/bills"
+  - "#/definitions/budgets"
+  - "#/definitions/classes"
+  - "#/definitions/credit_memos"
+  - "#/definitions/customers"
+  - "#/definitions/departments"
+  - "#/definitions/deposits"
+  - "#/definitions/employees"
+  - "#/definitions/estimates"
+  - "#/definitions/invoices"
+  - "#/definitions/items"
+  - "#/definitions/journal_entries"
+  - "#/definitions/payment_methods"
+  - "#/definitions/payments"
+  - "#/definitions/purchase_orders"
+  - "#/definitions/purchases"
+  - "#/definitions/refund_receipts"
+  - "#/definitions/sales_receipts"
+  - "#/definitions/tax_agencies"
+  - "#/definitions/tax_codes"
+  - "#/definitions/tax_rates"
+  - "#/definitions/terms"
+  - "#/definitions/time_activities"
+  - "#/definitions/transfers"
+  - "#/definitions/vendor_credits"
+  - "#/definitions/vendors"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "accounts"

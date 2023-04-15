@@ -14,7 +14,7 @@ dependencies {
     //implementation project(':airbyte-protocol:protocol-models')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:connectors:source-relational-db')
-    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config-oss:config-models-oss')
 
     implementation "com.azure:azure-storage-blob:12.20.2"
     implementation "com.github.saasquatch:json-schema-inferrer:0.1.5"

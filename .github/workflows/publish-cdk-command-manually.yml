@@ -292,6 +292,8 @@ jobs:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
       - name: Update CDK version
         run: |
+          PREVIOUS_VERSION=$(cat oss/airbyte-connector-builder-resources/CDK_VERSION)
+          sed -i "s/${PREVIOUS_VERSION}/${{needs.bump-version.outputs.new_cdk_version}}/g" oss/airbyte-connector-atelier-server/Dockerfile
           echo ${{needs.bump-version.outputs.new_cdk_version}} > oss/airbyte-connector-builder-resources/CDK_VERSION
           cd oss/airbyte-connector-builder-server
           pip install pip-tools
