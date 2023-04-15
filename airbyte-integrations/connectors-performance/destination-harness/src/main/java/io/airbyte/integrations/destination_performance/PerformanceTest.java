@@ -127,7 +127,7 @@ public class PerformanceTest {
         sb.append(String.join(",", combined));
         sb.append("}");
         final String recordString = sb.toString();
-        log.info("*** RECORD: {}", recordString); //TEMP
+        log.info("*** RECORD: {}", recordString); // TEMP
         totalBytes += recordString.length();
 
         final AirbyteMessage airbyteMessage = new AirbyteMessage().withRecord(new AirbyteRecordMessage()
