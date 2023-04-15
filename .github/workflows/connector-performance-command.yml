@@ -151,9 +151,7 @@ jobs:
           export CONNECTOR_IMAGE_NAME=${CONN/connectors/airbyte}:dev
           export DATASET=$DS
           export HARNESS=$HARNESS_TYPE
-          envsubst < ./tools/bin/run-harness-process.yaml
           envsubst < ./tools/bin/run-harness-process.yaml | kubectl create -f -
-          kubectl get pod
           echo "harness is ${{ steps.which-harness.outputs.harness_type }}"
           POD=$(kubectl get pod -l app=performance-harness -o jsonpath="{.items[0].metadata.name}")
           kubectl wait --for=condition=Ready --timeout=20s "pod/$POD"
