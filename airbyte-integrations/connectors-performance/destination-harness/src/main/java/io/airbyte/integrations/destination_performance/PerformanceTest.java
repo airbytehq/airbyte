@@ -96,8 +96,9 @@ public class PerformanceTest {
         new EnvVariableFeatureFlags());
     this.destination = new DefaultAirbyteDestination(dstIntegtationLauncher);
     final WorkerDestinationConfig dstConfig = new WorkerDestinationConfig()
-        .withDestinationConnectionConfiguration(
-            Jsons.jsonNode(Collections.singletonMap("type", "SILENT")));
+        .withDestinationConnectionConfiguration(this.config)
+        .withState(null)
+        .withCatalog(convertProtocolObject(this.catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
     log.info("Destination starting");
     destination.start(dstConfig, Path.of(jobRoot));
 
