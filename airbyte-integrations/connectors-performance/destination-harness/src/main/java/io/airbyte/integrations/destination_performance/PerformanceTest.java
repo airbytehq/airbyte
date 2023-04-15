@@ -110,7 +110,7 @@ public class PerformanceTest {
     final Pattern pattern = Pattern.compile(",");
     final var start = System.currentTimeMillis();
 
-    log.info("Starting Test");
+    log.info("Starting Test {}", destination.isFinished());
     final var columns = Arrays.asList(pattern.split(reader.readLine()));
     while (!destination.isFinished()) {
       try (reader) {
