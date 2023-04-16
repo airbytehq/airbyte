@@ -142,7 +142,7 @@ public class PerformanceTest {
         destination.accept(airbyteMessage);
       }
 
-      if (counter == 1000) { //TEMP
+      if (counter == 1000) { // TEMP
         break;
       }
       if (counter > 0 && counter % MEGABYTE == 0) {
