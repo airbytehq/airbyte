@@ -111,7 +111,9 @@ public class PerformanceTest {
     final var start = System.currentTimeMillis();
 
     log.info("Starting Test {}", destination.isFinished());
-    final var columns = Arrays.asList(pattern.split(reader.readLine()));
+    final var columnsString = reader.readLine();
+    log.info("*** columns string: {}", columnsString);
+    final var columns = Arrays.asList(pattern.split(columnsString));
     log.info("*** columns {}", columns);
     while (!destination.isFinished()) {
       try (reader) {
@@ -140,6 +142,9 @@ public class PerformanceTest {
         destination.accept(airbyteMessage);
       }
 
+      if (counter == 1000) { //TEMP
+        break;
+      }
       if (counter > 0 && counter % MEGABYTE == 0) {
         log.info("current throughput: {} total MB {}", (totalBytes / MEGABYTE) / ((System.currentTimeMillis() - start) / 1000.0),
             totalBytes / MEGABYTE);
