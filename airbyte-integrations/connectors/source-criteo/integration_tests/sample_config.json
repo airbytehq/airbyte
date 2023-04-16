@@ -1,3 +1,10 @@
 {
-  "fix-me": "TODO"
+  "advertiserIds": "11111,0000",
+  "dimensions": ["AdvertiserId", "Os", "Day"],
+  "metrics": ["Displays", "Clicks"],
+  "start_date": "2023-04-10T00:00:00Z",
+  "currency": "EUR",
+  "timezone": "Europe/Rome",
+  "lookback_window": 30,
+  "authorization": {"auth_type": "Client", "client_id": "XXXXX", "client_secret": "XXXXX"}
 }

@@ -5,15 +5,13 @@
         "name": "analytics",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": null,
-        "default_cursor_field": null,
-        "source_defined_primary_key": null,
-        "namespace": null
+        "source_defined_cursor": true,
+        "default_cursor_field": ["Day"],
+        "source_defined_primary_key": [["uuid"]]
       },
       "sync_mode": "incremental",
       "cursor_field": ["Day"],
-      "destination_sync_mode": "append",
-      "primary_key": null
+      "destination_sync_mode": "append"
     }
   ]
 }

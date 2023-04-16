@@ -1,23 +1,16 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from typing import Any, List, Mapping, Tuple
 
-import json
-from typing import Any, List, Mapping, Optional, Tuple
-from urllib.parse import urlparse
-
-import jsonschema
 import pendulum
-import requests
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from source_criteo.streams import Analytics
+
 from .authenticator import CriteoAuthenticator
-from source_criteo.streams import (
-    Analytics
-)
 
 
 # Source
@@ -27,11 +20,14 @@ class SourceCriteo(AbstractSource):
         end_date = config.get("end_date")
         if end_date:
             pendulum.parse(end_date)
-        config["end_date"] = end_date or pendulum.now().to_datetime_string().replace(' ', 'T') + 'Z'
+        config["end_date"] = end_date or pendulum.now().to_datetime_string().replace(" ", "T") + "Z"
 
         config["advertiserIds"] = config.get("advertiserIds")
         config["dimensions"] = config.get("dimensions")
         config["metrics"] = config.get("metrics")
+        config["lookback_window"] = config.get("lookback_window")
+        config["currency"] = config.get("currency")
+        config["timezone"] = config.get("timezone")
         return config
 
     def get_stream_kwargs(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -41,7 +37,10 @@ class SourceCriteo(AbstractSource):
             "end_date": config["end_date"],
             "authenticator": self.get_authenticator(config),
             "dimensions": config["dimensions"],
-            "metrics": config["metrics"]
+            "metrics": config["metrics"],
+            "lookback_window": config["lookback_window"],
+            "currency": config["currency"],
+            "timezone": config["timezone"],
         }
 
     def get_authenticator(self, config):
@@ -50,9 +49,11 @@ class SourceCriteo(AbstractSource):
 
         if auth_type == "Client":
             return CriteoAuthenticator(
-                {'client_secret': authorization["client_secret"],
-                 'client_id': authorization["client_id"],
-                 'grant_type': "client_credentials"}
+                {
+                    "client_secret": authorization["client_secret"],
+                    "client_id": authorization["client_id"],
+                    "grant_type": "client_credentials",
+                }
             )
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
@@ -61,7 +62,7 @@ class SourceCriteo(AbstractSource):
 
             authenticator = self.get_authenticator(config)
 
-            if (authenticator.get_access_token()):
+            if authenticator.get_access_token():
                 return True, None
         except Exception as error:
             return (

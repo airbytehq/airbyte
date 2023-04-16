@@ -1,16 +1,14 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from typing import Mapping, Tuple
 
-from typing import Any, Dict, Mapping, Tuple
 import requests
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import Oauth2Authenticator
 
 
-
 class CriteoAuthenticator(Oauth2Authenticator):
-
     def __init__(self, config: Mapping):
 
         super().__init__(
@@ -20,7 +18,6 @@ class CriteoAuthenticator(Oauth2Authenticator):
             refresh_token=None,
         )
 
-
     def refresh_access_token(self) -> Tuple[str, int]:
         """
         Calling the Google OAuth 2.0 token endpoint. Used for authorizing signed JWT.
@@ -29,10 +26,7 @@ class CriteoAuthenticator(Oauth2Authenticator):
         response_json = None
         try:
             payload = "grant_type=client_credentials&client_id={}&client_secret={}".format(self.get_client_id(), self.get_client_secret())
-            headers = {
-                "accept": "application/json",
-                "content-type": "application/x-www-form-urlencoded"
-            }
+            headers = {"accept": "application/json", "content-type": "application/x-www-form-urlencoded"}
 
             response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), data=payload, headers=headers)
 
@@ -48,4 +42,3 @@ class CriteoAuthenticator(Oauth2Authenticator):
             raise Exception(f"Error refreshing access token: {e}") from e
         else:
             return response_json["access_token"], response_json["expires_in"]
-
