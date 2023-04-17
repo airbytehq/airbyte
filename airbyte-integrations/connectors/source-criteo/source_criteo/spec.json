@@ -134,7 +134,7 @@
       },
       "lookback_window": {
         "type": "integer",
-        "title": "Data request time increment in days",
+        "title": "Lookback Window",
         "description": "The attribution window",
         "default": 1,
         "order": 7

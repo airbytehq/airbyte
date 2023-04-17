@@ -434,6 +434,14 @@
   icon: clockify.svg
   sourceType: api
   releaseStage: alpha
+- name: Criteo
+  sourceDefinitionId: 3ec471d6-6d65-4113-9147-ba57b48f829f
+  dockerRepository: airbyte/source-criteo
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/criteo
+  icon: criteo.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Customer.io
   sourceDefinitionId: c47d6804-8b98-449f-970a-5ddb5cb5d7aa
   dockerRepository: farosai/airbyte-customer-io-source
