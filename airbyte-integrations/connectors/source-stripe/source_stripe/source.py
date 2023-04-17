@@ -12,6 +12,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_stripe.streams import (
+    Accounts,
     BalanceTransactions,
     BankAccounts,
     Charges,
@@ -37,7 +38,6 @@ from source_stripe.streams import (
     Subscriptions,
     SubscriptionSchedule,
     Transfers,
-    Accounts,
 )
 
 
