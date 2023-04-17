@@ -23,8 +23,8 @@ from source_bing_ads.reports import (
     HISTORICAL_FIELDS,
     LOW_QUALITY_FIELDS,
     REVENUE_FIELDS,
-    ReportsMixin,
     PerformanceReportsMixin,
+    ReportsMixin,
 )
 from suds import sudsobject
 

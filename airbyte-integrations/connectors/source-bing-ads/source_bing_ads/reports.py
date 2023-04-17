@@ -225,12 +225,11 @@ class ReportsMixin(ABC):
         }
 
     def get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
-        if not stream_state or not account_id or not stream_state.get(account_id, {}).get(self.cursor_field):
-            start_date = self.client.reports_start_date
-        else:
-            # gets starting point for a stream and account
-            start_date = pendulum.from_timestamp(stream_state[account_id][self.cursor_field])
-        return start_date
+        if stream_state and account_id:
+            if stream_state.get(account_id, {}).get(self.cursor_field):
+                return pendulum.from_timestamp(stream_state[account_id][self.cursor_field])
+
+        return self.client.reports_start_date
 
     def get_updated_state(
         self,
@@ -344,11 +343,12 @@ class ReportsMixin(ABC):
 
 
 class PerformanceReportsMixin(ReportsMixin):
-
     def get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
-        if not stream_state or not account_id or not stream_state.get(account_id, {}).get(self.cursor_field):
-            start_date = self.client.reports_start_date.subtract(days=self.config["lookback_window"])
+        start_date = super().get_start_date(stream_state, account_id)
+
+        if self.config.get("lookback_window") != 0:
+            # Datetime subtract won't work with days = 0
+            # it'll output an AirbuteError
+            return start_date.subtract(days=self.config["lookback_window"])
         else:
-            # gets starting point for a stream and account
-            start_date = pendulum.from_timestamp(stream_state[account_id][self.cursor_field]).subtract(days=self.config["lookback_window"])
-        return start_date
+            return start_date
