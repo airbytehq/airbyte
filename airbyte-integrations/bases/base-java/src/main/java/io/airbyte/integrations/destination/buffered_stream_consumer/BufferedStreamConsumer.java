@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.buffered_stream_consumer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -79,7 +78,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private static final Logger LOGGER = LoggerFactory.getLogger(BufferedStreamConsumer.class);
 
   private final OnStartFunction onStart;
-  private final CheckedConsumer<Boolean, Exception> onClose;
+  private final OnCloseFunction onClose;
   private final Set<AirbyteStreamNameNamespacePair> streamNames;
   private final ConfiguredAirbyteCatalog catalog;
   private final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
@@ -97,7 +96,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
                                 final OnStartFunction onStart,
                                 final BufferingStrategy bufferingStrategy,
-                                final CheckedConsumer<Boolean, Exception> onClose,
+                                final OnCloseFunction onClose,
                                 final ConfiguredAirbyteCatalog catalog,
                                 final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord) {
     this(outputRecordCollector,
@@ -117,7 +116,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
                          final OnStartFunction onStart,
                          final BufferingStrategy bufferingStrategy,
-                         final CheckedConsumer<Boolean, Exception> onClose,
+                         final OnCloseFunction onClose,
                          final ConfiguredAirbyteCatalog catalog,
                          final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
                          final Duration flushFrequency) {

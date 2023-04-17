@@ -16,7 +16,6 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
@@ -69,7 +68,7 @@ public class BufferedStreamConsumerTest {
   private BufferedStreamConsumer consumer;
   private OnStartFunction onStart;
   private RecordWriter<AirbyteRecordMessage> recordWriter;
-  private CheckedConsumer<Boolean, Exception> onClose;
+  private OnCloseFunction onClose;
   private CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
   private Consumer<AirbyteMessage> outputRecordCollector;
 
@@ -78,7 +77,7 @@ public class BufferedStreamConsumerTest {
   void setup() throws Exception {
     onStart = mock(OnStartFunction.class);
     recordWriter = mock(RecordWriter.class);
-    onClose = mock(CheckedConsumer.class);
+    onClose = mock(OnCloseFunction.class);
     isValidRecord = mock(CheckedFunction.class);
     outputRecordCollector = mock(Consumer.class);
     consumer = new BufferedStreamConsumer(
