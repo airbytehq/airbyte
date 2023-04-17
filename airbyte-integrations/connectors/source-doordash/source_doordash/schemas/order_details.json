@@ -16,11 +16,10 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "DD_ORDER_NUBMER": {
-      "type": ["null", "string"],
-      "format": "uuid"
+    "DD_ORDER_NUMBER": {
+      "type": ["null", "string"]
     },
-    "MX_ORDER_NUBMER": {
+    "MX_ORDER_NUMBER": {
       "type": ["null", "string"]
     },
     "EXTERNAL_ORDER_ID": {

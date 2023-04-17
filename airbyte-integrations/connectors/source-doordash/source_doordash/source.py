@@ -14,7 +14,6 @@ import time
 import tempfile
 import zipfile
 import os
-import json
 import csv
 
 
@@ -43,7 +42,6 @@ class IncrementalDoordashStream(DoordashStream):
         latest_record_cursor_value = latest_record.get(self.cursor_field, self.start_date_from_config)
         current_state_cursor_value = current_stream_state.get(self.cursor_field, self.start_date_from_config)
         new_cursor_value = max(latest_record_cursor_value, current_state_cursor_value)
-        self.logger.info(f"Inside get_updated_state. New cursor value: {new_cursor_value}.")
         return {self.cursor_field: new_cursor_value}
 
 
@@ -54,6 +52,12 @@ class IncrementalDoordashStream(DoordashStream):
         start_date = self.start_date_from_config        
         if stream_state.get('ACTIVE_DATE_UTC'):
             start_date = stream_state.get('ACTIVE_DATE_UTC')
+        
+        # Remove the time portion of it if it's present.
+        if len(start_date) > 10:
+            start_date = start_date[:10]
+
+        self.logger.info(f"Start date: {start_date}")
 
         # To capture all the changes on the DoorDash side, we would always go back 7 days. The dedup process
         # on the destination side will handle all the clean up.
@@ -77,15 +81,13 @@ class IncrementalDoordashStream(DoordashStream):
 
 class OrderDetails(IncrementalDoordashStream):
     cursor_field = "ACTIVE_DATE_UTC"
-    primary_key = "dd_order_number"
+    primary_key = "ORDER_ITEM_ID"
     http_method = "POST"
 
     def path(self, **kwargs) -> str:
         return ""
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        # TODO: Make sure we update the state after the sync, but it might be managed by the core code already.
-
         # Initial create report request would provide a report ID.
         report_id = response.json()['report_id']
         self.logger.info(f"Create report request completed. Report ID: {report_id}.")
@@ -151,10 +153,10 @@ class SourceDoordash(AbstractSource):
             body = { 
                 "store_ids": [],
                 "start_date": "2023-01-01",
-                "end_date": "2023-01-01",
+                "end_date": "2023-01-02",
                 "report_type": "ORDER_DETAIL"
             }
-            response = requests.post(url_base, headers=auth.get_auth_header(), json=json.dumps(body))
+            response = requests.post(url_base, headers=auth.get_auth_header(), json=body)
             response.raise_for_status()
             return True, None
         except Exception as e:
