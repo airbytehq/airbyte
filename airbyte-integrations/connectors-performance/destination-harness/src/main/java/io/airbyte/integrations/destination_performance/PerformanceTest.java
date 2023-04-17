@@ -98,23 +98,26 @@ public class PerformanceTest {
         .withDestinationConnectionConfiguration(this.config)
         .withState(null)
         .withCatalog(convertProtocolObject(this.catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
-    log.info("Destination starting");
-    destination.start(dstConfig, Path.of(jobRoot));
 
+    log.info("reader first line");
     BufferedReader reader = new BufferedReader(new InputStreamReader(
         new URL("https://storage.googleapis.com/airbyte-performance-testing-public/sample-data/faker_1m/users.csv").openStream(),
         StandardCharsets.UTF_8));
+    final var columnsString = reader.readLine();
+    log.info("*** columns string: {}", columnsString);
+    final Pattern pattern = Pattern.compile(",");
+    final var columns = Arrays.asList(pattern.split(columnsString));
+    log.info("*** columns {}", columns);
+
+    log.info("Destination starting");
+    destination.start(dstConfig, Path.of(jobRoot));
 
     var totalBytes = 0.0;
     var counter = 0L;
-    final Pattern pattern = Pattern.compile(",");
     final var start = System.currentTimeMillis();
 
     log.info("Starting Test {}", destination.isFinished());
-    final var columnsString = reader.readLine();
-    log.info("*** columns string: {}", columnsString);
-    final var columns = Arrays.asList(pattern.split(columnsString));
-    log.info("*** columns {}", columns);
+
     while (!destination.isFinished()) {
       try (reader) {
         log.info("*** reading row");
