@@ -2061,6 +2061,17 @@
   allowedHosts:
     hosts:
       - api.tempo.io
+- name: Teradata
+  sourceDefinitionId: aa8ba6fd-4875-d94e-fc8d-4e1e09aa2503
+  dockerRepository: airbyte/source-teradata
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/teradata
+  icon: teradata.svg
+  sourceType: database
+  releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${host}"
 - name: TiDB
   sourceDefinitionId: 0dad1a35-ccf8-4d03-b73e-6788c00b13ae
   dockerRepository: airbyte/source-tidb
