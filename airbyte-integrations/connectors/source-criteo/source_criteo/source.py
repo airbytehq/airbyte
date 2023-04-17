@@ -8,9 +8,13 @@ import pendulum
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from source_criteo.streams import Analytics
+from source_criteo.streams import StatisticReport
 
 from .authenticator import CriteoAuthenticator
+
+
+class ConfigurationError(Exception):
+    pass
 
 
 # Source
@@ -20,10 +24,11 @@ class SourceCriteo(AbstractSource):
         end_date = config.get("end_date")
         if end_date:
             pendulum.parse(end_date)
-        config["end_date"] = end_date or pendulum.now().to_datetime_string().replace(" ", "T") + "Z"
-
+        config["end_date"] = end_date or pendulum.now().to_date_string()
         config["advertiserIds"] = config.get("advertiserIds")
         config["dimensions"] = config.get("dimensions")
+        if "Day" not in config["dimensions"]:
+            config["dimensions"].append("Day")
         config["metrics"] = config.get("metrics")
         config["lookback_window"] = config.get("lookback_window")
         config["currency"] = config.get("currency")
@@ -77,6 +82,6 @@ class SourceCriteo(AbstractSource):
         config = self._validate_and_transform(config)
         stream_config = self.get_stream_kwargs(config)
 
-        streams = [Analytics(**stream_config)]
+        streams = [StatisticReport(**stream_config)]
 
         return streams

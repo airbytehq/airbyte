@@ -3,10 +3,10 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": {
-        "name": "analytics"
+        "name": "statistic_report"
       },
       "stream_state": {
-        "date": "20990101"
+        "Day": "2099-01-01"
       }
     }
   }

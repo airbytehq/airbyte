@@ -1,10 +1,10 @@
 {
-  "documentationUrl": "https://developers.google.com/my-business/reference/rest",
+  "documentationUrl": "https://developers.criteo.com/marketing-solutions/reference",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Criteo Spec",
     "type": "object",
-    "required": ["advertiserIds", "start_date", "authorization", "dimensions", "metrics"],
+    "required": ["advertiserIds", "start_date", "authorization", "dimensions", "metrics", "currency", "timezone", "lookback_window"],
     "properties": {
       "advertiserIds": {
         "title": "Advertiser ID",
@@ -105,7 +105,7 @@
         "title": "Start Date",
         "description": "UTC date in the format 2017-01-25. Any data before this date will not be replicated.",
         "examples": ["2021-01-01"],
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "order": 3
       },
       "end_date": {
@@ -113,7 +113,7 @@
         "title": "End Date",
         "description": "UTC date in the format 2017-01-25. Any data after this date will not be replicated. Must be greater or equal to the start date field.",
         "examples": ["2021-12-12"],
-        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "order": 4
       },
       "currency": {
@@ -142,46 +142,43 @@
       "authorization": {
         "type": "object",
         "title": "Authentication Type",
+        "required": ["client_id", "client_secret"],
         "description": "",
         "order": 8,
-        "oneOf": [
-          {
-            "title": "OAuth",
-            "type": "object",
-            "required": [
-              "client_id",
-              "client_secret"
-            ],
-            "properties": {
-              "auth_type": {
-                "type": "string",
-                "const": "Client",
-                "order": 0
-              },
-              "client_id": {
-                "title": "Client ID",
-                "type": "string",
-                "description": "The client ID of your Google Search Console developer application. Read more <a href=\"https://developers.google.com/webmaster-tools/v1/how-tos/authorizing\">here</a>.",
-                "airbyte_secret": true
-              },
-              "client_secret": {
-                "title": "Client Secret",
-                "type": "string",
-                "description": "The client secret of your Google Search Console developer application. Read more <a href=\"https://developers.google.com/webmaster-tools/v1/how-tos/authorizing\">here</a>.",
-                "airbyte_secret": true
-              }
-            }
+        "properties": {
+          "auth_type": {
+            "type": "string",
+            "const": "Client",
+            "order": 0
+          },
+          "client_id": {
+            "title": "Client ID",
+            "type": "string",
+            "description": "The client ID of your Criteo developer application. Read more <a href=\"https://developers.criteo.com/marketing-solutions/docs/authentication\">here</a>.",
+            "airbyte_secret": true
+          },
+          "client_secret": {
+            "title": "Client Secret",
+            "type": "string",
+            "description": "The client secret of your Criteo developer application. Read more <a href=\"https://developers.criteo.com/marketing-solutions/docs/authentication\">here</a>.",
+            "airbyte_secret": true
+          },
+          "access_token": {
+            "title": "Access Token",
+            "type": "string",
+            "description": "The client secret of your Criteo developer application. Read more <a href=\"https://developers.criteo.com/marketing-solutions/docs/authentication\">here</a>.",
+            "airbyte_secret": true
           }
-        ]
+        }
       }
     }
   },
   "authSpecification": {
     "auth_type": "oauth2.0",
     "oauth2Specification": {
-      "rootObject": ["authorization", 0],
+      "rootObject": ["authorization"],
       "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-      "oauthFlowOutputParameters": [["access_token"],["expires_in"]]
+      "oauthFlowOutputParameters": [["access_token"]]
     }
   }
 }

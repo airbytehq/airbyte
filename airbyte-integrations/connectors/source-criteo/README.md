@@ -60,7 +60,7 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/source-criteo:dev
+docker build --no-cache . -t airbyte/source-criteo:dev
 ```
 
 You can also build the connector image via Gradle:

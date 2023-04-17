@@ -20,7 +20,7 @@ class CriteoAuthenticator(Oauth2Authenticator):
 
     def refresh_access_token(self) -> Tuple[str, int]:
         """
-        Calling the Google OAuth 2.0 token endpoint. Used for authorizing signed JWT.
+        Calling the Criteo OAuth 2.0 token endpoint. Used for authorizing signed JWT.
         Returns tuple with access token and token's time-to-live
         """
         response_json = None
