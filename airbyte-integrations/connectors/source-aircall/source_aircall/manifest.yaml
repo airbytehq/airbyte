@@ -81,7 +81,7 @@ definitions:
       cursor_granularity: "PT0.000001S"
       lookback_window: "P31D"
       start_datetime:
-        datetime: "{{ config['date_from'] }}"
+        datetime: "{{ config['start_date'] }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
       end_datetime:
         datetime: "{{ today_utc() }}"
@@ -160,7 +160,7 @@ definitions:
       cursor_granularity: "PT0.000001S"
       lookback_window: "P31D"
       start_datetime:
-        datetime: "{{ config['date_from'] }}"
+        datetime: "{{ config['start_date'] }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
       end_datetime:
         datetime: "{{ today_utc() }}"

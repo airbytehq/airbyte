@@ -7794,7 +7794,7 @@
             "description": "App token found at settings (Ref- https://dashboard.aircall.io/integrations/api-keys)",
             "airbyte_secret": true
           },
-          "date_from": {
+          "start_date": {
             "title": "Date-From Filter",
             "type": "string",
             "description": "Date time filter for incremental filter, Specify which date to extract from.",

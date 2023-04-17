@@ -6,7 +6,7 @@ connectionSpecification:
   required:
     - api_id
     - api_token
-    - date_from
+    - start_date
   additionalProperties: true
   properties:
     api_id:
@@ -19,7 +19,7 @@ connectionSpecification:
       type: string
       description: App token found at settings (Ref- https://dashboard.aircall.io/integrations/api-keys)
       airbyte_secret: true
-    date_from:
+    start_date:
       title: Date-From Filter
       type: string
       description: Date time filter for incremental filter, Specify which date to extract from.
