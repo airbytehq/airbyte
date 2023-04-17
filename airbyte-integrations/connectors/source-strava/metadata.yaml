@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - strava.com
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 7a4327c4-315a-11ec-8d3d-0242ac130003
+  dockerImageTag: 0.1.4
+  dockerRepository: airbyte/source-strava
+  githubIssueLabel: source-strava
+  icon: strava.svg
+  license: MIT
+  name: Strava
+  releaseStage: beta
+  supportUrl: https://docs.airbyte.com/integrations/sources/strava
+metadataSpecVersion: "1.0"
