@@ -3,7 +3,7 @@ data:
     hosts:
       - galaxyapi.senseforce.io
       - senseforce.io
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:
