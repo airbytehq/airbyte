@@ -91,7 +91,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
    */
   protected void putInteger(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     try {
-      Thread.sleep(100);
+      Thread.sleep(1);
       node.put(columnName, resultSet.getInt(index));
     } catch (final SQLException e) {
       node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> resultSet.getLong(index)));
