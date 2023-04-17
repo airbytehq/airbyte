@@ -78,9 +78,9 @@ RESOURCES = {
     "catalog_report_directory_manager": gcs_file_manager.configured(
         {"gcs_bucket": {"env": "METADATA_BUCKET"}, "gcs_prefix": REPORT_FOLDER}
     ),
+    "catalog_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "gcs_prefix": CATALOG_FOLDER}),
     "latest_oss_catalog_gcs_file": gcs_file_blob.configured({"gcs_prefix": CATALOG_FOLDER, "gcs_filename": "oss_catalog.json"}),
     "latest_cloud_catalog_gcs_file": gcs_file_blob.configured({"gcs_prefix": CATALOG_FOLDER, "gcs_filename": "cloud_catalog.json"}),
-    "specs_secrets_mask": gcs_file_blob.configured({"gcs_prefix": CATALOG_FOLDER, "gcs_filename": "specs_secrets_mask.yaml"}),
 }
 
 SENSORS = [catalog_updated_sensor(job=generate_catalog_markdown, resources_def=RESOURCES)]

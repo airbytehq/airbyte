@@ -152,33 +152,29 @@ def construct_registry_with_spec_from_registry(registry: dict, cached_specs: Out
 
 
 @asset(group_name=GROUP_NAME)
-def cloud_catalog_from_metadata(catalog_derived_metadata_definitions: List[PartialMetadataDefinition]) -> dict:
+def cloud_catalog_from_metadata(
+    catalog_derived_metadata_definitions: List[PartialMetadataDefinition], cached_specs: OutputDataFrame
+) -> dict:
     """
     This asset is used to generate the cloud catalog from the metadata definitions.
 
     TODO (ben): This asset should be updated to use the GCS metadata definitions once available.
     """
-    return construct_catalog_from_metadata(catalog_derived_metadata_definitions, "cloud")
+    from_metadata = construct_catalog_from_metadata(catalog_derived_metadata_definitions, "cloud")
+    from_metadata_and_spec = construct_registry_with_spec_from_registry(from_metadata, cached_specs)
+    return from_metadata_and_spec
 
 
 @asset(group_name=GROUP_NAME)
-def oss_catalog_from_metadata(catalog_derived_metadata_definitions: List[PartialMetadataDefinition]) -> dict:
+def oss_catalog_from_metadata(catalog_derived_metadata_definitions: List[PartialMetadataDefinition], cached_specs: OutputDataFrame) -> dict:
     """
     This asset is used to generate the oss catalog from the metadata definitions.
 
     TODO (ben): This asset should be updated to use the GCS metadata definitions once available.
     """
-    return construct_catalog_from_metadata(catalog_derived_metadata_definitions, "oss")
-
-
-@asset(group_name=GROUP_NAME)
-def cloud_catalog_from_metadata_and_spec(cloud_catalog_from_metadata: dict, cached_specs: OutputDataFrame) -> dict:
-    return construct_registry_with_spec_from_registry(cloud_catalog_from_metadata, cached_specs)
-
-
-@asset(group_name=GROUP_NAME)
-def oss_catalog_from_metadata_and_spec(oss_catalog_from_metadata: dict, cached_specs: OutputDataFrame) -> dict:
-    return construct_registry_with_spec_from_registry(oss_catalog_from_metadata, cached_specs)
+    from_metadata = construct_catalog_from_metadata(catalog_derived_metadata_definitions, "oss")
+    from_metadata_and_spec = construct_registry_with_spec_from_registry(from_metadata, cached_specs)
+    return from_metadata_and_spec
 
 
 @asset(group_name=GROUP_NAME)

@@ -5,7 +5,7 @@ from typing import List, Set
 
 import dpath.util
 import yaml
-from dagster import asset
+from dagster import MetadataValue, Output, asset
 
 GROUP_NAME = "specs_secrets_mask"
 
@@ -13,6 +13,17 @@ GROUP_NAME = "specs_secrets_mask"
 
 
 def get_secrets_properties_from_registry_entry(registry_entry: dict) -> List[str]:
+    """Traverse a registry entry to spot properties in a spec that have the "airbyte_secret" field set to true.
+
+    This function assumes all the properties have a "type" field that we can use to find all the nested properties in a spec.
+
+
+    Args:
+        registry_entry (dict): An entry in the registry with a spec field.
+
+    Returns:
+        List[str]: List of property names marked as airbyte_secret.
+    """
     secret_properties = []
     spec_properties = registry_entry["spec"]["connectionSpecification"].get("properties")
     if spec_properties is None:
@@ -34,19 +45,26 @@ def get_secrets_properties_from_registry_entry(registry_entry: dict) -> List[str
 
 
 @asset(group_name=GROUP_NAME)
-def all_specs_secrets(oss_catalog_from_metadata_and_spec: dict, cloud_catalog_from_metadata_and_spec: dict) -> Set[str]:
+def all_specs_secrets(oss_catalog_from_metadata: dict, cloud_catalog_from_metadata: dict) -> Set[str]:
     all_secret_properties = []
     all_entries = (
-        oss_catalog_from_metadata_and_spec["sources"]
-        + cloud_catalog_from_metadata_and_spec["sources"]
-        + oss_catalog_from_metadata_and_spec["destinations"]
-        + cloud_catalog_from_metadata_and_spec["destinations"]
+        oss_catalog_from_metadata["sources"]
+        + cloud_catalog_from_metadata["sources"]
+        + oss_catalog_from_metadata["destinations"]
+        + cloud_catalog_from_metadata["destinations"]
     )
     for registry_entry in all_entries:
         all_secret_properties += get_secrets_properties_from_registry_entry(registry_entry)
     return set(all_secret_properties)
 
 
-@asset(group_name=GROUP_NAME)
-def specs_secrets_mask_yaml(all_specs_secrets: Set[str]) -> str:
-    return yaml.dump({"properties": list(all_specs_secrets)})
+@asset(required_resource_keys={"catalog_directory_manager"}, group_name=GROUP_NAME)
+def specs_secrets_mask_yaml(context, all_specs_secrets: Set[str]) -> Output:
+    yaml_string = yaml.dump({"properties": list(all_specs_secrets)})
+    catalog_directory_manager = context.resources.catalog_directory_manager
+    file_handle = catalog_directory_manager.write_data(yaml_string.encode(), ext="yaml", key="specs_secrets_mask")
+    metadata = {
+        "preview": yaml_string,
+        "gcs_path": MetadataValue.url(file_handle.gcs_path),
+    }
+    return Output(metadata=metadata, value=file_handle)
