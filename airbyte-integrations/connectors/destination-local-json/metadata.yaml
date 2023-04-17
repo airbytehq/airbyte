@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: file
+  connectorType: destination
+  definitionId: a625d593-bba5-4a1c-a53d-2d246268a816
+  dockerImageTag: 0.2.11
+  dockerRepository: airbyte/destination-local-json
+  githubIssueLabel: destination-local-json
+  icon: file-json.svg
+  license: MIT
+  name: Local JSON
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/local-json
+metadataSpecVersion: "1.0"
