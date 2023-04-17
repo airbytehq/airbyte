@@ -312,19 +312,19 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "title": "Iceberg Destination Spec",
           "type": "object",
-          "required": ["catalog_config", "storage_config", "format_config"],
+          "required": ["registry_config", "storage_config", "format_config"],
           "properties": {
-            "catalog_config": {
-              "title": "Iceberg catalog config",
+            "registry_config": {
+              "title": "Iceberg registry config",
               "type": "object",
-              "description": "Catalog config of Iceberg.",
+              "description": "Registry config of Iceberg.",
               "oneOf": [
                 {
-                  "title": "HiveCatalog: Use Apache Hive MetaStore",
-                  "required": ["catalog_type", "hive_thrift_uri"],
+                  "title": "HiveRegistry: Use Apache Hive MetaStore",
+                  "required": ["registry_type", "hive_thrift_uri"],
                   "properties": {
-                    "catalog_type": {
-                      "title": "Catalog Type",
+                    "registry_type": {
+                      "title": "Registry Type",
                       "type": "string",
                       "default": "Hive",
                       "enum": ["Hive"],
@@ -333,7 +333,7 @@
                     "hive_thrift_uri": {
                       "title": "Hive Metastore thrift uri",
                       "type": "string",
-                      "description": "Hive MetaStore thrift server uri of iceberg catalog.",
+                      "description": "Hive MetaStore thrift server uri of iceberg registry.",
                       "examples": ["host:port"],
                       "order": 1
                     },
@@ -348,12 +348,12 @@
                   }
                 },
                 {
-                  "title": "HadoopCatalog: Use hierarchical file systems as same as storage config",
-                  "description": "A Hadoop catalog doesn’t need to connect to a Hive MetaStore, but can only be used with HDFS or similar file systems that support atomic rename.",
-                  "required": ["catalog_type"],
+                  "title": "HadoopRegistry: Use hierarchical file systems as same as storage config",
+                  "description": "A Hadoop registry doesn’t need to connect to a Hive MetaStore, but can only be used with HDFS or similar file systems that support atomic rename.",
+                  "required": ["registry_type"],
                   "properties": {
-                    "catalog_type": {
-                      "title": "Catalog Type",
+                    "registry_type": {
+                      "title": "Registry Type",
                       "type": "string",
                       "default": "Hadoop",
                       "enum": ["Hadoop"],
@@ -370,12 +370,12 @@
                   }
                 },
                 {
-                  "title": "JdbcCatalog: Use relational database",
+                  "title": "JdbcRegistry: Use relational database",
                   "description": "Using a table in a relational database to manage Iceberg tables through JDBC. Read more <a href=\"https://iceberg.apache.org/docs/latest/jdbc/\">here</a>. Supporting: PostgreSQL",
-                  "required": ["catalog_type"],
+                  "required": ["registry_type"],
                   "properties": {
-                    "catalog_type": {
-                      "title": "Catalog Type",
+                    "registry_type": {
+                      "title": "Registry Type",
                       "type": "string",
                       "default": "Jdbc",
                       "enum": ["Jdbc"],
@@ -417,9 +417,9 @@
                       "default": false,
                       "order": 5
                     },
-                    "catalog_schema": {
-                      "title": "schema for Iceberg catalog",
-                      "description": "Iceberg catalog metadata tables are written to catalog schema. The usual value for this field is \"public\".",
+                    "registry_schema": {
+                      "title": "schema for Iceberg registry",
+                      "description": "Iceberg registry metadata tables are written to registry schema. The usual value for this field is \"public\".",
                       "type": "string",
                       "default": "public",
                       "examples": ["public"],
@@ -6814,7 +6814,7 @@
               "type": "string",
               "enum": [
                 "org.openx.data.jsonserde.JsonSerDe",
-                "org.apache.hive.hcatalog.data.JsonSerDe"
+                "org.apache.hive.hregistry.data.JsonSerDe"
               ],
               "default": "org.openx.data.jsonserde.JsonSerDe",
               "order": 10
@@ -11158,7 +11158,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "title": "Chargebee Spec",
           "type": "object",
-          "required": ["site", "site_api_key", "start_date", "product_catalog"],
+          "required": ["site", "site_api_key", "start_date", "product_registry"],
           "additionalProperties": true,
           "properties": {
             "site_api_key": {
@@ -11184,10 +11184,10 @@
               "examples": ["2021-01-25T00:00:00Z"],
               "order": 2
             },
-            "product_catalog": {
+            "product_registry": {
               "type": "string",
-              "title": "Product Catalog",
-              "description": "Product Catalog version of your Chargebee site. Instructions on how to find your version you may find <a href=\"https://apidocs.chargebee.com/docs/api?prod_cat_ver=2\">here</a> under `API Version` section.",
+              "title": "Product Registry",
+              "description": "Product Registry version of your Chargebee site. Instructions on how to find your version you may find <a href=\"https://apidocs.chargebee.com/docs/api?prod_cat_ver=2\">here</a> under `API Version` section.",
               "enum": ["1.0", "2.0"],
               "order": 3
             }
@@ -12891,7 +12891,7 @@
           "oneOf": [
             {
               "title": "Legacy Infinite Feed",
-              "description": "This mode is used for Platform acceptance tests. The catalog has one \"data\" stream, which has one string field \"column1\". This mode will emit messages infinitely.",
+              "description": "This mode is used for Platform acceptance tests. The registry has one \"data\" stream, which has one string field \"column1\". This mode will emit messages infinitely.",
               "required": ["type", "max_records"],
               "type": "object",
               "additionalProperties": true,
@@ -12915,7 +12915,7 @@
             },
             {
               "title": "Legacy Exception After N",
-              "description": "This mode is used for Platform acceptance tests. The catalog has one \"data\" stream, which has one string field \"column1\". This mode will throw an exception after N messages.",
+              "description": "This mode is used for Platform acceptance tests. The registry has one \"data\" stream, which has one string field \"column1\". This mode will throw an exception after N messages.",
               "required": ["type", "throw_after_n_records"],
               "type": "object",
               "additionalProperties": true,
@@ -12936,7 +12936,7 @@
             {
               "title": "Continuous Feed",
               "type": "object",
-              "required": ["type", "max_messages", "mock_catalog"],
+              "required": ["type", "max_messages", "mock_registry"],
               "additionalProperties": true,
               "properties": {
                 "type": {
@@ -12973,14 +12973,14 @@
                   "default": 0,
                   "order": 40
                 },
-                "mock_catalog": {
-                  "title": "Mock Catalog",
+                "mock_registry": {
+                  "title": "Mock Registry",
                   "type": "object",
                   "order": 50,
                   "oneOf": [
                     {
                       "title": "Single Schema",
-                      "description": "A catalog with one or multiple streams that share the same schema.",
+                      "description": "A registry with one or multiple streams that share the same schema.",
                       "type": "object",
                       "required": ["type", "stream_name", "stream_schema"],
                       "properties": {
@@ -13014,7 +13014,7 @@
                     {
                       "title": "Multi Schema",
                       "type": "object",
-                      "description": "A catalog with multiple data streams, each with a different schema.",
+                      "description": "A registry with multiple data streams, each with a different schema.",
                       "required": ["type", "stream_schemas"],
                       "properties": {
                         "type": {
@@ -13284,11 +13284,11 @@
                         "campaign_name",
                         "canvas_avg_view_percent",
                         "canvas_avg_view_time",
-                        "catalog_segment_actions",
-                        "catalog_segment_value",
-                        "catalog_segment_value_mobile_purchase_roas",
-                        "catalog_segment_value_omni_purchase_roas",
-                        "catalog_segment_value_website_purchase_roas",
+                        "registry_segment_actions",
+                        "registry_segment_value",
+                        "registry_segment_value_mobile_purchase_roas",
+                        "registry_segment_value_omni_purchase_roas",
+                        "registry_segment_value_website_purchase_roas",
                         "clicks",
                         "conversion_rate_ranking",
                         "conversion_values",

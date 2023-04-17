@@ -5340,7 +5340,7 @@
               "type": "string",
               "enum": [
                 "org.openx.data.jsonserde.JsonSerDe",
-                "org.apache.hive.hcatalog.data.JsonSerDe"
+                "org.apache.hive.hregistry.data.JsonSerDe"
               ],
               "default": "org.openx.data.jsonserde.JsonSerDe",
               "order": 10
@@ -7656,7 +7656,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "title": "Chargebee Spec",
           "type": "object",
-          "required": ["site", "site_api_key", "start_date", "product_catalog"],
+          "required": ["site", "site_api_key", "start_date", "product_registry"],
           "additionalProperties": true,
           "properties": {
             "site": {
@@ -7679,10 +7679,10 @@
               "description": "UTC date and time in the format 2021-01-25T00:00:00Z. Any data before this date will not be replicated.",
               "examples": ["2021-01-25T00:00:00Z"]
             },
-            "product_catalog": {
-              "title": "Product Catalog",
+            "product_registry": {
+              "title": "Product Registry",
               "type": "string",
-              "description": "Product Catalog version of your Chargebee site. Instructions on how to find your version you may find <a href=\"https://apidocs.chargebee.com/docs/api?prod_cat_ver=2\">here</a> under `API Version` section.",
+              "description": "Product Registry version of your Chargebee site. Instructions on how to find your version you may find <a href=\"https://apidocs.chargebee.com/docs/api?prod_cat_ver=2\">here</a> under `API Version` section.",
               "enum": ["1.0", "2.0"]
             }
           }
@@ -8580,7 +8580,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "title": "Cloud E2E Test Source Spec",
           "type": "object",
-          "required": ["max_messages", "mock_catalog"],
+          "required": ["max_messages", "mock_registry"],
           "additionalProperties": false,
           "properties": {
             "type": {
@@ -8617,14 +8617,14 @@
               "default": 0,
               "order": 40
             },
-            "mock_catalog": {
-              "title": "Mock Catalog",
+            "mock_registry": {
+              "title": "Mock Registry",
               "type": "object",
               "order": 50,
               "oneOf": [
                 {
                   "title": "Single Schema",
-                  "description": "A catalog with one or multiple streams that share the same schema.",
+                  "description": "A registry with one or multiple streams that share the same schema.",
                   "required": ["type", "stream_name", "stream_schema"],
                   "properties": {
                     "type": {
@@ -8656,7 +8656,7 @@
                 },
                 {
                   "title": "Multi Schema",
-                  "description": "A catalog with multiple data streams, each with a different schema.",
+                  "description": "A registry with multiple data streams, each with a different schema.",
                   "required": ["type", "stream_schemas"],
                   "properties": {
                     "type": {
@@ -8848,11 +8848,11 @@
                         "campaign_name",
                         "canvas_avg_view_percent",
                         "canvas_avg_view_time",
-                        "catalog_segment_actions",
-                        "catalog_segment_value",
-                        "catalog_segment_value_mobile_purchase_roas",
-                        "catalog_segment_value_omni_purchase_roas",
-                        "catalog_segment_value_website_purchase_roas",
+                        "registry_segment_actions",
+                        "registry_segment_value",
+                        "registry_segment_value_mobile_purchase_roas",
+                        "registry_segment_value_omni_purchase_roas",
+                        "registry_segment_value_website_purchase_roas",
                         "clicks",
                         "conversion_rate_ranking",
                         "conversion_values",

@@ -1,4 +1,4 @@
-CATALOG_FOLDER = "catalogs"
+REGISTRY_FOLDER = "registries"
 REPORT_FOLDER = "generated_reports"
 
 CONNECTOR_REPO_NAME = "airbytehq/airbyte"

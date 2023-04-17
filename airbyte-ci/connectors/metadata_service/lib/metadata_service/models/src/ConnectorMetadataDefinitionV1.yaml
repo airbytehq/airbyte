@@ -69,17 +69,17 @@ properties:
           - generally_available
           - source
 
-      catalogs:
+      registries:
         anyOf:
           - type: object
             additionalProperties: false
             properties:
               oss:
                 anyOf:
-                  - "$ref": CatalogOverrides.yaml
+                  - "$ref": RegistryOverrides.yaml
               cloud:
                 anyOf:
-                  - "$ref": CatalogOverrides.yaml
+                  - "$ref": RegistryOverrides.yaml
 
       allowedHosts:
         "$ref": AllowedHosts.yaml

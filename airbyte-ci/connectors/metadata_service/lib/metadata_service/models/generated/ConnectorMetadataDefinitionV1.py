@@ -112,7 +112,7 @@ class ActorDefinitionResourceRequirements(BaseModel):
     jobSpecific: Optional[List[JobTypeResourceLimit]] = None
 
 
-class CatalogOverrides(BaseModel):
+class RegistryOverrides(BaseModel):
     class Config:
         extra = Extra.forbid
 
@@ -131,12 +131,12 @@ class CatalogOverrides(BaseModel):
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
 
 
-class Catalog(BaseModel):
+class Registry(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    oss: Optional[CatalogOverrides] = None
-    cloud: Optional[CatalogOverrides] = None
+    oss: Optional[RegistryOverrides] = None
+    cloud: Optional[RegistryOverrides] = None
 
 
 class Data(BaseModel):
@@ -152,7 +152,7 @@ class Data(BaseModel):
     githubIssueLabel: str
     connectorSubtype: ConnectorSubtype
     releaseStage: ReleaseStage
-    catalogs: Optional[Catalog] = None
+    registries: Optional[Registry] = None
     allowedHosts: Optional[AllowedHosts] = None
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
     suggestedStreams: Optional[SuggestedStreams] = None
