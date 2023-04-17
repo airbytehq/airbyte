@@ -181,6 +181,6 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
     allowedHosts: Optional[AllowedHosts] = None
 
 
-class ConnectorRegistry(BaseModel):
+class ConnectorRegistryV1(BaseModel):
     destinations: List[ConnectorRegistryDestinationDefinition]
     sources: List[ConnectorRegistrySourceDefinition]
