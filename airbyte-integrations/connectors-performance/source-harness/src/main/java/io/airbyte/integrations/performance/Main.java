@@ -31,10 +31,10 @@ public class Main {
 
     var raw = """   
         """;
-    final JsonNode config = Jsons.deserialize(raw);
-
+    final JsonNode config;
     final JsonNode catalog;
     try {
+      config = getConfig();
       catalog = getCatalog();
     } catch (final IOException ex) {
       throw new IllegalStateException("Failed to read catalog", ex);
@@ -87,6 +87,13 @@ public class Main {
   static JsonNode getCatalog() throws IOException {
     final ObjectMapper objectMapper = new ObjectMapper();
     final String catalogFilename = "catalogs/catalog.json";
+    final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(catalogFilename);
+    return objectMapper.readTree(is);
+  }
+
+  static JsonNode getConfig() throws IOException {
+    final ObjectMapper objectMapper = new ObjectMapper();
+    final String catalogFilename = "secrets/config.json";
     final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(catalogFilename);
     return objectMapper.readTree(is);
   }
