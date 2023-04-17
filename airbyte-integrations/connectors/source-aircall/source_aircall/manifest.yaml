@@ -17,6 +17,19 @@ definitions:
       extractor:
         type: DpathExtractor
         field_path: ["{{ parameters.name }}"]
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "{{ response['meta']['per_page'] }}"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 5
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "{{ response['meta']['page'] }}"
 
   calls_stream:
     type: DeclarativeStream
@@ -25,8 +38,6 @@ definitions:
       path: "/calls"
     retriever:
       $ref: "#/definitions/record_retriever"
-      paginator:
-        type: NoPagination
       requester:
         $ref: "#/definitions/requester"
 
@@ -37,8 +48,6 @@ definitions:
       path: "/company"
     retriever:
       $ref: "#/definitions/record_retriever"
-      paginator:
-        type: NoPagination
       requester:
         $ref: "#/definitions/requester"
 
@@ -49,8 +58,6 @@ definitions:
       path: "/contacts"
     retriever:
       $ref: "#/definitions/record_retriever"
-      paginator:
-        type: NoPagination
       requester:
         $ref: "#/definitions/requester"
 
@@ -61,8 +68,6 @@ definitions:
       path: "/numbers"
     retriever:
       $ref: "#/definitions/record_retriever"
-      paginator:
-        type: NoPagination
       requester:
         $ref: "#/definitions/requester"
     incremental_sync:
@@ -87,8 +92,6 @@ definitions:
       path: "/tags"
     retriever:
       $ref: "#/definitions/record_retriever"
-      paginator:
-        type: NoPagination
       requester:
         $ref: "#/definitions/requester"
     primary_key: "id"
@@ -100,8 +103,6 @@ definitions:
       extractor:
         type: DpathExtractor
         field_path: ["users"]
-    paginator:
-      type: NoPagination
     requester:
       $ref: "#/definitions/requester"
 
@@ -130,8 +131,6 @@ definitions:
       path: "/teams"
     retriever:
       $ref: "#/definitions/record_retriever"
-      paginator:
-        type: NoPagination
       requester:
         $ref: "#/definitions/requester"
     incremental_sync:
@@ -156,8 +155,6 @@ definitions:
       path: "/webhooks"
     retriever:
       $ref: "#/definitions/record_retriever"
-      paginator:
-        type: NoPagination
       requester:
         $ref: "#/definitions/requester"
     primary_key: "id"
