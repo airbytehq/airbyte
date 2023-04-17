@@ -1,0 +1,17 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: df65a8f3-9908-451b-aa9b-445462803560
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-iceberg
+  githubIssueLabel: destination-iceberg
+  license: MIT
+  name: Apache Iceberg
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/iceberg
+metadataSpecVersion: "1.0"

@@ -7,6 +7,7 @@ import csv
 import io
 import logging
 import re
+from datetime import datetime
 from unittest.mock import Mock
 
 import pytest
@@ -187,10 +188,10 @@ def test_stream_start_date(
 ):
     if start_date_provided:
         stream = generate_stream(stream_name, stream_config, stream_api)
+        assert stream.start_date == expected_start_date
     else:
         stream = generate_stream(stream_name, stream_config_without_start_date, stream_api)
-
-    assert stream.start_date == expected_start_date
+        assert datetime.strptime(stream.start_date, "%Y-%m-%dT%H:%M:%SZ").year == datetime.now().year - 2
 
 
 def test_stream_start_date_should_be_converted_to_datetime_format(stream_config_date_format, stream_api):

@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: df38991e-f35b-4af2-996d-36817f614587
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-news-api
+  githubIssueLabel: source-news-api
+  icon: newsapi.svg
+  license: MIT
+  name: News API
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/news-api
+metadataSpecVersion: "1.0"

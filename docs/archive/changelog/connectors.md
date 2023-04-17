@@ -15,7 +15,7 @@ Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/
 New sources:
 
 - [**Chartmogul**](https://docs.airbyte.com/integrations/sources/chartmogul)
-- [**Hellobaton**](https://docs.airbyte.com/integrations/sources/hellobaton)
+- [**Baton**](https://docs.airbyte.com/integrations/sources/baton)
 - [**Flexport**](https://docs.airbyte.com/integrations/sources/flexport)
 - [**PersistIq**](https://docs.airbyte.com/integrations/sources/persistiq)
 
@@ -53,7 +53,7 @@ New destinations:
 
 - [**Redis**](https://docs.airbyte.com/integrations/destinations/redis)
 - [**MQTT**](https://docs.airbyte.com/integrations/destinations/mqtt)
-- [**Google Firestore**](https://docs.airbyte.com/integrations/destinations/google-firestore)
+- [**Google Firestore**](https://docs.airbyte.com/integrations/destinations/firestore)
 - [**Kinesis**](https://docs.airbyte.com/integrations/destinations/kinesis)
 
 ## 11/25/2021
@@ -128,7 +128,7 @@ New sources:
 - [**Strava**](https://docs.airbyte.com/integrations/sources/strava)
 - [**Lemlist**](https://docs.airbyte.com/integrations/sources/lemlist)
 - [**Amazon SQS**](https://docs.airbyte.com/integrations/sources/amazon-sqs)
-- [**Freshservices**](https://docs.airbyte.com/integrations/source/freshservices)
+- [**Freshservices**](https://docs.airbyte.com/integrations/sources/freshservice/)
 - [**Freshsales**](https://docs.airbyte.com/integrations/sources/freshsales)
 - [**Appsflyer**](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-appsflyer)
 - [**Paystack**](https://docs.airbyte.com/integrations/sources/paystack)
@@ -291,7 +291,7 @@ New sources:
 
 - [**S3/Abstract Files**](https://docs.airbyte.com/integrations/sources/s3)
 - [**Zuora**](https://docs.airbyte.com/integrations/sources/zuora)
-- [**Kustomer**](https://docs.airbyte.com/integrations/sources/kustomer)
+- [**Kustomer**](https://docs.airbyte.com/integrations/sources/kustomer-singer/)
 - [**Apify**](https://docs.airbyte.com/integrations/sources/apify-dataset)
 - [**Chargebee**](https://docs.airbyte.com/integrations/sources/chargebee)
 
