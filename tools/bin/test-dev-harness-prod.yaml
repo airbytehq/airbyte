@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  generateName: run-harness-test
+  namespace: jobs
+  labels:
+    app: source-harness
+spec:
+  serviceAccountName: airbyte-admin
+  containers:
+    - name: main
+      image: airbyte/source-harness-private:16-april-amd-10
+      args: ["airbyte/source-postgres:latest"]
+      resources:
+        limits:
+          cpu: "2.5"
+          memory: "2Gi"
+        requests:
+          cpu: "2.5"
+          memory: "2Gi"
+      volumeMounts:
+        - mountPath: /secrets/gcp-creds
+          name: airbyte-secret
+      env:
+        - name: JOB_KUBE_NODE_SELECTORS
+          value: node_pool=prod-jobs-pool
+        - name: SOCAT_KUBE_CPU_REQUEST
+          value: "1.5"
+        # - name: DD_SERVICE
+        #   value: airbyte-container-orchestrator
+        # - name: PUBLISH_METRICS
+        #   value: true
+        # - name: DD_DOGSTATSD_PORT
+        #   value: 8125
+        # - name: DD_AGENT_HOST
+        #   valueFrom:
+        #     fieldRef:
+        #       apiVersion: v1
+        #       fieldPath: status.hostIP
+        - name: GCS_LOG_BUCKET
+          value: prod-ab-app-logs
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /secrets/gcp-creds/gcp.json
+  imagePullSecrets:
+    - name: regcred
+  volumes:
+    - name: airbyte-secret
+      secret:
+        defaultMode: 420
+        secretName: prod-gsm-creds
+  restartPolicy: Never
+  nodeSelector:
+    node_pool: prod-jobs-pool
