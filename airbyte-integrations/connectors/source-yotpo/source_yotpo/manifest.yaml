@@ -41,7 +41,18 @@ definitions:
           type: DpathExtractor
           field_path: ["reviews"]
       paginator:
-        type: NoPagination
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 5
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
       requester:
         $ref: "#/definitions/yotpo_stream_requester"
     incremental_sync:
