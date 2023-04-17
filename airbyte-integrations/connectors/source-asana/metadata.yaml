@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: d0243522-dccf-4978-8ba0-37ed47a0bdbf
+  dockerImageTag: 0.1.5
+  dockerRepository: airbyte/source-asana
+  githubIssueLabel: source-asana
+  icon: asana.svg
+  license: MIT
+  name: Asana
+  releaseStage: beta
+  supportUrl: https://docs.airbyte.com/integrations/sources/asana
+metadataSpecVersion: "1.0"
