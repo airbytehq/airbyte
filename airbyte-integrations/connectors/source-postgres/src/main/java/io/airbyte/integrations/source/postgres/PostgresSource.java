@@ -225,6 +225,15 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           .collect(toList());
 
       catalog.setStreams(streams);
+    } else if (PostgresUtils.isXmin(config)) {
+      final List<AirbyteStream> streams = catalog.getStreams().stream()
+          .map(PostgresCdcCatalogHelper::overrideSyncModes)
+          //.map(PostgresCdcCatalogHelper::removeIncrementalWithoutPk)
+          //.map(PostgresCdcCatalogHelper::setIncrementalToSourceDefined)
+          .map(PostgresCdcCatalogHelper::addXminMetadataColumn)
+          // If we're in CDC mode and a stream is not in the publication, the user should only be able to sync this in FULL_REFRESH mode
+          //.map(stream -> PostgresCdcCatalogHelper.setFullRefreshForNonPublicationStreams(stream, publicizedTablesInCdc))
+          .collect(toList());
     }
 
     return catalog;
