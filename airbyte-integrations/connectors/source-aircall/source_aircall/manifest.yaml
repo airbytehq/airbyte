@@ -1,0 +1,214 @@
+version: "0.29.0"
+
+definitions:
+  requester:
+    type: HttpRequester
+    url_base: "https://api.aircall.io/v1"
+    http_method: "GET"
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['api_id'] }}"
+      password: "{{ config['api_token'] }}"
+
+  calls_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["calls"]
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+    name: "calls"
+    $parameters:
+      path: "/calls"
+
+  company_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["company"]
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+    name: "company"
+    $parameters:
+      path: "/company"
+
+  contacts_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["contacts"]
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+    name: "contacts"
+    $parameters:
+      path: "/contacts"
+
+  numbers_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["numbers"]
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "created_at"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      cursor_granularity: "PT0.000001S"
+      lookback_window: "P31D"
+      start_datetime:
+        datetime: "{{ config['date_from'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      step: "P1M"
+    name: "numbers"
+    primary_key: "id"
+    $parameters:
+      path: "/numbers"
+
+  tags_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["tags"]
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+    name: "tags"
+    primary_key: "id"
+    $parameters:
+      path: "/tags"
+
+  user_retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: ["users"]
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "#/definitions/requester"
+
+  users_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/user_retriever"
+    name: "users"
+    primary_key: "id"
+    $parameters:
+      path: "/users"
+
+  user_availablity_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/user_retriever"
+    name: "user_availablity"
+    primary_key: "id"
+    $parameters:
+      path: "/users/availabilities"
+
+  teams_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["teams"]
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "created_at"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      cursor_granularity: "PT0.000001S"
+      lookback_window: "P31D"
+      start_datetime:
+        datetime: "{{ config['date_from'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      step: "P1M"
+    name: "teams"
+    primary_key: "id"
+    $parameters:
+      path: "/teams"
+
+  webhooks_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["webhooks"]
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+    name: "webhooks"
+    primary_key: "id"
+    $parameters:
+      path: "/webhooks"
+
+streams:
+  - "#/definitions/calls_stream"
+  - "#/definitions/company_stream"
+  - "#/definitions/contacts_stream"
+  - "#/definitions/numbers_stream"
+  - "#/definitions/tags_stream"
+  - "#/definitions/user_availablity_stream"
+  - "#/definitions/users_stream"
+  - "#/definitions/teams_stream"
+  - "#/definitions/webhooks_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "calls"
+    - "company"
+    - "contacts"
+    - "numbers"
+    - "tags"
+    - "user_availablity"
+    - "users"
+    - "teams"
+    - "webhooks"
