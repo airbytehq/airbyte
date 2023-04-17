@@ -85,7 +85,7 @@ public class PerformanceTest {
     final var jobRoot = "/";
 
     final var dstIntegtationLauncher = new AirbyteIntegrationLauncher(
-        "2",
+        "1",
         0,
         this.imageName,
         processFactory,
