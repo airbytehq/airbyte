@@ -72,6 +72,10 @@ const config = {
             to: "/category/using-airbyte-cloud",
           },
           {
+            from: "/category/airbyte-open-source-quick-start",
+            to: "/category/getting-started"
+          },
+          {
             from: "/cloud/dbt-cloud-integration",
             to: "/cloud/managing-airbyte-cloud/dbt-cloud-integration",
           },
