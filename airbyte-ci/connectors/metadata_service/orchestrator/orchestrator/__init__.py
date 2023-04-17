@@ -4,13 +4,11 @@
 from dagster import Definitions
 from orchestrator.assets.catalog import (
     cloud_catalog_from_metadata,
-    cloud_catalog_from_metadata_and_spec,
     cloud_destinations_dataframe,
     cloud_sources_dataframe,
     latest_cloud_catalog_dict,
     latest_oss_catalog_dict,
     oss_catalog_from_metadata,
-    oss_catalog_from_metadata_and_spec,
     oss_destinations_dataframe,
     oss_sources_dataframe,
 )
@@ -62,8 +60,6 @@ ASSETS = [
     cloud_catalog_from_metadata,
     cloud_catalog_diff_dataframe,
     oss_catalog_diff_dataframe,
-    oss_catalog_from_metadata_and_spec,
-    cloud_catalog_from_metadata_and_spec,
     all_specs_secrets,
     specs_secrets_mask_yaml,
 ]
