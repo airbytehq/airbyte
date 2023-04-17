@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 239463f5-64bb-4d88-b4bd-18ce673fd572
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-coinmarketcap
+  githubIssueLabel: source-coinmarketcap
+  icon: coinmarketcap.svg
+  license: MIT
+  name: CoinMarketCap
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/coinmarketcap
+metadataSpecVersion: "1.0"

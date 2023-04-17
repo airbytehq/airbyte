@@ -1,0 +1,22 @@
+data:
+  allowedHosts:
+    hosts:
+      - sandbox-ads.tiktok.com
+      - business-api.tiktok.com
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
+  dockerImageTag: 2.0.6
+  dockerRepository: airbyte/source-tiktok-marketing
+  githubIssueLabel: source-tiktok-marketing
+  icon: tiktok.svg
+  license: MIT
+  name: TikTok Marketing
+  releaseStage: generally_available
+  supportUrl: https://docs.airbyte.com/integrations/sources/tiktok-marketing
+metadataSpecVersion: "1.0"

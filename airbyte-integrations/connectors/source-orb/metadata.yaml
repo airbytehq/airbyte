@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 7f0455fb-4518-4ec0-b7a3-d808bf8081cc
+  dockerImageTag: 1.1.0
+  dockerRepository: airbyte/source-orb
+  githubIssueLabel: source-orb
+  icon: orb.svg
+  license: MIT
+  name: Orb
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/orb
+metadataSpecVersion: "1.0"
