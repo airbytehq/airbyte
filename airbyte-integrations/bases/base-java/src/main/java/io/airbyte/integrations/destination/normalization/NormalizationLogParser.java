@@ -1,4 +1,4 @@
-package io.airbyte.integrations.destination.bigquery;
+package io.airbyte.integrations.destination.normalization;
 
 /*
  * This class should probably live in a higher library
@@ -6,11 +6,11 @@ package io.airbyte.integrations.destination.bigquery;
  * we'll need to extract it anyway when we start doing other destinations
  */
 
-import static io.airbyte.integrations.destination.bigquery.SentryExceptionHelper.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.normalization.SentryExceptionHelper.ErrorMapKeys;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage.FailureType;
 import io.airbyte.protocol.models.AirbyteLogMessage;
@@ -145,7 +145,7 @@ public class NormalizationLogParser {
     final List<String> errors = normalizationLogParser.getDbtErrors();
     final String dbtErrorStack = String.join("\n", errors);
     if (!"".equals(dbtErrorStack)) {
-      final Map<ErrorMapKeys, String> errorMap = getUsefulErrorMessageAndTypeFromDbtError(dbtErrorStack);
+      final Map<ErrorMapKeys, String> errorMap = SentryExceptionHelper.getUsefulErrorMessageAndTypeFromDbtError(dbtErrorStack);
       String internalMessage = errorMap.get(ErrorMapKeys.ERROR_MAP_MESSAGE_KEY);
       AirbyteMessage traceMessage = new AirbyteMessage()
           .withType(Type.TRACE)

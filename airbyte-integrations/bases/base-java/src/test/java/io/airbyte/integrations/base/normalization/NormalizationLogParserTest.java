@@ -1,7 +1,8 @@
-package io.airbyte.integrations.destination.bigquery;
+package io.airbyte.integrations.base.normalization;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import io.airbyte.integrations.destination.normalization.NormalizationLogParser;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage.FailureType;
 import io.airbyte.protocol.models.AirbyteLogMessage;

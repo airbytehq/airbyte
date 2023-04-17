@@ -1,4 +1,4 @@
-package io.airbyte.integrations.destination.bigquery;
+package io.airbyte.integrations.destination.normalization;
 
 import java.util.Arrays;
 import java.util.HashMap;
