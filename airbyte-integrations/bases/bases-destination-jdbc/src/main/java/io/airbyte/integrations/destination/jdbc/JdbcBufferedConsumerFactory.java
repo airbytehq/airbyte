@@ -35,13 +35,18 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**Strategy:
- * <p>1. Create a final table for each stream
- * <p>2. Accumulate records in a buffer. One buffer per stream
- * <p>3. As records accumulate write them in batch to the database. We set a minimum numbers of records
+/**
+ * Strategy:
+ * <p>
+ * 1. Create a final table for each stream
+ * <p>
+ * 2. Accumulate records in a buffer. One buffer per stream
+ * <p>
+ * 3. As records accumulate write them in batch to the database. We set a minimum numbers of records
  * before writing to avoid wasteful record-wise writes. In the case with slow syncs this will be
  * superseded with a periodic record flush from {@link BufferedStreamConsumer#periodicBufferFlush()}
- * <p>4. Once all records have been written to buffer, flush the buffer and write any remaining records
+ * <p>
+ * 4. Once all records have been written to buffer, flush the buffer and write any remaining records
  * to the database (regardless of how few are left)
  */
 public class JdbcBufferedConsumerFactory {
@@ -118,9 +123,12 @@ public class JdbcBufferedConsumerFactory {
 
   /**
    * Sets up destination storage through:
-   * <p>1. Creates Schema (if not exists)
-   * <p>2. Creates airybte_raw table (if not exists)
-   * <p>3. <Optional>Truncates table if sync mode is in OVERWRITE
+   * <p>
+   * 1. Creates Schema (if not exists)
+   * <p>
+   * 2. Creates airybte_raw table (if not exists)
+   * <p>
+   * 3. <Optional>Truncates table if sync mode is in OVERWRITE
    *
    * @param database JDBC database to connect to
    * @param sqlOperations interface for execution SQL queries
