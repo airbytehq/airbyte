@@ -1252,10 +1252,10 @@ definitions:
         title: File Path
         description: Path to the JSON file defining the schema. The path is relative to the connector module's root.
         type: string
+        interpolation_context:
+          - config
         example:
           - "./schemas/users.json"
-      interpolation_context:
-        - config
       $parameters:
         type: object
         additionalProperties: true
