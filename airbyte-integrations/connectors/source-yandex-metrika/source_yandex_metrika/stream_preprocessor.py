@@ -80,7 +80,7 @@ class YandexMetrikaStreamPreprocessor:
                 f'API error on create_log_request_response["log_request"]["request_id"]. Response: {create_log_request_response_data}'
             )
 
-    def check_if_log_request_already_on_server(self, stream_slice: Mapping[str, Any], cached_available_log_requests: List[Mapping[str, Any]] = None) -> Tuple[bool, int]:
+    def check_if_log_request_already_on_server(self, stream_slice: Mapping[str, Any], cached_available_log_requests: List[Mapping[str, Any]] = None,) -> Tuple[bool, int]:
         # Return (True, <log_request_id>) if log request was found, otherwise return (False, None)
         available_log_requests = cached_available_log_requests or self.get_available_log_requests()
         params = self.request_params(stream_slice=stream_slice)
@@ -160,7 +160,8 @@ class YandexMetrikaStreamPreprocessor:
                     log_request["request_id"])
                 logger.info(f"Cleaned log request: {cleaned_log_request}")
 
-    def check_log_request_ability(self, stream_slice: str) -> Tuple[bool, any]:
+    def check_log_request_ability(self, stream_slice: Mapping[str, Any]) -> Tuple[bool, Any]:
+        print('check_log_request_ability')
         url = self.url_base + f"counter/{self.counter_id}/logrequests/evaluate"
         headers = self.authorized_request_headers(stream_slice=stream_slice)
         params = self.request_params(stream_slice=stream_slice)
@@ -187,6 +188,7 @@ class YandexMetrikaStreamPreprocessor:
                 sleep(10)
 
     def check_stream_slices_ability(self) -> Tuple[bool, any]:
+        print('check_stream_slices_ability')
         available_log_requests = self.get_available_log_requests()
         for raw_stream_slice in self.stream_instance.stream_slices():
             is_already_on_server, on_server_log_request_id = self.check_if_log_request_already_on_server(
@@ -203,7 +205,7 @@ class YandexMetrikaStreamPreprocessor:
                 return False, is_possible_message
         return True, None
 
-    def clean_log_request(self, log_request_id):
+    def clean_log_request(self, log_request_id: int):
         url = self.url_base + \
             f"counter/{self.counter_id}/logrequest/{log_request_id}/clean"
         logger.info(f"Clean log request {url}...")

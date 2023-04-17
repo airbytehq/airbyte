@@ -5,6 +5,7 @@
 
 import logging
 from abc import ABC
+import os
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
@@ -12,7 +13,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_yandex_metrika.stream_preprocessor import YandexMetrikaStreamPreprocessor
 from queue import Queue
-from .utils import daterange_days_list, today_minus_n_days_date, yesterday_date
+from .utils import daterange_days_list, random_output_filename, today_minus_n_days_date, yesterday_date, random_str
 
 logger = logging.getLogger("airbyte")
 
@@ -137,21 +138,37 @@ class YandexMetrikaStream(HttpStream, ABC):
     def should_retry(self, response: requests.Response) -> bool:
         return response.status_code in [429, 400] or 500 <= response.status_code < 600
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, str], *args, **kwargs,) -> str:
         logger.info(f"parse_response {response.url}")
-        raw_data_lines = response.content.split(b"\n")
-        del response
+        # raw_data_lines = response.content.split(b"\n")
+        # del response
 
-        for line_n, line in enumerate(raw_data_lines):
-            if not line.strip():
-                continue
-            if line_n == 0:
-                continue
+        # for line_n, line in enumerate(raw_data_lines):
+        #     if not line.strip():
+        #         continue
+        #     if line_n == 0:
+        #         continue
 
-            # zip values list to named dict
-            zipped_object = dict(zip(self.fields, line.decode().split("\t")))
-            yield self.add_constants_to_record(zipped_object)
+        #     # zip values list to named dict
+        #     zipped_object = dict(zip(self.fields, line.decode().split("\t")))
+        #     yield self.add_constants_to_record(zipped_object)
+
+        # ------
+        try:
+            os.mkdir("output")
+        except FileExistsError:
+            pass
+        filename = random_output_filename()
+        logger.info(f"Save slice {stream_slice} data to {filename}")
+        with open(filename, "wb") as f:
+            f.write(response.content)
         logger.info(f"end of parse_response")
+        return [filename]
+
+    def should_retry(self, response: requests.Response) -> bool:
+        print('self.preprocessor.get_available_log_requests()',
+              self.preprocessor.get_available_log_requests())
+        return super().should_retry(response)
 
     def stream_slices(self, *args, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         if self.split_reports["split_mode_type"] == "do_not_split_mode":

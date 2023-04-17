@@ -1,0 +1,2 @@
+class MissingChunkIdsError(Exception):
+    pass

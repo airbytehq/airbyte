@@ -117,12 +117,6 @@
         "examples": ["30"],
         "order": 6
       },
-      "clean_on_every_slice": {
-        "type": "boolean",
-        "title": "Clean Logs On Server On Every Day Load",
-        "description": "Connector will send clean logs request for configured Counter ID after every report load (useful on large logs size due to 10GB of total logs size limit).",
-        "order": 7
-      },
       "chunk_reports": {
         "title": "Split Report Into Chunks",
         "description": "Connector can split data replication into several reports instead of only one. You can choice days period for every chunk.",
