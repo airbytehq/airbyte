@@ -318,14 +318,48 @@ class Schemas(BaseModel):
 
 class SessionTokenAuthenticator(BaseModel):
     type: Literal["SessionTokenAuthenticator"]
-    api_url: str
-    header: str
-    login_url: str
-    session_token: str
-    session_token_response_key: str
-    username: str
-    validate_session_url: str
-    password: Optional[str] = ""
+    header: str = Field(
+        ...,
+        description="The name of the session token header that will be injected in the request",
+        examples=["X-Session"],
+        title="Session Request Header",
+    )
+    login_url: str = Field(
+        ...,
+        description="Path of the login URL (do not include the base URL)",
+        examples=["session"],
+        title="Login Path",
+    )
+    session_token: Optional[str] = Field(
+        None,
+        description="Session token to use if using a pre-defined token. Not needed if authenticating with username + password pair",
+        example=["{{ config['session_token'] }}"],
+        title="Session Token",
+    )
+    session_token_response_key: str = Field(
+        ...,
+        description="Name of the key of the session token to be extracted from the response",
+        examples=["id"],
+        title="Response Token Response Key",
+    )
+    username: Optional[str] = Field(
+        None,
+        description="Username used to authenticate and obtain a session token",
+        examples=[" {{ config['username'] }}"],
+        title="Username",
+    )
+    password: Optional[str] = Field(
+        "",
+        description="Password used to authenticate and obtain a session token",
+        examples=["{{ config['password'] }}", ""],
+        title="Password",
+    )
+    validate_session_url: str = Field(
+        ...,
+        description="Path of the URL to use to validate that the session token is valid (do not include the base URL)",
+        examples=["user/current"],
+        title="Validate Session Path",
+    )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
