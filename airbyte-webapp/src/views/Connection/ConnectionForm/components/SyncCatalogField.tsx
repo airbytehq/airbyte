@@ -93,7 +93,12 @@ const CatalogHeader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => {
       <CatalogHeaderCell lighter>
         <FormattedMessage id="sources.source" />
         <InfoTooltip>
-          <FormattedMessage id="connectionForm.source.info" />
+          <FormattedMessage
+            id="connectionForm.source.info"
+            values={{
+              b: (b: React.ReactNode) => <b>{b}</b>,
+            }}
+          />
         </InfoTooltip>
       </CatalogHeaderCell>
       <CatalogHeaderCell />
@@ -119,9 +124,19 @@ const CatalogHeader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => {
       <CatalogHeaderCell lighter>
         <FormattedMessage id="connector.destination" />
         <InfoTooltip>
-          <FormattedMessage id="connectionForm.destinationName.info" />
+          <FormattedMessage
+            id="connectionForm.destinationName.info"
+            values={{
+              b: (b: React.ReactNode) => <b>{b}</b>,
+            }}
+          />
           <NextLineText>
-            <FormattedMessage id="connectionForm.destinationStream.info" />
+            <FormattedMessage
+              id="connectionForm.destinationStream.info"
+              values={{
+                b: (b: React.ReactNode) => <b>{b}</b>,
+              }}
+            />
           </NextLineText>
         </InfoTooltip>
       </CatalogHeaderCell>

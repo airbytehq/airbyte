@@ -42,7 +42,12 @@ export const ReleaseStageBadge: React.FC<ReleaseStageBadgeProps> = ({ stage, sma
 
   return tooltip ? (
     <Tooltip control={badge}>
-      <FormattedMessage id={`connector.releaseStage.${stage}.description`} />
+      <FormattedMessage
+        id={`connector.releaseStage.${stage}.description`}
+        values={{
+          b: (b: React.ReactNode) => <b>{b}</b>,
+        }}
+      />
     </Tooltip>
   ) : (
     badge
