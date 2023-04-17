@@ -66,6 +66,13 @@
     "type": "STREAM",
     "stream": {
       "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "subscription_schedule" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
       "stream_descriptor": { "name": "balance_transactions" }
     }
   },
