@@ -49,8 +49,6 @@ The Yotpo source connector supports the following [sync modes](https://docs.airb
 
 ## Supported Streams
 
-- privacy_data
-- privacy_user
 - reviews
 - reviews_bottomline
 - top_reviews
