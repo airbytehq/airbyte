@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.bigquery;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedBiConsumer;
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -15,6 +14,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
+import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -110,7 +110,7 @@ public class BigQueryStagingConsumerFactory {
    * @param writeConfigs configuration settings used to describe how to write data and where it exists
    * @return
    */
-  private VoidCallable onStartFunction(final BigQueryStagingOperations bigQueryGcsOperations,
+  private OnStartFunction onStartFunction(final BigQueryStagingOperations bigQueryGcsOperations,
                                        final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs) {
     return () -> {
       LOGGER.info("Preparing airbyte_raw tables in destination started for {} streams", writeConfigs.size());

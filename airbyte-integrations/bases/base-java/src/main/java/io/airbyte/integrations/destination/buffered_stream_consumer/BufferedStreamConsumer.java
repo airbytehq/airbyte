@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.buffered_stream_consumer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
@@ -79,7 +78,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BufferedStreamConsumer.class);
 
-  private final VoidCallable onStart;
+  private final OnStartFunction onStart;
   private final CheckedConsumer<Boolean, Exception> onClose;
   private final Set<AirbyteStreamNameNamespacePair> streamNames;
   private final ConfiguredAirbyteCatalog catalog;
@@ -96,7 +95,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final Duration bufferFlushFrequency;
 
   public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
-                                final VoidCallable onStart,
+                                final OnStartFunction onStart,
                                 final BufferingStrategy bufferingStrategy,
                                 final CheckedConsumer<Boolean, Exception> onClose,
                                 final ConfiguredAirbyteCatalog catalog,
@@ -116,7 +115,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
    */
   @VisibleForTesting
   BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
-                         final VoidCallable onStart,
+                         final OnStartFunction onStart,
                          final BufferingStrategy bufferingStrategy,
                          final CheckedConsumer<Boolean, Exception> onClose,
                          final ConfiguredAirbyteCatalog catalog,

@@ -16,7 +16,6 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
@@ -68,7 +67,7 @@ public class BufferedStreamConsumerTest {
       .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of("state_message_id", 2))));
 
   private BufferedStreamConsumer consumer;
-  private VoidCallable onStart;
+  private OnStartFunction onStart;
   private RecordWriter<AirbyteRecordMessage> recordWriter;
   private CheckedConsumer<Boolean, Exception> onClose;
   private CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
@@ -77,7 +76,7 @@ public class BufferedStreamConsumerTest {
   @SuppressWarnings("unchecked")
   @BeforeEach
   void setup() throws Exception {
-    onStart = mock(VoidCallable.class);
+    onStart = mock(OnStartFunction.class);
     recordWriter = mock(RecordWriter.class);
     onClose = mock(CheckedConsumer.class);
     isValidRecord = mock(CheckedFunction.class);
