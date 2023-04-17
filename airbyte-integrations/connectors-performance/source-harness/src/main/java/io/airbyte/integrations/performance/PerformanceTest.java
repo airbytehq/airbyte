@@ -7,10 +7,8 @@ package io.airbyte.integrations.performance;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.commons.protocol.AirbyteMessageMigrator;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
 import io.airbyte.commons.protocol.AirbyteProtocolVersionedMigratorFactory;
@@ -19,31 +17,27 @@ import io.airbyte.commons.protocol.serde.AirbyteMessageV0Deserializer;
 import io.airbyte.commons.protocol.serde.AirbyteMessageV0Serializer;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.AllowedHosts;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.ResourceRequirements;
-import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteDestination;
 import io.airbyte.workers.internal.DefaultAirbyteSource;
-import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
-import io.airbyte.workers.internal.EmptyAirbyteSource;
 import io.airbyte.workers.internal.HeartbeatMonitor;
 import io.airbyte.workers.internal.NamespacingMapper;
 import io.airbyte.workers.internal.VersionedAirbyteMessageBufferedWriterFactory;
 import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
 import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
+import io.airbyte.workers.internal.book_keeping.DefaultSyncStatsTracker;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
@@ -51,12 +45,10 @@ import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.net.InetAddress;
 import java.nio.file.Path;
+import java.sql.Timestamp;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -105,10 +97,10 @@ public class PerformanceTest {
     final var workerConfigs = new WorkerConfigs(new EnvConfigs());
     final var processFactory = new KubeProcessFactory(workerConfigs, "jobs", fabricClient, kubeHeartbeatUrl, false);
     final ResourceRequirements resourceReqs = new ResourceRequirements()
-        .withCpuLimit("1")
-        .withCpuRequest("1")
-        .withMemoryLimit("2Gi")
-        .withMemoryRequest("2Gi");
+        .withCpuLimit("1.5")
+        .withCpuRequest("1.5")
+        .withMemoryLimit("2.5Gi")
+        .withMemoryRequest("2.5Gi");
     final var heartbeatMonitor = new HeartbeatMonitor(Duration.ofMillis(1));
     final var allowedHosts = new AllowedHosts().withHosts(List.of("*"));
     final var integrationLauncher =
@@ -136,7 +128,7 @@ public class PerformanceTest {
 
     // Uncomment to add destination
 
-    /////////// destiantion ///////////
+    /////////// destination ///////////
     final var dstIntegtationLauncher = new AirbyteIntegrationLauncher("1", 0, "airbyte/destination-dev-null:0.2.7", processFactory, resourceReqs,
         allowedHosts, false, new EnvVariableFeatureFlags());
 
@@ -169,22 +161,21 @@ public class PerformanceTest {
 
     final String streamName0 = sourceConfig.getCatalog().getStreams().get(0).getStream().getName();
     final String streamNamespace0 = sourceConfig.getCatalog().getStreams().get(0).getStream().getNamespace();
-    final String streamName1 = sourceConfig.getCatalog().getStreams().get(1).getStream().getName();
-    final String streamNamespace1 = sourceConfig.getCatalog().getStreams().get(1).getStream().getNamespace();
-    final String streamName2 = sourceConfig.getCatalog().getStreams().get(2).getStream().getName();
-    final String streamNamespace2 = sourceConfig.getCatalog().getStreams().get(2).getStream().getNamespace();
+//    final String streamName1 = sourceConfig.getCatalog().getStreams().get(1).getStream().getName();
+//    final String streamNamespace1 = sourceConfig.getCatalog().getStreams().get(1).getStream().getNamespace();
+//    final String streamName2 = sourceConfig.getCatalog().getStreams().get(2).getStream().getName();
+//    final String streamNamespace2 = sourceConfig.getCatalog().getStreams().get(2).getStream().getNamespace();
 
     final var namespaceMapper = new NamespacingMapper(NamespaceDefinitionType.DESTINATION, "", "");
 
     final var recordSchemaValidator = new RecordSchemaValidator(
         Map.of(
             new AirbyteStreamNameNamespacePair(streamName0, streamNamespace0),
-            sourceConfig.getCatalog().getStreams().get(0).getStream().getJsonSchema(),
-            new AirbyteStreamNameNamespacePair(streamName1, streamNamespace1),
-            sourceConfig.getCatalog().getStreams().get(1).getStream().getJsonSchema(),
-            new AirbyteStreamNameNamespacePair(streamName2, streamNamespace2),
-            sourceConfig.getCatalog().getStreams().get(2).getStream().getJsonSchema()),
-        true);
+            sourceConfig.getCatalog().getStreams().get(0).getStream().getJsonSchema()));
+//            new AirbyteStreamNameNamespacePair(streamName1, streamNamespace1),
+//            sourceConfig.getCatalog().getStreams().get(1).getStream().getJsonSchema(),
+//            new AirbyteStreamNameNamespacePair(streamName2, streamNamespace2),
+//            sourceConfig.getCatalog().getStreams().get(2).getStream().getJsonSchema()),);
 
 //    while (!source.isFinished()) {
 //      final Optional<AirbyteMessage> airbyteMessageOptional = source.attemptRead();
@@ -219,7 +210,8 @@ public class PerformanceTest {
 //            totalBytes / 1_000_000.0);
 //      }
 //    }
-    var tracker = new AirbyteMessageTracker(new EnvVariableFeatureFlags());
+    var syncStats = new DefaultSyncStatsTracker();
+    var tracker = new AirbyteMessageTracker(syncStats, new EnvVariableFeatureFlags());
 //    var runner = TestRunnable.readFromSrcAndWriteToDstRunnable(
 //        source, destination, catalog, new AtomicBoolean(false), namespaceMapper, tracker, Map.of(), recordSchemaValidator, new ThreadedTimeTracker(), UUID.randomUUID(), true);
 //
@@ -243,16 +235,20 @@ public class PerformanceTest {
 //    }, executors);
 //
 //    CompletableFuture.anyOf(readSrcAndWriteDstThread, readFromDstThread).get();
+    LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.KUBERNETES, new EnvConfigs().getLogConfigs(), Path.of("/16-april/" +
+        new Timestamp(System.currentTimeMillis()).toInstant()));
     var worker = new DefaultReplicationWorkerTester(
         "1", 0, source, namespaceMapper, destination, tracker,  recordSchemaValidator,  true, false, null);
-    worker.run(sourceConfig, dstConfig, Path.of("/"));
+    var output = worker.run(sourceConfig, dstConfig, Path.of("/"));
 
     log.info("Test Ended");
     final var end = System.currentTimeMillis();
 //    final var totalMB = totalBytes / 1_000_000.0;
-    final var totalMB = tracker.getTotalBytesEmitted() / 1_000_000.0;
-    final var totalTimeSecs = (end - start) / 1000.0;
-    counter = tracker.getTotalRecordsEmitted();
+    final var totalMB = syncStats.getTotalBytesEmitted() / 1_000_000.0;
+//    final var totalTimeSecs = (end - start) / 1000.0;
+    final var totalTimeSecs = (output.getReplicationAttemptSummary().getTotalStats().getDestinationWriteEndTime() -
+        output.getReplicationAttemptSummary().getTotalStats().getDestinationWriteStartTime()) / 1000.0;
+    counter = syncStats.getTotalRecordsEmitted();
     final var rps = counter / totalTimeSecs;
     log.info("total secs: {}. total MB read: {}, rps: {}, throughput: {}", totalTimeSecs, totalMB, rps, totalMB / totalTimeSecs);
     source.close();

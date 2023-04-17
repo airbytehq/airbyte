@@ -102,7 +102,7 @@ public class TestRunnable {
             recordsRead += 1;
 
             if (recordsRead % 1000 == 0) {
-              log.info("Records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
+              log.info("Records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getSyncStatsTracker().getTotalBytesEmitted()));
             }
           } else {
             log.info("Source has no more messages, closing connection.");
@@ -114,7 +114,7 @@ public class TestRunnable {
           }
         }
         timeHolder.trackSourceReadEndTime();
-        log.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
+        log.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getSyncStatsTracker().getTotalBytesEmitted()));
         if (!validationErrors.isEmpty()) {
           validationErrors.forEach((stream, errorPair) -> {
             log.warn("Schema validation errors found for stream {}. Error messages: {}", stream, errorPair.getLeft());

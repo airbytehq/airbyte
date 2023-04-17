@@ -394,8 +394,8 @@ public class DefaultReplicationWorkerTester {
 
             recordsRead += 1;
 
-            if (recordsRead % 1000 == 0) {
-              LOGGER.info("Records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
+            if (recordsRead % 5000 == 0) {
+              LOGGER.info("Records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getSyncStatsTracker().getTotalBytesEmitted()));
             }
           } else {
             LOGGER.info("Source has no more messages, closing connection.");
@@ -407,7 +407,7 @@ public class DefaultReplicationWorkerTester {
           }
         }
         timeHolder.trackSourceReadEndTime();
-        LOGGER.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
+        LOGGER.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getSyncStatsTracker().getTotalBytesEmitted()));
         if (!validationErrors.isEmpty()) {
           validationErrors.forEach((stream, errorPair) -> {
             LOGGER.warn("Schema validation errors found for stream {}. Error messages: {}", stream, errorPair.getLeft());
@@ -484,10 +484,11 @@ public class DefaultReplicationWorkerTester {
     final SyncStats totalSyncStats = getTotalStats(timeTracker, outputStatus);
     final List<StreamSyncStats> streamSyncStats = getPerStreamStats(outputStatus);
 
+    var tracker = messageTracker.getSyncStatsTracker();
     final ReplicationAttemptSummary summary = new ReplicationAttemptSummary()
         .withStatus(outputStatus)
-        .withRecordsSynced(messageTracker.getTotalRecordsEmitted()) // TODO (parker) remove in favor of totalRecordsEmitted
-        .withBytesSynced(messageTracker.getTotalBytesEmitted()) // TODO (parker) remove in favor of totalBytesEmitted
+        .withRecordsSynced(tracker.getTotalRecordsEmitted()) // TODO (parker) remove in favor of totalRecordsEmitted
+        .withBytesSynced(tracker.getTotalBytesEmitted()) // TODO (parker) remove in favor of totalBytesEmitted
         .withTotalStats(totalSyncStats)
         .withStreamStats(streamSyncStats)
         .withStartTime(timeTracker.getReplicationStartTime())
@@ -511,15 +512,16 @@ public class DefaultReplicationWorkerTester {
   }
 
   private SyncStats getTotalStats(final ThreadedTimeTracker timeTracker, final ReplicationStatus outputStatus) {
+    var tracker = messageTracker.getSyncStatsTracker();
     final SyncStats totalSyncStats = new SyncStats()
-        .withRecordsEmitted(messageTracker.getTotalRecordsEmitted())
-        .withBytesEmitted(messageTracker.getTotalBytesEmitted())
-        .withSourceStateMessagesEmitted(messageTracker.getTotalSourceStateMessagesEmitted())
-        .withDestinationStateMessagesEmitted(messageTracker.getTotalDestinationStateMessagesEmitted())
-        .withMaxSecondsBeforeSourceStateMessageEmitted(messageTracker.getMaxSecondsToReceiveSourceStateMessage())
-        .withMeanSecondsBeforeSourceStateMessageEmitted(messageTracker.getMeanSecondsToReceiveSourceStateMessage())
-        .withMaxSecondsBetweenStateMessageEmittedandCommitted(messageTracker.getMaxSecondsBetweenStateMessageEmittedAndCommitted().orElse(null))
-        .withMeanSecondsBetweenStateMessageEmittedandCommitted(messageTracker.getMeanSecondsBetweenStateMessageEmittedAndCommitted().orElse(null))
+        .withRecordsEmitted(tracker.getTotalRecordsEmitted())
+        .withBytesEmitted(tracker.getTotalBytesEmitted())
+        .withSourceStateMessagesEmitted(tracker.getTotalSourceStateMessagesEmitted())
+        .withDestinationStateMessagesEmitted(tracker.getTotalDestinationStateMessagesEmitted())
+        .withMaxSecondsBeforeSourceStateMessageEmitted(tracker.getMaxSecondsToReceiveSourceStateMessage())
+        .withMeanSecondsBeforeSourceStateMessageEmitted(tracker.getMeanSecondsToReceiveSourceStateMessage())
+        .withMaxSecondsBetweenStateMessageEmittedandCommitted(tracker.getMaxSecondsBetweenStateMessageEmittedAndCommitted().orElse(null))
+        .withMeanSecondsBetweenStateMessageEmittedandCommitted(tracker.getMeanSecondsBetweenStateMessageEmittedAndCommitted().orElse(null))
         .withReplicationStartTime(timeTracker.getReplicationStartTime())
         .withReplicationEndTime(timeTracker.getReplicationEndTime())
         .withSourceReadStartTime(timeTracker.getSourceReadStartTime())
@@ -529,8 +531,8 @@ public class DefaultReplicationWorkerTester {
 
     if (outputStatus == ReplicationStatus.COMPLETED) {
       totalSyncStats.setRecordsCommitted(totalSyncStats.getRecordsEmitted());
-    } else if (messageTracker.getTotalRecordsCommitted().isPresent()) {
-      totalSyncStats.setRecordsCommitted(messageTracker.getTotalRecordsCommitted().get());
+    } else if (tracker.getTotalRecordsCommitted().isPresent()) {
+      totalSyncStats.setRecordsCommitted(tracker.getTotalRecordsCommitted().get());
     } else {
       LOGGER.warn("Could not reliably determine committed record counts, committed record stats will be set to null");
       totalSyncStats.setRecordsCommitted(null);
@@ -540,17 +542,18 @@ public class DefaultReplicationWorkerTester {
 
   private List<StreamSyncStats> getPerStreamStats(final ReplicationStatus outputStatus) {
     // assume every stream with stats is in streamToEmittedRecords map
-    return messageTracker.getStreamToEmittedRecords().keySet().stream().map(stream -> {
+    var tracker = messageTracker.getSyncStatsTracker();
+    return tracker.getStreamToEmittedRecords().keySet().stream().map(stream -> {
       final SyncStats syncStats = new SyncStats()
-          .withRecordsEmitted(messageTracker.getStreamToEmittedRecords().get(stream))
-          .withBytesEmitted(messageTracker.getStreamToEmittedBytes().get(stream))
+          .withRecordsEmitted(tracker.getStreamToEmittedRecords().get(stream))
+          .withBytesEmitted(tracker.getStreamToEmittedBytes().get(stream))
           .withSourceStateMessagesEmitted(null)
           .withDestinationStateMessagesEmitted(null);
 
       if (outputStatus == ReplicationStatus.COMPLETED) {
-        syncStats.setRecordsCommitted(messageTracker.getStreamToEmittedRecords().get(stream));
-      } else if (messageTracker.getStreamToCommittedRecords().isPresent()) {
-        syncStats.setRecordsCommitted(messageTracker.getStreamToCommittedRecords().get().get(stream));
+        syncStats.setRecordsCommitted(tracker.getStreamToEmittedRecords().get(stream));
+      } else if (tracker.getStreamToCommittedRecords().isPresent()) {
+        syncStats.setRecordsCommitted(tracker.getStreamToCommittedRecords().get().get(stream));
       } else {
         syncStats.setRecordsCommitted(null);
       }
@@ -586,9 +589,9 @@ public class DefaultReplicationWorkerTester {
       LOGGER.warn("State capture: No state retained.");
     }
 
-    if (messageTracker.getUnreliableStateTimingMetrics()) {
+//    if (messageTracker.getUnreliableStateTimingMetrics()) {
 //      metricReporter.trackStateMetricTrackerError();
-    }
+//    }
   }
 
   private List<FailureReason> getFailureReasons(final AtomicReference<FailureReason> replicationRunnableFailureRef,
