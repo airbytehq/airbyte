@@ -1,8 +1,8 @@
 # Partitioning
 
-Partitioning is required if the records of a stream are nested within multiple buckets or parent resources that need to be queried separately to extract the records.
+Partitioning is required if the records of a stream are grouped into buckets based on an attribute or parent resources that need to be queried separately to extract the records.
 
-Sometimes records belonging to a single stream are partitioned into subsets that need to be fetched separately. In most cases, these partitions are a parent resource type of the resource type targeted by the connector. The partitioning feature can be used to configure your connector to iterate through all partitions. In API documentations, this concept is showing up as mandatory parameters that need to be set on the path, query or request body of the request.
+Sometimes records belonging to a single stream are partitioned into subsets that need to be fetched separately. In most cases, these partitions are a parent resource type of the resource type targeted by the connector. The partitioning feature can be used to configure your connector to iterate through all partitions. In API documentation, this concept can show up as mandatory parameters that need to be set on the path, query parameters or request body of the request. 
 
 Common API structures look like this:
 * The [SurveySparrow API](https://developers.surveysparrow.com/rest-apis/response#getV3Responses) allows to fetch a list of responses to surveys. For the `/responses` endpoint, the id of the survey to fetch responses for needs to be specified via the query parameter `survey_id`. The API does not allow to fetch responses for all available surveys in a single request, there needs to be a separate request per survey. The surveys represent the partitions of the responses stream.
@@ -23,7 +23,7 @@ The first two options are a "static" form of partition routing (because the part
 To configure static partitioning, choose the "List" method for the partition router. The following fields have to be configured:
 * The "partition values" can either be set to a list of strings, making the partitions part of the connector itself or delegated to a user input so the end user configuring a Source based on the connector can control which partitions to fetch.
 * The "Current partition value identifier" can be freely choosen and is the identifier of the variable holding the current partition value. It can for example be used in the path of the stream using the `{{ stream_slice.<identifier> }}` syntax.
-* The "Inject partition value into outgoing HTTP request" option allows to configure how to add the current partition value to the requests
+* The "Inject partition value into outgoing HTTP request" option allows you to configure how to add the current partition value to the requests
 
 #### Example
 
@@ -58,9 +58,9 @@ curl -X GET https://example.com/wp-json/wc/v3/orders/789/notes
 To fetch the list of partitions (in this example surveys or orders) from the API itself, the "Substream" partition router has to be used. It allows you to select another stream of the same connector to serve as the source for partitions to fetch. Each record of the parent stream is used as a partition for the current stream.
 
 The following fields have to be configured to use the substream partition router:
+* The "Parent stream" defines the records of which stream should be used as partitions
 * The "Parent key" is the property on the parent stream record that should become the partition value (in most cases this is some form of id)
 * The "Current partition value identifier" can be freely choosen and is the identifier of the variable holding the current partition value. It can for example be used in the path of the stream using the `{{ stream_slice.<identifier> }}` interpolation placeholder.
-* The "Parent stream" defines the records of which stream should be used as partitions
 
 #### Example
 
