@@ -165,6 +165,7 @@ public class StagingConsumerFactory {
       }
       LOGGER.info("Executing finalization of tables.");
       stagingOperations.executeTransaction(database, queryList);
+      LOGGER.info("Finalization of tables complete.");
     };
   }
 
