@@ -214,6 +214,9 @@ def registry_derived_metadata_definitions(
 def metadata_definitions(context: OpExecutionContext) -> List[MetadataDefinition]:
     metadata_file_blobs = context.resources.metadata_file_blobs
 
+    # limit to 100 for testing
+    metadata_file_blobs = metadata_file_blobs[:100]
+
     metadata_definitions = []
     for blob in metadata_file_blobs:
         yaml_string = blob.download_as_string().decode("utf-8")

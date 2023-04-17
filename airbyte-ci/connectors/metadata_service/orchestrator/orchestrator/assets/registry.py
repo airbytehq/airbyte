@@ -16,6 +16,7 @@ from orchestrator.utils.object_helpers import deep_copy_params
 
 from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
 
+from uuid import UUID
 
 
 GROUP_NAME = "registry"
@@ -81,7 +82,14 @@ def metadata_to_registry_entry(metadata_definition: dict, connector_type: str, o
 
     # rename definitionId field to sourceDefinitionId or destinationDefinitionId
     id_field = "sourceDefinitionId" if connector_type == "source" else "destinationDefinitionId"
-    overrode_metadata_data[id_field] = overrode_metadata_data["definitionId"]
+    id_value = overrode_metadata_data["definitionId"]
+
+    # TODO remove this once we have a better way to handle UUIDs
+    # if the id is a UUID, convert it to a string
+    # if isinstance(id_value, UUID):
+    id_value = str(id_value)
+    # import pdb; pdb.set_trace()
+    overrode_metadata_data[id_field] = id_value
     del overrode_metadata_data["definitionId"]
 
     # add in useless fields that are currently required for porting to the actor definition spec
@@ -102,6 +110,7 @@ def is_metadata_registry_enabled(metadata_definition: dict, registry_name: str) 
     return metadata_definition["data"]["registries"][registry_name]["enabled"]
 
 
+# TODO use actual type!
 def is_metadata_connector_type(metadata_definition: dict, connector_type: str) -> bool:
     return metadata_definition["data"]["connectorType"] == connector_type
 
@@ -129,9 +138,14 @@ def construct_registry_from_metadata(registry_derived_metadata_definitions: List
     ]
 
     registry = {"sources": registry_sources, "destinations": registry_destinations}
-
     return registry
 
+class UUIDEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, UUID):
+            # if the obj is uuid, we simply return the value of uuid
+            return obj.hex
+        return json.JSONEncoder.default(self, obj)
 
 def construct_registry_with_spec_from_registry(registry: dict, cached_specs: OutputDataFrame) -> dict:
     entries = [("source", entry) for entry in registry["sources"]] + [("destinations", entry) for entry in registry["destinations"]]
@@ -166,8 +180,10 @@ def persist_registry_to_json(registry: dict, registry_name: str, registry_direct
         OutputDataFrame: The registry directory manager.
     """
     registry_file_name = f"{registry_name}_registry"
+    # TODO: once we have a registry type try registry.json()
     registry_json = json.dumps(registry)
     file_handle = registry_directory_manager.write_data(registry_json.encode("utf-8"), ext="json", key=registry_file_name)
+    import pdb; pdb.set_trace()
 
     return file_handle
 

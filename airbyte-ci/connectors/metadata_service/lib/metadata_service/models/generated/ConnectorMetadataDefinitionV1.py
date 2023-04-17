@@ -3,32 +3,11 @@
 
 from __future__ import annotations
 
-from enum import Enum
 from typing import List, Optional
 from uuid import UUID
 
 from pydantic import AnyUrl, BaseModel, Extra, Field
-
-
-class ConnectorType(Enum):
-    destination = "destination"
-    source = "source"
-
-
-class ConnectorSubtype(Enum):
-    api = "api"
-    database = "database"
-    file = "file"
-    custom = "custom"
-    message_queue = "message_queue"
-    unknown = "unknown"
-
-
-class ReleaseStage(Enum):
-    alpha = "alpha"
-    beta = "beta"
-    generally_available = "generally_available"
-    source = "source"
+from typing_extensions import Literal
 
 
 class AllowedHosts(BaseModel):
@@ -79,14 +58,20 @@ class ResourceRequirements(BaseModel):
     memory_limit: Optional[str] = None
 
 
-class JobType(Enum):
-    get_spec = "get_spec"
-    check_connection = "check_connection"
-    discover_schema = "discover_schema"
-    sync = "sync"
-    reset_connection = "reset_connection"
-    connection_updater = "connection_updater"
-    replicate = "replicate"
+class JobType(BaseModel):
+    __root__: Literal[
+        'get_spec',
+        'check_connection',
+        'discover_schema',
+        'sync',
+        'reset_connection',
+        'connection_updater',
+        'replicate',
+    ] = Field(
+        ...,
+        description='enum that describes the different types of jobs that the platform runs.',
+        title='JobType',
+    )
 
 
 class JobTypeResourceLimit(BaseModel):
@@ -138,7 +123,7 @@ class Registry(BaseModel):
 class Data(BaseModel):
     name: str
     definitionId: UUID
-    connectorType: ConnectorType
+    connectorType: Literal['destination', 'source']
     dockerRepository: str
     dockerImageTag: str
     supportsDbt: Optional[bool] = None
@@ -146,8 +131,10 @@ class Data(BaseModel):
     license: str
     supportUrl: AnyUrl
     githubIssueLabel: str
-    connectorSubtype: ConnectorSubtype
-    releaseStage: ReleaseStage
+    connectorSubtype: Literal[
+        'api', 'database', 'file', 'custom', 'message_queue', 'unknown'
+    ]
+    releaseStage: Literal['alpha', 'beta', 'generally_available', 'source']
     registries: Optional[Registry] = None
     allowedHosts: Optional[AllowedHosts] = None
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
