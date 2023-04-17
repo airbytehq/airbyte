@@ -426,6 +426,20 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     return database;
   }
 
+  /**
+   * {@inheritDoc}
+   * @param database database instance
+   * @param catalog schema of the incoming messages.
+   * @throws SQLException
+   */
+  @Override
+  protected void logPreSyncDebugData(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog)
+      throws SQLException {
+    LOGGER.info("Data source product recognized as {}:{}",
+        database.getMetaData().getDatabaseProductName(),
+        database.getMetaData().getDatabaseProductVersion());
+  }
+
   @Override
   public void close() {
     dataSources.forEach(d -> {
