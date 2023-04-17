@@ -370,7 +370,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:2.0.19"
+- dockerImage: "airbyte/source-alloydb:2.0.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -444,15 +444,6 @@
           order: 6
           group: "advanced"
           pattern_descriptor: "key1=value1&key2=value2"
-        ssl:
-          title: "Connect using SSL"
-          description: "Encrypt data using SSL. When activating SSL, please select\
-            \ one of the connection modes."
-          type: "boolean"
-          default: false
-          order: 7
-          group: "security"
-          always_show: true
         ssl_mode:
           title: "SSL Modes"
           description: "SSL connection modes. \n  Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"\
@@ -518,7 +509,7 @@
                 order: 0
               ca_certificate:
                 type: "string"
-                title: "CA certificate"
+                title: "CA Certificate"
                 description: "CA certificate"
                 airbyte_secret: true
                 multiline: true
@@ -530,6 +521,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client Key"
@@ -537,6 +529,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -570,6 +563,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client Key"
@@ -577,6 +571,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -822,7 +817,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-ads:1.0.2"
+- dockerImage: "airbyte/source-amazon-ads:1.0.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-ads"
     connectionSpecification:
@@ -1314,11 +1309,11 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.1.24"
+- dockerImage: "airbyte/source-amplitude:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amplitude"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Amplitude Spec"
       type: "object"
       required:
@@ -1355,29 +1350,15 @@
             \ data before this date will not be replicated."
           examples:
           - "2021-01-25T00:00:00Z"
-        event_time_interval:
-          type: "object"
-          title: "Event Stream Time Interval"
-          description: "Amplitude event stream time interval"
-          required:
-          - "size_unit"
-          - "size"
-          properties:
-            size_unit:
-              type: "string"
-              title: "Events Time Interval Size Unit"
-              description: "Amplitude event stream's interval size unit"
-              enum:
-              - "days"
-              - "hours"
-              - "weeks"
-              - "months"
-              default: "days"
-            size:
-              type: "integer"
-              title: "Events Time Interval Size"
-              description: "Amplitude event stream's interval size unit"
-              default: 1
+        request_time_range:
+          type: "integer"
+          title: "Request time range"
+          description: "According to <a href=\"https://www.docs.developers.amplitude.com/analytics/apis/export-api/#considerations\"\
+            >Considerations</a> too big time range in request can cause a timeout\
+            \ error. In this case, set shorter time interval in hours."
+          default: 24
+          minimum: 1
+          maximum: 8760
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -1977,7 +1958,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-bing-ads:0.1.18"
+- dockerImage: "airbyte/source-bing-ads:0.1.19"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/bing-ads"
     connectionSpecification:
@@ -3901,7 +3882,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.3.2"
+- dockerImage: "airbyte/source-facebook-marketing:0.3.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -4289,7 +4270,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-facebook-pages:0.2.3"
+- dockerImage: "airbyte/source-facebook-pages:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-pages"
     connectionSpecification:
@@ -4490,7 +4471,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.37"
+- dockerImage: "airbyte/source-file:0.2.38"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/file"
     connectionSpecification:
@@ -9478,7 +9459,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:2.0.14"
+- dockerImage: "airbyte/source-mysql:2.0.15"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -9593,6 +9574,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client key"
@@ -9602,6 +9584,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -9635,6 +9618,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client key"
@@ -9644,6 +9628,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -12072,7 +12057,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:2.0.20"
+- dockerImage: "airbyte/source-postgres:2.0.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -12211,7 +12196,7 @@
                 order: 0
               ca_certificate:
                 type: "string"
-                title: "CA certificate"
+                title: "CA Certificate"
                 description: "CA certificate"
                 airbyte_secret: true
                 multiline: true
@@ -12223,6 +12208,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client Key"
@@ -12230,6 +12216,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -12263,6 +12250,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client Key"
@@ -12270,6 +12258,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -15198,7 +15187,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-surveymonkey:0.1.15"
+- dockerImage: "airbyte/source-surveymonkey:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/surveymonkey"
     connectionSpecification:
@@ -16237,7 +16226,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-twilio:0.4.0"
+- dockerImage: "airbyte/source-twilio:0.5.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/twilio"
     connectionSpecification:
