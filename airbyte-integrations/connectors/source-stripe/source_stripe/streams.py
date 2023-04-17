@@ -427,6 +427,7 @@ class Plans(IncrementalStripeStream):
         params["expand[]"] = ["data.tiers"]
         return params
 
+
 class Products(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/products/list
@@ -475,6 +476,7 @@ class SubscriptionItems(StripeSubStream):
         params["subscription"] = stream_slice[self.parent_id]
         return params
 
+
 class SubscriptionSchedule(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/subscription_schedules
@@ -484,7 +486,7 @@ class SubscriptionSchedule(IncrementalStripeStream):
 
     def path(self, **kwargs):
         return "subscription_schedules"
-    
+
 
 class Transfers(IncrementalStripeStream):
     """
