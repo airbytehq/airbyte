@@ -1,12 +1,11 @@
-#
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-#
-from dagster import define_asset_job
+from dagster import define_asset_job, AssetSelection
 
+metadata_definitions_inclusive = AssetSelection.keys("metadata_directory_report", "metadata_definitions").upstream()
+registry_reports_inclusive = AssetSelection.keys("connector_registry_location_html", "connector_registry_location_markdown").upstream()
 
-generate_registry = define_asset_job(name="generate_registry", selection=["metadata_directory_report", "metadata_definitions"])
-generate_registry_markdown = define_asset_job(
-    name="generate_registry_markdown", selection=["connector_registry_location_html", "connector_registry_location_markdown"]
-)
+generate_registry = define_asset_job(name="generate_registry", selection=metadata_definitions_inclusive)
+generate_registry_markdown = define_asset_job(name="generate_registry_markdown", selection=registry_reports_inclusive)
+
+# TODO come and address
 generate_local_metadata_files = define_asset_job(name="generate_local_metadata_files", selection=["persist_metadata_definitions"])
 generate_specs_secrets_mask_file = define_asset_job(name="generate_specs_secrets_mask_file", selection=["persist_specs_secrets_mask"])

@@ -82,7 +82,7 @@ ASSETS = [
 
 RESOURCES = {
     "metadata_file_directory": simple_local_file_manager.configured({"base_dir": "/tmp/metadata"}),
-    "github_client": github_client,
+    "github_client": github_client.configured({"github_token": {"env": "GITHUB_METADATA_SERVICE_TOKEN"}}),
     "github_connector_repo": github_connector_repo.configured({"connector_repo_name": CONNECTOR_REPO_NAME}),
     "github_connectors_directory": github_connectors_directory.configured({"connectors_path": CONNECTORS_PATH}),
     "gcp_gcs_client": gcp_gcs_client.configured(
