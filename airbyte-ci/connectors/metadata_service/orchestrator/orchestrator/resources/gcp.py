@@ -39,7 +39,7 @@ def gcs_bucket_manager(resource_context: InitResourceContext) -> storage.Bucket:
     required_resource_keys={"gcp_gcs_client"},
     config_schema={
         "gcs_bucket": StringSource,
-        "gcs_prefix": StringSource,
+        "prefix": StringSource,
     },
 )
 def gcs_file_manager(resource_context) -> GCSFileManager:
@@ -53,14 +53,14 @@ def gcs_file_manager(resource_context) -> GCSFileManager:
     return GCSFileManager(
         client=storage_client,
         gcs_bucket=resource_context.resource_config["gcs_bucket"],
-        gcs_base_key=resource_context.resource_config["gcs_prefix"],
+        gcs_base_key=resource_context.resource_config["prefix"],
     )
 
 
 @resource(
     required_resource_keys={"gcs_bucket_manager"},
     config_schema={
-        "gcs_prefix": StringSource,
+        "prefix": StringSource,
         "gcs_filename": StringSource,
     },
 )
@@ -73,9 +73,9 @@ def gcs_file_blob(resource_context: InitResourceContext) -> storage.Blob:
     """
     bucket = resource_context.resources.gcs_bucket_manager
 
-    gcs_prefix = resource_context.resource_config["gcs_prefix"]
+    prefix = resource_context.resource_config["prefix"]
     gcs_filename = resource_context.resource_config["gcs_filename"]
-    gcs_file_path = f"{gcs_prefix}/{gcs_filename}"
+    gcs_file_path = f"{prefix}/{gcs_filename}"
 
     resource_context.log.info(f"retrieving gcs file blob for {gcs_file_path}")
 
@@ -84,3 +84,27 @@ def gcs_file_blob(resource_context: InitResourceContext) -> storage.Blob:
         raise Exception(f"File does not exist at path: {gcs_file_path}")
 
     return gcs_file_blob
+
+
+@resource(
+    required_resource_keys={"gcs_bucket_manager"},
+    config_schema={
+        "prefix": StringSource,
+        "suffix": StringSource,
+    },
+)
+def gcs_directory_blobs(resource_context: InitResourceContext) -> storage.Blob:
+    """
+    List all blobs in a bucket that match the prefix.
+    """
+    bucket = resource_context.resources.gcs_bucket_manager
+    prefix = resource_context.resource_config["prefix"]
+    suffix = resource_context.resource_config["suffix"]
+
+    resource_context.log.info(f"retrieving gcs file blobs for prefix: {prefix}, suffix: {suffix}")
+
+    gcs_file_blobs = bucket.list_blobs(prefix=prefix)
+    if suffix:
+        gcs_file_blobs = [blob for blob in gcs_file_blobs if blob.name.endswith(suffix)]
+
+    return gcs_file_blobs
