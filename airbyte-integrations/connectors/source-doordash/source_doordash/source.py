@@ -26,14 +26,6 @@ class DoordashStream(HttpStream, ABC):
 
 # Basic incremental stream
 class IncrementalDoordashStream(DoordashStream):    
-    def get_state_value(self, stream_state: Mapping[str, Any] = None) -> str:
-        # TODO: This is being called by stream_slices() in OrderDetails and this whole function may not be needed.
-        state = stream_state.get(self.cursor_field) if stream_state else self.start_date_from_config
-        if not state:
-            self.logger.info(f"Stream state for `{self.name}` was not emmited, falling back to default value: {self.start_date_from_config}")
-            return self.start_date_from_config
-        return state
-
     def get_updated_state(
         self,
         current_stream_state: MutableMapping[str, Any],
@@ -137,13 +129,6 @@ class OrderDetails(IncrementalDoordashStream):
                             # Yield return each row as a json record.
                             for row in csv_reader:
                                 yield row
-
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        # TODO: This whole function may not be needed (Airbyte should be managing the state). Remove if not necessary.
-        state = self.get_state_value(stream_state)        
-        yield super().stream_slices(sync_mode=sync_mode, stream_state=state)
 
 class SourceDoordash(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
