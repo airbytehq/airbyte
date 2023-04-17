@@ -202,7 +202,11 @@ public class IntegrationRunner {
     // https://jsonlines.org/ standard
     final Scanner input = new Scanner(System.in, StandardCharsets.UTF_8).useDelimiter("[\r\n]+");
     consumer.start();
+    int numMessages = 0;
     while (input.hasNext()) {
+      if (numMessages++ % 100 == 0) {
+        LOGGER.info("Message Count: " + numMessages);
+      }
       consumeMessage(consumer, input.next());
     }
   }
