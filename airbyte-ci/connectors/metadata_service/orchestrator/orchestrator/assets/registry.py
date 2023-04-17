@@ -6,11 +6,17 @@ import json
 from typing import List
 
 import pandas as pd
-from dagster import OpExecutionContext, asset
+from dagster import asset, OpExecutionContext, MetadataValue, Output
+
 from metadata_service.spec_cache import get_cached_spec
-from orchestrator.models.metadata import PartialMetadataDefinition
+
+from orchestrator.models.metadata import PartialMetadataDefinition, MetadataDefinition
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 from orchestrator.utils.object_helpers import deep_copy_params
+
+from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
+
+
 
 GROUP_NAME = "registry"
 
@@ -147,36 +153,64 @@ def construct_registry_with_spec_from_registry(registry: dict, cached_specs: Out
             raise MissingCachedSpecError(f"No cached spec found for {entry['dockerRegistry']:{entry['dockerImageTag']}}")
     return registry_with_specs
 
+def persist_registry_to_json(registry: dict, registry_name: str, registry_directory_manager: GCSFileManager) -> GCSFileHandle:
+    """Persist the registry to a json file.
+
+    Args:
+        registry (dict): The registry.
+        registry_name (str): The name of the registry. One of "cloud" or "oss".
+        registry_directory_manager (OutputDataFrame): The registry directory manager.
+
+    Returns:
+        OutputDataFrame: The registry directory manager.
+    """
+    registry_file_name = f"{registry_name}_registry"
+    registry_json = json.dumps(registry)
+    registry_directory_manager.write_data(registry_json, ext="json", key=registry_file_name)
+
+    return registry_directory_manager
 
 # ASSETS
 
 
+
 @asset(group_name=GROUP_NAME)
 def cloud_registry_from_metadata(
-    registry_derived_metadata_definitions: List[PartialMetadataDefinition], cached_specs: OutputDataFrame
+    context: OpExecutionContext, metadata_definitions: List[MetadataDefinition], cached_specs: OutputDataFrame
 ) -> dict:
     """
     This asset is used to generate the cloud registry from the metadata definitions.
-
-    TODO (ben): This asset should be updated to use the GCS metadata definitions once available.
     """
-    from_metadata = construct_registry_from_metadata(registry_derived_metadata_definitions, "cloud")
-    from_metadata_and_spec = construct_registry_with_spec_from_registry(from_metadata, cached_specs)
-    return from_metadata_and_spec
+    registry_name = "cloud"
+    from_metadata = construct_registry_from_metadata(metadata_definitions, registry_name)
+    registry_dict = construct_registry_with_spec_from_registry(from_metadata, cached_specs)
+    file_handle = persist_registry_to_json(registry_dict, registry_name, context.file_manager)
+
+    metadata = {
+        "gcs_path": MetadataValue.url(file_handle.gcs_path),
+    }
+
+    return Output(metadata=metadata, value=registry_dict)
 
 
 @asset(group_name=GROUP_NAME)
-def oss_registry_from_metadata(registry_derived_metadata_definitions: List[PartialMetadataDefinition], cached_specs: OutputDataFrame) -> dict:
+def oss_registry_from_metadata(context: OpExecutionContext, metadata_definitions: List[MetadataDefinition], cached_specs: OutputDataFrame) -> dict:
     """
     This asset is used to generate the oss registry from the metadata definitions.
-
-    TODO (ben): This asset should be updated to use the GCS metadata definitions once available.
     """
-    from_metadata = construct_registry_from_metadata(registry_derived_metadata_definitions, "oss")
-    from_metadata_and_spec = construct_registry_with_spec_from_registry(from_metadata, cached_specs)
-    return from_metadata_and_spec
+    registry_name = "oss"
+    from_metadata = construct_registry_from_metadata(metadata_definitions, registry_name)
+    registry_dict = construct_registry_with_spec_from_registry(from_metadata, cached_specs)
+    file_handle = persist_registry_to_json(registry_dict, registry_name, context.file_manager)
+
+    metadata = {
+        "gcs_path": MetadataValue.url(file_handle.gcs_path),
+    }
+
+    return Output(metadata=metadata, value=registry_dict)
 
 
+# TODO legacy or latest?
 @asset(group_name=GROUP_NAME)
 def cloud_sources_dataframe(latest_cloud_registry_dict: dict) -> OutputDataFrame:
     sources = latest_cloud_registry_dict["sources"]
@@ -201,17 +235,22 @@ def oss_destinations_dataframe(latest_oss_registry_dict: dict) -> OutputDataFram
     return output_dataframe(pd.DataFrame(destinations))
 
 
-@asset(required_resource_keys={"latest_cloud_registry_gcs_file"}, group_name=GROUP_NAME)
+@asset(required_resource_keys={"latest_cloud_registry_gcs_blob"}, group_name=GROUP_NAME)
 def latest_cloud_registry_dict(context: OpExecutionContext) -> dict:
-    oss_registry_file = context.resources.latest_cloud_registry_gcs_file
+    oss_registry_file = context.resources.latest_cloud_registry_gcs_blob
     json_string = oss_registry_file.download_as_string().decode("utf-8")
     oss_registry_dict = json.loads(json_string)
     return oss_registry_dict
 
 
-@asset(required_resource_keys={"latest_oss_registry_gcs_file"}, group_name=GROUP_NAME)
+@asset(required_resource_keys={"latest_oss_registry_gcs_blob"}, group_name=GROUP_NAME)
 def latest_oss_registry_dict(context: OpExecutionContext) -> dict:
-    oss_registry_file = context.resources.latest_oss_registry_gcs_file
+    oss_registry_file = context.resources.latest_oss_registry_gcs_blob
     json_string = oss_registry_file.download_as_string().decode("utf-8")
     oss_registry_dict = json.loads(json_string)
     return oss_registry_dict
+
+
+# NET new
+
+

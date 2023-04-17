@@ -3,7 +3,7 @@ import json
 from google.cloud import storage
 from google.oauth2 import service_account
 
-from dagster import StringSource, InitResourceContext, resource
+from dagster import StringSource, InitResourceContext, Noneable, resource
 from dagster_gcp.gcs.file_manager import GCSFileManager
 
 
@@ -39,7 +39,7 @@ def gcs_bucket_manager(resource_context: InitResourceContext) -> storage.Bucket:
     required_resource_keys={"gcp_gcs_client"},
     config_schema={
         "gcs_bucket": StringSource,
-        "prefix": StringSource,
+        "prefix": StringSource
     },
 )
 def gcs_file_manager(resource_context) -> GCSFileManager:
@@ -60,7 +60,7 @@ def gcs_file_manager(resource_context) -> GCSFileManager:
 @resource(
     required_resource_keys={"gcs_bucket_manager"},
     config_schema={
-        "prefix": StringSource,
+        "prefix": Noneable(StringSource),
         "gcs_filename": StringSource,
     },
 )
@@ -75,12 +75,12 @@ def gcs_file_blob(resource_context: InitResourceContext) -> storage.Blob:
 
     prefix = resource_context.resource_config["prefix"]
     gcs_filename = resource_context.resource_config["gcs_filename"]
-    gcs_file_path = f"{prefix}/{gcs_filename}"
+    gcs_file_path = f"{prefix}/{gcs_filename}" if prefix else gcs_filename
 
     resource_context.log.info(f"retrieving gcs file blob for {gcs_file_path}")
 
     gcs_file_blob = bucket.get_blob(gcs_file_path)
-    if not gcs_file_blob.exists():
+    if not gcs_file_blob or not gcs_file_blob.exists():
         raise Exception(f"File does not exist at path: {gcs_file_path}")
 
     return gcs_file_blob
