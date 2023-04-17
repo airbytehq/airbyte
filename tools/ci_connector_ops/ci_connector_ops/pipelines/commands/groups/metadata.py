@@ -98,14 +98,14 @@ def upload(ctx: click.Context, gcs_bucket_name: str, gcs_credentials: str, modif
     )
 
 
-
-
 # DEPLOY GROUP
+
 
 @metadata.group(help="Commands related to deploying components of the metadata service.")
 @click.pass_context
 def deploy(ctx: click.Context):
     pass
+
 
 @deploy.command(cls=DaggerPipelineCommand, name="orchestrator", help="Deploy the metadata service orchestrator to production")
 @click.pass_context
@@ -156,7 +156,3 @@ def test_orchestrator(ctx: click.Context):
         ctx.obj.get("pipeline_start_timestamp"),
         ctx.obj.get("ci_context"),
     )
-
-
-if __name__ == "__main__":
-    test_lib()
