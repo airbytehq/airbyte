@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  connectorSubtype: file
+  connectorType: source
+  definitionId: 2a8c41ae-8c23-4be0-a73f-2ab10ca1a820
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-gcs
+  githubIssueLabel: source-gcs
+  icon: gcs.svg
+  license: MIT
+  name: GCS
+  supportUrl: https://docs.airbyte.com/integrations/sources/gcs
+metadataSpecVersion: "1.0"
