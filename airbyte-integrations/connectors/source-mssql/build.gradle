@@ -21,7 +21,7 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
 
-    implementation 'io.debezium:debezium-connector-sqlserver:2.1.2.Final'
+    implementation libs.debezium.sqlserver
     implementation 'com.microsoft.sqlserver:mssql-jdbc:10.2.1.jre8'
     implementation 'org.codehaus.plexus:plexus-utils:3.4.2'
 

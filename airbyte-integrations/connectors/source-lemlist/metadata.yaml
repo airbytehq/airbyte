@@ -1,0 +1,17 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 789f8e7a-2d28-11ec-8d3d-0242ac130003
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-lemlist
+  githubIssueLabel: source-lemlist
+  license: MIT
+  name: Lemlist
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/lemlist
+metadataSpecVersion: "1.0"

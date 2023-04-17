@@ -1,0 +1,24 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: file
+  connectorType: destination
+  definitionId: b4c5d105-31fd-4817-96b6-cb923bfc04cb
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/destination-azure-blob-storage
+  githubIssueLabel: destination-azure-blob-storage
+  icon: azureblobstorage.svg
+  license: MIT
+  name: Azure Blob Storage
+  releaseStage: alpha
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 1Gi
+          memory_request: 1Gi
+  supportUrl: https://docs.airbyte.com/integrations/destinations/azureblobstorage
+metadataSpecVersion: "1.0"
