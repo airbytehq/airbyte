@@ -10,66 +10,57 @@ definitions:
       username: "{{ config['api_id'] }}"
       password: "{{ config['api_token'] }}"
 
+  record_retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: ["{{ parameters.name }}"]
+
   calls_stream:
     type: DeclarativeStream
+    $parameters:
+      name: "calls"
+      path: "/calls"
     retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["calls"]
+      $ref: "#/definitions/record_retriever"
       paginator:
         type: NoPagination
       requester:
         $ref: "#/definitions/requester"
-    name: "calls"
-    $parameters:
-      path: "/calls"
 
   company_stream:
     type: DeclarativeStream
+    $parameters:
+      name: "company"
+      path: "/company"
     retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["company"]
+      $ref: "#/definitions/record_retriever"
       paginator:
         type: NoPagination
       requester:
         $ref: "#/definitions/requester"
-    name: "company"
-    $parameters:
-      path: "/company"
 
   contacts_stream:
     type: DeclarativeStream
+    $parameters:
+      name: "contacts"
+      path: "/contacts"
     retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["contacts"]
+      $ref: "#/definitions/record_retriever"
       paginator:
         type: NoPagination
       requester:
         $ref: "#/definitions/requester"
-    name: "contacts"
-    $parameters:
-      path: "/contacts"
 
   numbers_stream:
     type: DeclarativeStream
+    $parameters:
+      name: "numbers"
+      path: "/numbers"
     retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["numbers"]
+      $ref: "#/definitions/record_retriever"
       paginator:
         type: NoPagination
       requester:
@@ -87,28 +78,20 @@ definitions:
         datetime: "{{ today_utc() }}"
         datetime_format: "%Y-%m-%d"
       step: "P1M"
-    name: "numbers"
     primary_key: "id"
-    $parameters:
-      path: "/numbers"
 
   tags_stream:
     type: DeclarativeStream
+    $parameters:
+      name: "tags"
+      path: "/tags"
     retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["tags"]
+      $ref: "#/definitions/record_retriever"
       paginator:
         type: NoPagination
       requester:
         $ref: "#/definitions/requester"
-    name: "tags"
     primary_key: "id"
-    $parameters:
-      path: "/tags"
 
   user_retriever:
     type: SimpleRetriever
@@ -142,13 +125,11 @@ definitions:
 
   teams_stream:
     type: DeclarativeStream
+    $parameters:
+      name: "teams"
+      path: "/teams"
     retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["teams"]
+      $ref: "#/definitions/record_retriever"
       paginator:
         type: NoPagination
       requester:
@@ -166,28 +147,20 @@ definitions:
         datetime: "{{ today_utc() }}"
         datetime_format: "%Y-%m-%d"
       step: "P1M"
-    name: "teams"
     primary_key: "id"
-    $parameters:
-      path: "/teams"
 
   webhooks_stream:
     type: DeclarativeStream
+    $parameters:
+      name: "webhooks"
+      path: "/webhooks"
     retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["webhooks"]
+      $ref: "#/definitions/record_retriever"
       paginator:
         type: NoPagination
       requester:
         $ref: "#/definitions/requester"
-    name: "webhooks"
     primary_key: "id"
-    $parameters:
-      path: "/webhooks"
 
 streams:
   - "#/definitions/calls_stream"
