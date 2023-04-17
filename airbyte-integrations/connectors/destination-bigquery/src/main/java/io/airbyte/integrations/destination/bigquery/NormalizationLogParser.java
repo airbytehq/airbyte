@@ -6,11 +6,12 @@ package io.airbyte.integrations.destination.bigquery;
  * we'll need to extract it anyway when we start doing other destinations
  */
 
+import static io.airbyte.integrations.destination.bigquery.SentryExceptionHelper.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.bigquery.SentryExceptionHelper.ErrorMapKeys;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage.FailureType;
 import io.airbyte.protocol.models.AirbyteLogMessage;
@@ -22,15 +23,11 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.util.Strings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A simple wrapper for base-normalization logs. Reads messages off of stdin and sticks them into appropriate AirbyteMessages (log or trace), then
@@ -152,7 +149,7 @@ public class NormalizationLogParser {
     final List<String> errors = normalizationLogParser.getDbtErrors();
     final String dbtErrorStack = String.join("\n", errors);
     if (!"".equals(dbtErrorStack)) {
-      final Map<ErrorMapKeys, String> errorMap = SentryExceptionHelper.getUsefulErrorMessageAndTypeFromDbtError(dbtErrorStack);
+      final Map<ErrorMapKeys, String> errorMap = getUsefulErrorMessageAndTypeFromDbtError(dbtErrorStack);
       String internalMessage = errorMap.get(ErrorMapKeys.ERROR_MAP_MESSAGE_KEY);
       AirbyteMessage traceMessage = new AirbyteMessage()
           .withType(Type.TRACE)
@@ -162,7 +159,7 @@ public class NormalizationLogParser {
               .withError(new AirbyteErrorTraceMessage()
                   .withFailureType(FailureType.SYSTEM_ERROR)
                   .withMessage("Normalization failed during the dbt run. This may indicate a problem with the data itself.")
-                  .withStackTrace("edgao_test_AirbyteDbtError: \n" + dbtErrorStack)
+                  .withStackTrace("AirbyteDbtError: \n" + dbtErrorStack)
                   .withInternalMessage(internalMessage)));
       System.out.println(logMessage(Level.WARN, "Emitting trace message: " + Jsons.serialize(traceMessage)));
       System.out.println(Jsons.serialize(traceMessage));
