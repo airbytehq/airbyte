@@ -2,7 +2,7 @@
   "required": ["start_date", "credentials"],
   "properties": {
     "start_date": {
-      "format": "date-time"
+      "default": "2023-04-17T00:00:00.000Z"
     },
     "credentials": {
       "title": "Authenticate using",
