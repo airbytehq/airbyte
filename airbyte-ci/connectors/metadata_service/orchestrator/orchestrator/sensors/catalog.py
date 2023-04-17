@@ -1,9 +1,6 @@
-from typing import List
 from dagster import sensor, RunRequest, SkipReason, SensorDefinition, SensorEvaluationContext, build_resources, DefaultSensorStatus
 
-
-def generate_composite_etag_cursor(etags: List[str]):
-    return ":".join(etags)
+from orchestrator.utils.dagster_helpers import serialize_composite_etags_cursor
 
 
 def catalog_updated_sensor(job, resources_def) -> SensorDefinition:
@@ -27,7 +24,7 @@ def catalog_updated_sensor(job, resources_def) -> SensorDefinition:
             etag_cursor = context.cursor or None
             context.log.info(f"Old etag cursor: {etag_cursor}")
 
-            new_etag_cursor = generate_composite_etag_cursor(
+            new_etag_cursor = serialize_composite_etags_cursor(
                 [resources.latest_oss_catalog_gcs_file.etag, resources.latest_cloud_catalog_gcs_file.etag]
             )
             context.log.info(f"New etag cursor: {new_etag_cursor}")
@@ -38,7 +35,7 @@ def catalog_updated_sensor(job, resources_def) -> SensorDefinition:
                 context.log.info("No new catalogs in GCS bucket")
                 return SkipReason("No new catalogs in GCS bucket")
 
-            context.update_cursor(new_etag_cursor)  # Question: what happens if the run fails? is the cursor still updated?
+            context.update_cursor(new_etag_cursor)
             context.log.info("New catalogs in GCS bucket")
             return RunRequest(run_key="updated_catalogs")
 
