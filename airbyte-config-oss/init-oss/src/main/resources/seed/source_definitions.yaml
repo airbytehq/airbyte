@@ -211,7 +211,7 @@
 - name: Bing Ads
   sourceDefinitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
   dockerRepository: airbyte/source-bing-ads
-  dockerImageTag: 0.1.18
+  dockerImageTag: 0.1.19
   documentationUrl: https://docs.airbyte.com/integrations/sources/bing-ads
   icon: bingads.svg
   sourceType: api
@@ -562,7 +562,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.3.2
+  dockerImageTag: 0.3.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -2007,7 +2007,7 @@
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 3.1.0
+  dockerImageTag: 3.2.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api
@@ -2061,6 +2061,17 @@
   allowedHosts:
     hosts:
       - api.tempo.io
+- name: Teradata
+  sourceDefinitionId: aa8ba6fd-4875-d94e-fc8d-4e1e09aa2503
+  dockerRepository: airbyte/source-teradata
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/teradata
+  icon: teradata.svg
+  sourceType: database
+  releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${host}"
 - name: TiDB
   sourceDefinitionId: 0dad1a35-ccf8-4d03-b73e-6788c00b13ae
   dockerRepository: airbyte/source-tidb
@@ -2428,7 +2439,7 @@
   allowedHosts:
     hosts:
       - "*"
-  maxSecondsBetweenMessages: 43200
+  maxSecondsBetweenMessages: 64800
 - name: Zuora
   sourceDefinitionId: 3dc3037c-5ce8-4661-adc2-f7a9e3c5ece5
   dockerRepository: airbyte/source-zuora

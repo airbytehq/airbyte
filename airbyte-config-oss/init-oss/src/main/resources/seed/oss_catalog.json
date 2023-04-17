@@ -9715,7 +9715,7 @@
     "sourceDefinitionId": "47f25999-dd5e-4636-8c39-e7cea2453331",
     "name": "Bing Ads",
     "dockerRepository": "airbyte/source-bing-ads",
-    "dockerImageTag": "0.1.18",
+    "dockerImageTag": "0.1.19",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/bing-ads",
     "icon": "bingads.svg",
     "sourceType": "api",
@@ -12073,7 +12073,7 @@
     "sourceDefinitionId": "e7778cfc-e97c-4458-9ecb-b4f2bba8946c",
     "name": "Facebook Marketing",
     "dockerRepository": "airbyte/source-facebook-marketing",
-    "dockerImageTag": "0.3.2",
+    "dockerImageTag": "0.3.3",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/facebook-marketing",
     "icon": "facebook.svg",
     "sourceType": "api",
@@ -24442,7 +24442,7 @@
     "sourceDefinitionId": "e094cb9a-26de-4645-8761-65c0c425d1de",
     "name": "Stripe",
     "dockerRepository": "airbyte/source-stripe",
-    "dockerImageTag": "3.1.0",
+    "dockerImageTag": "3.2.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/stripe",
     "icon": "stripe.svg",
     "sourceType": "api",
@@ -27624,7 +27624,7 @@
     "allowedHosts": {
       "hosts": [ "*" ]
     },
-    "maxSecondsBetweenMessages": 43200
+    "maxSecondsBetweenMessages": 64800
   }, {
     "sourceDefinitionId": "3dc3037c-5ce8-4661-adc2-f7a9e3c5ece5",
     "name": "Zuora",
