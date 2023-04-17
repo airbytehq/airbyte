@@ -1,3 +1,6 @@
 {
-  "access_token": "XXXXXXXXXXXXXXXXXXXXXXXXXX"
+  "app_key": "XXXXXXXXXXXXXXXXXXX",
+  "access_token": "YYYYYYYYYYYYYYYY",
+  "start_date": "2020-04-12T18:42:50.000Z",
+  "email": "example@gmail.com"
 }

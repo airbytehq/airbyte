@@ -18349,7 +18349,7 @@
       required:
         - access_token
         - app_key
-        - date_from
+        - start_date
         - email
       additionalProperties: true
       properties:
@@ -18362,7 +18362,7 @@
           title: App Key
           type: string
           description: App key found at settings (Ref- https://settings.yotpo.com/#/general_settings)
-        date_from:
+        start_date:
           title: Date-From Filter
           type: string
           description: Date time filter for incremental filter, Specify which date to extract from.

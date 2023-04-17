@@ -1,12 +1,16 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Reviews Schema",
+  "additionalProperties": true,
   "type": "object",
   "properties": {
     "id": {
       "type": ["null", "number"]
     },
     "title": {
+      "type": ["null", "string"]
+    },
+    "incentive_type": {
       "type": ["null", "string"]
     },
     "content": {
