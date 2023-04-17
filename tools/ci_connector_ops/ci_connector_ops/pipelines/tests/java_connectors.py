@@ -102,8 +102,8 @@ class GradleTask(Step, ABC):
 
     DESTINATION_BUILD_INCLUDE = [
         "airbyte-integrations/connectors/destination-jdbc",
-        # destination-bigquery uses utils from destination gcs
         "airbyte-integrations/connectors/destination-gcs",
+        "airbyte-integrations/connectors/destination-azure-blob-storage",
     ]
 
     # These are the lines we remove from the connector gradle file to ignore specific tasks / plugins.
