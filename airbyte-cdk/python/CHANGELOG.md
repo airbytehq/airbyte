@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.35.0
+low-code: simplify session token authenticator interface
+
 ## 0.34.3
 low-code: fix typo in ManifestDeclarativeSource
 
