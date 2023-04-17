@@ -9,7 +9,6 @@ package io.airbyte.integrations.destination.bigquery;
 import static io.airbyte.integrations.destination.bigquery.SentryExceptionHelper.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
@@ -81,8 +80,8 @@ public class NormalizationLogParser {
    * There are two cases here: Either the json is already an AirbyteMessage (and we should just emit it without change),
    * or it's dbt json log, and we need to do some extra work to convert it to a log message + aggregate error logs.
    */
-  private Stream<AirbyteMessage> jsonToMessage(final JsonNode json) {
-    final Optional<AirbyteMessage> message = Jsons.tryObject(json, AirbyteMessage.class);
+  private Stream<AirbyteMessage> jsonToMessage(final JsonNode jsonLine) {
+    final Optional<AirbyteMessage> message = Jsons.tryObject(jsonLine, AirbyteMessage.class);
     if (message.isPresent()) {
       // This line is already an AirbyteMessage; we can just return it directly
       // (these messages come from the transform_config / transform_catalog scripts)
@@ -108,11 +107,8 @@ public class NormalizationLogParser {
          "type": "log_line"
        }
        */
-      JsonNode jsonLine = json;
-      final String logLevel = (jsonLine.getNodeType() == JsonNodeType.NULL || jsonLine.get("level").isNull())
-                              ? ""
-                              : jsonLine.get("level").asText();
-      String logMsg = jsonLine.get("msg").isNull() ? "" : jsonLine.get("msg").asText();
+      final String logLevel = (jsonLine.hasNonNull("level")) ? jsonLine.get("level").asText() : "";
+      String logMsg = jsonLine.hasNonNull("msg") ? jsonLine.get("msg").asText() : "";
       Level level;
       switch (logLevel) {
         case "debug" -> level = Level.DEBUG;
@@ -161,7 +157,6 @@ public class NormalizationLogParser {
                   .withMessage("Normalization failed during the dbt run. This may indicate a problem with the data itself.")
                   .withStackTrace("AirbyteDbtError: \n" + dbtErrorStack)
                   .withInternalMessage(internalMessage)));
-      System.out.println(logMessage(Level.WARN, "Emitting trace message: " + Jsons.serialize(traceMessage)));
       System.out.println(Jsons.serialize(traceMessage));
     }
   }
