@@ -28416,7 +28416,7 @@
         "$schema": "https://json-schema.org/draft-07/schema#",
         "title": "Yotpo Spec",
         "type": "object",
-        "required": [ "access_token", "app_key", "date_from", "email" ],
+        "required": [ "access_token", "app_key", "start_date", "email" ],
         "additionalProperties": true,
         "properties": {
           "access_token": {
@@ -28430,7 +28430,7 @@
             "type": "string",
             "description": "App key found at settings (Ref- https://settings.yotpo.com/#/general_settings)"
           },
-          "date_from": {
+          "start_date": {
             "title": "Date-From Filter",
             "type": "string",
             "description": "Date time filter for incremental filter, Specify which date to extract from.",
