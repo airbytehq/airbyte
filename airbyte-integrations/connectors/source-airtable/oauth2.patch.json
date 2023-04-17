@@ -1,8 +1,12 @@
 {
     "provider": "airtable",
-    "authUrlTemplate": "https://airtable.com/oauth2/v1/authorize?client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&response_type=code&state={{#urlencode}}{{{ state }}}{{/urlencode}}&scope=data.records:read%20data.recordComments:read%20schema.bases:read    ",
+    "authUrlTemplate": "https://airtable.com/oauth2/v1/authorize?client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&response_type=code&state={{#urlencode}}{{{ state }}}{{/urlencode}}&scope=data.records:read%20data.recordComments:read%20schema.bases:read",
     "accessTokenUrlTemplate": "https://airtable.com/oauth2/v1/token",
     "accessTokenBody": "grant_type=authorization_code&client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&client_secret={{#urlencode}}{{{ client_secret }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&code={{#urlencode}}{{{ code }}}{{/urlencode}}",
     "accessTokenHeaders": {"content-type": "application/x-www-form-urlencoded"},
-    "accessTokenResponseMap": {"refresh_token": "/refresh_token"}
+    "accessTokenResponseMap": {
+        "refresh_token": "/refresh_token",
+        "access_token": "/access_token",
+        "token_expiry_date": "/expires_in"
+    }
 }
