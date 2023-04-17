@@ -370,7 +370,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:2.0.19"
+- dockerImage: "airbyte/source-alloydb:2.0.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -444,15 +444,6 @@
           order: 6
           group: "advanced"
           pattern_descriptor: "key1=value1&key2=value2"
-        ssl:
-          title: "Connect using SSL"
-          description: "Encrypt data using SSL. When activating SSL, please select\
-            \ one of the connection modes."
-          type: "boolean"
-          default: false
-          order: 7
-          group: "security"
-          always_show: true
         ssl_mode:
           title: "SSL Modes"
           description: "SSL connection modes. \n  Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"\
@@ -518,7 +509,7 @@
                 order: 0
               ca_certificate:
                 type: "string"
-                title: "CA certificate"
+                title: "CA Certificate"
                 description: "CA certificate"
                 airbyte_secret: true
                 multiline: true
@@ -530,6 +521,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client Key"
@@ -537,6 +529,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -570,6 +563,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client Key"
@@ -577,6 +571,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -822,7 +817,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-ads:1.0.2"
+- dockerImage: "airbyte/source-amazon-ads:1.0.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-ads"
     connectionSpecification:
@@ -1963,7 +1958,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-bing-ads:0.1.18"
+- dockerImage: "airbyte/source-bing-ads:0.1.19"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/bing-ads"
     connectionSpecification:
@@ -3887,7 +3882,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.3.2"
+- dockerImage: "airbyte/source-facebook-marketing:0.3.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -4275,7 +4270,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-facebook-pages:0.2.3"
+- dockerImage: "airbyte/source-facebook-pages:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-pages"
     connectionSpecification:
@@ -4476,7 +4471,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.37"
+- dockerImage: "airbyte/source-file:0.2.38"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/file"
     connectionSpecification:
@@ -9464,7 +9459,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:2.0.14"
+- dockerImage: "airbyte/source-mysql:2.0.15"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -9579,6 +9574,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client key"
@@ -9588,6 +9584,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -9621,6 +9618,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client key"
@@ -9630,6 +9628,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -12058,7 +12057,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:2.0.20"
+- dockerImage: "airbyte/source-postgres:2.0.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -12197,7 +12196,7 @@
                 order: 0
               ca_certificate:
                 type: "string"
-                title: "CA certificate"
+                title: "CA Certificate"
                 description: "CA certificate"
                 airbyte_secret: true
                 multiline: true
@@ -12209,6 +12208,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client Key"
@@ -12216,6 +12216,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -12249,6 +12250,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 2
+                always_show: true
               client_key:
                 type: "string"
                 title: "Client Key"
@@ -12256,6 +12258,7 @@
                 airbyte_secret: true
                 multiline: true
                 order: 3
+                always_show: true
               client_key_password:
                 type: "string"
                 title: "Client key password"
@@ -15072,7 +15075,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-stripe:3.1.0"
+- dockerImage: "airbyte/source-stripe:3.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
     connectionSpecification:
@@ -15184,7 +15187,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-surveymonkey:0.1.15"
+- dockerImage: "airbyte/source-surveymonkey:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/surveymonkey"
     connectionSpecification:
@@ -15423,6 +15426,180 @@
           description: "Tempo API Token. Go to Tempo>Settings, scroll down to Data\
             \ Access and select API integration."
           airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-teradata:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/teradata"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Teradata Source Spec"
+      type: "object"
+      required:
+      - "host"
+      - "database"
+      - "username"
+      properties:
+        host:
+          title: "Host"
+          description: "Hostname of the database."
+          type: "string"
+          order: 0
+        port:
+          title: "Port"
+          description: "Port of the database."
+          type: "integer"
+          minimum: 0
+          maximum: 65536
+          default: 3306
+          examples:
+          - "3306"
+          order: 1
+        database:
+          title: "Database"
+          description: "Name of the database."
+          type: "string"
+          order: 2
+        username:
+          title: "Username"
+          description: "Username to use to access the database."
+          type: "string"
+          order: 3
+        password:
+          title: "Password"
+          description: "Password associated with the username."
+          type: "string"
+          airbyte_secret: true
+          order: 4
+        jdbc_url_params:
+          title: "JDBC URL params"
+          description: "Additional properties to pass to the JDBC URL string when\
+            \ connecting to the database formatted as 'key=value' pairs separated\
+            \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)"
+          type: "string"
+          order: 5
+        replication_method:
+          title: "Replication method"
+          description: "Replication method to use for extracting data from the database.\
+            \ STANDARD replication requires no setup on the DB side but will not be\
+            \ able to represent deletions incrementally. CDC uses the Binlog to detect\
+            \ inserts, updates, and deletes. This needs to be configured on the source\
+            \ database itself."
+          type: "string"
+          order: 6
+          default: "STANDARD"
+          enum:
+          - "STANDARD"
+          - "CDC"
+        ssl:
+          title: "SSL Connection"
+          description: "Encrypt data using SSL. When activating SSL, please select\
+            \ one of the connection modes."
+          type: "boolean"
+          default: false
+          order: 7
+        ssl_mode:
+          title: "SSL Modes"
+          description: "SSL connection modes. \n <b>disable</b> - Chose this mode\
+            \ to disable encryption of communication between Airbyte and destination\
+            \ database\n <b>allow</b> - Chose this mode to enable encryption only\
+            \ when required by the destination database\n <b>prefer</b> - Chose this\
+            \ mode to allow unencrypted connection only if the destination database\
+            \ does not support encryption\n <b>require</b> - Chose this mode to always\
+            \ require encryption. If the destination database server does not support\
+            \ encryption, connection will fail\n  <b>verify-ca</b> - Chose this mode\
+            \ to always require encryption and to verify that the destination database\
+            \ server has a valid SSL certificate\n  <b>verify-full</b> - This is the\
+            \ most secure mode. Chose this mode to always require encryption and to\
+            \ verify the identity of the destination database server\n See more information\
+            \ - <a href=\"https://teradata-docs.s3.amazonaws.com/doc/connectivity/jdbc/reference/current/jdbcug_chapter_2.html#URL_SSLMODE\"\
+            > in the docs</a>."
+          type: "object"
+          order: 8
+          oneOf:
+          - title: "disable"
+            additionalProperties: true
+            description: "Disable SSL."
+            required:
+            - "mode"
+            properties:
+              mode:
+                type: "string"
+                const: "disable"
+                order: 0
+          - title: "allow"
+            additionalProperties: true
+            description: "Allow SSL mode."
+            required:
+            - "mode"
+            properties:
+              mode:
+                type: "string"
+                const: "allow"
+                order: 0
+          - title: "prefer"
+            additionalProperties: true
+            description: "Prefer SSL mode."
+            required:
+            - "mode"
+            properties:
+              mode:
+                type: "string"
+                const: "prefer"
+                order: 0
+          - title: "require"
+            additionalProperties: true
+            description: "Require SSL mode."
+            required:
+            - "mode"
+            properties:
+              mode:
+                type: "string"
+                const: "require"
+                order: 0
+          - title: "verify-ca"
+            additionalProperties: true
+            description: "Verify-ca SSL mode."
+            required:
+            - "mode"
+            - "ssl_ca_certificate"
+            properties:
+              mode:
+                type: "string"
+                const: "verify-ca"
+                order: 0
+              ssl_ca_certificate:
+                type: "string"
+                title: "CA certificate"
+                description: "Specifies the file name of a PEM file that contains\
+                  \ Certificate Authority (CA) certificates for use with SSLMODE=verify-ca.\n\
+                  \ See more information - <a href=\"https://teradata-docs.s3.amazonaws.com/doc/connectivity/jdbc/reference/current/jdbcug_chapter_2.html#URL_SSLCA\"\
+                  > in the docs</a>."
+                airbyte_secret: true
+                multiline: true
+                order: 1
+          - title: "verify-full"
+            additionalProperties: true
+            description: "Verify-full SSL mode."
+            required:
+            - "mode"
+            - "ssl_ca_certificate"
+            properties:
+              mode:
+                type: "string"
+                const: "verify-full"
+                order: 0
+              ssl_ca_certificate:
+                type: "string"
+                title: "CA certificate"
+                description: "Specifies the file name of a PEM file that contains\
+                  \ Certificate Authority (CA) certificates for use with SSLMODE=verify-full.\n\
+                  \ See more information - <a href=\"https://teradata-docs.s3.amazonaws.com/doc/connectivity/jdbc/reference/current/jdbcug_chapter_2.html#URL_SSLCA\"\
+                  > in the docs</a>."
+                airbyte_secret: true
+                multiline: true
+                order: 1
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -16223,7 +16400,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-twilio:0.4.0"
+- dockerImage: "airbyte/source-twilio:0.5.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/twilio"
     connectionSpecification:
