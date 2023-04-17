@@ -66,4 +66,4 @@ The Criteo source connector supports the following streams. For more information
 
 | Version | Date       | Pull Request                                             | Subject                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------|
-| 0.1.0   | 2023-04-17 | [7092](https://github.com/airbytehq/airbyte/pull/7092)   | Initial Release                                                 |
+| 0.1.0   | 2023-04-17 | [25241](https://github.com/airbytehq/airbyte/pull/25241)   | Initial Release                                                 |
