@@ -10,6 +10,7 @@ def github_client(resource_context: InitResourceContext) -> Github:
     github_token = resource_context.resource_config["github_token"]
     return Github(github_token)
 
+
 @resource(
     required_resource_keys={"github_client"},
     config_schema={"connector_repo_name": StringSource},

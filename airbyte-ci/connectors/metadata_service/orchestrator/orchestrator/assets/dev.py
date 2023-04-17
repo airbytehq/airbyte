@@ -189,7 +189,9 @@ def diff_registries(registry_dict_1: dict, registry_dict_2: dict) -> DeepDiff:
 
 
 @asset(group_name=GROUP_NAME)
-def overrode_metadata_definitions(registry_derived_metadata_definitions: List[PartialMetadataDefinition]) -> List[PartialMetadataDefinition]:
+def overrode_metadata_definitions(
+    registry_derived_metadata_definitions: List[PartialMetadataDefinition],
+) -> List[PartialMetadataDefinition]:
     """
     Overrides the metadata definitions with the values in the OVERRIDES dictionary.
     This is useful for ensuring all connectors are passing validation when we go live.
