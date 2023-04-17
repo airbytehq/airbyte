@@ -51,11 +51,14 @@ You should now have all the requirements needed to configure Databend as a desti
 * **Password**
 * **Database**
 
+## Compatibility
+If your databend version >= v0.9.0 or later, you need to use databend-sqlalchemy version >= v0.1.0. And the [Databend Cloud](https://app.databend.com/) will only support databend version > 0.9.0.
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                  |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------|
-| 0.1.1   | 2022-01-09 | [21182](https://github.com/airbytehq/airbyte/pull/21182)   | Remove protocol option and enforce HTTPS |
-| 0.1.0   | 2022-01-09 | [20909](https://github.com/airbytehq/airbyte/pull/20909)   | Destination Databend                     |
+| Version | Date       | Pull Request                                             | Subject                                         |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
+| 0.1.2   | 2023-02-11 | [22855](https://github.com/airbytehq/airbyte/pull/22855) | Fix compatibility issue with databend-query 0.9 |
+| 0.1.1   | 2022-01-09 | [21182](https://github.com/airbytehq/airbyte/pull/21182) | Remove protocol option and enforce HTTPS        |
+| 0.1.0   | 2022-01-09 | [20909](https://github.com/airbytehq/airbyte/pull/20909) | Destination Databend                            |
 

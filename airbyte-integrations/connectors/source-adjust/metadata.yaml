@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: d3b7fa46-111b-419a-998a-d7f046f6d66d
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-adjust
+  githubIssueLabel: source-adjust
+  icon: adjust.svg
+  license: MIT
+  name: Adjust
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/adjust
+metadataSpecVersion: "1.0"

@@ -102,7 +102,7 @@ Here is the available compression codecs:
 
 #### Data schema
 
-Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.io/understanding-airbyte/json-avro-conversion).
+Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.com/understanding-airbyte/json-avro-conversion).
 
 ### CSV
 
@@ -202,7 +202,7 @@ These parameters are related to the `ParquetOutputFormat`. See the [Java doc](ht
 
 #### Data schema
 
-Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet format. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.io/understanding-airbyte/json-avro-conversion).
+Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet format. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.com/understanding-airbyte/json-avro-conversion).
 
 ## Getting started
 
@@ -237,7 +237,9 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date | Pull Request                                                | Subject |
 |:--------| :--- |:------------------------------------------------------------| :--- |
-| 0.2.14  | 2023-11-23 | [\#21682](https://github.com/airbytehq/airbyte/pull/21682) | Add support for buckets with Customer-Managed Encryption Key                                                               |
+| 0.2.16  | 2023-03-17 | [#23788](https://github.com/airbytehq/airbyte/pull/23788)   | S3-Parquet: added handler to process null values in arrays                                                                                           |
+| 0.2.15  | 2023-03-10 | [#23466](https://github.com/airbytehq/airbyte/pull/23466)   | Changed S3 Avro type from Int to Long                                                                                                                |
+| 0.2.14  | 2023-11-23 | [\#21682](https://github.com/airbytehq/airbyte/pull/21682)  | Add support for buckets with Customer-Managed Encryption Key                                                               |
 | 0.2.13  | 2023-01-18 | [#21087](https://github.com/airbytehq/airbyte/pull/21087)   | Wrap Authentication Errors as Config Exceptions                                                                          |
 | 0.2.12  | 2022-10-18 | [\#17901](https://github.com/airbytehq/airbyte/pull/17901)  | Fix logging to GCS |
 | 0.2.11  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243)  | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields) |

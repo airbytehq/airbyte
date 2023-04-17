@@ -8,15 +8,11 @@ from setuptools import find_packages, setup
 MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.11",
     "cached_property==1.5.2",
-    "facebook_business==15.0.0",
+    "facebook_business==16.0.0",
     "pendulum>=2,<3",
 ]
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "pytest-mock~=3.6",
-    "requests_mock~=1.8",
-]
+TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock~=3.6", "requests_mock~=1.8", "freezegun"]
 
 setup(
     name="source_facebook_marketing",

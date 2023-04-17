@@ -28,6 +28,7 @@ import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -67,10 +68,13 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  protected MongoDatabase createDatabase(final JsonNode config) throws Exception {
-    final var dbConfig = toDatabaseConfig(config);
-    return new MongoDatabase(dbConfig.get("connectionString").asText(),
+  protected MongoDatabase createDatabase(final JsonNode sourceConfig) throws Exception {
+    final var dbConfig = toDatabaseConfig(sourceConfig);
+    final MongoDatabase database = new MongoDatabase(dbConfig.get("connectionString").asText(),
         dbConfig.get(JdbcUtils.DATABASE_KEY).asText());
+    database.setSourceConfig(sourceConfig);
+    database.setDatabaseConfig(toDatabaseConfig(sourceConfig));
+    return database;
   }
 
   @Override
@@ -171,7 +175,9 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   public AutoCloseableIterator<JsonNode> queryTableFullRefresh(final MongoDatabase database,
                                                                final List<String> columnNames,
                                                                final String schemaName,
-                                                               final String tableName) {
+                                                               final String tableName,
+                                                               final SyncMode syncMode,
+                                                               final Optional<String> cursorField) {
     return queryTable(database, columnNames, tableName, null);
   }
 

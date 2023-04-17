@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: d8540a80-6120-485d-b7d6-272bca477d9b
+  dockerImageTag: 0.1.6
+  dockerRepository: airbyte/source-openweather
+  githubIssueLabel: source-openweather
+  icon: openweather.svg
+  license: MIT
+  name: OpenWeather
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/openweather
+metadataSpecVersion: "1.0"

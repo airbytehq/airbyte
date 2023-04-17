@@ -1,5 +1,5 @@
 {
-  "type": ["null", "object"],
+  "type": "object",
   "properties": {
     "adgroup_id": {
       "type": "integer"
@@ -17,71 +17,78 @@
       "type": "string",
       "enum": ["PLACEMENT_TYPE_AUTOMATIC", "PLACEMENT_TYPE_NORMAL"]
     },
-    "placement": {
+    "placements": {
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
-    "enable_inventory_filter": {
+    "inventory_filter_enabled": {
       "type": ["null", "boolean"]
     },
-    "is_comment_disable": {
-      "type": "integer"
+    "comment_disabled": {
+      "type": "boolean"
     },
     "app_id": {
-      "type": ["integer", "null"]
+      "type": ["null", "integer"]
     },
-    "external_type": {
+    "promotion_type": {
       "type": "string",
       "enum": [
         "APP_ANDROID",
         "APP_IOS",
         "WEBSITE",
         "LEAD_GENERATION",
-        "WEBSITE_OR_DISPLAY"
+        "WEBSITE_OR_DISPLAY",
+        "TIKTOK_SHOP",
+        "VIDEO_SHOPPING",
+        "LIVE_SHOPPING"
       ]
     },
     "app_download_url": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "package": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "pixel_id": {
-      "type": ["integer", "null"]
+      "type": ["null", "integer"]
     },
-    "external_action": {
-      "type": ["string", "null"]
+    "optimization_event": {
+      "type": ["null", "string"]
     },
-    "deep_external_action": {
-      "type": ["string", "null"]
+    "secondary_optimization_event": {
+      "type": ["null", "string"]
     },
     "creative_material_mode": {
       "type": "string"
     },
     "modify_time": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "create_time": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
-    "audience": {
+    "audience_ids": {
       "type": "array",
       "items": {
         "type": "integer"
       }
     },
-    "excluded_audience": {
+    "excluded_audience_ids": {
       "type": "array",
       "items": {
         "type": "integer"
       }
     },
     "audience_type": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
-    "location": {
+    "location_ids": {
       "type": "array",
       "items": {
         "type": "integer"
@@ -90,26 +97,26 @@
     "is_hfss": {
       "type": "boolean"
     },
-    "interest_category_v2": {
+    "interest_category_ids": {
       "type": "array",
       "items": {
         "type": "integer"
       }
     },
-    "interest_keywords": {
+    "interest_keyword_ids": {
       "type": "array",
       "items": {
         "type": "integer"
       }
     },
-    "age": {
-      "type": ["array", "null"],
+    "age_groups": {
+      "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "gender": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "languages": {
       "type": "array",
@@ -117,38 +124,38 @@
         "type": "string"
       }
     },
-    "operation_system": {
+    "operating_systems": {
       "type": "array",
       "items": {
         "type": "string"
       }
     },
-    "connection_type": {
+    "network_types": {
       "type": "array",
       "items": {
         "type": "string"
       }
     },
-    "device_price": {
-      "type": ["array", "null"],
+    "device_price_ranges": {
+      "type": ["null", "array"],
       "items": {
         "type": "number"
       }
     },
-    "android_osv": {
-      "type": ["string", "null"]
+    "min_android_version": {
+      "type": ["null", "string"]
     },
-    "ios_target_device": {
-      "type": ["string", "null"]
+    "ios14_targeting": {
+      "type": ["null", "string"]
     },
-    "device_models": {
-      "type": ["array", "null"],
+    "device_model_ids": {
+      "type": ["null", "array"],
       "items": {
         "type": "integer"
       }
     },
-    "ios_osv": {
-      "type": ["string", "null"]
+    "min_ios_version": {
+      "type": ["null", "string"]
     },
     "budget_mode": {
       "type": "string"
@@ -161,86 +168,88 @@
     },
     "schedule_start_time": {
       "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "schedule_end_time": {
       "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "dayparting": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
-    "optimize_goal": {
+    "optimization_goal": {
       "type": "string"
     },
     "cpv_video_duration": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "conversion_window": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "pacing": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "billing_event": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "skip_learning_phase": {
       "type": "integer"
     },
     "bid_type": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
-    "bid": {
+    "bid_price": {
       "type": "number"
     },
-    "conversion_bid": {
+    "conversion_bid_price": {
       "type": "number"
     },
     "deep_bid_type": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
-    "deep_cpabid": {
+    "deep_cpa_bid": {
       "type": "number"
     },
-    "status": {
+    "secondary_status": {
       "type": "string"
     },
-    "opt_status": {
+    "operation_status": {
       "type": "string"
     },
     "frequency": {
-      "type": ["integer", "null"]
+      "type": ["null", "integer"]
     },
     "frequency_schedule": {
-      "type": ["integer", "null"]
+      "type": ["null", "integer"]
     },
     "statistic_type": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
-    "carriers_v2": {
-      "type": ["array", "null"],
+    "carrier_ids": {
+      "type": ["null", "array"],
       "items": {
         "type": "integer"
       }
     },
     "carriers": {
-      "type": ["array", "null"],
+      "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
-    "video_download": {
-      "type": "string"
+    "video_download_disabled": {
+      "type": "boolean"
     },
-    "pangle_block_app_list_id": {
-      "type": ["array", "null"],
+    "blocked_pangle_app_ids": {
+      "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
-    "action_categories": {
-      "type": ["array", "null"],
+    "action_category_ids": {
+      "type": ["null", "array"],
       "items": {
         "type": "string"
       }
@@ -249,34 +258,34 @@
       "type": ["null", "integer"]
     },
     "video_actions": {
-      "type": ["array", "null"],
+      "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
-    "rf_buy_type": {
-      "type": ["string", "null"]
+    "rf_purchased_type": {
+      "type": ["null", "string"]
     },
-    "buy_impression": {
-      "type": ["number", "null"]
+    "purchased_impression": {
+      "type": ["null", "number"]
     },
-    "buy_reach": {
-      "type": ["number", "null"]
+    "purchased_reach": {
+      "type": ["null", "number"]
     },
-    "rf_predict_cpr": {
-      "type": ["number", "null"]
+    "rf_estimated_cpr": {
+      "type": ["null", "number"]
     },
-    "rf_predict_frequency": {
-      "type": ["number", "null"]
+    "rf_estimated_frequency": {
+      "type": ["null", "number"]
     },
-    "pangle_audience_package_include": {
-      "type": ["array", "null"],
+    "included_pangle_audience_package_ids": {
+      "type": ["null", "array"],
       "items": {
         "type": "number"
       }
     },
-    "pangle_audience_package_exclude": {
-      "type": ["array", "null"],
+    "excluded_pangle_audience_package_ids": {
+      "type": ["null", "array"],
       "items": {
         "type": "number"
       }
@@ -290,67 +299,67 @@
     "product_set_id": {
       "type": ["null", "integer"]
     },
-    "catalog_authorized_bc": {
+    "catalog_authorized_bc_id": {
       "type": ["null", "integer"]
     },
     "audience_rule": {
-      "type": ["object", "null"]
+      "type": ["null", "object"]
     },
-    "include_custom_actions": {
-      "type": ["array", "null"],
+    "included_custom_actions": {
+      "type": ["null", "array"],
       "items": {
         "type": "object"
       }
     },
-    "exclude_custom_actions": {
-      "type": ["array", "null"],
+    "excluded_custom_actions": {
+      "type": ["null", "array"],
       "items": {
         "type": "object"
       }
     },
-    "dpa_retargeting_type": {
-      "type": ["string", "null"]
+    "shopping_ads_retargeting_type": {
+      "type": ["null", "string"]
     },
     "split_test_adgroup_ids": {
-      "type": ["array", "null"],
+      "type": ["null", "array"],
       "items": {
         "type": "number"
       }
     },
-    "brand_safety": {
-      "type": ["string", "null"]
+    "brand_safety_type": {
+      "type": ["null", "string"]
     },
     "brand_safety_partner": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "promotion_website_type": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "ios_quota_type": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "roas_bid": {
-      "type": ["number", "null"]
+      "type": ["null", "number"]
     },
-    "action_v2": {
+    "actions": {
       "type": ["null", "array"],
       "items": {
-        "type": ["object", "null"],
+        "type": ["null", "object"],
         "properties": {
-          "action_categories": {
-            "type": ["array", "null"],
+          "action_category_ids": {
+            "type": ["null", "array"],
             "items": {
               "type": "integer"
             }
           },
           "action_period": {
-            "type": ["number", "null"]
+            "type": ["null", "number"]
           },
           "action_scene": {
-            "type": ["string", "null"]
+            "type": ["null", "string"]
           },
-          "user_actions ": {
-            "type": ["array", "null"],
+          "video_user_actions": {
+            "type": ["null", "array"],
             "items": {
               "type": "string"
             }
@@ -359,18 +368,66 @@
       }
     },
     "targeting_expansion": {
-      "type": ["object", "null"],
+      "type": ["null", "object"],
       "properties": {
-        "enable_expansion": {
+        "expansion_enabled": {
           "type": "boolean"
         },
         "expansion_types": {
-          "type": ["array", "null"],
+          "type": ["null", "array"],
           "items": {
             "type": "string"
           }
         }
       }
+    },
+    "schedule_infos": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object"
+      }
+    },
+    "share_disabled": {
+      "type": ["null", "boolean"]
+    },
+    "auto_targeting_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "ios14_quota_type": {
+      "type": ["null", "string"]
+    },
+    "campaign_name": {
+      "type": ["null", "string"]
+    },
+    "bid_display_mode": {
+      "type": ["null", "string"]
+    },
+    "scheduled_budget": {
+      "type": ["null", "number"]
+    },
+    "adgroup_app_profile_page_state": {
+      "type": ["null", "string"]
+    },
+    "keywords": {
+      "type": ["null", "string"]
+    },
+    "next_day_retention": {
+      "type": ["null", "number"]
+    },
+    "category_id": {
+      "type": ["null", "integer"]
+    },
+    "search_result_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "app_type": {
+      "type": ["null", "string"]
+    },
+    "feed_type": {
+      "type": ["null", "string"]
+    },
+    "delivery_mode": {
+      "type": ["null", "string"]
     }
   }
 }
