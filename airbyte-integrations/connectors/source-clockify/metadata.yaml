@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: e71aae8a-5143-11ed-bdc3-0242ac120002
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-clockify
+  githubIssueLabel: source-clockify
+  icon: clockify.svg
+  license: MIT
+  name: Clockify
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/clockify
+metadataSpecVersion: "1.0"

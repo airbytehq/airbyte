@@ -1,0 +1,17 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 06bdb480-2598-40b8-8b0f-fc2e2d2abdda
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-opsgenie
+  githubIssueLabel: source-opsgenie
+  license: MIT
+  name: Opsgenie
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/opsgenie
+metadataSpecVersion: "1.0"
