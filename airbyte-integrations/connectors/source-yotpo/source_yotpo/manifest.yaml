@@ -29,40 +29,7 @@ definitions:
     request_parameters:
       utoken: "{{ config['access_token'] }}"
       email: "{{ config['email'] }}"
-
-  privacy_data_stream:
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["response"]
-      paginator:
-        type: NoPagination
-      requester:
-        $ref: "#/definitions/privacy_stream_requester"
-    name: "privacy_data"
-    $parameters:
-      path: "/data/exists"
   
-  privacy_user_stream:
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["status"]
-      paginator:
-        type: NoPagination
-      requester:
-        $ref: "#/definitions/privacy_stream_requester"
-    name: "privacy_user"
-    $parameters:
-      path: "/data"
 
   reviews_stream:
     type: DeclarativeStream
@@ -138,7 +105,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: ["response"]
+          field_path: ["response", "webhooks"]
       paginator:
         type: NoPagination
       requester:
@@ -148,8 +115,6 @@ definitions:
       path: "/apps/{{ config['app_key'] }}/webhooks"
 
 streams:
-  - "#/definitions/privacy_data_stream"
-  - "#/definitions/privacy_user_stream"
   - "#/definitions/reviews_stream"
   - "#/definitions/reviews_bottomline_stream"
   - "#/definitions/top_reviews_stream"
@@ -158,8 +123,6 @@ streams:
 check:
   type: CheckStream
   stream_names:
-    - "privacy_data"
-    - "privacy_user"
     - "reviews"
     - "reviews_bottomline"
     - "top_reviews"
