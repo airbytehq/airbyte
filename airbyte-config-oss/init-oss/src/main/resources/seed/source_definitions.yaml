@@ -108,6 +108,11 @@
   icon: amplitude.svg
   sourceType: api
   releaseStage: generally_available
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: "8Gi"
   allowedHosts:
     hosts:
       - amplitude.com
