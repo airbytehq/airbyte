@@ -9,7 +9,7 @@ COPY spec.map.json ./
 COPY oauth2.patch.json ./
 COPY streams/* ./streams/
 
-LABEL io.airbyte.version=v1
+LABEL io.airbyte.version=v2
 LABEL io.airbyte.name=airbyte/source-bing-ads
 LABEL FLOW_RUNTIME_PROTOCOL=capture
 LABEL CONNECTOR_PROTOCOL=flow-capture

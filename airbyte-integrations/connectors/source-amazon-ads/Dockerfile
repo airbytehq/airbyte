@@ -5,7 +5,7 @@ ENTRYPOINT ["/airbyte/integration_code/airbyte-to-flow", "--connector-entrypoint
 
 COPY *.json ./
 
-LABEL io.airbyte.version=v1
+LABEL io.airbyte.version=v2
 LABEL io.airbyte.name=airbyte/source-amazon-ads
 LABEL FLOW_RUNTIME_PROTOCOL=capture
 LABEL CONNECTOR_PROTOCOL=flow-capture

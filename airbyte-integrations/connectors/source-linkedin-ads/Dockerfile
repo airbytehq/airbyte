@@ -7,7 +7,7 @@ COPY documentation_url.patch.json ./
 COPY spec.patch.json ./
 COPY oauth2.patch.json ./
 
-LABEL io.airbyte.version=v1
+LABEL io.airbyte.version=v2
 LABEL io.airbyte.name=airbyte/source-linkedin-ads
 LABEL FLOW_RUNTIME_PROTOCOL=capture
 LABEL CONNECTOR_PROTOCOL=flow-capture
