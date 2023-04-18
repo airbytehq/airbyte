@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - api.xero.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:
