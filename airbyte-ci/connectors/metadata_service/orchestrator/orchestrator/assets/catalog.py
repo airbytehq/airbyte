@@ -1,15 +1,25 @@
-import pandas as pd
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+import copy
 import json
 from typing import List
 
-from dagster import asset, OpExecutionContext
-
+import pandas as pd
+from dagster import OpExecutionContext, asset
+from metadata_service.spec_cache import get_cached_spec
+from orchestrator.models.metadata import PartialMetadataDefinition
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 from orchestrator.utils.object_helpers import deep_copy_params
-from orchestrator.models.metadata import PartialMetadataDefinition
-
 
 GROUP_NAME = "catalog"
+
+# ERRORS
+
+
+class MissingCachedSpecError(Exception):
+    pass
+
 
 # HELPERS
 
@@ -116,27 +126,55 @@ def construct_catalog_from_metadata(catalog_derived_metadata_definitions: List[P
     return catalog
 
 
+def construct_registry_with_spec_from_registry(registry: dict, cached_specs: OutputDataFrame) -> dict:
+    entries = [("source", entry) for entry in registry["sources"]] + [("destinations", entry) for entry in registry["destinations"]]
+
+    cached_connector_version = {
+        (cached_spec["docker_repository"], cached_spec["docker_image_tag"]): cached_spec["spec_cache_path"]
+        for cached_spec in cached_specs.to_dict(orient="records")
+    }
+    registry_with_specs = {"sources": [], "destinations": []}
+    for connector_type, entry in entries:
+        try:
+            spec_path = cached_connector_version[(entry["dockerRepository"], entry["dockerImageTag"])]
+            entry_with_spec = copy.deepcopy(entry)
+            entry_with_spec["spec"] = get_cached_spec(spec_path)
+            if connector_type == "source":
+                registry_with_specs["sources"].append(entry_with_spec)
+            else:
+                registry_with_specs["destinations"].append(entry_with_spec)
+        except KeyError:
+            raise MissingCachedSpecError(f"No cached spec found for {entry['dockerRegistry']:{entry['dockerImageTag']}}")
+    return registry_with_specs
+
+
 # ASSETS
 
 
 @asset(group_name=GROUP_NAME)
-def cloud_catalog_from_metadata(catalog_derived_metadata_definitions: List[PartialMetadataDefinition]) -> dict:
+def cloud_catalog_from_metadata(
+    catalog_derived_metadata_definitions: List[PartialMetadataDefinition], cached_specs: OutputDataFrame
+) -> dict:
     """
     This asset is used to generate the cloud catalog from the metadata definitions.
 
     TODO (ben): This asset should be updated to use the GCS metadata definitions once available.
     """
-    return construct_catalog_from_metadata(catalog_derived_metadata_definitions, "cloud")
+    from_metadata = construct_catalog_from_metadata(catalog_derived_metadata_definitions, "cloud")
+    from_metadata_and_spec = construct_registry_with_spec_from_registry(from_metadata, cached_specs)
+    return from_metadata_and_spec
 
 
 @asset(group_name=GROUP_NAME)
-def oss_catalog_from_metadata(catalog_derived_metadata_definitions: List[PartialMetadataDefinition]) -> dict:
+def oss_catalog_from_metadata(catalog_derived_metadata_definitions: List[PartialMetadataDefinition], cached_specs: OutputDataFrame) -> dict:
     """
     This asset is used to generate the oss catalog from the metadata definitions.
 
     TODO (ben): This asset should be updated to use the GCS metadata definitions once available.
     """
-    return construct_catalog_from_metadata(catalog_derived_metadata_definitions, "oss")
+    from_metadata = construct_catalog_from_metadata(catalog_derived_metadata_definitions, "oss")
+    from_metadata_and_spec = construct_registry_with_spec_from_registry(from_metadata, cached_specs)
+    return from_metadata_and_spec
 
 
 @asset(group_name=GROUP_NAME)
