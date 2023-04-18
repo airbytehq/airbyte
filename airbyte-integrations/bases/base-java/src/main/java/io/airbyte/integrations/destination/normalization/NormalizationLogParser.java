@@ -1,12 +1,5 @@
 package io.airbyte.integrations.destination.normalization;
 
-/*
- * This class should probably live in a higher library
- * just putting it here for now for convenience
- * we'll need to extract it anyway when we start doing other destinations
- */
-
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
