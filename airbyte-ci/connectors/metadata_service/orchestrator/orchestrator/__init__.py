@@ -48,7 +48,7 @@ from orchestrator.jobs.registry import generate_registry_markdown, generate_loca
 from orchestrator.sensors.registry import registry_updated_sensor
 from orchestrator.sensors.metadata import metadata_updated_sensor
 
-from orchestrator.config import REPORT_FOLDER, REGISTRY_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME
+from orchestrator.config import REPORT_FOLDER, REGISTRIES_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
 
 ASSETS = [
@@ -91,11 +91,11 @@ RESOURCES = {
         }
     ),
     "gcs_bucket_manager": gcs_bucket_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}}),
-    "registry_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRY_FOLDER}),
+    "registry_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER}),
     "registry_report_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REPORT_FOLDER}),
     "metadata_file_blobs": gcs_directory_blobs.configured({"prefix": METADATA_FOLDER, "suffix": METADATA_FILE_NAME}),
-    "latest_oss_registry_gcs_file": gcs_file_blob.configured({"prefix": REGISTRY_FOLDER, "gcs_filename": "oss_registry.json"}),
-    "latest_cloud_registry_gcs_file": gcs_file_blob.configured({"prefix": REGISTRY_FOLDER, "gcs_filename": "cloud_registry.json"}),
+    "latest_oss_registry_gcs_file": gcs_file_blob.configured({"prefix": REGISTRIES_FOLDER, "gcs_filename": "oss_registry.json"}),
+    "latest_cloud_registry_gcs_file": gcs_file_blob.configured({"prefix": REGISTRIES_FOLDER, "gcs_filename": "cloud_registry.json"}),
 }
 
 SENSORS = [
