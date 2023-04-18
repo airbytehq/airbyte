@@ -20,7 +20,12 @@ parser = argparse.ArgumentParser(description="Migrate acceptance-test-config.yml
 utils.add_connectors_param(parser)
 utils.add_allow_alpha_param(parser)
 utils.add_allow_beta_param(parser)
-parser.add_argument("--migrate_from_legacy", action=argparse.BooleanOptionalAction, default=False, help="Whether to migrate config files from the legacy format before applying the migration.")
+parser.add_argument(
+    "--migrate_from_legacy",
+    action=argparse.BooleanOptionalAction,
+    default=False,
+    help="Whether to migrate config files from the legacy format before applying the migration.",
+)
 
 
 def load_config(config_path: Path) -> Config:
@@ -81,4 +86,3 @@ if __name__ == "__main__":
     for definition in utils.get_valid_definitions_from_args(args):
         config_path = utils.acceptance_test_config_path(definitions.get_airbyte_connector_name_from_definition(definition))
         update_configuration(config_path, MIGRATION_TO_RUN, args.migrate_from_legacy)
-

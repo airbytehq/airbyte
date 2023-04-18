@@ -43,6 +43,7 @@ def get_test_failure_logs(definition):
 
     return test_failure_logs
 
+
 def get_issue_content(source_definition) -> Optional[Dict[Text, Any]]:
     issue_title = f"Source {source_definition['name']}: {config.ISSUE_TITLE}"
 
@@ -50,7 +51,9 @@ def get_issue_content(source_definition) -> Optional[Dict[Text, Any]]:
 
     # TODO: Make list of variables to render, and how to render them, configurable
     issue_body = template.render(
-        connector_name=source_definition["name"], release_stage=source_definition["releaseStage"], test_failure_logs=get_test_failure_logs(source_definition)
+        connector_name=source_definition["name"],
+        release_stage=source_definition["releaseStage"],
+        test_failure_logs=get_test_failure_logs(source_definition),
     )
     file_definition, issue_body_path = tempfile.mkstemp()
 

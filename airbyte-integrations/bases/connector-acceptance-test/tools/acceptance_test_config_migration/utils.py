@@ -22,17 +22,37 @@ def acceptance_test_docker_sh_path(connector_name):
 
 
 def add_dry_param(parser: argparse.ArgumentParser):
-    parser.add_argument("-d", "--dry", action=argparse.BooleanOptionalAction, default=True, help="Whether the action performed is a dry run. In the case of a dry run, no git actions will be pushed to the remote.")
+    parser.add_argument(
+        "-d",
+        "--dry",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Whether the action performed is a dry run. In the case of a dry run, no git actions will be pushed to the remote.",
+    )
 
 
 def add_allow_alpha_param(parser: argparse.ArgumentParser):
-    parser.add_argument("--allow_alpha", action=argparse.BooleanOptionalAction, default=False, help="Whether to apply the change to alpha connectors, if they are included in the list of connectors.")
+    parser.add_argument(
+        "--allow_alpha",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Whether to apply the change to alpha connectors, if they are included in the list of connectors.",
+    )
+
 
 def add_allow_beta_param(parser: argparse.ArgumentParser):
-    parser.add_argument("--allow_beta", action=argparse.BooleanOptionalAction, default=False, help="Whether to apply the change to bets connectors, if they are included in the list of connectors.")
+    parser.add_argument(
+        "--allow_beta",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Whether to apply the change to bets connectors, if they are included in the list of connectors.",
+    )
+
 
 def add_connectors_param(parser: argparse.ArgumentParser):
-    parser.add_argument("--connectors", nargs="*", help="A list of connectors (separated by spaces) to run a script on. (default: all connectors)")
+    parser.add_argument(
+        "--connectors", nargs="*", help="A list of connectors (separated by spaces) to run a script on. (default: all connectors)"
+    )
 
 
 def get_valid_definitions_from_args(args):
