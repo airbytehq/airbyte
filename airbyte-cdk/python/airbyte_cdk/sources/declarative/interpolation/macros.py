@@ -61,10 +61,14 @@ def timestamp(dt: Union[numbers.Number, str]):
     if isinstance(dt, numbers.Number):
         return int(dt)
     else:
-        parsed_date = parser.isoparse(dt)
-        if not parsed_date.tzinfo:
-            parsed_date = parsed_date.replace(tzinfo=datetime.timezone.utc)
-        return parsed_date.astimezone(datetime.timezone.utc).timestamp()
+        return _str_to_datetime(dt).astimezone(datetime.timezone.utc).timestamp()
+
+
+def _str_to_datetime(s: str, timezone=datetime.timezone.utc) -> datetime.datetime:
+    parsed_date = parser.isoparse(s)
+    if not parsed_date.tzinfo:
+        parsed_date = parsed_date.replace(tzinfo=timezone)
+    return parsed_date.astimezone(datetime.timezone.utc)
 
 
 def max(*args):
@@ -119,7 +123,7 @@ def format_datetime(dt: Union[str, datetime.datetime], format: str) -> str:
     """
     if isinstance(dt, datetime.datetime):
         return dt.strftime(format)
-    return parser.isoparse(dt).strftime(format)
+    return _str_to_datetime(dt).strftime(format)
 
 
 _macros_list = [now_local, now_utc, today_utc, timestamp, max, day_delta, duration, format_datetime]
