@@ -1377,7 +1377,7 @@ macros:
   - title: Duration
     description: Converts an ISO8601 duratioin to datetime.timedelta
     arguments:
-     duration_string: "A string representing an ISO8601 duration. See https://www.digi.com/resources/documentation/digidocs//90001488-13/reference/r_iso_8601_duration_format.htm for more details."
+      duration_string: "A string representing an ISO8601 duration. See https://www.digi.com/resources/documentation/digidocs//90001488-13/reference/r_iso_8601_duration_format.htm for more details."
     return_type: datetime.timedelta
     examples:
       - "{{ duration('P1D') }}"
@@ -1392,4 +1392,3 @@ macros:
     examples:
       - "{{ format_datetime(config['start_time'], '%Y-%m-%d') }}"
       - "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
-
