@@ -12,7 +12,7 @@ from metadata_service.spec_cache import get_cached_spec
 
 from orchestrator.models.metadata import MetadataDefinition
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
-from orchestrator.utils.object_helpers import deep_copy_params
+from orchestrator.utils.object_helpers import deep_copy_params, to_json_sanitized_dict
 
 from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
 
@@ -43,11 +43,9 @@ def apply_overrides_from_registry(metadata_data: dict, override_registry_key: st
     Returns:
         dict: The metadata data field with the overrides applied.
     """
-    # import pdb; pdb.set_trace()
     override_registry = metadata_data["registries"][override_registry_key]
     del override_registry["enabled"]
 
-    # TODO find a nicer way to handle this
     # remove any None values from the override registry
     override_registry = {k: v for k, v in override_registry.items() if v is not None}
 
@@ -138,13 +136,6 @@ def construct_registry_from_metadata(legacy_registry_derived_metadata_definition
 
     return {"sources": registry_sources, "destinations": registry_destinations}
 
-class UUIDEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, UUID):
-            # if the obj is uuid, we simply return the value of uuid
-            return obj.hex
-        return json.JSONEncoder.default(self, obj)
-
 def construct_registry_with_spec_from_registry(registry: dict, cached_specs: OutputDataFrame) -> dict:
     entries = [("source", entry) for entry in registry["sources"]] + [("destinations", entry) for entry in registry["destinations"]]
 
@@ -212,7 +203,6 @@ def oss_registry_from_metadata(context: OpExecutionContext, metadata_definitions
     """
     registry_name = "oss"
     registry_directory_manager = context.resources.registry_directory_manager
-    # import pdb; pdb.set_trace()
 
     from_metadata = construct_registry_from_metadata(metadata_definitions, registry_name)
     registry_dict = construct_registry_with_spec_from_registry(from_metadata, cached_specs)
@@ -228,28 +218,28 @@ def oss_registry_from_metadata(context: OpExecutionContext, metadata_definitions
 
 @asset(group_name=GROUP_NAME)
 def cloud_sources_dataframe(cloud_registry_from_metadata: ConnectorRegistryV0) -> OutputDataFrame:
-    cloud_registry_from_metadata_dict = json.loads(cloud_registry_from_metadata.json())
+    cloud_registry_from_metadata_dict = to_json_sanitized_dict(cloud_registry_from_metadata)
     sources = cloud_registry_from_metadata_dict["sources"]
     return output_dataframe(pd.DataFrame(sources))
 
 
 @asset(group_name=GROUP_NAME)
 def oss_sources_dataframe(oss_registry_from_metadata: ConnectorRegistryV0) -> OutputDataFrame:
-    oss_registry_from_metadata_dict = json.loads(oss_registry_from_metadata.json())
+    oss_registry_from_metadata_dict = to_json_sanitized_dict(oss_registry_from_metadata)
     sources = oss_registry_from_metadata_dict["sources"]
     return output_dataframe(pd.DataFrame(sources))
 
 
 @asset(group_name=GROUP_NAME)
 def cloud_destinations_dataframe(cloud_registry_from_metadata: ConnectorRegistryV0) -> OutputDataFrame:
-    cloud_registry_from_metadata_dict = json.loads(cloud_registry_from_metadata.json())
+    cloud_registry_from_metadata_dict = to_json_sanitized_dict(cloud_registry_from_metadata)
     destinations = cloud_registry_from_metadata_dict["destinations"]
     return output_dataframe(pd.DataFrame(destinations))
 
 
 @asset(group_name=GROUP_NAME)
 def oss_destinations_dataframe(oss_registry_from_metadata: ConnectorRegistryV0) -> OutputDataFrame:
-    oss_registry_from_metadata_dict = json.loads(oss_registry_from_metadata.json())
+    oss_registry_from_metadata_dict = to_json_sanitized_dict(oss_registry_from_metadata)
     destinations = oss_registry_from_metadata_dict["destinations"]
     return output_dataframe(pd.DataFrame(destinations))
 
