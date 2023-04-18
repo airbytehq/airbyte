@@ -1,0 +1,48 @@
+{
+    "properties": {
+        "performed_via_github_app": {
+            "type": ["null", "object"],
+            "properties": {
+                "description": {
+                    "type": ["null", "string"]
+                },
+                "events": {
+                    "type": ["array", "null"]
+                },
+                "external_url": {
+                    "type": ["string", "null"]
+                },
+                "html_url": {
+                    "type": ["string", "null"]
+                },
+                "id": {
+                    "type": ["integer", "null"]
+                },
+                "name": {
+                    "type": ["string", "null"]
+                },
+                "node_id": {
+                    "type": ["string", "null"]
+                },
+                "owner": {
+                    "type": ["object", "null"],
+                    "properties": {
+                        "id": {
+                            "type": ["string", "null"]
+                        },
+                        "type": {
+                            "type": ["string", "null"]
+                        }
+                    }
+                },
+                "slug": {
+                    "type": ["string", "null"]
+                },
+                "updated_at": {
+                    "type": ["string", "null"],
+                    "format": "date-time"
+                }
+            }
+        }
+    }
+}
