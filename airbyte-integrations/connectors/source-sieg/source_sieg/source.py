@@ -227,7 +227,6 @@ class BaseClass(HttpStream):
             logger.info("Ran first execution")
             if 'xmls' in response.json().keys():
                 invoice = self.format_response(response.json())
-                print(type(invoice))
                 return [invoice]
         else:
             logger.info("Parsing Response")
