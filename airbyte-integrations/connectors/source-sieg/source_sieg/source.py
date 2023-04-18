@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+import time
 import json
 import base64
 import logging
@@ -38,6 +39,7 @@ class BaseClass(HttpStream):
         self.downloadevent = False
         self.threads_quantity = 64
         self.max_skip = 1000000
+        self.first_execution = True
 
     @abstractmethod
     def xmltype(self) -> str:
@@ -101,6 +103,7 @@ class BaseClass(HttpStream):
         return "https://api.sieg.com/aws/api-xml-search.ashx"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        self.first_execution = False
         return None
 
     def path(
@@ -177,55 +180,40 @@ class BaseClass(HttpStream):
 
             response = self.make_request(url=url,payload=payload,headers=headers)
 
-            try:
-                if response.json()['xmls']:
-                    invoice = self.format_response(response.json())
-                else:
-                    logger.info('--- Breaking Thread')
-                    break
-                
-                item_list.append(invoice)
-            except:
-                logger.info('--- Empity Response')
+            # try:
+
+            # Report errors
+            if 'error' in response.json():
+                logger.info(f"--- Error Message: {response.json()['error']}")
+                time.sleep(210)
                 new_list = [x for x in skips_list if x >= skip]
                 self.read_invoice(item_list, new_list)
+            
+            # if response.json()['xmls']:
+            elif 'xmls' in response.json().keys():
+                invoice = self.format_response(response.json())
+            elif 'xmls' not in response.json().keys():
+                logger.info('--- Breaking Thread')
+                break
+            else:
+                logger.info("ELSEEEE")
+                # logger.info(f'--- Empity Response: {response.json()}')
+                # time.sleep(240)
+                # new_list = [x for x in skips_list if x >= (skip + take)]
+                # self.read_invoice(item_list, new_list)
+
+            # else:
+            #     logger.info('--- Breaking Thread')
+            #     break
+            
+            item_list.append(invoice)
+
+            # except:
+            #     logger.info('--- Empity Response')
+            #     new_list = [x for x in skips_list if x >= skip]
+            #     self.read_invoice(item_list, new_list)
                 
     
-    # def parse_response(
-    #     self,
-    #     response: requests.Response,
-    #     stream_state: Mapping[str, Any],
-    #     stream_slice: Mapping[str, Any] = None,
-    #     next_page_token: Mapping[str, Any] = None,
-    # ):
-
-    #     logger.info("Parsing Response")
-
-    #     skips_list = [i for i in range(0,self.max_skip)]
-    #     item_list = ThreadSafeList()
-    #     threads_quantity = self.threads_quantity
-
-    #     threads = []
-    #     events = Event()
-    #     for chunk in self.chunker_list(skips_list, threads_quantity):
-    #         threads.append(Thread(target=self.read_invoice, args=(item_list, chunk)))
-
-    #     # start threads
-    #     for thread in threads:
-    #         thread.start()
-        
-    #     # wait for all threads
-    #     for thread in threads:
-    #         thread.join()
-        
-    #     return item_list.get_list()
-
-
-class Nfe(BaseClass):
-    xmltype = "nfe"
-    downloadevent = False
-    class_identifier = "NFe"
-
     def parse_response(
         self,
         response: requests.Response,
@@ -234,26 +222,40 @@ class Nfe(BaseClass):
         next_page_token: Mapping[str, Any] = None,
     ):
 
-        logger.info("Parsing Response")
+        if self.first_execution:
+            logger.info("Ran first execution")
+            if 'xmls' in response.json().keys():
+                invoice = self.format_response(response.json())
+                print(type(invoice))
+                return [invoice]
+            # pass
+        else:
+            logger.info("Parsing Response")
 
-        skips_list = [i for i in range(0,self.max_skip)]
-        item_list = ThreadSafeList()
-        threads_quantity = self.threads_quantity
+            skips_list = [i for i in range(0,self.max_skip)]
+            item_list = ThreadSafeList()
+            threads_quantity = self.threads_quantity
 
-        threads = []
-        events = Event()
-        for chunk in self.chunker_list(skips_list, threads_quantity):
-            threads.append(Thread(target=self.read_invoice, args=(item_list, chunk)))
+            threads = []
+            events = Event()
+            for chunk in self.chunker_list(skips_list, threads_quantity):
+                threads.append(Thread(target=self.read_invoice, args=(item_list, chunk)))
 
-        # start threads
-        for thread in threads:
-            thread.start()
-        
-        # wait for all threads
-        for thread in threads:
-            thread.join()
-        
-        return item_list.get_list()
+            # start threads
+            for thread in threads:
+                thread.start()
+            
+            # wait for all threads
+            for thread in threads:
+                thread.join()
+            
+            return item_list.get_list()
+
+
+class Nfe(BaseClass):
+    xmltype = "nfe"
+    downloadevent = False
+    class_identifier = "NFe"
 
     def get_created_at(self, xml_item):
         try:
@@ -305,35 +307,6 @@ class Cte(BaseClass):
     xmltype = "cte"
     downloadevent = False
     class_identifier = "CTe"
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ):
-
-        logger.info("Parsing Response")
-
-        skips_list = [i for i in range(0,self.max_skip)]
-        item_list = ThreadSafeList()
-        threads_quantity = self.threads_quantity
-
-        threads = []
-        events = Event()
-        for chunk in self.chunker_list(skips_list, threads_quantity):
-            threads.append(Thread(target=self.read_invoice, args=(item_list, chunk)))
-
-        # start threads
-        for thread in threads:
-            thread.start()
-        
-        # wait for all threads
-        for thread in threads:
-            thread.join()
-        
-        return item_list.get_list()
     
     def get_created_at(self, xml_item):
         try:
@@ -390,35 +363,6 @@ class NfeEvents(Nfe):
     downloadevent = True
     class_identifier = "Evento_NFe"
 
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ):
-
-        logger.info("Parsing Response")
-
-        skips_list = [i for i in range(0,self.max_skip)]
-        item_list = ThreadSafeList()
-        threads_quantity = self.threads_quantity
-
-        threads = []
-        events = Event()
-        for chunk in self.chunker_list(skips_list, threads_quantity):
-            threads.append(Thread(target=self.read_invoice, args=(item_list, chunk)))
-
-        # start threads
-        for thread in threads:
-            thread.start()
-        
-        # wait for all threads
-        for thread in threads:
-            thread.join()
-        
-        return item_list.get_list()
-
     def get_invoice_type(self, xml_item):
         return "evento_nfe"
 
@@ -426,35 +370,6 @@ class CteEvents(Cte):
     xmltype = "cte"
     downloadevent = True
     class_identifier = "Evento_CTe"
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ):
-
-        logger.info("Parsing Response")
-
-        skips_list = [i for i in range(0,self.max_skip)]
-        item_list = ThreadSafeList()
-        threads_quantity = self.threads_quantity
-
-        threads = []
-        events = Event()
-        for chunk in self.chunker_list(skips_list, threads_quantity):
-            threads.append(Thread(target=self.read_invoice, args=(item_list, chunk)))
-
-        # start threads
-        for thread in threads:
-            thread.start()
-        
-        # wait for all threads
-        for thread in threads:
-            thread.join()
-        
-        return item_list.get_list()
 
     def get_invoice_type(self, xml_item):
         return "evento_cte"
