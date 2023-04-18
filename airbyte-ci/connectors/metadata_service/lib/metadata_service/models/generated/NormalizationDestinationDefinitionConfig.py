@@ -12,13 +12,13 @@ class NormalizationDestinationDefinitionConfig(BaseModel):
 
     normalizationRepository: str = Field(
         ...,
-        description='a field indicating the name of the repository to be used for normalization. If the value of the flag is NULL - normalization is not used.',
+        description="a field indicating the name of the repository to be used for normalization. If the value of the flag is NULL - normalization is not used.",
     )
     normalizationTag: str = Field(
         ...,
-        description='a field indicating the tag of the docker repository to be used for normalization.',
+        description="a field indicating the tag of the docker repository to be used for normalization.",
     )
     normalizationIntegrationType: str = Field(
         ...,
-        description='a field indicating the type of integration dialect to use for normalization.',
+        description="a field indicating the type of integration dialect to use for normalization.",
     )

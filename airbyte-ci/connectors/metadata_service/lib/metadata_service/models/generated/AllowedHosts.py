@@ -14,5 +14,5 @@ class AllowedHosts(BaseModel):
 
     hosts: Optional[List[str]] = Field(
         None,
-        description='An array of hosts that this connector can connect to.  AllowedHosts not being present for the source or destination means that access to all hosts is allowed.  An empty list here means that no network access is granted.',
+        description="An array of hosts that this connector can connect to.  AllowedHosts not being present for the source or destination means that access to all hosts is allowed.  An empty list here means that no network access is granted.",
     )

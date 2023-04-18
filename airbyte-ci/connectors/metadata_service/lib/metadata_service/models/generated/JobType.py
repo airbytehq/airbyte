@@ -9,15 +9,15 @@ from typing_extensions import Literal
 
 class JobType(BaseModel):
     __root__: Literal[
-        'get_spec',
-        'check_connection',
-        'discover_schema',
-        'sync',
-        'reset_connection',
-        'connection_updater',
-        'replicate',
+        "get_spec",
+        "check_connection",
+        "discover_schema",
+        "sync",
+        "reset_connection",
+        "connection_updater",
+        "replicate",
     ] = Field(
         ...,
-        description='enum that describes the different types of jobs that the platform runs.',
-        title='JobType',
+        description="enum that describes the different types of jobs that the platform runs.",
+        title="JobType",
     )

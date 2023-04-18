@@ -60,17 +60,17 @@ class ResourceRequirements(BaseModel):
 
 class JobType(BaseModel):
     __root__: Literal[
-        'get_spec',
-        'check_connection',
-        'discover_schema',
-        'sync',
-        'reset_connection',
-        'connection_updater',
-        'replicate',
+        "get_spec",
+        "check_connection",
+        "discover_schema",
+        "sync",
+        "reset_connection",
+        "connection_updater",
+        "replicate",
     ] = Field(
         ...,
-        description='enum that describes the different types of jobs that the platform runs.',
-        title='JobType',
+        description="enum that describes the different types of jobs that the platform runs.",
+        title="JobType",
     )
 
 
@@ -124,7 +124,7 @@ class Data(BaseModel):
     name: str
     icon: Optional[str] = None
     definitionId: UUID
-    connectorType: Literal['destination', 'source']
+    connectorType: Literal["destination", "source"]
     dockerRepository: str
     dockerImageTag: str
     supportsDbt: Optional[bool] = None
@@ -133,9 +133,9 @@ class Data(BaseModel):
     supportUrl: AnyUrl
     githubIssueLabel: str
     connectorSubtype: Literal[
-        'api', 'database', 'file', 'custom', 'message_queue', 'unknown'
+        "api", "database", "file", "custom", "message_queue", "unknown"
     ]
-    releaseStage: Literal['alpha', 'beta', 'generally_available', 'source']
+    releaseStage: Literal["alpha", "beta", "generally_available", "source"]
     registries: Optional[Registry] = None
     allowedHosts: Optional[AllowedHosts] = None
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
