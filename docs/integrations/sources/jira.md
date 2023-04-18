@@ -122,10 +122,11 @@ Check out common troubleshooting issues for the Jira connector on our Discourse 
 
 The Jira connector should not run into Jira API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
-## CHANGELOG 
+## CHANGELOG
 
 | Version | Date       | Pull Request                                                | Subject                                                                                                                 |
 |:--------|:-----------|:------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| 0.3.7   | 2023-04-18 | [\#25275](https://github.com/airbytehq/airbyte/pull/25275)  | Add missing types to issues json schema |
 | 0.3.6   | 2023-04-10 | [\#24636](https://github.com/airbytehq/airbyte/pull/24636)  | Removed Connector Domain Pattern from Spec                                                                              |
 | 0.3.5   | 2023-04-05 | [\#24890](https://github.com/airbytehq/airbyte/pull/24890)  | Fix streams "IssuePropertyKeys", "ScreenTabFields"                                                                      |
 | 0.3.4   | 2023-02-14 | [\#23006](https://github.com/airbytehq/airbyte/pull/23006)  | Remove caching for `Issues` stream                                                                                      |
