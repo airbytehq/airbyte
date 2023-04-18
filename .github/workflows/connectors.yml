@@ -32,7 +32,7 @@ jobs:
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly
+          toolchain: nightly-2023-04-16
           target: x86_64-unknown-linux-musl
           default: true
           override: true
@@ -175,9 +175,15 @@ jobs:
       - name: Build ${{ matrix.connector.name }}
         id: build
         run: |
-          ./gradlew :airbyte-integrations:connectors:${{ matrix.connector.name }}:build
-          connector_name=${{ matrix.connector.name }}
-          docker tag docker.io/airbyte/${{ matrix.connector.name }}:dev ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }}
+          if [ -f "airbyte-integrations/connectors/${{ matrix.connector.name }}/requirements.txt" ]; then
+            ./gradlew :airbyte-integrations:connectors:${{ matrix.connector.name }}:build
+            docker tag docker.io/airbyte/${{ matrix.connector.name }}:dev ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }}
+          else
+            docker build "airbyte-integrations/connectors/${{ matrix.connector.name }}" \
+                   -f "airbyte-integrations/connectors/${{ matrix.connector.name }}/Dockerfile" \
+                   -t ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }}
+          fi
+          
           docker push ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }}
 
       - name: Push ${{ matrix.connector.name }} image with 'dev' and version tags
