@@ -274,7 +274,7 @@ class IntegrationTestJava(GradleTask):
                 tg.start_soon(self._load_connector_image, connector_tar_file)
             return await super()._run()
         except QueryError as e:
-            return StepResult(self, StepStatus.FAILURE, stderr=str(e)), None
+            return StepResult(self, StepStatus.FAILURE, stderr=str(e))
 
 
 async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
