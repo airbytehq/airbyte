@@ -9024,6 +9024,14 @@
     "public": true,
     "custom": false,
     "releaseStage": "generally_available",
+    "resourceRequirements": {
+      "jobSpecific": [ {
+        "jobType": "sync",
+        "resourceRequirements": {
+          "memory_limit": "8Gi"
+        }
+      } ]
+    },
     "allowedHosts": {
       "hosts": [ "amplitude.com", "analytics.eu.amplitude.com" ]
     }
