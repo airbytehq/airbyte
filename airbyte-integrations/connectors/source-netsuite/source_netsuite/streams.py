@@ -168,8 +168,7 @@ class NetsuiteStream(HttpStream, ABC):
 
                     # handle data-format error
                     if "INVALID_PARAMETER" in error_code and "failed with date format" in detail_message:
-                        self.logger.error(
-                            f"Stream `{self.name}`: {error_code} error occured, full error message: {detail_message}")
+                        self.logger.error(f"Stream `{self.name}`: {error_code} error occured, full error message: {detail_message}")
                 else:
                     return super().should_retry(response)
         return super().should_retry(response)
