@@ -503,7 +503,7 @@ class Segmentations(SemiIncrementalMarketoStream):
         super().__init__(config)
 
     def path(self, **kwargs) -> str:
-        return f"rest/asset/v1/segmentation.json"
+        return "rest/asset/v1/segmentation.json"
 
 
 class MarketoAuthenticator(Oauth2Authenticator):
