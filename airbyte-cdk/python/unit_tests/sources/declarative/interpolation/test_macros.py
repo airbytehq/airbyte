@@ -34,6 +34,30 @@ def test_format_datetime():
     assert format_datetime(datetime.datetime(2022, 1, 1, 1, 1, 1), "%Y-%m-%d") == "2022-01-01"
 
 
-def test_duration():
-    duration = macros["duration"]
-    assert duration("P1D") == datetime.timedelta(days=1)
+@pytest.mark.parametrize(
+    "test_name, input_value, expected_output", [
+        ("test_one_day", "P1D", datetime.timedelta(days=1)),
+        ("test_6_days_23_hours", "P6DT23H", datetime.timedelta(days=6, hours=23))
+    ]
+)
+def test_duration(test_name, input_value, expected_output):
+    duration_fn = macros["duration"]
+    assert duration_fn(input_value) == expected_output
+
+
+@pytest.mark.parametrize(
+    "test_name, input_value, expected_output",[
+        ("test_int_input", 1646006400, 1646006400),
+        ("test_float_input", 100.0, 100),
+        ("test_float_input_is_floored", 100.9, 100),
+        ("test_string_date_iso8601", "2022-02-28", 1646006400),
+        ("test_string_datetime_midnight_iso8601", "2022-02-28T00:00:00Z", 1646006400),
+        ("test_string_datetime_midnight_iso8601_with_tz", "2022-02-28T00:00:00-08:00", 1646035200),
+        ("test_string_datetime_midnight_iso8601_no_t", "2022-02-28 00:00:00Z", 1646006400),
+        ("test_string_datetime_iso8601", "2022-02-28T10:11:12", 1646043072),
+    ]
+)
+def test_timestamp(test_name, input_value, expected_output):
+    timestamp_function = macros["timestamp"]
+    actual_output = timestamp_function(input_value)
+    assert actual_output == expected_output
