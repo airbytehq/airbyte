@@ -232,20 +232,22 @@ def persist_metadata_definitions(context: OpExecutionContext, overrode_metadata_
 
 
 @asset(group_name=GROUP_NAME)
-def cloud_registry_diff(cloud_registry_from_metadata: ConnectorRegistryV1, legacy_cloud_registry_dict: dict) -> dict:
+def cloud_registry_diff(cloud_registry_from_metadata: ConnectorRegistryV1, legacy_cloud_registry: ConnectorRegistryV1) -> dict:
     """
     Compares the cloud registry from the metadata with the latest OSS registry.
     """
     cloud_registry_from_metadata_dict = json.loads(cloud_registry_from_metadata.json())
+    legacy_cloud_registry_dict = json.loads(legacy_cloud_registry.json())
     return diff_registries(legacy_cloud_registry_dict, cloud_registry_from_metadata_dict).to_dict()
 
 
 @asset(group_name=GROUP_NAME)
-def oss_registry_diff(oss_registry_from_metadata: ConnectorRegistryV1, legacy_oss_registry_dict: dict) -> dict:
+def oss_registry_diff(oss_registry_from_metadata: ConnectorRegistryV1, legacy_oss_registry: ConnectorRegistryV1) -> dict:
     """
     Compares the OSS registry from the metadata with the latest OSS registry.
     """
     oss_registry_from_metadata_dict = json.loads(oss_registry_from_metadata.json())
+    legacy_oss_registry_dict = json.loads(legacy_oss_registry.json())
     return diff_registries(legacy_oss_registry_dict, oss_registry_from_metadata_dict).to_dict()
 
 

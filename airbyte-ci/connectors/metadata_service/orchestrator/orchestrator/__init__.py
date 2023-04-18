@@ -30,7 +30,9 @@ from orchestrator.assets.registry import (
     legacy_cloud_destinations_dataframe,
     legacy_oss_destinations_dataframe,
     legacy_cloud_registry_dict,
+    legacy_cloud_registry,
     legacy_oss_registry_dict,
+    legacy_oss_registry,
 )
 from orchestrator.assets.metadata import (
     legacy_registry_derived_metadata_definitions,
@@ -70,9 +72,11 @@ ASSETS = [
     github_connector_folders,
     legacy_cloud_destinations_dataframe,
     legacy_cloud_registry_dict,
+    legacy_cloud_registry,
     legacy_cloud_sources_dataframe,
     legacy_oss_destinations_dataframe,
     legacy_oss_registry_dict,
+    legacy_oss_registry,
     legacy_oss_sources_dataframe,
     legacy_registry_derived_metadata_definitions,
     metadata_definitions,

@@ -282,6 +282,15 @@ def legacy_oss_destinations_dataframe(legacy_oss_registry_dict: dict) -> OutputD
 
 
 @asset(required_resource_keys={"legacy_cloud_registry_gcs_blob"}, group_name=GROUP_NAME)
+def legacy_cloud_registry(legacy_cloud_registry_dict: dict) -> ConnectorRegistryV1:
+    return ConnectorRegistryV1.parse_obj(legacy_cloud_registry_dict)
+
+
+@asset(required_resource_keys={"legacy_oss_registry_gcs_blob"}, group_name=GROUP_NAME)
+def legacy_oss_registry(legacy_oss_registry_dict: dict) -> ConnectorRegistryV1:
+    return ConnectorRegistryV1.parse_obj(legacy_oss_registry_dict)
+
+@asset(required_resource_keys={"legacy_cloud_registry_gcs_blob"}, group_name=GROUP_NAME)
 def legacy_cloud_registry_dict(context: OpExecutionContext) -> dict:
     oss_registry_file = context.resources.legacy_cloud_registry_gcs_blob
     json_string = oss_registry_file.download_as_string().decode("utf-8")
