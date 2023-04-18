@@ -1,0 +1,7 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'us-docker.pkg.dev/$PROJECT_ID/airbyte-custom-connectors/source-microvix:${_MICROVIX_VERSION}', './airbyte-integrations/connectors/source-microvix' ]
+substitutions:
+  _MICROVIX_VERSION: '0.0.1'
+images:
+- 'us-docker.pkg.dev/$PROJECT_ID/airbyte-custom-connectors/source-microvix:${_MICROVIX_VERSION}'
