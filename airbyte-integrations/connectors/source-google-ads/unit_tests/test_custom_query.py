@@ -2,9 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from source_google_ads.custom_query_stream import IncrementalCustomQuery, CustomQueryMixin
-from source_google_ads.utils import GAQL
 from unittest.mock import MagicMock
+
+from source_google_ads.custom_query_stream import CustomQueryMixin, IncrementalCustomQuery
+from source_google_ads.utils import GAQL
+
 
 def test_custom_query():
     input_q = """SELECT ad_group.resource_name, ad_group.status, ad_group.target_cpa_micros, ad_group.target_cpm_micros,
@@ -18,9 +20,12 @@ def test_custom_query():
         == """SELECT ad_group.resource_name, ad_group.status, ad_group.target_cpa_micros, ad_group.target_cpm_micros, ad_group.target_roas, ad_group.targeting_setting.target_restrictions, ad_group.tracking_url_template, ad_group.type, ad_group.url_custom_parameters, campaign.accessible_bidding_strategy, campaign.ad_serving_optimization_status, campaign.advertising_channel_type, campaign.advertising_channel_sub_type, campaign.app_campaign_setting.app_id, campaign.app_campaign_setting.app_store, segments.date FROM search_term_view WHERE segments.date BETWEEN '1980-01-01' AND '1980-01-01'"""
     )
 
+
 class Obj:
     def __init__(self, **entries):
         self.__dict__.update(entries)
+
+
 def test_get_json_schema():
     query_object = MagicMock(return_value={
         'a': Obj(data_type=Obj(name='ENUM'), is_repeated=False, enum_values=['a', 'aa']),
@@ -48,5 +53,3 @@ def test_get_json_schema():
             'f': {'type': ['string', 'null'], 'format': 'date'},
         }
     }
-
-
