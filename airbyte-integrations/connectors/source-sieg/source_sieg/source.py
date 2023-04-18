@@ -103,7 +103,6 @@ class BaseClass(HttpStream):
         return "https://api.sieg.com/aws/api-xml-search.ashx"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        self.first_execution = False
         return None
 
     def path(
@@ -223,6 +222,7 @@ class BaseClass(HttpStream):
     ):
 
         if self.first_execution:
+            self.first_execution = False
             logger.info("Ran first execution")
             if 'xmls' in response.json().keys():
                 invoice = self.format_response(response.json())
