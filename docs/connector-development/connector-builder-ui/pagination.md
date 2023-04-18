@@ -1,0 +1,172 @@
+# Pagination
+
+Pagination is a mechanism used by APIs in which data is split up into "pages" when returning results, so that the entire response data doesn't need to be returned all at once.
+
+The Connector Builder offers a Pagination section which implements the most common pagination methods used by APIs. When enabled, the connector will use the pagination configuration you have provided to request consecutive pages of data from the API until there are no more pages to fetch.
+
+If your API doesn't support pagination, simply leave the Pagination section disabled.
+
+## Pagination methods
+
+Check the documentation of the API you want to integrate to find which type of pagination is uses. Many API docs have a "Pagination" or "Paging" section that describes this.
+
+The following pagination mechanisms are supported in the connector builder:
+
+- [Offset Increment](#offset-increment)
+- [Page Increment](#page-increment)
+- [Cursor Pagination](#cursor-pagination)
+
+Select the matching pagination method for your API and check the sections below for more information about individual methods.
+
+### Offset Increment
+
+If your API paginates using offsets, the API docs will likely contain one of the following keywords:
+
+- `offset`
+- `limit`
+
+In this method of pagination, the "limit" specifies the maximum number of records to return per page, while the "offset" indicates the starting position or index from which to retrieve records.
+
+For example, say that the API has the following dataset:
+
+```
+[
+  {"id": 1, "name": "Product A"},
+  {"id": 2, "name": "Product B"},
+  {"id": 3, "name": "Product C"},
+  {"id": 4, "name": "Product D"},
+  {"id": 5, "name": "Product E"},
+  {"id": 6, "name": "Product F"}
+]
+```
+
+Then the API may take in a request like this: `GET https://api.example.com/products?limit=2&offset=3`, which could result in the following response:
+
+```
+{
+  "data": [
+    {"id": 4, "name": "Product D"},
+    {"id": 5, "name": "Product E"},
+  ]
+}
+```
+
+Normally, the caller of the API would need to implement some logic to then increment the `offset` by the `limit` amount and then submit another call with the updated `offset`, and continue on this pattern until all of the records have been retrieved.
+
+The Offset Increment pagination mode in the Connector Builder does this for you. So you just need to decide on a `limit` value to set, and configure how the limit and offset are injected into the HTTP requests. Most APIs accept these values as query parameters like in the above example, but this can differ depending on the API.
+
+If an API does not accept a `limit`, then the injection configuration for the limit can be disabled. If so, your connector will still automatically increment the `offset` for subsequent requests based on the number of records it receives (which is likely some default page size value defined by the API), and continue until it receives fewer records than the limit you configured.
+
+The Connector Builder currently supports injecting these values into the request parameters (i.e. query parameters), headers, or body.
+
+#### Examples
+
+The following APIs accept offset and limit pagination values as query parameters like in the above example:
+
+- [Spotify API](https://developer.spotify.com/documentation/web-api/concepts/api-calls#pagination)
+- [GIPHY API](https://developers.giphy.com/docs/api/endpoint#trending)
+- [Twilio SendGrid API](https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/responses#pagination)
+
+### Page Increment
+
+If your API paginates using page increments, the API docs will likely contain one of the following keywords:
+
+- `page size` / `page_size` / `pagesize` / `per_page`
+- `page number` / `page_number` / `pagenum` / `page`
+
+In this method of pagination, the "page size" specifies the maximum number of records to return per request, while the "page number" indicates the specific page of data to retrieve.
+
+This is similar to Offset Increment pagination, but the main difference lies in how the starting point of the data subset being returned by the request is determined. In Offset Increment pagination, the starting point is explicitly defined by the offset value; in Page Increment pagination, the starting point can be determined by calculating `pageSize * pageNum` if the starting page is `0`, or `pageSize * (pageNum - 1)` if the starting page is `1`.
+
+For example, say that the API has the following dataset:
+
+```
+[
+  {"id": 1, "name": "Product A"},
+  {"id": 2, "name": "Product B"},
+  {"id": 3, "name": "Product C"},
+  {"id": 4, "name": "Product D"},
+  {"id": 5, "name": "Product E"},
+  {"id": 6, "name": "Product F"}
+]
+```
+
+Then the API may take in a request like this: `GET https://api.example.com/products?page=1&page_size=2`, which could result in the following response:
+
+```
+{
+  "data": [
+    {"id": 1, "name": "Product A"},
+    {"id": 2, "name": "Product B"},
+  ]
+}
+```
+
+Then the next request should call the same endpoint with `page` set to 2 and `page_size` set to 2, which would return the next 2 records, and so on.
+
+The Connector Builder abstracts this away so that you only need to decide what page size to set, what the starting page number should be (usually either 0 or 1 dependent on the API), and how the page size and number are injected into the API requests.
+
+Similar to Offset Increment pagination, the page size injection can be disabled if the API does not accept a page size value, in which case your connector will automatically increment the page number by 1 for each subsequent request, and continue until it receives fewer records than the page size you configured.
+
+The Connector Builder currently supports injecting these values into the request parameters (i.e. query parameters), headers, or body.
+
+#### Examples
+
+The following APIs accept page size/num paagination values as query parameters like in the above example"
+
+- [WooCommerce API](https://woocommerce.github.io/woocommerce-rest-api-docs/#pagination)
+- [FreshDesk API](https://developers.freshdesk.com/api/)
+
+### Cursor Pagination
+
+If your API paginates using cursor pagination, the API docs will likely contain one of the following keywords:
+
+- `cursor`
+- `link`
+- `next_token`
+
+In this method of pagination, some identifier (e.g. a timestamp or record ID) is used to navigate through the API's records, rather than relying on fixed indices or page numbers like in the above methods. When making a request, clients provide a cursor value, and the API returns a subset of records starting from the specified cursor, along with the cursor for the next page. This can be especially helpful in preventing issues like duplicate or skipped records that can arise when using the above pagination methods.
+
+Using the [Twitter API](https://developer.twitter.com/en/docs/twitter-api/pagination) as an example, a request is made to the `/tweets` endpoint, with the page size (called `max_results` in this case) set to 100. This will return a response like
+
+```
+{
+  "data": [
+    {
+      "created_at": "2020-12-11T20:44:52.000Z",
+      "id": "1337498609819021312",
+      "text": "Thanks to everyone who tuned in today..."
+    },
+    {
+      "created_at": "2020-05-06T17:24:31.000Z",
+      "id": "1258085245091368960",
+      "text": "It’s now easier to understand Tweet impact..."
+    },
+    ...
+
+  ],
+  "meta": {
+    ...
+    "result_count": 100,
+    "next_token": "7140w"
+  }
+}
+```
+
+The `meta.next_token` value of that response can then be set as the `pagination_token` in the next request, causing the API to return the next 100 tweets.
+
+To integrate with such an API in the Connector Builder, you must configure how this "Cursor value" is obtained for each request. You will likely need to use a macro (TODO: link to macro docs) to accomplish this, since the cursor is usually obtained from the response of the previous request. For the above example, this would look like `{{ response.meta.next_token }}`, which accesses response body of the last request. However, you can access the `headers` object in this macro if your API places cursor tokens in the response headers instead of the response body.
+
+You can also configure how the cursor value is injected into the API Requests. In the above example, this would be set as a request_parameter with the field name `pagination_token`, but this is dependent on the API - check the docs to see if they describe how to set the cursor/token for subsequent requests. For cursor pagination, if `path` is selected as the `Inject into` option, then the entire request URL for the subsequent request will be replaced by the cursor value. This can be useful for APIs that return a full URL that should be requested for the next page of results, such as the [GitHub API](https://docs.github.com/en/rest/guides/using-pagination-in-the-rest-api?apiVersion=2022-11-28).
+
+The "Stop condition" tells the Connector Builder when to stop fetching more pages from the API. This will commonly look something like `{{ 'next_token' not in response.meta }}`, but this is also dependent on the API - check the docs to see if they describe when to stop fetching subsequent pages.
+
+The "Page size" can optionally be specified as well; if so, how this page size gets injected into the HTTP requests can be configured similar to the above pagination methods.
+
+#### Examples
+
+The following APIs implement cursor pagination in various ways:
+
+- [Twitter API](https://developer.twitter.com/en/docs/twitter-api/pagination) - includes `next_token` IDs in its responses which are passed in as request parameters to subsequent requests
+- [GitHub API](https://docs.github.com/en/rest/guides/using-pagination-in-the-rest-api?apiVersion=2022-11-28) - includes full-URL `link`s to subsequent pages of results
+- [FourSquare API](https://location.foursquare.com/developer/reference/pagination) - includes full-URL `link`s to subsequent pages of results
