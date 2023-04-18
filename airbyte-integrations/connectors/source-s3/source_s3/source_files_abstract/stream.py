@@ -11,6 +11,7 @@ from functools import cached_property, lru_cache
 from traceback import format_exc
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
+import pendulum
 import pytz
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import SyncMode
@@ -51,7 +52,7 @@ class FileStream(Stream, ABC):
     # we need to support both of them for a while
     deprecated_datetime_format_string = "%Y-%m-%dT%H:%M:%S%z"
 
-    def __init__(self, dataset: str, provider: dict, format: dict, path_pattern: str, schema: str = None):
+    def __init__(self, dataset: str, provider: dict, format: dict, path_pattern: str, schema: str = None, start_date: str = None):
         """
         :param dataset: table name for this stream
         :param provider: provider specific mapping as described in spec.json
@@ -64,6 +65,7 @@ class FileStream(Stream, ABC):
         self._provider = provider
         self._format = format
         self._user_input_schema: Dict[str, Any] = {}
+        self.start_date = pendulum.parse(start_date) if start_date else pendulum.from_timestamp(0)
         if schema:
             self._user_input_schema = self._parse_user_input_schema(schema)
         LOGGER.info(f"initialised stream with format: {format}")
@@ -134,7 +136,7 @@ class FileStream(Stream, ABC):
         """
 
     @abstractmethod
-    def filepath_iterator(self) -> Iterator[FileInfo]:
+    def filepath_iterator(self, stream_state: Mapping[str, Any] = None) -> Iterator[FileInfo]:
         """
         Provider-specific method to iterate through bucket/container/etc. and yield each full filepath.
         This should supply the 'FileInfo' to use in StorageFile(). This is aggrigate all file properties (last_modified, key, size).
@@ -155,7 +157,7 @@ class FileStream(Stream, ABC):
                 yield file_info
 
     @lru_cache(maxsize=None)
-    def get_time_ordered_file_infos(self) -> List[FileInfo]:
+    def get_time_ordered_file_infos(self, stream_state: str = None) -> List[FileInfo]:
         """
         Iterates through pattern_matched_filepath_iterator(), acquiring FileInfo objects
         with last_modified property of each file to return in time ascending order.
@@ -163,7 +165,11 @@ class FileStream(Stream, ABC):
 
         :return: list in time-ascending order
         """
-        return sorted(self.pattern_matched_filepath_iterator(self.filepath_iterator()), key=lambda file_info: file_info.last_modified)
+        stream_state = eval(stream_state) if stream_state else None
+        return sorted(
+            self.pattern_matched_filepath_iterator(self.filepath_iterator(stream_state=stream_state)),
+            key=lambda file_info: file_info.last_modified,
+        )
 
     @property
     def _raw_schema(self) -> Mapping[str, Any]:
@@ -312,11 +318,8 @@ class IncrementalFileStream(FileStream, ABC):
         return self.ab_last_mod_col
 
     @staticmethod
-    def file_in_history(file_info: FileInfo, history: dict) -> bool:
-        for slot in history.values():
-            if file_info.key in slot:
-                return file_info.key in slot
-        return False
+    def file_in_history(file_key: str, history: dict) -> bool:
+        return any(file_key in slot for slot in history.values())
 
     def _get_datetime_from_stream_state(self, stream_state: Mapping[str, Any] = None) -> datetime:
         """
@@ -400,27 +403,6 @@ class IncrementalFileStream(FileStream, ABC):
 
         return self.size_history_balancer(state_dict)
 
-    def need_to_skip_file(self, stream_state, file_info):
-        """
-        Skip this file if last_mod is earlier than our cursor value from state and already in history
-        or skip this file if last_mod plus delta is earlier than our cursor value
-        """
-        file_in_history_and_last_modified_is_earlier_than_cursor_value = (
-            stream_state is not None
-            and self.cursor_field in stream_state.keys()
-            and file_info.last_modified <= self._get_datetime_from_stream_state(stream_state)
-            and self.file_in_history(file_info, stream_state.get("history", {}))
-        )
-
-        file_is_not_in_history_and_last_modified_plus_buffer_days_is_earlier_than_cursor_value = file_info.last_modified + timedelta(
-            days=self.buffer_days
-        ) < self._get_datetime_from_stream_state(stream_state) and not self.file_in_history(file_info, stream_state.get("history", {}))
-
-        return (
-            file_in_history_and_last_modified_is_earlier_than_cursor_value
-            or file_is_not_in_history_and_last_modified_plus_buffer_days_is_earlier_than_cursor_value
-        )
-
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Dict[str, Any]]]:
@@ -441,10 +423,7 @@ class IncrementalFileStream(FileStream, ABC):
             # logic here is to bundle all files with exact same last modified timestamp together in each slice
             prev_file_last_mod: datetime = None  # init variable to hold previous iterations last modified
             grouped_files_by_time: List[Dict[str, Any]] = []
-            for file_info in self.get_time_ordered_file_infos():
-                if self.need_to_skip_file(stream_state, file_info):
-                    continue
-
+            for file_info in self.get_time_ordered_file_infos(stream_state=str(stream_state)):
                 # check if this file belongs in the next slice, if so yield the current slice before this file
                 if (prev_file_last_mod is not None) and (file_info.last_modified != prev_file_last_mod):
                     yield {"files": grouped_files_by_time}
