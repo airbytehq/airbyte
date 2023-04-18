@@ -156,12 +156,12 @@ class SourceGoogleAds(AbstractSource):
             query = single_query_config["query"]
             if self.is_metrics_in_custom_query(query):
                 if non_manager_accounts:
-                    if query.resource_name in FULL_REFRESH_CUSTOM_TABLE:
+                    if query.resource_name in FULL_REFRESH_CUSTOM_TABLE or single_query_config.get("full_refresh_only"):
                         streams.append(CustomQuery(config=single_query_config, api=google_api, customers=non_manager_accounts))
                     else:
                         streams.append(IncrementalCustomQuery(config=single_query_config, **non_manager_incremental_config))
                 continue
-            if query.resource_name in FULL_REFRESH_CUSTOM_TABLE:
+            if query.resource_name in FULL_REFRESH_CUSTOM_TABLE or single_query_config.get("full_refresh_only"):
                 streams.append(CustomQuery(config=single_query_config, api=google_api, customers=customers))
             else:
                 streams.append(IncrementalCustomQuery(config=single_query_config, **incremental_config))
