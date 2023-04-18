@@ -499,9 +499,8 @@ class Lists(SemiIncrementalMarketoStream):
 class Segmentations(SemiIncrementalMarketoStream):
      
 
-    def __init__(self, config: Mapping[str, Any], segment_id: Optional[str] = None):
+    def __init__(self, config: Mapping[str, Any]):
         super().__init__(config)
-        self.segment_id = segment_id
 
     def path(self, **kwargs) -> str:
         return f"rest/asset/v1/segmentation.json"
@@ -563,7 +562,7 @@ class SourceMarketo(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config["authenticator"] = MarketoAuthenticator(config)
 
-        streams = [ActivityTypes(config), Segmentations(config, segment_id=config.get("segment_id")), Campaigns(config), Leads(config), Lists(config), Programs(config)]
+        streams = [ActivityTypes(config), Segmentations(config), Campaigns(config), Leads(config), Lists(config), Programs(config)]
 
         # create dynamically activities by activity type id
         for activity in ActivityTypes(config).read_records(sync_mode=None):
