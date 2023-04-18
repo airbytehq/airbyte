@@ -1,0 +1,17 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: f9b6c538-ee12-42fe-8d4b-0c10f5955417
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-tplcentral
+  githubIssueLabel: source-tplcentral
+  license: MIT
+  name: TPLcentral
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/tplcentral
+metadataSpecVersion: "1.0"

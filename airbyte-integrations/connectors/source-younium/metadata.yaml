@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 9c74c2d7-531a-4ebf-b6d8-6181f805ecdc
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-younium
+  githubIssueLabel: source-younium
+  icon: younium.svg
+  license: MIT
+  name: Younium
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/younium
+metadataSpecVersion: "1.0"

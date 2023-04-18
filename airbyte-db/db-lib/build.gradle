@@ -19,7 +19,7 @@ dependencies {
 
     implementation libs.airbyte.protocol
     implementation project(':airbyte-json-validation')
-    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.flyway.core
 
     migrations libs.platform.testcontainers.postgresql

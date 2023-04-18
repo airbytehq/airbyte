@@ -237,6 +237,7 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date | Pull Request                                                | Subject |
 |:--------| :--- |:------------------------------------------------------------| :--- |
+| 0.2.16  | 2023-03-17 | [#23788](https://github.com/airbytehq/airbyte/pull/23788)   | S3-Parquet: added handler to process null values in arrays                                                                                           |
 | 0.2.15  | 2023-03-10 | [#23466](https://github.com/airbytehq/airbyte/pull/23466)   | Changed S3 Avro type from Int to Long                                                                                                                |
 | 0.2.14  | 2023-11-23 | [\#21682](https://github.com/airbytehq/airbyte/pull/21682)  | Add support for buckets with Customer-Managed Encryption Key                                                               |
 | 0.2.13  | 2023-01-18 | [#21087](https://github.com/airbytehq/airbyte/pull/21087)   | Wrap Authentication Errors as Config Exceptions                                                                          |

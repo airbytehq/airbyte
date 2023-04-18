@@ -1,0 +1,22 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*.googleapis.com"
+  catalogs:
+    cloud:
+      dockerImageTag: 0.2.21
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: file
+  connectorType: source
+  definitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
+  dockerImageTag: 0.2.37
+  dockerRepository: airbyte/source-google-sheets
+  githubIssueLabel: source-google-sheets
+  icon: google-sheets.svg
+  license: MIT
+  name: Google Sheets
+  releaseStage: generally_available
+  supportUrl: https://docs.airbyte.com/integrations/sources/google-sheets
+metadataSpecVersion: "1.0"
