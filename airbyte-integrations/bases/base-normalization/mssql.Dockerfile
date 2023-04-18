@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y \
 RUN echo 'Package: multiarch-support-dummy\nProvides: multiarch-support\nDescription: Fake multiarch-support' > multiarch-support-dummy.ctl \
     && equivs-build multiarch-support-dummy.ctl && dpkg -i multiarch-support-dummy*.deb && rm multiarch-support-dummy*.* \
     && apt-get -y purge equivs
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+RUN curl --insecure https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 RUN curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list
 
 # Install MS SQL Server dependencies
