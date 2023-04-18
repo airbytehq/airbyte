@@ -147,6 +147,40 @@ definitions:
     $parameters:
       path: "/apps/{{ config['app_key'] }}/top_reviews"
 
+  unsubscribers_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["response", "unsubscribers"]
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/yotpo_stream_plain_requester"
+    name: "unsubscribers"
+    $parameters:
+      path: "/apps/{{ config['app_key'] }}/unsubscribers?utoken={{ config['access_token'] }}"
+
+  webhook_events_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["response", "webhook_events"]
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/yotpo_stream_plain_requester"
+    name: "webhook_events"
+    $parameters:
+      path: "/webhook_events?utoken={{ config['access_token'] }}"
+
   webhooks_stream:
     type: DeclarativeStream
     retriever:
@@ -171,6 +205,8 @@ streams:
   - "#/definitions/reviews_bottomline_stream"
   - "#/definitions/top_reviews_stream"
   - "#/definitions/webhooks_stream"
+  - "#/definitions/unsubscribers_stream"
+  - "#/definitions/webhook_events_stream"
 
 check:
   type: CheckStream
@@ -180,4 +216,6 @@ check:
     - "reviews"
     - "reviews_bottomline"
     - "top_reviews"
+    - "unsubscribers"
     - "webhooks"
+    - "webhook_events"
