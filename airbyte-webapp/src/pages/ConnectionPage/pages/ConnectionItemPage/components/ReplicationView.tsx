@@ -5,7 +5,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useAsyncFn, useUnmount } from "react-use";
 import styled from "styled-components";
 
-import { Button, LabeledSwitch, ModalBody, ModalFooter } from "components";
+import { Button, LabeledSwitch, ModalBody } from "components";
 import { Tooltip } from "components/base/Tooltip";
 import LoadingSchema from "components/LoadingSchema";
 
@@ -37,6 +37,24 @@ interface ResetWarningModalProps {
   stateType: ConnectionStateType;
 }
 
+const ModalFooterButtons = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin: 30px 20px 20px 10px;
+`;
+
+const ButtonWithMargin = styled(Button)<{
+  secondary?: boolean;
+}>`
+  min-width: 140px;
+  height: 44px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  color: ${({ secondary }) => (secondary ? "#27272a" : "#fff")};
+`;
+
 const ResetWarningModal: React.FC<ResetWarningModalProps> = ({ onCancel, onClose, stateType }) => {
   const { formatMessage } = useIntl();
   const [withReset, setWithReset] = useState(true);
@@ -49,7 +67,7 @@ const ResetWarningModal: React.FC<ResetWarningModalProps> = ({ onCancel, onClose
         See https://github.com/airbytehq/airbyte/issues/14478
       */}
         <FormattedMessage id={requireFullReset ? "connection.streamFullResetHint" : "connection.streamResetHint"} />
-        <p>
+        <div>
           <LabeledSwitch
             checked={withReset}
             onChange={(ev) => setWithReset(ev.target.checked)}
@@ -59,16 +77,16 @@ const ResetWarningModal: React.FC<ResetWarningModalProps> = ({ onCancel, onClose
             checkbox
             data-testid="resetModal-reset-checkbox"
           />
-        </p>
+        </div>
       </ModalBody>
-      <ModalFooter>
-        <Button onClick={onCancel} secondary data-testid="resetModal-cancel">
+      <ModalFooterButtons>
+        <ButtonWithMargin onClick={onCancel} secondary data-testid="resetModal-cancel">
           <FormattedMessage id="form.cancel" />
-        </Button>
-        <Button onClick={() => onClose(withReset)} data-testid="resetModal-save">
+        </ButtonWithMargin>
+        <ButtonWithMargin onClick={() => onClose(withReset)} data-testid="resetModal-save">
           <FormattedMessage id="connection.save" />
-        </Button>
-      </ModalFooter>
+        </ButtonWithMargin>
+      </ModalFooterButtons>
     </>
   );
 };
