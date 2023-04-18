@@ -55,7 +55,15 @@ Normally, the caller of the API would need to implement some logic to then incre
 
 The Offset Increment pagination mode in the Connector Builder does this for you. So you just need to decide on a `limit` value to set, and configure how the limit and offset are injected into the HTTP requests. Most APIs accept these values as query parameters like in the above example, but this can differ depending on the API.
 
-If an API does not accept a `limit`, then the injection configuration for the limit can be disabled. If so, your connector will still automatically increment the `offset` for subsequent requests based on the number of records it receives (which is likely some default page size value defined by the API), and continue until it receives fewer records than the limit you configured.
+If an API does not accept a `limit`, then the injection configuration for the limit can be disabled. If so, your connector will still automatically increment the `offset` for subsequent requests based on the number of records it receives (which is likely some default page size value defined by the API). In either case, the connector will continue until it receives fewer records than the limit you configured.
+
+So for the above example, using a `limit` of `3` would cause your connector to make the following request to the API in order to paginate through all of its data:
+
+```
+GET https://api.example.com/products?limit=3&offset=0
+GET https://api.example.com/products?limit=3&offset=3
+GET https://api.example.com/products?limit=3&offset=6 // less than 3 records returned -> stop
+```
 
 The Connector Builder currently supports injecting these values into the request parameters (i.e. query parameters), headers, or body.
 
