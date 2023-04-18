@@ -21419,7 +21419,8 @@
     "releaseStage": "generally_available",
     "allowedHosts": {
       "hosts": [ "${host}", "${tunnel_method.tunnel_host}" ]
-    }
+    },
+    "maxSecondsBetweenMessages": 7200
   }, {
     "sourceDefinitionId": "cde75ca1-1e28-4a0f-85bb-90c546de9f1f",
     "name": "Postmark App",
