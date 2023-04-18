@@ -14,6 +14,14 @@
   icon: adjust.svg
   sourceType: api
   releaseStage: alpha
+- name: Aircall
+  sourceDefinitionId: 912eb6b7-a893-4a5b-b1c0-36ebbe2de8cd
+  dockerRepository: airbyte/source-aircall
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/aircall
+  icon: aircall.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Airtable
   sourceDefinitionId: 14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212
   dockerRepository: airbyte/source-airtable
