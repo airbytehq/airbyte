@@ -138,7 +138,7 @@ definitions:
           condition: "{{ record[parameters['stream_cursor_field']] > stream_state.get(parameters['stream_cursor_field'],config['start_date']) }}"
     incremental_sync:
       $ref: "#/definitions/datetime_incremental_sync"
-      step: "PT{{config.get('request_time_range', 24)}}H"
+      step: "PT{{config.get('request_time_range', 4)}}H"
       cursor_field: "{{ parameters.get('stream_cursor_field') }}"
       cursor_granularity: PT1H
       start_datetime:

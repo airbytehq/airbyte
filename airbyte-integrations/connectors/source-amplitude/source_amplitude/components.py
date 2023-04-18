@@ -100,6 +100,7 @@ class EventsExtractor(RecordExtractor):
         response: requests.Response,
     ) -> List[Record]:
         try:
+            logger.info(f"The size of the response body is: {len(response.content)}")
             zip_file = zipfile.ZipFile(io.BytesIO(response.content))
         except zipfile.BadZipFile:
             logger.exception(
