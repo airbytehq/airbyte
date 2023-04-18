@@ -18,9 +18,14 @@ connector=${@:$OPTIND:1}
 export DOCKER_BUILD_PLATFORM=linux/amd64
 export ALPINE_IMAGE=amd64/alpine:3.14
 export DOCKER_BUILD_ARCH=amd64
-./tools/bin/setup_connector_venv.sh $connector python3.9
-./gradlew :airbyte-integrations:connectors:$connector:airbyteDocker
-docker tag docker.io/airbyte/$connector:dev ghcr.io/estuary/$connector:local
+
+if [ -f "airbyte-integrations/connectors/$connector/requirements.txt" ]; then
+   ./tools/bin/setup_connector_venv.sh $connector python3.9
+   ./gradlew :airbyte-integrations:connectors:$connector:airbyteDocker
+   docker tag docker.io/airbyte/$connector:dev ghcr.io/estuary/$connector:local
+else
+   docker build airbyte-integrations/connectors/$connector -f airbyte-integrations/connectors/$connector/Dockerfile -t ghcr.io/estuary/$connector:local
+fi
 
 if [[ "$_push" -eq "1" ]]; then
     tag=$CODESPACE_NAME

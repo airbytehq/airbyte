@@ -1,28 +1,5 @@
-FROM python:3.9.11-alpine3.15 as base
-FROM base as builder
+FROM airbyte/source-zendesk-support:0.2.27
 
-
-RUN apk --no-cache upgrade \
-    && pip install --upgrade pip  \
-    && apk --no-cache add tzdata build-base
-
-WORKDIR /airbyte/integration_code
-COPY setup.py ./
-RUN pip install --prefix=/install .
-
-
-FROM base
-COPY --from=builder /install /usr/local
-# add default timezone settings
-COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
-RUN echo "Etc/UTC" > /etc/timezone
-
-WORKDIR /airbyte/integration_code
-COPY main.py ./
-COPY source_zendesk_support ./source_zendesk_support
-
-
-ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 COPY --from=ghcr.io/estuary/airbyte-to-flow:dev /airbyte-to-flow ./
 ENTRYPOINT ["/airbyte/integration_code/airbyte-to-flow", "--connector-entrypoint", "python /airbyte/integration_code/main.py"]
 

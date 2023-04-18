@@ -1,19 +1,9 @@
-FROM python:3.9-slim
+FROM airbyte/source-amazon-ads:1.0.3
 
-# Bash is installed for more convenient debugging.
-RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /airbyte/integration_code
-COPY source_amazon_ads ./source_amazon_ads
-COPY main.py ./
-COPY setup.py ./
-RUN pip install .
-
-COPY *.patch.json ./
-
-ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 COPY --from=ghcr.io/estuary/airbyte-to-flow:dev /airbyte-to-flow ./airbyte-to-flow
 ENTRYPOINT ["/airbyte/integration_code/airbyte-to-flow", "--connector-entrypoint", "python /airbyte/integration_code/main.py"]
+
+COPY *.patch.json ./
 
 LABEL io.airbyte.version=v1
 LABEL io.airbyte.name=airbyte/source-amazon-ads
