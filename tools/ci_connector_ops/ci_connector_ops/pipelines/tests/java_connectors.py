@@ -9,6 +9,7 @@ from typing import List, Optional
 import anyio
 from ci_connector_ops.pipelines.actions import environments, secrets
 from ci_connector_ops.pipelines.bases import GradleTask, StepResult, StepStatus
+from ci_connector_ops.pipelines.builds import LOCAL_BUILD_PLATFORM
 from ci_connector_ops.pipelines.builds.java_connectors import BuildConnectorImage
 from ci_connector_ops.pipelines.builds.normalization import BuildOrPullNormalization
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
@@ -70,7 +71,7 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
         List[StepResult]: The results of all the tests steps.
     """
     step_results = []
-    build_connector_step = BuildConnectorImage(context)
+    build_connector_step = BuildConnectorImage(context, LOCAL_BUILD_PLATFORM)
     unit_tests_step = UnitTests(context)
     build_normalization_step = None
     if context.connector.supports_normalization:
@@ -92,7 +93,7 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
                 integration_tests_java_step.skip(),
                 acceptance_tests_step.skip(),
             ]
-        normalization_tar_file = await export_container_to_tarball(context, normalization_container)
+        normalization_tar_file, _ = await export_container_to_tarball(context, normalization_container)
         context.logger.info(f"{build_normalization_step.normalization_image} was successfully built.")
         step_results.append(build_normalization_results)
 
@@ -105,7 +106,7 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
             integration_tests_java_step.skip(),
             acceptance_tests_step.skip(),
         ]
-    connector_image_tar_file = await export_container_to_tarball(context, connector_container)
+    connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container)
     context.logger.info("The connector was successfully built.")
     step_results.append(build_connector_results)
 

@@ -9,6 +9,7 @@ from typing import List, Tuple
 import asyncer
 from ci_connector_ops.pipelines.actions import environments, secrets
 from ci_connector_ops.pipelines.bases import Step, StepResult, StepStatus
+from ci_connector_ops.pipelines.builds import LOCAL_BUILD_PLATFORM
 from ci_connector_ops.pipelines.builds.python_connectors import BuildConnectorImage
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.pipelines.tests.common import AcceptanceTests, PytestStep
@@ -115,7 +116,7 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
     """
     connector_package_install_step = ConnectorPackageInstall(context)
     unit_tests_step = UnitTests(context)
-    build_connector_image_step = BuildConnectorImage(context)
+    build_connector_image_step = BuildConnectorImage(context, LOCAL_BUILD_PLATFORM)
     integration_tests_step = IntegrationTests(context)
     acceptance_test_step = AcceptanceTests(context)
 
@@ -144,7 +145,7 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
         results.append(build_connector_image_results)
         if build_connector_image_results.status is StepStatus.FAILURE:
             return results + [integration_tests_step.skip(), acceptance_test_step.skip()]
-        connector_image_tar_file = await export_container_to_tarball(context, connector_container)
+        connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container)
         context.logger.info("Successfully ran the build connector image step.")
 
     context.logger.info("Retrieve the connector secrets.")

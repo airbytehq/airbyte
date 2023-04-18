@@ -476,7 +476,7 @@ def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_p
     )
 
 
-def with_integration_base(context: PipelineContext, jdk_version: str = "17.0.4") -> Container:
+def with_integration_base(context: PipelineContext, build_platform: str, jdk_version: str = "17.0.4") -> Container:
     """Create an integration base container.
 
     Reproduce with Dagger the Dockerfile defined here: airbyte-integrations/bases/base/Dockerfile
@@ -484,7 +484,7 @@ def with_integration_base(context: PipelineContext, jdk_version: str = "17.0.4")
     base_sh = context.get_repo_dir("airbyte-integrations/bases/base", include=["base.sh"]).file("base.sh")
 
     return (
-        context.dagger_client.container()
+        context.dagger_client.container(platform=build_platform)
         .from_(f"amazoncorretto:{jdk_version}")
         .with_workdir("/airbyte")
         .with_file("base.sh", base_sh)
@@ -494,7 +494,7 @@ def with_integration_base(context: PipelineContext, jdk_version: str = "17.0.4")
     )
 
 
-async def with_java_base(context: PipelineContext, jdk_version: str = "17.0.4") -> Container:
+async def with_java_base(context: PipelineContext, build_platform: str, jdk_version: str = "17.0.4") -> Container:
     """Create a java base container.
 
     Reproduce with Dagger the Dockerfile defined here: airbyte-integrations/bases/base-java/Dockerfile_
@@ -505,7 +505,7 @@ async def with_java_base(context: PipelineContext, jdk_version: str = "17.0.4") 
     java_base_version = await get_version_from_dockerfile(dockerfile)
 
     return (
-        with_integration_base(context, jdk_version)
+        with_integration_base(context, build_platform, jdk_version)
         .with_exec(["yum", "install", "-y", "tar", "openssl"])
         .with_exec(["yum", "clean", "all"])
         .with_workdir("/airbyte")
@@ -522,11 +522,11 @@ async def with_java_base(context: PipelineContext, jdk_version: str = "17.0.4") 
     )
 
 
-async def with_airbyte_java_connector(context: ConnectorTestContext, connector_java_tar_file: File):
+async def with_airbyte_java_connector(context: ConnectorTestContext, connector_java_tar_file: File, build_platform: str):
     dockerfile = context.get_connector_dir(include=["Dockerfile"]).file("Dockerfile")
     connector_version = await get_version_from_dockerfile(dockerfile)
     application = context.connector.technical_name
-    java_base = await with_java_base(context)
+    java_base = await with_java_base(context, build_platform)
     enable_sentry = await should_enable_sentry(dockerfile)
 
     return (

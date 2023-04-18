@@ -11,7 +11,7 @@ import sys
 import unicodedata
 from glob import glob
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Set
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Set, Tuple
 
 import anyio
 import asyncer
@@ -296,6 +296,9 @@ class DaggerPipelineCommand(click.Command):
         """
         command_name = self.name
         click.secho(f"Running {command_name}...")
+        click.secho(
+            "If you're running this command for the first time the Dagger engine image will be pulled, it can take a short minute..."
+        )
         try:
             pipeline_success = super().invoke(ctx)
             if not pipeline_success:
@@ -315,7 +318,7 @@ async def execute_concurrently(steps: List[Callable], concurrency=5):
     return [task.value for task in tasks]
 
 
-async def export_container_to_tarball(context: ConnectorTestContext, container: Container) -> Optional[File]:
+async def export_container_to_tarball(context: ConnectorTestContext, container: Container) -> Optional[Tuple[File, Path]]:
     """Save the container image to the host filesystem as a tar archive.
 
     Returns:
@@ -323,11 +326,12 @@ async def export_container_to_tarball(context: ConnectorTestContext, container: 
     """
     container_id = await container.id()
     tar_file_name = f"{container_id[:100]}.tar"
-    export_success = await container.export(f"{context.host_image_export_dir_path}/{tar_file_name}")
+    local_path = Path(f"{context.host_image_export_dir_path}/{tar_file_name}")
+    export_success = await container.export(str(local_path))
     if export_success:
         exported_file = (
             context.dagger_client.host().directory(context.host_image_export_dir_path, include=[tar_file_name]).file(tar_file_name)
         )
-        return exported_file
+        return exported_file, local_path
     else:
-        return None
+        return None, None
