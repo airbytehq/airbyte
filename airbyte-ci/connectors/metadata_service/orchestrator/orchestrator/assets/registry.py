@@ -215,6 +215,7 @@ def oss_registry_from_metadata(context: OpExecutionContext, metadata_definitions
     """
     registry_name = "oss"
     registry_directory_manager = context.resources.registry_directory_manager
+    # import pdb; pdb.set_trace()
 
     from_metadata = construct_registry_from_metadata(metadata_definitions, registry_name)
     registry_dict = construct_registry_with_spec_from_registry(from_metadata, cached_specs)

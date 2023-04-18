@@ -248,6 +248,7 @@ def oss_registry_diff(oss_registry_from_metadata: ConnectorRegistryV1, legacy_os
     """
     oss_registry_from_metadata_dict = json.loads(oss_registry_from_metadata.json())
     legacy_oss_registry_dict = json.loads(legacy_oss_registry.json())
+    # import pdb; pdb.set_trace()
     return diff_registries(legacy_oss_registry_dict, oss_registry_from_metadata_dict).to_dict()
 
 

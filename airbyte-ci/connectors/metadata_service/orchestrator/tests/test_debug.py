@@ -12,10 +12,15 @@ from orchestrator.assets.registry import (
     cloud_registry_from_metadata,
     cloud_registry_from_metadata,
     oss_registry_from_metadata,
+    legacy_oss_registry_dict,
+    legacy_oss_registry
 )
 from orchestrator.assets.metadata import (
     legacy_registry_derived_metadata_definitions,
     metadata_definitions,
+)
+from orchestrator.assets.dev import (
+    oss_registry_diff,
 )
 
 
@@ -68,7 +73,7 @@ def debug_registry_projection():
     # connector_registry_location_html(context, all_sources_df, all_destinations_df)
     # connector_registry_location_markdown(context, all_sources_df, all_destinations_df)
 
-def test_debug_registry_generation():
+def debug_registry_generation():
     resources = {
         "gcp_gcs_client": gcp_gcs_client.configured(
             {
@@ -84,3 +89,23 @@ def test_debug_registry_generation():
     metadata_definitions_asset = metadata_definitions(context)
     oss_registry_from_metadata(context, metadata_definitions_asset).value
     # cloud_registry_from_metadata(context, metadata_definitions_asset).value
+
+def test_debug_registry_diff():
+    resources = {
+        "gcp_gcs_client": gcp_gcs_client.configured(
+            {
+                "gcp_gcs_cred_string": {"env": "GCS_CREDENTIALS"},
+            }
+        ),
+        "gcs_bucket_manager": gcs_bucket_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}}),
+        "registry_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRY_FOLDER}),
+        "metadata_file_blobs": gcs_directory_blobs.configured({"prefix": METADATA_FOLDER, "suffix": METADATA_FILE_NAME}),
+        "legacy_oss_registry_gcs_blob": gcs_file_blob.configured({"prefix": "", "gcs_filename": "oss_catalog.json"}),
+    }
+
+    context = build_op_context(resources=resources)
+    metadata_definitions_asset = metadata_definitions(context)
+    oss_registry_from_metadata_value = oss_registry_from_metadata(context, metadata_definitions_asset).value
+    legacy_oss_registry_dict_value = legacy_oss_registry_dict(context)
+    legacy_oss_registry_value = legacy_oss_registry(legacy_oss_registry_dict_value)
+    oss_registry_diff(oss_registry_from_metadata_value, legacy_oss_registry_value)

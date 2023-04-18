@@ -122,6 +122,7 @@ class Registry(BaseModel):
 
 class Data(BaseModel):
     name: str
+    icon: Optional[str] = None
     definitionId: UUID
     connectorType: Literal['destination', 'source']
     dockerRepository: str

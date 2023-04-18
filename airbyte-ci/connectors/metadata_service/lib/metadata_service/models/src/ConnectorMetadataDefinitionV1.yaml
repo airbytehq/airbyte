@@ -16,7 +16,7 @@ properties:
     type: object
     required:
       - name
-      - icon
+      # - icon
       - definitionId
       - connectorType
       - dockerRepository
@@ -28,6 +28,8 @@ properties:
       - releaseStage
     properties:
       name:
+        type: string
+      icon:
         type: string
       definitionId:
         type: string
