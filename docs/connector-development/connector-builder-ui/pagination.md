@@ -16,7 +16,7 @@ The following pagination mechanisms are supported in the connector builder:
 - [Page Increment](#page-increment)
 - [Cursor Pagination](#cursor-pagination)
 
-Select the matching pagination method for your API and check the sections below for more information about individual methods.
+Select the matching pagination method for your API and check the sections below for more information about individual methods. If none of these pagination methods work for your API, you will need to use the [low-code CDK](../config-based/low-code-cdk-overview) or [Python CDK](../cdk-python/) instead.
 
 ### Offset Increment
 
