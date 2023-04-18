@@ -4,7 +4,7 @@ from typing import List
 from dagster import Output, asset, OpExecutionContext
 import yaml
 
-from metadata_service.models.generated.ConnectorMetadataDefinitionV1 import ConnectorMetadataDefinitionV1
+from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 
 from orchestrator.utils.object_helpers import are_values_equal, merge_values
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
@@ -164,7 +164,7 @@ def merge_into_metadata_definitions(
 
 def validate_metadata(metadata: PartialMetadataDefinition) -> tuple[bool, str]:
     try:
-        ConnectorMetadataDefinitionV1.parse_obj(metadata)
+        ConnectorMetadataDefinitionV0.parse_obj(metadata)
         return True, None
     except Exception as e:
         return False, str(e)

@@ -23,9 +23,9 @@ def validate(file_path: pathlib.Path):
 
     is_valid, error = validate_metadata_file(file_path)
     if is_valid:
-        click.echo(f"{file_path} is a valid ConnectorMetadataDefinitionV1 YAML file.")
+        click.echo(f"{file_path} is a valid ConnectorMetadataDefinitionV0 YAML file.")
     else:
-        click.echo(f"{file_path} is not a valid ConnectorMetadataDefinitionV1 YAML file.")
+        click.echo(f"{file_path} is not a valid ConnectorMetadataDefinitionV0 YAML file.")
         click.echo(str(error))
         exit(1)
 

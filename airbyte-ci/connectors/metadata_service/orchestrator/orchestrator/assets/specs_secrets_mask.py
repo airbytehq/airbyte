@@ -6,7 +6,7 @@ from typing import List, Set
 import dpath.util
 import yaml
 from dagster import MetadataValue, Output, asset
-from metadata_service.models.generated.ConnectorRegistryV1 import ConnectorRegistryV1
+from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
 
 GROUP_NAME = "specs_secrets_mask"
 
@@ -46,7 +46,7 @@ def get_secrets_properties_from_registry_entry(registry_entry: dict) -> List[str
 
 
 @asset(group_name=GROUP_NAME)
-def all_specs_secrets(oss_registry_from_metadata: ConnectorRegistryV1, cloud_registry_from_metadata: ConnectorRegistryV1) -> Set[str]:
+def all_specs_secrets(oss_registry_from_metadata: ConnectorRegistryV0, cloud_registry_from_metadata: ConnectorRegistryV0) -> Set[str]:
     oss_registry_from_metadata_dict = oss_registry_from_metadata.dict()
     cloud_registry_from_metadata_dict = cloud_registry_from_metadata.dict()
 

@@ -1,4 +1,4 @@
-from metadata_service.models.generated.ConnectorMetadataDefinitionV1 import ConnectorMetadataDefinitionV1
+from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from pydantic import ValidationError
 
 from pydantic import ValidationError
@@ -33,8 +33,8 @@ class PydanitcDictMixin:
         self.__dict__[key] = value
 
 
-class PartialMetadataDefinition(PydanticDelayValidationMixin, PydanitcDictMixin, ConnectorMetadataDefinitionV1):
+class PartialMetadataDefinition(PydanticDelayValidationMixin, PydanitcDictMixin, ConnectorMetadataDefinitionV0):
     pass
 
-class MetadataDefinition(PydanitcDictMixin, ConnectorMetadataDefinitionV1):
+class MetadataDefinition(PydanitcDictMixin, ConnectorMetadataDefinitionV0):
     pass

@@ -7,7 +7,7 @@ from dagster import Output, asset, OpExecutionContext
 from typing import List
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 from orchestrator.models.metadata import PartialMetadataDefinition
-from metadata_service.models.generated.ConnectorRegistryV1 import ConnectorRegistryV1
+from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
 
 
 """
@@ -232,7 +232,7 @@ def persist_metadata_definitions(context: OpExecutionContext, overrode_metadata_
 
 
 @asset(group_name=GROUP_NAME)
-def cloud_registry_diff(cloud_registry_from_metadata: ConnectorRegistryV1, legacy_cloud_registry: ConnectorRegistryV1) -> dict:
+def cloud_registry_diff(cloud_registry_from_metadata: ConnectorRegistryV0, legacy_cloud_registry: ConnectorRegistryV0) -> dict:
     """
     Compares the cloud registry from the metadata with the latest OSS registry.
     """
@@ -242,7 +242,7 @@ def cloud_registry_diff(cloud_registry_from_metadata: ConnectorRegistryV1, legac
 
 
 @asset(group_name=GROUP_NAME)
-def oss_registry_diff(oss_registry_from_metadata: ConnectorRegistryV1, legacy_oss_registry: ConnectorRegistryV1) -> dict:
+def oss_registry_diff(oss_registry_from_metadata: ConnectorRegistryV0, legacy_oss_registry: ConnectorRegistryV0) -> dict:
     """
     Compares the OSS registry from the metadata with the latest OSS registry.
     """
