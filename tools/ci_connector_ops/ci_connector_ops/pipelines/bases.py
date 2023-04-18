@@ -25,7 +25,7 @@ from rich.table import Table
 from rich.text import Text
 
 if TYPE_CHECKING:
-    from ci_connector_ops.pipelines.contexts import ConnectorTestContext, PipelineContext
+    from ci_connector_ops.pipelines.contexts import ConnectorContext, PipelineContext
 
 
 class StepStatus(Enum):
@@ -75,7 +75,7 @@ class Step(ABC):
 
     title: ClassVar
 
-    def __init__(self, context: ConnectorTestContext) -> None:  # noqa D107
+    def __init__(self, context: ConnectorContext) -> None:  # noqa D107
         self.context = context
 
     async def run(self, *args, **kwargs) -> StepResult:
@@ -200,12 +200,13 @@ class StepResult:
 
 
 @dataclass(frozen=True)
-class TestReport:
-    """A dataclass to build test reports to share pipelines executions results with the user."""
+class Report:
+    """A dataclass to build reports to share pipelines executions results with the user."""
 
     pipeline_context: PipelineContext
     steps_results: List[StepResult]
     created_at: datetime = field(default_factory=datetime.utcnow)
+    name: str = "REPORT"
 
     @property
     def failed_steps(self) -> List[StepResult]:  # noqa D102
@@ -255,7 +256,7 @@ class TestReport:
     def print(self):
         """Print the test report to the console in a nice way."""
         pipeline_name = self.pipeline_context.pipeline_name
-        main_panel_title = Text(f"{pipeline_name.upper()} - TEST RESULTS")
+        main_panel_title = Text(f"{pipeline_name.upper()} - {self.name}")
         main_panel_title.stylize(Style(color="blue", bold=True))
         duration_subtitle = Text(f"⏲️  Total pipeline duration for {pipeline_name}: {round(self.run_duration)} seconds")
         step_results_table = Table(title="Steps results")
@@ -287,7 +288,7 @@ class TestReport:
 
 
 @dataclass(frozen=True)
-class ConnectorTestReport(TestReport):
+class ConnectorReport(Report):
     """A dataclass to build connector test reports to share pipelines executions results with the user."""
 
     @property
@@ -323,7 +324,7 @@ class ConnectorTestReport(TestReport):
     def print(self):
         """Print the test report to the console in a nice way."""
         connector_name = self.pipeline_context.connector.technical_name
-        main_panel_title = Text(f"{connector_name.upper()} - TEST RESULTS")
+        main_panel_title = Text(f"{connector_name.upper()} - {self.name}")
         main_panel_title.stylize(Style(color="blue", bold=True))
         duration_subtitle = Text(f"⏲️  Total pipeline duration for {connector_name}: {round(self.run_duration)} seconds")
         step_results_table = Table(title="Steps results")

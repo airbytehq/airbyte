@@ -12,7 +12,7 @@ from ci_connector_ops.pipelines.bases import GradleTask, StepResult, StepStatus
 from ci_connector_ops.pipelines.builds import LOCAL_BUILD_PLATFORM
 from ci_connector_ops.pipelines.builds.java_connectors import BuildConnectorImage
 from ci_connector_ops.pipelines.builds.normalization import BuildOrPullNormalization
-from ci_connector_ops.pipelines.contexts import ConnectorTestContext
+from ci_connector_ops.pipelines.contexts import ConnectorContext
 from ci_connector_ops.pipelines.tests.common import AcceptanceTests
 from ci_connector_ops.pipelines.utils import export_container_to_tarball
 from dagger import File, QueryError
@@ -56,7 +56,7 @@ class IntegrationTestJava(GradleTask):
             return StepResult(self, StepStatus.FAILURE, stderr=str(e)), None
 
 
-async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
+async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     """Run all tests for a Java connectors.
 
     - Build the normalization image if the connector supports it.
@@ -65,7 +65,7 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
     - Run integration and acceptance test in parallel using the built connector and normalization images.
 
     Args:
-        context (ConnectorTestContext): The current connector test context.
+        context (ConnectorContext): The current connector context.
 
     Returns:
         List[StepResult]: The results of all the tests steps.

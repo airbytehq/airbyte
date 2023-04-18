@@ -22,7 +22,7 @@ from dagger import Config, Connection, Container, DaggerError, File, QueryError
 from more_itertools import chunked
 
 if TYPE_CHECKING:
-    from ci_connector_ops.pipelines.contexts import ConnectorTestContext
+    from ci_connector_ops.pipelines.contexts import ConnectorContext
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
@@ -318,11 +318,11 @@ async def execute_concurrently(steps: List[Callable], concurrency=5):
     return [task.value for task in tasks]
 
 
-async def export_container_to_tarball(context: ConnectorTestContext, container: Container) -> Optional[Tuple[File, Path]]:
+async def export_container_to_tarball(context: ConnectorContext, container: Container) -> Tuple[Optional[File], Optional[Path]]:
     """Save the container image to the host filesystem as a tar archive.
 
     Returns:
-        Optional[File]: The file object holding the tar archive on the host.
+        Tuple[Optional[File], Optional[Path]]: A tuple with the file object holding the tar archive on the host and its path.
     """
     container_id = await container.id()
     tar_file_name = f"{container_id[:100]}.tar"

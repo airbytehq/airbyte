@@ -13,7 +13,7 @@ from dagger import Container, File, QueryError
 
 class BuildConnectorImage(BuildConnectorImageBase, GradleTask):
     """
-    A step to build a Java connector image using the build Gradle task.
+    A step to build a Java connector image using the distTar Gradle task.
     """
 
     gradle_task_name = "distTar"

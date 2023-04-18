@@ -13,7 +13,7 @@ from typing import Tuple
 import anyio
 import click
 import dagger
-from ci_connector_ops.pipelines.contexts import CIContext, ConnectorTestContext
+from ci_connector_ops.pipelines.contexts import CIContext, ConnectorContext
 from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.pipelines.connectors import run_connectors_build_pipelines, run_connectors_test_pipelines
 from ci_connector_ops.pipelines.utils import DaggerPipelineCommand, get_modified_connectors
@@ -138,7 +138,7 @@ def test(
     click.secho(f"Will run the test pipeline for the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}.", fg="green")
 
     connectors_tests_contexts = [
-        ConnectorTestContext(
+        ConnectorContext(
             connector,
             ctx.obj["is_local"],
             ctx.obj["git_branch"],
@@ -179,7 +179,7 @@ def test(
 def build(ctx: click.Context):
     click.secho(f"Will build the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}.", fg="green")
     connectors_contexts = [
-        ConnectorTestContext(
+        ConnectorContext(
             connector,
             ctx.obj["is_local"],
             ctx.obj["git_branch"],

@@ -5,7 +5,7 @@ from typing import Tuple
 
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.bases import Step, StepResult, StepStatus
-from ci_connector_ops.pipelines.contexts import ConnectorTestContext
+from ci_connector_ops.pipelines.contexts import ConnectorContext
 from ci_connector_ops.utils import Connector
 from dagger import Container
 
@@ -24,11 +24,11 @@ class BuildOrPullNormalization(Step):
         Connector("destination-tidb"): "tidb.Dockerfile",
     }
 
-    def __init__(self, context: ConnectorTestContext, normalization_image: str) -> None:
+    def __init__(self, context: ConnectorContext, normalization_image: str) -> None:
         """Initialize the step to build or pull the normalization image.
 
         Args:
-            context (ConnectorTestContext): The current connector test context.
+            context (ConnectorContext): The current connector context.
             normalization_image (str): The normalization image to build (if :dev) or pull.
         """
         super().__init__(context)

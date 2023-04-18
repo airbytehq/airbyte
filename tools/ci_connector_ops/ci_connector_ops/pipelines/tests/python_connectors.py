@@ -11,7 +11,7 @@ from ci_connector_ops.pipelines.actions import environments, secrets
 from ci_connector_ops.pipelines.bases import Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.builds import LOCAL_BUILD_PLATFORM
 from ci_connector_ops.pipelines.builds.python_connectors import BuildConnectorImage
-from ci_connector_ops.pipelines.contexts import ConnectorTestContext
+from ci_connector_ops.pipelines.contexts import ConnectorContext
 from ci_connector_ops.pipelines.tests.common import AcceptanceTests, PytestStep
 from ci_connector_ops.pipelines.utils import export_container_to_tarball
 from dagger import Container
@@ -35,7 +35,7 @@ class CodeFormatChecks(Step):
         - Flake enforces style-guides: fails if the style-guide is not followed.
 
         Args:
-            context (ConnectorTestContext): The current test context, providing a connector object, a dagger client and a repository directory.
+            context (ConnectorContext): The current test context, providing a connector object, a dagger client and a repository directory.
             step (Step): The step in which the code format checks are run. Defaults to Step.CODE_FORMAT_CHECKS
         Returns:
             StepResult: Failure or success of the code format checks with stdout and stderr.
@@ -105,11 +105,11 @@ class IntegrationTests(PytestStep):
         return await self._run_tests_in_directory(connector_under_test_with_secrets, "integration_tests")
 
 
-async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
+async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     """Run all tests for a Python connector.
 
     Args:
-        context (ConnectorTestContext): The current connector test context.
+        context (ConnectorContext): The current connector context.
 
     Returns:
         List[StepResult]: The results of all the steps that ran or were skipped.
@@ -160,11 +160,11 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
     return results + [task.value for task in tasks]
 
 
-async def run_code_format_checks(context: ConnectorTestContext) -> List[StepResult]:
+async def run_code_format_checks(context: ConnectorContext) -> List[StepResult]:
     """Run the code format check steps for Python connectors.
 
     Args:
-        context (ConnectorTestContext): The current connector test context.
+        context (ConnectorContext): The current connector context.
 
     Returns:
         List[StepResult]: Results of the code format checks.
