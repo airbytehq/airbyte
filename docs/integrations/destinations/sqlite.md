@@ -10,6 +10,12 @@ This destination is meant to be used on a local workstation and won't work on Ku
 
 This destination writes data to a file on the _local_ filesystem on the host running Airbyte. By default, data is written to `/tmp/airbyte_local`. To change this location, modify the `LOCAL_ROOT` environment variable for Airbyte.
 
+:::caution
+
+Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a MacOS, as /tmp has a symlink that points to /private. It will not work otherwise). You allow it with "File sharing" in `Settings -> Resources -> File sharing -> add the one or two above folder` and hit the "Apply & restart" button.
+
+:::
+
 ### Sync Overview
 
 #### Output schema

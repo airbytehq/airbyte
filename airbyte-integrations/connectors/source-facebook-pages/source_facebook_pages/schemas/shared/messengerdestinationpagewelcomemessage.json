@@ -15,11 +15,11 @@
     },
     "time_created": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "time_last_used": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     }
   }
 }

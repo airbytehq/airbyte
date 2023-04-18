@@ -1,12 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
-import static io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest.setEnv;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_FILE;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_POS;
 import static io.airbyte.integrations.source.mysql.MySqlSource.DRIVER_CLASS;
@@ -33,10 +32,13 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
@@ -46,9 +48,17 @@ import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.MySQLContainer;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
+@ExtendWith(SystemStubsExtension.class)
 public class CdcMysqlSourceTest extends CdcSourceTest {
+
+  @SystemStub
+  private EnvironmentVariables environmentVariables;
 
   private static final String DB_NAME = MODELS_SCHEMA;
   private MySQLContainer<?> container;
@@ -58,7 +68,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
 
   @BeforeEach
   public void setup() throws SQLException {
-    setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
+    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     init();
     revokeAllPermissions();
     grantCorrectPermissions();
@@ -99,6 +109,10 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     executeQuery("REVOKE ALL PRIVILEGES, GRANT OPTION FROM " + container.getUsername() + "@'%';");
   }
 
+  private void revokeReplicationClientPermission() {
+    executeQuery("REVOKE REPLICATION CLIENT ON *.* FROM " + container.getUsername() + "@'%';");
+  }
+
   private void grantCorrectPermissions() {
     executeQuery("GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO " + container.getUsername() + "@'%';");
   }
@@ -117,7 +131,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected CdcTargetPosition cdcLatestTargetPosition() {
+  protected MySqlCdcTargetPosition cdcLatestTargetPosition() {
     final DataSource dataSource = DataSourceFactory.create(
         "root",
         "test",
@@ -132,8 +146,8 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected CdcTargetPosition extractPosition(final JsonNode record) {
-    return new MySqlCdcTargetPosition(record.get(CDC_LOG_FILE).asText(), record.get(CDC_LOG_POS).asInt());
+  protected MySqlCdcTargetPosition extractPosition(final JsonNode record) {
+    return new MySqlCdcTargetPosition(record.get(CDC_LOG_FILE).asText(), record.get(CDC_LOG_POS).asLong());
   }
 
   @Override
@@ -204,6 +218,16 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   @Override
   protected String randomTableSchema() {
     return MODELS_SCHEMA;
+  }
+
+  @Test
+  protected void syncWithReplicationClientPrivilegeRevokedFailsCheck() throws Exception {
+    revokeReplicationClientPermission();
+    final AirbyteConnectionStatus status = getSource().check(getConfig());
+    final String expectedErrorMessage = "Please grant REPLICATION CLIENT privilege, so that binary log files are available"
+        + " for CDC mode.";
+    assertTrue(status.getStatus().equals(Status.FAILED));
+    assertTrue(status.getMessage().contains(expectedErrorMessage));
   }
 
   @Test

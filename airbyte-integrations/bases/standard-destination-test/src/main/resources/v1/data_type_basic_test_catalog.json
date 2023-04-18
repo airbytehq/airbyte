@@ -71,16 +71,6 @@
       }
     },
     {
-      "name": "bignumber_test_1",
-      "json_schema": {
-        "properties": {
-          "data": {
-            "$ref": "WellKnownTypes.json#/definitions/Number"
-          }
-        }
-      }
-    },
-    {
       "name": "integer_test_1",
       "json_schema": {
         "properties": {

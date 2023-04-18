@@ -6,8 +6,6 @@ The Zoho CRM source supports both Full Refresh and Incremental syncs. You can ch
 
 Airbyte uses [REST API](https://www.zoho.com/crm/developer/docs/api/v2/modules-api.html) to fetch data from Zoho CRM.
 
-This Source Connector is based on an [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
-
 ### Output schema
 
 This Source is capable of syncing:
@@ -130,6 +128,8 @@ Make sure to complete the auth flow quickly, as the initial token granted by Zoh
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject         |
-|:--------|:-----------|:---------------------------------------------------------|:----------------|
-| 0.1.0   | 2022-03-30 | [11193](https://github.com/airbytehq/airbyte/pull/11193) | Initial release |
+| Version | Date       | Pull Request                                             | Subject                                                                            |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------|
+| 0.1.2   | 2023-03-09 | [23906](https://github.com/airbytehq/airbyte/pull/23906) | added support for the latest CDK, fixed SAT                                        |
+| 0.1.1   | 2023-03-13 | [23818](https://github.com/airbytehq/airbyte/pull/23818) | Set airbyte type to string for zoho autonumbers when they include prefix or suffix |
+| 0.1.0   | 2022-03-30 | [11193](https://github.com/airbytehq/airbyte/pull/11193) | Initial release                                                                    |

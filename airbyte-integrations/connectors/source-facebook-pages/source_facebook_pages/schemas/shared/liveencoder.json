@@ -6,7 +6,7 @@
     },
     "creation_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "device_id": {
       "type": ["string", "null"]
@@ -16,7 +16,7 @@
     },
     "last_heartbeat_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "model": {
       "type": ["string", "null"]

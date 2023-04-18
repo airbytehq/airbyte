@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
@@ -20,8 +20,8 @@ import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFac
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
 import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.io.IOException;
 import java.util.Map;
 import java.util.function.BiFunction;

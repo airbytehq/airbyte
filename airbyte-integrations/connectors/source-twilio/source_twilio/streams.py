@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import copy
@@ -12,14 +12,19 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from pendulum.datetime import DateTime
 from requests.auth import AuthBase
 
+TWILIO_CONVERSATION_BASE = "https://conversations.twilio.com/v1/"
 TWILIO_API_URL_BASE = "https://api.twilio.com"
 TWILIO_API_URL_BASE_VERSIONED = f"{TWILIO_API_URL_BASE}/2010-04-01/"
 TWILIO_MONITOR_URL_BASE = "https://monitor.twilio.com/v1/"
+TWILIO_STUDIO_API_BASE = "https://studio.twilio.com/v1/"
+TWILIO_CONVERSATIONS_URL_BASE = "https://conversations.twilio.com/v1/"
 
 
 class TwilioStream(HttpStream, ABC):
@@ -38,6 +43,10 @@ class TwilioStream(HttpStream, ABC):
         :return list of changeable fields that should be removed from the records
         """
         return []
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def path(self, **kwargs):
         return f"{self.name.title()}.json"
@@ -160,16 +169,25 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
                 value[self.cursor_field] = new_start_date
         self._cursor_value = value.get(self.cursor_field)
 
-    def generate_date_ranges(self, super_slice: MutableMapping[str, Any]) -> Iterable[Optional[MutableMapping[str, Any]]]:
-        end_datetime = pendulum.now()
+    def generate_date_ranges(self) -> Iterable[Optional[MutableMapping[str, Any]]]:
+        def align_to_dt_format(dt: DateTime) -> DateTime:
+            return pendulum.parse(dt.format(self.time_filter_template))
+
+        end_datetime = pendulum.now("utc")
         start_datetime = min(end_datetime, pendulum.parse(self.state.get(self.cursor_field, self._start_date)))
         current_start = start_datetime
         current_end = start_datetime
-        while current_end < end_datetime:
+        # Aligning to a datetime format is done to avoid the following scenario:
+        # start_dt = 2021-11-14T00:00:00, end_dt (now) = 2022-11-14T12:03:01, time_filter_template = "YYYY-MM-DD"
+        # First slice: (2021-11-14, 2022-11-14)
+        # (!) Second slice: (2022-11-15, 2022-11-14) - because 2022-11-14T00:00:00 (prev end) < 2022-11-14T12:03:01,
+        # so we have to compare dates, not date-times to avoid yielding that last slice
+        while align_to_dt_format(current_end) < align_to_dt_format(end_datetime):
             current_end = min(end_datetime, current_start + self.slice_step)
-            slice_ = copy.deepcopy(super_slice) if super_slice else {}
-            slice_[self.lower_boundary_filter_field] = current_start.format(self.time_filter_template)
-            slice_[self.upper_boundary_filter_field] = current_end.format(self.time_filter_template)
+            slice_ = {
+                self.lower_boundary_filter_field: current_start.format(self.time_filter_template),
+                self.upper_boundary_filter_field: current_end.format(self.time_filter_template),
+            }
             yield slice_
             current_start = current_end + self.slice_granularity
 
@@ -177,7 +195,10 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for super_slice in super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
-            yield from self.generate_date_ranges(super_slice)
+            for dt_range in self.generate_date_ranges():
+                slice_ = copy.deepcopy(super_slice) if super_slice else {}
+                slice_.update(dt_range)
+                yield slice_
 
     def request_params(
         self,
@@ -381,6 +402,33 @@ class ConferenceParticipants(TwilioNestedStream):
     data_field = "participants"
 
 
+class Flows(TwilioStream):
+    """
+    https://www.twilio.com/docs/studio/rest-api/flow#read-a-list-of-flows
+    """
+
+    url_base = TWILIO_STUDIO_API_BASE
+
+    def path(self, **kwargs):
+        return "Flows"
+
+
+class Executions(TwilioNestedStream):
+    """
+    https://www.twilio.com/docs/studio/rest-api/execution#read-a-list-of-executions
+    """
+
+    parent_stream = Flows
+    url_base = TWILIO_STUDIO_API_BASE
+    uri_from_subresource = False
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        return f"Flows/{ stream_slice['flow_sid'] }/Executions"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"flow_sid": record["sid"]}
+
+
 class OutgoingCallerIds(TwilioNestedStream):
     """https://www.twilio.com/docs/voice/api/outgoing-caller-ids#outgoingcallerids-list-resource"""
 
@@ -484,3 +532,42 @@ class Alerts(IncrementalTwilioStream):
 
     def path(self, **kwargs):
         return self.name.title()
+
+
+class Conversations(TwilioStream):
+    """https://www.twilio.com/docs/conversations/api/conversation-resource#read-multiple-conversation-resources"""
+
+    url_base = TWILIO_CONVERSATIONS_URL_BASE
+
+    def path(self, **kwargs):
+        return self.name.title()
+
+
+class ConversationParticipants(TwilioNestedStream):
+    """https://www.twilio.com/docs/conversations/api/conversation-participant-resource"""
+
+    parent_stream = Conversations
+    url_base = TWILIO_CONVERSATIONS_URL_BASE
+    data_field = "participants"
+    uri_from_subresource = False
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs):
+        return f"Conversations/{stream_slice['conversation_sid']}/Participants"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"conversation_sid": record["sid"]}
+
+
+class ConversationMessages(TwilioNestedStream):
+    """https://www.twilio.com/docs/conversations/api/conversation-message-resource#list-all-conversation-messages"""
+
+    parent_stream = Conversations
+    url_base = TWILIO_CONVERSATIONS_URL_BASE
+    uri_from_subresource = False
+    data_field = "messages"
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs):
+        return f"Conversations/{stream_slice['conversation_sid']}/Messages"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"conversation_sid": record["sid"]}

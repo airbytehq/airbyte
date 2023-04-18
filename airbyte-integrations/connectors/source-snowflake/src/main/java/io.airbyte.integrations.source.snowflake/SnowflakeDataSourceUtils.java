@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.snowflake;
@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,8 +38,9 @@ public class SnowflakeDataSourceUtils {
   public static final String AIRBYTE_OSS = "airbyte_oss";
   public static final String AIRBYTE_CLOUD = "airbyte_cloud";
   private static final String JDBC_CONNECTION_STRING =
-      "role=%s&warehouse=%s&database=%s&schema=%s&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s&application=%s";
+      "role=%s&warehouse=%s&database=%s&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s&application=%s";
 
+  private static final String JDBC_SCHEMA_PARAM = "&schema=%s&CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX=true";
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDataSourceUtils.class);
   private static final int PAUSE_BETWEEN_TOKEN_REFRESH_MIN = 7; // snowflake access token's TTL is 10min and can't be modified
   private static final String REFRESH_TOKEN_URL = "https://%s/oauth/token-request";
@@ -141,12 +143,15 @@ public class SnowflakeDataSourceUtils {
         config.get("role").asText(),
         config.get("warehouse").asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText(),
-        config.get("schema").asText(),
         // Needed for JDK17 - see
         // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
         "JSON",
         true,
         airbyteEnvironment));
+
+    if (config.get("schema") != null && StringUtils.isNotBlank(config.get("schema").asText())) {
+      jdbcUrl.append(JDBC_SCHEMA_PARAM.formatted(config.get("schema").asText()));
+    }
 
     // https://docs.snowflake.com/en/user-guide/jdbc-configure.html#jdbc-driver-connection-string
     if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {

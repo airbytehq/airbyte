@@ -1,0 +1,196 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/object1667389704.json",
+  "title": "Root",
+  "type": "object",
+  "properties": {
+    "page": {
+      "$id": "#root/page",
+      "title": "Page",
+      "type": "integer",
+      "default": 0
+    },
+    "per_page": {
+      "$id": "#root/per_page",
+      "title": "Per_page",
+      "type": "integer",
+      "default": 0
+    },
+    "total_results": {
+      "$id": "#root/total_results",
+      "title": "Total_results",
+      "type": "integer",
+      "default": 0
+    },
+    "url": {
+      "$id": "#root/url",
+      "title": "Url",
+      "type": "string",
+      "default": "",
+      "pattern": "^.*$"
+    },
+    "videos": {
+      "$id": "#root/videos",
+      "title": "Videos",
+      "type": "array",
+      "default": [],
+      "items": {
+        "$id": "#root/videos/items",
+        "title": "Items",
+        "type": "object",
+        "properties": {
+          "id": {
+            "$id": "#root/videos/items/id",
+            "title": "Id",
+            "type": "integer",
+            "default": 0
+          },
+          "width": {
+            "$id": "#root/videos/items/width",
+            "title": "Width",
+            "type": ["null", "number", "integer"],
+            "default": 0
+          },
+          "height": {
+            "$id": "#root/videos/items/height",
+            "title": "Height",
+            "type": ["null", "number", "integer"],
+            "default": 0
+          },
+          "url": {
+            "$id": "#root/videos/items/url",
+            "title": "Url",
+            "type": "string",
+            "default": "",
+            "pattern": "^.*$"
+          },
+          "image": {
+            "$id": "#root/videos/items/image",
+            "title": "Image",
+            "type": "string",
+            "default": "",
+            "pattern": "^.*$"
+          },
+          "duration": {
+            "$id": "#root/videos/items/duration",
+            "title": "Duration",
+            "type": "integer",
+            "default": 0
+          },
+          "user": {
+            "$id": "#root/videos/items/user",
+            "title": "User",
+            "type": "object",
+            "properties": {
+              "id": {
+                "$id": "#root/videos/items/user/id",
+                "title": "Id",
+                "type": "integer",
+                "default": 0
+              },
+              "name": {
+                "$id": "#root/videos/items/user/name",
+                "title": "Name",
+                "type": "string",
+                "default": "",
+                "pattern": "^.*$"
+              },
+              "url": {
+                "$id": "#root/videos/items/user/url",
+                "title": "Url",
+                "type": "string",
+                "default": "",
+                "pattern": "^.*$"
+              }
+            }
+          },
+          "video_files": {
+            "$id": "#root/videos/items/video_files",
+            "title": "Video_files",
+            "type": "array",
+            "default": [],
+            "items": {
+              "$id": "#root/videos/items/video_files/items",
+              "title": "Items",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "$id": "#root/videos/items/video_files/items/id",
+                  "title": "Id",
+                  "type": "integer",
+                  "default": 0
+                },
+                "quality": {
+                  "$id": "#root/videos/items/video_files/items/quality",
+                  "title": "Quality",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^.*$"
+                },
+                "file_type": {
+                  "$id": "#root/videos/items/video_files/items/file_type",
+                  "title": "File_type",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^.*$"
+                },
+                "width": {
+                  "$id": "#root/videos/items/video_files/items/width",
+                  "title": "Width",
+                  "type": ["null", "number", "integer"],
+                  "default": 0
+                },
+                "height": {
+                  "$id": "#root/videos/items/video_files/items/height",
+                  "title": "Height",
+                  "type": ["null", "number", "integer"],
+                  "default": 0
+                },
+                "link": {
+                  "$id": "#root/videos/items/video_files/items/link",
+                  "title": "Link",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^.*$"
+                }
+              }
+            }
+          },
+          "video_pictures": {
+            "$id": "#root/videos/items/video_pictures",
+            "title": "Video_pictures",
+            "type": "array",
+            "default": [],
+            "items": {
+              "$id": "#root/videos/items/video_pictures/items",
+              "title": "Items",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "$id": "#root/videos/items/video_pictures/items/id",
+                  "title": "Id",
+                  "type": "integer",
+                  "default": 0
+                },
+                "picture": {
+                  "$id": "#root/videos/items/video_pictures/items/picture",
+                  "title": "Picture",
+                  "type": ["null", "string"],
+                  "default": "",
+                  "pattern": "^.*$"
+                },
+                "nr": {
+                  "$id": "#root/videos/items/video_pictures/items/nr",
+                  "title": "Nr",
+                  "type": "integer",
+                  "default": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

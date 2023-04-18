@@ -94,7 +94,7 @@ class MyStream(Stream):
     ...
 
     @transformer.registerCustomTransform
-    def transform_function(orginal_value: Any, field_schema: Dict[str, Any]) -> Any:
+    def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
         # transformed_value = ...
         return transformed_value
 ```
