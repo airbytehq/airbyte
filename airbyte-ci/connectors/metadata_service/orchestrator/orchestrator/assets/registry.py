@@ -115,12 +115,11 @@ def is_metadata_registry_enabled(metadata_definition: dict, registry_name: str) 
     return metadata_definition["data"]["registries"][registry_name]["enabled"]
 
 
-# TODO use actual type!
 def is_metadata_connector_type(metadata_definition: dict, connector_type: str) -> bool:
     return metadata_definition["data"]["connectorType"] == connector_type
 
 
-def construct_registry_from_metadata(registry_derived_metadata_definitions: List[MetadataDefinition], registry_name: str) -> dict:
+def construct_registry_from_metadata(registry_derived_metadata_definitions: List[MetadataDefinition], registry_name: str) -> ConnectorRegistryV1:
     """Construct the registry from the metadata definitions.
 
     Args:
@@ -142,8 +141,7 @@ def construct_registry_from_metadata(registry_derived_metadata_definitions: List
         if is_metadata_registry_enabled(metadata, registry_name) and is_metadata_connector_type(metadata, "destination")
     ]
 
-    registry = {"sources": registry_sources, "destinations": registry_destinations}
-    return registry
+    return {"sources": registry_sources, "destinations": registry_destinations}
 
 class UUIDEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -187,13 +185,9 @@ def persist_registry_to_json(registry: ConnectorRegistryV1, registry_name: str, 
     registry_file_name = f"{registry_name}_registry"
     registry_json = registry.json()
     file_handle = registry_directory_manager.write_data(registry_json.encode("utf-8"), ext="json", key=registry_file_name)
-    # import pdb; pdb.set_trace()
-
     return file_handle
 
 # ASSETS
-
-
 
 @asset(required_resource_keys={"registry_directory_manager"}, group_name=GROUP_NAME)
 def cloud_registry_from_metadata(context: OpExecutionContext, metadata_definitions: List[MetadataDefinition], cached_specs: OutputDataFrame) -> Output[ConnectorRegistryV1]:
@@ -213,11 +207,11 @@ def cloud_registry_from_metadata(context: OpExecutionContext, metadata_definitio
         "gcs_path": MetadataValue.url(file_handle.gcs_path),
     }
 
-    return Output(metadata=metadata, value=registry_dict)
+    return Output(metadata=metadata, value=reigstry_model)
 
 
 @asset(required_resource_keys={"registry_directory_manager"}, group_name=GROUP_NAME)
-def oss_registry_from_metadata(context: OpExecutionContext, metadata_definitions: List[MetadataDefinition], cached_specs: OutputDataFrame) -> Output[dict]:
+def oss_registry_from_metadata(context: OpExecutionContext, metadata_definitions: List[MetadataDefinition], cached_specs: OutputDataFrame) -> Output[ConnectorRegistryV1]:
     """
     This asset is used to generate the oss registry from the metadata definitions.
     """
@@ -234,7 +228,7 @@ def oss_registry_from_metadata(context: OpExecutionContext, metadata_definitions
         "gcs_path": MetadataValue.url(file_handle.gcs_path),
     }
 
-    return Output(metadata=metadata, value=registry_dict)
+    return Output(metadata=metadata, value=reigstry_model)
 
 
 # TODO legacy or latest?
