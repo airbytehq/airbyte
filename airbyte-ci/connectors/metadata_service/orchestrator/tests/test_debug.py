@@ -8,13 +8,13 @@ from orchestrator.assets.registry import (
     cloud_destinations_dataframe,
     oss_sources_dataframe,
     cloud_sources_dataframe,
-    latest_oss_registry_dict,
-    latest_cloud_registry_dict,
+    oss_registry_from_metadata,
+    cloud_registry_from_metadata,
     cloud_registry_from_metadata,
     oss_registry_from_metadata,
 )
 from orchestrator.assets.metadata import (
-    registry_derived_metadata_definitions,
+    legacy_registry_derived_metadata_definitions,
     metadata_definitions,
 )
 
@@ -50,16 +50,16 @@ def debug_registry_projection():
     }
 
     context = build_op_context(resources=resources)
-    cloud_registry_dict = latest_cloud_registry_dict(context)
+    cloud_registry_dict = cloud_registry_from_metadata(context)
     cloud_destinations_df = cloud_destinations_dataframe(cloud_registry_dict).value
     cloud_sources_df = cloud_sources_dataframe(cloud_registry_dict).value
 
-    oss_registry_dict = latest_oss_registry_dict(context)
+    oss_registry_dict = oss_registry_from_metadata(context)
     oss_destinations_df = oss_destinations_dataframe(oss_registry_dict).value
     oss_sources_df = oss_sources_dataframe(oss_registry_dict).value
     # github_connector_folders_list = github_connector_folders(context).value
 
-    registry_derived_metadata_definitions(context, cloud_sources_df, cloud_destinations_df, oss_sources_df, oss_destinations_df).value
+    legacy_registry_derived_metadata_definitions(context, cloud_sources_df, cloud_destinations_df, oss_sources_df, oss_destinations_df).value
     # valid_metadata_report_dataframe_df = valid_metadata_report_dataframe(metadata_definitions_df).value
 
     # all_sources_df = all_sources_dataframe(cloud_sources_df, oss_sources_df, github_connector_folders_list, valid_metadata_report_dataframe_df)

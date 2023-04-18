@@ -199,12 +199,12 @@ def valid_metadata_report_dataframe(overrode_metadata_definitions: List[PartialM
 
 
 @asset(group_name=GROUP_NAME)
-def registry_derived_metadata_definitions(
-    cloud_sources_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, oss_destinations_dataframe
+def legacy_registry_derived_metadata_definitions(
+    legacy_cloud_sources_dataframe, legacy_cloud_destinations_dataframe, legacy_oss_sources_dataframe, legacy_oss_destinations_dataframe
 ) -> Output[List[PartialMetadataDefinition]]:
-    sources_metadata_list = merge_into_metadata_definitions("sourceDefinitionId", "source", oss_sources_dataframe, cloud_sources_dataframe)
+    sources_metadata_list = merge_into_metadata_definitions("sourceDefinitionId", "source", legacy_oss_sources_dataframe, legacy_cloud_sources_dataframe)
     destinations_metadata_list = merge_into_metadata_definitions(
-        "destinationDefinitionId", "destination", oss_destinations_dataframe, cloud_destinations_dataframe
+        "destinationDefinitionId", "destination", legacy_oss_destinations_dataframe, legacy_cloud_destinations_dataframe
     )
     all_definitions = sources_metadata_list + destinations_metadata_list
     return Output(all_definitions, metadata={"count": len(all_definitions)})

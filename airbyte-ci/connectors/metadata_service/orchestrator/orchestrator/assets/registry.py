@@ -16,8 +16,6 @@ from orchestrator.utils.object_helpers import deep_copy_params
 
 from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
 
-from uuid import UUID
-
 from metadata_service.models.generated.ConnectorRegistryV1 import ConnectorRegistryV1
 
 
@@ -119,17 +117,17 @@ def is_metadata_connector_type(metadata_definition: dict, connector_type: str) -
     return metadata_definition["data"]["connectorType"] == connector_type
 
 
-def construct_registry_from_metadata(registry_derived_metadata_definitions: List[MetadataDefinition], registry_name: str) -> ConnectorRegistryV1:
+def construct_registry_from_metadata(legacy_registry_derived_metadata_definitions: List[MetadataDefinition], registry_name: str) -> ConnectorRegistryV1:
     """Construct the registry from the metadata definitions.
 
     Args:
-        registry_derived_metadata_definitions (List[dict]): Metadata definitions that have been derived from the existing registry.
+        legacy_registry_derived_metadata_definitions (List[dict]): Metadata definitions that have been derived from the existing registry.
         registry_name (str): The name of the registry to construct. One of "cloud" or "oss".
 
     Returns:
         dict: The registry.
     """
-    registry_derived_metadata_dicts = [metadata_definition.dict() for metadata_definition in registry_derived_metadata_definitions]
+    registry_derived_metadata_dicts = [metadata_definition.dict() for metadata_definition in legacy_registry_derived_metadata_definitions]
     registry_sources = [
         metadata_to_registry_entry(metadata, "source", registry_name)
         for metadata in registry_derived_metadata_dicts
@@ -187,7 +185,7 @@ def persist_registry_to_json(registry: ConnectorRegistryV1, registry_name: str, 
     file_handle = registry_directory_manager.write_data(registry_json.encode("utf-8"), ext="json", key=registry_file_name)
     return file_handle
 
-# ASSETS
+# New Registry
 
 @asset(required_resource_keys={"registry_directory_manager"}, group_name=GROUP_NAME)
 def cloud_registry_from_metadata(context: OpExecutionContext, metadata_definitions: List[MetadataDefinition], cached_specs: OutputDataFrame) -> Output[ConnectorRegistryV1]:
@@ -230,48 +228,71 @@ def oss_registry_from_metadata(context: OpExecutionContext, metadata_definitions
 
     return Output(metadata=metadata, value=reigstry_model)
 
-
-# TODO legacy or latest?
 @asset(group_name=GROUP_NAME)
-def cloud_sources_dataframe(latest_cloud_registry_dict: dict) -> OutputDataFrame:
-    sources = latest_cloud_registry_dict["sources"]
+def cloud_sources_dataframe(cloud_registry_from_metadata: ConnectorRegistryV1) -> OutputDataFrame:
+    cloud_registry_from_metadata_dict = json.loads(cloud_registry_from_metadata.json())
+    sources = cloud_registry_from_metadata_dict["sources"]
     return output_dataframe(pd.DataFrame(sources))
 
 
 @asset(group_name=GROUP_NAME)
-def oss_sources_dataframe(latest_oss_registry_dict: dict) -> OutputDataFrame:
-    sources = latest_oss_registry_dict["sources"]
+def oss_sources_dataframe(oss_registry_from_metadata: ConnectorRegistryV1) -> OutputDataFrame:
+    oss_registry_from_metadata_dict = json.loads(oss_registry_from_metadata.json())
+    sources = oss_registry_from_metadata_dict["sources"]
     return output_dataframe(pd.DataFrame(sources))
 
 
 @asset(group_name=GROUP_NAME)
-def cloud_destinations_dataframe(latest_cloud_registry_dict: dict) -> OutputDataFrame:
-    destinations = latest_cloud_registry_dict["destinations"]
+def cloud_destinations_dataframe(cloud_registry_from_metadata: ConnectorRegistryV1) -> OutputDataFrame:
+    cloud_registry_from_metadata_dict = json.loads(cloud_registry_from_metadata.json())
+    destinations = cloud_registry_from_metadata_dict["destinations"]
     return output_dataframe(pd.DataFrame(destinations))
 
 
 @asset(group_name=GROUP_NAME)
-def oss_destinations_dataframe(latest_oss_registry_dict: dict) -> OutputDataFrame:
-    destinations = latest_oss_registry_dict["destinations"]
+def oss_destinations_dataframe(oss_registry_from_metadata: ConnectorRegistryV1) -> OutputDataFrame:
+    oss_registry_from_metadata_dict = json.loads(oss_registry_from_metadata.json())
+    destinations = oss_registry_from_metadata_dict["destinations"]
+    return output_dataframe(pd.DataFrame(destinations))
+
+# Old Registry
+
+@asset(group_name=GROUP_NAME)
+def legacy_cloud_sources_dataframe(legacy_cloud_registry_dict: dict) -> OutputDataFrame:
+    sources = legacy_cloud_registry_dict["sources"]
+    return output_dataframe(pd.DataFrame(sources))
+
+
+@asset(group_name=GROUP_NAME)
+def legacy_oss_sources_dataframe(legacy_oss_registry_dict: dict) -> OutputDataFrame:
+    sources = legacy_oss_registry_dict["sources"]
+    return output_dataframe(pd.DataFrame(sources))
+
+
+@asset(group_name=GROUP_NAME)
+def legacy_cloud_destinations_dataframe(legacy_cloud_registry_dict: dict) -> OutputDataFrame:
+    destinations = legacy_cloud_registry_dict["destinations"]
     return output_dataframe(pd.DataFrame(destinations))
 
 
-@asset(required_resource_keys={"latest_cloud_registry_gcs_blob"}, group_name=GROUP_NAME)
-def latest_cloud_registry_dict(context: OpExecutionContext) -> dict:
-    oss_registry_file = context.resources.latest_cloud_registry_gcs_blob
+@asset(group_name=GROUP_NAME)
+def legacy_oss_destinations_dataframe(legacy_oss_registry_dict: dict) -> OutputDataFrame:
+    destinations = legacy_oss_registry_dict["destinations"]
+    return output_dataframe(pd.DataFrame(destinations))
+
+
+@asset(required_resource_keys={"legacy_cloud_registry_gcs_blob"}, group_name=GROUP_NAME)
+def legacy_cloud_registry_dict(context: OpExecutionContext) -> dict:
+    oss_registry_file = context.resources.legacy_cloud_registry_gcs_blob
     json_string = oss_registry_file.download_as_string().decode("utf-8")
     oss_registry_dict = json.loads(json_string)
     return oss_registry_dict
 
 
-@asset(required_resource_keys={"latest_oss_registry_gcs_blob"}, group_name=GROUP_NAME)
-def latest_oss_registry_dict(context: OpExecutionContext) -> dict:
-    oss_registry_file = context.resources.latest_oss_registry_gcs_blob
+@asset(required_resource_keys={"legacy_oss_registry_gcs_blob"}, group_name=GROUP_NAME)
+def legacy_oss_registry_dict(context: OpExecutionContext) -> dict:
+    oss_registry_file = context.resources.legacy_oss_registry_gcs_blob
     json_string = oss_registry_file.download_as_string().decode("utf-8")
     oss_registry_dict = json.loads(json_string)
     return oss_registry_dict
-
-
-# NET new
-
 

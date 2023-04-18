@@ -1,11 +1,13 @@
 import pandas as pd
 import yaml
+import json
 from pydash.collections import key_by
 from deepdiff import DeepDiff
 from dagster import Output, asset, OpExecutionContext
 from typing import List
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 from orchestrator.models.metadata import PartialMetadataDefinition
+from metadata_service.models.generated.ConnectorRegistryV1 import ConnectorRegistryV1
 
 
 """
@@ -190,14 +192,14 @@ def diff_registries(registry_dict_1: dict, registry_dict_2: dict) -> DeepDiff:
 
 @asset(group_name=GROUP_NAME)
 def overrode_metadata_definitions(
-    registry_derived_metadata_definitions: List[PartialMetadataDefinition],
+    legacy_registry_derived_metadata_definitions: List[PartialMetadataDefinition],
 ) -> List[PartialMetadataDefinition]:
     """
     Overrides the metadata definitions with the values in the OVERRIDES dictionary.
     This is useful for ensuring all connectors are passing validation when we go live.
     """
     overrode_definitions = []
-    for metadata_definition in registry_derived_metadata_definitions:
+    for metadata_definition in legacy_registry_derived_metadata_definitions:
         definition_id = metadata_definition["data"]["definitionId"]
         if definition_id in OVERRIDES:
             metadata_definition["data"].update(OVERRIDES[definition_id])
@@ -230,19 +232,21 @@ def persist_metadata_definitions(context: OpExecutionContext, overrode_metadata_
 
 
 @asset(group_name=GROUP_NAME)
-def cloud_registry_diff(cloud_registry_from_metadata: dict, latest_cloud_registry_dict: dict) -> dict:
+def cloud_registry_diff(cloud_registry_from_metadata: ConnectorRegistryV1, legacy_cloud_registry_dict: dict) -> dict:
     """
     Compares the cloud registry from the metadata with the latest OSS registry.
     """
-    return diff_registries(latest_cloud_registry_dict, cloud_registry_from_metadata).to_dict()
+    cloud_registry_from_metadata_dict = json.loads(cloud_registry_from_metadata.json())
+    return diff_registries(legacy_cloud_registry_dict, cloud_registry_from_metadata_dict).to_dict()
 
 
 @asset(group_name=GROUP_NAME)
-def oss_registry_diff(oss_registry_from_metadata: dict, latest_oss_registry_dict: dict) -> dict:
+def oss_registry_diff(oss_registry_from_metadata: ConnectorRegistryV1, legacy_oss_registry_dict: dict) -> dict:
     """
     Compares the OSS registry from the metadata with the latest OSS registry.
     """
-    return diff_registries(latest_oss_registry_dict, oss_registry_from_metadata).to_dict()
+    oss_registry_from_metadata_dict = json.loads(oss_registry_from_metadata.json())
+    return diff_registries(legacy_oss_registry_dict, oss_registry_from_metadata_dict).to_dict()
 
 
 @asset(group_name=GROUP_NAME)
