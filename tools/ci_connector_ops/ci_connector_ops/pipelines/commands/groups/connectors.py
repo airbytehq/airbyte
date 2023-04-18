@@ -164,7 +164,3 @@ def test(
             should_send=ctx.obj.get("ci_context") == CIContext.PULL_REQUEST,
             logger=logger,
         )
-
-
-if __name__ == "__main__":
-    test()

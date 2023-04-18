@@ -73,7 +73,8 @@ class StepStatus(Enum):
 class Step(ABC):
     """An abstract class to declare and run pipeline step."""
 
-    title: ClassVar
+    title: ClassVar[str]
+    started_at: ClassVar[datetime]
 
     def __init__(self, context: ConnectorTestContext) -> None:  # noqa D107
         self.context = context
@@ -87,6 +88,7 @@ class Step(ABC):
         Returns:
             StepResult: The step result following the step run.
         """
+        self.started_at = datetime.utcnow()
         try:
             return await self._run(*args, **kwargs)
         except QueryError as e:
@@ -269,7 +271,12 @@ class TestReport:
             step.stylize(step_result.status.get_rich_style())
             result = Text(step_result.status.value)
             result.stylize(step_result.status.get_rich_style())
-            step_results_table.add_row(step, result, f"{round((self.created_at - step_result.created_at).total_seconds())}s")
+
+            if step_result.status is StepStatus.SKIPPED:
+                step_results_table.add_row(step, result, "N/A")
+            else:
+                run_time_seconds = round((step_result.created_at - step_result.step.started_at).total_seconds())
+                step_results_table.add_row(step, result, f"{run_time_seconds}s")
 
         to_render = [step_results_table]
         if self.failed_steps:

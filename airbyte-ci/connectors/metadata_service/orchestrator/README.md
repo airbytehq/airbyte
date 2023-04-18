@@ -86,7 +86,7 @@ Refer to the [Dagster documentation](https://docs.dagster.io/concepts) for more 
 ### Starting the Dagster Daemons
 Start the orchestrator with the following command:
 ```bash
-poetry run dagster dev -m orchestrator
+poetry run dagster dev
 ```
 
 Then you can access the Dagster UI at http://localhost:3000
@@ -110,3 +110,19 @@ In some cases you may want to run the orchestrator without the UI. To learn more
 poetry run pytest
 ```
 
+## Deploying to Dagster Cloud manually
+Note: This is a temporary solution until we have a CI/CD pipeline setup.
+
+Getting the CICD setup is currently blocked until we hear back from Dagster on a better way to use relative imports in a Dagster Cloud Deployment.
+
+### Installing the dagster-cloud cli
+```bash
+pip install dagster-cloud
+dagster-cloud config
+```
+
+### Deploying the orchestrator
+```bash
+cd orchestrator
+DAGSTER_CLOUD_API_TOKEN=<YOU-DAGSTER-CLOUD-TOKEN> airbyte-ci metadata deploy orchestrator
+```
