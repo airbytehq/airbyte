@@ -111,6 +111,11 @@ Set to empty values, e.g. "" to disable basic auth. **Be sure to change these va
 4. `MAX_DISCOVER_WORKERS` - Define the maximum number of Discover workers each Airbyte Worker container can support. Defaults to 5.
 5. `SENTRY_DSN` - Define the [DSN](https://docs.sentry.io/product/sentry-basics/dsn-explainer/) of necessary Sentry instance. Defaults to empty. Integration with Sentry is explained [here](./sentry-integration.md)
 
+#### Data Retention
+
+1. `TEMPORAL_HISTORY_RETENTION_IN_DAYS` - Define the retention period of the job history in Temporal, defaults to 30 days. When running in docker, 
+   this same value is applied to the log retention.
+
 ### Docker-Only
 
 1. `WORKSPACE_DOCKER_MOUNT` - Defines the name of the Airbyte docker volume.
