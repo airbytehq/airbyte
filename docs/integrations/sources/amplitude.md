@@ -43,7 +43,7 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
-| 0.2.1   | 2023-02-03 | [22362](https://github.com/airbytehq/airbyte/pull/22362) | Reduce request_time_range to 6 hours                                                            |
+| 0.2.1   | 2023-02-03 | [22362](https://github.com/airbytehq/airbyte/pull/22362) | Reduce request_time_range to 4 hours                                                            |
 | 0.2.0   | 2023-02-03 | [22362](https://github.com/airbytehq/airbyte/pull/22362) | Migrate to YAML                                                                                 |
 | 0.1.24  | 2023-03-28 | [21022](https://github.com/airbytehq/airbyte/pull/21022) | Enable event stream time interval selection                                                     |
 | 0.1.23  | 2023-03-02 | [23087](https://github.com/airbytehq/airbyte/pull/23087) | Specified date formatting in specification                                                      |
