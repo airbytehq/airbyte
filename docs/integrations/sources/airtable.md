@@ -28,7 +28,7 @@ Currently, this source connector works with `Standard` subscription plan only. `
    - To authenticate using OAuth, select **OAuth2.0** from the Authentication dropdown click **Authenticate your Airtable account** to sign in with Airtable, select required workspaces you want to sync and authorize your account.
    - To authenticate using a Personal Access Token, select **Personal Access Token** from the Authentication dropdown and enter the Access Token for your Airtable account.
 :::info
-You may see a `400` or `401` error causing a failed sync. You can re-authenticate your Airtable connector to solve the issue temprorarily. We are working on a permanent fix that you can follow [here](https://github.com/airbytehq/airbyte/issues/24984).
+When using OAuth, you may see a `400` or `401` error causing a failed sync. You can re-authenticate your Airtable connector to solve the issue temporarily. We are working on a permanent fix that you can follow [here](https://github.com/airbytehq/airbyte/issues/25278).
 :::
 
 1. Click **Set up source**.
