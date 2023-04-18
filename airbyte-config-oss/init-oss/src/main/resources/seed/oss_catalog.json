@@ -7767,6 +7767,53 @@
     "custom": false,
     "releaseStage": "alpha"
   }, {
+    "sourceDefinitionId": "912eb6b7-a893-4a5b-b1c0-36ebbe2de8cd",
+    "name": "Aircall",
+    "dockerRepository": "airbyte/source-aircall",
+    "dockerImageTag": "0.1.0",
+    "documentationUrl": "https://docs.airbyte.com/integrations/sources/aircall",
+    "icon": "aircall.svg",
+    "sourceType": "api",
+    "spec": {
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/aircall",
+      "connectionSpecification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Aircall Spec",
+        "type": "object",
+        "required": [ "api_id", "api_token", "start_date" ],
+        "additionalProperties": true,
+        "properties": {
+          "api_id": {
+            "title": "API ID",
+            "type": "string",
+            "description": "App ID found at settings https://dashboard.aircall.io/integrations/api-keys",
+            "airbyte_secret": true
+          },
+          "api_token": {
+            "title": "API Token",
+            "type": "string",
+            "description": "App token found at settings (Ref- https://dashboard.aircall.io/integrations/api-keys)",
+            "airbyte_secret": true
+          },
+          "start_date": {
+            "title": "Date-From Filter",
+            "type": "string",
+            "description": "Date time filter for incremental filter, Specify which date to extract from.",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$",
+            "examples": [ "2022-03-01T00:00:00.000Z" ],
+            "format": "date-time"
+          }
+        }
+      },
+      "supportsNormalization": false,
+      "supportsDBT": false,
+      "supported_destination_sync_modes": [ ]
+    },
+    "tombstone": false,
+    "public": true,
+    "custom": false,
+    "releaseStage": "alpha"
+  }, {
     "sourceDefinitionId": "14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212",
     "name": "Airtable",
     "dockerRepository": "airbyte/source-airtable",
