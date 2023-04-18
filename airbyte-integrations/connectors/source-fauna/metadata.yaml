@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: source
+  definitionId: 3825db3e-c94b-42ac-bd53-b5a9507ace2b
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-fauna
+  githubIssueLabel: source-fauna
+  icon: fauna.svg
+  license: MIT
+  name: Fauna
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/fauna
+metadataSpecVersion: "1.0"

@@ -1,0 +1,23 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false # strict encrypt connectors are deployed to Cloud by their non strict encrypt sibling.
+    oss:
+      enabled: false # strict encrypt connectors are not used on OSS.
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: ce0d828e-1dc4-496c-b122-2da42e637e48
+  dockerImageTag: 0.2.3
+  dockerRepository: airbyte/destination-clickhouse-strict-encrypt
+  githubIssueLabel: destination-clickhouse
+  icon: clickhouse.svg
+  license: MIT
+  name: Clickhouse
+  normalizationConfig:
+    normalizationIntegrationType: clickhouse
+    normalizationRepository: airbyte/normalization-clickhouse
+    normalizationTag: 0.4.0
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/clickhouse
+  supportsDbt: false
+metadataSpecVersion: "1.0"
