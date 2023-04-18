@@ -14,16 +14,7 @@ data:
     hosts:
       - "${host}"
       - "${tunnel_method.tunnel_host}"
-  catalogs:
+  registries:
     oss:
       enabled: true
-    cloud:
-      enabled: true
-      name: "NEWNAME"
-      dockerRepository: airbyte/source-alloydb
-      resourceRequirements:
-        jobSpecific:
-          - jobType: sync
-            resourceRequirements:
-              memory_request: 1Gi
-              memory_limit: 1Gi
+      connectorType: destination

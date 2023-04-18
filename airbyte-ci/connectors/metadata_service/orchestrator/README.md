@@ -43,7 +43,7 @@ Developing against the orchestrator requires a development bucket in GCP.
 
 The orchestrator will use this bucket to:
 - store important output files. (e.g. Reports)
-- watch for changes to the `catalog` directory in the bucket.
+- watch for changes to the `registry` directory in the bucket.
 
 However all tmp files will be stored in a local directory.
 
