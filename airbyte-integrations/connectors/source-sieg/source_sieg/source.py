@@ -221,35 +221,34 @@ class BaseClass(HttpStream):
         next_page_token: Mapping[str, Any] = None,
     ):
 
-        if self.first_execution:
-            self.first_execution = False
-            logger.info("Ran first execution")
-            if 'xmls' in response.json().keys():
-                invoice = self.format_response(response.json())
-                print(type(invoice))
-                return [invoice]
-            # pass
-        else:
-            logger.info("Parsing Response")
+        # if self.first_execution:
+        #     self.first_execution = False
+        #     logger.info("Ran first execution")
+        #     if 'xmls' in response.json().keys():
+        #         invoice = self.format_response(response.json())
+        #         print(type(invoice))
+        #         return [invoice]
+        # else:
+        logger.info("Parsing Response")
 
-            skips_list = [i for i in range(0,self.max_skip)]
-            item_list = ThreadSafeList()
-            threads_quantity = self.threads_quantity
+        skips_list = [i for i in range(0,self.max_skip)]
+        item_list = ThreadSafeList()
+        threads_quantity = self.threads_quantity
 
-            threads = []
-            events = Event()
-            for chunk in self.chunker_list(skips_list, threads_quantity):
-                threads.append(Thread(target=self.read_invoice, args=(item_list, chunk)))
+        threads = []
+        events = Event()
+        for chunk in self.chunker_list(skips_list, threads_quantity):
+            threads.append(Thread(target=self.read_invoice, args=(item_list, chunk)))
 
-            # start threads
-            for thread in threads:
-                thread.start()
-            
-            # wait for all threads
-            for thread in threads:
-                thread.join()
-            
-            return item_list.get_list()
+        # start threads
+        for thread in threads:
+            thread.start()
+        
+        # wait for all threads
+        for thread in threads:
+            thread.join()
+        
+        return item_list.get_list()
 
 
 class Nfe(BaseClass):
