@@ -3,7 +3,7 @@ data:
     hosts:
       - mixpanel.com
       - eu.mixpanel.com
-  catalogs:
+  registries:
     cloud:
       dockerImageTag: 0.1.30
       enabled: true

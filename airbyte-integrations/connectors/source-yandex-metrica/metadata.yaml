@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - api-metrica.yandex.net
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:

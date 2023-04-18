@@ -139,27 +139,27 @@ OVERRIDES = {
 # HELPERS
 
 
-def key_catalog_entries(catalog: List[dict]) -> dict:
+def key_registry_entries(registry: List[dict]) -> dict:
     """Transforms a List of connectors into a dictionary keyed by the connector id.
 
     Args:
-        catalog (List[dict]): List of connectors
+        registry (List[dict]): List of connectors
 
     Returns:
         dict: Dictionary of connectors keyed by the connector id
     """
-    catalog_keyed = catalog.copy()
+    registry_keyed = registry.copy()
     for connector_type, id_field in [("sources", "sourceDefinitionId"), ("destinations", "destinationDefinitionId")]:
-        catalog_keyed[connector_type] = key_by(catalog_keyed[connector_type], id_field)
-    return catalog_keyed
+        registry_keyed[connector_type] = key_by(registry_keyed[connector_type], id_field)
+    return registry_keyed
 
 
-def diff_catalogs(catalog_dict_1: dict, catalog_dict_2: dict) -> DeepDiff:
-    """Compares two catalogs and returns a DeepDiff object.
+def diff_registries(registry_dict_1: dict, registry_dict_2: dict) -> DeepDiff:
+    """Compares two registries and returns a DeepDiff object.
 
     Args:
-        catalog_dict_1 (dict)
-        catalog_dict_2 (dict)
+        registry_dict_1 (dict)
+        registry_dict_2 (dict)
 
     Returns:
         DeepDiff
@@ -173,29 +173,31 @@ def diff_catalogs(catalog_dict_1: dict, catalog_dict_2: dict) -> DeepDiff:
         r"protocolVersion",
     ]
 
-    # TODO (ben) remove this when checking the final catalog from GCS metadata
+    # TODO (ben) remove this when checking the final registry from GCS metadata
     temporarily_ignored_fields = [
         r"spec",
     ]
 
     excludedRegex = new_metadata_fields + removed_metadata_fields + temporarily_ignored_fields
-    keyed_catalog_dict_1 = key_catalog_entries(catalog_dict_1)
-    keyed_catalog_dict_2 = key_catalog_entries(catalog_dict_2)
+    keyed_registry_dict_1 = key_registry_entries(registry_dict_1)
+    keyed_registry_dict_2 = key_registry_entries(registry_dict_2)
 
-    return DeepDiff(keyed_catalog_dict_1, keyed_catalog_dict_2, ignore_order=True, exclude_regex_paths=excludedRegex, verbose_level=2)
+    return DeepDiff(keyed_registry_dict_1, keyed_registry_dict_2, ignore_order=True, exclude_regex_paths=excludedRegex, verbose_level=2)
 
 
 # ASSETS
 
 
 @asset(group_name=GROUP_NAME)
-def overrode_metadata_definitions(catalog_derived_metadata_definitions: List[PartialMetadataDefinition]) -> List[PartialMetadataDefinition]:
+def overrode_metadata_definitions(
+    registry_derived_metadata_definitions: List[PartialMetadataDefinition],
+) -> List[PartialMetadataDefinition]:
     """
     Overrides the metadata definitions with the values in the OVERRIDES dictionary.
     This is useful for ensuring all connectors are passing validation when we go live.
     """
     overrode_definitions = []
-    for metadata_definition in catalog_derived_metadata_definitions:
+    for metadata_definition in registry_derived_metadata_definitions:
         definition_id = metadata_definition["data"]["definitionId"]
         if definition_id in OVERRIDES:
             metadata_definition["data"].update(OVERRIDES[definition_id])
@@ -228,30 +230,30 @@ def persist_metadata_definitions(context: OpExecutionContext, overrode_metadata_
 
 
 @asset(group_name=GROUP_NAME)
-def cloud_catalog_diff(cloud_catalog_from_metadata: dict, latest_cloud_catalog_dict: dict) -> dict:
+def cloud_registry_diff(cloud_registry_from_metadata: dict, latest_cloud_registry_dict: dict) -> dict:
     """
-    Compares the cloud catalog from the metadata with the latest OSS catalog.
+    Compares the cloud registry from the metadata with the latest OSS registry.
     """
-    return diff_catalogs(latest_cloud_catalog_dict, cloud_catalog_from_metadata).to_dict()
+    return diff_registries(latest_cloud_registry_dict, cloud_registry_from_metadata).to_dict()
 
 
 @asset(group_name=GROUP_NAME)
-def oss_catalog_diff(oss_catalog_from_metadata: dict, latest_oss_catalog_dict: dict) -> dict:
+def oss_registry_diff(oss_registry_from_metadata: dict, latest_oss_registry_dict: dict) -> dict:
     """
-    Compares the OSS catalog from the metadata with the latest OSS catalog.
+    Compares the OSS registry from the metadata with the latest OSS registry.
     """
-    return diff_catalogs(latest_oss_catalog_dict, oss_catalog_from_metadata).to_dict()
+    return diff_registries(latest_oss_registry_dict, oss_registry_from_metadata).to_dict()
 
 
 @asset(group_name=GROUP_NAME)
-def cloud_catalog_diff_dataframe(cloud_catalog_diff: dict) -> OutputDataFrame:
-    diff_df = pd.DataFrame.from_dict(cloud_catalog_diff)
+def cloud_registry_diff_dataframe(cloud_registry_diff: dict) -> OutputDataFrame:
+    diff_df = pd.DataFrame.from_dict(cloud_registry_diff)
     return output_dataframe(diff_df)
 
 
 @asset(group_name=GROUP_NAME)
-def oss_catalog_diff_dataframe(oss_catalog_diff: dict) -> OutputDataFrame:
-    diff_df = pd.DataFrame.from_dict(oss_catalog_diff)
+def oss_registry_diff_dataframe(oss_registry_diff: dict) -> OutputDataFrame:
+    diff_df = pd.DataFrame.from_dict(oss_registry_diff)
     return output_dataframe(diff_df)
 
 

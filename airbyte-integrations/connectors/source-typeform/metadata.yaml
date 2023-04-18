@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - api.typeform.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:

@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - api.linkedin.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:

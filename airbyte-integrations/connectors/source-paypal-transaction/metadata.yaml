@@ -3,7 +3,7 @@ data:
     hosts:
       - api-m.paypal.com
       - api-m.sandbox.paypal.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:

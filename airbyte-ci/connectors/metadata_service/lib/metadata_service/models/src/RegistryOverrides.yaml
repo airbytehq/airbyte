@@ -1,8 +1,8 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors_ci/metadata_service/lib/models/src/CatalogOverrides.yml
-title: CatalogOverrides
-description: describes the overrides per catalog of a connector
+"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors_ci/metadata_service/lib/models/src/RegistryOverrides.yml
+title: RegistryOverrides
+description: describes the overrides per registry of a connector
 type: object
 additionalProperties: false
 required:

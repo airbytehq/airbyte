@@ -3,7 +3,7 @@ data:
     hosts:
       - ${subdomain}.apilayer.com
       - apilayer.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:

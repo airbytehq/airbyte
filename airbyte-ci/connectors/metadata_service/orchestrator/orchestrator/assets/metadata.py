@@ -19,13 +19,13 @@ OSS_SUFFIX = "_oss"
 CLOUD_SUFFIX = "_cloud"
 
 
-def get_primary_catalog_suffix(merged_df):
+def get_primary_registry_suffix(merged_df):
     """
-    Returns the suffix for the primary catalog and the secondary catalog.
-    The primary catalog is the one that is used for the final metadata.
-    The secondary catalog is the one that is used for overrides.
+    Returns the suffix for the primary registry and the secondary registry.
+    The primary registry is the one that is used for the final metadata.
+    The secondary registry is the one that is used for overrides.
 
-    This is nessesary because we have connectors that are only in the cloud catalog and vice versa.
+    This is nessesary because we have connectors that are only in the cloud registry and vice versa.
     """
     cloud_only = merged_df["_merge"] == "right_only"
     primary_suffix = CLOUD_SUFFIX if cloud_only else OSS_SUFFIX
@@ -35,11 +35,11 @@ def get_primary_catalog_suffix(merged_df):
 
 def get_field_with_fallback(merged_df, field):
     """
-    Returns the value of the field from the primary catalog.
-    If the field is not present in the primary catalog, the value from the secondary catalog is returned.
+    Returns the value of the field from the primary registry.
+    If the field is not present in the primary registry, the value from the secondary registry is returned.
     """
 
-    primary_suffix, secondary_suffix = get_primary_catalog_suffix(merged_df)
+    primary_suffix, secondary_suffix = get_primary_registry_suffix(merged_df)
 
     primary_field = field + primary_suffix
     secondary_field = field + secondary_suffix
@@ -48,14 +48,14 @@ def get_field_with_fallback(merged_df, field):
     return merged_df.get(primary_field, default=secondary_value)
 
 
-def compute_catalog_overrides(merged_df):
+def compute_registry_overrides(merged_df):
     """
-    Returns the catalog overrides section for the metadata file.
+    Returns the registry overrides section for the metadata file.
     """
     cloud_only = merged_df["_merge"] == "right_only"
     oss_only = merged_df["_merge"] == "left_only"
 
-    catalogs = {
+    registries = {
         "oss": {
             "enabled": not cloud_only,
         },
@@ -65,7 +65,7 @@ def compute_catalog_overrides(merged_df):
     }
 
     if cloud_only or oss_only:
-        return catalogs
+        return registries
 
     allowed_overrides = [
         "name",
@@ -82,7 +82,7 @@ def compute_catalog_overrides(merged_df):
         "resourceRequirements",
     ]
 
-    # find the difference between the two catalogs
+    # find the difference between the two registries
     for override_col in allowed_overrides:
         oss_col = override_col + OSS_SUFFIX
         cloud_col = override_col + CLOUD_SUFFIX
@@ -92,9 +92,9 @@ def compute_catalog_overrides(merged_df):
 
         # if the columns are different, add the cloud value to the overrides
         if cloud_value and not are_values_equal(oss_value, cloud_value):
-            catalogs["cloud"][override_col] = merge_values(oss_value, cloud_value)
+            registries["cloud"][override_col] = merge_values(oss_value, cloud_value)
 
-    return catalogs
+    return registries
 
 
 def merge_into_metadata_definitions(
@@ -105,8 +105,8 @@ def merge_into_metadata_definitions(
     Args:
         id_field (str): The field that uniquely identifies a connector.
         connector_type (str): The type of connector (source or destination).
-        oss_connector_df (pd.DataFrame): The dataframe containing the related OSS connector in the catalog.
-        cloud_connector_df (pd.DataFrame): The dataframe containing the related Cloud connector in the catalog.
+        oss_connector_df (pd.DataFrame): The dataframe containing the related OSS connector in the registry.
+        cloud_connector_df (pd.DataFrame): The dataframe containing the related Cloud connector in the registry.
 
     Returns:
         pd.Series: The merged metadata definition.
@@ -118,33 +118,33 @@ def merge_into_metadata_definitions(
     # Replace numpy nan values with None
     sanitized_connectors = merged_connectors.replace([np.nan], [None])
 
-    def build_metadata(connector_catalog_entry: dict) -> PartialMetadataDefinition:
+    def build_metadata(connector_registry_entry: dict) -> PartialMetadataDefinition:
         """Builds the metadata definition for a single connector.
 
         Args:
-            connector_catalog_entry (dict): The merged connector metadata from the existing json catalogs.
+            connector_registry_entry (dict): The merged connector metadata from the existing json registries.
 
         Returns:
             PartialMetadataDefinition: The final metadata definition.
         """
         raw_data = {
-            "name": get_field_with_fallback(connector_catalog_entry, "name"),
-            "definitionId": connector_catalog_entry[id_field],
+            "name": get_field_with_fallback(connector_registry_entry, "name"),
+            "definitionId": connector_registry_entry[id_field],
             "connectorType": connector_type,
-            "dockerRepository": get_field_with_fallback(connector_catalog_entry, "dockerRepository"),
-            "githubIssueLabel": get_field_with_fallback(connector_catalog_entry, "dockerRepository").replace("airbyte/", ""),
-            "dockerImageTag": get_field_with_fallback(connector_catalog_entry, "dockerImageTag"),
-            "icon": get_field_with_fallback(connector_catalog_entry, "icon"),
-            "supportUrl": get_field_with_fallback(connector_catalog_entry, "documentationUrl"),
-            "connectorSubtype": get_field_with_fallback(connector_catalog_entry, "sourceType"),
-            "releaseStage": get_field_with_fallback(connector_catalog_entry, "releaseStage"),
+            "dockerRepository": get_field_with_fallback(connector_registry_entry, "dockerRepository"),
+            "githubIssueLabel": get_field_with_fallback(connector_registry_entry, "dockerRepository").replace("airbyte/", ""),
+            "dockerImageTag": get_field_with_fallback(connector_registry_entry, "dockerImageTag"),
+            "icon": get_field_with_fallback(connector_registry_entry, "icon"),
+            "supportUrl": get_field_with_fallback(connector_registry_entry, "documentationUrl"),
+            "connectorSubtype": get_field_with_fallback(connector_registry_entry, "sourceType"),
+            "releaseStage": get_field_with_fallback(connector_registry_entry, "releaseStage"),
             "license": "MIT",
-            "supportsDbt": get_field_with_fallback(connector_catalog_entry, "supportsDbt"),
-            "supportsNormalization": get_field_with_fallback(connector_catalog_entry, "supportsNormalization"),
-            "allowedHosts": get_field_with_fallback(connector_catalog_entry, "allowedHosts"),
-            "normalizationConfig": get_field_with_fallback(connector_catalog_entry, "normalizationConfig"),
-            "suggestedStreams": get_field_with_fallback(connector_catalog_entry, "suggestedStreams"),
-            "resourceRequirements": get_field_with_fallback(connector_catalog_entry, "resourceRequirements"),
+            "supportsDbt": get_field_with_fallback(connector_registry_entry, "supportsDbt"),
+            "supportsNormalization": get_field_with_fallback(connector_registry_entry, "supportsNormalization"),
+            "allowedHosts": get_field_with_fallback(connector_registry_entry, "allowedHosts"),
+            "normalizationConfig": get_field_with_fallback(connector_registry_entry, "normalizationConfig"),
+            "suggestedStreams": get_field_with_fallback(connector_registry_entry, "suggestedStreams"),
+            "resourceRequirements": get_field_with_fallback(connector_registry_entry, "resourceRequirements"),
         }
 
         # remove none values
@@ -152,12 +152,12 @@ def merge_into_metadata_definitions(
 
         metadata = {"metadataSpecVersion": "1.0", "data": data}
 
-        catalogs = compute_catalog_overrides(connector_catalog_entry)
-        metadata["data"]["catalogs"] = catalogs
+        registries = compute_registry_overrides(connector_registry_entry)
+        metadata["data"]["registries"] = registries
 
         return PartialMetadataDefinition.construct(**metadata)
 
-    metadata_list = [build_metadata(connector_catalog_entry) for _, connector_catalog_entry in sanitized_connectors.iterrows()]
+    metadata_list = [build_metadata(connector_registry_entry) for _, connector_registry_entry in sanitized_connectors.iterrows()]
 
     return metadata_list
 
@@ -199,7 +199,7 @@ def valid_metadata_report_dataframe(overrode_metadata_definitions: List[PartialM
 
 
 @asset(group_name=GROUP_NAME)
-def catalog_derived_metadata_definitions(
+def registry_derived_metadata_definitions(
     cloud_sources_dataframe, cloud_destinations_dataframe, oss_sources_dataframe, oss_destinations_dataframe
 ) -> Output[List[PartialMetadataDefinition]]:
     sources_metadata_list = merge_into_metadata_definitions("sourceDefinitionId", "source", oss_sources_dataframe, cloud_sources_dataframe)

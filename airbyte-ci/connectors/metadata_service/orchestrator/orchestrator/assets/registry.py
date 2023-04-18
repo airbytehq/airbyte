@@ -12,7 +12,7 @@ from orchestrator.models.metadata import PartialMetadataDefinition
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 from orchestrator.utils.object_helpers import deep_copy_params
 
-GROUP_NAME = "catalog"
+GROUP_NAME = "registry"
 
 # ERRORS
 
@@ -25,39 +25,39 @@ class MissingCachedSpecError(Exception):
 
 
 @deep_copy_params
-def apply_overrides_from_catalog(metadata_data: dict, override_catalog_key: str) -> dict:
-    """Apply the overrides from the catalog to the metadata data.
+def apply_overrides_from_registry(metadata_data: dict, override_registry_key: str) -> dict:
+    """Apply the overrides from the registry to the metadata data.
 
     Args:
         metadata_data (dict): The metadata data field.
-        override_catalog_key (str): The key of the catalog to override the metadata with.
+        override_registry_key (str): The key of the registry to override the metadata with.
 
     Returns:
         dict: The metadata data field with the overrides applied.
     """
-    override_catalog = metadata_data["catalogs"][override_catalog_key]
-    del override_catalog["enabled"]
-    metadata_data.update(override_catalog)
+    override_registry = metadata_data["registries"][override_registry_key]
+    del override_registry["enabled"]
+    metadata_data.update(override_registry)
 
     return metadata_data
 
 
 @deep_copy_params
-def metadata_to_catalog_entry(metadata_definition: dict, connector_type: str, override_catalog_key: str) -> dict:
-    """Convert the metadata definition to a catalog entry.
+def metadata_to_registry_entry(metadata_definition: dict, connector_type: str, override_registry_key: str) -> dict:
+    """Convert the metadata definition to a registry entry.
 
     Args:
         metadata_definition (dict): The metadata definition.
         connector_type (str): One of "source" or "destination".
-        override_catalog_key (str): The key of the catalog to override the metadata with.
+        override_registry_key (str): The key of the registry to override the metadata with.
 
     Returns:
-        dict: The catalog equivalent of the metadata definition.
+        dict: The registry equivalent of the metadata definition.
     """
     metadata_data = metadata_definition["data"]
 
-    overrode_metadata_data = apply_overrides_from_catalog(metadata_data, override_catalog_key)
-    del overrode_metadata_data["catalogs"]
+    overrode_metadata_data = apply_overrides_from_registry(metadata_data, override_registry_key)
+    del overrode_metadata_data["registries"]
 
     del overrode_metadata_data["connectorType"]
 
@@ -84,7 +84,7 @@ def metadata_to_catalog_entry(metadata_definition: dict, connector_type: str, ov
     overrode_metadata_data["public"] = True
 
     # if there is no releaseStage, set it to "alpha"
-    # Note: this is something our current cloud catalog generator does
+    # Note: this is something our current cloud registry generator does
     # Note: We will not once this is live
     if not overrode_metadata_data.get("releaseStage"):
         overrode_metadata_data["releaseStage"] = "alpha"
@@ -92,38 +92,38 @@ def metadata_to_catalog_entry(metadata_definition: dict, connector_type: str, ov
     return overrode_metadata_data
 
 
-def is_metadata_catalog_enabled(metadata_definition: dict, catalog_name: str) -> bool:
-    return metadata_definition["data"]["catalogs"][catalog_name]["enabled"]
+def is_metadata_registry_enabled(metadata_definition: dict, registry_name: str) -> bool:
+    return metadata_definition["data"]["registries"][registry_name]["enabled"]
 
 
 def is_metadata_connector_type(metadata_definition: dict, connector_type: str) -> bool:
     return metadata_definition["data"]["connectorType"] == connector_type
 
 
-def construct_catalog_from_metadata(catalog_derived_metadata_definitions: List[PartialMetadataDefinition], catalog_name: str) -> dict:
-    """Construct the catalog from the metadata definitions.
+def construct_registry_from_metadata(registry_derived_metadata_definitions: List[PartialMetadataDefinition], registry_name: str) -> dict:
+    """Construct the registry from the metadata definitions.
 
     Args:
-        catalog_derived_metadata_definitions (List[dict]): Metadata definitions that have been derived from the existing catalog.
-        catalog_name (str): The name of the catalog to construct. One of "cloud" or "oss".
+        registry_derived_metadata_definitions (List[dict]): Metadata definitions that have been derived from the existing registry.
+        registry_name (str): The name of the registry to construct. One of "cloud" or "oss".
 
     Returns:
-        dict: The catalog.
+        dict: The registry.
     """
-    catalog_sources = [
-        metadata_to_catalog_entry(metadata, "source", catalog_name)
-        for metadata in catalog_derived_metadata_definitions
-        if is_metadata_catalog_enabled(metadata, catalog_name) and is_metadata_connector_type(metadata, "source")
+    registry_sources = [
+        metadata_to_registry_entry(metadata, "source", registry_name)
+        for metadata in registry_derived_metadata_definitions
+        if is_metadata_registry_enabled(metadata, registry_name) and is_metadata_connector_type(metadata, "source")
     ]
-    catalog_destinations = [
-        metadata_to_catalog_entry(metadata, "destination", catalog_name)
-        for metadata in catalog_derived_metadata_definitions
-        if is_metadata_catalog_enabled(metadata, catalog_name) and is_metadata_connector_type(metadata, "destination")
+    registry_destinations = [
+        metadata_to_registry_entry(metadata, "destination", registry_name)
+        for metadata in registry_derived_metadata_definitions
+        if is_metadata_registry_enabled(metadata, registry_name) and is_metadata_connector_type(metadata, "destination")
     ]
 
-    catalog = {"sources": catalog_sources, "destinations": catalog_destinations}
+    registry = {"sources": registry_sources, "destinations": registry_destinations}
 
-    return catalog
+    return registry
 
 
 def construct_registry_with_spec_from_registry(registry: dict, cached_specs: OutputDataFrame) -> dict:
@@ -152,66 +152,66 @@ def construct_registry_with_spec_from_registry(registry: dict, cached_specs: Out
 
 
 @asset(group_name=GROUP_NAME)
-def cloud_catalog_from_metadata(
-    catalog_derived_metadata_definitions: List[PartialMetadataDefinition], cached_specs: OutputDataFrame
+def cloud_registry_from_metadata(
+    registry_derived_metadata_definitions: List[PartialMetadataDefinition], cached_specs: OutputDataFrame
 ) -> dict:
     """
-    This asset is used to generate the cloud catalog from the metadata definitions.
+    This asset is used to generate the cloud registry from the metadata definitions.
 
     TODO (ben): This asset should be updated to use the GCS metadata definitions once available.
     """
-    from_metadata = construct_catalog_from_metadata(catalog_derived_metadata_definitions, "cloud")
+    from_metadata = construct_registry_from_metadata(registry_derived_metadata_definitions, "cloud")
     from_metadata_and_spec = construct_registry_with_spec_from_registry(from_metadata, cached_specs)
     return from_metadata_and_spec
 
 
 @asset(group_name=GROUP_NAME)
-def oss_catalog_from_metadata(catalog_derived_metadata_definitions: List[PartialMetadataDefinition], cached_specs: OutputDataFrame) -> dict:
+def oss_registry_from_metadata(registry_derived_metadata_definitions: List[PartialMetadataDefinition], cached_specs: OutputDataFrame) -> dict:
     """
-    This asset is used to generate the oss catalog from the metadata definitions.
+    This asset is used to generate the oss registry from the metadata definitions.
 
     TODO (ben): This asset should be updated to use the GCS metadata definitions once available.
     """
-    from_metadata = construct_catalog_from_metadata(catalog_derived_metadata_definitions, "oss")
+    from_metadata = construct_registry_from_metadata(registry_derived_metadata_definitions, "oss")
     from_metadata_and_spec = construct_registry_with_spec_from_registry(from_metadata, cached_specs)
     return from_metadata_and_spec
 
 
 @asset(group_name=GROUP_NAME)
-def cloud_sources_dataframe(latest_cloud_catalog_dict: dict) -> OutputDataFrame:
-    sources = latest_cloud_catalog_dict["sources"]
+def cloud_sources_dataframe(latest_cloud_registry_dict: dict) -> OutputDataFrame:
+    sources = latest_cloud_registry_dict["sources"]
     return output_dataframe(pd.DataFrame(sources))
 
 
 @asset(group_name=GROUP_NAME)
-def oss_sources_dataframe(latest_oss_catalog_dict: dict) -> OutputDataFrame:
-    sources = latest_oss_catalog_dict["sources"]
+def oss_sources_dataframe(latest_oss_registry_dict: dict) -> OutputDataFrame:
+    sources = latest_oss_registry_dict["sources"]
     return output_dataframe(pd.DataFrame(sources))
 
 
 @asset(group_name=GROUP_NAME)
-def cloud_destinations_dataframe(latest_cloud_catalog_dict: dict) -> OutputDataFrame:
-    destinations = latest_cloud_catalog_dict["destinations"]
+def cloud_destinations_dataframe(latest_cloud_registry_dict: dict) -> OutputDataFrame:
+    destinations = latest_cloud_registry_dict["destinations"]
     return output_dataframe(pd.DataFrame(destinations))
 
 
 @asset(group_name=GROUP_NAME)
-def oss_destinations_dataframe(latest_oss_catalog_dict: dict) -> OutputDataFrame:
-    destinations = latest_oss_catalog_dict["destinations"]
+def oss_destinations_dataframe(latest_oss_registry_dict: dict) -> OutputDataFrame:
+    destinations = latest_oss_registry_dict["destinations"]
     return output_dataframe(pd.DataFrame(destinations))
 
 
-@asset(required_resource_keys={"latest_cloud_catalog_gcs_file"}, group_name=GROUP_NAME)
-def latest_cloud_catalog_dict(context: OpExecutionContext) -> dict:
-    oss_catalog_file = context.resources.latest_cloud_catalog_gcs_file
-    json_string = oss_catalog_file.download_as_string().decode("utf-8")
-    oss_catalog_dict = json.loads(json_string)
-    return oss_catalog_dict
+@asset(required_resource_keys={"latest_cloud_registry_gcs_file"}, group_name=GROUP_NAME)
+def latest_cloud_registry_dict(context: OpExecutionContext) -> dict:
+    oss_registry_file = context.resources.latest_cloud_registry_gcs_file
+    json_string = oss_registry_file.download_as_string().decode("utf-8")
+    oss_registry_dict = json.loads(json_string)
+    return oss_registry_dict
 
 
-@asset(required_resource_keys={"latest_oss_catalog_gcs_file"}, group_name=GROUP_NAME)
-def latest_oss_catalog_dict(context: OpExecutionContext) -> dict:
-    oss_catalog_file = context.resources.latest_oss_catalog_gcs_file
-    json_string = oss_catalog_file.download_as_string().decode("utf-8")
-    oss_catalog_dict = json.loads(json_string)
-    return oss_catalog_dict
+@asset(required_resource_keys={"latest_oss_registry_gcs_file"}, group_name=GROUP_NAME)
+def latest_oss_registry_dict(context: OpExecutionContext) -> dict:
+    oss_registry_file = context.resources.latest_oss_registry_gcs_file
+    json_string = oss_registry_file.download_as_string().decode("utf-8")
+    oss_registry_dict = json.loads(json_string)
+    return oss_registry_dict

@@ -3,7 +3,7 @@ data:
     hosts:
       - api.twilio.com
       - monitor.twilio.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:

@@ -1,5 +1,5 @@
 data:
-  catalogs:
+  registries:
     cloud:
       dockerImageTag: 0.2.2
       dockerRepository: airbyte/destination-clickhouse-strict-encrypt

@@ -4,7 +4,7 @@ data:
       - oauth2.googleapis.com
       - www.googleapis.com
       - analyticsdata.googleapis.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:

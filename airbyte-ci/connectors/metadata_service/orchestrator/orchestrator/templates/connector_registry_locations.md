@@ -1,4 +1,4 @@
-# Connector Catalog Locations
+# Connector Registry Locations
 ## Sources
 {{ sources_markdown }}
 

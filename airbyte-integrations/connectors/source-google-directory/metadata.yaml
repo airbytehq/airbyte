@@ -1,5 +1,5 @@
 data:
-  catalogs:
+  registries:
     cloud:
       dockerImageTag: 0.1.3
       enabled: true
