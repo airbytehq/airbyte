@@ -42,7 +42,8 @@
         "type": "string",
         "description": "Retrieves a list of segments inside the target segmentation ID.",
         "examples": ["1002"],
-        "pattern": "^[0-9]+$"
+        "pattern": "^[0-9]+$",
+        "format": "date-time"
       }
     }
   }

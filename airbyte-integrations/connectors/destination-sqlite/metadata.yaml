@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: b76be0a6-27dc-4560-95f6-2623da0bd7b6
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-sqlite
+  githubIssueLabel: destination-sqlite
+  icon: sqlite.svg
+  license: MIT
+  name: Local SQLite
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/local-sqlite
+metadataSpecVersion: "1.0"

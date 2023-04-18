@@ -2,10 +2,6 @@
 
 This page contains the setup guide and reference information for the Postgres source connector for CDC and non-CDC workflows.
 
-:::note
-The Postgres source performs best on small databases (under 100GB).
-:::
-
 ## When to use Postgres with CDC
 
 Configure Postgres with CDC if:
@@ -62,6 +58,7 @@ Additionally, if you plan to configure CDC for the Postgres source connector, gr
 ```
 ALTER USER <user_name> REPLICATION;
 ```
+
 
 **Syncing a subset of columns​**
 
@@ -170,10 +167,12 @@ Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-re
 - The modifications you want to capture must be made using `DELETE`/`INSERT`/`UPDATE`. For example, changes made using `TRUNCATE`/`ALTER` will not appear in logs and therefore in your destination.
 - Schema changes are not supported automatically for CDC sources. Reset and resync data if you make a schema change.
 - The records produced by `DELETE` statements only contain primary keys. All other data fields are unset.
-- Log-based replication only works for master instances of Postgres. CDC cannot be run from a read-replica of your primary database.
+- Log-based replication only works for master instances of Postgres.  CDC cannot be run from a read-replica of your primary database.
 - Using logical replication increases disk space used on the database server. The additional data is stored until it is consumed.
   - Set frequent syncs for CDC to ensure that the data doesn't fill up your disk space.
   - If you stop syncing a CDC-configured Postgres instance with Airbyte, delete the replication slot. Otherwise, it may fill up your disk space.
+
+:::note Connector configuration are supported only on primary/master db host/servers. Do not point connector configuration to replica db hosts, it will not work.. :::
 
 ### Setting up CDC for Postgres​
 
@@ -184,7 +183,7 @@ Airbyte requires a replication slot configured only for its use. Only one source
 To enable logical replication on bare metal, VMs (EC2/GCE/etc), or Docker, configure the following parameters in the [postgresql.conf file](https://www.postgresql.org/docs/current/config-setting.html) for your Postgres database:
 
 | Parameter             | Description                                                                    | Set value to                                                                                                                       |
-| --------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+|-----------------------|--------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|
 | wal_level             | Type of coding used within the Postgres write-ahead log                        | logical                                                                                                                            |
 | max_wal_senders       | The maximum number of processes used for handling WAL changes                  | Min: 1                                                                                                                             |
 | max_replication_slots | The maximum number of replication slots that are allowed to stream WAL changes | 1 (if Airbyte is the only service reading subscribing to WAL changes. More than 1 if other services are also reading from the WAL) |
@@ -299,54 +298,54 @@ The Postgres source connector supports the following [sync modes](https://docs.a
 
 According to Postgres [documentation](https://www.postgresql.org/docs/14/datatype.html), Postgres data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/PostgresSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
-| Postgres Type                         | Resulting Type | Notes                                                                                                                                                |
-| ------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bigint`                              | number         |                                                                                                                                                      |
-| `bigserial`, `serial8`                | number         |                                                                                                                                                      |
-| `bit`                                 | string         | Fixed-length bit string (e.g. "0100").                                                                                                               |
-| `bit varying`, `varbit`               | string         | Variable-length bit string (e.g. "0100").                                                                                                            |
-| `boolean`, `bool`                     | boolean        |                                                                                                                                                      |
-| `box`                                 | string         |                                                                                                                                                      |
-| `bytea`                               | string         | Variable length binary string with hex output format prefixed with "\x" (e.g. "\x6b707a").                                                           |
-| `character`, `char`                   | string         |                                                                                                                                                      |
-| `character varying`, `varchar`        | string         |                                                                                                                                                      |
-| `cidr`                                | string         |                                                                                                                                                      |
-| `circle`                              | string         |                                                                                                                                                      |
-| `date`                                | string         | Parsed as ISO8601 date time at midnight. CDC mode doesn't support era indicators. Issue: [#14590](https://github.com/airbytehq/airbyte/issues/14590) |
-| `double precision`, `float`, `float8` | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902).      |
-| `hstore`                              | string         |                                                                                                                                                      |
-| `inet`                                | string         |                                                                                                                                                      |
-| `integer`, `int`, `int4`              | number         |                                                                                                                                                      |
-| `interval`                            | string         |                                                                                                                                                      |
-| `json`                                | string         |                                                                                                                                                      |
-| `jsonb`                               | string         |                                                                                                                                                      |
-| `line`                                | string         |                                                                                                                                                      |
-| `lseg`                                | string         |                                                                                                                                                      |
-| `macaddr`                             | string         |                                                                                                                                                      |
-| `macaddr8`                            | string         |                                                                                                                                                      |
-| `money`                               | number         |                                                                                                                                                      |
-| `numeric`, `decimal`                  | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902).      |
-| `path`                                | string         |                                                                                                                                                      |
-| `pg_lsn`                              | string         |                                                                                                                                                      |
-| `point`                               | string         |                                                                                                                                                      |
-| `polygon`                             | string         |                                                                                                                                                      |
-| `real`, `float4`                      | number         |                                                                                                                                                      |
-| `smallint`, `int2`                    | number         |                                                                                                                                                      |
-| `smallserial`, `serial2`              | number         |                                                                                                                                                      |
-| `serial`, `serial4`                   | number         |                                                                                                                                                      |
-| `text`                                | string         |                                                                                                                                                      |
-| `time`                                | string         | Parsed as a time string without a time-zone in the ISO-8601 calendar system.                                                                         |
-| `timetz`                              | string         | Parsed as a time string with time-zone in the ISO-8601 calendar system.                                                                              |
-| `timestamp`                           | string         | Parsed as a date-time string without a time-zone in the ISO-8601 calendar system.                                                                    |
-| `timestamptz`                         | string         | Parsed as a date-time string with time-zone in the ISO-8601 calendar system.                                                                         |
-| `tsquery`                             | string         |                                                                                                                                                      |
-| `tsvector`                            | string         |                                                                                                                                                      |
-| `uuid`                                | string         |                                                                                                                                                      |
-| `xml`                                 | string         |                                                                                                                                                      |
-| `enum`                                | string         |                                                                                                                                                      |
-| `tsrange`                             | string         |                                                                                                                                                      |
-| `array`                               | array          | E.g. "[\"10001\",\"10002\",\"10003\",\"10004\"]".                                                                                                    |
-| composite type                        | string         |                                                                                                                                                      |
+| Postgres Type                         | Resulting Type | Notes                                                                                                                                                 |
+|---------------------------------------|----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `bigint`                              | number         |                                                                                                                                                       |
+| `bigserial`, `serial8`                | number         |                                                                                                                                                       |
+| `bit`                                 | string         | Fixed-length bit string (e.g. "0100").                                                                                                                |
+| `bit varying`, `varbit`               | string         | Variable-length bit string (e.g. "0100").                                                                                                             |
+| `boolean`, `bool`                     | boolean        |                                                                                                                                                       |
+| `box`                                 | string         |                                                                                                                                                       |
+| `bytea`                               | string         | Variable length binary string with hex output format prefixed with "\x" (e.g. "\x6b707a").                                                            |
+| `character`, `char`                   | string         |                                                                                                                                                       |
+| `character varying`, `varchar`        | string         |                                                                                                                                                       |
+| `cidr`                                | string         |                                                                                                                                                       |
+| `circle`                              | string         |                                                                                                                                                       |
+| `date`                                | string         | Parsed as ISO8601 date time at midnight. CDC mode doesn't support era indicators. Issue: [#14590](https://github.com/airbytehq/airbyte/issues/14590)  |
+| `double precision`, `float`, `float8` | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902).       |
+| `hstore`                              | string         |                                                                                                                                                       |
+| `inet`                                | string         |                                                                                                                                                       |
+| `integer`, `int`, `int4`              | number         |                                                                                                                                                       |
+| `interval`                            | string         |                                                                                                                                                       |
+| `json`                                | string         |                                                                                                                                                       |
+| `jsonb`                               | string         |                                                                                                                                                       |
+| `line`                                | string         |                                                                                                                                                       |
+| `lseg`                                | string         |                                                                                                                                                       |
+| `macaddr`                             | string         |                                                                                                                                                       |
+| `macaddr8`                            | string         |                                                                                                                                                       |
+| `money`                               | number         |                                                                                                                                                       |
+| `numeric`, `decimal`                  | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902).       |
+| `path`                                | string         |                                                                                                                                                       |
+| `pg_lsn`                              | string         |                                                                                                                                                       |
+| `point`                               | string         |                                                                                                                                                       |
+| `polygon`                             | string         |                                                                                                                                                       |
+| `real`, `float4`                      | number         |                                                                                                                                                       |
+| `smallint`, `int2`                    | number         |                                                                                                                                                       |
+| `smallserial`, `serial2`              | number         |                                                                                                                                                       |
+| `serial`, `serial4`                   | number         |                                                                                                                                                       |
+| `text`                                | string         |                                                                                                                                                       |
+| `time`                                | string         | Parsed as a time string without a time-zone in the ISO-8601 calendar system.                                                                          |
+| `timetz`                              | string         | Parsed as a time string with time-zone in the ISO-8601 calendar system.                                                                               |
+| `timestamp`                           | string         | Parsed as a date-time string without a time-zone in the ISO-8601 calendar system.                                                                     |
+| `timestamptz`                         | string         | Parsed as a date-time string with time-zone in the ISO-8601 calendar system.                                                                          |
+| `tsquery`                             | string         |                                                                                                                                                       |
+| `tsvector`                            | string         |                                                                                                                                                       |
+| `uuid`                                | string         |                                                                                                                                                       |
+| `xml`                                 | string         |                                                                                                                                                       |
+| `enum`                                | string         |                                                                                                                                                       |
+| `tsrange`                             | string         |                                                                                                                                                       |
+| `array`                               | array          | E.g. "[\"10001\",\"10002\",\"10003\",\"10004\"]".                                                                                                     |
+| composite type                        | string         |                                                                                                                                                       |
 
 ## Limitations
 
@@ -385,7 +384,7 @@ Normally under the CDC mode, the Postgres source will first run a full refresh s
 > Saved offset is before Replication slot's confirmed_flush_lsn, Airbyte will trigger sync from scratch
 
 The root causes is that the WALs needed for the incremental sync has been removed by Postgres. This can occur under the following scenarios:
-
+        
 - When there are lots of database updates resulting in more WAL files than allowed in the `pg_wal` directory, Postgres will purge or archive the WAL files. This scenario is preventable. Possible solutions include:
   - Sync the data source more frequently. The downside is that more computation resources will be consumed, leading to a higher Airbyte bill.
   - Set a higher `wal_keep_size`. If no unit is provided, it is in megabytes, and the default is `0`. See detailed documentation [here](https://www.postgresql.org/docs/current/runtime-config-replication.html#GUC-WAL-KEEP-SIZE). The downside of this approach is that more disk space will be needed.
@@ -394,8 +393,26 @@ The root causes is that the WALs needed for the incremental sync has been remove
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2.0.4   | 2023-03-17 | [24127](https://github.com/airbytehq/airbyte/pull/24127) | Add field groups and titles to improve display of connector setup form                                                                                                     |
+|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.22  | 2022-04-17 | [25220](https://github.com/airbytehq/airbyte/pull/25220) | Logging changes : Log additional metadata & clean up noisy logs                                                                                                            |
+| 2.0.21  | 2022-04-12 | [25131](https://github.com/airbytehq/airbyte/pull/25131) | Make Client Certificate and Client Key always show                                                                                                                         |
+| 2.0.20  | 2022-04-11 | [24859](https://github.com/airbytehq/airbyte/pull/24859) | Removed SSL toggle and rely on SSL mode dropdown to enable/disable SSL                                                                                                     |
+| 2.0.19  | 2022-04-11 | [24656](https://github.com/airbytehq/airbyte/pull/24656) | CDC minor refactor                                                                                                                                                         |
+| 2.0.18  | 2022-04-06 | [24820](https://github.com/airbytehq/airbyte/pull/24820) | Fix data loss bug during an initial failed non-CDC incremental sync                                                                                                        |
+| 2.0.17  | 2022-04-05 | [24622](https://github.com/airbytehq/airbyte/pull/24622) | Allow streams not in CDC publication to be synced in Full-refresh mode                                                                                                     |
+| 2.0.16  | 2022-04-05 | [24895](https://github.com/airbytehq/airbyte/pull/24895) | Fix spec for cloud                                                                                                                                                         |
+| 2.0.15  | 2022-04-04 | [24833](https://github.com/airbytehq/airbyte/pull/24833) | Fix Debezium retry policy configuration                                                                                                                                    |
+| 2.0.14  | 2022-04-03 | [24609](https://github.com/airbytehq/airbyte/pull/24609) | Disallow the "disable" SSL Modes                                                                                                                                           |
+| 2.0.13  | 2022-03-28 | [24166](https://github.com/airbytehq/airbyte/pull/24166) | Fix InterruptedException bug during Debezium shutdown                                                                                                                      |
+| 2.0.12  | 2022-03-27 | [24529](https://github.com/airbytehq/airbyte/pull/24373) | Add CDC checkpoint state messages                                                                                                                                          |
+| 2.0.11  | 2023-03-23 | [24446](https://github.com/airbytehq/airbyte/pull/24446) | Set default SSL Mode to require in strict-encrypt                                                                                                                          |
+| 2.0.10  | 2023-03-23 | [24417](https://github.com/airbytehq/airbyte/pull/24417) | Add field groups and titles to improve display of connector setup form                                                                                                     |
+| 2.0.9   | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760) | Removed redundant date-time datatypes formatting                                                                                                                           |
+| 2.0.8   | 2023-03-22 | [24255](https://github.com/airbytehq/airbyte/pull/24255) | Add field groups and titles to improve display of connector setup form                                                                                                     |
+| 2.0.7   | 2022-03-21 | [24207](https://github.com/airbytehq/airbyte/pull/24207) | Fix incorrect schema change warning in CDC mode                                                                                                                            |
+| 2.0.6   | 2022-03-21 | [24271](https://github.com/airbytehq/airbyte/pull/24271) | Fix NPE in CDC mode                                                                                                                                                        |
+| 2.0.5   | 2022-03-21 | [21533](https://github.com/airbytehq/airbyte/pull/21533) | Add integration with datadog                                                                                                                                               |
+| 2.0.4   | 2023-03-21 | [24147](https://github.com/airbytehq/airbyte/pull/24275) | Fix error with CDC checkpointing                                                                                                                                           |
 | 2.0.3   | 2023-03-14 | [24000](https://github.com/airbytehq/airbyte/pull/24000) | Removed check method call on read.                                                                                                                                         |
 | 2.0.2   | 2023-03-13 | [23112](https://github.com/airbytehq/airbyte/pull/21727) | Add state checkpointing for CDC sync.                                                                                                                                      |
 | 2.0.0   | 2023-03-06 | [23112](https://github.com/airbytehq/airbyte/pull/23112) | Upgrade Debezium version to 2.1.2                                                                                                                                          |
@@ -458,13 +475,13 @@ The root causes is that the WALs needed for the incremental sync has been remove
 | 0.4.43  | 2022-08-03 | [15226](https://github.com/airbytehq/airbyte/pull/15226) | Make connectionTimeoutMs configurable through JDBC url parameters                                                                                                          |
 | 0.4.42  | 2022-08-03 | [15273](https://github.com/airbytehq/airbyte/pull/15273) | Fix a bug in `0.4.36` and correctly parse the CDC initial record waiting time                                                                                              |
 | 0.4.41  | 2022-08-03 | [15077](https://github.com/airbytehq/airbyte/pull/15077) | Sync data from beginning if the LSN is no longer valid in CDC                                                                                                              |
-|         | 2022-08-03 | [14903](https://github.com/airbytehq/airbyte/pull/14903) | Emit state messages more frequently (⛔ this version has a bug; use `1.0.1` instead)                                                                                       |
+|         | 2022-08-03 | [14903](https://github.com/airbytehq/airbyte/pull/14903) | Emit state messages more frequently (⛔ this version has a bug; use `1.0.1` instead                                                                                         |
 | 0.4.40  | 2022-08-03 | [15187](https://github.com/airbytehq/airbyte/pull/15187) | Add support for BCE dates/timestamps                                                                                                                                       |
 |         | 2022-08-03 | [14534](https://github.com/airbytehq/airbyte/pull/14534) | Align regular and CDC integration tests and data mappers                                                                                                                   |
 | 0.4.39  | 2022-08-02 | [14801](https://github.com/airbytehq/airbyte/pull/14801) | Fix multiple log bindings                                                                                                                                                  |
 | 0.4.38  | 2022-07-26 | [14362](https://github.com/airbytehq/airbyte/pull/14362) | Integral columns are now discovered as int64 fields.                                                                                                                       |
 | 0.4.37  | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714) | Clarified error message when invalid cursor column selected                                                                                                                |
-| 0.4.36  | 2022-07-21 | [14451](https://github.com/airbytehq/airbyte/pull/14451) | Make initial CDC waiting time configurable (⛔ this version has a bug and will not work; use `0.4.42` instead)                                                             |
+| 0.4.36  | 2022-07-21 | [14451](https://github.com/airbytehq/airbyte/pull/14451) | Make initial CDC waiting time configurable (⛔ this version has a bug and will not work; use `0.4.42` instead)                                                              | |
 | 0.4.35  | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors                                                                                                             |
 | 0.4.34  | 2022-07-17 | [13840](https://github.com/airbytehq/airbyte/pull/13840) | Added the ability to connect using different SSL modes and SSL certificates.                                                                                               |
 | 0.4.33  | 2022-07-14 | [14586](https://github.com/airbytehq/airbyte/pull/14586) | Validate source JDBC url parameters                                                                                                                                        |
@@ -493,7 +510,7 @@ The root causes is that the WALs needed for the incremental sync has been remove
 | 0.4.8   | 2022-02-21 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Fixed cursor for old connectors that use non-microsecond format. Now connectors work with both formats                                                                     |
 | 0.4.7   | 2022-02-18 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Updated timestamp transformation with microseconds                                                                                                                         |
 | 0.4.6   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                                                                                 |
-| 0.4.5   | 2022-02-08 | [10173](https://github.com/airbytehq/airbyte/pull/10173) | Improved discovering tables in case if user does not have permissions to any table                                                                                         |
+| 0.4.5   | 2022-02-08 | [10173](https://github.com/airbytehq/airbyte/pull/10173) | Improved  discovering tables in case if user does not have permissions to any table                                                                                        |
 | 0.4.4   | 2022-01-26 | [9807](https://github.com/airbytehq/airbyte/pull/9807)   | Update connector fields title/description                                                                                                                                  |
 | 0.4.3   | 2022-01-24 | [9554](https://github.com/airbytehq/airbyte/pull/9554)   | Allow handling of java sql date in CDC                                                                                                                                     |
 | 0.4.2   | 2022-01-13 | [9360](https://github.com/airbytehq/airbyte/pull/9360)   | Added schema selection                                                                                                                                                     |
