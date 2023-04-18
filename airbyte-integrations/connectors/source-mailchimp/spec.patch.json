@@ -1,6 +1,7 @@
 {
   "required": ["credentials"],
   "properties": {
+    "campaign_id": null,
     "credentials": {
       "type": "object",
       "title": "Authentication",

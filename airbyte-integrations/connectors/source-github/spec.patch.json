@@ -12,13 +12,15 @@
         "estuary/*",
         "estuary/connectors"
       ],
-      "order": 1
+      "order": 1,
+      "pattern_descriptor": null
     },
     "branch": {
       "title": "Branch (Optional)",
       "examples": ["estuary/flow/examples estuary/flow/scripts"],
       "description": "Space-delimited list of GitHub repository branches to pull commits for, e.g. `estuary/flow/your-branch`. If no branches are specified for a repository, the default branch will be pulled.",
-      "order": 2
+      "order": 2,
+      "pattern_descriptor": null
     },
     "page_size_for_large_streams": {
       "title": "Page size for large streams (Optional)",
