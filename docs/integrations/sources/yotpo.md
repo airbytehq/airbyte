@@ -49,10 +49,14 @@ The Yotpo source connector supports the following [sync modes](https://docs.airb
 
 ## Supported Streams
 
+- email_analytics
+- raw_data
 - reviews
 - reviews_bottomline
 - top_reviews
+- unsubscribers
 - webhooks
+- webhook_events
 
 ## API method example
 
