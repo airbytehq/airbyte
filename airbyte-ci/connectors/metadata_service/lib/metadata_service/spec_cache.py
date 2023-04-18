@@ -1,6 +1,11 @@
-from google.cloud import storage
-from typing import List
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+import json
 from dataclasses import dataclass
+from typing import List
+
+from google.cloud import storage
 
 SPEC_CACHE_BUCKET_NAME = "io-airbyte-cloud-spec-cache"
 CACHE_FOLDER = "specs"
@@ -56,3 +61,9 @@ def list_cached_specs() -> List[CachedSpec]:
     blobs = bucket.list_blobs(prefix=CACHE_FOLDER)
 
     return [get_docker_info_from_spec_cache_path(blob.name) for blob in blobs]
+
+
+def get_cached_spec(spec_cache_path: str) -> dict:
+    client = storage.Client.create_anonymous_client()
+    bucket = client.bucket(SPEC_CACHE_BUCKET_NAME)
+    return json.loads(bucket.blob(spec_cache_path).download_as_string())

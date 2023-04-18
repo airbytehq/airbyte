@@ -32,7 +32,7 @@
 # Java-based destination connectors
 /airbyte-integrations/bases/standard-destination-test/ @airbytehq/destinations
 /airbyte-integrations/bases/base-java-s3/ @airbytehq/destinations
-/airbyte-integrations/connectors/destination-jdbc/ @airbytehq/destinations
+/airbyte-integrations/bases/bases-destination-jdbc/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-bigquery/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-bigquery-denormalized/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-azure-blob-storage/ @airbytehq/destinations

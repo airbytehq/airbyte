@@ -554,7 +554,11 @@ class ModelToComponentFactory:
         return ExponentialBackoffStrategy(factor=model.factor, parameters=model.parameters, config=config)
 
     def create_http_requester(self, model: HttpRequesterModel, config: Config, *, name: str) -> HttpRequester:
-        authenticator = self._create_component_from_model(model=model.authenticator, config=config) if model.authenticator else None
+        authenticator = (
+            self._create_component_from_model(model=model.authenticator, config=config, url_base=model.url_base)
+            if model.authenticator
+            else None
+        )
         error_handler = (
             self._create_component_from_model(model=model.error_handler, config=config)
             if model.error_handler
@@ -730,9 +734,11 @@ class ModelToComponentFactory:
         return RemoveFields(field_pointers=model.field_pointers, parameters={})
 
     @staticmethod
-    def create_session_token_authenticator(model: SessionTokenAuthenticatorModel, config: Config, **kwargs) -> SessionTokenAuthenticator:
+    def create_session_token_authenticator(
+        model: SessionTokenAuthenticatorModel, config: Config, *, url_base: str, **kwargs
+    ) -> SessionTokenAuthenticator:
         return SessionTokenAuthenticator(
-            api_url=model.api_url,
+            api_url=url_base,
             header=model.header,
             login_url=model.login_url,
             password=model.password,
