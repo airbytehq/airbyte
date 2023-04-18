@@ -16,5 +16,5 @@ RUN pip install .
 
 ENTRYPOINT ["python", "/airbyte/integration_code/main_dev.py"]
 
-LABEL io.airbyte.version=0.1.12
+LABEL io.airbyte.version=0.1.14
 LABEL io.airbyte.name=airbyte/source-zendesk-chat

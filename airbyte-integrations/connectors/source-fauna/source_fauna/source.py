@@ -240,8 +240,8 @@ class SourceFauna(Source):
                         type(source) is Ref
                         and source.collection() == Ref("collections")
                         # Index must have 2 values and no terms
-                        and len(index["values"]) == 2
-                        and len(index["terms"]) == 0
+                        and ("values" in index and len(index["values"]) == 2)
+                        and (("terms" in index and len(index["terms"]) == 0) or "terms" not in index)
                         # Index values must be ts and ref
                         and index["values"][0] == {"field": "ts"}
                         and index["values"][1] == {"field": "ref"}

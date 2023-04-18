@@ -5,7 +5,6 @@
 
 from copy import deepcopy
 
-import pydantic
 import pytest
 from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification, Status
 from facebook_business import FacebookAdsApi, FacebookSession
@@ -59,6 +58,14 @@ class TestSourceFacebookMarketing:
         api.assert_called_once_with(account_id="123", access_token="TOKEN")
         logger_mock.info.assert_called_once_with(f"Select account {api.return_value.account}")
 
+    def test_check_connection_future_date_range(self, api, config, logger_mock):
+        config["start_date"] = "2219-10-10T00:00:00"
+        config["end_date"] = "2219-10-11T00:00:00"
+        assert SourceFacebookMarketing().check_connection(logger_mock, config=config) == (
+            False,
+            "Date range can not be in the future.",
+        )
+
     def test_check_connection_end_date_before_start_date(self, api, config, logger_mock):
         config["start_date"] = "2019-10-10T00:00:00"
         config["end_date"] = "2019-10-09T00:00:00"
@@ -69,19 +76,17 @@ class TestSourceFacebookMarketing:
 
     def test_check_connection_empty_config(self, api, logger_mock):
         config = {}
+        ok, error_msg = SourceFacebookMarketing().check_connection(logger_mock, config=config)
 
-        with pytest.raises(pydantic.ValidationError):
-            SourceFacebookMarketing().check_connection(logger_mock, config=config)
-
-        assert not api.called
+        assert not ok
+        assert error_msg
 
     def test_check_connection_invalid_config(self, api, config, logger_mock):
         config.pop("start_date")
+        ok, error_msg = SourceFacebookMarketing().check_connection(logger_mock, config=config)
 
-        with pytest.raises(pydantic.ValidationError):
-            SourceFacebookMarketing().check_connection(logger_mock, config=config)
-
-        assert not api.called
+        assert not ok
+        assert error_msg
 
     def test_check_connection_exception(self, api, config, logger_mock):
         api.side_effect = RuntimeError("Something went wrong!")

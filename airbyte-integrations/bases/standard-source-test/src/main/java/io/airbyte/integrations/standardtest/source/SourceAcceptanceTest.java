@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StandardCheckConnectionOutput.Status;
+import io.airbyte.configoss.StandardCheckConnectionOutput.Status;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -43,6 +43,7 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
   public static final String CDC_DELETED_AT = "_ab_cdc_deleted_at";
   public static final String CDC_LOG_FILE = "_ab_cdc_log_file";
   public static final String CDC_LOG_POS = "_ab_cdc_log_pos";
+  public static final String CDC_EVENT_SERIAL_NO = "_ab_cdc_event_serial_no";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SourceAcceptanceTest.class);
 
@@ -357,6 +358,7 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
     ((ObjectNode) clone.getData()).remove(CDC_LOG_POS);
     ((ObjectNode) clone.getData()).remove(CDC_UPDATED_AT);
     ((ObjectNode) clone.getData()).remove(CDC_DELETED_AT);
+    ((ObjectNode) clone.getData()).remove(CDC_EVENT_SERIAL_NO);
     return clone;
   }
 

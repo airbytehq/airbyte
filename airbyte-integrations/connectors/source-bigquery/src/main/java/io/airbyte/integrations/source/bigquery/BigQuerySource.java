@@ -28,11 +28,13 @@ import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -63,9 +65,12 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
   }
 
   @Override
-  protected BigQueryDatabase createDatabase(final JsonNode config) {
-    dbConfig = Jsons.clone(config);
-    return new BigQueryDatabase(config.get(CONFIG_PROJECT_ID).asText(), config.get(CONFIG_CREDS).asText());
+  protected BigQueryDatabase createDatabase(final JsonNode sourceConfig) {
+    dbConfig = Jsons.clone(sourceConfig);
+    final BigQueryDatabase database = new BigQueryDatabase(sourceConfig.get(CONFIG_PROJECT_ID).asText(), sourceConfig.get(CONFIG_CREDS).asText());
+    database.setSourceConfig(sourceConfig);
+    database.setDatabaseConfig(toDatabaseConfig(sourceConfig));
+    return database;
   }
 
   @Override
@@ -155,7 +160,9 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
   protected AutoCloseableIterator<JsonNode> queryTableFullRefresh(final BigQueryDatabase database,
                                                                   final List<String> columnNames,
                                                                   final String schemaName,
-                                                                  final String tableName) {
+                                                                  final String tableName,
+                                                                  final SyncMode syncMode,
+                                                                  final Optional<String> cursorField) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return queryTable(database, String.format("SELECT %s FROM %s",
         enquoteIdentifierList(columnNames, getQuoteString()),

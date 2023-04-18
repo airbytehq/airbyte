@@ -152,12 +152,39 @@ def test_iterable_stream_parse_response():
 
 def test_iterable_stream_backoff_time():
     stream = Lists(authenticator=NoAuth())
-    assert stream.backoff_time(response=None) == stream.BACKOFF_TIME_CONSTANT
+    assert stream.backoff_time(response=None) is None
 
 
 def test_iterable_export_stream_backoff_time():
     stream = Users(authenticator=NoAuth(), start_date="2019-10-10T00:00:00")
     assert stream.backoff_time(response=None) is None
+
+
+@pytest.mark.parametrize(
+    "status, json, expected",
+    [
+        (429, {}, True),
+        # for 500 - Generic error we should make 2 retry attempts
+        # and give up on third one!
+        (500, {"msg": "...Please try again later...1", "code": "Generic Error"}, True),
+        (500, {"msg": "...Please try again later...2", "code": "Generic Error"}, True),
+        # This one should return False
+        (500, {"msg": "...Please try again later...3", "code": "Generic Error"}, False)
+    ],
+    ids=[
+        "Retry on 429",
+        "Retry on 500 - Generic (first)",
+        "Retry on 500 - Generic (second)",
+        "Retry on 500 - Generic (third)",
+    ]
+)
+def test_should_retry(status, json, expected, requests_mock, lists_stream):
+    stream = lists_stream
+    url = f"{stream.url_base}/{stream.path()}"
+    requests_mock.get(url, json=json, status_code=status)
+    test_response = requests.get(url)
+    result = stream.should_retry(test_response)
+    assert result is expected
 
 
 @pytest.mark.parametrize(
@@ -181,10 +208,47 @@ def test_get_updated_state(current_state, record_date, expected_state):
 def test_stream_stops_on_401(mock_lists_resp):
     # no requests should be made after getting 401 error despite the multiple slices
     users_stream = ListUsers(authenticator=NoAuth())
-    responses.add(responses.GET, "https://api.iterable.com/api/lists/getUsers?listId=1", json={}, status=401)
+    responses.add(responses.GET, "https://api.iterable.com/api/lists/getUsers?listId=2", json={}, status=401)
     slices = 0
     for slice_ in users_stream.stream_slices(sync_mode=SyncMode.full_refresh):
         slices += 1
         _ = list(users_stream.read_records(stream_slice=slice_, sync_mode=SyncMode.full_refresh))
     assert len(responses.calls) == 1
     assert slices > 1
+
+
+@responses.activate
+def test_listuser_stream_keep_working_on_500():
+    users_stream = ListUsers(authenticator=NoAuth())
+    responses.add(
+        responses.GET,
+        "https://api.iterable.com/api/lists",
+        json={"lists": [{"id": 1000}, {"id": 2000}]},
+        status=200
+    )
+    responses.add(
+        responses.GET,
+        "https://api.iterable.com/api/lists/getUsers?listId=1000",
+        json={
+            "msg": "An error occurred. Please try again later. If problem persists, please contact your CSM",
+            "code": "GenericError",
+            "params": None
+        },
+        status=500
+    )
+    responses.add(
+        responses.GET,
+        "https://api.iterable.com/api/lists/getUsers?listId=2000",
+        body="one@example.com\ntwo@example.com\nthree@example.com",
+        status=200
+    )
+    expected_records = [
+        {'email': 'one@example.com', 'listId': 2000},
+        {'email': 'two@example.com', 'listId': 2000},
+        {'email': 'three@example.com', 'listId': 2000}
+    ]
+
+    records = []
+    for stream_slice in users_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+        records += list(users_stream.read_records(stream_slice=stream_slice, sync_mode=SyncMode.full_refresh))
+    assert records == expected_records

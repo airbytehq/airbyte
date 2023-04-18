@@ -4,7 +4,7 @@ The [connector specification](../understanding-airbyte/airbyte-protocol.md#spec)
 
 ## Demoing your specification
 
-While iterating on your specification, you can preview what it will look like in the UI in realtime by following the instructions [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-webapp/docs/HowTo-ConnectionSpecification.md).
+While iterating on your specification, you can preview what it will look like in the UI in realtime by following the instructions [here](https://github.com/airbytehq/airbyte-platform/blob/master/airbyte-webapp/docs/HowTo-ConnectionSpecification.md).
 
 
 ### Secret obfuscation

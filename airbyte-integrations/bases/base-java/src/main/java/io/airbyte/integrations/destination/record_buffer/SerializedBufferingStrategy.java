@@ -122,6 +122,7 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
     onStreamFlush.accept(stream, writer);
     totalBufferSizeInBytes -= writer.getByteCount();
     allBuffers.remove(stream);
+    LOGGER.info("Flushing completed for {}", stream.getName());
   }
 
   @Override
@@ -130,10 +131,10 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
     for (final Entry<AirbyteStreamNameNamespacePair, SerializableBuffer> entry : allBuffers.entrySet()) {
       LOGGER.info("Flushing buffer of stream {} ({})", entry.getKey().getName(), FileUtils.byteCountToDisplaySize(entry.getValue().getByteCount()));
       onStreamFlush.accept(entry.getKey(), entry.getValue());
+      LOGGER.info("Flushing completed for {}", entry.getKey().getName());
     }
     close();
     clear();
-
     totalBufferSizeInBytes = 0;
   }
 

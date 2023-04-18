@@ -1,5 +1,62 @@
 # Changelog
 
+## 0.35.0
+low-code: simplify session token authenticator interface
+
+## 0.34.3
+low-code: fix typo in ManifestDeclarativeSource
+
+## 0.34.2
+Emit slice log messages when running the connector builder
+
+## 0.34.1
+set slice and pages limit when reading from the connector builder module
+
+## 0.34.0
+Low-Code CDK: Enable use of SingleUseRefreshTokenAuthenticator
+
+## 0.33.2
+low-code: fix duplicate stream slicer update
+
+## 0.33.1
+Low-Code CDK: make RecordFilter.filter_records as generator
+
+## 0.33.0
+Enable oauth flow for low-code connectors
+
+## 0.32.0
+Remove unexpected error swallowing on abstract source's check method
+
+## 0.31.1
+connector builder: send stacktrace when error on read
+
+## 0.31.0
+Add connector builder module for handling Connector Builder server requests
+
+## 0.30.4
+CDK's read command handler supports Connector Builder list_streams requests
+
+## 0.30.3
+Fix reset pagination issue on test reads
+
+## 0.30.2
+* Low-code CDK: Override refresh_access_token logic DeclarativeOAuthAuthenticator
+
+## 0.30.1
+Releasing using the new release flow. No change to the CDK per se
+
+## 0.30.0
+OAuth: retry refresh access token requests
+
+## 0.29.3
+Low-Code CDK: duration macro added
+
+## 0.29.2
+support python3.8
+
+## 0.29.1
+Publishing Docker image for source-declarative-manifest
+
 ## 0.29.0
 **Breaking changes: We have promoted the low-code CDK to Beta. This release contains a number of breaking changes intended to improve the overall usability of the language by reorganizing certain concepts, renaming, reducing some field duplication, and removal of fields that are seldom used.**
 

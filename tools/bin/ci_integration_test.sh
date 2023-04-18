@@ -7,6 +7,7 @@ set -e
 # runs integration tests for an integration name
 
 connector="$1"
+local_cdk="$2"
 all_integration_tests=$(./gradlew integrationTest --dry-run | grep 'integrationTest SKIPPED' | cut -d: -f 4)
 run() {
 if [[ "$connector" == "all" ]] ; then
@@ -40,7 +41,7 @@ else
   fi
   if [ -n "$selected_integration_test" ] ; then
     echo "Running: ./gradlew --no-daemon --scan $integrationTestCommand"
-    ./gradlew --no-daemon --scan "$integrationTestCommand"
+    ./gradlew --no-daemon --scan "$integrationTestCommand" -PconnectorAcceptanceTest.useLocalCdk=$local_cdk -PconnectorAcceptanceTest.connectorName=$connector_name
   else
     echo "Connector '$connector' not found..."
     return 1
