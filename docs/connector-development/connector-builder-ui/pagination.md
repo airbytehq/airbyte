@@ -35,8 +35,7 @@ For example, say that the API has the following dataset:
   {"id": 2, "name": "Product B"},
   {"id": 3, "name": "Product C"},
   {"id": 4, "name": "Product D"},
-  {"id": 5, "name": "Product E"},
-  {"id": 6, "name": "Product F"}
+  {"id": 5, "name": "Product E"}
 ]
 ```
 
@@ -46,7 +45,7 @@ Then the API may take in a request like this: `GET https://api.example.com/produ
 {
   "data": [
     {"id": 4, "name": "Product D"},
-    {"id": 5, "name": "Product E"},
+    {"id": 5, "name": "Product E"}
   ]
 }
 ```
@@ -57,12 +56,37 @@ The Offset Increment pagination mode in the Connector Builder does this for you.
 
 If an API does not accept a `limit`, then the injection configuration for the limit can be disabled. If so, your connector will still automatically increment the `offset` for subsequent requests based on the number of records it receives (which is likely some default page size value defined by the API). In either case, the connector will continue until it receives fewer records than the limit you configured.
 
-So for the above example, using a `limit` of `3` would cause your connector to make the following request to the API in order to paginate through all of its data:
+So for the example API and dataset above, you could apply the following Pagination configurations in the Connector Builder:
+
+- Mode: `Offset Increment`
+- Limit: `2`
+- Inject limit into outgoing HTTP request:
+  - Inject into: `request_parameter`
+  - Field name: `limit`
+- Inject offset into outgoing HTTP request:
+  - Inject into: `request_parameter`
+  - Field name: `offset`
+
+and this would cause your connector to make the following requests to the API in order to paginate through all of its data:
 
 ```
-GET https://api.example.com/products?limit=3&offset=0
-GET https://api.example.com/products?limit=3&offset=3
-GET https://api.example.com/products?limit=3&offset=6 // less than 3 records returned -> stop
+GET https://api.example.com/products?limit=2&offset=0
+  -> [
+       {"id": 1, "name": "Product A"},
+       {"id": 2, "name": "Product B"}
+     ]
+
+GET https://api.example.com/products?limit=2&offset=2
+  -> [
+       {"id": 3, "name": "Product C"},
+       {"id": 4, "name": "Product D"}
+     ]
+
+GET https://api.example.com/products?limit=3&offset=4
+  -> [
+       {"id": 5, "name": "Product E"}
+     ]
+     // less than 2 records returned -> stop
 ```
 
 The Connector Builder currently supports injecting these values into the request parameters (i.e. query parameters), headers, or body.
@@ -84,7 +108,7 @@ If your API paginates using page increments, the API docs will likely contain on
 
 In this method of pagination, the "page size" specifies the maximum number of records to return per request, while the "page number" indicates the specific page of data to retrieve.
 
-This is similar to Offset Increment pagination, but the main difference lies in how the starting point of the data subset being returned by the request is determined. In Offset Increment pagination, the starting point is explicitly defined by the offset value; in Page Increment pagination, the starting point can be determined by calculating `pageSize * pageNum` if the starting page is `0`, or `pageSize * (pageNum - 1)` if the starting page is `1`.
+This is similar to Offset Increment pagination, but instead of increasing the offset parameter by the number of records per page for the next request, the page number is simply increased by one to fetch the next page, iterating through all of them.
 
 For example, say that the API has the following dataset:
 
@@ -99,22 +123,67 @@ For example, say that the API has the following dataset:
 ]
 ```
 
-Then the API may take in a request like this: `GET https://api.example.com/products?page=1&page_size=2`, which could result in the following response:
+Then the API may take in a request like this: `GET https://api.example.com/products?page_size=2&page=1`, which could result in the following response:
 
 ```
 {
   "data": [
     {"id": 1, "name": "Product A"},
-    {"id": 2, "name": "Product B"},
+    {"id": 2, "name": "Product B"}
   ]
 }
 ```
 
-Then the next request should call the same endpoint with `page` set to 2 and `page_size` set to 2, which would return the next 2 records, and so on.
+then incrementing the `page` by 1 to call it with `GET https://api.example.com/products?page_size=2&page=2` would result in:
+
+```
+{
+  "data": [
+    {"id": 3, "name": "Product C"},
+    {"id": 4, "name": "Product D"}
+  ]
+}
+```
+
+and so on.
 
 The Connector Builder abstracts this away so that you only need to decide what page size to set, what the starting page number should be (usually either 0 or 1 dependent on the API), and how the page size and number are injected into the API requests.
 
-Similar to Offset Increment pagination, the page size injection can be disabled if the API does not accept a page size value, in which case your connector will automatically increment the page number by 1 for each subsequent request, and continue until it receives fewer records than the page size you configured.
+Similar to Offset Increment pagination, the page size injection can be disabled if the API does not accept a page size value. In either case, the connector will automatically increment the page number by 1 for each subsequent request, and continue until it receives fewer records than the page size you configured.
+
+So for the example API and dataset above, you could apply the following configurations in the Connector Builder:
+
+- Mode: `Page Increment`
+- Page size: `3`
+- Start from page: `1`
+- Inject page size into outgoing HTTP request:
+  - Inject into: `request_parameter`
+  - Field name: `page_size`
+- Inject page number into outgoing HTTP request:
+  - Inject into: `request_parameter`
+  - Field name: `page`
+
+and this would cause your connector to make the following requests to the API in order to paginate through all of its data:
+
+```
+GET https://api.example.com/products?page_size=2&page=1
+  -> [
+       {"id": 1, "name": "Product A"},
+       {"id": 2, "name": "Product B"}
+     ]
+
+GET https://api.example.com/products?page_size=2&page=2
+  -> [
+       {"id": 3, "name": "Product C"},
+       {"id": 4, "name": "Product D"}
+     ]
+
+GET https://api.example.com/products?page_size=3&page=3
+  -> [
+       {"id": 5, "name": "Product E"}
+     ]
+     // less than 2 records returned -> stop
+```
 
 The Connector Builder currently supports injecting these values into the request parameters (i.e. query parameters), headers, or body.
 
