@@ -39,7 +39,6 @@ class BaseClass(HttpStream):
         self.downloadevent = False
         self.threads_quantity = 64
         self.max_skip = 1000000
-        self.first_execution = True
 
     @abstractmethod
     def xmltype(self) -> str:
