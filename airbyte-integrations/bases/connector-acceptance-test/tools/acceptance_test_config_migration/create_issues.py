@@ -15,7 +15,7 @@ import definitions
 import utils
 from jinja2 import Environment, FileSystemLoader
 
-## Update this line before running the script
+# Update this line before running the script
 from migrations.strictness_level_migration import config
 
 logging.basicConfig(level=logging.DEBUG)
