@@ -18,6 +18,9 @@ from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
 
 from uuid import UUID
 
+from metadata_service.models.generated.ConnectorRegistryV1 import ConnectorRegistryV1
+
+
 
 GROUP_NAME = "registry"
 
@@ -42,8 +45,14 @@ def apply_overrides_from_registry(metadata_data: dict, override_registry_key: st
     Returns:
         dict: The metadata data field with the overrides applied.
     """
+    # import pdb; pdb.set_trace()
     override_registry = metadata_data["registries"][override_registry_key]
     del override_registry["enabled"]
+
+    # TODO find a nicer way to handle this
+    # remove any None values from the override registry
+    override_registry = {k: v for k, v in override_registry.items() if v is not None}
+
     metadata_data.update(override_registry)
 
     return metadata_data
@@ -88,6 +97,7 @@ def metadata_to_registry_entry(metadata_definition: dict, connector_type: str, o
     # if the id is a UUID, convert it to a string
     # if isinstance(id_value, UUID):
     id_value = str(id_value)
+
     # import pdb; pdb.set_trace()
     overrode_metadata_data[id_field] = id_value
     del overrode_metadata_data["definitionId"]
@@ -102,6 +112,9 @@ def metadata_to_registry_entry(metadata_definition: dict, connector_type: str, o
     # Note: We will not once this is live
     if not overrode_metadata_data.get("releaseStage"):
         overrode_metadata_data["releaseStage"] = "alpha"
+
+    # TODO remove once spec mask is merged in
+    overrode_metadata_data["spec"] = {}
 
     return overrode_metadata_data
 
@@ -168,11 +181,11 @@ def construct_registry_with_spec_from_registry(registry: dict, cached_specs: Out
             raise MissingCachedSpecError(f"No cached spec found for {entry['dockerRegistry']:{entry['dockerImageTag']}}")
     return registry_with_specs
 
-def persist_registry_to_json(registry: dict, registry_name: str, registry_directory_manager: GCSFileManager) -> GCSFileHandle:
+def persist_registry_to_json(registry: ConnectorRegistryV1, registry_name: str, registry_directory_manager: GCSFileManager) -> GCSFileHandle:
     """Persist the registry to a json file.
 
     Args:
-        registry (dict): The registry.
+        registry (ConnectorRegistryV1): The registry.
         registry_name (str): The name of the registry. One of "cloud" or "oss".
         registry_directory_manager (OutputDataFrame): The registry directory manager.
 
@@ -180,10 +193,9 @@ def persist_registry_to_json(registry: dict, registry_name: str, registry_direct
         OutputDataFrame: The registry directory manager.
     """
     registry_file_name = f"{registry_name}_registry"
-    # TODO: once we have a registry type try registry.json()
-    registry_json = json.dumps(registry)
+    registry_json = registry.json()
     file_handle = registry_directory_manager.write_data(registry_json.encode("utf-8"), ext="json", key=registry_file_name)
-    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
 
     return file_handle
 
@@ -192,7 +204,7 @@ def persist_registry_to_json(registry: dict, registry_name: str, registry_direct
 
 
 @asset(required_resource_keys={"registry_directory_manager"}, group_name=GROUP_NAME)
-def cloud_registry_from_metadata(context: OpExecutionContext, metadata_definitions: List[MetadataDefinition], cached_specs: OutputDataFrame) -> Output[dict]:
+def cloud_registry_from_metadata(context: OpExecutionContext, metadata_definitions: List[MetadataDefinition], cached_specs: OutputDataFrame) -> Output[ConnectorRegistryV1]:
     """
     This asset is used to generate the cloud registry from the metadata definitions.
     """
@@ -201,7 +213,9 @@ def cloud_registry_from_metadata(context: OpExecutionContext, metadata_definitio
 
     from_metadata = construct_registry_from_metadata(metadata_definitions, registry_name)
     registry_dict = construct_registry_with_spec_from_registry(from_metadata, cached_specs)
-    file_handle = persist_registry_to_json(registry_dict, registry_name, registry_directory_manager)
+    reigstry_model = ConnectorRegistryV1.parse_obj(registry_dict)
+
+    file_handle = persist_registry_to_json(reigstry_model, registry_name, registry_directory_manager)
 
     metadata = {
         "gcs_path": MetadataValue.url(file_handle.gcs_path),
@@ -220,7 +234,9 @@ def oss_registry_from_metadata(context: OpExecutionContext, metadata_definitions
 
     from_metadata = construct_registry_from_metadata(metadata_definitions, registry_name)
     registry_dict = construct_registry_with_spec_from_registry(from_metadata, cached_specs)
-    file_handle = persist_registry_to_json(registry_dict, registry_name, registry_directory_manager)
+    reigstry_model = ConnectorRegistryV1.parse_obj(registry_dict)
+
+    file_handle = persist_registry_to_json(reigstry_model, registry_name, registry_directory_manager)
 
     metadata = {
         "gcs_path": MetadataValue.url(file_handle.gcs_path),
