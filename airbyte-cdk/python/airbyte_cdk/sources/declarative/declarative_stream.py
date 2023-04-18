@@ -5,7 +5,7 @@
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteMessage, SyncMode
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
@@ -100,12 +100,22 @@ class DeclarativeStream(Stream):
         for record in self.retriever.read_records(sync_mode, cursor_field, stream_slice, stream_state):
             yield self._apply_transformations(record, self.config, stream_slice)
 
-    def _apply_transformations(self, record: Mapping[str, Any], config: Config, stream_slice: StreamSlice):
-        output_record = record
+    def _apply_transformations(self, message_or_record_data: Union[AirbyteMessage, Mapping[str, Any]], config: Config, stream_slice: StreamSlice):
+        # If the input is an AirbyteRecord, transform the record's data
+        # If the input is another type of Airbyte Message, return it as is
+        # If the input is a dict, transform it
+        if isinstance(message_or_record_data, AirbyteMessage):
+            if message_or_record_data.record:
+                record_data = message_or_record_data.record.data
+            else:
+                # Do not transform other types of AirbyteMessages
+                return message_or_record_data
+        else:
+            record_data = message_or_record_data
         for transformation in self.transformations:
-            output_record = transformation.transform(record, config=config, stream_state=self.state, stream_slice=stream_slice)
+            transformation.transform(record_data, config=config, stream_state=self.state, stream_slice=stream_slice)
 
-        return output_record
+        return message_or_record_data
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """
