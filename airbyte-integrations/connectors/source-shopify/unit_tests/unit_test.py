@@ -5,7 +5,7 @@
 
 import pytest
 import requests
-from source_shopify.source import BalanceTransactions, PriceRules, DiscountCodes, ShopifyStream, SourceShopify
+from source_shopify.source import BalanceTransactions, DiscountCodes, PriceRules, ShopifyStream, SourceShopify
 
 
 def test_get_next_page_token(requests_mock):
@@ -59,7 +59,7 @@ def test_privileges_validation(requests_mock, basic_config):
         (PriceRules, 403, {"errors": "Forbidden"}, False)
     ],
     ids=[
-        "Stream not found (404)", 
+        "Stream not found (404)",
         "No permissions (403)",
     ],
 )
