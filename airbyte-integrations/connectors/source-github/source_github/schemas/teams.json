@@ -29,6 +29,9 @@
     "privacy": {
       "type": ["null", "string"]
     },
+    "notification_setting": {
+      "type": ["null", "string"]
+    },
     "permission": {
       "type": ["null", "string"]
     },
