@@ -58,6 +58,9 @@ class BaseClass(HttpStream):
             if merchant_uid:
                 return merchant_uid
         return None
+    
+    def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        return [1,2]
 
     def request_body_json(
         self,
@@ -220,26 +223,33 @@ class BaseClass(HttpStream):
         next_page_token: Mapping[str, Any] = None,
     ):
 
-        logger.info("Parsing Response")
+        if stream_slice == 1:
+            logger.info("Ran first execution")
+            if 'xmls' in response.json().keys():
+                invoice = self.format_response(response.json())
+                print(type(invoice))
+                return [invoice]
+        else:
+            logger.info("Parsing Response")
 
-        skips_list = [i for i in range(0,self.max_skip)]
-        item_list = ThreadSafeList()
-        threads_quantity = self.threads_quantity
+            skips_list = [i for i in range(0,self.max_skip)]
+            item_list = ThreadSafeList()
+            threads_quantity = self.threads_quantity
 
-        threads = []
-        events = Event()
-        for chunk in self.chunker_list(skips_list, threads_quantity):
-            threads.append(Thread(target=self.read_invoice, args=(item_list, chunk)))
+            threads = []
+            events = Event()
+            for chunk in self.chunker_list(skips_list, threads_quantity):
+                threads.append(Thread(target=self.read_invoice, args=(item_list, chunk)))
 
-        # start threads
-        for thread in threads:
-            thread.start()
-        
-        # wait for all threads
-        for thread in threads:
-            thread.join()
-        
-        return item_list.get_list()
+            # start threads
+            for thread in threads:
+                thread.start()
+            
+            # wait for all threads
+            for thread in threads:
+                thread.join()
+            
+            return item_list.get_list()
 
 
 class Nfe(BaseClass):
