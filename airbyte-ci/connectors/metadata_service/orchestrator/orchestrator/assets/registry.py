@@ -103,9 +103,6 @@ def metadata_to_registry_entry(metadata_definition: dict, connector_type: str, o
     if not overrode_metadata_data.get("releaseStage"):
         overrode_metadata_data["releaseStage"] = "alpha"
 
-    # TODO remove once spec mask is merged in
-    overrode_metadata_data["spec"] = {}
-
     return overrode_metadata_data
 
 
