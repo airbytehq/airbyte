@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.pipedrive.com
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: d8286229-c680-4063-8c59-23b9b391c700
+  dockerImageTag: 0.1.17
+  dockerRepository: airbyte/source-pipedrive
+  githubIssueLabel: source-pipedrive
+  icon: pipedrive.svg
+  license: MIT
+  name: Pipedrive
+  releaseStage: beta
+  supportUrl: https://docs.airbyte.com/integrations/sources/pipedrive
+metadataSpecVersion: "1.0"

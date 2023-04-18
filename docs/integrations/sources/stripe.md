@@ -67,6 +67,7 @@ The Stripe source connector supports the following streams:
 - [Products](https://stripe.com/docs/api/products/list) \(Incremental\)
 - [Refunds](https://stripe.com/docs/api/refunds/list) \(Incremental\)
 - [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
+- [Subscription Schedule](https://stripe.com/docs/api/subscription_schedules) \(Incremental\)
 - [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
 - [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 
@@ -82,6 +83,8 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.0   | 2023-04-10 | [23624](https://github.com/airbytehq/airbyte/pull/23624) | Add new stream `Subscription Schedule`                                                                                                               |
+| 3.1.0   | 2023-03-10 | [19906](https://github.com/airbytehq/airbyte/pull/19906) | Expand `tiers` when syncing `Plans` streams                                                                                                          |
 | 3.0.5   | 2023-03-25 | [22866](https://github.com/airbytehq/airbyte/pull/22866) | Specified date formatting in specification                                                     |
 | 3.0.4   | 2023-03-24 | [24471](https://github.com/airbytehq/airbyte/pull/24471) | Fix stream slices for single sliced streams                                                                                                          |
 | 3.0.3   | 2023-03-17 | [24179](https://github.com/airbytehq/airbyte/pull/24179) | Get customer's attributes safely                                                                                                                     |
