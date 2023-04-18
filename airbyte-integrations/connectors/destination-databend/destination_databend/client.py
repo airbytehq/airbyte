@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from databend_sqlalchemy import connector
@@ -15,6 +15,6 @@ class DatabendClient:
         self.password = password
 
     def open(self):
-        handle = connector.connect(f"https://{self.username}:{self.password}@{self.host}:{self.port}").cursor()
+        handle = connector.connect(f"https://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}").cursor()
 
         return handle

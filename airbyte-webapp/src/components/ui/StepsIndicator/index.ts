@@ -1,1 +1,0 @@
-export { StepsIndicator } from "./StepsIndicator";

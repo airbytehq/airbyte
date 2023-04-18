@@ -1,0 +1,254 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-03-04T14:35:37-08:00"
+      },
+      "stream_descriptor": {"name": "budgets"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-03-04T14:35:37-08:00"
+      },
+      "stream_descriptor": {"name": "bills"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-03-04T14:35:37-08:00"
+      },
+      "stream_descriptor": {"name": "classes"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-03-04T14:35:37-08:00"
+      },
+      "stream_descriptor": {"name": "departments"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-03-04T14:35:37-08:00"
+      },
+      "stream_descriptor": {"name": "vendor_credits"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-03-04T14:35:37-08:00"
+      },
+      "stream_descriptor": {"name": "transfers"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-03-04T14:35:37-08:00"
+      },
+      "stream_descriptor": {"name": "accounts"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-02-17T12:51:28-08:00"
+      },
+      "stream_descriptor": {"name": "credit_memos"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-02-18T12:56:17-08:00"
+      },
+      "stream_descriptor": {"name": "bill_payments"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-02-16T11:40:52-08:00"
+      },
+      "stream_descriptor": {"name": "sales_receipts"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-03-15T14:04:25-07:00"
+      },
+      "stream_descriptor": {"name": "purchases"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-02-18T13:13:33-08:00"
+      },
+      "stream_descriptor": {"name": "payments"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-02-18T13:10:36-08:00"
+      },
+      "stream_descriptor": {"name": "purchase_orders"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-02-10T14:42:05-08:00"
+      },
+      "stream_descriptor": {"name": "payment_methods"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-02-15T10:04:24-08:00"
+      },
+      "stream_descriptor": {"name": "journal_entries"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-02-18T13:16:17-08:00"
+      },
+      "stream_descriptor": {"name": "items"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-02-18T13:16:17-08:00"
+      },
+      "stream_descriptor": {"name": "invoices"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-02-18T13:16:17-08:00"
+      },
+      "stream_descriptor": {"name": "customers"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-02-16T15:35:07-08:00"
+      },
+      "stream_descriptor": {"name": "refund_receipts"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-02-18T13:00:56-08:00"
+      },
+      "stream_descriptor": {"name": "deposits"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-02-16T11:46:26-08:00"
+      },
+      "stream_descriptor": {"name": "employees"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-02-18T13:16:17-08:00"
+      },
+      "stream_descriptor": {"name": "estimates"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-02-17T12:17:04-08:00"
+      },
+      "stream_descriptor": {"name": "tax_agencies"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-02-17T12:17:04-08:00"
+      },
+      "stream_descriptor": {"name": "tax_codes"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-02-17T12:17:04-08:00"
+      },
+      "stream_descriptor": {"name": "tax_rates"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-02-15T15:24:26-08:00"
+      },
+      "stream_descriptor": {"name": "terms"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-02-16T11:55:25-08:00"
+      },
+      "stream_descriptor": {"name": "time_activities"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-03-04T14:29:35-08:00"
+      },
+      "stream_descriptor": {"name": "vendors"}
+    }
+  }
+]

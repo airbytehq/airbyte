@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import base64
@@ -14,6 +14,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, Oauth2Authenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -136,6 +137,10 @@ class PaypalTransactionStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return f"{get_endpoint(self.is_sandbox)}/v1/reporting/"
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         return {"Content-Type": "application/json"}
@@ -315,16 +320,13 @@ class PaypalTransactionStream(HttpStream, ABC):
             try:
                 response = self._send_request(request, request_kwargs)
             except PaypalHttpException as exception:
-                if self.max_records_in_response_reached(exception):
-                    date_slices = middle_date_slices(stream_slice)
-                    if date_slices:
-                        for date_slice in date_slices:
-                            yield from self.read_records(
-                                sync_mode, cursor_field=cursor_field, stream_slice=date_slice, stream_state=stream_state
-                            )
-                        break
-                    else:
-                        raise exception
+                if self.max_records_in_response_reached(exception) and (date_slices := middle_date_slices(stream_slice)):
+                    for date_slice in date_slices:
+                        yield from self.read_records(
+                            sync_mode, cursor_field=cursor_field, stream_slice=date_slice, stream_state=stream_state
+                        )
+                    break
+                raise exception
 
             yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
 

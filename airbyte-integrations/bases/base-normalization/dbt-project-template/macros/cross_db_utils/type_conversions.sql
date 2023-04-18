@@ -77,6 +77,10 @@
     IF(lower({{ field }}) = 'true', true, false)
 {%- endmacro %}
 
+{% macro duckdb__cast_to_boolean(field) -%}
+    cast({{ field }} as boolean)
+{%- endmacro %}
+
 {# -- Redshift does not support converting string directly to boolean, it must go through int first #}
 {% macro redshift__cast_to_boolean(field) -%}
   {% if redshift_super_type() -%}
@@ -103,6 +107,10 @@
 
 {%- macro default__empty_string_to_null(field) -%}
     nullif({{ field }}, '')
+{%- endmacro %}
+
+{%- macro duckdb__empty_string_to_null(field) -%}
+    nullif(nullif({{ field }}, 'null'), '')
 {%- endmacro %}
 
 {%- macro redshift__empty_string_to_null(field) -%}

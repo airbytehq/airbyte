@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-airtable:dev
 test_strictness_level: high
@@ -15,10 +15,17 @@ acceptance_tests:
       - config_path: "secrets/config_oauth.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config_oauth.json"
-        status: "failed" 
+        status: "failed"
+      - config_path: "integration_tests/invalid_config_oauth_missing_fields.json"
+        status: "exception"
   discovery:
     tests:
       - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 2.0.4
+      - config_path: "secrets/config_oauth.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 2.0.4
   basic_read:
     tests:
       - config_path: "secrets/config.json"

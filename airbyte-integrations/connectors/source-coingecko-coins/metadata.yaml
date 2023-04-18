@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 9cdd4183-d0ba-40c3-aad3-6f46d4103974
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-coingecko-coins
+  githubIssueLabel: source-coingecko-coins
+  icon: coingeckocoins.svg
+  license: MIT
+  name: CoinGecko Coins
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/coingecko-coins
+metadataSpecVersion: "1.0"

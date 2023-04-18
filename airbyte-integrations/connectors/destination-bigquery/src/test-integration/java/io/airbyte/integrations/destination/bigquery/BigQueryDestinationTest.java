@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -84,7 +85,6 @@ class BigQueryDestinationTest {
   protected static final Path CREDENTIALS_WITH_GCS_STAGING_PATH =
       Path.of("secrets/credentials-gcs-staging.json");
 
-
   protected static final Path[] ALL_PATHS = {CREDENTIALS_STANDARD_INSERT_PATH, CREDENTIALS_BAD_PROJECT_PATH, CREDENTIALS_NO_DATASET_CREATION_PATH,
     CREDENTIALS_NO_EDIT_PUBLIC_SCHEMA_ROLE_PATH, CREDENTIALS_NON_BILLABLE_PROJECT_PATH, CREDENTIALS_WITH_GCS_STAGING_PATH};
 
@@ -131,9 +131,11 @@ class BigQueryDestinationTest {
 
   private AmazonS3 s3Client;
 
-  /* TODO: Migrate all BigQuery Destination configs (GCS, Denormalized, Normalized) to no longer use
+  /*
+   * TODO: Migrate all BigQuery Destination configs (GCS, Denormalized, Normalized) to no longer use
    * #partitionIfUnpartitioned then recombine Base Provider. The reason for breaking this method into
-   * a base class is because #testWritePartitionOverUnpartitioned is no longer used only in GCS Staging
+   * a base class is because #testWritePartitionOverUnpartitioned is no longer used only in GCS
+   * Staging
    */
   private Stream<Arguments> successTestConfigProviderBase() {
     return Stream.of(
@@ -314,13 +316,39 @@ class BigQueryDestinationTest {
         .collect(Collectors.toList()));
   }
 
+  @Test
+  void testCreateTableSuccessWhenTableAlreadyExists() throws Exception {
+    initBigQuery(config);
+
+    // Test schema where we will try to re-create existing table
+    final String tmpTestSchemaName = "test_create_table_when_exists_schema";
+
+    final com.google.cloud.bigquery.Schema schema = com.google.cloud.bigquery.Schema.of(
+        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
+        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP),
+        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING));
+
+    final TableId tableId = TableId.of(tmpTestSchemaName, "test_already_existing_table");
+
+    BigQueryUtils.getOrCreateDataset(bigquery, tmpTestSchemaName, BigQueryUtils.getDatasetLocation(config));
+
+    assertDoesNotThrow(() -> {
+      // Create table
+      BigQueryUtils.createPartitionedTableIfNotExists(bigquery, tableId, schema);
+
+      // Try to create it one more time. Shouldn't throw exception
+      BigQueryUtils.createPartitionedTableIfNotExists(bigquery, tableId, schema);
+    });
+  }
+
   @ParameterizedTest
   @MethodSource("failWriteTestConfigProvider")
   void testWriteFailure(final String configName, final String error) throws Exception {
     initBigQuery(config);
     final JsonNode testConfig = configs.get(configName);
     final Exception ex = assertThrows(Exception.class, () -> {
-      final AirbyteMessageConsumer consumer = spy(new BigQueryDestination().getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector));
+      final AirbyteMessageConsumer consumer =
+          spy(new BigQueryDestination().getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector));
       consumer.start();
     });
     assertThat(ex.getMessage()).contains(error);
