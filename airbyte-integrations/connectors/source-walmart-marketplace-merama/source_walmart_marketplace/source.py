@@ -5,6 +5,7 @@ import requests
 import base64
 import uuid
 import json
+import urllib
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -13,6 +14,7 @@ from datetime import datetime, timedelta, timezone
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.models import SyncMode
 import xmltodict
+from time import sleep
 # from time import sleep
 
 
@@ -68,6 +70,7 @@ class WalmartMarketplaceBase(HttpStream):
         else:
             headers.update({"WM_SEC.ACCESS_TOKEN": self.access_token})
 
+        self.headers = headers
         return headers
 
     def path(
@@ -410,6 +413,254 @@ class Items(WalmartMarketplaceBase):
         return {}
 
 
+class Returns(WalmartMarketplaceBase):
+
+    cursor_field = 'returnOrderDate'
+    endpoint_name = 'returns'
+    record_list_name = 'returnOrders'
+    record_key_name = 'return'
+    record_primary_key = 'returnOrderId'
+    record_creation_date_key = 'returnOrderDate'
+    record_metadata_name = 'meta'
+
+    primary_key = 'returnOrderDate'
+
+    def __init__(
+            self,
+            config: Mapping[str, Any],
+            createdStartDate: datetime,
+            **kwargs
+    ):
+        super().__init__(config)
+
+        self.createdStartDate = datetime.strptime(config['createdStartDate'], '%Y-%m-%d')
+        self.offset = 0
+        self.totalCount = 0
+        self._cursor_value = None
+        self.retry_interval = 15
+
+    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+                       ):
+        return None
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+
+        # self.next_page_token = xmltodict.parse(response.text)['ns2:ItemResponses'][self.next_page_token_key]
+        logger.info('old_offset')
+        logger.info(self.offset)
+        if self.totalCount == 0:
+            self.offset = 0
+            return None
+        elif self.totalCount - self.offset <= self.limit:
+            self.offset = 0
+            return None
+        else:
+            self.offset = self.offset + self.limit
+            if self.offset > 1000:
+                logger.info('offset must bigger than one thousand for this day!')
+                self.offset = 0
+                return None
+        logger.info('new_offset')
+        logger.info(self.offset)
+        return self.offset
+
+    def path(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None
+    ) -> str:
+
+        self.try_count = 1
+        param_returnCreationStartDate = str((datetime.now() - datetime.strptime(stream_slice['createdStartDate'], "%Y-%m-%dT00:00:00Z")).days)
+        param_returnCreationEndDate = str((datetime.now() - datetime.strptime(stream_slice['createdStartDate'], "%Y-%m-%dT00:00:00Z")).days - 1)
+        # param_returnCreationEndDate = str((datetime.now() - datetime.strptime(stream_slice['createdEndDate'], "%Y-%m-%dT23:59:59Z")).days)
+        param_limit = stream_slice['limit']
+        param_offset = self.offset
+
+        logger.info('request made:')
+        logger.info(f"{self.endpoint_name}?limit={param_limit}&returnCreationStartDate=NOW-{param_returnCreationStartDate}DAYS&returnCreationEndDate=NOW-{param_returnCreationEndDate}DAYS&offset={param_offset}")
+        # sleep(2)
+        # params = urllib.parse.quote(f"limit={param_limit}&returnCreationStartDate=NOW-{param_returnCreationStartDate}DAYS&returnCreationEndDate=NOW-{param_returnCreationEndDate}DAYS&offset={param_offset}")
+
+        # return f"{self.endpoint_name}?{params}"
+        return f"{self.endpoint_name}?limit={param_limit}&returnCreationStartDate=NOW-{param_returnCreationStartDate}DAYS&returnCreationEndDate=NOW-{param_returnCreationEndDate}DAYS&offset={param_offset}"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+
+        latest_record_date = datetime.strptime(latest_record['data'][self.record_creation_date_key], '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(tz=timezone.utc).replace(tzinfo=None)
+        if current_stream_state.get(self.cursor_field):
+            if isinstance(current_stream_state[self.cursor_field], str):
+                try:
+                    current_stream_state_date = datetime.strptime(current_stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S')
+                except:
+                    current_stream_state_date = datetime.strptime(current_stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(tz=timezone.utc).replace(tzinfo=None)
+            else:
+                current_stream_state_date = current_stream_state[self.cursor_field]
+
+            return {self.cursor_field: max(latest_record_date, current_stream_state_date)}
+
+        return {self.cursor_field: latest_record_date}
+
+    def _chunk_slices(self, createdStartDate: datetime) -> List[Mapping[str, any]]:
+        slices = []
+
+        while createdStartDate <= datetime.now():
+            # for status in status_list:
+            if (createdStartDate.date() < datetime.now().date()):
+                slice = {}
+                slice['limit'] = 100
+                slice["createdStartDate"] = datetime.strftime(createdStartDate, "%Y-%m-%dT00:00:00Z")
+                slice["createdEndDate"] = datetime.strftime(createdStartDate, "%Y-%m-%dT23:59:59Z")
+                slice['offset'] = 0
+                slices.append(slice)
+            # else:
+            #     logger.info('last slice_value')
+            #     logger.info(createdStartDate.date())
+
+            createdStartDate += timedelta(days=1)
+
+        logger.info('slices content log:')
+        logger.info(slices)
+
+        return slices
+
+    def stream_slices(
+            self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, any]]]:
+
+        if stream_state and (self.cursor_field in stream_state):
+            if isinstance(stream_state[self.cursor_field], str):
+                try:
+                    current_stream_state_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S')
+                except:
+                    current_stream_state_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(tz=timezone.utc).replace(tzinfo=None)
+            else:
+                current_stream_state_date = stream_state[self.cursor_field]
+
+        createdStartDate = current_stream_state_date - timedelta(
+            days=15) if stream_state and self.cursor_field in stream_state else self.createdStartDate
+
+        return self._chunk_slices(createdStartDate)
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+
+        response_json = response.json()
+        if response.status_code != 200:
+            logger.info('Handling error %s:', response.status_code)
+            logger.info(response.text)
+            response_json = self.handle_request(response).json()
+
+        logger.info('totalCount')
+        logger.info(response_json[self.record_metadata_name]['totalCount'])
+        logger.info('limit')
+        logger.info(response_json[self.record_metadata_name]['limit'])
+        self.totalCount = response_json[self.record_metadata_name]['totalCount']
+        # if response_json[self.record_metadata_name]['totalCount'] < response_json[self.record_metadata_name]['limit']:
+        #     self.timedelta_to_sum = 1
+        # if response_json[self.record_metadata_name]['totalCount'] == 0:
+        #     self.end_of_records = True
+        #     return []
+
+        item_list = []
+        self.new_initial_date = self.createdStartDate
+
+        for item in response_json[self.record_list_name]:
+            timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
+            item_json = {
+                "data": item,
+                "merchant": self.merchant.upper(),
+                "source": self.WM_MARKET + "_WALMART",
+                "type": f"{self.merchant.lower()}_{self.record_key_name}",
+                "id": item[self.record_primary_key],
+                "user_id": self.user_id,
+                "timeline": "historic",
+                "created_at": item[self.record_creation_date_key],
+                "updated_at": timestamp,
+                "timestamp": timestamp,
+                "sensible": True
+            }
+
+            item_list.append(item_json)
+        if len(response_json[self.record_list_name]) > 0:
+            self.new_initial_date = datetime.strptime(response_json[self.record_list_name][0][self.record_creation_date_key], '%Y-%m-%dT%H:%M:%S.%f%z')
+
+        return item_list
+
+    # def parse_response_error_message(cls, response: requests.Response) -> Optional[str]:
+    #     """
+    #     Parses the raw response object from a failed request into a user-friendly error message.
+    #     By default, this method tries to grab the error message from JSON responses by following common API patterns. Override to parse differently.
+    #
+    #     :param response:
+    #     :return: A user-friendly message that indicates the cause of the error
+    #     """
+    #
+    #     # default logic to grab error from common fields
+    #     def _try_get_error(value):
+    #         if isinstance(value, str):
+    #             return value
+    #         elif isinstance(value, list):
+    #             return ", ".join(str(_try_get_error(v)) for v in value)
+    #         elif isinstance(value, dict):
+    #             new_value = (
+    #                 value.get("message")
+    #                 or value.get("messages")
+    #                 or value.get("error")
+    #                 or value.get("errors")
+    #                 or value.get("failures")
+    #                 or value.get("failure")
+    #                 or value.get("detail")
+    #             )
+    #             return _try_get_error(new_value)
+    #         return None
+    #
+    #     try:
+    #         body = response.json()
+    #         return _try_get_error(body)
+    #     except requests.exceptions.JSONDecodeError:
+    #         return None
+    #
+    # def should_retry(self, response: requests.Response) -> bool:
+    #     """
+    #     Override to set different conditions for backoff based on the response from the server.
+    #
+    #     By default, back off on the following HTTP response statuses:
+    #      - 429 (Too Many Requests) indicating rate limiting
+    #      - 500s to handle transient server errors
+    #
+    #     Unexpected but transient exceptions (connection timeout, DNS resolution failed, etc..) are retried by default.
+    #     """
+    #     return response.status_code == 400 or response.status_code == 429 or 500 <= response.status_code < 600
+
+    @property
+    def raise_on_http_errors(self) -> bool:
+        """
+        Override if needed. If set to False, allows opting-out of raising HTTP code exception.
+        """
+        return False
+
+    def handle_request(self, response):
+        # try_count = 1
+
+        while self.try_count < self.max_retries:
+            logger.info('Retry number: %s', self.try_count)
+            logger.info(response.url)
+            logger.info(self.headers)
+            # self.headers["WM_QOS.CORRELATION_ID"] = uuid.uuid4().hex
+            # self.headers["Content-Type"] = 'application/json'
+            new_response = requests.get(response.url, headers=self.headers)
+
+            if new_response.status_code == 200:
+                logger.info('Success for url: %s', response.url)
+                return new_response
+
+            self.try_count += 1
+            sleep(self.retry_interval)
+            if self.try_count == 5:
+                sleep(2*self.retry_interval)
+
+        raise
 
 class SourceWalmartMarketplace(AbstractSource):
 
@@ -432,7 +683,8 @@ class SourceWalmartMarketplace(AbstractSource):
 
         return [
             Orders(authenticator=auth, config=config, createdStartDate=createdStartDate),
-            Items(authenticator=auth, config=config)
+            Items(authenticator=auth, config=config),
+            Returns(authenticator=auth, config=config, createdStartDate=createdStartDate)
         ]
 
 # Durante a emissão da Credencial Plena, o titular poderá incluir dependentes, contudo, a Credencial Plena de dependentes maiores de 18 anos só estará disponível para uso
