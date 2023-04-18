@@ -5,6 +5,7 @@ ENTRYPOINT ["/airbyte/integration_code/airbyte-to-flow", "--connector-entrypoint
 
 COPY spec.patch.json ./
 COPY documentation_url.patch.json ./
+COPY streams/* ./streams/
 
 LABEL io.airbyte.version=v2
 LABEL io.airbyte.name=airbyte/source-exchange-rates
