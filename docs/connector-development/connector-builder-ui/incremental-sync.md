@@ -10,17 +10,17 @@ To use incremental syncs, the API endpoint needs to fullfil the following requir
 * Records contain a date/time field that defines when this record was last updated (the "cursor field")
 * It's possible to filter/request records by the cursor field
 
-To learn more about how different modes of incremental syncs, check out the [Incremental Sync - Append](/understanding-airbyte/connections/incremental-append/) and [Incremental Sync - Deduped History](/understanding-airbyte/connections/incremental-deduped-history) pages.
+The knowledge of a cursor value also allows the Airbyte system to automatically keep a history of changes to records in the destination. To learn more about how different modes of incremental syncs, check out the [Incremental Sync - Append](/understanding-airbyte/connections/incremental-append/) and [Incremental Sync - Deduped History](/understanding-airbyte/connections/incremental-deduped-history) pages.
 
 ## Configuration
 
-To configure incremental syncs for a stream in the connector builder, you have to specify how the records specify the **"last changed" / "updated at" timestamp**, the **initial time range** to fetch records for and **how to request records from a certain time range**.
+To configure incremental syncs for a stream in the connector builder, you have to specify how the records will represent the **"last changed" / "updated at" timestamp**, the **initial time range** to fetch records for and **how to request records from a certain time range**.
 
 In the builder UI, these things are specified like this:
 * The "Cursor field" is the property in the record that defines the date and time when the record got changed. It's used to decide which records are synced already and which records are "new"
 * The "Datetime format" specifies the [format](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes) the cursor field is using to specify date and time,
-* The "Cursor granularity" is the smallest time unit supported by the API to specify the time range to request records for
-* The "Start datetime" is the initial start date of the time range to fetch records for. When doing incremental syncs, the second sync will overwrite this date with the last record that got synced so far. In most cases, it is defined by the end user when configuring a Source using your connector.
+* The "Cursor granularity" is the smallest time unit supported by the API to specify the time range to request records for expressed as [ISO 8601 duration](https://en.wikipedia.org/wiki/ISO_8601#Durations)
+* The "Start datetime" is the initial start date of the time range to fetch records for. When doing incremental syncs, the second sync will overwrite this date with the last record that got synced so far.
 * The "End datetime" is the end date of the time range to fetch records for. In most cases it's set to the current date and time when the sync is started to sync all changes that happened so far.
 * The "Inject start/end time into outgoing HTTP request" defines how to request records that got changed in the time range to sync. In most cases the start and end time is added as a request parameter or body parameter
 
@@ -57,28 +57,28 @@ This API orders records by default from new to old, which is not optimal for a r
 * Set the key to `order-by`
 * Set the value to `oldest`
 
-Setting the start date in the "Testing values" to a week in the past (`2023-04-09T00:00:00Z` at the time of writing) results in the following request:
-```
-curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=2023-04-09T00:00:00Z&to-date=2023-04-15T10:18:08Z'
-```
+Setting the start date in the "Testing values" to a date in the past like **2023-04-09T00:00:00Z** results in the following request:
+<pre>
+curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=<b>2023-04-09T00:00:00Z</b>&to-date={`now`}'
+</pre>
 
 The last encountered date will be saved as part of the connection - when the next sync is running, it picks up from the last record. Let's assume the last ecountered article looked like this:
-```
-{
+<pre>
+{`{
   "id": "business/live/2023/apr/15/uk-bosses-more-optimistic-energy-prices-fall-ai-spending-boom-economics-business-live",
   "type": "liveblog",
   "sectionId": "business",
   "sectionName": "Business",
-  "webPublicationDate": "2023-04-15T07:30:58Z",
-}
-```
+  "webPublicationDate": `}<b>"2023-04-15T07:30:58Z"</b>{`,
+}`}
+</pre>
 
 Then when a sync is triggered for the same connection the next day, the following request is made:
-```
-curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=2023-04-15T07:30:58Z&to-date=2023-04-16T10:18:08Z'
-```
+<pre>
+curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=<b>2023-04-15T07:30:58Z</b>&to-date={`<now>`}'
+</pre>
 
-The `from-date` is set to the cutoff date of articles synced already and the `to-date` is set to the new "now".
+The `from-date` is set to the cutoff date of articles synced already and the `to-date` is set to the current date.
 
 ## Advanced settings
 
@@ -86,48 +86,44 @@ The description above is sufficient for a lot of APIs. However there are some mo
 
 ### Step
 
-When incremental syncs are enabled, the connector is not fetching all records since the cutoff date at once - instead it's splitting up the time range between the cutoff date and the desired end date into intervals based on the "Step" configuration (by default it's set to 1 month)
+When incremental syncs are enabled, the connector is not fetching all records since the cutoff date at once - instead it's splitting up the time range between the cutoff date and the desired end date into intervals based on the "Step" configuration (by default it's set to one month) expressed as [ISO 8601 duration](https://en.wikipedia.org/wiki/ISO_8601#Durations).
 
 For example if the "Step" is set to 10 days (`P10D`) for the Guardian articles stream described above and a longer time range, then the following requests will be performed:
-```
-
-curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=2023-01-01T00:00:00Z&to-date=2023-01-10T00:00:00Z'
-
-curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=2023-01-10T00:00:00Z&to-date=2023-01-20T00:00:00Z'
-
-curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=2023-01-20T00:00:00Z&to-date=2023-01-30T00:00:00Z'
-
+<pre>
+curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=<b>2023-01-01T00:00:00Z</b>&to-date=<b>2023-01-10T00:00:00Z</b>'{`\n`}
+curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=<b>2023-01-10T00:00:00Z</b>&to-date=<b>2023-01-20T00:00:00Z</b>'{`\n`}
+curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=<b>2023-01-20T00:00:00Z</b>&to-date=<b>2023-01-30T00:00:00Z</b>'{`\n`}
 ...
-```
+</pre>
 
 After an interval is processed, the cursor value of the last record will be saved as part of the connection as the new cutoff date.
 
-In most cases, the default step size is fine, there are two reasons to change it:
-* **The API is unreliable** and the cutoff date should be saved more often to prevent resync of a lot of records - if the "Step" size is a day, then at most one day worth of data needs to be resync in case the sync fails halfway through. However, a smaller step size might cause more requests to the API and more load on the system.
+In most cases, the default step size is fine, but there are two reasons to change it:
+* **To protect a connection against intermittent failures** - if the "Step" size is a day, the cutoff date is saved after all records associated with a day are proccessed. If a sync fails halfway through because the API, the Airbyte system, the destination or the network between these components has a failure, then at most one day worth of data needs to be resynced. However, a smaller step size might cause more requests to the API and more load on the system. It depends on the expected amount of data and load characteristics of an API what step size is optimal, but for a lot of applications the default of one month is a good starting point.
 * **The API requires the connector to fetch data in pre-specified chunks** - for example the [Exchange Rates API](https://exchangeratesapi.io/documentation/) makes the date to fetch data for part of the URL path and only allows to fetch data for a single day at a time
 
 ### Lookback window
 
 The "Lookback window" specifies a duration that is subtracted from the last cutoff date before starting to sync.
 
-Same APIs update records over time but do not allow to filter or search by modification date, only by creation date. For example the API of The Guardian might change the title of an article after it got published, but the `webPublicationDate` still shows the original date the article got published initially.
+Some APIs update records over time but do not allow to filter or search by modification date, only by creation date. For example the API of The Guardian might change the title of an article after it got published, but the `webPublicationDate` still shows the original date the article got published initially.
 
 In these cases, there are two options:
-* **Do not use incremental sync** and always sync the full set of records to always have a consistent state - depending on the amount of data this might not be feasable 
-* **Configure the "Lookback window"** to not only sync exclusively new records, but resync some portion of records before the cutoff date to catch changes that were made to existing records, trading off data consistency and the amount of synced records. In the case of the API of The Guardian, this strategy will likey work well because news articles tend to only be updated for a few days after the initial release date, so this strategy should be able to catch most updates without having to resync all articles.
+* **Do not use incremental sync** and always sync the full set of records to always have a consistent state, losing the advantages of reduced load and [automatic history keeping in the destination](/understanding-airbyte/connections/incremental-deduped-history)
+* **Configure the "Lookback window"** to not only sync exclusively new records, but resync some portion of records before the cutoff date to catch changes that were made to existing records, trading off data consistency and the amount of synced records. In the case of the API of The Guardian, news articles tend to only be updated for a few days after the initial release date, so this strategy should be able to catch most updates without having to resync all articles.
 
-Reiterating the example from above with a "Lookback window" of 2 days configured, let's assume the last ecountered article looked like this:
-```
-{
+Reiterating the example from above with a "Lookback window" of 2 days configured, let's assume the last encountered article looked like this:
+<pre>
+{`{
   "id": "business/live/2023/apr/15/uk-bosses-more-optimistic-energy-prices-fall-ai-spending-boom-economics-business-live",
   "type": "liveblog",
   "sectionId": "business",
   "sectionName": "Business",
-  "webPublicationDate": <b>"2023-04-15T07:30:58Z"</b>,
-}
-```
+  "webPublicationDate": `}<b>{`"2023-04-15T07:30:58Z"`}</b>{`,
+}`}
+</pre>
 
 Then when a sync is triggered for the same connection the next day, the following request is made:
-```
-curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=2023-04-13T07:30:58Z&to-date=2023-04-16T10:18:08Z'
-```
+<pre>
+curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=<b>2023-04-13T07:30:58Z</b>&to-date={`<now>`}'
+</pre>
