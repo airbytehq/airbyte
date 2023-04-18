@@ -8,6 +8,9 @@
         },
         "client_secret": {
             "description": "Stripe API key (usually starts with sk_live_). Find yours here: https://go.estuary.dev/t7DgTg"
+        },
+        "lookback_window_days": {
+        "description": "When set, the connector will always re-export data from the past N days, where N is the value set here. This is useful if your data is frequently updated after creation. More info here https://go.estuary.dev/OhUbgL"
         }
     }
 }

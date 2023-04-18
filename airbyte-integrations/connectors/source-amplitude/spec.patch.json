@@ -8,6 +8,9 @@
     },
     "start_date": {
       "format": "date-time"
+    },
+    "request_time_range": {
+      "description": "Too big time range in request can cause a timeout error. If that happens, set shorter time interval in hours. See https://go.estuary.dev/Mr2NMb for more details."
     }
   }
 }

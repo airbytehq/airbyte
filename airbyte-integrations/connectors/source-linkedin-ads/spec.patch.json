@@ -3,6 +3,9 @@
     "start_date": {
       "format": "date"
     },
+    "account_ids": {
+      "description": "Specify the account IDs separated by a space, to pull the data from. Leave empty if you want to pull the data from all associated accounts. See the Linkedin Ads docs for more info: https://go.estuary.dev/oNY6ct"
+    },
     "credentials": {
       "title": "Authentication",
       "type": "object",

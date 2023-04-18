@@ -1,11 +1,61 @@
 {
+    "required": ["credentials"],
     "properties": {
+        "auth_type": null,
+        "client_id": null,
+        "client_secret": null,
+        "refresh_token": null,
         "region": {
             "description": "Region to pull data from (EU/NA/FE). See the docs for more details https://go.estuary.dev/8Ra66M"
         },
         "start_date": {
             "description": "Date from which to start collecting reports, in YYYY-MM-DD format. Shouldn’t be more than 60 days in the past.",
             "format": "date"
+        },
+        "profiles": {
+            "description": "Profile IDs you want to fetch data for. See the docs for more details https://go.estuary.dev/fUqsnk"
+        },
+        "report_record_types": {
+            "description": "Use this config option only if you want to pull specific report type(s), leave blank for default behaviour to pull all report types. See https://go.estuary.dev/v01fDX for more details."
+        },
+        "credentials": {
+            "properties": {
+            "auth_type": {
+                "const": "oauth2.0",
+                "default": "oauth2.0",
+                "order": 0,
+                "title": "Auth Type",
+                "type": "string"
+            },
+            "client_id": {
+                "airbyte_secret": true,
+                "description": "The client ID of your Amazon Ads developer application. See the docs for more information  https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret",
+                "order": 1,
+                "title": "Client ID",
+                "type": "string"
+            },
+            "client_secret": {
+                "airbyte_secret": true,
+                "description": "The client secret of your Amazon Ads developer application. See the docs for more information https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret",
+                "order": 2,
+                "title": "Client Secret",
+                "type": "string"
+            },
+            "refresh_token": {
+                "airbyte_secret": true,
+                "description": "Amazon Ads refresh token. See the docs for more information about this token  https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens",
+                "order": 3,
+                "title": "Refresh Token",
+                "type": "string"
+            }
+            },
+            "required": [
+            "client_id",
+            "client_secret",
+            "refresh_token"
+            ],
+            "type": "object",
+            "x-oauth2-provider": "amazon"
         }
     }
 }
