@@ -1,0 +1,13 @@
+{
+    "payment_method_types": {
+        "items": {
+            "card": null,
+            "type": "object",
+            "properties": {
+                "card": {
+                    "type": ["null", "string"]
+                }
+            }
+        }
+    }
+}

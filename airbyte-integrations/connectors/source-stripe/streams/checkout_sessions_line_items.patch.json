@@ -1,0 +1,14 @@
+{
+    "properties": {
+        "taxes": {
+            "items": {
+                "properties": {
+                    "amount": {
+                        "types": null,
+                        "type": ["null", "integer"]
+                    }
+                }
+            }
+        }
+    }
+}
