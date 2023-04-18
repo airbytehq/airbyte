@@ -15,7 +15,7 @@
   sourceType: api
   releaseStage: alpha
 - name: Aircall
-  sourceDefinitionId: <To-be-given>
+  sourceDefinitionId: 912eb6b7-a893-4a5b-b1c0-36ebbe2de8cd
   dockerRepository: airbyte/source-aircall
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/aircall

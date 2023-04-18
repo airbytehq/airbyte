@@ -71,13 +71,13 @@
     },
     "wrap_up_time": {
       "type": ["null", "number"]
-    }, 
+    },
     "available": {
       "type": ["null", "boolean"]
-    }, 
+    },
     "language": {
       "type": ["null", "string"]
-    }, 
+    },
     "email": {
       "type": ["null", "string"]
     },
