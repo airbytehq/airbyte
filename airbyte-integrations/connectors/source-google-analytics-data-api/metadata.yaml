@@ -1,0 +1,23 @@
+data:
+  allowedHosts:
+    hosts:
+      - oauth2.googleapis.com
+      - www.googleapis.com
+      - analyticsdata.googleapis.com
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 3cc2eafd-84aa-4dca-93af-322d9dfeec1a
+  dockerImageTag: 0.1.3
+  dockerRepository: airbyte/source-google-analytics-data-api
+  githubIssueLabel: source-google-analytics-data-api
+  icon: google-analytics.svg
+  license: MIT
+  name: Google Analytics 4 (GA4)
+  releaseStage: generally_available
+  supportUrl: https://docs.airbyte.com/integrations/sources/google-analytics-data-api
+metadataSpecVersion: "1.0"
