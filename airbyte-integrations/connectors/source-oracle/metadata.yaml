@@ -3,7 +3,7 @@ data:
     hosts:
       - ${host}
       - ${tunnel_method.tunnel_host}
-  catalogs:
+  registries:
     cloud:
       dockerImageTag: 0.3.17
       dockerRepository: airbyte/source-oracle-strict-encrypt
