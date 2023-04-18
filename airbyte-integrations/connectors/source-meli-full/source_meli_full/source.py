@@ -133,7 +133,6 @@ class MeliInvoices(HttpStream):
             "user_id": self.credstash_key.split('_')[-1].split('.')[0],
             "source": "AIRBYTE_MELI_FULL"
         }
-        logger.info(f"MERCHANT: {invoice['merchant']} --- COUNTRY {invoice['country']}")
         return invoice
 
     def parse_response(
