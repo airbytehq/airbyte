@@ -44,7 +44,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: |
           export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
-          airbyte-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} connectors test ${{ github.event.inputs.test-connectors-options }}
+          airbyte-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} connectors ${{ github.event.inputs.test-connectors-options }} test
         env:
           _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -61,7 +61,7 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
-          airbyte-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} connectors test --modified
+          airbyte-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} connectors --modified test
         env:
           _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
