@@ -25,6 +25,7 @@ class PydanticDelayValidationMixin:
         except ValidationError as e:
             return (False, e)
 
+
 class PydanitcDictMixin:
     def __getitem__(self, key: str):
         return self.__dict__[key]
@@ -35,6 +36,7 @@ class PydanitcDictMixin:
 
 class PartialMetadataDefinition(PydanticDelayValidationMixin, PydanitcDictMixin, ConnectorMetadataDefinitionV0):
     pass
+
 
 class MetadataDefinition(PydanitcDictMixin, ConnectorMetadataDefinitionV0):
     pass

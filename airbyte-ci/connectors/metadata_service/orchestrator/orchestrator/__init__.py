@@ -3,7 +3,6 @@
 #
 from dagster import Definitions
 
-from orchestrator.jobs.registry import generate_registry, generate_registry_markdown, generate_local_metadata_files
 from orchestrator.resources.gcp import gcp_gcs_client, gcs_bucket_manager, gcs_directory_blobs, gcs_file_blob, gcs_file_manager
 from orchestrator.resources.github import github_client, github_connector_repo, github_connectors_directory
 from orchestrator.resources.local import simple_local_file_manager
@@ -48,6 +47,8 @@ from orchestrator.assets.dev import (
     cloud_registry_diff_dataframe,
     oss_registry_diff_dataframe,
     metadata_directory_report,
+    oss_registry_diff_report,
+    cloud_registry_diff_report,
 )
 
 from orchestrator.jobs.registry import generate_registry_markdown, generate_local_metadata_files, generate_registry
@@ -64,6 +65,7 @@ ASSETS = [
     cached_specs,
     cloud_destinations_dataframe,
     cloud_registry_diff_dataframe,
+    cloud_registry_diff_report,
     cloud_registry_diff,
     cloud_registry_from_metadata,
     cloud_sources_dataframe,
@@ -83,6 +85,7 @@ ASSETS = [
     metadata_directory_report,
     oss_destinations_dataframe,
     oss_registry_diff_dataframe,
+    oss_registry_diff_report,
     oss_registry_diff,
     oss_registry_from_metadata,
     oss_sources_dataframe,
@@ -105,12 +108,9 @@ RESOURCES = {
     "gcs_bucket_manager": gcs_bucket_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}}),
     "registry_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER}),
     "registry_report_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REPORT_FOLDER}),
-    "registry_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER}),
     "metadata_file_blobs": gcs_directory_blobs.configured({"prefix": METADATA_FOLDER, "suffix": METADATA_FILE_NAME}),
-
     "legacy_oss_registry_gcs_blob": gcs_file_blob.configured({"prefix": "", "gcs_filename": "oss_catalog.json"}),
     "legacy_cloud_registry_gcs_blob": gcs_file_blob.configured({"prefix": "", "gcs_filename": "cloud_catalog.json"}),
-
     "latest_oss_registry_gcs_blob": gcs_file_blob.configured({"prefix": REGISTRIES_FOLDER, "gcs_filename": "oss_registry.json"}),
     "latest_cloud_registry_gcs_blob": gcs_file_blob.configured({"prefix": REGISTRIES_FOLDER, "gcs_filename": "cloud_registry.json"}),
 }

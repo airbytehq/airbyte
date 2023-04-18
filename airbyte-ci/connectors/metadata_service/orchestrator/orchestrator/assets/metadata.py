@@ -202,7 +202,9 @@ def valid_metadata_report_dataframe(overrode_metadata_definitions: List[PartialM
 def legacy_registry_derived_metadata_definitions(
     legacy_cloud_sources_dataframe, legacy_cloud_destinations_dataframe, legacy_oss_sources_dataframe, legacy_oss_destinations_dataframe
 ) -> Output[List[PartialMetadataDefinition]]:
-    sources_metadata_list = merge_into_metadata_definitions("sourceDefinitionId", "source", legacy_oss_sources_dataframe, legacy_cloud_sources_dataframe)
+    sources_metadata_list = merge_into_metadata_definitions(
+        "sourceDefinitionId", "source", legacy_oss_sources_dataframe, legacy_cloud_sources_dataframe
+    )
     destinations_metadata_list = merge_into_metadata_definitions(
         "destinationDefinitionId", "destination", legacy_oss_destinations_dataframe, legacy_cloud_destinations_dataframe
     )

@@ -3,10 +3,12 @@ import yaml
 import json
 from pydash.collections import key_by
 from deepdiff import DeepDiff
-from dagster import Output, asset, OpExecutionContext
+from dagster import Output, asset, OpExecutionContext, MetadataValue
 from typing import List
+
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 from orchestrator.models.metadata import PartialMetadataDefinition
+
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
 
 
@@ -264,9 +266,37 @@ def oss_registry_diff_dataframe(oss_registry_diff: dict) -> OutputDataFrame:
 
 
 @asset(required_resource_keys={"metadata_file_blobs"}, group_name=GROUP_NAME)
-def metadata_directory_report(context):
+def metadata_directory_report(context: OpExecutionContext):
     metadata_file_blobs = context.resources.metadata_file_blobs
     blobs = [blob.name for blob in metadata_file_blobs if blob.name.endswith("metadata.yaml")]
     blobs_df = pd.DataFrame(blobs)
 
     return output_dataframe(blobs_df)
+
+
+@asset(required_resource_keys={"registry_report_directory_manager"}, group_name=GROUP_NAME)
+def oss_registry_diff_report(context: OpExecutionContext, oss_registry_diff_dataframe: pd.DataFrame):
+    markdown = oss_registry_diff_dataframe.to_markdown()
+
+    registry_report_directory_manager = context.resources.registry_report_directory_manager
+    file_handle = registry_report_directory_manager.write_data(markdown.encode(), ext="md", key="dev/oss_registry_diff_report")
+
+    metadata = {
+        "preview": MetadataValue.md(markdown),
+        "gcs_path": MetadataValue.url(file_handle.gcs_path),
+    }
+    return Output(metadata=metadata, value=file_handle)
+
+
+@asset(required_resource_keys={"registry_report_directory_manager"}, group_name=GROUP_NAME)
+def cloud_registry_diff_report(context: OpExecutionContext, cloud_registry_diff_dataframe: pd.DataFrame):
+    markdown = cloud_registry_diff_dataframe.to_markdown()
+
+    registry_report_directory_manager = context.resources.registry_report_directory_manager
+    file_handle = registry_report_directory_manager.write_data(markdown.encode(), ext="md", key="dev/cloud_registry_diff_report")
+
+    metadata = {
+        "preview": MetadataValue.md(markdown),
+        "gcs_path": MetadataValue.url(file_handle.gcs_path),
+    }
+    return Output(metadata=metadata, value=file_handle)

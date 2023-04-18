@@ -19,7 +19,6 @@ from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
 
 
-
 GROUP_NAME = "registry"
 
 # ERRORS
@@ -112,7 +111,9 @@ def is_metadata_connector_type(metadata_definition: dict, connector_type: str) -
     return metadata_definition["data"]["connectorType"] == connector_type
 
 
-def construct_registry_from_metadata(legacy_registry_derived_metadata_definitions: List[MetadataDefinition], registry_name: str) -> ConnectorRegistryV0:
+def construct_registry_from_metadata(
+    legacy_registry_derived_metadata_definitions: List[MetadataDefinition], registry_name: str
+) -> ConnectorRegistryV0:
     """Construct the registry from the metadata definitions.
 
     Args:
@@ -136,6 +137,7 @@ def construct_registry_from_metadata(legacy_registry_derived_metadata_definition
 
     return {"sources": registry_sources, "destinations": registry_destinations}
 
+
 def construct_registry_with_spec_from_registry(registry: dict, cached_specs: OutputDataFrame) -> dict:
     entries = [("source", entry) for entry in registry["sources"]] + [("destinations", entry) for entry in registry["destinations"]]
 
@@ -157,7 +159,10 @@ def construct_registry_with_spec_from_registry(registry: dict, cached_specs: Out
             raise MissingCachedSpecError(f"No cached spec found for {entry['dockerRegistry']:{entry['dockerImageTag']}}")
     return registry_with_specs
 
-def persist_registry_to_json(registry: ConnectorRegistryV0, registry_name: str, registry_directory_manager: GCSFileManager) -> GCSFileHandle:
+
+def persist_registry_to_json(
+    registry: ConnectorRegistryV0, registry_name: str, registry_directory_manager: GCSFileManager
+) -> GCSFileHandle:
     """Persist the registry to a json file.
 
     Args:
@@ -173,10 +178,14 @@ def persist_registry_to_json(registry: ConnectorRegistryV0, registry_name: str, 
     file_handle = registry_directory_manager.write_data(registry_json.encode("utf-8"), ext="json", key=registry_file_name)
     return file_handle
 
+
 # New Registry
 
+
 @asset(required_resource_keys={"registry_directory_manager"}, group_name=GROUP_NAME)
-def cloud_registry_from_metadata(context: OpExecutionContext, metadata_definitions: List[MetadataDefinition], cached_specs: OutputDataFrame) -> Output[ConnectorRegistryV0]:
+def cloud_registry_from_metadata(
+    context: OpExecutionContext, metadata_definitions: List[MetadataDefinition], cached_specs: OutputDataFrame
+) -> Output[ConnectorRegistryV0]:
     """
     This asset is used to generate the cloud registry from the metadata definitions.
     """
@@ -185,19 +194,21 @@ def cloud_registry_from_metadata(context: OpExecutionContext, metadata_definitio
 
     from_metadata = construct_registry_from_metadata(metadata_definitions, registry_name)
     registry_dict = construct_registry_with_spec_from_registry(from_metadata, cached_specs)
-    reigstry_model = ConnectorRegistryV0.parse_obj(registry_dict)
+    registry_model = ConnectorRegistryV0.parse_obj(registry_dict)
 
-    file_handle = persist_registry_to_json(reigstry_model, registry_name, registry_directory_manager)
+    file_handle = persist_registry_to_json(registry_model, registry_name, registry_directory_manager)
 
     metadata = {
         "gcs_path": MetadataValue.url(file_handle.gcs_path),
     }
 
-    return Output(metadata=metadata, value=reigstry_model)
+    return Output(metadata=metadata, value=registry_model)
 
 
 @asset(required_resource_keys={"registry_directory_manager"}, group_name=GROUP_NAME)
-def oss_registry_from_metadata(context: OpExecutionContext, metadata_definitions: List[MetadataDefinition], cached_specs: OutputDataFrame) -> Output[ConnectorRegistryV0]:
+def oss_registry_from_metadata(
+    context: OpExecutionContext, metadata_definitions: List[MetadataDefinition], cached_specs: OutputDataFrame
+) -> Output[ConnectorRegistryV0]:
     """
     This asset is used to generate the oss registry from the metadata definitions.
     """
@@ -206,15 +217,16 @@ def oss_registry_from_metadata(context: OpExecutionContext, metadata_definitions
 
     from_metadata = construct_registry_from_metadata(metadata_definitions, registry_name)
     registry_dict = construct_registry_with_spec_from_registry(from_metadata, cached_specs)
-    reigstry_model = ConnectorRegistryV0.parse_obj(registry_dict)
+    registry_model = ConnectorRegistryV0.parse_obj(registry_dict)
 
-    file_handle = persist_registry_to_json(reigstry_model, registry_name, registry_directory_manager)
+    file_handle = persist_registry_to_json(registry_model, registry_name, registry_directory_manager)
 
     metadata = {
         "gcs_path": MetadataValue.url(file_handle.gcs_path),
     }
 
-    return Output(metadata=metadata, value=reigstry_model)
+    return Output(metadata=metadata, value=registry_model)
+
 
 @asset(group_name=GROUP_NAME)
 def cloud_sources_dataframe(cloud_registry_from_metadata: ConnectorRegistryV0) -> OutputDataFrame:
@@ -243,7 +255,9 @@ def oss_destinations_dataframe(oss_registry_from_metadata: ConnectorRegistryV0) 
     destinations = oss_registry_from_metadata_dict["destinations"]
     return output_dataframe(pd.DataFrame(destinations))
 
+
 # Old Registry
+
 
 @asset(group_name=GROUP_NAME)
 def legacy_cloud_sources_dataframe(legacy_cloud_registry_dict: dict) -> OutputDataFrame:
@@ -278,6 +292,7 @@ def legacy_cloud_registry(legacy_cloud_registry_dict: dict) -> ConnectorRegistry
 def legacy_oss_registry(legacy_oss_registry_dict: dict) -> ConnectorRegistryV0:
     return ConnectorRegistryV0.parse_obj(legacy_oss_registry_dict)
 
+
 @asset(required_resource_keys={"legacy_cloud_registry_gcs_blob"}, group_name=GROUP_NAME)
 def legacy_cloud_registry_dict(context: OpExecutionContext) -> dict:
     oss_registry_file = context.resources.legacy_cloud_registry_gcs_blob
@@ -292,4 +307,3 @@ def legacy_oss_registry_dict(context: OpExecutionContext) -> dict:
     json_string = oss_registry_file.download_as_string().decode("utf-8")
     oss_registry_dict = json.loads(json_string)
     return oss_registry_dict
-

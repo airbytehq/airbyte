@@ -31,6 +31,7 @@ def deep_copy_params(to_call):
 
     return f
 
+
 def to_json_sanitized_dict(pydantic_model_obj: BaseModel) -> dict:
     """A helper function to convert a pydantic model to a sanitized dict.
 

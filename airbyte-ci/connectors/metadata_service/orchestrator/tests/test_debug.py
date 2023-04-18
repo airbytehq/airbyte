@@ -10,10 +10,8 @@ from orchestrator.assets.registry import (
     cloud_sources_dataframe,
     oss_registry_from_metadata,
     cloud_registry_from_metadata,
-    cloud_registry_from_metadata,
-    oss_registry_from_metadata,
     legacy_oss_registry_dict,
-    legacy_oss_registry
+    legacy_oss_registry,
 )
 from orchestrator.assets.metadata import (
     legacy_registry_derived_metadata_definitions,
@@ -64,7 +62,9 @@ def debug_registry_projection():
     oss_sources_df = oss_sources_dataframe(oss_registry_dict).value
     # github_connector_folders_list = github_connector_folders(context).value
 
-    legacy_registry_derived_metadata_definitions(context, cloud_sources_df, cloud_destinations_df, oss_sources_df, oss_destinations_df).value
+    legacy_registry_derived_metadata_definitions(
+        context, cloud_sources_df, cloud_destinations_df, oss_sources_df, oss_destinations_df
+    ).value
     # valid_metadata_report_dataframe_df = valid_metadata_report_dataframe(metadata_definitions_df).value
 
     # all_sources_df = all_sources_dataframe(cloud_sources_df, oss_sources_df, github_connector_folders_list, valid_metadata_report_dataframe_df)
@@ -72,6 +72,7 @@ def debug_registry_projection():
 
     # connector_registry_location_html(context, all_sources_df, all_destinations_df)
     # connector_registry_location_markdown(context, all_sources_df, all_destinations_df)
+
 
 def debug_registry_generation():
     resources = {
@@ -81,7 +82,7 @@ def debug_registry_generation():
             }
         ),
         "gcs_bucket_manager": gcs_bucket_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}}),
-        "registry_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRY_FOLDER}),
+        "registry_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER}),
         "metadata_file_blobs": gcs_directory_blobs.configured({"prefix": METADATA_FOLDER, "suffix": METADATA_FILE_NAME}),
     }
 
@@ -90,7 +91,8 @@ def debug_registry_generation():
     oss_registry_from_metadata(context, metadata_definitions_asset).value
     # cloud_registry_from_metadata(context, metadata_definitions_asset).value
 
-def test_debug_registry_diff():
+
+def debug_registry_diff():
     resources = {
         "gcp_gcs_client": gcp_gcs_client.configured(
             {
@@ -98,7 +100,7 @@ def test_debug_registry_diff():
             }
         ),
         "gcs_bucket_manager": gcs_bucket_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}}),
-        "registry_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRY_FOLDER}),
+        "registry_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER}),
         "metadata_file_blobs": gcs_directory_blobs.configured({"prefix": METADATA_FOLDER, "suffix": METADATA_FILE_NAME}),
         "legacy_oss_registry_gcs_blob": gcs_file_blob.configured({"prefix": "", "gcs_filename": "oss_catalog.json"}),
     }

@@ -37,10 +37,7 @@ def gcs_bucket_manager(resource_context: InitResourceContext) -> storage.Bucket:
 
 @resource(
     required_resource_keys={"gcp_gcs_client"},
-    config_schema={
-        "gcs_bucket": StringSource,
-        "prefix": StringSource
-    },
+    config_schema={"gcs_bucket": StringSource, "prefix": StringSource},
 )
 def gcs_file_manager(resource_context) -> GCSFileManager:
     """FileManager that provides abstract access to GCS.
