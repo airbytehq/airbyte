@@ -23,7 +23,7 @@ from source_netsuite.constraints import (
     SCHEMA_HEADERS,
     USLESS_SCHEMA_ELEMENTS,
 )
-from source_netsuite.errors import NETSUITE_ERRORS_MAPPING, DateFormatExeption
+from source_netsuite.errors import NETSUITE_ERRORS_MAPPING
 
 
 class NetsuiteStream(HttpStream, ABC):
