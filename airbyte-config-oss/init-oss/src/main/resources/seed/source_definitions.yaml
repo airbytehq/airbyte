@@ -248,6 +248,14 @@
   icon: callrail.svg
   sourceType: api
   releaseStage: alpha
+- name: Captain Data
+  sourceDefinitionId: <To-be-given>
+  dockerRepository: airbyte/source-captain-data
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/captain-data
+  icon: captain-data.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Cart.com
   sourceDefinitionId: bb1a6d31-6879-4819-a2bd-3eed299ea8e2
   dockerRepository: airbyte/source-cart

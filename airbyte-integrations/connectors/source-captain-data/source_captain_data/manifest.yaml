@@ -160,9 +160,11 @@ spec:
     additionalProperties: true
     properties:
       api_key:
+        title: API Key
         type: string
         description: Your Captain Data project API key.
         airbyte_secret: true
       project_uid:
+        title: Project UID
         type: string
         description: Your Captain Data project uuid.
