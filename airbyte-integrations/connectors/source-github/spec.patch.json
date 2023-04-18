@@ -28,6 +28,7 @@
       "order": 3
     },
     "credentials": {
+      "group": null,
       "order": 4,
       "discriminator": {
         "propertyName": "option_title"
