@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.normalization;
 
 import java.util.Arrays;
@@ -13,7 +17,6 @@ import org.slf4j.LoggerFactory;
 public class SentryExceptionHelper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SentryExceptionHelper.class);
-
 
   /**
    * Keys to known error types.
@@ -36,8 +39,7 @@ public class SentryExceptionHelper {
     boolean defaultNextLine = false;
     // TODO: this whole code block is quite ugh, commented to try and make each part clear but could be
     // much more readable.
-    mainLoop:
-    for (int i = 0; i < stacktraceLines.length; i++) {
+    mainLoop: for (int i = 0; i < stacktraceLines.length; i++) {
       // This order is important due to how these errors can co-occur.
       // This order attempts to keep error definitions consistent based on our observations of possible
       // dbt error structures.
@@ -125,4 +127,5 @@ public class SentryExceptionHelper {
     }
     return errorMessageAndType;
   }
+
 }

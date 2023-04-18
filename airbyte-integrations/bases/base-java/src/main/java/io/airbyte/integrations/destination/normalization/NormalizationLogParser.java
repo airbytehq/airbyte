@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.normalization;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,14 +26,15 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.util.Strings;
 
 /**
- * A simple wrapper for base-normalization logs. Reads messages off of stdin and sticks them into appropriate AirbyteMessages (log or trace), then
- * dumps those messages to stdout
+ * A simple wrapper for base-normalization logs. Reads messages off of stdin and sticks them into
+ * appropriate AirbyteMessages (log or trace), then dumps those messages to stdout
  * <p>
- * does mostly the same thing as {@link io.airbyte.workers.normalization.NormalizationAirbyteStreamFactory}. That class is not actively developed, and
- * will be deleted after all destinations run normalization in-connector.
+ * does mostly the same thing as
+ * {@link io.airbyte.workers.normalization.NormalizationAirbyteStreamFactory}. That class is not
+ * actively developed, and will be deleted after all destinations run normalization in-connector.
  * <p>
- * Aggregates all error logs and emits them as a single trace message at the end. If the underlying process emits any trace messages, they are passed
- * through immediately.
+ * Aggregates all error logs and emits them as a single trace message at the end. If the underlying
+ * process emits any trace messages, they are passed through immediately.
  */
 public class NormalizationLogParser {
 
@@ -70,8 +75,9 @@ public class NormalizationLogParser {
   }
 
   /**
-   * There are two cases here: Either the json is already an AirbyteMessage (and we should just emit it without change),
-   * or it's dbt json log, and we need to do some extra work to convert it to a log message + aggregate error logs.
+   * There are two cases here: Either the json is already an AirbyteMessage (and we should just emit
+   * it without change), or it's dbt json log, and we need to do some extra work to convert it to a
+   * log message + aggregate error logs.
    */
   private Stream<AirbyteMessage> jsonToMessage(final JsonNode jsonLine) {
     final Optional<AirbyteMessage> message = Jsons.tryObject(jsonLine, AirbyteMessage.class);
@@ -81,24 +87,12 @@ public class NormalizationLogParser {
       return message.stream();
     } else {
       /*
-       This line is a JSON-format dbt log. We need to extract the message and wrap it in a logmessage
-       And if it's an error, we also need to collect it into dbtErrors.
-       Example log message, formatted for readability:
-       {
-         "code": "A001",
-         "data": {
-           "v": "=1.0.9"
-         },
-         "invocation_id": "3f9a0b9f-9623-4c25-8708-1f6ae851e738",
-         "level": "info",
-         "log_version": 1,
-         "msg": "Running with dbt=1.0.9",
-         "node_info": {},
-         "pid": 65,
-         "thread_name": "MainThread",
-         "ts": "2023-04-12T21:03:23.079315Z",
-         "type": "log_line"
-       }
+       * This line is a JSON-format dbt log. We need to extract the message and wrap it in a logmessage
+       * And if it's an error, we also need to collect it into dbtErrors. Example log message, formatted
+       * for readability: { "code": "A001", "data": { "v": "=1.0.9" }, "invocation_id":
+       * "3f9a0b9f-9623-4c25-8708-1f6ae851e738", "level": "info", "log_version": 1, "msg":
+       * "Running with dbt=1.0.9", "node_info": {}, "pid": 65, "thread_name": "MainThread", "ts":
+       * "2023-04-12T21:03:23.079315Z", "type": "log_line" }
        */
       final String logLevel = (jsonLine.hasNonNull("level")) ? jsonLine.get("level").asText() : "";
       String logMsg = jsonLine.hasNonNull("msg") ? jsonLine.get("msg").asText() : "";
@@ -108,7 +102,8 @@ public class NormalizationLogParser {
         case "info" -> level = Level.INFO;
         case "warn" -> level = Level.WARN;
         case "error" -> {
-          // This is also not _amazing_, but we make the assumption that all error logs should be emitted in the trace message
+          // This is also not _amazing_, but we make the assumption that all error logs should be emitted in
+          // the trace message
           // In practice, this seems to be a valid assumption.
           level = Level.ERROR;
           dbtErrors.add(logMsg);
@@ -132,7 +127,8 @@ public class NormalizationLogParser {
 
   public static void main(String[] args) {
     final NormalizationLogParser normalizationLogParser = new NormalizationLogParser();
-    final Stream<AirbyteMessage> airbyteMessageStream = normalizationLogParser.create(new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8)));
+    final Stream<AirbyteMessage> airbyteMessageStream =
+        normalizationLogParser.create(new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8)));
     airbyteMessageStream.forEachOrdered(message -> System.out.println(Jsons.serialize(message)));
 
     final List<String> errors = normalizationLogParser.getDbtErrors();
@@ -153,4 +149,5 @@ public class NormalizationLogParser {
       System.out.println(Jsons.serialize(traceMessage));
     }
   }
+
 }
