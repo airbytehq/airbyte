@@ -1,0 +1,15 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Select Star Spec
+  type: object
+  required:
+    - token
+  properties:
+    token:
+      type: string
+      title: Token
+      description: >-
+        Your Select Star Token
+      airbyte_secret: true
+      order: 0
