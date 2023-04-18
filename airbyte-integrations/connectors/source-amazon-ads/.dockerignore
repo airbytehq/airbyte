@@ -1,0 +1,7 @@
+*
+!*.patch.json
+!Dockerfile
+!main.py
+!source_amazon_ads
+!setup.py
+!secrets
