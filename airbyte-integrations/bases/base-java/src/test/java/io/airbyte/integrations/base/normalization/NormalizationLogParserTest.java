@@ -103,9 +103,12 @@ class NormalizationLogParserTest {
   }
 
   private void runTest(String rawLogs, List<AirbyteMessage> expectedMessages, List<String> expectedDbtErrors) {
-    final List<AirbyteMessage> messages = parser.create(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(
-        rawLogs.getBytes(StandardCharsets.UTF_8)
-    )))).toList();
+    final List<AirbyteMessage> messages = parser.create(new BufferedReader(
+        new InputStreamReader(
+            new ByteArrayInputStream(
+                rawLogs.getBytes(StandardCharsets.UTF_8)
+            ),
+            StandardCharsets.UTF_8))).toList();
 
     assertEquals(
         expectedMessages,
