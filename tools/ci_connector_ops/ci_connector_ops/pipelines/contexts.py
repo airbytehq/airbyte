@@ -295,8 +295,12 @@ class ConnectorTestContext(PipelineContext):
         return self.get_repo_dir("airbyte-integrations/bases/connector-acceptance-test")
 
     @property
-    def should_save_updated_secrets(self):  # noqa D102
+    def should_save_updated_secrets(self) -> bool:  # noqa D102
         return self.use_remote_secrets and self.updated_secrets_dir is not None
+
+    @property
+    def host_image_export_dir_path(self) -> str:
+        return "." if self.is_ci else "/tmp"
 
     def get_connector_dir(self, exclude=None, include=None) -> Directory:
         """Get the connector under test source code directory.

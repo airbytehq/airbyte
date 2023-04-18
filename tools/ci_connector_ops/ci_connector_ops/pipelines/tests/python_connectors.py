@@ -9,9 +9,11 @@ from typing import List, Tuple
 import asyncer
 from ci_connector_ops.pipelines.actions import environments, secrets
 from ci_connector_ops.pipelines.bases import Step, StepResult, StepStatus
+from ci_connector_ops.pipelines.builds.python_connectors import BuildConnectorImage
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.pipelines.tests.common import AcceptanceTests, PytestStep
-from dagger import Container, File
+from ci_connector_ops.pipelines.utils import export_container_to_tarball
+from dagger import Container
 
 
 class CodeFormatChecks(Step):
@@ -102,36 +104,14 @@ class IntegrationTests(PytestStep):
         return await self._run_tests_in_directory(connector_under_test_with_secrets, "integration_tests")
 
 
-class BuildConnectorImage(Step):
-    """
-    A step to build a Python connector image using its Dockerfile.
-
-    Export the image as a tar archive on the host /tmp folder.
-    """
-
-    title = "Build connector image"
-
-    async def _run(self) -> Tuple[StepResult, File]:
-        connector_dir = self.context.get_connector_dir()
-        connector_local_tar_name = f"{self.context.connector.technical_name}.tar"
-        export_success = await connector_dir.docker_build().export(f"/tmp/{connector_local_tar_name}")
-        if export_success:
-            connector_image_tar_path = (
-                self.context.dagger_client.host().directory("/tmp", include=[connector_local_tar_name]).file(connector_local_tar_name)
-            )
-            return StepResult(self, StepStatus.SUCCESS), connector_image_tar_path
-        else:
-            return StepResult(self, StepStatus.FAILURE, stderr="The connector image could not be exported."), None
-
-
 async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
-    """Run all tests for a Python connnector.
+    """Run all tests for a Python connector.
 
     Args:
         context (ConnectorTestContext): The current connector test context.
 
     Returns:
-        List[StepResult]: _description_
+        List[StepResult]: The results of all the steps that ran or were skipped.
     """
     connector_package_install_step = ConnectorPackageInstall(context)
     unit_tests_step = UnitTests(context)
@@ -160,10 +140,11 @@ async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
         connector_image_tar_file = None
     else:
         context.logger.info("Run the build connector image step.")
-        build_connector_image_results, connector_image_tar_file = await build_connector_image_step.run()
+        build_connector_image_results, connector_container = await build_connector_image_step.run()
         results.append(build_connector_image_results)
         if build_connector_image_results.status is StepStatus.FAILURE:
             return results + [integration_tests_step.skip(), acceptance_test_step.skip()]
+        connector_image_tar_file = await export_container_to_tarball(context, connector_container)
         context.logger.info("Successfully ran the build connector image step.")
 
     context.logger.info("Retrieve the connector secrets.")
