@@ -120,6 +120,14 @@
   icon: appfollow.svg
   sourceType: api
   releaseStage: alpha
+- name: Apple Search Ads
+  sourceDefinitionId: e59c8416-c2fa-4bd3-9e95-52677ea281c1
+  dockerRepository: airbyte/source-apple-search-ads
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/apple-search-ads
+  icon: apple.svg
+  sourceType: api
+  releaseStage: alpha
 - name: AppsFlyer
   sourceDefinitionId: 16447954-e6a8-4593-b140-43dea13bc457
   dockerRepository: airbyte/source-appsflyer
