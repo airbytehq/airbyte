@@ -109,8 +109,6 @@ class DeclarativeStream(Stream):
         # If the input is an AirbyteRecord, transform the record's data
         # If the input is another type of Airbyte Message, return it as is
         # If the input is a dict, transform it
-        print(f"message_or_record_data: {message_or_record_data}")
-        print(f"type: {type(message_or_record_data)}")
         if isinstance(message_or_record_data, AirbyteLogMessage) or isinstance(message_or_record_data, AirbyteTraceMessage):
             return message_or_record_data
         for transformation in self.transformations:
