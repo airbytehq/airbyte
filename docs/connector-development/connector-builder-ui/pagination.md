@@ -52,7 +52,7 @@ Then the API may take in a request like this: `GET https://api.example.com/produ
 
 Normally, the caller of the API would need to implement some logic to then increment the `offset` by the `limit` amount and then submit another call with the updated `offset`, and continue on this pattern until all of the records have been retrieved.
 
-The Offset Increment pagination mode in the Connector Builder does this for you. So you just need to decide on a `limit` value to set, and configure how the limit and offset are injected into the HTTP requests. Most APIs accept these values as query parameters like in the above example, but this can differ depending on the API. If an API does not accept a `limit`, then the injection configuration for the limit can be disabled
+The Offset Increment pagination mode in the Connector Builder does this for you. So you just need to decide on a `limit` value to set (the general recommendation is to use the largest limit that the API supports in order to minimize the number of API requests), and configure how the limit and offset are injected into the HTTP requests. Most APIs accept these values as query parameters like in the above example, but this can differ depending on the API. If an API does not accept a `limit`, then the injection configuration for the limit can be disabled
 
 Either way, your connector will automatically increment the `offset` for subsequent requests based on the number of records it receives, and will continue until it receives fewer records than the limit you configured.
 
@@ -147,7 +147,7 @@ then incrementing the `page` by 1 to call it with `GET https://api.example.com/p
 
 and so on.
 
-The Connector Builder abstracts this away so that you only need to decide what page size to set, what the starting page number should be (usually either 0 or 1 dependent on the API), and how the page size and number are injected into the API requests. Similar to Offset Increment pagination, the page size injection can be disabled if the API does not accept a page size value.
+The Connector Builder abstracts this away so that you only need to decide what page size to set (the general recommendation is to use the largest limit that the API supports in order to minimize the number of API requests), what the starting page number should be (usually either 0 or 1 dependent on the API), and how the page size and number are injected into the API requests. Similar to Offset Increment pagination, the page size injection can be disabled if the API does not accept a page size value.
 
 Either way, your connector will automatically increment the page number by 1 for each subsequent request, and continue until it receives fewer records than the page size you configured.
 
