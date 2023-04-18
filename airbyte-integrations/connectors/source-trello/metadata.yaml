@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - api.trello.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:
