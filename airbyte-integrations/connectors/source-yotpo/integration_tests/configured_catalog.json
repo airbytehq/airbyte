@@ -2,6 +2,24 @@
   "streams": [
     {
       "stream": {
+        "name": "email_analytics",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "raw_data",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "reviews",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"]

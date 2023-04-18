@@ -29,7 +29,13 @@ definitions:
     request_parameters:
       utoken: "{{ config['access_token'] }}"
       email: "{{ config['email'] }}"
-  
+
+  analytics_stream_requester:
+    type: HttpRequester
+    url_base: "https://api.yotpo.com/analytics/v1"
+    http_method: "GET"
+    request_parameters:
+      utoken: "{{ config['access_token'] }}"
 
   reviews_stream:
     type: DeclarativeStream
@@ -73,6 +79,40 @@ definitions:
     $parameters:
       path: "/apps/{{ config['app_key'] }}/reviews"
 
+  email_analytics_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["date_series_points"]
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/analytics_stream_requester"
+    name: "email_analytics"
+    $parameters:
+      path: "/emails/{{ config['app_key'] }}/emails_sent?token={{ config['access_token'] }}"
+
+  raw_data_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["records"]
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/analytics_stream_requester"
+    name: "raw_data"
+    $parameters:
+      path: "/emails/{{ config['app_key'] }}/export/raw_data?token={{ config['access_token'] }}"
+
   reviews_bottomline_stream:
     type: DeclarativeStream
     retriever:
@@ -89,7 +129,6 @@ definitions:
     name: "reviews_bottomline"
     $parameters:
       path: "/products/{{ config['app_key'] }}/yotpo_site_reviews/bottomline"
-
 
   top_reviews_stream:
     type: DeclarativeStream
@@ -126,6 +165,8 @@ definitions:
       path: "/apps/{{ config['app_key'] }}/webhooks"
 
 streams:
+  - "#/definitions/email_analytics_stream"
+  - "#/definitions/raw_data_stream"
   - "#/definitions/reviews_stream"
   - "#/definitions/reviews_bottomline_stream"
   - "#/definitions/top_reviews_stream"
@@ -134,6 +175,8 @@ streams:
 check:
   type: CheckStream
   stream_names:
+    - "email_analytics"
+    - "raw_data"
     - "reviews"
     - "reviews_bottomline"
     - "top_reviews"
