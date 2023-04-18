@@ -220,14 +220,6 @@ class BaseClass(HttpStream):
         next_page_token: Mapping[str, Any] = None,
     ):
 
-        # if self.first_execution:
-        #     self.first_execution = False
-        #     logger.info("Ran first execution")
-        #     if 'xmls' in response.json().keys():
-        #         invoice = self.format_response(response.json())
-        #         print(type(invoice))
-        #         return [invoice]
-        # else:
         logger.info("Parsing Response")
 
         skips_list = [i for i in range(0,self.max_skip)]
