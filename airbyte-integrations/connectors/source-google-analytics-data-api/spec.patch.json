@@ -19,7 +19,7 @@
           "title": "Authenticate via Google (Oauth)",
           "type": "object",
           "x-oauth2-provider": "google",
-          "required": ["auth_type", "client_id", "client_secret", "refresh_token"],
+          "required": ["client_id", "client_secret", "refresh_token"],
           "properties": {
             "auth_type": {
               "type": "string",

@@ -49,7 +49,7 @@
       }
     },
     "login_customer_id": {
-      "title": "Login Customer ID for Managed Accounts (Optional)",
+      "title": "Login Customer ID for Managed Accounts",
       "description": "If your access to the customer account is through a manager account, this field is required and must be set to the customer ID of the manager account (10-digit number without dashes). See the docs for more information: https://go.estuary.dev/q3rQAD"
     },
     "conversion_window_days": {

@@ -1,0 +1,8 @@
+[
+    "/segments.ad_network_type",
+    "/segments.date",
+    "/ad_group.id",
+    "/campaign.id",
+    "/customer.id",
+    "/ad_group_ad.ad.id"
+]
