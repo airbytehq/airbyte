@@ -192,7 +192,3 @@ def build(ctx: click.Context):
         for connector in ctx.obj["selected_connectors"]
     ]
     return anyio.run(run_connectors_build_pipelines, connectors_contexts, ctx.obj["concurrency"])
-
-
-if __name__ == "__main__":
-    test()
