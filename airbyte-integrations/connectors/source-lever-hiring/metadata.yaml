@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 3981c999-bd7d-4afc-849b-e53dea90c948
+  dockerImageTag: 0.1.3
+  dockerRepository: airbyte/source-lever-hiring
+  githubIssueLabel: source-lever-hiring
+  icon: leverhiring.svg
+  license: MIT
+  name: Lever Hiring
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/lever-hiring
+metadataSpecVersion: "1.0"
