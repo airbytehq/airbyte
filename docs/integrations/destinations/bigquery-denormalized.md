@@ -1,4 +1,4 @@
-# Bigquery Denormalized
+# BigQuery Denormalized
 
 See [destinations/bigquery](https://docs.airbyte.com/integrations/destinations/bigquery)
 
@@ -8,8 +8,8 @@ See [destinations/bigquery](https://docs.airbyte.com/integrations/destinations/b
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                  |
 | :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
+| 1.3.0   | 2023-04-XX | [XXX](https://github.com/airbytehq/airbyte/pull/XXX)   | XXX                                                                                                      |
 | 1.2.20  | 2023-04-12 | [25122](https://github.com/airbytehq/airbyte/pull/25122)   | Add additional data                                                                                                      |
-| centers |
 | 1.2.19  | 2023-03-29 | [#24671](https://github.com/airbytehq/airbyte/pull/24671)  | Fail faster in certain error cases                                                                                       |
 | 1.2.18  | 2023-03-23 | [#24447](https://github.com/airbytehq/airbyte/pull/24447)  | Set the Service Account Key JSON field to always_show: true so that it isn't collapsed into an optional fields section   |
 | 1.2.17  | 2023-03-17 | [#23788](https://github.com/airbytehq/airbyte/pull/23788)  | S3-Parquet: added handler to process null values in arrays                                                               |
