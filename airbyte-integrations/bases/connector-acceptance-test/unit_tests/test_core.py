@@ -1,11 +1,12 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from unittest import mock
 from unittest.mock import MagicMock, patch
 
 import pytest
+from _pytest.outcomes import Failed
 from airbyte_cdk.models import (
     AirbyteErrorTraceMessage,
     AirbyteLogMessage,
@@ -20,7 +21,7 @@ from airbyte_cdk.models import (
     TraceType,
     Type,
 )
-from connector_acceptance_test.config import BasicReadTestConfig, Config, ExpectedRecordsConfig
+from connector_acceptance_test.config import BasicReadTestConfig, Config, ExpectedRecordsConfig, IgnoredFieldsConfiguration
 from connector_acceptance_test.tests import test_core
 
 from .conftest import does_not_raise
@@ -277,30 +278,96 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
 
 
 @pytest.mark.parametrize(
-    "schema, record, expectation",
+    "schema, ignored_fields, expect_records_config, record, expected_records_by_stream, expectation",
     [
-        ({"type": "object"}, {"aa": 23}, does_not_raise()),
-        ({"type": "object"}, {}, does_not_raise()),
+        (
+            {"type": "object"},
+            {},
+            ExpectedRecordsConfig(path="foobar"),
+            {"aa": 23},
+            {},
+            does_not_raise()
+        ),
+        (
+            {"type": "object"},
+            {},
+            ExpectedRecordsConfig(path="foobar"),
+            {},
+            {},
+            does_not_raise()
+        ),
         (
             {"type": "object", "properties": {"created": {"type": "string"}}},
+            {},
+            ExpectedRecordsConfig(path="foobar"),
             {"aa": 23},
+            {},
             pytest.raises(AssertionError, match="should have some fields mentioned by json schema"),
         ),
-        ({"type": "object", "properties": {"created": {"type": "string"}}}, {"created": "23"}, does_not_raise()),
         (
             {"type": "object", "properties": {"created": {"type": "string"}}},
+            {},
+            ExpectedRecordsConfig(path="foobar"),
+            {"created": "23"},
+            {},
+            does_not_raise()
+        ),
+        (
+            {"type": "object", "properties": {"created": {"type": "string"}}},
+            {},
+            ExpectedRecordsConfig(path="foobar"),
             {"root": {"created": "23"}},
+            {},
             pytest.raises(AssertionError, match="should have some fields mentioned by json schema"),
         ),
         # Recharge shop stream case
         (
             {"type": "object", "properties": {"shop": {"type": ["null", "object"]}, "store": {"type": ["null", "object"]}}},
+            {},
+            ExpectedRecordsConfig(path="foobar"),
             {"shop": {"a": "23"}, "store": {"b": "23"}},
+            {},
+            does_not_raise(),
+        ),
+        # Fail when expected and actual records are not equal
+        (
+            {"type": "object"},
+            {},
+            ExpectedRecordsConfig(path="foobar"),
+            {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]},
+            {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}]},
+            pytest.raises(Failed, match="Stream test_stream: All expected records must be produced"),
+        ),
+        # Expected and Actual records are not equal but we ignore fast changing field
+        (
+            {"type": "object"},
+            {"test_stream": [IgnoredFieldsConfiguration(name="fast_changing_field/*/field", bypass_reason="test")]},
+            ExpectedRecordsConfig(path="foobar"),
+            {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]},
+            {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}]},
+            does_not_raise(),
+        ),
+        # Fail when expected and actual records are not equal and exact_order=True
+        (
+            {"type": "object"},
+            {},
+            ExpectedRecordsConfig(extra_fields=False, exact_order=True, extra_records=True, path="foobar"),
+            {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]},
+            {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}]},
+            pytest.raises(AssertionError, match="Stream test_stream: Mismatch of record order or values"),
+        ),
+        # Expected and Actual records are not equal but we ignore fast changing field (for case when exact_order=True)
+        (
+            {"type": "object"},
+            {"test_stream": [IgnoredFieldsConfiguration(name="fast_changing_field/*/field", bypass_reason="test")]},
+            ExpectedRecordsConfig(extra_fields=False, exact_order=True, extra_records=True, path="foobar"),
+            {"constant_field": "must equal", "fast_changing_field": [{"field": 1}]},
+            {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 2}]}]},
             does_not_raise(),
         ),
     ],
 )
-def test_read(schema, record, expectation):
+def test_read(schema, ignored_fields, expect_records_config, record, expected_records_by_stream, expectation):
     configured_catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -319,12 +386,75 @@ def test_read(schema, record, expectation):
         t.test_read(
             connector_config=None,
             configured_catalog=configured_catalog,
+            expect_records_config=expect_records_config,
+            should_validate_schema=True,
+            should_validate_data_points=False,
+            should_fail_on_extra_columns=False,
+            empty_streams=set(),
+            expected_records_by_stream=expected_records_by_stream,
+            docker_runner=docker_runner_mock,
+            ignored_fields=ignored_fields,
+            detailed_logger=MagicMock(),
+        )
+
+
+@pytest.mark.parametrize("config_fail_on_extra_columns, record_has_unexpected_column, expectation_should_fail", [
+        (True, True, True),
+        (True, False, False),
+        (False, False, False),
+        (False, True, False),
+])
+@pytest.mark.parametrize("additional_properties", [True, False, None])
+def test_fail_on_extra_columns(config_fail_on_extra_columns, record_has_unexpected_column, expectation_should_fail, additional_properties):
+    schema = {"type": "object", "properties": {"field_1": {"type": ["string"]}, "field_2": {"type": ["string"]}}}
+    if additional_properties:
+        schema["additionalProperties"] = additional_properties
+
+    record = {"field_1": "value", "field_2": "value"}
+    if record_has_unexpected_column:
+        record["surprise_field"] = "value"
+
+    configured_catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema, "supported_sync_modes": ["full_refresh"]}),
+                sync_mode="full_refresh",
+                destination_sync_mode="overwrite",
+            )
+        ]
+    )
+    docker_runner_mock = MagicMock()
+    docker_runner_mock.call_read.return_value = [
+        AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=111))
+    ]
+    t = test_core.TestBasicRead()
+    if expectation_should_fail:
+        with pytest.raises(Failed, match="test_stream"):
+            t.test_read(
+                connector_config=None,
+                configured_catalog=configured_catalog,
+                expect_records_config=ExpectedRecordsConfig(path="foobar"),
+                should_validate_schema=True,
+                should_validate_data_points=False,
+                should_fail_on_extra_columns=config_fail_on_extra_columns,
+                empty_streams=set(),
+                expected_records_by_stream={},
+                docker_runner=docker_runner_mock,
+                ignored_fields=None,
+                detailed_logger=MagicMock(),
+            )
+    else:
+        t.test_read(
+            connector_config=None,
+            configured_catalog=configured_catalog,
             expect_records_config=ExpectedRecordsConfig(path="foobar"),
             should_validate_schema=True,
             should_validate_data_points=False,
+            should_fail_on_extra_columns=config_fail_on_extra_columns,
             empty_streams=set(),
             expected_records_by_stream={},
             docker_runner=docker_runner_mock,
+            ignored_fields=None,
             detailed_logger=MagicMock(),
         )
 

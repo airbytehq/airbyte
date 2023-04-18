@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -95,12 +95,18 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
   }
 
   @Override
-  public String uploadRecordsToStage(final JdbcDatabase database, final SerializableBuffer recordsData, final String schemaName, final String stageName, final String stagingPath)
+  public String uploadRecordsToStage(final JdbcDatabase database,
+                                     final SerializableBuffer recordsData,
+                                     final String schemaName,
+                                     final String stageName,
+                                     final String stagingPath)
       throws Exception {
     final List<Exception> exceptionsThrown = new ArrayList<>();
     while (exceptionsThrown.size() < UPLOAD_RETRY_LIMIT) {
       try {
-        return loadDataIntoBucket(stagingPath, recordsData);
+        final String fileName = loadDataIntoBucket(stagingPath, recordsData);
+        LOGGER.info("Successfully loaded records to stage {} with {} re-attempt(s)", stagingPath, exceptionsThrown.size());
+        return fileName;
       } catch (final Exception e) {
         LOGGER.error("Failed to upload records into storage {}", stagingPath, e);
         exceptionsThrown.add(e);
@@ -109,6 +115,18 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
     throw new RuntimeException(String.format("Exceptions thrown while uploading records into storage: %s", Strings.join(exceptionsThrown, "\n")));
   }
 
+  /**
+   * Upload the file from {@code recordsData} to S3 and simplify the filename as <partId>.<extension>.
+   *
+   * <p>
+   * Method mirrors similarly named method within
+   * {@link io.airbyte.integrations.destination.s3.S3StorageOperations}
+   * </p>
+   *
+   * @param objectPath filepath to the object
+   * @param recordsData serialized {@link io.airbyte.protocol.models.AirbyteRecordMessage}s
+   * @return the uploaded filename, which is different from the serialized buffer filename
+   */
   private String loadDataIntoBucket(final String objectPath, final SerializableBuffer recordsData) throws IOException {
 
     final String fullObjectKey = objectPath + recordsData.getFilename();
@@ -131,11 +149,11 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
 
   @Override
   public void copyIntoTableFromStage(final JdbcDatabase database,
-                                        final String stageName,
-                                        final String stagingPath,
-                                        final List<String> stagedFiles,
-                                        final String tableName,
-                                        final String schemaName)
+                                     final String stageName,
+                                     final String stagingPath,
+                                     final List<String> stagedFiles,
+                                     final String tableName,
+                                     final String schemaName)
       throws Exception {
     LOGGER.info("Starting copy to target table from stage: {} in destination from stage: {}, schema: {}, .",
         tableName, stagingPath, schemaName);

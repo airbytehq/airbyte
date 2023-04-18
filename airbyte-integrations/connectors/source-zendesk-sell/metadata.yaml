@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 982eaa4c-bba1-4cce-a971-06a41f700b8c
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-zendesk-sell
+  githubIssueLabel: source-zendesk-sell
+  icon: zendesk.svg
+  license: MIT
+  name: Zendesk Sell
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/zendesk-sell
+metadataSpecVersion: "1.0"

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -57,7 +57,7 @@ class SourceFreshdesk(AbstractSource):
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]):
         try:
-            check_stream = CheckStream(stream_names=["settings"], options={})
+            check_stream = CheckStream(stream_names=["settings"], parameters={})
             return check_stream.check_connection(self, logger, config)
         except Exception as error:
             return False, repr(error)

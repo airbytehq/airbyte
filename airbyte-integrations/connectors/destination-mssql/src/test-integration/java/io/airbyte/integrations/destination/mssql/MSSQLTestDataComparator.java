@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql;
 
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 public class MSSQLTestDataComparator extends AdvancedTestDataComparator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MSSQLTestDataComparator.class);
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   @Override
   protected boolean compareDateTimeWithTzValues(final String airbyteMessageValue,

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -18,7 +18,7 @@ from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
-from .utils import analytics_columns, to_datetime_str
+from .utils import get_analytics_columns, to_datetime_str
 
 # For Pinterest analytics streams rate limit is 300 calls per day / per user.
 # once hit - response would contain `code` property with int.
@@ -179,7 +179,7 @@ class IncrementalPinterestStream(PinterestStream, ABC):
         date_slices = []
 
         while start_date < end_date:
-            # the amount of days for each data-chunk begining from start_date
+            # the amount of days for each data-chunk beginning from start_date
             end_date_slice = start_date.add(days=self.window_in_days)
             date_slices.append({"start_date": to_datetime_str(start_date), "end_date": to_datetime_str(end_date_slice)})
 
@@ -217,6 +217,26 @@ class PinterestAnalyticsStream(IncrementalPinterestSubStream):
     granularity = "DAY"
     analytics_target_ids = None
 
+    def lookback_date_limt_reached(self, response: requests.Response) -> bool:
+        """
+        After few consecutive requests analytics API return bad request error
+        with 'You can only get data from the last 90 days' error message.
+        But with next request all working good. So, we wait 1 sec and
+        request again if we get this issue.
+        """
+
+        if isinstance(response.json(), dict):
+            return response.json().get("code", 0) and response.status_code == 400
+        return False
+
+    def should_retry(self, response: requests.Response) -> bool:
+        return super().should_retry(response) or self.lookback_date_limt_reached(response)
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        if self.lookback_date_limt_reached(response):
+            return 1
+        return super().backoff_time(response)
+
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
@@ -226,7 +246,7 @@ class PinterestAnalyticsStream(IncrementalPinterestSubStream):
                 "start_date": stream_slice["start_date"],
                 "end_date": stream_slice["end_date"],
                 "granularity": self.granularity,
-                "columns": analytics_columns,
+                "columns": get_analytics_columns(),
             }
         )
 

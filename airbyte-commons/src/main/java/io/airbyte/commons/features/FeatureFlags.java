@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.features;
@@ -47,6 +47,8 @@ public interface FeatureFlags {
   String strictComparisonNormalizationWorkspaces();
 
   /**
+   * Get the Docker image tag representing the normalization version with strict-comparison.
+   *
    * @return The Docker image tag representing the normalization version with strict-comparison
    */
   String strictComparisonNormalizationTag();

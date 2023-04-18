@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -35,6 +35,7 @@ from source_stripe.streams import (
     Refunds,
     SubscriptionItems,
     Subscriptions,
+    SubscriptionSchedule,
     Transfers,
 )
 
@@ -80,6 +81,7 @@ class SourceStripe(AbstractSource):
             Refunds(**incremental_args),
             SubscriptionItems(**args),
             Subscriptions(**incremental_args),
+            SubscriptionSchedule(**incremental_args),
             Transfers(**incremental_args),
             ExternalAccountBankAccounts(**args),
             ExternalAccountCards(**args),

@@ -1,9 +1,9 @@
-version: "0.1.0"
+version: "0.29.0"
 
 definitions:
   selector:
     extractor:
-      field_pointer: ["Data"]
+      field_path: ["Data"]
   requester:
     url_base: "https://api.mailjet.com/v3/REST"
     http_method: "GET"
@@ -13,12 +13,11 @@ definitions:
       password: "{{ config['api_key_secret'] }}"
   offset_paginator:
     type: DefaultPaginator
-    $options:
-      url_base: "*ref(definitions.requester.url_base)"
     pagination_strategy:
       type: "OffsetIncrement"
       page_size: 100
     page_token_option:
+      type: RequestOption
       field_name: "offset"
       inject_into: "request_parameter"
     page_size_option:
@@ -26,72 +25,72 @@ definitions:
       field_name: "limit"
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   contactslist_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     retriever:
       record_selector:
-        $ref: "*ref(definitions.selector)"
+        $ref: "#/definitions/selector"
       paginator:
-        $ref: "*ref(definitions.offset_paginator)"
+        $ref: "#/definitions/offset_paginator"
       requester:
-        $ref: "*ref(definitions.requester)"
-    $options:
+        $ref: "#/definitions/requester"
+    $parameters:
       name: "contactslist"
       primary_key: "ID"
       path: "/contactslist"
   contacts_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     retriever:
       record_selector:
-        $ref: "*ref(definitions.selector)"
+        $ref: "#/definitions/selector"
       paginator:
-        $ref: "*ref(definitions.offset_paginator)"
+        $ref: "#/definitions/offset_paginator"
       requester:
-        $ref: "*ref(definitions.requester)"
-    $options:
+        $ref: "#/definitions/requester"
+    $parameters:
       name: "contacts"
       primary_key: "ID"
       path: "/contact"
   stats_api_lifetime_message_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "stats_api_lifetime_message"
       primary_key: "APIKeyID"
       path: "/statcounters?CounterSource=APIKey&CounterResolution=Lifetime&CounterTiming=Message"
   campaign_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "campaign"
       primary_key: "ID"
       path: "/campaign"
   message_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     retriever:
       record_selector:
-        $ref: "*ref(definitions.selector)"
+        $ref: "#/definitions/selector"
       paginator:
-        $ref: "*ref(definitions.offset_paginator)"
+        $ref: "#/definitions/offset_paginator"
       requester:
-        $ref: "*ref(definitions.requester)"
-    $options:
+        $ref: "#/definitions/requester"
+    $parameters:
       name: "message"
       primary_key: "ID"
       path: "/message"
 
 streams:
-  - "*ref(definitions.contactslist_stream)"
-  - "*ref(definitions.contacts_stream)"
-  - "*ref(definitions.stats_api_lifetime_message_stream)"
-  - "*ref(definitions.campaign_stream)"
-  - "*ref(definitions.message_stream)"
+  - "#/definitions/contactslist_stream"
+  - "#/definitions/contacts_stream"
+  - "#/definitions/stats_api_lifetime_message_stream"
+  - "#/definitions/campaign_stream"
+  - "#/definitions/message_stream"
 
 check:
   stream_names:

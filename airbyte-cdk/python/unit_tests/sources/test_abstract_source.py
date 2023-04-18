@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import copy
@@ -104,10 +104,11 @@ def test_failed_check():
     assert expected == MockSource(check_lambda=lambda: (False, "womp womp")).check(logger, {})
 
 
-def test_raising_check():
+def test_raising_check(mocker):
     """Tests that if a source raises an unexpected exception the appropriate connectionStatus failure message is returned."""
-    expected = AirbyteConnectionStatus(status=Status.FAILED, message="Exception('this should fail')")
-    assert expected == MockSource(check_lambda=lambda: exec('raise Exception("this should fail")')).check(logger, {})
+    check_lambda = mocker.Mock(side_effect=BaseException("this should fail"))
+    with pytest.raises(BaseException):
+        MockSource(check_lambda=check_lambda).check(logger, {})
 
 
 class MockStream(Stream):
@@ -334,10 +335,7 @@ def test_valid_full_refresh_read_with_slices(mocker):
 
 @pytest.mark.parametrize(
     "slices",
-    [
-        [{"1": "1"}, {"2": "2"}],
-        [{"date": datetime.date(year=2023, month=1, day=1)}, {"date": datetime.date(year=2023, month=1, day=1)}]
-    ]
+    [[{"1": "1"}, {"2": "2"}], [{"date": datetime.date(year=2023, month=1, day=1)}, {"date": datetime.date(year=2023, month=1, day=1)}]],
 )
 def test_read_full_refresh_with_slices_sends_slice_messages(mocker, slices):
     """Given the logger is debug and a full refresh, AirbyteMessages are sent for slices"""
@@ -369,7 +367,7 @@ def test_read_incremental_with_slices_sends_slice_messages(mocker):
     debug_logger.setLevel(logging.DEBUG)
     slices = [{"1": "1"}, {"2": "2"}]
     stream = MockStream(
-        [({"sync_mode": SyncMode.incremental, "stream_slice": s, 'stream_state': {}}, [s]) for s in slices],
+        [({"sync_mode": SyncMode.incremental, "stream_slice": s, "stream_state": {}}, [s]) for s in slices],
         name="s1",
     )
 

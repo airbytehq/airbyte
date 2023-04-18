@@ -1,11 +1,11 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 import yaml
 
-SOURCE_DEFINITIONS_FILE_PATH = "../../../../../airbyte-config/init/src/main/resources/seed/source_definitions.yaml"
+SOURCE_DEFINITIONS_FILE_PATH = "../../../../../airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml"
 
 
 def read_source_definitions():

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -17,7 +17,13 @@ from pydantic import ValidationError
 
 
 class ConnectorRunner:
-    def __init__(self, image_name: str, volume: Path, connector_configuration_path: Optional[Path] = None):
+    def __init__(
+        self,
+        image_name: str,
+        volume: Path,
+        connector_configuration_path: Optional[Path] = None,
+        custom_environment_variables: Optional[Mapping] = {},
+    ):
         self._client = docker.from_env()
         try:
             self._image = self._client.images.get(image_name)
@@ -28,6 +34,7 @@ class ConnectorRunner:
         self._runs = 0
         self._volume_base = volume
         self._connector_configuration_path = connector_configuration_path
+        self._custom_environment_variables = custom_environment_variables
 
     @property
     def output_folder(self) -> Path:
@@ -106,6 +113,7 @@ class ConnectorRunner:
             volumes=volumes,
             network_mode="host",
             detach=True,
+            environment=self._custom_environment_variables,
             **kwargs,
         )
         with open(self.output_folder / "raw", "wb+") as f:
@@ -160,7 +168,7 @@ class ConnectorRunner:
             logging.error(f"Waiting error: {err}, logs: {exception or line}")
             raise
         if exit_status["StatusCode"]:
-            error = exit_status["Error"] or exception or line
+            error = exit_status.get("Error") or exception or line
             logging.error(f"Docker container failed, " f'code {exit_status["StatusCode"]}, error:\n{error}')
             if with_ext:
                 raise ContainerError(

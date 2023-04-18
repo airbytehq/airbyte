@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -43,7 +43,7 @@ def test_check_stream_with_slices_as_list(test_name, record, streams_to_check, s
     source = MagicMock()
     source.streams.return_value = [stream]
 
-    check_stream = CheckStream(streams_to_check, options={})
+    check_stream = CheckStream(streams_to_check, parameters={})
 
     if expectation:
         actual = check_stream.check_connection(source, logger, config)
@@ -67,7 +67,7 @@ def test_check_empty_stream():
     source = MagicMock()
     source.streams.return_value = [stream]
 
-    check_stream = CheckStream(["s1"], options={})
+    check_stream = CheckStream(["s1"], parameters={})
     stream_is_available, reason = check_stream.check_connection(source, logger, config)
     assert stream_is_available
 
@@ -81,7 +81,7 @@ def test_check_stream_with_no_stream_slices_aborts():
     source = MagicMock()
     source.streams.return_value = [stream]
 
-    check_stream = CheckStream(["s1"], options={})
+    check_stream = CheckStream(["s1"], parameters={})
     stream_is_available, reason = check_stream.check_connection(source, logger, config)
     assert not stream_is_available
     assert "no stream slices were found, likely because the parent stream is empty" in reason
@@ -91,10 +91,15 @@ def test_check_stream_with_no_stream_slices_aborts():
     "test_name, response_code, available_expectation, expected_messages",
     [
         ("test_stream_unavailable_unhandled_error", 404, False, ["Unable to connect to stream mock_http_stream", "404 Client Error"]),
-        ("test_stream_unavailable_handled_error", 403, False, [
-            "The endpoint to access stream 'mock_http_stream' returned 403: Forbidden.",
-            "This is most likely due to insufficient permissions on the credentials in use.",
-        ]),
+        (
+            "test_stream_unavailable_handled_error",
+            403,
+            False,
+            [
+                "The endpoint to access stream 'mock_http_stream' returned 403: Forbidden.",
+                "This is most likely due to insufficient permissions on the credentials in use.",
+            ],
+        ),
         ("test_stream_available", 200, True, []),
     ],
 )
@@ -117,6 +122,7 @@ def test_check_http_stream_via_availability_strategy(mocker, test_name, response
             stub_resp = {"data": self.resp_counter}
             self.resp_counter += 1
             yield stub_resp
+
         pass
 
     http_stream = MockHttpStream()
@@ -126,7 +132,7 @@ def test_check_http_stream_via_availability_strategy(mocker, test_name, response
     source = MagicMock()
     source.streams.return_value = [http_stream]
 
-    check_stream = CheckStream(stream_names=["mock_http_stream"], options={})
+    check_stream = CheckStream(stream_names=["mock_http_stream"], parameters={})
 
     req = requests.Response()
     req.status_code = response_code

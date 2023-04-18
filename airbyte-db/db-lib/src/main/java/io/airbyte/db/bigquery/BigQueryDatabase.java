@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.bigquery;
@@ -23,7 +23,6 @@ import com.google.cloud.bigquery.Table;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
-import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.db.SqlDatabase;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -84,7 +83,7 @@ public class BigQueryDatabase extends SqlDatabase {
   }
 
   private String getConnectorVersion() {
-    return Optional.ofNullable(System.getenv(WorkerEnvConstants.WORKER_CONNECTOR_IMAGE))
+    return Optional.ofNullable(System.getenv("WORKER_CONNECTOR_IMAGE"))
         .orElse(EMPTY)
         .replace("airbyte/", EMPTY).replace(":", "/");
   }

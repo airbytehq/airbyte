@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -27,6 +27,9 @@ BIGQUERY = {
     "CROSS",
     "CUBE",
     "CURRENT",
+    "CURRENT_DATE",
+    "CURRENT_TIME",
+    "CURRENT_TIMESTAMP",
     "DEFAULT",
     "DEFINE",
     "DESC",

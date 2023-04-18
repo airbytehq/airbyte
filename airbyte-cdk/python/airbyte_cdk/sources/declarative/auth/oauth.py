@@ -1,20 +1,19 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, List, Mapping, Optional, Tuple, Union
 
 import pendulum
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAuthenticator, JsonSchemaMixin):
+class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAuthenticator):
     """
     Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials based on
     a declarative connector configuration file. Credentials can be defined explicitly or via interpolation
@@ -40,7 +39,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     client_secret: Union[InterpolatedString, str]
     refresh_token: Union[InterpolatedString, str]
     config: Mapping[str, Any]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     scopes: Optional[List[str]] = None
     token_expiry_date: Optional[Union[InterpolatedString, str]] = None
     _token_expiry_date: pendulum.DateTime = field(init=False, repr=False, default=None)
@@ -50,17 +49,17 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     refresh_request_body: Optional[Mapping[str, Any]] = None
     grant_type: Union[InterpolatedString, str] = "refresh_token"
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self.token_refresh_endpoint = InterpolatedString.create(self.token_refresh_endpoint, options=options)
-        self.client_id = InterpolatedString.create(self.client_id, options=options)
-        self.client_secret = InterpolatedString.create(self.client_secret, options=options)
-        self.refresh_token = InterpolatedString.create(self.refresh_token, options=options)
-        self.access_token_name = InterpolatedString.create(self.access_token_name, options=options)
-        self.expires_in_name = InterpolatedString.create(self.expires_in_name, options=options)
-        self.grant_type = InterpolatedString.create(self.grant_type, options=options)
-        self._refresh_request_body = InterpolatedMapping(self.refresh_request_body or {}, options=options)
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self.token_refresh_endpoint = InterpolatedString.create(self.token_refresh_endpoint, parameters=parameters)
+        self.client_id = InterpolatedString.create(self.client_id, parameters=parameters)
+        self.client_secret = InterpolatedString.create(self.client_secret, parameters=parameters)
+        self.refresh_token = InterpolatedString.create(self.refresh_token, parameters=parameters)
+        self.access_token_name = InterpolatedString.create(self.access_token_name, parameters=parameters)
+        self.expires_in_name = InterpolatedString.create(self.expires_in_name, parameters=parameters)
+        self.grant_type = InterpolatedString.create(self.grant_type, parameters=parameters)
+        self._refresh_request_body = InterpolatedMapping(self.refresh_request_body or {}, parameters=parameters)
         self._token_expiry_date = (
-            pendulum.parse(InterpolatedString.create(self.token_expiry_date, options=options).eval(self.config))
+            pendulum.parse(InterpolatedString.create(self.token_expiry_date, parameters=parameters).eval(self.config))
             if self.token_expiry_date
             else pendulum.now().subtract(days=1)
         )
@@ -93,14 +92,32 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         return self._refresh_request_body.eval(self.config)
 
+    def refresh_access_token(self) -> Tuple[str, Any]:
+        """
+        This overrides the parent class method because the parent class assumes the "expires_in" field is always an int representing
+         seconds till token expiry.
+
+        However, this class provides the ability to determine the expiry date of an access token either by using (pseudocode):
+        * expiry_datetime = datetime.now() + seconds_till_access_token_expiry # in this option we have to calculate expiry timestamp, OR
+        * expiry_datetime = parse(response.body["expires_at"]) # in this option the API tells us exactly when access token expires
+
+        :return: a tuple of (access_token, either token_lifespan_in_seconds or datetime_of_token_expiry)
+
+        # TODO this is a hack and should be better encapsulated/enabled by the AbstractOAuthAuthenticator i.e: that class should have
+                a method which takes the HTTP response and returns a timestamp for when the access token will expire which subclasses
+                such as this one can override or just configure directly.
+        """
+        response_json = self._get_refresh_access_token_response()
+        return response_json[self.get_access_token_name()], response_json[self.get_expires_in_name()]
+
     def get_token_expiry_date(self) -> pendulum.DateTime:
         return self._token_expiry_date
 
-    def set_token_expiry_date(self, initial_time: pendulum.DateTime, value: Union[str, int]):
+    def set_token_expiry_date(self, value: Union[str, int]):
         if self.token_expiry_date_format:
             self._token_expiry_date = pendulum.from_format(value, self.token_expiry_date_format)
         else:
-            self._token_expiry_date = initial_time.add(seconds=value)
+            self._token_expiry_date = pendulum.now().add(seconds=value)
 
     @property
     def access_token(self) -> str:
