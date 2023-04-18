@@ -504,7 +504,7 @@ class Segmentations(SemiIncrementalMarketoStream):
         self.segment_id = segment_id
 
     def path(self, **kwargs) -> str:
-        return f"rest/asset/v1/segmentation/{self.segment_id}/segments.json"
+        return f"rest/asset/v1/segmentation.json"
 
 
 class MarketoAuthenticator(Oauth2Authenticator):
