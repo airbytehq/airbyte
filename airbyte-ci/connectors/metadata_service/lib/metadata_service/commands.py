@@ -4,7 +4,6 @@
 import pathlib
 
 import click
-
 from metadata_service.gcs_upload import upload_metadata_to_gcs
 from metadata_service.validators.metadata_validator import validate_metadata_file
 from pydantic import ValidationError
@@ -46,5 +45,7 @@ def upload(metadata_file_path: pathlib.Path, bucket_name: str, service_account_f
         exit(1)
     if uploaded:
         click.secho(f"The metadata file {metadata_file_path} was uploaded to {blob_id}.", color="green")
+        exit(0)
     else:
         click.secho(f"The metadata file {metadata_file_path} was not uploaded.", color="yellow")
+        exit(5)

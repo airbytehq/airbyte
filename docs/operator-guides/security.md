@@ -27,6 +27,8 @@ For more information, see [Airbyte’s Privacy Policy](https://airbyte.com/priva
 ## Securing Airbyte Open Source
 
 :::note
+In version 0.44.0, Airbyte Open Source runs a security self-check during setup to help users secure their Airbyte instance. The security self-check verifies whether the instance is accessible from the internet and if strong authentication is configured.
+
 Our security and reliability commitments are only applicable to Airbyte Cloud. Airbyte Open Source security and reliability depend on your development and production setups.
 :::
 
