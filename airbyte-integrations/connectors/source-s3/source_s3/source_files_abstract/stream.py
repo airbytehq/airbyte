@@ -41,10 +41,9 @@ class FileStream(Stream, ABC):
         "jsonl": JsonlParser,
     }
     # TODO: make these user configurable in spec.json
-    ab_additional_col = "_ab_additional_properties"
     ab_last_mod_col = "_ab_source_file_last_modified"
     ab_file_name_col = "_ab_source_file_url"
-    airbyte_columns = [ab_additional_col, ab_last_mod_col, ab_file_name_col]
+    airbyte_columns = [ab_last_mod_col, ab_file_name_col]
     datetime_format_string = "%Y-%m-%dT%H:%M:%SZ"
     # In version 2.0.1 the datetime format has been changed. Since the state may still store values in the old datetime format,
     # we need to support both of them for a while
@@ -172,7 +171,7 @@ class FileStream(Stream, ABC):
 
     @property
     def _schema(self) -> Mapping[str, Any]:
-        extra_fields = {self.ab_additional_col: "object", self.ab_last_mod_col: "string", self.ab_file_name_col: "string"}
+        extra_fields = {self.ab_last_mod_col: "string", self.ab_file_name_col: "string"}
         schema = self._raw_schema
         return {**schema, **extra_fields}
 
