@@ -22402,7 +22402,7 @@
     "sourceDefinitionId": "69589781-7828-43c5-9f63-8925b1c1ccc2",
     "name": "S3",
     "dockerRepository": "airbyte/source-s3",
-    "dockerImageTag": "2.0.4",
+    "dockerImageTag": "2.1.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/s3",
     "icon": "s3.svg",
     "sourceType": "file",
@@ -22639,6 +22639,15 @@
                 "description": "Endpoint to an S3 compatible service. Leave empty to use AWS.",
                 "default": "",
                 "order": 4,
+                "type": "string"
+              },
+              "start_date": {
+                "title": "Start Date",
+                "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not be replicated.",
+                "examples": [ "2021-01-01T00:00:00Z" ],
+                "format": "date-time",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+                "order": 5,
                 "type": "string"
               }
             },
