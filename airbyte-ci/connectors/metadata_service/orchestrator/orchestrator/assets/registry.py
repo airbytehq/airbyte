@@ -91,15 +91,7 @@ def metadata_to_registry_entry(metadata_definition: dict, connector_type: str, o
 
     # rename definitionId field to sourceDefinitionId or destinationDefinitionId
     id_field = "sourceDefinitionId" if connector_type == "source" else "destinationDefinitionId"
-    id_value = overrode_metadata_data["definitionId"]
-
-    # TODO remove this once we have a better way to handle UUIDs
-    # if the id is a UUID, convert it to a string
-    # if isinstance(id_value, UUID):
-    id_value = str(id_value)
-
-    # import pdb; pdb.set_trace()
-    overrode_metadata_data[id_field] = id_value
+    overrode_metadata_data[id_field] = overrode_metadata_data["definitionId"]
     del overrode_metadata_data["definitionId"]
 
     # add in useless fields that are currently required for porting to the actor definition spec
