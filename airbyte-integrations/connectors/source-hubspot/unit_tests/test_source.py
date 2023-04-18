@@ -64,7 +64,7 @@ def test_check_connection_exception(config):
 def test_streams(config):
     streams = SourceHubspot().streams(config)
 
-    assert len(streams) == 26
+    assert len(streams) == 27
 
 
 def test_check_credential_title_exception(config):

@@ -1,9 +1,9 @@
 from dagster import build_op_context
 
-from orchestrator.resources.gcp_resources import gcp_gcs_client, gcs_bucket_manager, gcs_file_manager, gcs_file_blob
-from orchestrator.resources.github_resources import github_client, github_connector_repo, github_connectors_directory
+from orchestrator.resources.gcp import gcp_gcs_client, gcs_bucket_manager, gcs_file_manager, gcs_file_blob
+from orchestrator.resources.github import github_client, github_connector_repo, github_connectors_directory
 
-from orchestrator.assets.catalog_assets import (
+from orchestrator.assets.catalog import (
     oss_destinations_dataframe,
     cloud_destinations_dataframe,
     oss_sources_dataframe,
@@ -11,7 +11,7 @@ from orchestrator.assets.catalog_assets import (
     latest_oss_catalog_dict,
     latest_cloud_catalog_dict,
 )
-from orchestrator.assets.metadata_assets import (
+from orchestrator.assets.metadata import (
     catalog_derived_metadata_definitions,
 )
 
@@ -39,10 +39,10 @@ def debug_catalog_projection():
         ),
         "gcs_bucket_manager": gcs_bucket_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}}),
         "catalog_report_directory_manager": gcs_file_manager.configured(
-            {"gcs_bucket": {"env": "METADATA_BUCKET"}, "gcs_prefix": REPORT_FOLDER}
+            {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REPORT_FOLDER}
         ),
-        "latest_oss_catalog_gcs_file": gcs_file_blob.configured({"gcs_prefix": CATALOG_FOLDER, "gcs_filename": "oss_catalog.json"}),
-        "latest_cloud_catalog_gcs_file": gcs_file_blob.configured({"gcs_prefix": CATALOG_FOLDER, "gcs_filename": "cloud_catalog.json"}),
+        "latest_oss_catalog_gcs_file": gcs_file_blob.configured({"prefix": CATALOG_FOLDER, "gcs_filename": "oss_catalog.json"}),
+        "latest_cloud_catalog_gcs_file": gcs_file_blob.configured({"prefix": CATALOG_FOLDER, "gcs_filename": "cloud_catalog.json"}),
     }
 
     context = build_op_context(resources=resources)
@@ -56,9 +56,9 @@ def debug_catalog_projection():
     # github_connector_folders_list = github_connector_folders(context).value
 
     catalog_derived_metadata_definitions(context, cloud_sources_df, cloud_destinations_df, oss_sources_df, oss_destinations_df).value
-    # valid_metadata_list_df = valid_metadata_list(metadata_definitions_df).value
+    # valid_metadata_report_dataframe_df = valid_metadata_report_dataframe(metadata_definitions_df).value
 
-    # all_sources_df = all_sources_dataframe(cloud_sources_df, oss_sources_df, github_connector_folders_list, valid_metadata_list_df)
+    # all_sources_df = all_sources_dataframe(cloud_sources_df, oss_sources_df, github_connector_folders_list, valid_metadata_report_dataframe_df)
     # all_destinations_df = all_destinations_dataframe(cloud_destinations_df, oss_destinations_df)
 
     # connector_catalog_location_html(context, all_sources_df, all_destinations_df)
