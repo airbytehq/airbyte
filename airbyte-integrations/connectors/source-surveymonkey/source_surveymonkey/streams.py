@@ -263,6 +263,7 @@ class SurveyResponses(SurveyIDSliceMixin, IncrementalSurveymonkeyStream):
         params["start_modified_at"] = since_value.strftime("%Y-%m-%dT%H:%M:%S")
         return params
 
+
 class SurveyCollectors(SurveyIDSliceMixin, SurveymonkeyStream):
     """should be filled from SurveyDetails"""
 
@@ -272,7 +273,9 @@ class SurveyCollectors(SurveyIDSliceMixin, SurveymonkeyStream):
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         data = super().parse_response(response=response, stream_state=stream_state, **kwargs)
         for record in data:
+            record["survey_id"] = kwargs.get("stream_slice", {}).get("survey_id")
             yield record
+
 
 class Collectors(SurveymonkeyStream):
     """
