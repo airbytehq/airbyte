@@ -1752,7 +1752,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-databricks:1.0.0"
+- dockerImage: "airbyte/destination-databricks:1.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/databricks"
     connectionSpecification:
