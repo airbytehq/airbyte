@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.s3.parquet;
 
 import static org.apache.parquet.avro.AvroWriteSupport.WRITE_OLD_LIST_STRUCTURE;
 
-import io.airbyte.commons.functional.CheckedBiFunction;
+import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
@@ -161,7 +161,7 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
     }
   }
 
-  public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> createFunction(final S3DestinationConfig s3DestinationConfig) {
+  public static BufferCreateFunction createFunction(final S3DestinationConfig s3DestinationConfig) {
     return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) -> new ParquetSerializedBuffer(s3DestinationConfig,
         stream, catalog);
   }

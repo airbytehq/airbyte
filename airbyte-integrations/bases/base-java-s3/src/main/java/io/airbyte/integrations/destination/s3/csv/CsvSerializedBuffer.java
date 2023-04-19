@@ -6,8 +6,8 @@ package io.airbyte.integrations.destination.s3.csv;
 
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.integrations.destination.record_buffer.BaseSerializedBuffer;
+import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
 import io.airbyte.integrations.destination.record_buffer.BufferStorage;
-import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -32,8 +32,8 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
   private CSVFormat csvFormat;
 
   public CsvSerializedBuffer(final BufferStorage bufferStorage,
-                             final CsvSheetGenerator csvSheetGenerator,
-                             final boolean compression)
+      final CsvSheetGenerator csvSheetGenerator,
+      final boolean compression)
       throws Exception {
     super(bufferStorage);
     this.csvSheetGenerator = csvSheetGenerator;
@@ -71,21 +71,21 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
     csvPrinter.close();
   }
 
-  public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> createFunction(
-                                                                                                                                          final S3CsvFormatConfig config,
-                                                                                                                                          final Callable<BufferStorage> createStorageFunction) {
+  public static BufferCreateFunction createFunction(
+      final S3CsvFormatConfig config,
+      final Callable<BufferStorage> createStorageFunction) {
     return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) -> {
       if (config == null) {
         return new CsvSerializedBuffer(createStorageFunction.call(), new StagingDatabaseCsvSheetGenerator(), true);
       }
 
       final CsvSheetGenerator csvSheetGenerator = CsvSheetGenerator.Factory.create(catalog.getStreams()
-          .stream()
-          .filter(s -> s.getStream().getName().equals(stream.getName()) && StringUtils.equals(s.getStream().getNamespace(), stream.getNamespace()))
-          .findFirst()
-          .orElseThrow(() -> new RuntimeException(String.format("No such stream %s.%s", stream.getNamespace(), stream.getName())))
-          .getStream()
-          .getJsonSchema(),
+              .stream()
+              .filter(s -> s.getStream().getName().equals(stream.getName()) && StringUtils.equals(s.getStream().getNamespace(), stream.getNamespace()))
+              .findFirst()
+              .orElseThrow(() -> new RuntimeException(String.format("No such stream %s.%s", stream.getNamespace(), stream.getName())))
+              .getStream()
+              .getJsonSchema(),
           config);
       final CSVFormat csvSettings = CSVFormat.DEFAULT
           .withQuoteMode(QuoteMode.NON_NUMERIC)

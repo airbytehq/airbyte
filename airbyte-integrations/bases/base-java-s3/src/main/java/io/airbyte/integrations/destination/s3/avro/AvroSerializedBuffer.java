@@ -4,10 +4,9 @@
 
 package io.airbyte.integrations.destination.s3.avro;
 
-import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.integrations.destination.record_buffer.BaseSerializedBuffer;
+import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
 import io.airbyte.integrations.destination.record_buffer.BufferStorage;
-import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -63,18 +62,19 @@ public class AvroSerializedBuffer extends BaseSerializedBuffer {
     dataFileWriter.close();
   }
 
-  public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> createFunction(final S3AvroFormatConfig config,
-                                                                                                                                          final Callable<BufferStorage> createStorageFunction) {
+  public static BufferCreateFunction createFunction(
+      final S3AvroFormatConfig config,
+      final Callable<BufferStorage> createStorageFunction) {
     final CodecFactory codecFactory = config.getCodecFactory();
     return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) -> {
       final JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
       final Schema schema = schemaConverter.getAvroSchema(catalog.getStreams()
-          .stream()
-          .filter(s -> s.getStream().getName().equals(stream.getName()) && StringUtils.equals(s.getStream().getNamespace(), stream.getNamespace()))
-          .findFirst()
-          .orElseThrow(() -> new RuntimeException(String.format("No such stream %s.%s", stream.getNamespace(), stream.getName())))
-          .getStream()
-          .getJsonSchema(),
+              .stream()
+              .filter(s -> s.getStream().getName().equals(stream.getName()) && StringUtils.equals(s.getStream().getNamespace(), stream.getNamespace()))
+              .findFirst()
+              .orElseThrow(() -> new RuntimeException(String.format("No such stream %s.%s", stream.getNamespace(), stream.getName())))
+              .getStream()
+              .getJsonSchema(),
           stream.getName(), stream.getNamespace());
       return new AvroSerializedBuffer(createStorageFunction.call(), codecFactory, schema);
     };

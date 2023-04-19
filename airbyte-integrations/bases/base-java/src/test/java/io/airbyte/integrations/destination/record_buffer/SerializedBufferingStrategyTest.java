@@ -208,7 +208,7 @@ public class SerializedBufferingStrategyTest {
         .withData(MESSAGE_DATA));
   }
 
-  private CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBufferFunction() {
+  private BufferCreateFunction onCreateBufferFunction() {
     return (stream, catalog) -> switch (stream.getName()) {
       case STREAM_1 -> recordWriter1;
       case STREAM_2 -> recordWriter2;

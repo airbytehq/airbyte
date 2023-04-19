@@ -31,7 +31,7 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SerializedBufferingStrategy.class);
 
-  private final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer;
+  private final BufferCreateFunction onCreateBuffer;
   private final FlushBufferFunction onStreamFlush;
 
   private Map<AirbyteStreamNameNamespacePair, SerializableBuffer> allBuffers = new HashMap<>();
@@ -46,7 +46,7 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
    * @param catalog collection of {@link io.airbyte.protocol.models.ConfiguredAirbyteStream}
    * @param onStreamFlush buffer flush logic used throughout the streaming of messages
    */
-  public SerializedBufferingStrategy(final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
+  public SerializedBufferingStrategy(final BufferCreateFunction onCreateBuffer,
                                      final ConfiguredAirbyteCatalog catalog,
                                      final FlushBufferFunction onStreamFlush) {
     this.onCreateBuffer = onCreateBuffer;
