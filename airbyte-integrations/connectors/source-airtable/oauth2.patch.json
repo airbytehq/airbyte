@@ -10,6 +10,6 @@
     "accessTokenResponseMap": {
         "refresh_token": "/refresh_token",
         "access_token": "/access_token",
-        "token_expiry_date": "{{#now_plus}}{{{ expires_in }}}{{/now_plus}}"
+        "token_expiry_date": "{{#now_plus}}{{ expires_in }}{{/now_plus}}"
     }
 }
