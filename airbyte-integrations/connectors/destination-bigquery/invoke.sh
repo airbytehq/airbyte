@@ -17,9 +17,12 @@ else
   normalization_exit_code=0
 fi
 
-if test destination_exit_code -eq 0 && normalization_exit_code -eq 0
+if test $destination_exit_code -ne 0
 then
-  exit 0
+  exit $destination_exit_code
+elif test $normalization_exit_code -ne 0
+then
+  exit $normalization_exit_code
 else
-  exit 1
+  exit 0
 fi
