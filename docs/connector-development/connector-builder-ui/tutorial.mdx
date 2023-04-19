@@ -131,6 +131,8 @@ To do so, follow these steps:
 
 <img src={InputModal} width="400" alt="User input modal" />
 
+The value input is now set to `{{ config['base'] }}`. When making requests, the connector will replace this placeholder by the user supplied value. This syntax can be used in all fields that have a user icon on the right side.
+
 Now your connector has a second configuration input. To test it, click the "Testing values" button again, set the "Base" to `USD`. Then, click the "Test" button again to issue a new test read.
 
 The record should update to use USD as the base currency:
@@ -156,6 +158,7 @@ In this section, we'll update the source to read historical data instead of only
 According to the API documentation, we can read the exchange rate for a specific date range by querying the `"/exchangerates_data/{date}"` endpoint instead of `"/exchangerates_data/latest"`.
 
 To configure your connector to request every day individually, follow these steps:
+* On top of the form, change the "Path URL" input to `/exchangerates_data/{{ stream_slice.start_time }}` to inject the date to fetch data for into the path of the request
 * Enable "Incremental sync" for the Rates stream
 * Set the "Cursor field" to `date` - this is the property in our records to check what date got synced last
 * Set the "Datetime format" to `%Y-%m-%d` to match the format of the date in the record returned from the API
@@ -164,7 +167,6 @@ To configure your connector to request every day individually, follow these step
 * Set the "End datetime" to `{{ today_utc() }}` to always sync up to the current day
 * In a lot of cases the start and end date are injected into the request body or request parameters. However in the case of the exchange rate API it needs to be added to the path of the request, so disable the "Inject start/end time into outgoing HTTP request" options
 * Open the "Advanced" section and set "Step" to `P1D` to configure the connector to do one separate request per day by partitioning the dataset into daily intervals
-* On top of the form, change the "Path URL" input to `/exchangerates_data/{{ stream_slice.start_time }}` to inject the date to fetch data for into the path of the request
 * Set a start date (like `2023-03-03`) in the "Testing values" menu
 * Hit the "Test" button to trigger a new test read
 
@@ -178,7 +180,6 @@ Note that a warning icon should show next to the "Detected schema" tab - using t
 
 To do so, follow these steps:
 * Enable the "Transformations" section
-* Add a new transformation
 * Set the "Path" to `historical`
 * Trigger a new test read
 
@@ -216,11 +217,10 @@ Congratulations! You just completed the following steps:
 
 This tutorial didn't go into depth about all features that can be used in the connector builder. Check out the concept pages for more information about certain topics:
 * Authentication
-* Record selection and transformation
+* Record processing
 * Pagination
 * Error handling
 * Incremental syncs
 * Partitioning
-* Schema declaration
 
 Not every possible API can be consumed by connectors configured in the connector builder. The [compatibility guide](/connector-development/config-based/connector-builder-compatibility#oauth) can help determining whether another technology should be used to integrate an API with the Airbyte platform.
