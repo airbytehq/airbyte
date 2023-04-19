@@ -3,7 +3,6 @@
 #
 
 import unittest
-from datetime import datetime
 from source_zuora.source import ZuoraObjectsBase
 import pendulum
 
