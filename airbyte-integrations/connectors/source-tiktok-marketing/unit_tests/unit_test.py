@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -16,7 +16,7 @@ from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffExcept
 from source_tiktok_marketing import SourceTiktokMarketing
 from source_tiktok_marketing.streams import Ads, Advertisers, JsonUpdatedState
 
-SANDBOX_CONFIG_FILE = "secrets/config.json"
+SANDBOX_CONFIG_FILE = "secrets/sandbox_config.json"
 PROD_CONFIG_FILE = "secrets/prod_config.json"
 
 
@@ -88,7 +88,7 @@ def test_random_items(prepared_prod_args):
         # mock for advertisers' list
         advertisers = [{"advertiser_id": i, "advertiser_name": str(i)} for i in test_advertiser_ids]
         for _, page_response in generate_pages(items=advertisers, page_size=advertiser_count):
-            m.register_uri("GET", "/open_api/v1.2/oauth2/advertiser/get/", json=page_response)
+            m.register_uri("GET", "/open_api/v1.3/oauth2/advertiser/get/", json=page_response)
         stream = Ads(**prepared_prod_args)
         stream.page_size = page_size
         stream.get_advertiser_ids()
@@ -115,7 +115,7 @@ def test_random_items(prepared_prod_args):
 
             # mock for ads
             for page, page_response in generate_pages(items=ad_items, page_size=page_size, last_empty=True):
-                uri = f"/open_api/v1.2/ad/get/?page_size={page_size}&advertiser_id={advertiser_id}"
+                uri = f"/open_api/v1.3/ad/get/?page_size={page_size}&advertiser_id={advertiser_id}"
                 if page != 1:
                     uri += f"&page={page}"
                 m.register_uri("GET", uri, complete_qs=True, json=page_response)
@@ -134,8 +134,8 @@ def test_random_items(prepared_prod_args):
 @pytest.mark.parametrize(
     "config, stream_len",
     [
-        (PROD_CONFIG_FILE, 22),
-        (SANDBOX_CONFIG_FILE, 16),
+        (PROD_CONFIG_FILE, 30),
+        (SANDBOX_CONFIG_FILE, 22),
     ],
 )
 def test_source_streams(config, stream_len):
@@ -167,8 +167,9 @@ def logger_mock_fixture():
 
 
 def test_source_check_connection_ok(config, logger_mock):
-    with patch.object(Advertisers, "read_records", return_value=iter([1])):
-        assert SourceTiktokMarketing().check_connection(logger_mock, config=config) == (True, None)
+    with patch.object(Advertisers, "stream_slices"):
+        with patch.object(Advertisers, "read_records", return_value=iter([1])):
+            assert SourceTiktokMarketing().check_connection(logger_mock, config=config) == (True, None)
 
 
 def test_source_check_connection_failed(config, logger_mock):

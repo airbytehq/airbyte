@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
@@ -45,6 +46,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
   @Override
   protected Database setupDatabase() throws Exception {
     config = Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
+    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, SCHEMA_NAME);
 
     dslContext = DSLContextFactory.create(
         config.get("credentials").get(JdbcUtils.USERNAME_KEY).asText(),
@@ -261,15 +263,15 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
         TestDataHolder.builder()
             .sourceType("DATE")
             .airbyteType(JsonSchemaType.STRING_DATE)
-            .addInsertValues("null", "'0001-01-01'", "'9999-12-31'")
-            .addExpectedValues(null, "0001-01-01", "9999-12-31")
+            .addInsertValues("null", "'0001-01-01'", "'9999-12-31'", "'12-JAN-2022'")
+            .addExpectedValues(null, "0001-01-01", "9999-12-31", "2022-01-12")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("DATETIME")
             .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
             .addInsertValues("null", "'0001-01-01 00:00:00'", "'9999-12-31 23:59:59'", "'9999-12-31 23:59:59.123456'")
-            .addExpectedValues(null, "0001-01-01T00:00:00.000000", "9999-12-31T23:59:59.000000", "9999-12-31T23:59:59.123456")
+            .addExpectedValues(null, "0001-01-01T00:00:00.000000", "9999-12-31T23:59:59", "9999-12-31T23:59:59.123456")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -284,7 +286,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
             .sourceType("TIMESTAMP")
             .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
             .addInsertValues("null", "'2018-03-22 12:00:00.123'", "'2018-03-22 12:00:00.123456'")
-            .addExpectedValues(null, "2018-03-22T12:00:00.123000", "2018-03-22T12:00:00.123456")
+            .addExpectedValues(null, "2018-03-22T12:00:00.123", "2018-03-22T12:00:00.123456")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -298,7 +300,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
             .sourceType("TIMESTAMP_NTZ")
             .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
             .addInsertValues("null", "'2018-03-22 12:00:00.123 +05:00'", "'2018-03-22 12:00:00.123456 +05:00'")
-            .addExpectedValues(null, "2018-03-22T12:00:00.123000", "2018-03-22T12:00:00.123456")
+            .addExpectedValues(null, "2018-03-22T12:00:00.123", "2018-03-22T12:00:00.123456")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -347,6 +349,15 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
             .addExpectedValues(null,
                 "{\n  \"coordinates\": [\n    -122.35,\n    37.55\n  ],\n  \"type\": \"Point\"\n}",
                 "{\n  \"coordinates\": [\n    [\n      -124.2,\n      42\n    ],\n    [\n      -120.01,\n      41.99\n    ]\n  ],\n  \"type\": \"LineString\"\n}")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("NUMBER")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .fullSourceDataType("NUMBER(38,0)")
+            .addInsertValues("3E+1")
+            .addExpectedValues("30")
             .build());
   }
 

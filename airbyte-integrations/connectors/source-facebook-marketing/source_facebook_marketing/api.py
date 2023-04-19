@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -29,8 +29,8 @@ backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, 
 class MyFacebookAdsApi(FacebookAdsApi):
     """Custom Facebook API class to intercept all API calls and handle call rate limits"""
 
-    MAX_RATE, MAX_PAUSE_INTERVAL = (95, pendulum.duration(minutes=5))
-    MIN_RATE, MIN_PAUSE_INTERVAL = (90, pendulum.duration(minutes=1))
+    MAX_RATE, MAX_PAUSE_INTERVAL = (95, pendulum.duration(minutes=10))
+    MIN_RATE, MIN_PAUSE_INTERVAL = (85, pendulum.duration(minutes=2))
 
     @dataclass
     class Throttle:
@@ -175,4 +175,8 @@ class API:
         try:
             return AdAccount(f"act_{account_id}").api_get()
         except FacebookRequestError as exc:
-            raise FacebookAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
+            raise FacebookAPIException(
+                f"Error: {exc.api_error_code()}, {exc.api_error_message()}. "
+                f"Please also verify your Account ID: "
+                f"See the https://www.facebook.com/business/help/1492627900875762 for more information."
+            ) from exc

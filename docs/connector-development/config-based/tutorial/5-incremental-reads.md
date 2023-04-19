@@ -7,11 +7,11 @@ According to the API documentation, we can read the exchange rate for a specific
 
 We'll now add a `start_date` property to the connector.
 
-First we'll update the spec block in `source_exchange_rates_tutorial/exchange_rates_tutorial.yaml`
+First we'll update the spec block in `source_exchange_rates_tutorial/manifest.yaml`
 
 ```yaml
 spec: 
-  documentation_url: https://docs.airbyte.io/integrations/sources/exchangeratesapi
+  documentation_url: https://docs.airbyte.com/integrations/sources/exchangeratesapi
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
     title: exchangeratesapi.io Source Spec
@@ -66,8 +66,8 @@ Note that we are setting a default value because the `check` operation does not 
 definitions:
   <...>
   rates_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "rates"
       primary_key: "date"
       path: "/exchangerates_data/{{config['start_date'] or 'latest'}}"
@@ -86,60 +86,54 @@ For example:
 The connector will now always read data for the start date, which is not exactly what we want.
 Instead, we would like to iterate over all the dates between the `start_date` and today and read data for each day.
 
-We can do this by adding a `DatetimeStreamSlicer` to the connector definition, and update the `path` to point to the stream_slice's `start_date`:
+We can do this by adding a `DatetimeBasedCursor` to the connector definition, and update the `path` to point to the stream_slice's `start_date`:
 
-More details on the stream slicers can be found [here](../understanding-the-yaml-file/stream-slicers.md).
+More details on incremental syncs can be found [here](../understanding-the-yaml-file/incremental-syncs.md).
 
-Let's first define a stream slicer at the top level of the connector definition:
+Let's first define a datetime cursor at the top level of the connector definition:
 
 ```yaml
 definitions:
-  requester:
-    <...>
-  stream_slicer:
-    type: "DatetimeStreamSlicer"
+  datetime_cursor:
+    type: "DatetimeBasedCursor"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%d"
     end_datetime:
       datetime: "{{ now_utc() }}"
       datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
-    step: "1d"
+    step: "P1D"
     datetime_format: "%Y-%m-%d"
-    cursor_field: "{{ options['stream_cursor_field'] }}"
+    cursor_granularity: "P1D"
+    cursor_field: "date"
 ```
 
-and refer to it in the stream's retriever.
-This will generate slices from the start time until the end time, where each slice is exactly one day.
-The start time is defined in the config file, while the end time is defined by the `now_utc()` macro, which will evaluate to the current date in the current timezone at runtime. See the section on [string interpolation](../advanced-topics.md#string-interpolation) for more details.
+and refer to it in the stream.
 
-Note that we're also setting the `stream_cursor_field` in the stream's `$options` so it can be accessed by the `StreamSlicer`:
+This will generate time windows from the start time until the end time, where each window is exactly one day.
+The start time is defined in the config file, while the end time is defined by the `now_utc()` macro, which will evaluate to the current date in the current timezone at runtime. See the section on [string interpolation](../advanced-topics.md#string-interpolation) for more details.
 
 ```yaml
 definitions:
   <...>
   rates_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "rates"
       primary_key: "date"
       path: "/exchangerates_data/{{config['start_date'] or 'latest'}}"
-      stream_cursor_field: "date"
 ```
 
-We'll also update the retriever to user the stream slicer:
+We'll also update the base stream to use the datetime cursor:
 
 ```yaml
 definitions:
   <...>
-  retriever:
+  base_stream:
     <...>
-    stream_slicer:
-      $ref: "*ref(definitions.stream_slicer)"
+    incremental_sync:
+      $ref: "#/definitions/datetime_cursor"
 ```
-
-This will generate slices from the start time until the end time, where each slice is exactly one day.
-The start time is defined in the config file, while the end time is defined by the `now_utc()` macro, which will evaluate to the current date in the current timezone at runtime. See the section on [string interpolation](../advanced-topics.md#string-interpolation) for more details.
 
 Finally, we'll update the path to point to the `stream_slice`'s start_time
 
@@ -147,15 +141,14 @@ Finally, we'll update the path to point to the `stream_slice`'s start_time
 definitions:
   <...>
   rates_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "rates"
       primary_key: "date"
       path: "/exchangerates_data/{{stream_slice['start_time'] or 'latest'}}"
-      stream_cursor_field: "date"
 ```
 
-The full connector definition should now look like `./source_exchange_rates_tutorial/exchange_rates_tutorial.yaml`:
+The full connector definition should now look like `./source_exchange_rates_tutorial/manifest.yaml`:
 
 ```yaml
 version: "0.1.0"
@@ -163,7 +156,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: [ ]
+      field_path: [ ]
   requester:
     url_base: "https://api.apilayer.com"
     http_method: "GET"
@@ -174,43 +167,43 @@ definitions:
     request_options_provider:
       request_parameters:
         base: "{{ config['base'] }}"
-  stream_slicer:
-    type: "DatetimeStreamSlicer"
+  datetime_cursor:
+    type: "DatetimeBasedCursor"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%d"
     end_datetime:
       datetime: "{{ now_utc() }}"
       datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
-    step: "1d"
+    step: "P1D"
     datetime_format: "%Y-%m-%d"
-    cursor_field: "{{ options['stream_cursor_field'] }}"
+    cursor_granularity: "P1D"
+    cursor_field: "date"
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
     requester:
-      $ref: "*ref(definitions.requester)"
-    stream_slicer:
-      $ref: "*ref(definitions.stream_slicer)"
+      $ref: "#/definitions/requester"
   base_stream:
+    incremental_sync:
+      $ref: "#/definitions/datetime_cursor"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   rates_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "rates"
       primary_key: "date"
       path: "/exchangerates_data/{{stream_slice['start_time'] or 'latest'}}"
-      stream_cursor_field: "date"
 streams:
-  - "*ref(definitions.rates_stream)"
+  - "#/definitions/rates_stream"
 check:
   stream_names:
     - "rates"
 spec: 
-  documentation_url: https://docs.airbyte.io/integrations/sources/exchangeratesapi
+  documentation_url: https://docs.airbyte.com/integrations/sources/exchangeratesapi
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
     title: exchangeratesapi.io Source Spec
@@ -314,10 +307,10 @@ There shouldn't be any data read if the state is today's date:
 
 ## Next steps:
 
-Next, we'll run the [Source Acceptance Tests suite to ensure the connector invariants are respected](6-testing.md).
+Next, we'll run the [Connector Acceptance Tests suite to ensure the connector invariants are respected](6-testing.md).
 
 ## More readings
 
-- [Incremental reads](../../cdk-python/incremental-stream.md)
-- [Stream slicers](../understanding-the-yaml-file/stream-slicers.md)
+- [Incremental syncs](../understanding-the-yaml-file/incremental-syncs.md)
+- [Partition routers](../understanding-the-yaml-file/partition-router.md)
 - [Stream slices](../../cdk-python/stream-slices.md)

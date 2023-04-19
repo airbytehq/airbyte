@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.util;
 
+import com.google.common.collect.ImmutableList;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.integrations.base.errors.messages.ErrorMessage;
@@ -22,6 +23,8 @@ public class ConnectorExceptionUtil {
   static final String RECOVERY_CONNECTION_ERROR_MESSAGE =
       "We're having issues syncing from a Postgres replica that is configured as a hot standby server. " +
           "Please see https://docs.airbyte.com/integrations/sources/postgres/#sync-data-from-postgres-hot-standby-server for options and workarounds";
+
+  public static final List<Integer> HTTP_AUTHENTICATION_ERROR_CODES = ImmutableList.of(401, 403);
   private static final List<Predicate<Throwable>> configErrorPredicates =
       List.of(getConfigErrorPredicate(), getConnectionErrorPredicate(),
           isRecoveryConnectionExceptionPredicate(), isUnknownColumnInFieldListException());

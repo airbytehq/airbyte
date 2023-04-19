@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -303,7 +303,7 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("DATE")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'0001-01-01'", "'9999-12-31'")
-            .addExpectedValues(null, "0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z")
+            .addExpectedValues(null, "0001-01-01", "9999-12-31")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -311,7 +311,7 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("TIME")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'00.00.00'", "'1:59 PM'", "'23.59.59'")
-            .addExpectedValues(null, "1970-01-01T00:00:00Z", "1970-01-01T13:59:00Z", "1970-01-01T23:59:59Z")
+            .addExpectedValues(null, "00:00:00.000000", "13:59:00.000000", "23:59:59")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -319,8 +319,8 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("TIMESTAMP")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'2018-03-22-12.00.00.123'", "'2018-03-22-12.00.00.123456'", "'20180322125959'", "'20180101 12:00:59 PM'")
-            .addExpectedValues(null, "2018-03-22T12:00:00.123000Z", "2018-03-22T12:00:00.123456Z", "2018-03-22T12:59:59.000000Z",
-                "2018-01-01T12:00:59.000000Z")
+            .addExpectedValues(null, "2018-03-22T12:00:00.123", "2018-03-22T12:00:00.123456", "2018-03-22T12:59:59",
+                "2018-01-01T12:00:59")
             .build());
   }
 

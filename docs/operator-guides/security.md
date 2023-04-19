@@ -27,6 +27,8 @@ For more information, see [Airbyte’s Privacy Policy](https://airbyte.com/priva
 ## Securing Airbyte Open Source
 
 :::note
+In version 0.44.0, Airbyte Open Source runs a security self-check during setup to help users secure their Airbyte instance. The security self-check verifies whether the instance is accessible from the internet and if strong authentication is configured.
+
 Our security and reliability commitments are only applicable to Airbyte Cloud. Airbyte Open Source security and reliability depend on your development and production setups.
 :::
 
@@ -37,7 +39,23 @@ Deploy Airbyte Open Source in a private network or use a firewall to filter whic
 You can secure access to Airbyte using the following methods:
 
 - Deploy Airbyte in a private network or use a firewall to filter which IP is allowed to access your host.
-- Deploy Airbyte behind a reverse proxy and handle the access control on the reverse proxy side.
+- Deploy Airbyte behind a reverse proxy and handle the access control and SSL encryption on the reverse proxy side.
+  ```
+  # Example nginx reverse proxy config
+  server {
+    listen 443 ssl;
+    server_name airbyte.<your-domain>.com;
+    client_max_body_size 200M;  # required for Airbyte API
+    ssl_certificate <path-to-your-cert>.crt.pem; 
+    ssl_certificate_key <path-to-your-key>.key.pem;
+    
+    location / {
+      proxy_pass http://127.0.0.1:8000;
+      proxy_set_header Cookie $http_cookie;  # if you use Airbytes basic auth
+      proxy_read_timeout 3600;  # set a number in seconds suitable for you
+    }
+  }
+  ```
 - Change the default username and password in your environment's `.env` file:
   ```
   	# Proxy Configuration
@@ -86,7 +104,7 @@ Only certain Airbyte staff can access Airbyte infrastructure and technical logs 
 
 ### Network security
 
-Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud#choose-your-default-data-residency) location, you may need to allowlist the following IP addresses to enable access to Airbyte:
+Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-data-residency) location, you may need to allowlist the following IP addresses to enable access to Airbyte:
 
 #### United States and Airbyte Default
 
@@ -140,14 +158,14 @@ Airbyte Cloud allows you to log in to the platform using your email and password
 
 ### Access Control
 
-Airbyte Cloud supports [user management](https://docs.airbyte.com/cloud/managing-airbyte-cloud#add-users-to-your-workspace) but doesn’t support role-based access control (RBAC) yet.
+Airbyte Cloud supports [user management](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-airbyte-cloud-workspace#add-users-to-your-workspace) but doesn’t support role-based access control (RBAC) yet.
 
 ### Compliance
 
 Our compliance efforts for Airbyte Cloud include:
 
 - SOC 2 Type II assessment: An independent third-party completed a SOC2 Type II assessment and found effective operational controls in place. Independent third-party audits will continue at a regular cadence, and the most recent report is available upon request.
-- ISO 27001 certification: We are currently pursuing ISO 27001 certification and will continue to align the evolution of our security program with its standards as we grow.
+- ISO 27001 certification: We received our ISO 27001 certification in November 2022. A copy of the certificate is available upon request. 
 - Assessments and penetration tests: We use tools provided by the Cloud platforms as well as third-party assessments and penetration tests.
 
 ## Reporting Vulnerabilities​

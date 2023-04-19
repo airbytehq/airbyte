@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -57,7 +57,7 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
     config = getStaticConfig();
 
     database = createDatabase(config);
-    testUserName = "foo";
+    testUserName = Strings.addRandomSuffix("foo", "_", 5).toLowerCase();
     testUserPassword = "BarBarBar1&";
     createTestUser(database, config, testUserName, testUserPassword);
     schemaName = Strings.addRandomSuffix("integration_test", "_", 5).toLowerCase();

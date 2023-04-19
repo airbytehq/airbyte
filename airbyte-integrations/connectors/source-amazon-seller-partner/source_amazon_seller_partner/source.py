@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, List, Mapping, Tuple
@@ -29,7 +29,6 @@ from source_amazon_seller_partner.streams import (
     FbaFulfillmentInventorySummaryReport,
     FbaFulfillmentMonthlyInventoryReport,
     FbaInventoryPlaningReport,
-    FbaInventoryReports,
     FbaMyiUnsuppressedInventoryReport,
     FbaOrdersReports,
     FbaReplacementsReports,
@@ -61,7 +60,6 @@ from source_amazon_seller_partner.streams import (
     SellerFeedbackReports,
     StrandedInventoryUiReport,
     VendorDirectFulfillmentShipping,
-    VendorInventoryHealthReports,
     VendorInventoryReports,
     VendorSalesReports,
     XmlAllOrdersDataByOrderDataGeneral,
@@ -134,7 +132,7 @@ class SourceAmazonSellerPartner(AbstractSource):
         try:
             config = AmazonSellerPartnerConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
             stream_kwargs = self._get_stream_kwargs(config)
-            orders_stream = Orders(**stream_kwargs)
+            orders_stream = VendorSalesReports(**stream_kwargs)
             next(orders_stream.read_records(sync_mode=SyncMode.full_refresh))
 
             return True, None
@@ -158,7 +156,6 @@ class SourceAmazonSellerPartner(AbstractSource):
 
         return [
             FbaCustomerReturnsReports(**stream_kwargs),
-            FbaInventoryReports(**stream_kwargs),
             FbaAfnInventoryReports(**stream_kwargs),
             FbaAfnInventoryByCountryReports(**stream_kwargs),
             FbaOrdersReports(**stream_kwargs),
@@ -173,7 +170,6 @@ class SourceAmazonSellerPartner(AbstractSource):
             FulfilledShipmentsReports(**stream_kwargs),
             MerchantListingsReports(**stream_kwargs),
             VendorDirectFulfillmentShipping(**stream_kwargs),
-            VendorInventoryHealthReports(**stream_kwargs),
             VendorInventoryReports(**stream_kwargs),
             VendorSalesReports(**stream_kwargs),
             Orders(**stream_kwargs),

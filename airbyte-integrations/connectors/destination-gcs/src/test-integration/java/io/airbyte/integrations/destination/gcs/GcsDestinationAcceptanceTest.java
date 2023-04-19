@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs;
@@ -17,12 +17,13 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StandardCheckConnectionOutput.Status;
+import io.airbyte.configoss.StandardCheckConnectionOutput.Status;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.ProtocolVersion;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -70,6 +71,11 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
 
   protected JsonNode getBaseConfigJson() {
     return Jsons.deserialize(IOs.readFile(Path.of(SECRET_FILE_PATH)));
+  }
+
+  @Override
+  public ProtocolVersion getProtocolVersion() {
+    return ProtocolVersion.V1;
   }
 
   @Override

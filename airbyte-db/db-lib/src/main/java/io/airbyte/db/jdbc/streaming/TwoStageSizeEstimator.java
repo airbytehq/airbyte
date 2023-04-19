@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc.streaming;
@@ -67,8 +67,7 @@ public class TwoStageSizeEstimator implements FetchSizeEstimator {
       return FetchSizeConstants.MIN_BUFFER_BYTE_SIZE;
     }
     final long targetBufferByteSize = Math.round(maxMemory * FetchSizeConstants.TARGET_BUFFER_SIZE_RATIO);
-    final long finalBufferByteSize = Math.min(FetchSizeConstants.MAX_BUFFER_BYTE_SIZE,
-        Math.max(FetchSizeConstants.MIN_BUFFER_BYTE_SIZE, targetBufferByteSize));
+    final long finalBufferByteSize = Math.max(FetchSizeConstants.MIN_BUFFER_BYTE_SIZE, targetBufferByteSize);
     LOGGER.info("Max memory limit: {}, JDBC buffer size: {}", maxMemory, finalBufferByteSize);
     return finalBufferByteSize;
   }

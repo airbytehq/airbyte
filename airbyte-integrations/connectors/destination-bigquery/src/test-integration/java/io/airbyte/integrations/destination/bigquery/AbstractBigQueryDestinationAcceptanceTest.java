@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
@@ -65,16 +65,6 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
   }
 
   @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
-
-  @Override
   protected boolean implementsNamespaces() {
     return true;
   }
@@ -103,6 +93,9 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
   protected boolean supportObjectDataTypeTest() {
     return true;
   }
+
+  @Override
+  protected boolean supportIncrementalSchemaChanges() { return true; }
 
   @Override
   protected Optional<NamingConventionTransformer> getNameTransformer() {
@@ -170,7 +163,7 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
   }
 
   protected void setUpBigQuery() throws IOException {
-    //secrets file should be set by the inhereting class
+    // secrets file should be set by the inhereting class
     Assertions.assertNotNull(secretsFile);
     final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
     config = BigQueryDestinationTestUtils.createConfig(secretsFile, datasetId);

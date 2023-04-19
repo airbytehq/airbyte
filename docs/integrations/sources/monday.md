@@ -10,7 +10,7 @@ You can get the API token for Monday by going to Profile picture (bottom left co
 
 ## Setup guide
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Monday connector and select **Monday** from the Source type dropdown.
 4. Fill in your API Key or authenticate using OAuth and then click **Set up source**.
@@ -57,6 +57,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
+| 0.2.3   | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231) | Publish using low-code CDK Beta version         |
 | 0.2.2   | 2023-01-04 | [20996](https://github.com/airbytehq/airbyte/pull/20996) | Fix json schema loader                          |
 | 0.2.1   | 2022-12-15 | [20533](https://github.com/airbytehq/airbyte/pull/20533) | Bump CDK version                                |
 | 0.2.0   | 2022-12-13 | [19586](https://github.com/airbytehq/airbyte/pull/19586) | Migrate to low-code                             |

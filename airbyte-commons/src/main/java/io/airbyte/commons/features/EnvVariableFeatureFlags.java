@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.features;
@@ -41,7 +41,7 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
 
   @Override
   public boolean autoDetectSchema() {
-    return getEnvOrDefault(AUTO_DETECT_SCHEMA, false, Boolean::parseBoolean);
+    return getEnvOrDefault(AUTO_DETECT_SCHEMA, true, Boolean::parseBoolean);
   }
 
   @Override
@@ -64,13 +64,23 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
     return getEnvOrDefault(FIELD_SELECTION_WORKSPACES, "", (arg) -> arg);
   }
 
+  @Override
+  public String strictComparisonNormalizationWorkspaces() {
+    return "";
+  }
+
+  @Override
+  public String strictComparisonNormalizationTag() {
+    return "";
+  }
+
   // TODO: refactor in order to use the same method than the ones in EnvConfigs.java
   public <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser) {
     final String value = System.getenv(key);
     if (value != null && !value.isEmpty()) {
       return parser.apply(value);
     } else {
-      log.info("Using default value for environment variable {}: '{}'", key, defaultValue);
+      log.debug("Using default value for environment variable {}: '{}'", key, defaultValue);
       return defaultValue;
     }
   }
