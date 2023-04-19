@@ -53,11 +53,11 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 ### Requirements
 
-* Zoom JWT Token
+* Zoom Server-to-Server Oauth App
 
 ### Setup guide
 
-Please read [How to generate your JWT Token](https://marketplace.zoom.us/docs/guides/build/jwt-app).
+Please read [How to generate your Server-to-Server OAuth app ](https://developers.zoom.us/docs/internal-apps/s2s-oauth/).
 
 ## Changelog
 
