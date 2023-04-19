@@ -40,7 +40,7 @@ def validate(ctx: click.Context, modified_only: bool):
         metadata_to_validate = get_modified_metadata_files(modified_files)
         if not metadata_to_validate:
             click.secho("No modified metadata found. Skipping metadata validation.")
-            return
+            return True
     else:
         click.secho("Will run metadata validation on all the metadata files found in the repo.")
         metadata_to_validate = get_all_metadata_files()
@@ -73,12 +73,12 @@ def upload(ctx: click.Context, gcs_bucket_name: str, gcs_credentials: str, modif
     if modified_only:
         if ctx.obj["ci_context"] is not CIContext.MASTER and ctx.obj["git_branch"] != "master":
             click.secho("Not on the master branch. Skipping metadata upload.")
-            return
+            return True
         modified_files = ctx.obj["modified_files_in_commit"]
         metadata_to_upload = get_modified_metadata_files(modified_files)
         if not metadata_to_upload:
             click.secho("No modified metadata found. Skipping metadata upload.")
-            return
+            return True
     else:
         metadata_to_upload = get_all_metadata_files()
 
