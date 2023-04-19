@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.35.0
+low-code: simplify session token authenticator interface
+
+## 0.34.3
+low-code: fix typo in ManifestDeclarativeSource
+
+## 0.34.2
+Emit slice log messages when running the connector builder
+
+## 0.34.1
+set slice and pages limit when reading from the connector builder module
+
 ## 0.34.0
 Low-Code CDK: Enable use of SingleUseRefreshTokenAuthenticator
 
