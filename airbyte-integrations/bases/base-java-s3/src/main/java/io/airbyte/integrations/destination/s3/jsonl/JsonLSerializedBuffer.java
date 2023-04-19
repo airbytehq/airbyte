@@ -53,8 +53,7 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
     json.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
     json.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, record.getEmittedAt());
     if (flattenData) {
-      Map<String, JsonNode> data = MAPPER.convertValue(record.getData(), new TypeReference<>() {
-      });
+      Map<String, JsonNode> data = MAPPER.convertValue(record.getData(), new TypeReference<>() {});
       json.setAll(data);
     } else {
       json.set(JavaBaseConstants.COLUMN_NAME_DATA, record.getData());
@@ -73,8 +72,8 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
   }
 
   public static BufferCreateFunction createBufferFunction(
-      final S3JsonlFormatConfig config,
-      final Callable<BufferStorage> createStorageFunction) {
+                                                          final S3JsonlFormatConfig config,
+                                                          final Callable<BufferStorage> createStorageFunction) {
     return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) -> {
       final CompressionType compressionType = config == null
           ? S3DestinationConstants.DEFAULT_COMPRESSION_TYPE

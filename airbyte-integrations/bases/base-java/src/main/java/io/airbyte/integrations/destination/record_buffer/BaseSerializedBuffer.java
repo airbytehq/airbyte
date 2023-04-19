@@ -54,8 +54,8 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
   protected abstract void initWriter(OutputStream outputStream) throws Exception;
 
   /**
-   * Transform the @param record into a serialized form of the data and writes it to the
-   * registered OutputStream provided when {@link BaseSerializedBuffer#initWriter} was called.
+   * Transform the @param record into a serialized form of the data and writes it to the registered
+   * OutputStream provided when {@link BaseSerializedBuffer#initWriter} was called.
    */
   protected abstract void writeRecord(AirbyteRecordMessage record) throws IOException;
 

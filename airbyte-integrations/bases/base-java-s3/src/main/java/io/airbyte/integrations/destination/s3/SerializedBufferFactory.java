@@ -25,20 +25,25 @@ public class SerializedBufferFactory {
   protected static final Logger LOGGER = LoggerFactory.getLogger(SerializedBufferFactory.class);
 
   /**
-   * When running a {@link io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy}, it would usually need to instantiate new
-   * buffers when flushing data or when it receives data for a brand-new stream. This factory fills this need and @return the function to be called on
-   * such events.
+   * When running a
+   * {@link io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy}, it would
+   * usually need to instantiate new buffers when flushing data or when it receives data for a
+   * brand-new stream. This factory fills this need and @return the function to be called on such
+   * events.
    * <p>
-   * The factory is responsible for choosing the correct constructor function for a new {@link SerializableBuffer} that handles the correct serialized
-   * format of the data. It is configured by composition with another function to create a new {@link BufferStorage} where to store it.
+   * The factory is responsible for choosing the correct constructor function for a new
+   * {@link SerializableBuffer} that handles the correct serialized format of the data. It is
+   * configured by composition with another function to create a new {@link BufferStorage} where to
+   * store it.
    * <p>
-   * This factory determines which {@link S3FormatConfig} to use depending on the user provided @param config, The @param
-   * createStorageFunctionWithoutExtension is the constructor function to call when creating a new buffer where to store data. Note that we typically
-   * associate which format is being stored in the storage object thanks to its file extension.
+   * This factory determines which {@link S3FormatConfig} to use depending on the user provided @param
+   * config, The @param createStorageFunctionWithoutExtension is the constructor function to call when
+   * creating a new buffer where to store data. Note that we typically associate which format is being
+   * stored in the storage object thanks to its file extension.
    */
   public static BufferCreateFunction getCreateFunction(
-      final S3DestinationConfig config,
-      final Function<String, BufferStorage> createStorageFunctionWithoutExtension) {
+                                                       final S3DestinationConfig config,
+                                                       final Function<String, BufferStorage> createStorageFunctionWithoutExtension) {
     final S3FormatConfig formatConfig = config.getFormatConfig();
     LOGGER.info("S3 format config: {}", formatConfig.toString());
     switch (formatConfig.getFormat()) {

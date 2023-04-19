@@ -183,10 +183,10 @@ public class StagingConsumerFactory {
    */
   @VisibleForTesting
   FlushBufferFunction flushBufferFunction(
-         final JdbcDatabase database,
-         final StagingOperations stagingOperations,
-         final List<WriteConfig> writeConfigs,
-         final ConfiguredAirbyteCatalog catalog) {
+                                          final JdbcDatabase database,
+                                          final StagingOperations stagingOperations,
+                                          final List<WriteConfig> writeConfigs,
+                                          final ConfiguredAirbyteCatalog catalog) {
     // TODO: (ryankfu) move this block of code that executes before the lambda to #onStartFunction
     final Set<WriteConfig> conflictingStreams = new HashSet<>();
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig = new HashMap<>();
