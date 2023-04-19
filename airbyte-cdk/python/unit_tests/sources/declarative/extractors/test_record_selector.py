@@ -78,7 +78,7 @@ def test_record_filter(test_name, field_path, filter_template, body, expected_re
     actual_records = record_selector.select_records(
         response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
     )
-    assert list(actual_records) == expected_records
+    assert actual_records == expected_records
 
 
 def create_response(body):
