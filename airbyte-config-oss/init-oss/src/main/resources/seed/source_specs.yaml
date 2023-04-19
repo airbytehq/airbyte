@@ -8429,7 +8429,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-mailjet-mail:0.1.0"
+- dockerImage: "airbyte/source-mailjet-mail:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mailjet-mail"
     connectionSpecification:
