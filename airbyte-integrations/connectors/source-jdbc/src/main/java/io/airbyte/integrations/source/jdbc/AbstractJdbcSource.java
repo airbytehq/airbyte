@@ -179,7 +179,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
                 .map(f -> {
                   final Datatype datatype = sourceOperations.getDatabaseFieldType(f);
                   final JsonSchemaType jsonType = getAirbyteType(datatype);
-                  LOGGER.info("Table {} column {} (type {}[{}], nullable {}) -> {}",
+                  LOGGER.debug("Table {} column {} (type {}[{}], nullable {}) -> {}",
                       fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
                       f.get(INTERNAL_COLUMN_NAME).asText(),
                       f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
@@ -424,6 +424,20 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     database.setSourceConfig(sourceConfig);
     database.setDatabaseConfig(jdbcConfig);
     return database;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @param database database instance
+   * @param catalog schema of the incoming messages.
+   * @throws SQLException
+   */
+  @Override
+  protected void logPreSyncDebugData(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog)
+      throws SQLException {
+    LOGGER.info("Data source product recognized as {}:{}",
+        database.getMetaData().getDatabaseProductName(),
+        database.getMetaData().getDatabaseProductVersion());
   }
 
   @Override
