@@ -7,7 +7,7 @@ on:
     branches: [master]
 
 jobs:
-  build_airbyte_to_flow:
+  airbyte_to_flow:
     runs-on: ubuntu-20.04
 
     permissions:
@@ -78,7 +78,7 @@ jobs:
           push: true
           tags: ghcr.io/estuary/airbyte-to-flow:${{ steps.prep.outputs.tag }}
 
-  build_cdk:
+  cdk:
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
@@ -112,10 +112,10 @@ jobs:
           ./gradlew :airbyte-cdk:python:build
           ./publish-airbyte-cdk.sh
 
-  build_connectors:
+  connector:
     needs:
-      - build_airbyte_to_flow
-      - build_cdk
+      - airbyte_to_flow
+      - cdk
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
