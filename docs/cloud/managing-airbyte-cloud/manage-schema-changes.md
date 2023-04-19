@@ -55,3 +55,17 @@ To review and fix breaking schema changes:
 If a connection’s source schema has breaking changes, it will stop syncing. You must review and fix the changes before editing the connection or resuming syncs.
     
 :::
+
+### Manually refresh the source schema
+
+In addition to Airbyte Cloud’s automatic schema change detection, you can manually refresh the source schema to stay up to date with changes in your schema. 
+
+ To manually refresh the source schema:
+
+ 1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Connections** and then click the connection you want to refresh.
+
+ 2. Click the **Replication** tab.
+
+ 3. In the **Activate the streams you want to sync** table, click **Refresh source schema** to fetch the schema of your data source.
+
+ 2. If there are changes to the schema, you can review them in the **Refreshed source schema** dialog.

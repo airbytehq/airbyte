@@ -13,7 +13,7 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation libs.airbyte.protocol
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    implementation project(':airbyte-integrations:connectors:destination-jdbc')
+    implementation project(':airbyte-integrations:bases:bases-destination-jdbc')
 
     implementation 'com.exasol:exasol-jdbc:7.1.17'
 

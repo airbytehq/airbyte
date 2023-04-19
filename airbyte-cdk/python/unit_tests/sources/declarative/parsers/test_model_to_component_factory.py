@@ -6,7 +6,7 @@ import datetime
 
 import pytest
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
-from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator, BearerAuthenticator
+from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator, BearerAuthenticator, SessionTokenAuthenticator
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
@@ -25,6 +25,7 @@ from airbyte_cdk.sources.declarative.models import HttpRequester as HttpRequeste
 from airbyte_cdk.sources.declarative.models import ListPartitionRouter as ListPartitionRouterModel
 from airbyte_cdk.sources.declarative.models import OAuthAuthenticator as OAuthAuthenticatorModel
 from airbyte_cdk.sources.declarative.models import RecordSelector as RecordSelectorModel
+from airbyte_cdk.sources.declarative.models import SimpleRetriever as SimpleRetrieverModel
 from airbyte_cdk.sources.declarative.models import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models import SubstreamPartitionRouter as SubstreamPartitionRouterModel
 from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
@@ -46,7 +47,7 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
-from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
+from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
@@ -172,6 +173,8 @@ spec:
         title: API Key
         description: Test API Key
         order: 0
+  advanced_auth:
+    auth_flow_type: "oauth2.0"
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
@@ -257,6 +260,8 @@ spec:
         "description": "Test API Key",
         "order": 0,
     }
+    advanced_auth = spec.advanced_auth
+    assert advanced_auth.auth_flow_type.value == "oauth2.0"
 
 
 def test_interpolate_config():
@@ -682,6 +687,43 @@ requester:
     assert isinstance(selector._request_options_provider, InterpolatedRequestOptionsProvider)
     assert selector._request_options_provider._parameter_interpolator._interpolator.mapping["a_parameter"] == "something_here"
     assert selector._request_options_provider._headers_interpolator._interpolator.mapping["header"] == "header_value"
+
+
+def test_create_request_with_session_authenticator():
+    content = """
+requester:
+  type: HttpRequester
+  path: "/v3/marketing/lists"
+  $parameters:
+    name: 'lists'
+  url_base: "https://api.sendgrid.com"
+  authenticator:
+    type: "SessionTokenAuthenticator"
+    username: "{{ parameters.name}}"
+    password: "{{ config.apikey }}"
+    login_url: "login"
+    header: "token"
+    session_token_response_key: "session"
+    validate_session_url: validate
+  request_parameters:
+    a_parameter: "something_here"
+  request_headers:
+    header: header_value
+    """
+    name = "name"
+    parsed_manifest = YamlDeclarativeSource._parse(content)
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
+    requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
+
+    selector = factory.create_component(
+        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name
+    )
+
+    assert isinstance(selector, HttpRequester)
+    assert isinstance(selector.authenticator, SessionTokenAuthenticator)
+    assert selector.authenticator._username.eval(input_config) == "lists"
+    assert selector.authenticator._password.eval(input_config) == "verysecrettoken"
+    assert selector.authenticator._api_url.eval(input_config) == "https://api.sendgrid.com"
 
 
 def test_create_composite_error_handler():
@@ -1292,3 +1334,29 @@ def test_merge_incremental_and_partition_router(incremental, partition_router, e
     if expected_slicer_count > 1:
         assert isinstance(stream.retriever.stream_slicer, CartesianProductStreamSlicer)
         assert len(stream.retriever.stream_slicer.stream_slicers) == expected_slicer_count
+
+
+def test_simple_retriever_emit_log_messages():
+    simple_retriever_model = {
+        "type": "SimpleRetriever",
+        "record_selector": {
+            "type": "RecordSelector",
+            "extractor": {
+                "type": "DpathExtractor",
+                "field_path": [],
+            },
+        },
+        "requester": {"type": "HttpRequester", "name": "list", "url_base": "orange.com", "path": "/v1/api"},
+    }
+
+    connector_builder_factory = ModelToComponentFactory(emit_connector_builder_messages=True)
+    retriever = connector_builder_factory.create_component(
+        model_type=SimpleRetrieverModel,
+        component_definition=simple_retriever_model,
+        config={},
+        name="Test",
+        primary_key="id",
+        stream_slicer=None,
+    )
+
+    assert isinstance(retriever, SimpleRetrieverTestReadDecorator)

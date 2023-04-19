@@ -71,6 +71,9 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestPath as RequestPathModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SessionTokenAuthenticator as SessionTokenAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
+    SingleUseRefreshTokenOAuthAuthenticator as SingleUseRefreshTokenOAuthAuthenticatorModel,
+)
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamPartitionRouter as SubstreamPartitionRouterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitTimeFromHeader as WaitTimeFromHeaderModel
@@ -98,6 +101,7 @@ from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStrea
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 from pydantic import BaseModel
 
 ComponentDefinition: Union[Literal, Mapping, List]
@@ -107,10 +111,13 @@ DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy
 
 
 class ModelToComponentFactory:
-    def __init__(self, limit_pages_fetched_per_slice: int = None, limit_slices_fetched: int = None):
+    def __init__(
+        self, limit_pages_fetched_per_slice: int = None, limit_slices_fetched: int = None, emit_connector_builder_messages: bool = False
+    ):
         self._init_mappings()
         self._limit_pages_fetched_per_slice = limit_pages_fetched_per_slice
         self._limit_slices_fetched = limit_slices_fetched
+        self._emit_connector_builder_messages = emit_connector_builder_messages
 
     def _init_mappings(self):
         self.PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
@@ -149,6 +156,7 @@ class ModelToComponentFactory:
             NoAuthModel: self.create_no_auth,
             NoPaginationModel: self.create_no_pagination,
             OAuthAuthenticatorModel: self.create_oauth_authenticator,
+            SingleUseRefreshTokenOAuthAuthenticatorModel: self.create_single_use_refresh_token_oauth_authenticator,
             OffsetIncrementModel: self.create_offset_increment,
             PageIncrementModel: self.create_page_increment,
             ParentStreamConfigModel: self.create_parent_stream_config,
@@ -546,7 +554,11 @@ class ModelToComponentFactory:
         return ExponentialBackoffStrategy(factor=model.factor, parameters=model.parameters, config=config)
 
     def create_http_requester(self, model: HttpRequesterModel, config: Config, *, name: str) -> HttpRequester:
-        authenticator = self._create_component_from_model(model=model.authenticator, config=config) if model.authenticator else None
+        authenticator = (
+            self._create_component_from_model(model=model.authenticator, config=config, url_base=model.url_base)
+            if model.authenticator
+            else None
+        )
         error_handler = (
             self._create_component_from_model(model=model.error_handler, config=config)
             if model.error_handler
@@ -659,6 +671,26 @@ class ModelToComponentFactory:
         )
 
     @staticmethod
+    def create_single_use_refresh_token_oauth_authenticator(
+        model: SingleUseRefreshTokenOAuthAuthenticatorModel, config: Config, **kwargs
+    ) -> SingleUseRefreshTokenOauth2Authenticator:
+        return SingleUseRefreshTokenOauth2Authenticator(
+            config,
+            model.token_refresh_endpoint,
+            access_token_name=model.access_token_name,
+            refresh_token_name=model.refresh_token_name,
+            expires_in_name=model.expires_in_name,
+            client_id_config_path=model.client_id_config_path,
+            client_secret_config_path=model.client_secret_config_path,
+            access_token_config_path=model.access_token_config_path,
+            refresh_token_config_path=model.refresh_token_config_path,
+            token_expiry_date_config_path=model.token_expiry_date_config_path,
+            grant_type=model.grant_type,
+            refresh_request_body=model.refresh_request_body,
+            scopes=model.scopes,
+        )
+
+    @staticmethod
     def create_offset_increment(model: OffsetIncrementModel, config: Config, **kwargs) -> OffsetIncrement:
         return OffsetIncrement(page_size=model.page_size, config=config, parameters=model.parameters)
 
@@ -702,9 +734,11 @@ class ModelToComponentFactory:
         return RemoveFields(field_pointers=model.field_pointers, parameters={})
 
     @staticmethod
-    def create_session_token_authenticator(model: SessionTokenAuthenticatorModel, config: Config, **kwargs) -> SessionTokenAuthenticator:
+    def create_session_token_authenticator(
+        model: SessionTokenAuthenticatorModel, config: Config, *, url_base: str, **kwargs
+    ) -> SessionTokenAuthenticator:
         return SessionTokenAuthenticator(
-            api_url=model.api_url,
+            api_url=url_base,
             header=model.header,
             login_url=model.login_url,
             password=model.password,
@@ -734,7 +768,7 @@ class ModelToComponentFactory:
             else NoPagination(parameters={})
         )
 
-        if self._limit_slices_fetched:
+        if self._limit_slices_fetched or self._emit_connector_builder_messages:
             return SimpleRetrieverTestReadDecorator(
                 name=name,
                 paginator=paginator,
@@ -759,7 +793,12 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_spec(model: SpecModel, config: Config, **kwargs) -> Spec:
-        return Spec(connection_specification=model.connection_specification, documentation_url=model.documentation_url, parameters={})
+        return Spec(
+            connection_specification=model.connection_specification,
+            documentation_url=model.documentation_url,
+            advanced_auth=model.advanced_auth,
+            parameters={},
+        )
 
     def create_substream_partition_router(self, model: SubstreamPartitionRouterModel, config: Config, **kwargs) -> SubstreamPartitionRouter:
         parent_stream_configs = []
