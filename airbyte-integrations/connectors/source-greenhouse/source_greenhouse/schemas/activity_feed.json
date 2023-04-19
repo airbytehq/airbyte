@@ -1,96 +1,100 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "notes": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "id": {
-            "type": "integer"
+            "type": ["null", "integer"]
           },
           "created_at": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "body": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "user": {
-            "type": "object",
+            "type": ["null", "object"],
             "properties": {
               "id": {
-                "type": "integer"
+                "type": ["null", "integer"]
               },
               "first_name": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "last_name": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "name": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "employee_id": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           },
           "private": {
-            "type": "boolean"
+            "type": ["null", "boolean"]
           },
           "visiblity": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "visibility": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }
     },
     "emails": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "id": {
-            "type": "integer"
+            "type": ["null", "integer"]
           },
           "created_at": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "subject": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "body": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "to": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "from": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "cc": {
-            "type": "string"
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
           },
           "user": {
-            "type": "object",
+            "type": ["null", "object"],
             "properties": {
               "id": {
-                "type": "integer"
+                "type": ["null", "integer"]
               },
               "first_name": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "last_name": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "name": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "employee_id": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           }
@@ -98,39 +102,39 @@
       }
     },
     "activities": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "id": {
-            "type": "integer"
+            "type": ["null", "integer"]
           },
           "created_at": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "subject": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "body": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "user": {
-            "type": "object",
+            "type": ["null", "object"],
             "properties": {
               "id": {
-                "type": "integer"
+                "type": ["null", "integer"]
               },
               "first_name": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "last_name": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "name": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "employee_id": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           }

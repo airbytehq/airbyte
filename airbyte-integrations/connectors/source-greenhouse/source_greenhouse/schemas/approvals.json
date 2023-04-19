@@ -1,75 +1,76 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema",
-  "type": "object",
+  "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "offer_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "sequential": {
       "type": "boolean"
     },
     "version": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "approval_type": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "approval_status": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "job_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "requested_by_user_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "approver_groups": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "id": {
-            "type": "integer"
+            "type": ["null", "integer"]
           },
           "approvals_required": {
-            "type": "integer"
+            "type": ["null", "integer"]
           },
           "created_at": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "resolved_at": {
             "type": ["null", "string"]
           },
           "priority": {
-            "type": "integer"
+            "type": ["null", "integer"]
           },
           "job_id": {
-            "type": "integer"
+            "type": ["null", "integer"]
           },
           "offer_id": {
             "type": ["integer", "null"]
           },
           "approvers": {
-            "type": "array",
+            "type": ["null", "array"],
             "items": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "id": {
-                  "type": "integer"
+                  "type": ["null", "integer"]
                 },
                 "name": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "employee_id": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "email_addresses": {
-                  "type": "array",
+                  "type": ["null", "array"],
                   "items": {
-                    "type": "string"
+                    "type": ["null", "string"]
                   }
                 }
               }

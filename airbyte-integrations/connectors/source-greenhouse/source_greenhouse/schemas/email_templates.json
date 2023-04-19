@@ -1,35 +1,36 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "description": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "default": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "updated_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "created_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "type": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "from": {
       "type": ["null", "string"]
     },
     "cc": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "string"
+        "type": ["null", "string"]
       }
     },
     "body": {

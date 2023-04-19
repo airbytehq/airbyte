@@ -3,13 +3,13 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "job_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "user_role_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     }
   }
 }

@@ -3,24 +3,24 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "active": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "prospect_stages": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "id": {
-            "type": "integer"
+            "type": ["null", "integer"]
           },
           "name": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }

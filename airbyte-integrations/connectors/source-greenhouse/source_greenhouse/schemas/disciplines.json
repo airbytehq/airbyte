@@ -1,15 +1,16 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "priority": {
-      "type": "integer"
+      "type": ["null", "integer"]
     }
   }
 }
