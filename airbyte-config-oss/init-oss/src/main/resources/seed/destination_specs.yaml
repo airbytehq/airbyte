@@ -533,7 +533,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-aws-datalake:0.1.2"
+- dockerImage: "airbyte/destination-aws-datalake:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/aws-datalake"
     connectionSpecification:
@@ -1752,7 +1752,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-databricks:1.0.0"
+- dockerImage: "airbyte/destination-databricks:1.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/databricks"
     connectionSpecification:
