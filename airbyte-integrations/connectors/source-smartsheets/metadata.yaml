@@ -3,7 +3,7 @@ data:
     hosts:
       - app.smartsheet.com
       - api.smartsheet.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:
