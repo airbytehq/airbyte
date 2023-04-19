@@ -225,14 +225,12 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           .collect(toList());
 
       catalog.setStreams(streams);
-    } else if (PostgresUtils.isXmin(config)) {
+    } else if (PostgresXminUtils.isXmin(config)) {
       final List<AirbyteStream> streams = catalog.getStreams().stream()
-          .map(PostgresCdcCatalogHelper::overrideSyncModes)
+          //.map(PostgresCdcCatalogHelper::overrideSyncModes)
           //.map(PostgresCdcCatalogHelper::removeIncrementalWithoutPk)
-          //.map(PostgresCdcCatalogHelper::setIncrementalToSourceDefined)
-          .map(PostgresCdcCatalogHelper::addXminMetadataColumn)
-          // If we're in CDC mode and a stream is not in the publication, the user should only be able to sync this in FULL_REFRESH mode
-          //.map(stream -> PostgresCdcCatalogHelper.setFullRefreshForNonPublicationStreams(stream, publicizedTablesInCdc))
+          .map(PostgresCdcCatalogHelper::setIncrementalToSourceDefined)
+          .map(PostgresXminUtils::addXminMetadataColumn)
           .collect(toList());
     }
 
@@ -412,6 +410,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           AutoCloseableIterators.concatWithEagerClose(AirbyteTraceMessageUtility::emitStreamStatusTrace, snapshotIterator,
               AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)));
 
+    } else if (PostgresXminUtils.isXmin(sourceConfig) && /*change this to is incremental*/shouldUseCDC(catalog)) {
+      return PostgresXminUtils.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     } else {
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }

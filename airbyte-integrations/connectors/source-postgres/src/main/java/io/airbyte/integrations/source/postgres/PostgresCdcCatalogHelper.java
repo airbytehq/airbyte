@@ -86,16 +86,6 @@ public final class PostgresCdcCatalogHelper {
     return stream;
   }
 
-  public static AirbyteStream addXminMetadataColumn(final AirbyteStream stream) {
-    final ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
-    final ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
-
-    final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
-    properties.set("xmin", numberType);
-
-    return stream;
-  }
-
   /**
    * Modifies streams that are NOT present in the publication to be full-refresh only streams. Users should be able to replicate these streams, just
    * not in incremental mode as they have no associated publication.

@@ -337,7 +337,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
                 }
               }
 
-              columnNames.add("xmin::text::bigint");
+              //columnNames.add("xmin::text::bigint");
               final String wrappedColumnNames = getWrappedColumnNames(database, connection, columnNames, schemaName, tableName);
               final StringBuilder sql = new StringBuilder(String.format("SELECT %s FROM %s WHERE %s %s ?",
                   wrappedColumnNames,
