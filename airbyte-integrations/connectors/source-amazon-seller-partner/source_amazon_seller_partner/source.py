@@ -184,8 +184,8 @@ class SourceAmazonSellerPartner(AbstractSource):
         schema["properties"]["region"] = schema["definitions"]["AWSRegion"]
 
         return ConnectorSpecification(
-            documentationUrl="https://docs.airbyte.io/integrations/sources/amazon-seller-partner",
-            changelogUrl="https://docs.airbyte.io/integrations/sources/amazon-seller-partner",
+            documentationUrl="https://docs.daspire.com/setup-guide/sources/amazon-seller-partner",
+            changelogUrl="https://docs.daspire.com/setup-guide/sources/amazon-seller-partner",
             connectionSpecification=schema,
             advanced_auth=advanced_auth,
         )
