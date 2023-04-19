@@ -1177,7 +1177,7 @@
 - name: Mailjet Mail
   sourceDefinitionId: 56582331-5de2-476b-b913-5798de77bbdf
   dockerRepository: airbyte/source-mailjet-mail
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailjet-mail
   icon: mailjetmail.svg
   sourceType: api
