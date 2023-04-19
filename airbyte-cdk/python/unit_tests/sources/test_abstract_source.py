@@ -83,7 +83,7 @@ class MockStreamOverridesStateMethod(Stream, IncrementalMixin):
     primary_key = None
     cursor_field = "updated_at"
     _cursor_value = ""
-    start_date = "19-12-12"
+    start_date = "1984-12-12"
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         return {}
