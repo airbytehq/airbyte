@@ -142,6 +142,7 @@ To set up Slack notifications:
 
 Understanding the following limitations will help you better manage Airbyte Cloud:
 
+* Max number of workspaces per user: 100 (does not apply to customers using [Powered by Airbyte](https://airbyte.com/embed-airbyte-connectors-with-api))
 * Max number of sources in a workspace: 100
 * Max number of destinations in a workspace: 100
 * Max number of connections in a workspace: 100
