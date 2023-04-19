@@ -9,7 +9,7 @@ GROUP_NAME = "registry_reports"
 
 
 def augment_and_normalize_connector_dataframes(
-    cloud_df, oss_df, primaryKey, connector_type, valid_metadata_report_dataframe, github_connector_folders, cached_specs
+    cloud_df, oss_df, primaryKey, connector_type, github_connector_folders, cached_specs
 ):
     """
     Normalize the cloud and oss connector dataframes and merge them into a single dataframe.
@@ -30,18 +30,18 @@ def augment_and_normalize_connector_dataframes(
     # Replace NaN values in the 'is_cloud' and 'is_oss' columns with False
     total_registry[["is_cloud", "is_oss"]] = total_registry[["is_cloud", "is_oss"]].fillna(False)
 
-    registry_with_metadata = pd.merge(
-        total_registry,
-        valid_metadata_report_dataframe[["definitionId", "is_metadata_valid"]],
-        left_on=primaryKey,
-        right_on="definitionId",
-        how="left",
-    )
+    # registry_with_metadata = pd.merge(
+    #     total_registry,
+    #     valid_metadata_report_dataframe[["definitionId", "is_metadata_valid"]],
+    #     left_on=primaryKey,
+    #     right_on="definitionId",
+    #     how="left",
+    # )
 
     # merge with cached_specs on dockerRepository and dockerImageTag
     cached_specs["is_spec_cached"] = True
     merged_registry = pd.merge(
-        registry_with_metadata,
+        total_registry,
         cached_specs,
         left_on=["dockerRepository", "dockerImageTag"],
         right_on=["docker_repository", "docker_image_tag"],
@@ -73,7 +73,6 @@ def connector_registry_location_html(context, all_destinations_dataframe, all_so
         "is_cloud",
         "is_source_controlled",
         "is_spec_cached",
-        "is_metadata_valid",
     ]
 
     # convert true and false to checkmarks and x's
@@ -109,7 +108,6 @@ def connector_registry_location_markdown(context, all_destinations_dataframe, al
         "is_cloud",
         "is_source_controlled",
         "is_spec_cached",
-        "is_metadata_valid",
     ]
 
     # convert true and false to checkmarks and x's
@@ -133,7 +131,7 @@ def connector_registry_location_markdown(context, all_destinations_dataframe, al
 
 @asset(group_name=GROUP_NAME)
 def all_sources_dataframe(
-    cloud_sources_dataframe, oss_sources_dataframe, github_connector_folders, valid_metadata_report_dataframe, cached_specs
+    cloud_sources_dataframe, oss_sources_dataframe, github_connector_folders, cached_specs
 ) -> pd.DataFrame:
     """
     Merge the cloud and oss sources registries into a single dataframe.
@@ -144,7 +142,6 @@ def all_sources_dataframe(
         oss_df=oss_sources_dataframe,
         primaryKey="sourceDefinitionId",
         connector_type="source",
-        valid_metadata_report_dataframe=valid_metadata_report_dataframe,
         github_connector_folders=github_connector_folders,
         cached_specs=cached_specs,
     )
@@ -152,7 +149,7 @@ def all_sources_dataframe(
 
 @asset(group_name=GROUP_NAME)
 def all_destinations_dataframe(
-    cloud_destinations_dataframe, oss_destinations_dataframe, github_connector_folders, valid_metadata_report_dataframe, cached_specs
+    cloud_destinations_dataframe, oss_destinations_dataframe, github_connector_folders, cached_specs
 ) -> pd.DataFrame:
     """
     Merge the cloud and oss destinations registries into a single dataframe.
@@ -163,7 +160,40 @@ def all_destinations_dataframe(
         oss_df=oss_destinations_dataframe,
         primaryKey="destinationDefinitionId",
         connector_type="destination",
-        valid_metadata_report_dataframe=valid_metadata_report_dataframe,
         github_connector_folders=github_connector_folders,
         cached_specs=cached_specs,
     )
+
+@asset(required_resource_keys={"registry_report_directory_manager"}, group_name=GROUP_NAME)
+def connector_registry_report(context, all_destinations_dataframe, all_sources_dataframe):
+    """
+    Generate a markdown report of the connector registry locations.
+    """
+
+    columns_to_show = [
+        "dockerRepository",
+        "dockerImageTag",
+        "is_oss",
+        "is_cloud",
+        "is_source_controlled",
+        "is_spec_cached",
+    ]
+
+    # convert true and false to checkmarks and x's
+    all_sources_dataframe.replace({True: "✅", False: "❌"}, inplace=True)
+    all_destinations_dataframe.replace({True: "✅", False: "❌"}, inplace=True)
+
+    markdown = render_connector_registry_locations_markdown(
+        destinations_markdown=all_destinations_dataframe[columns_to_show].to_markdown(),
+        sources_markdown=all_sources_dataframe[columns_to_show].to_markdown(),
+    )
+
+    registry_report_directory_manager = context.resources.registry_report_directory_manager
+    file_handle = registry_report_directory_manager.write_data(markdown.encode(), ext="md", key="connector_registry_locations")
+
+    metadata = {
+        "preview": MetadataValue.md(markdown),
+        "gcs_path": MetadataValue.url(file_handle.gcs_path),
+    }
+    return Output(metadata=metadata, value=file_handle)
+
