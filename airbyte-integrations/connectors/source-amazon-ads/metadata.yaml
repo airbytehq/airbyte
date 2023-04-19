@@ -5,7 +5,7 @@ data:
       - advertising-api.amazon.com
       - advertising-api-eu.amazon.com
       - advertising-api-fe.amazon.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:
