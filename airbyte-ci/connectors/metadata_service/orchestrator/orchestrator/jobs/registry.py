@@ -3,7 +3,7 @@ from dagster import define_asset_job, AssetSelection
 registries_inclusive = AssetSelection.keys(
     "metadata_directory_report", "cloud_registry_from_metadata", "oss_registry_from_metadata"
 ).upstream()
-registry_reports_inclusive = AssetSelection.keys("connector_registry_location_html", "connector_registry_location_markdown").upstream()
+registry_reports_inclusive = AssetSelection.keys("connector_registry_report").upstream()
 
 generate_registry = define_asset_job(name="generate_registry", selection=registries_inclusive)
 generate_registry_markdown = define_asset_job(name="generate_registry_markdown", selection=registry_reports_inclusive)

@@ -14,8 +14,7 @@ from orchestrator.assets.spec_cache import cached_specs
 from orchestrator.assets.registry_report import (
     all_sources_dataframe,
     all_destinations_dataframe,
-    connector_registry_location_markdown,
-    connector_registry_location_html,
+    connector_registry_report,
 )
 from orchestrator.assets.registry import (
     oss_destinations_dataframe,
@@ -69,8 +68,7 @@ ASSETS = [
     cloud_registry_diff,
     cloud_registry_from_metadata,
     cloud_sources_dataframe,
-    connector_registry_location_html,
-    connector_registry_location_markdown,
+    connector_registry_report,
     github_connector_folders,
     legacy_cloud_destinations_dataframe,
     legacy_cloud_registry_dict,
