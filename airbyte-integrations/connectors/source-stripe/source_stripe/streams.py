@@ -45,7 +45,6 @@ class StripeStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-
         # Stripe default pagination is 10, max is 100
         params = {"limit": 100}
         for key in ("created[gte]", "created[lte]"):
@@ -683,3 +682,13 @@ class ExternalAccountCards(ExternalAccount):
     """
 
     object = "card"
+
+
+class Accounts(StripeStream):
+    """
+    Docs: https://stripe.com/docs/api/accounts/list
+    Even the endpoint allow to filter based on created the data usually don't have this field.
+    """
+
+    def path(self, **kwargs):
+        return "accounts"
