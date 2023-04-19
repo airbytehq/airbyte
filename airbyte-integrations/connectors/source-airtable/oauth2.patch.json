@@ -9,7 +9,6 @@
     },
     "accessTokenResponseMap": {
         "refresh_token": "/refresh_token",
-        "access_token": "/access_token",
-        "token_expiry_date": "/expires_in"
+        "access_token": "/access_token"
     }
 }
