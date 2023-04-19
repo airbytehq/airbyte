@@ -496,14 +496,26 @@ class Lists(SemiIncrementalMarketoStream):
     API Docs: https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListsUsingGET
     """
 
-class Segmentations(SemiIncrementalMarketoStream):
-     
+class Segmentations(MarketoStream):
+    """
+    This stream is similar to Programs but don't support to filter using created or update at parameters
+    API Docs: https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET
+    """
+    
+    page_size = 200
 
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(config)
 
     def path(self, **kwargs) -> str:
         return "rest/asset/v1/segmentation.json"
+    
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        data = response.json().get(self.data_field)
+
+        if data:
+            self.offset += self.page_size + 1
+            return {"offset": self.offset}
 
 
 class MarketoAuthenticator(Oauth2Authenticator):

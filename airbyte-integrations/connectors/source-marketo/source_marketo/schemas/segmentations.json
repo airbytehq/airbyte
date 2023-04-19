@@ -33,7 +33,7 @@
           "type": ["null", "string"]
         },
         "value": {
-          "type": ["null", "string"]
+          "type": ["null", "integer"]
         },
         "folderName": {
           "type": ["null", "string"]
