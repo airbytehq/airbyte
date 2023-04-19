@@ -29,8 +29,8 @@ backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, 
 class MyFacebookAdsApi(FacebookAdsApi):
     """Custom Facebook API class to intercept all API calls and handle call rate limits"""
 
-    MAX_RATE, MAX_PAUSE_INTERVAL = (95, pendulum.duration(minutes=5))
-    MIN_RATE, MIN_PAUSE_INTERVAL = (90, pendulum.duration(minutes=1))
+    MAX_RATE, MAX_PAUSE_INTERVAL = (95, pendulum.duration(minutes=10))
+    MIN_RATE, MIN_PAUSE_INTERVAL = (85, pendulum.duration(minutes=2))
 
     @dataclass
     class Throttle:
