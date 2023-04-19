@@ -265,7 +265,9 @@ class SurveyResponses(SurveyIDSliceMixin, IncrementalSurveymonkeyStream):
 
 
 class SurveyCollectors(SurveyIDSliceMixin, SurveymonkeyStream):
-    """should be filled from SurveyDetails"""
+    """
+    API Docs: https://www.surveymonkey.com/developer/api/v3/#api-endpoints-get-surveys-id-collectors
+    """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"surveys/{ stream_slice['survey_id'] }/collectors"
