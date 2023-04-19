@@ -39,8 +39,8 @@ public class BigQueryAvroSerializedBuffer extends AvroSerializedBuffer {
   }
 
   @Override
-  protected void writeRecord(final AirbyteRecordMessage recordMessage) throws IOException {
-    dataFileWriter.append(avroRecordFactory.getAvroRecord(recordFormatter.formatRecord(recordMessage)));
+  protected void writeRecord(final AirbyteRecordMessage record) throws IOException {
+    dataFileWriter.append(avroRecordFactory.getAvroRecord(recordFormatter.formatRecord(record)));
   }
 
   public static BufferCreateFunction createBufferFunction(

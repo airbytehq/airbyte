@@ -8,6 +8,6 @@ public interface BufferCreateFunction extends
     CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> {
 
   @Override
-  SerializableBuffer apply(AirbyteStreamNameNamespacePair streamName, ConfiguredAirbyteCatalog configuredCatalog)
+  SerializableBuffer apply(AirbyteStreamNameNamespacePair stream, ConfiguredAirbyteCatalog configuredCatalog)
       throws Exception;
 }

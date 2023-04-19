@@ -41,15 +41,15 @@ public class AvroSerializedBuffer extends BaseSerializedBuffer {
   }
 
   @Override
-  protected void createWriter(final OutputStream outputStream) throws IOException {
+  protected void initWriter(final OutputStream outputStream) throws IOException {
     dataFileWriter = new DataFileWriter<>(new GenericDatumWriter<Record>())
         .setCodec(codecFactory)
         .create(schema, outputStream);
   }
 
   @Override
-  protected void writeRecord(final AirbyteRecordMessage recordMessage) throws IOException {
-    dataFileWriter.append(avroRecordFactory.getAvroRecord(UUID.randomUUID(), recordMessage));
+  protected void writeRecord(final AirbyteRecordMessage record) throws IOException {
+    dataFileWriter.append(avroRecordFactory.getAvroRecord(UUID.randomUUID(), record));
   }
 
   @Override

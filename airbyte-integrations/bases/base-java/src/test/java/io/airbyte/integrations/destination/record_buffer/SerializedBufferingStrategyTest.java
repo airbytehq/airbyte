@@ -15,7 +15,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -101,7 +100,7 @@ public class SerializedBufferingStrategyTest {
     assertFalse(buffering.addRecord(stream2, message5).isPresent());
 
     // force flush to terminate test
-    buffering.flushAll();
+    buffering.flushAllBuffers();
     verify(perStreamFlushHook, times(1)).accept(stream1, recordWriter1);
     verify(perStreamFlushHook, times(2)).accept(stream2, recordWriter2);
   }
@@ -146,7 +145,7 @@ public class SerializedBufferingStrategyTest {
 
     assertFalse(buffering.addRecord(stream3, message6).isPresent());
     // force flush to terminate test
-    buffering.flushAll();
+    buffering.flushAllBuffers();
     verify(perStreamFlushHook, times(1)).accept(stream1, recordWriter1);
     verify(perStreamFlushHook, times(1)).accept(stream2, recordWriter2);
     verify(perStreamFlushHook, times(2)).accept(stream3, recordWriter3);
@@ -187,7 +186,7 @@ public class SerializedBufferingStrategyTest {
 
     assertFalse(buffering.addRecord(stream1, message5).isPresent());
     // force flush to terminate test
-    buffering.flushAll();
+    buffering.flushAllBuffers();
     verify(perStreamFlushHook, times(2)).accept(stream1, recordWriter1);
     verify(perStreamFlushHook, times(1)).accept(stream2, recordWriter2);
     verify(perStreamFlushHook, times(1)).accept(stream3, recordWriter3);

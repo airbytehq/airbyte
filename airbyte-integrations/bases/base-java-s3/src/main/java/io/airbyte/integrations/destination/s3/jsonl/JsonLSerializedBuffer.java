@@ -43,21 +43,21 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
   }
 
   @Override
-  protected void createWriter(final OutputStream outputStream) {
+  protected void initWriter(final OutputStream outputStream) {
     printWriter = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
   }
 
   @Override
-  protected void writeRecord(final AirbyteRecordMessage recordMessage) {
+  protected void writeRecord(final AirbyteRecordMessage record) {
     final ObjectNode json = MAPPER.createObjectNode();
     json.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
-    json.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
+    json.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, record.getEmittedAt());
     if (flattenData) {
-      Map<String, JsonNode> data = MAPPER.convertValue(recordMessage.getData(), new TypeReference<>() {
+      Map<String, JsonNode> data = MAPPER.convertValue(record.getData(), new TypeReference<>() {
       });
       json.setAll(data);
     } else {
-      json.set(JavaBaseConstants.COLUMN_NAME_DATA, recordMessage.getData());
+      json.set(JavaBaseConstants.COLUMN_NAME_DATA, record.getData());
     }
     printWriter.println(Jsons.serialize(json));
   }

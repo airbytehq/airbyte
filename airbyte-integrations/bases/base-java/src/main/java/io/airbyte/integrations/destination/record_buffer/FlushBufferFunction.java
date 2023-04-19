@@ -5,5 +5,5 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 
 public interface FlushBufferFunction extends CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> {
   @Override
-  void accept(AirbyteStreamNameNamespacePair streamName, SerializableBuffer buffer) throws Exception;
+  void accept(AirbyteStreamNameNamespacePair stream, SerializableBuffer buffer) throws Exception;
 }

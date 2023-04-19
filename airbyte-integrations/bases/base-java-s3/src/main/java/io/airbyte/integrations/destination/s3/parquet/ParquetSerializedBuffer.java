@@ -91,10 +91,10 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
   }
 
   @Override
-  public long accept(final AirbyteRecordMessage recordMessage) throws Exception {
+  public long accept(final AirbyteRecordMessage record) throws Exception {
     if (inputStream == null && !isClosed) {
       final long startCount = getByteCount();
-      parquetWriter.write(avroRecordFactory.getAvroRecord(UUID.randomUUID(), recordMessage));
+      parquetWriter.write(avroRecordFactory.getAvroRecord(UUID.randomUUID(), record));
       return getByteCount() - startCount;
     } else {
       throw new IllegalCallerException("Buffer is already closed, it cannot accept more messages");

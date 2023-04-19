@@ -52,13 +52,13 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
   }
 
   @Override
-  protected void createWriter(final OutputStream outputStream) throws IOException {
+  protected void initWriter(final OutputStream outputStream) throws IOException {
     csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8), csvFormat);
   }
 
   @Override
-  protected void writeRecord(final AirbyteRecordMessage recordMessage) throws IOException {
-    csvPrinter.printRecord(csvSheetGenerator.getDataRow(UUID.randomUUID(), recordMessage));
+  protected void writeRecord(final AirbyteRecordMessage record) throws IOException {
+    csvPrinter.printRecord(csvSheetGenerator.getDataRow(UUID.randomUUID(), record));
   }
 
   @Override
