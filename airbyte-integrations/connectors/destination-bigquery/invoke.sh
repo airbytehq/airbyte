@@ -8,6 +8,7 @@ if test "$1" != 'write'
 then
   normalization_exit_code=0
 elif test "$NORMALIZATION_TECHNIQUE" = 'LEGACY'
+then
   echo '{"type": "LOG","log":{"level":"INFO","message":"Starting in-connector normalization"}}'
   # the args in a write command are `write --catalog foo.json --config bar.json`
   # so if we remove the `write`, we can just pass the rest directly into normalization
