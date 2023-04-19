@@ -164,6 +164,22 @@ def get_big_schema_configured_stream():
             },
             "empty_array": {"type": ["null", "array"]},
             "airbyte_type_object": {"type": "number", "airbyte_type": "integer"},
+            "airbyte_type_array": {"type": "array", "items": {"type": "number", "airbyte_type": "integer"}},
+            "airbyte_type_array_not_integer": {
+                "type": "array",
+                "items": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"},
+            },
+            "airbyte_type_object_not_integer": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"},
+            "object_with_additional_properties": {
+                "type": ["null", "object"],
+                "properties": {"id": {"type": ["null", "integer"]}, "name": {"type": ["null", "string"]}},
+                "additionalProperties": True,
+            },
+            "object_no_additional_properties": {
+                "type": ["null", "object"],
+                "properties": {"id": {"type": ["null", "integer"]}, "name": {"type": ["null", "string"]}},
+                "additionalProperties": False,
+            },
         },
     }
 
@@ -232,7 +248,10 @@ def test_get_glue_dtypes_from_json_schema():
     writer = get_big_schema_writer(get_config())
     result, json_casts = writer._get_glue_dtypes_from_json_schema(writer._schema)
     assert result == {
+        "airbyte_type_array": "array<bigint>",
         "airbyte_type_object": "bigint",
+        "airbyte_type_array_not_integer": "array<string>",
+        "airbyte_type_object_not_integer": "timestamp",
         "answers": "array<string>",
         "answers_nested_bad": "string",
         "appId": "bigint",
@@ -247,6 +266,8 @@ def test_get_glue_dtypes_from_json_schema():
         "nested_bad_object": "string",
         "nested_mixed_types": "string",
         "nested_nested_bad_object": "string",
+        "object_with_additional_properties": "string",
+        "object_no_additional_properties": "struct<id:bigint,name:string>",
         "percentage": "double",
         "phone_number_ids": "string",
         "questions": "array<struct<id:bigint,question:string,answer:string>>",
@@ -266,6 +287,7 @@ def test_get_glue_dtypes_from_json_schema():
         "nested_mixed_types",
         "nested_nested_bad_object",
         "phone_number_ids",
+        "object_with_additional_properties",
     }
 
 
