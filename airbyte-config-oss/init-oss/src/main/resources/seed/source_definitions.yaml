@@ -1632,6 +1632,7 @@
     hosts:
       - "${host}"
       - "${tunnel_method.tunnel_host}"
+  maxSecondsBetweenMessages: 7200
 - name: Postmark App
   sourceDefinitionId: cde75ca1-1e28-4a0f-85bb-90c546de9f1f
   dockerRepository: airbyte/source-postmarkapp
@@ -2028,7 +2029,7 @@
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 3.2.0
+  dockerImageTag: 3.3.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api
