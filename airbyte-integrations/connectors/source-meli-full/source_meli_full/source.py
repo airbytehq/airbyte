@@ -43,9 +43,9 @@ class MeliInvoices(HttpStream):
         # Meli URL to get the access_token
         url = "https://api.mercadolibre.com/oauth/token"
 
-        # Create the Secret Manager client.
+        # # Create the Secret Manager client.
         # client = secretmanager.SecretManagerServiceClient()
-        # Getting AWS Credentials from Google Secrets
+        # # Getting AWS Credentials from Google Secrets
         # resource_name = f"projects/{self.google_project_id}/secrets/{self.google_secret_aws_credstash_credentials}/versions/latest"
         # response = client.access_secret_version(name=resource_name)
         # aws_credentials = response.payload.data.decode('UTF-8')
