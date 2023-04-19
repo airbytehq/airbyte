@@ -4,8 +4,7 @@
 
 package io.airbyte.integrations.debezium;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.debezium.engine.ChangeEvent;
+import io.airbyte.integrations.debezium.internals.ChangeEventWithMetadata;
 import java.util.Map;
 
 /**
@@ -20,11 +19,11 @@ public interface CdcTargetPosition<T> {
   /**
    * Reads a position value (ex: LSN) from a change event and compares it to target position
    *
-   * @param valueAsJson json representation of a change event
+   * @param changeEventWithMetadata change event from Debezium with extra calculated metadata
    * @return true if event position is equal or greater than target position, or if last snapshot
    *         event
    */
-  boolean reachedTargetPosition(final JsonNode valueAsJson);
+  boolean reachedTargetPosition(final ChangeEventWithMetadata changeEventWithMetadata);
 
   /**
    * Reads a position value (lsn) from a change event and compares it to target lsn
@@ -55,16 +54,6 @@ public interface CdcTargetPosition<T> {
   T extractPositionFromHeartbeatOffset(final Map<String, ?> sourceOffset);
 
   /**
-   * This function indicates if the event is part of the snapshot or not.
-   *
-   * @param event Event from the CDC load
-   * @return Returns `true` when the DB event is part of the snapshot load. Otherwise, returns `false`
-   */
-  default boolean isSnapshotEvent(final ChangeEvent<String, String> event) {
-    return false;
-  }
-
-  /**
    * This function checks if the event we are processing in the loop is already behind the offset so
    * the process can safety save the state.
    *
@@ -72,7 +61,7 @@ public interface CdcTargetPosition<T> {
    * @param event Event from the CDC load
    * @return Returns `true` when the record is behind the offset. Otherwise, it returns `false`
    */
-  default boolean isRecordBehindOffset(final Map<String, String> offset, final ChangeEvent<String, String> event) {
+  default boolean isRecordBehindOffset(final Map<String, String> offset, final ChangeEventWithMetadata event) {
     return false;
   }
 

@@ -28,6 +28,11 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
   }
 
   @Override
+  public boolean isCdcCheckpointEnabled() {
+    return true;
+  }
+
+  @Override
   public AirbyteMessage saveState(final Map<String, String> offset, final String dbHistory) {
     final JsonNode asJson = Jsons.jsonNode(offset);
     LOGGER.info("debezium state: {}", asJson);
