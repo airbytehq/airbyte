@@ -45,7 +45,6 @@ async def run_steps(steps: List[Step | List[Step]], results: List[StepResult] = 
 
 def get_metadata_file_from_path(context: PipelineContext, metadata_path: Path) -> dagger.File:
     if metadata_path.is_file() and metadata_path.name != METADATA_FILE_NAME:
-        breakpoint()
         raise ValueError(f"The metadata file name is not {METADATA_FILE_NAME}, it is {metadata_path.name} .")
     if metadata_path.is_dir():
         metadata_path = metadata_path / METADATA_FILE_NAME

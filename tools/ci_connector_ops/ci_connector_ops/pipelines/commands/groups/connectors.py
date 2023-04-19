@@ -13,9 +13,12 @@ from typing import Tuple
 import anyio
 import click
 import dagger
+from ci_connector_ops.pipelines.builds import run_connector_build_pipeline
 from ci_connector_ops.pipelines.contexts import CIContext, ConnectorContext
 from ci_connector_ops.pipelines.github import update_commit_status_check
-from ci_connector_ops.pipelines.pipelines.connectors import run_connectors_build_pipelines, run_connectors_test_pipelines
+from ci_connector_ops.pipelines.pipelines.connectors import run_connectors_pipelines
+from ci_connector_ops.pipelines.publish import run_connector_publish_pipeline
+from ci_connector_ops.pipelines.tests import run_connector_test_pipeline
 from ci_connector_ops.pipelines.utils import DaggerPipelineCommand, get_modified_connectors
 from ci_connector_ops.utils import ConnectorLanguage, get_all_released_connectors
 from rich.logging import RichHandler
@@ -121,6 +124,8 @@ def connectors(
         click.secho("No connector were selected according to your inputs. Please double check your filters.", fg="yellow")
         sys.exit(0)
 
+    ctx.obj["modified_connectors_in_commit"] = get_modified_connectors(ctx.obj["modified_files_in_commit"])
+    ctx.obj["modified_connectors_name_in_commit"] = [c.technical_name for c in ctx.obj["modified_connectors_in_commit"]]
     ctx.obj["selected_connectors"] = selected_connectors
     ctx.obj["selected_connectors_names"] = [c.technical_name for c in selected_connectors]
 
@@ -151,7 +156,7 @@ def test(
         for connector in ctx.obj["selected_connectors"]
     ]
     try:
-        anyio.run(run_connectors_test_pipelines, connectors_tests_contexts, ctx.obj["concurrency"])
+        anyio.run(run_connectors_pipelines, connectors_tests_contexts, run_connector_test_pipeline, "Test Pipeline", ctx.obj["concurrency"])
         update_commit_status_check(
             ctx.obj["git_revision"],
             "success",
@@ -193,5 +198,65 @@ def build(ctx: click.Context) -> bool:
         )
         for connector in ctx.obj["selected_connectors"]
     ]
-    anyio.run(run_connectors_build_pipelines, connectors_contexts, ctx.obj["concurrency"])
+    anyio.run(run_connectors_pipelines, connectors_contexts, run_connector_build_pipeline, "Build Pipeline", ctx.obj["concurrency"])
+
+    return True
+
+
+@connectors.command(cls=DaggerPipelineCommand, help="Publish all images for the selected connectors.")
+@click.option("--pre-release/--main-release", help="Use this flag if you want to publish pre-release images.", default=True, type=bool)
+@click.option(
+    "--spec-cache-service-account-key",
+    help="The service account key to upload files to the GCS bucket hosting spec cache.",
+    type=click.STRING,
+    required=True,
+    envvar="SPEC_CACHE_SERVICE_ACCOUNT_KEY",
+)
+@click.option(
+    "--spec-cache-bucket-name",
+    help="The name of the GCS bucket where specs will be cached.",
+    type=click.STRING,
+    required=True,
+    envvar="SPEC_CACHE_BUCKET_NAME",
+)
+@click.pass_context
+def publish(ctx: click.Context, pre_release: bool, spec_cache_service_account_key: str, spec_cache_bucket_name: str):
+    if ctx.obj["is_local"]:
+        click.confirm(
+            "Publishing from a local environment is not recommend and require to be logged in to Airbyte's DockerHub registry, do you want to continue?",
+            abort=True,
+        )
+    if ctx.obj["modified"]:
+        selected_connectors = ctx.obj["modified_connectors_in_commit"]
+        selected_connectors_names = ctx.obj["modified_connectors_name_in_commit"]
+    else:
+        selected_connectors = ctx.obj["selected_connectors"]
+        selected_connectors_names = ctx.obj["selected_connectors_names"]
+
+    click.secho(f"Will publish the following connectors: {', '.join(selected_connectors_names)}.", fg="green")
+
+    os.environ["SPEC_CACHE_SERVICE_ACCOUNT_KEY"] = spec_cache_service_account_key
+
+    connectors_contexts = [
+        ConnectorContext(
+            connector,
+            ctx.obj["is_local"],
+            ctx.obj["git_branch"],
+            ctx.obj["git_revision"],
+            ctx.obj["use_remote_secrets"],
+            gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
+            pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
+            ci_context=ctx.obj.get("ci_context"),
+        )
+        for connector in selected_connectors
+    ]
+    anyio.run(
+        run_connectors_pipelines,
+        connectors_contexts,
+        run_connector_publish_pipeline,
+        "Publish pipeline",
+        ctx.obj["concurrency"],
+        pre_release,
+        spec_cache_bucket_name,
+    )
     return True
