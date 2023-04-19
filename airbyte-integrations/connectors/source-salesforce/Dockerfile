@@ -1,3 +1,6 @@
+ARG AIRBYTE_TO_FLOW_TAG="dev"
+FROM ghcr.io/estuary/airbyte-to-flow:$AIRBYTE_TO_FLOW_TAG as airbyte-to-flow
+
 FROM python:3.9-slim
 
 # Bash is installed for more convenient debugging.
@@ -14,7 +17,7 @@ COPY *.map.json ./
 COPY selected_streams.json ./
 RUN pip install .
 
-COPY --from=ghcr.io/estuary/airbyte-to-flow:dev /airbyte-to-flow ./
+COPY --from=airbyte-to-flow /airbyte-to-flow ./
 ENTRYPOINT ["/airbyte/integration_code/airbyte-to-flow", "--connector-entrypoint", "python /airbyte/integration_code/main.py"]
 
 LABEL io.airbyte.version=v1

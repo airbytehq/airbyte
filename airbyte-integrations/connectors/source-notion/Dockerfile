@@ -1,6 +1,9 @@
+ARG AIRBYTE_TO_FLOW_TAG="dev"
+FROM ghcr.io/estuary/airbyte-to-flow:$AIRBYTE_TO_FLOW_TAG as airbyte-to-flow
+
 FROM airbyte/source-notion:1.0.4
 
-COPY --from=ghcr.io/estuary/airbyte-to-flow:dev /airbyte-to-flow ./
+COPY --from=airbyte-to-flow /airbyte-to-flow ./
 ENTRYPOINT ["/airbyte/integration_code/airbyte-to-flow", "--connector-entrypoint", "python /airbyte/integration_code/main.py"]
 
 COPY documentation_url.patch.json ./

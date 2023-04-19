@@ -175,12 +175,18 @@ jobs:
       - name: Build ${{ matrix.connector.name }}
         id: build
         run: |
+          AIRBYTE_TO_FLOW_TAG=dev
+          if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
+            AIRBYTE_TO_FLOW_TAG=${{ steps.prep.outputs.tag }}
+          fi
+
           if [ -f "airbyte-integrations/connectors/${{ matrix.connector.name }}/requirements.txt" ]; then
             ./gradlew :airbyte-integrations:connectors:${{ matrix.connector.name }}:build
             docker tag docker.io/airbyte/${{ matrix.connector.name }}:dev ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }}
           else
             docker build "airbyte-integrations/connectors/${{ matrix.connector.name }}" \
                    -f "airbyte-integrations/connectors/${{ matrix.connector.name }}/Dockerfile" \
+                   --build-arg AIRBYTE_TO_FLOW_TAG=$AIRBYTE_TO_FLOW_TAG \
                    -t ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }}
           fi
           
