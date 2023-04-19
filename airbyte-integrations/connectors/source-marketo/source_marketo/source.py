@@ -503,6 +503,7 @@ class Segmentations(MarketoStream):
     """
     
     page_size = 200
+    offset = 0
 
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(config)
