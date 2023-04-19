@@ -4,6 +4,10 @@
 
 """This module is the CLI entrypoint to the airbyte-ci commands."""
 
+import json
+from pathlib import Path
+from typing import Optional
+
 import click
 from ci_connector_ops.pipelines.contexts import CIContext
 from ci_connector_ops.pipelines.utils import (
@@ -31,6 +35,7 @@ from .groups.metadata import metadata
 @click.option("--gha-workflow-run-id", help="[CI Only] The run id of the GitHub action workflow", default=None, type=str)
 @click.option("--ci-context", default=CIContext.MANUAL, envvar="CI_CONTEXT", type=click.Choice(CIContext))
 @click.option("--pipeline-start-timestamp", default=get_current_epoch_time, envvar="CI_PIPELINE_START_TIMESTAMP", type=int)
+@click.option("--github-event-path", envvar="GITHUB_EVENT_PATH", type=click.Path(False, path_type=Path))
 @click.pass_context
 def airbyte_ci(
     ctx: click.Context,
@@ -41,8 +46,12 @@ def airbyte_ci(
     gha_workflow_run_id: str,
     ci_context: str,
     pipeline_start_timestamp: int,
+    github_event_path: Optional[Path],
 ):  # noqa D103
     ctx.ensure_object(dict)
+    ctx.obj["github_event"] = json.loads(github_event_path.read_text()) if github_event_path else None
+    print("EVENT!!!")
+    print(ctx.obj["github_event"])
     ctx.obj["is_local"] = is_local
     ctx.obj["git_branch"] = git_branch
     ctx.obj["git_revision"] = git_revision
