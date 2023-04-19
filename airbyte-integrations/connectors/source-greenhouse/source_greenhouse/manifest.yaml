@@ -46,7 +46,7 @@ definitions:
     name: "{{ options['name'] }}"
     primary_key: "{{ options['primary_key'] }}"
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
   base_stream:
@@ -268,7 +268,7 @@ definitions:
       name: "users"
       path: "users"
   user_roles_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $options:
       name: "user_roles"
       path: "user_roles"
@@ -277,16 +277,16 @@ definitions:
       name: "user_permissions"
     primary_key: "id"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.no_pagination_retriever)"
+      $ref: "#/definitions/no_pagination_retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "users/{{ stream_slice.parent_id }}/permissions/jobs"
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
-          - stream: "*ref(definitions.users_stream)"
+          - stream: "#/definitions/users_stream"
             parent_key: "id"
             stream_slice_field: "parent_id"
   demographics_answers_stream:
@@ -303,16 +303,16 @@ definitions:
     $options:
       name: "activity_feed"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.no_pagination_retriever)"
+      $ref: "#/definitions/no_pagination_retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "candidates/{{ stream_slice.parent_id }}/activity_feed"
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
-          - stream: "*ref(definitions.candidates_stream)"
+          - stream: "#/definitions/candidates_stream"
             parent_key: "id"
             stream_slice_field: "parent_id"
   approvals_stream:
@@ -320,78 +320,78 @@ definitions:
       name: "approvals"
       primary_key: "id"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.no_pagination_retriever)"
+      $ref: "#/definitions/no_pagination_retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "jobs/{{ stream_slice.parent_id }}/approval_flows"
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
-          - stream: "*ref(definitions.jobs_stream)"
+          - stream: "#/definitions/jobs_stream"
             parent_key: "id"
             stream_slice_field: "parent_id"
   degrees_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $options:
       name: "degrees"
       path: "degrees"
     retriever:
-      $ref: "*ref(definitions.no_pagination_retriever)"
-      requester: "*ref(definitions.requester)"
+      $ref: "#/definitions/no_pagination_retriever"
+      requester: "#/definitions/requester"
   disciplines_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $options:
       name: "disciplines"
       path: "disciplines"
     retriever:
-      $ref: "*ref(definitions.no_pagination_retriever)"
-      requester: "*ref(definitions.requester)"
+      $ref: "#/definitions/no_pagination_retriever"
+      requester: "#/definitions/requester"
   schools_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $options:
       name: "schools"
       path: "schools"
     retriever:
-      $ref: "*ref(definitions.no_pagination_retriever)"
-      requester: "*ref(definitions.requester)"
+      $ref: "#/definitions/no_pagination_retriever"
+      requester: "#/definitions/requester"
   eeoc_stream:
-    $ref: "*ref(definitions.base_incremental_stream)"
+    $ref: "#/definitions/base_incremental_stream"
     $options:
       name: "eeoc"
       path: "eeoc"
     stream_cursor_field: "submitted_at"
     retriever:
-      $ref: "*ref(definitions.retriever)"
-      requester: "*ref(definitions.requester)"
+      $ref: "#/definitions/retriever"
+      requester: "#/definitions/requester"
       stream_slicer:
         request_cursor_field: "submitted_after"
         cursor_field: "submitted_at"
         class_name: source_greenhouse.components.GreenHouseSlicer
   email_templates_stream:
-    $ref: "*ref(definitions.base_incremental_stream)"
+    $ref: "#/definitions/base_incremental_stream"
     $options:
       name: "email_templates"
       path: "email_templates"
   offices_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $options:
       name: "offices"
       path: "offices"
   prospect_pools_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $options:
       name: "prospect_pools"
       path: "prospect_pools"
   tags_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $options:
       name: "tags"
       path: "tags/candidate"
     retriever:
-      $ref: "*ref(definitions.no_pagination_retriever)"
-      requester: "*ref(definitions.requester)"
+      $ref: "#/definitions/no_pagination_retriever"
+      requester: "#/definitions/requester"
 
 streams:
   - "#/definitions/applications_stream"
@@ -419,16 +419,16 @@ streams:
   - "#/definitions/scorecards_stream"
   - "#/definitions/sources_stream"
   - "#/definitions/users_stream"
-  - "*ref(definitions.activity_feed_stream)"
-  - "*ref(definitions.approvals_stream)"
-  - "*ref(definitions.degrees_stream)"
-  - "*ref(definitions.disciplines_stream)"
-  - "*ref(definitions.schools_stream)"
-  - "*ref(definitions.eeoc_stream)"
-  - "*ref(definitions.email_templates_stream)"
-  - "*ref(definitions.offices_stream)"
-  - "*ref(definitions.prospect_pools_stream)"
-  - "*ref(definitions.tags_stream)"
+  - "#/definitions/activity_feed_stream"
+  - "#/definitions/approvals_stream"
+  - "#/definitions/degrees_stream"
+  - "#/definitions/disciplines_stream"
+  - "#/definitions/schools_stream"
+  - "#/definitions/eeoc_stream"
+  - "#/definitions/email_templates_stream"
+  - "#/definitions/offices_stream"
+  - "#/definitions/prospect_pools_stream"
+  - "#/definitions/tags_stream"
 
 
 check:
