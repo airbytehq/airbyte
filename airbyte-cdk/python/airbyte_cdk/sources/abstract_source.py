@@ -115,7 +115,7 @@ class AbstractSource(Source, ABC):
                     continue
                 try:
                     timer.start_event(f"Syncing stream {configured_stream.stream.name}")
-                    self._emit_stream_status(configured_stream, AirbyteStreamStatus.STARTED, None)
+                    yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.STARTED, None)
                     yield from self._read_stream(
                         logger=logger,
                         stream_instance=stream_instance,
@@ -123,12 +123,12 @@ class AbstractSource(Source, ABC):
                         state_manager=state_manager,
                         internal_config=internal_config,
                     )
-                    self._emit_stream_status(configured_stream, AirbyteStreamStatus.STOPPED, True)
+                    yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.STOPPED, True)
                 except AirbyteTracedException as e:
                     raise e
                 except Exception as e:
                     logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
-                    self._emit_stream_status(configured_stream, AirbyteStreamStatus.STOPPED, False)
+                    yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.STOPPED, False)
                     display_message = stream_instance.get_error_display_message(e)
                     if display_message:
                         raise AirbyteTracedException.from_exception(e, message=display_message) from e
@@ -192,7 +192,7 @@ class AbstractSource(Source, ABC):
                 record_counter += 1
             if record_counter == 1:
                 # If we just read the first record of the stream, emit the transition to the RUNNING state
-                self._emit_stream_status(configured_stream, AirbyteStreamStatus.RUNNING, None)
+                yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.RUNNING, None)
             yield record
 
         logger.info(f"Read {record_counter} records from {stream_name} stream")
@@ -352,9 +352,3 @@ class AbstractSource(Source, ABC):
             return record_data_or_message
         else:
             return stream_data_to_airbyte_message(stream.name, record_data_or_message, stream.transformer, stream.get_json_schema())
-
-    def _emit_stream_status(self, stream: ConfiguredAirbyteStream, stream_status: AirbyteStreamStatus, successful: bool):
-        """
-        Emits a new AirbyteStreamStatusTraceMessage
-        """
-        yield stream_status_as_airbyte_message(stream, stream_status, successful)
