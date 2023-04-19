@@ -43,6 +43,7 @@ const buildAConnector = {
       label: 'Low-code connector development',
       items: [
         'connector-development/config-based/connector-builder-ui',
+        'connector-development/config-based/connector-builder-compatibility',
         {
           label: 'Low-code CDK Intro',
           type: 'doc',

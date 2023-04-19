@@ -101,9 +101,9 @@ class GradleTask(Step, ABC):
     ]
 
     DESTINATION_BUILD_INCLUDE = [
-        "airbyte-integrations/connectors/destination-jdbc",
-        # destination-bigquery uses utils from destination gcs
+        "airbyte-integrations/bases/bases-destination-jdbc",
         "airbyte-integrations/connectors/destination-gcs",
+        "airbyte-integrations/connectors/destination-azure-blob-storage",
     ]
 
     # These are the lines we remove from the connector gradle file to ignore specific tasks / plugins.
@@ -161,7 +161,6 @@ class GradleTask(Step, ABC):
         return command
 
     async def _run(self) -> StepResult:
-
         connector_under_test = (
             environments.with_gradle(
                 self.context, self.build_include, docker_service_name=self.docker_service_name, bind_to_docker_host=self.BIND_TO_DOCKER_HOST
@@ -274,7 +273,7 @@ class IntegrationTestJava(GradleTask):
                 tg.start_soon(self._load_connector_image, connector_tar_file)
             return await super()._run()
         except QueryError as e:
-            return StepResult(self, StepStatus.FAILURE, stderr=str(e)), None
+            return StepResult(self, StepStatus.FAILURE, stderr=str(e))
 
 
 async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
