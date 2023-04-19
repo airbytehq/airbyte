@@ -36,7 +36,7 @@
             },
             "token_expiry_date": {
               "type": "string",
-              "description": "The date-time when the access token should be refreshed.",
+              "description": "The date-time when the access token should be refreshed."
             },
             "refresh_token": {
               "type": "string",
