@@ -99,11 +99,41 @@ pub fn fix_document_schema_keys(mut doc: serde_json::Value, key_ptrs: Vec<String
     Ok(doc)
 }
 
+pub fn fix_nonstandard_jsonschema_attributes(schema: &mut serde_json::Value) {
+    match schema {
+        serde_json::Value::Object(map) => {
+            // airbyte sometimes hides some fields from their config but keeps them
+            // for backward compatibility
+            map.remove("airbyte_hidden");
+
+            // "group" is an attribute airbyte uses internally
+            map.remove("group");
+
+            // a mapping from a jsonschema type to an internal airbyte type
+            map.remove("airbyte_type");
+
+            // keys under properties are schemas, so we need to run on those as well
+            map.get_mut("properties").map(|props| {
+                match props {
+                    serde_json::Value::Object(inner_map) => {
+                        inner_map.values_mut().for_each(|v| {
+                            fix_nonstandard_jsonschema_attributes(v)
+                        });
+                    },
+                    _ => ()
+                }
+            });
+            map.get_mut("items").map(fix_nonstandard_jsonschema_attributes);
+        }
+        _ => ()
+    }
+}
+
 #[cfg(test)]
 mod test {
     use serde_json::json;
 
-    use super::fix_document_schema_keys;
+    use super::{fix_document_schema_keys, fix_nonstandard_jsonschema_attributes};
 
     #[test]
     fn test_fix_document_schema_keys_prop() {
@@ -335,6 +365,58 @@ mod test {
                         }
                     },
                     "required": ["id"]
+                }
+            })
+        );
+    }
+
+    #[test]
+    #[allow(non_snake_case)]
+    fn test_fix_nonstandard_jsonschema_attributes_multiple() {
+        let doc_schema = r#"{
+            "type": ["object", "null"],
+            "airbyte_hidden": true,
+            "properties": {
+                "my_key": {
+                    "type": ["object", "null"],
+                    "properties": {
+                        "group": {
+                            "type": "string"
+                        },
+                        "airbyte_type": {
+                            "type": "string",
+                            "airbyte_type": "string"
+                        },
+                        "id": {
+                            "type": ["string", "null"],
+                            "group": "test"
+                        }
+                    }
+                }
+            }
+        }"#.to_string();
+
+        let mut doc = serde_json::from_str(&doc_schema).unwrap();
+        fix_nonstandard_jsonschema_attributes(&mut doc);
+        assert_eq!(
+            doc,
+            json!({
+                "type": ["object", "null"],
+                "properties": {
+                    "my_key": {
+                        "type": ["object", "null"],
+                        "properties": {
+                            "group": {
+                                "type": "string"
+                            },
+                            "airbyte_type": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": ["string", "null"]
+                            }
+                        }
+                    }
                 }
             })
         );

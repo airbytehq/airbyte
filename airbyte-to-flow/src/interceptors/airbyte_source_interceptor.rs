@@ -31,7 +31,7 @@ use tempfile::{Builder, TempDir};
 
 use json_patch::merge;
 
-use super::fix_document_schema::fix_document_schema_keys;
+use super::fix_document_schema::{fix_document_schema_keys, fix_nonstandard_jsonschema_attributes};
 use super::normalize::{normalize_doc, NormalizationEntry};
 use super::remap::remap;
 
@@ -118,6 +118,8 @@ impl AirbyteSourceInterceptor {
                     .map(|s| s.to_string()),
                 None => spec.documentation_url,
             };
+
+            fix_nonstandard_jsonschema_attributes(&mut endpoint_spec);
 
             let v = serde_json::to_vec(&Response { spec: Some(response::Spec {
                 protocol: PROTOCOL_VERSION,
@@ -240,6 +242,8 @@ impl AirbyteSourceInterceptor {
                 if let Some(p) = doc_schema_patch {
                     merge(&mut doc_schema, &p);
                 }
+
+                fix_nonstandard_jsonschema_attributes(&mut doc_schema);
 
                 resp.bindings.push(response::discovered::Binding {
                     recommended_name,
