@@ -4,12 +4,20 @@
 
 
 from datetime import datetime
+from typing import Optional
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteStreamStatusTraceMessage, AirbyteTraceMessage, StreamDescriptor, TraceType
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteStreamStatus,
+    AirbyteStreamStatusTraceMessage,
+    AirbyteTraceMessage,
+    ConfiguredAirbyteStream,
+    StreamDescriptor,
+    TraceType)
 from airbyte_cdk.models import Type as MessageType
 
 
-def as_airbyte_message(stream, current_status, successful) -> AirbyteMessage:
+def as_airbyte_message(stream: ConfiguredAirbyteStream, current_status: AirbyteStreamStatus, successful: Optional[bool]) -> AirbyteMessage:
     """
     Builds an AirbyteStreamStatusTraceMessage for the provided stream
     """
