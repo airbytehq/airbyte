@@ -97,14 +97,18 @@ class ShopifyStream(HttpStream, ABC):
                 yield self._transformer.transform(record)
 
     def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code in [404, 403]:
-            if response.status_code == 404:
-                self.logger.warn(f"Stream `{self.name}` is not available, skipping...")
-            elif response.status_code == 403:
-                self.logger.warn(f"Stream `{self.name}` - insufficient permissions, skipping...")
+        error_mapping = {
+            404: f"Stream `{self.name}` - not available or missing, skipping...",
+            403: f"Stream `{self.name}` - insufficient permissions, skipping...",
+            # extend the mapping with more handable errors, if needed.
+        }
+        status = response.status_code
+        if status in error_mapping.keys():
             setattr(self, "raise_on_http_errors", False)
+            self.logger.warn(error_mapping.get(status))
             return False
-        return super().should_retry(response)
+        else:
+            return super().should_retry(response)
 
     @property
     @abstractmethod
