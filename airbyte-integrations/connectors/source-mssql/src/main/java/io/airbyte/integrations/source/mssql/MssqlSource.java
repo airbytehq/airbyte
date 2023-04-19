@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mssql;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getIdentifierWithQuoting;
@@ -31,6 +32,7 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
+import io.airbyte.integrations.debezium.internals.mssql.MssqlCdcTargetPosition;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.mssql.MssqlCdcHelper.SnapshotIsolation;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
@@ -94,15 +96,28 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public AutoCloseableIterator<JsonNode> queryTableFullRefresh(final JdbcDatabase database,
                                                                final List<String> columnNames,
                                                                final String schemaName,
-                                                               final String tableName) {
+                                                               final String tableName,
+                                                               final SyncMode syncMode,
+                                                               final Optional<String> cursorField) {
     LOGGER.info("Queueing query for table: {}", tableName);
+    // This corresponds to the initial sync for in INCREMENTAL_MODE. The ordering of the records matters as intermediate state messages are emitted.
+    if (syncMode.equals(SyncMode.INCREMENTAL)) {
+      final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
+      final String newIdentifiers = getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
+      final String preparedSqlQuery =
+          String.format("SELECT %s FROM %s ORDER BY %s ASC", newIdentifiers,
+              getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField);
+      LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
+      return queryTable(database, preparedSqlQuery);
+    } else {
+      // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering of the records.
+      final String newIdentifiers = getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
+      final String preparedSqlQuery =
+          String.format("SELECT %s FROM %s", newIdentifiers, getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()));
 
-    final String newIdentifiers = getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
-    final String preparedSqlQuery =
-        String.format("SELECT %s FROM %s", newIdentifiers, getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()));
-
-    LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
-    return queryTable(database, preparedSqlQuery);
+      LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
+      return queryTable(database, preparedSqlQuery);
+    }
   }
 
   /**
@@ -190,7 +205,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
     final Map<String, String> additionalParams = new HashMap<>();
     additionalParameters.forEach(param -> {
-      int i = param.indexOf('=');
+      final int i = param.indexOf('=');
       additionalParams.put(param.substring(0, i), param.substring(i + 1));
     });
 

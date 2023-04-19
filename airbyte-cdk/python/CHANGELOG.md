@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.35.0
+low-code: simplify session token authenticator interface
+
+## 0.34.3
+low-code: fix typo in ManifestDeclarativeSource
+
+## 0.34.2
+Emit slice log messages when running the connector builder
+
+## 0.34.1
+set slice and pages limit when reading from the connector builder module
+
+## 0.34.0
+Low-Code CDK: Enable use of SingleUseRefreshTokenAuthenticator
+
+## 0.33.2
+low-code: fix duplicate stream slicer update
+
+## 0.33.1
+Low-Code CDK: make RecordFilter.filter_records as generator
+
+## 0.33.0
+Enable oauth flow for low-code connectors
+
 ## 0.32.0
 Remove unexpected error swallowing on abstract source's check method
 
