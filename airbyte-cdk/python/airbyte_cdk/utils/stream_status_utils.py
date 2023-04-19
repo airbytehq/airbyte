@@ -13,7 +13,8 @@ from airbyte_cdk.models import (
     AirbyteTraceMessage,
     ConfiguredAirbyteStream,
     StreamDescriptor,
-    TraceType)
+    TraceType,
+)
 from airbyte_cdk.models import Type as MessageType
 
 
