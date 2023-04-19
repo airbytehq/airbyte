@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
@@ -100,7 +100,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   @Override
   public void createTableIfNotExists(final TableId tableId, final Schema tableSchema) {
     LOGGER.info("Creating target table {}", tableId);
-    BigQueryUtils.createPartitionedTable(bigQuery, tableId, tableSchema);
+    BigQueryUtils.createPartitionedTableIfNotExists(bigQuery, tableId, tableSchema);
   }
 
   @Override
@@ -126,10 +126,10 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
    */
   @Override
   public void copyIntoTableFromStage(final String datasetId,
-                                        final String stream,
-                                        final TableId tableId,
-                                        final Schema tableSchema,
-                                        final List<String> stagedFiles) {
+                                     final String stream,
+                                     final TableId tableId,
+                                     final Schema tableSchema,
+                                     final List<String> stagedFiles) {
     LOGGER.info("Uploading records from staging files to target table {} (dataset {}): {}",
         tableId, datasetId, stagedFiles);
 
@@ -154,7 +154,8 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
       } catch (final BigQueryException | InterruptedException e) {
         throw new RuntimeException(
             String.format("[%s] Failed to upload staging files to destination table %s (%s)", loadJob.getJobId(),
-                tableId, datasetId), e);
+                tableId, datasetId),
+            e);
       }
     });
   }

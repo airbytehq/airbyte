@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.base;
@@ -9,11 +9,13 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import datadog.trace.api.Trace;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions.Procedure;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.util.ApmTraceUtils;
 import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -92,6 +94,7 @@ public class IntegrationRunner {
     validator = jsonSchemaValidator;
   }
 
+  @Trace(operationName = "RUN_OPERATION")
   public void run(final String[] args) throws Exception {
     final IntegrationConfig parsed = cliParser.parse(args);
     try {
@@ -155,6 +158,7 @@ public class IntegrationRunner {
       // to
       // find the root exception that corresponds to a configuration error. If that does not exist, we
       // just return the original exception.
+      ApmTraceUtils.addExceptionToTrace(e);
       final Throwable rootThrowable = ConnectorExceptionUtil.getRootConfigError(e);
       final String displayMessage = ConnectorExceptionUtil.getDisplayMessage(rootThrowable);
       // If the source connector throws a config error, a trace message with the relevant message should

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -62,6 +62,17 @@ class Client:
             if isinstance(v, list) and len(v) == 0 and k not in self.schema[stream_name]:
                 record[k] = ""
 
+        missing_properties = set(self.schema[stream_name].keys()).difference(record.keys()).discard("id")
+        for prop in missing_properties or []:
+            record[prop] = None
+
+        additional_props = set(record.keys()).difference(self.schema[stream_name].keys())
+        for prop in additional_props or []:
+            if isinstance(record[prop], dict):
+                record[prop] = json.dumps(record[prop])
+            if isinstance(record[prop], list) and len(record[prop]) > 0 and isinstance(record[prop][0], dict):
+                record[prop] = json.dumps(record[prop])
+
         # Property names in Weaviate have to start with lowercase letter
         record = {k[0].lower() + k[1:]: v for k, v in record.items()}
         vector = None
@@ -77,7 +88,7 @@ class Client:
 
     def flush(self, retries: int = 3):
         if len(self.objects_with_error) > 0 and retries == 0:
-            error_msg = f"Objects had errors and retries failed as well. Object IDs: {self.objects_with_error.keys}"
+            error_msg = f"Objects had errors and retries failed as well. Object IDs: {self.objects_with_error.keys()}"
             raise WeaviatePartialBatchError(error_msg)
 
         results = self.client.batch.create_objects()

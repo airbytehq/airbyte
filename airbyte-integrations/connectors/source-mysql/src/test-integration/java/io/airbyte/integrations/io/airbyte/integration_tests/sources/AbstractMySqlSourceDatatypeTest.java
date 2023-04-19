@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -247,8 +247,8 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
               .sourceType("date")
               .fullSourceDataType(type)
               .airbyteType(JsonSchemaType.STRING_DATE)
-              .addInsertValues("'1999-01-08'", "'2021-01-01'")
-              .addExpectedValues("1999-01-08", "2021-01-01")
+              .addInsertValues("'1999-01-08'", "'2021-01-01'", "'2022/11/12'", "'1987.12.01'")
+              .addExpectedValues("1999-01-08", "2021-01-01", "2022-11-12", "1987-12-01")
               .build());
     }
 
@@ -267,7 +267,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
               .addInsertValues("'2005-10-10 23:22:21'", "'2013-09-05T10:10:02'", "'2013-09-06T10:10:02'")
-              .addExpectedValues("2005-10-10T23:22:21.000000", "2013-09-05T10:10:02.000000", "2013-09-06T10:10:02.000000")
+              .addExpectedValues("2005-10-10T23:22:21", "2013-09-05T10:10:02", "2013-09-06T10:10:02")
               .build());
     }
 
@@ -289,7 +289,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
               .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
               // JDBC driver can process only "clock"(00:00:00-23:59:59) values.
               .addInsertValues("'-22:59:59'", "'23:59:59'", "'00:00:00'")
-              .addExpectedValues("22:59:59.000000", "23:59:59.000000", "00:00:00.000000")
+              .addExpectedValues("22:59:59", "23:59:59", "00:00:00.000000")
               .build());
 
     }

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -13,7 +13,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from requests.auth import AuthBase
 
-from .streams import Campaigns, EmailActivity, Lists
+from .streams import Campaigns, EmailActivity, Lists, Reports
 
 
 class MailChimpAuthenticator:
@@ -68,4 +68,5 @@ class SourceMailchimp(AbstractSource):
             Lists(authenticator=authenticator),
             Campaigns(authenticator=authenticator),
             EmailActivity(authenticator=authenticator, campaign_id=campaign_id),
+            Reports(authenticator=authenticator),
         ]

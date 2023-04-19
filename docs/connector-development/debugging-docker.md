@@ -4,7 +4,7 @@ worker container, such as a Destination container. This guide will assume use of
 however the steps could be applied to another IDE or debugger.
 
 ## Prerequisites
-You should have the airbyte repo downloaded and should be able to [run the platform locally](/deploying-airbyte/local-deployment).
+You should have the airbyte repo downloaded and should be able to [run the platform locally](https://docs.airbyte.com/deploying-airbyte/local-deployment).
 Also, if you're on macOS you will need to follow the installation steps for [Docker Mac Connect](https://github.com/chipmk/docker-mac-net-connect).
 
 ## Connecting your debugger
@@ -123,6 +123,18 @@ Huh? No IP address, weird. Interestingly enough, all the IPs are sequential but 
 You can now add breakpoints and debug any code which would be executed in the `destination-postgres` container.
 
 Happy Debugging!
+
+#### Connecting the Debugger to an Integration Test Spawned Container
+You can also debug code contained in containers spawned in an integration test! This can be used to debug integration tests as well as testing code changes. 
+The steps involved are: 
+1. Follow all the steps outlined above to set up the **Remote JVM Debug** run configuration.
+2. Edit the run configurations associated with the given integration test with the following environment variables:`DEBUG_CONTAINER_IMAGE=source-postgres;DEBUG_CONTAINER_JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005`
+Note that you will have to keep repeating this step for every new integration test run configuration you create. 
+3. Run the integration test in debug mode. In the debug tab, open up the Remote JVM Debugger run configuration you just created. 
+4. Keep trying to attach the Remote JVM Debugger. It will likely fail a couple of times and eventually connect to the test container. If you want a more
+deterministic way to connect the debugger, you can set a break point in the `DockerProcessFactor.localDebuggingOptions()` method. Resume running the integration test run and
+then attempt to attach the Remote JVM Debugger (you still might need a couple of tries).
+
 
 ## Gotchas
 So now that your debugger is set up, what else is there to know?

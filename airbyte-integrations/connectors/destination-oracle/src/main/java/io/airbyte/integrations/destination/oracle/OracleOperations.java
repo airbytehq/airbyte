@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.oracle;
@@ -152,9 +152,9 @@ public class OracleOperations implements SqlOperations {
 
   @Override
   public String insertTableQuery(final JdbcDatabase database,
-                               final String schemaName,
-                               final String sourceTableName,
-                               final String destinationTableName) {
+                                 final String schemaName,
+                                 final String sourceTableName,
+                                 final String destinationTableName) {
     return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s\n", schemaName, destinationTableName, schemaName, sourceTableName);
   }
 
