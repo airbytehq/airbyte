@@ -346,7 +346,7 @@ class PerformanceReportsMixin(ReportsMixin):
     def get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
         start_date = super().get_start_date(stream_state, account_id)
 
-        if self.config.get("lookback_window") != 0:
+        if self.config.get("lookback_window"):
             # Datetime subtract won't work with days = 0
             # it'll output an AirbuteError
             return start_date.subtract(days=self.config["lookback_window"])
