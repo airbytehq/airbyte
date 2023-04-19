@@ -265,10 +265,10 @@ def oss_registry_diff_dataframe(oss_registry_diff: dict) -> OutputDataFrame:
     return output_dataframe(diff_df)
 
 
-@asset(required_resource_keys={"metadata_file_blobs"}, group_name=GROUP_NAME)
+@asset(required_resource_keys={"latest_metadata_file_blobs"}, group_name=GROUP_NAME)
 def metadata_directory_report(context: OpExecutionContext):
-    metadata_file_blobs = context.resources.metadata_file_blobs
-    blobs = [blob.name for blob in metadata_file_blobs if blob.name.endswith("metadata.yaml")]
+    latest_metadata_file_blobs = context.resources.latest_metadata_file_blobs
+    blobs = [blob.name for blob in latest_metadata_file_blobs]
     blobs_df = pd.DataFrame(blobs)
 
     return output_dataframe(blobs_df)

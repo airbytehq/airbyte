@@ -212,12 +212,12 @@ def legacy_registry_derived_metadata_definitions(
     return Output(all_definitions, metadata={"count": len(all_definitions)})
 
 
-@asset(required_resource_keys={"metadata_file_blobs"}, group_name=GROUP_NAME)
+@asset(required_resource_keys={"latest_metadata_file_blobs"}, group_name=GROUP_NAME)
 def metadata_definitions(context: OpExecutionContext) -> List[MetadataDefinition]:
-    metadata_file_blobs = context.resources.metadata_file_blobs
+    latest_metadata_file_blobs = context.resources.latest_metadata_file_blobs
 
     metadata_definitions = []
-    for blob in metadata_file_blobs:
+    for blob in latest_metadata_file_blobs:
         yaml_string = blob.download_as_string().decode("utf-8")
         metadata_dict = yaml.safe_load(yaml_string)
         metadata_def = MetadataDefinition.parse_obj(metadata_dict)
