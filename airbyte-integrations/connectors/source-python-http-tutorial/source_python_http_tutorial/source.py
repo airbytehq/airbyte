@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -38,7 +38,7 @@ class ExchangeRates(HttpStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         # The api requires that we include apikey as a header so we do that in this method
-        return {'apikey': self.apikey}
+        return {"apikey": self.apikey}
 
     def request_params(
         self,
@@ -47,7 +47,7 @@ class ExchangeRates(HttpStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         # The api requires that we include the base currency as a query param so we do that in this method
-        return {'base': self.base}
+        return {"base": self.base}
 
     def parse_response(
         self,

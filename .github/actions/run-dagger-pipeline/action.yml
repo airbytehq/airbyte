@@ -1,0 +1,47 @@
+name: "Run Dagger pipeline"
+description: "Runs a given dagger pipeline"
+inputs:
+  subcommand:
+    description: "Subcommand for airbyte-ci"
+    required: true
+  options:
+    description: "Options for the subcommand"
+    required: false
+  context:
+    description: "CI context (e.g., pull_request, manual)"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Get start timestamp
+      id: get-start-timestamp
+      run: echo "::set-output name=start-timestamp::$(date +%s)"
+      shell: bash
+    - name: Checkout Airbyte
+      uses: actions/checkout@v3
+      with:
+        repository: ${{ github.event.inputs.repo }}
+        ref: ${{ github.event.inputs.gitref }}
+    - name: Extract branch name
+      shell: bash
+      if: github.event_name == 'workflow_dispatch'
+      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+      id: extract_branch
+    - name: Install Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+    - name: Install ci-connector-ops package
+      shell: bash
+      run: pip install --quiet -e ./tools/ci_connector_ops\[pipelines]\
+    - name: Run airbyte-ci
+      shell: bash
+      run: |
+        export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
+        airbyte-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
+
+      env:
+        CI_GIT_BRANCH: ${{ github.head_ref }}
+        CI_GIT_REVISION: ${{ github.event.pull_request.head.sha }}
+        CI_CONTEXT: "${{ inputs.context }}"
+        CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}

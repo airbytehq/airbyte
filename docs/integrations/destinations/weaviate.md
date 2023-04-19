@@ -76,5 +76,6 @@ You should now have all the requirements needed to configure Weaviate as a desti
 
 | Version | Date       | Pull Request | Subject                                      |
 |:--------|:-----------| :--- |:---------------------------------------------|
-| 0.1.0   | 2022-12-06 | [\#20094](https://github.com/airbytehq/airbyte/pull/20094) | Add Weaviate destination                   |
+| 0.1.1   | 2022-02-08 | [\#22527](https://github.com/airbytehq/airbyte/pull/22527) | Multiple bug fixes: Support String based IDs, arrays of uknown type and additionalProperties of type object and array of objects |
+| 0.1.0   | 2022-12-06 | [\#20094](https://github.com/airbytehq/airbyte/pull/20094) | Add Weaviate destination |
 

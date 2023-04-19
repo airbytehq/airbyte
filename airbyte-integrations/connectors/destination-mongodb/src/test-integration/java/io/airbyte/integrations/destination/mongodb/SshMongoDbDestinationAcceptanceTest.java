@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mongodb;
@@ -45,7 +45,7 @@ public abstract class SshMongoDbDestinationAcceptanceTest extends MongodbDestina
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveIpAddress(container))
         .put(JdbcUtils.PORT_KEY, container.getExposedPorts().get(0))
         .put(JdbcUtils.DATABASE_KEY, DATABASE_NAME)
-        .put(AUTH_TYPE, getAuthTypeConfig()));
+        .put(AUTH_TYPE, getAuthTypeConfig()), false);
   }
 
   @Override
@@ -59,7 +59,7 @@ public abstract class SshMongoDbDestinationAcceptanceTest extends MongodbDestina
             .put("authorization", "login/password")
             .put(JdbcUtils.USERNAME_KEY, "user")
             .put(JdbcUtils.PASSWORD_KEY, "invalid_pass")
-            .build())));
+            .build())), false);
   }
 
   @Override

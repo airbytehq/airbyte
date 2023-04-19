@@ -1,8 +1,8 @@
 # Fivetran vs Airbyte
 
-We wrote an article, “[Open-source vs. Commercial Software: How to Solve the Data Integration Problem](https://airbyte.io/articles/data-engineering-thoughts/open-source-vs-commercial-software-how-to-better-solve-data-integration/),” in which we describe the pros and cons of Fivetran’s commercial approach and Airbyte’s open-source approach. Don’t hesitate to check it out for more detailed arguments. As a summary, here are the differences:
+We wrote an article, “[Open-source vs. Commercial Software: How to Solve the Data Integration Problem](https://airbyte.com/articles/data-engineering-thoughts/open-source-vs-commercial-software-how-to-better-solve-data-integration/),” in which we describe the pros and cons of Fivetran’s commercial approach and Airbyte’s open-source approach. Don’t hesitate to check it out for more detailed arguments. As a summary, here are the differences:
 
-![](https://airbyte.io/wp-content/uploads/2021/01/Airbyte-vs-Fivetran.png)
+![](https://airbyte.com/wp-content/uploads/2021/01/Airbyte-vs-Fivetran.png)
 
 ## **Fivetran:**
 

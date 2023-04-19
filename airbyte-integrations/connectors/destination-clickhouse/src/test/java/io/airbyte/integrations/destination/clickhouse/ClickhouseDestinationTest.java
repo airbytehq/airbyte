@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse;
@@ -17,7 +17,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -42,7 +42,7 @@ public class ClickhouseDestinationTest {
 
   private static final String DB_NAME = "default";
   private static final String STREAM_NAME = "id_and_name";
-  private static final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private static final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   private static ClickHouseContainer db;
   private static ConfiguredAirbyteCatalog catalog;

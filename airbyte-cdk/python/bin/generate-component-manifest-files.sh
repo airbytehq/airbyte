@@ -24,14 +24,15 @@ function main() {
 
     # There is a limitation of Pydantic where a model's private fields starting with an underscore are inaccessible.
     # The Pydantic model generator replaces special characters like $ with the underscore which results in all
-    # component's $options field resulting in _options. We have been unable to find a workaround in the model generator
-    # or while reading the field. There is no estimated timeline on the fix even though it is widely debated here:
+    # component's $parameters field resulting in _parameters. We have been unable to find a workaround in the
+    # model generator or while reading the field. There is no estimated timeline on the fix even though it is
+    # widely debated here:
     # https://github.com/pydantic/pydantic/issues/288.
     #
-    # Our low effort way to address this is to perform additional post-processing to rename _options to options.
+    # Our low effort way to address this is to perform additional post-processing to rename _parameters to parameters.
     # We can revisit this if there is movement on a fix.
     temp_file=$(mktemp)
-    sed 's/_options:/options:/g' "$ROOT_DIR/$OUTPUT_DIR/$filename_wo_ext.py" > "${temp_file}"
+    sed 's/ _parameters:/ parameters:/g' "$ROOT_DIR/$OUTPUT_DIR/$filename_wo_ext.py" > "${temp_file}"
     mv "${temp_file}" "$ROOT_DIR/$OUTPUT_DIR/$filename_wo_ext.py"
   done
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery.uploader;
@@ -35,18 +35,18 @@ import java.util.Set;
 public class BigQueryUploaderFactory {
 
   private static final String CONFIG_ERROR_MSG = """
-         Failed to write to destination schema.
-          
-        1. Make sure you have all required permissions for writing to the schema.
-        
-        2. Make sure that the actual destination schema's location corresponds to location provided
-          in connector's config.
-          
-        3. Try to change the "Destination schema" from "Mirror Source Structure" (if it's set) tp the
-        "Destination Default" option.
+                                                    Failed to write to destination schema.
 
-      More details:
-        """;
+                                                   1. Make sure you have all required permissions for writing to the schema.
+
+                                                   2. Make sure that the actual destination schema's location corresponds to location provided
+                                                     in connector's config.
+
+                                                   3. Try to change the "Destination schema" from "Mirror Source Structure" (if it's set) tp the
+                                                   "Destination Default" option.
+
+                                                 More details:
+                                                   """;
 
   public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig)
       throws IOException {

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, Mapping, Union
@@ -52,4 +52,8 @@ class AirtableAuth:
         if "api_key" in config:
             return TokenAuthenticator(token=(config or {}).get("api_key"))
         # for new oauth configs
-        return AirtableOAuth(config, "https://airtable.com/oauth2/v1/token")
+        credentials = config["credentials"]
+        if credentials["auth_method"] == "oauth2.0":
+            return AirtableOAuth(config, "https://airtable.com/oauth2/v1/token")
+        elif credentials["auth_method"] == "api_key":
+            return TokenAuthenticator(token=credentials["api_key"])
