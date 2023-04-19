@@ -101,7 +101,7 @@
       },
       "separator": {
         "title": "CSV Separator (Optional)",
-        "description": "The separator used in the cvs files. Define None if you want to use the Sniffer functionality",
+        "description": "The separator used in the CSV files. Define None if you want to use the Sniffer functionality",
         "type": "string",
         "default": ",",
         "examples": [","],
