@@ -1,7 +1,7 @@
 import pandas as pd
 from dagster import MetadataValue, Output, asset
-
-from orchestrator.templates.render import render_connector_registry_locations_html, render_connector_registry_locations_markdown
+from typing import List
+from orchestrator.templates.render import render_connector_registry_report_markdown
 
 GROUP_NAME = "registry_reports"
 OSS_SUFFIX = "_oss"
@@ -9,9 +9,20 @@ CLOUD_SUFFIX = "_cloud"
 
 # HELPERS
 
+# TODO choose a damn case
+def get_github_url(docker_repo_name, github_connector_folders):
+    if not isinstance(docker_repo_name, str):
+        return None
+
+    connector_name = docker_repo_name.replace("airbyte/", "")
+    if connector_name in github_connector_folders:
+        return f"https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/{connector_name}"
+    else:
+        return None
+
 
 def augment_and_normalize_connector_dataframes(
-    cloud_df, oss_df, primaryKey, connector_type, github_connector_folders
+    cloud_df: pd.DataFrame, oss_df: pd.DataFrame, primaryKey: str, connector_type: str, github_connector_folders: List[str]
 ):
     """
     Normalize the cloud and oss connector dataframes and merge them into a single dataframe.
@@ -26,8 +37,11 @@ def augment_and_normalize_connector_dataframes(
 
     # composite_key = [primaryKey, "dockerRepository", "dockerImageTag"]
 
-    # Merge the two registries on the 'image' and 'version' columns, keeping only the unique pairs
-    total_registry = pd.merge(cloud_df, oss_df, how="outer", suffixes=(OSS_SUFFIX, CLOUD_SUFFIX), on=primaryKey)
+    # Merge the two registries on the 'image' and 'version' columns
+    total_registry = pd.merge(oss_df, cloud_df, how="outer", suffixes=(OSS_SUFFIX, CLOUD_SUFFIX), on=primaryKey)
+
+    # remove duplicates from the merged dataframe
+    total_registry = total_registry.drop_duplicates(subset=primaryKey, keep="first")
 
     # Replace NaN values in the 'is_cloud' and 'is_oss' columns with False
     total_registry[["is_cloud", "is_oss"]] = total_registry[["is_cloud", "is_oss"]].fillna(False)
@@ -52,9 +66,17 @@ def augment_and_normalize_connector_dataframes(
 
     # Set connectorType to 'source' or 'destination'
     total_registry["connector_type"] = connector_type
-    # total_registry["is_source_controlled"] = total_registry["dockerRepository_oss"].apply(
-    #     lambda x: x.lstrip("airbyte/") in github_connector_folders
-    # )
+
+
+    # Set github url to the connector's folder in the github repo
+    # To do this we need to parse the 'dockerRepository_oss' column to get the connector name
+    # Its important to note that the 'dockerRepository_oss' column is only present if the connector is in the oss registry
+    # And that dockerRepository_oss needs to have "airbyte/" stripped from the beginning of the string before it can match the github folder name
+    # If the connector is not in the oss registry, then the 'dockerRepository_oss' column will be NaN
+    # In this case, we will set the github url to be None
+    total_registry["github_url"] = total_registry["dockerRepository_oss"].apply(
+        lambda x: get_github_url(x, github_connector_folders)
+    )
 
     # Rename column primaryKey to 'definitionId'
     total_registry.rename(columns={primaryKey: "definitionId"}, inplace=True)
@@ -177,21 +199,18 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
         "definitionId",
         "name_oss",
         "icon_oss",
+        "connector_type",
         "dockerRepository_oss",
         "dockerImageTag_oss",
         "dockerRepository_cloud",
         "dockerImageTag_cloud",
         "is_oss",
         "is_cloud",
+        "github_url",
         # "is_source_controlled",
         # "is_spec_cached",
 
         # build_status_badge
-        # icon
-        # id
-        # name
-        # cloud vs oss docker image
-        # cloud vs oss docker version
         # Do they match??
         # CDK version
         # Release stage
@@ -205,7 +224,7 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
     all_sources_dataframe.replace({True: "✅", False: "❌"}, inplace=True)
     all_destinations_dataframe.replace({True: "✅", False: "❌"}, inplace=True)
 
-    markdown = render_connector_registry_locations_markdown(
+    markdown = render_connector_registry_report_markdown(
         destinations_markdown=all_destinations_dataframe[columns_to_show].to_markdown(),
         sources_markdown=all_sources_dataframe[columns_to_show].to_markdown(),
     )
