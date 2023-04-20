@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - api.polygon.io
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:
