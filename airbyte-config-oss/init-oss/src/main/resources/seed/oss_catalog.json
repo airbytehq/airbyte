@@ -500,7 +500,7 @@
     "destinationDefinitionId": "99878c90-0fbd-46d3-9d98-ffde879d17fc",
     "name": "AWS Datalake",
     "dockerRepository": "airbyte/destination-aws-datalake",
-    "dockerImageTag": "0.1.2",
+    "dockerImageTag": "0.1.3",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/aws-datalake",
     "icon": "awsdatalake.svg",
     "spec": {
@@ -694,7 +694,7 @@
     "destinationDefinitionId": "22f6c74f-5699-40ff-833c-4a879ea40133",
     "name": "BigQuery",
     "dockerRepository": "airbyte/destination-bigquery",
-    "dockerImageTag": "1.2.20",
+    "dockerImageTag": "1.3.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/bigquery",
     "icon": "bigquery.svg",
     "spec": {
@@ -802,6 +802,16 @@
                   "default": "Delete all tmp files from GCS",
                   "enum": [ "Delete all tmp files from GCS", "Keep all tmp files in GCS" ],
                   "order": 4
+                },
+                "file_buffer_count": {
+                  "title": "File Buffer Count",
+                  "type": "integer",
+                  "minimum": 10,
+                  "maximum": 50,
+                  "default": 10,
+                  "description": "Number of file buffers allocated for writing data. Increasing this number is beneficial for connections using Change Data Capture (CDC) and up to the number of streams within a connection. Increasing the number of file buffers past the maximum number of streams has deteriorating effects",
+                  "examples": [ "10" ],
+                  "order": 5
                 }
               }
             } ]
@@ -862,7 +872,7 @@
     "destinationDefinitionId": "079d5540-f236-4294-ba7c-ade8fd918496",
     "name": "BigQuery (denormalized typed struct)",
     "dockerRepository": "airbyte/destination-bigquery-denormalized",
-    "dockerImageTag": "1.2.20",
+    "dockerImageTag": "1.3.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/bigquery",
     "icon": "bigquery.svg",
     "spec": {
@@ -965,6 +975,16 @@
                   "default": "Delete all tmp files from GCS",
                   "enum": [ "Delete all tmp files from GCS", "Keep all tmp files in GCS" ],
                   "order": 4
+                },
+                "file_buffer_count": {
+                  "title": "File Buffer Count",
+                  "type": "integer",
+                  "minimum": 10,
+                  "maximum": 50,
+                  "default": 10,
+                  "description": "Number of file buffers allocated for writing data. Increasing this number is beneficial for connections using Change Data Capture (CDC) and up to the number of streams within a connection. Increasing the number of file buffers past the maximum number of streams has deteriorating effects",
+                  "examples": [ "10" ],
+                  "order": 5
                 }
               }
             } ]
@@ -1630,7 +1650,7 @@
     "destinationDefinitionId": "072d5540-f236-4294-ba7c-ade8fd918496",
     "name": "Databricks Lakehouse",
     "dockerRepository": "airbyte/destination-databricks",
-    "dockerImageTag": "1.0.0",
+    "dockerImageTag": "1.0.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/databricks",
     "icon": "databricks.svg",
     "spec": {
@@ -8055,7 +8075,7 @@
     "sourceDefinitionId": "1fa90628-2b9e-11ed-a261-0242ac120002",
     "name": "AlloyDB for PostgreSQL",
     "dockerRepository": "airbyte/source-alloydb",
-    "dockerImageTag": "2.0.22",
+    "dockerImageTag": "2.0.23",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/alloydb",
     "icon": "alloydb.svg",
     "sourceType": "database",
@@ -8967,7 +8987,7 @@
     "sourceDefinitionId": "fa9f58c6-2d03-4237-aaa4-07d75e0c1396",
     "name": "Amplitude",
     "dockerRepository": "airbyte/source-amplitude",
-    "dockerImageTag": "0.2.0",
+    "dockerImageTag": "0.2.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/amplitude",
     "icon": "amplitude.svg",
     "sourceType": "api",
@@ -13932,7 +13952,7 @@
     "sourceDefinitionId": "253487c0-2246-43ba-a21f-5116b20a2c50",
     "name": "Google Ads",
     "dockerRepository": "airbyte/source-google-ads",
-    "dockerImageTag": "0.2.13",
+    "dockerImageTag": "0.2.14",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-ads",
     "icon": "google-adwords.svg",
     "sourceType": "api",
@@ -15789,7 +15809,7 @@
     "sourceDefinitionId": "68e63de2-bb83-4c7e-93fa-a8a9051e3993",
     "name": "Jira",
     "dockerRepository": "airbyte/source-jira",
-    "dockerImageTag": "0.3.6",
+    "dockerImageTag": "0.3.7",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/jira",
     "icon": "jira.svg",
     "sourceType": "api",
@@ -16999,7 +17019,7 @@
     "sourceDefinitionId": "56582331-5de2-476b-b913-5798de77bbdf",
     "name": "Mailjet Mail",
     "dockerRepository": "airbyte/source-mailjet-mail",
-    "dockerImageTag": "0.1.0",
+    "dockerImageTag": "0.1.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mailjet-mail",
     "icon": "mailjetmail.svg",
     "sourceType": "api",
@@ -17315,7 +17335,7 @@
     "sourceDefinitionId": "b5ea17b1-f170-46dc-bc31-cc744ca984c1",
     "name": "Microsoft SQL Server (MSSQL)",
     "dockerRepository": "airbyte/source-mssql",
-    "dockerImageTag": "1.0.12",
+    "dockerImageTag": "1.0.14",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mssql",
     "icon": "mssql.svg",
     "sourceType": "database",
@@ -18283,7 +18303,7 @@
     "sourceDefinitionId": "435bb9a5-7887-4809-aa58-28c27df0d7ad",
     "name": "MySQL",
     "dockerRepository": "airbyte/source-mysql",
-    "dockerImageTag": "2.0.16",
+    "dockerImageTag": "2.0.18",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mysql",
     "icon": "mysql.svg",
     "sourceType": "database",
@@ -21009,7 +21029,7 @@
     "sourceDefinitionId": "decd338e-5647-4c0b-adf4-da0e75f5a750",
     "name": "Postgres",
     "dockerRepository": "airbyte/source-postgres",
-    "dockerImageTag": "2.0.22",
+    "dockerImageTag": "2.0.24",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/postgres",
     "icon": "postgresql.svg",
     "sourceType": "database",
@@ -21419,7 +21439,8 @@
     "releaseStage": "generally_available",
     "allowedHosts": {
       "hosts": [ "${host}", "${tunnel_method.tunnel_host}" ]
-    }
+    },
+    "maxSecondsBetweenMessages": 7200
   }, {
     "sourceDefinitionId": "cde75ca1-1e28-4a0f-85bb-90c546de9f1f",
     "name": "Postmark App",
@@ -24564,7 +24585,7 @@
     "sourceDefinitionId": "e094cb9a-26de-4645-8761-65c0c425d1de",
     "name": "Stripe",
     "dockerRepository": "airbyte/source-stripe",
-    "dockerImageTag": "3.2.0",
+    "dockerImageTag": "3.3.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/stripe",
     "icon": "stripe.svg",
     "sourceType": "api",
@@ -28222,7 +28243,7 @@
     "sourceDefinitionId": "31e3242f-dee7-4cdc-a4b8-8e06c5458517",
     "name": "SFTP Bulk",
     "dockerRepository": "airbyte/source-sftp-bulk",
-    "dockerImageTag": "0.1.1",
+    "dockerImageTag": "0.1.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/sftp-bulk",
     "icon": "sftp.svg",
     "sourceType": "file",
@@ -28286,13 +28307,21 @@
             "order": 6,
             "examples": [ "csv", "json" ]
           },
+          "separator": {
+            "title": "CSV Separator (Optional)",
+            "description": "The separator used in the CSV files. Define None if you want to use the Sniffer functionality",
+            "type": "string",
+            "default": ",",
+            "examples": [ "," ],
+            "order": 7
+          },
           "folder_path": {
             "title": "Folder Path (Optional)",
             "description": "The directory to search files for sync",
             "type": "string",
             "default": "",
             "examples": [ "/logs/2022" ],
-            "order": 7
+            "order": 8
           },
           "file_pattern": {
             "title": "File Pattern (Optional)",
@@ -28300,14 +28329,14 @@
             "type": "string",
             "default": "",
             "examples": [ "log-([0-9]{4})([0-9]{2})([0-9]{2}) - This will filter files which  `log-yearmmdd`" ],
-            "order": 8
+            "order": 9
           },
           "file_most_recent": {
             "title": "Most recent file (Optional)",
             "description": "Sync only the most recent file for the configured folder path and file pattern",
             "type": "boolean",
             "default": false,
-            "order": 9
+            "order": 10
           },
           "start_date": {
             "type": "string",
@@ -28316,7 +28345,7 @@
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
             "examples": [ "2017-01-25T00:00:00Z" ],
             "description": "The date from which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
-            "order": 10
+            "order": 11
           }
         }
       },
