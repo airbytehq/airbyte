@@ -217,8 +217,29 @@ def build(ctx: click.Context) -> bool:
     required=True,
     envvar="SPEC_CACHE_BUCKET_NAME",
 )
+@click.option(
+    "--metadata-service-account-key",
+    help="The service account key to upload files to the GCS bucket hosting the metadata files.",
+    type=click.STRING,
+    required=True,
+    envvar="METADATA_SERVICE_ACCOUNT_KEY",
+)
+@click.option(
+    "--metadata-service-bucket-name",
+    help="The name of the GCS bucket where metadata files will be uploaded.",
+    type=click.STRING,
+    required=True,
+    envvar="METADATA_SERVICE_BUCKET_NAME",
+)
 @click.pass_context
-def publish(ctx: click.Context, pre_release: bool, spec_cache_service_account_key: str, spec_cache_bucket_name: str):
+def publish(
+    ctx: click.Context,
+    pre_release: bool,
+    spec_cache_service_account_key: str,
+    spec_cache_bucket_name: str,
+    metadata_service_bucket_name: str,
+    metadata_service_account_key: str,
+):
     if ctx.obj["is_local"]:
         click.confirm(
             "Publishing from a local environment is not recommend and requires to be logged in Airbyte's DockerHub registry, do you want to continue?",
@@ -234,6 +255,7 @@ def publish(ctx: click.Context, pre_release: bool, spec_cache_service_account_ke
     click.secho(f"Will publish the following connectors: {', '.join(selected_connectors_names)}.", fg="green")
 
     os.environ["SPEC_CACHE_SERVICE_ACCOUNT_KEY"] = spec_cache_service_account_key
+    os.environ["METADATA_SERVICE_ACCOUNT_KEY"] = metadata_service_account_key
 
     connectors_contexts = [
         ConnectorContext(
@@ -256,5 +278,6 @@ def publish(ctx: click.Context, pre_release: bool, spec_cache_service_account_ke
         ctx.obj["concurrency"],
         pre_release,
         spec_cache_bucket_name,
+        metadata_service_bucket_name,
     )
     return True

@@ -90,7 +90,7 @@ class MetadataUpload(PoetryRun):
         super().__init__(context, title, METADATA_DIR, METADATA_LIB_MODULE_PATH)
         self.poetry_run_container = (
             self.poetry_run_container.with_file(METADATA_FILE_NAME, get_metadata_file_from_path(context, metadata_path)).with_new_file(
-                self.GCS_CREDENTIALS_CONTAINER_PATH, gcs_credentials
+                self.GCS_CREDENTIALS_CONTAINER_PATH, gcs_credentials.replace("\n", "")
             )
             # The cache buster ensures we always run the upload command (in case of remote bucket change)
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
@@ -281,7 +281,6 @@ async def run_metadata_upload_pipeline(
 
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         pipeline_context.dagger_client = dagger_client.pipeline(pipeline_context.pipeline_name)
-
         async with pipeline_context:
             results = await execute_concurrently(
                 [
