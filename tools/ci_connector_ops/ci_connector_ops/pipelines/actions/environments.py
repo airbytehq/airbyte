@@ -10,7 +10,7 @@ import uuid
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from ci_connector_ops.pipelines.utils import get_file_contents, get_version_from_dockerfile, should_enable_sentry, slugify
-from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Secret
+from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Platform, Secret
 
 if TYPE_CHECKING:
     from ci_connector_ops.pipelines.contexts import ConnectorContext, PipelineContext
@@ -150,7 +150,7 @@ async def with_installed_python_package(
     return container
 
 
-def with_airbyte_connector(context: ConnectorContext) -> Container:
+def with_python_connector_installed(context: ConnectorContext) -> Container:
     """Load an airbyte connector source code in a testing environment.
 
     Args:
@@ -474,7 +474,7 @@ def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_p
     )
 
 
-def with_integration_base(context: PipelineContext, build_platform: str, jdk_version: str = "17.0.4") -> Container:
+def with_integration_base(context: PipelineContext, build_platform: Platform, jdk_version: str = "17.0.4") -> Container:
     """Create an integration base container.
 
     Reproduce with Dagger the Dockerfile defined here: airbyte-integrations/bases/base/Dockerfile
@@ -520,9 +520,8 @@ async def with_java_base(context: PipelineContext, build_platform: str, jdk_vers
     )
 
 
-async def with_airbyte_java_connector(context: ConnectorContext, connector_java_tar_file: File, build_platform: str):
+async def with_airbyte_java_connector(context: ConnectorContext, connector_java_tar_file: File, build_platform: Platform):
     dockerfile = context.get_connector_dir(include=["Dockerfile"]).file("Dockerfile")
-    connector_version = await get_version_from_dockerfile(dockerfile)
     application = context.connector.technical_name
     java_base = await with_java_base(context, build_platform)
     enable_sentry = await should_enable_sentry(dockerfile)
@@ -533,7 +532,7 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
         .with_file(f"{application}.tar", connector_java_tar_file)
         .with_exec(["tar", "xf", f"{application}.tar", "--strip-components=1"])
         .with_exec(["rm", "-rf", f"{application}.tar"])
-        .with_label("io.airbyte.version", connector_version)
+        .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
         .with_label("io.airbyte.name", f"airbyte/{application}")
         .with_env_variable("ENABLE_SENTRY", str(enable_sentry).lower())
         .with_entrypoint("/airbyte/base.sh")
@@ -548,3 +547,23 @@ def with_normalization(context, normalization_dockerfile_name: str) -> Container
     normalization_directory_with_build = normalization_directory.with_new_directory("build")
     normalization_directory_with_sshtunneling = normalization_directory_with_build.with_file("build/sshtunneling.sh", sshtunneling_file)
     return normalization_directory_with_sshtunneling.docker_build(normalization_dockerfile_name)
+
+
+def with_airbyte_python_connector(context: ConnectorContext, build_platform: Platform):
+    return (
+        context.dagger_client.container(platform=build_platform)
+        .from_("python:3.9-slim")
+        .with_exec(["apt-get", "update"])
+        .with_exec(["apt-get", "install", "bash"])
+        .with_exec(["rm", "-rf", "/var/lib/apt/lists/*"])
+        .with_directory(
+            "/airbyte/integration_code",
+            context.get_connector_dir(include=["main.py", "setup.py", context.connector.technical_name.replace("-", "_")]),
+        )
+        .with_workdir("/airbyte/integration_code")
+        .with_exec(["pip", "install", "."])
+        .with_env_variable("AIRBYTE_ENTRYPOINT", "python /airbyte/integration_code/main.py")
+        .with_entrypoint(["python", "/airbyte/integration_code/main.py"])
+        .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
+        .with_label("io.airbyte.name", context.metadata["dockerRepository"])
+    )
