@@ -605,7 +605,7 @@ definitions:
           - "P1W"
           - "{{ config['step_increment'] }}"
       end_time_option:
-        title: End Time Request Option
+        title: Inject End Time Into Outgoing HTTP Request
         description: Optionally configures how the end datetime will be sent in requests to the source API.
         "$ref": "#/definitions/RequestOption"
       lookback_window:
@@ -628,7 +628,7 @@ definitions:
         examples:
           - "starting_time"
       start_time_option:
-        title: Start Time Request Option
+        title: Inject Start Time Into Outgoing HTTP Request
         description: Optionally configures how the start datetime will be sent in requests to the source API.
         "$ref": "#/definitions/RequestOption"
       $parameters:
