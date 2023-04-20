@@ -43,12 +43,10 @@ class JinjaInterpolation(Interpolation):
         context = {"config": config, **additional_parameters}
 
         for alias, equivalent in self.ALIASES.items():
-            if "stream_slice" in context:
-                if alias in context:
-                    pass
-                    #raise RuntimeError("")
-                else:
-                    context[alias] = context[equivalent]
+            if alias in context:
+                raise ValueError(f"Found reserved keyword {alias} in interpolation context. This is unexpected and indicative of a bug in the CDK.")
+            elif equivalent in context:
+                context[alias] = context[equivalent]
 
         try:
             if isinstance(input_str, str):

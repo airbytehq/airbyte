@@ -46,6 +46,7 @@ def test_literals(test_name, s, value):
     val = interpolation.eval(s, None)
     assert val == value
 
+
 @pytest.mark.parametrize(
     "test_name, context, input_string, expected_value",
     [
@@ -73,6 +74,19 @@ def test_stream_slice_alias(test_name, context, input_string, expected_value):
     config = {}
     val = interpolation.eval(input_string, config, **context)
     assert val == expected_value
+
+
+@pytest.mark.parametrize(
+    "test_name, alias", [
+        ("test_error_is_raised_if_stream_interval_in_context", "stream_interval"),
+        ("test_error_is_raised_if_stream_partition_in_context", "stream_partition"),
+    ]
+)
+def test_error_is_raised_if_alias_is_already_in_context(test_name, alias):
+    config = {}
+    context = {alias: "a_value"}
+    with pytest.raises(ValueError):
+        interpolation.eval("a_key", config, **context)
 
 
 def test_positive_day_delta():
