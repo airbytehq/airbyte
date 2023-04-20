@@ -3,6 +3,7 @@
 #
 
 """This module groups util function used in pipelines."""
+from __future__ import annotations
 
 import datetime
 import re
@@ -10,7 +11,7 @@ import sys
 import unicodedata
 from glob import glob
 from pathlib import Path
-from typing import Any, Callable, List, Optional, Set
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Set, Tuple
 
 import anyio
 import asyncer
@@ -19,6 +20,9 @@ import git
 from ci_connector_ops.utils import DESTINATION_CONNECTOR_PATH_PREFIX, SOURCE_CONNECTOR_PATH_PREFIX, Connector, get_connector_name_from_path
 from dagger import Config, Connection, Container, DaggerError, File, QueryError
 from more_itertools import chunked
+
+if TYPE_CHECKING:
+    from ci_connector_ops.pipelines.contexts import ConnectorContext
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
@@ -292,6 +296,9 @@ class DaggerPipelineCommand(click.Command):
         """
         command_name = self.name
         click.secho(f"Running Dagger Command {command_name}...")
+        click.secho(
+            "If you're running this command for the first time the Dagger engine image will be pulled, it can take a short minute..."
+        )
         try:
             pipeline_success = super().invoke(ctx)
             if not pipeline_success:
@@ -309,3 +316,27 @@ async def execute_concurrently(steps: List[Callable], concurrency=5):
         async with asyncer.create_task_group() as task_group:
             tasks += [task_group.soonify(step)() for step in chunk]
     return [task.value for task in tasks]
+
+
+async def export_container_to_tarball(context: ConnectorContext, container: Container) -> Tuple[Optional[File], Optional[Path]]:
+    """Save the container image to the host filesystem as a tar archive.
+
+    Exporting a container image as a tar archive allows user to have a dagger built container image available on their host filesystem.
+    They can load this tar file to their main docker host with 'docker load'.
+    This mechanism is also used to share dagger built containers with other steps like AcceptanceTest that have their own dockerd service.
+    We 'docker load' this tar file to AcceptanceTest's docker host to make sure the container under test image is available for testing.
+
+    Returns:
+        Tuple[Optional[File], Optional[Path]]: A tuple with the file object holding the tar archive on the host and its path.
+    """
+    container_id = await container.id()
+    tar_file_name = f"{container_id[:100]}.tar"
+    local_path = Path(f"{context.host_image_export_dir_path}/{tar_file_name}")
+    export_success = await container.export(str(local_path))
+    if export_success:
+        exported_file = (
+            context.dagger_client.host().directory(context.host_image_export_dir_path, include=[tar_file_name]).file(tar_file_name)
+        )
+        return exported_file, local_path
+    else:
+        return None, None
