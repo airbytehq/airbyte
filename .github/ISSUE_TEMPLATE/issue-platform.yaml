@@ -1,5 +1,5 @@
 name: Platform Issue
-about: Use this when you're facing a platform, deploy or infrastructure issue.
+description: Use this when you're facing a platform, deploy or infrastructure issue.
 title: "Platform Issue: "
 labels: [type/bug, area/platform, needs-triage]
 body:
