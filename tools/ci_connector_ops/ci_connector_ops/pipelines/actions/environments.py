@@ -13,7 +13,7 @@ from ci_connector_ops.pipelines.utils import get_file_contents, get_version_from
 from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Secret
 
 if TYPE_CHECKING:
-    from ci_connector_ops.pipelines.contexts import ConnectorTestContext, PipelineContext
+    from ci_connector_ops.pipelines.contexts import ConnectorContext, PipelineContext
 
 
 PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
@@ -150,11 +150,11 @@ async def with_installed_python_package(
     return container
 
 
-def with_airbyte_connector(context: ConnectorTestContext) -> Container:
+def with_airbyte_connector(context: ConnectorContext) -> Container:
     """Load an airbyte connector source code in a testing environment.
 
     Args:
-        context (ConnectorTestContext): The current test context, providing the repository directory from which the connector sources will be pulled.
+        context (ConnectorContext): The current test context, providing the repository directory from which the connector sources will be pulled.
     Returns:
         Container: A python environment container (with the connector source code).
     """
@@ -163,11 +163,11 @@ def with_airbyte_connector(context: ConnectorTestContext) -> Container:
     return with_python_package(context, testing_environment, connector_source_path, exclude=["secrets"])
 
 
-async def with_installed_airbyte_connector(context: ConnectorTestContext) -> Container:
+async def with_installed_airbyte_connector(context: ConnectorContext) -> Container:
     """Install an airbyte connector python package in a testing environment.
 
     Args:
-        context (ConnectorTestContext): The current test context, providing the repository directory from which the connector sources will be pulled.
+        context (ConnectorContext): The current test context, providing the repository directory from which the connector sources will be pulled.
     Returns:
         Container: A python environment container (with the connector installed).
     """
@@ -249,12 +249,12 @@ async def with_ci_connector_ops(context: PipelineContext) -> Container:
 
 
 def with_dockerd_service(
-    context: ConnectorTestContext, shared_volume: Optional(Tuple[str, CacheVolume]) = None, docker_service_name: Optional[str] = None
+    context: ConnectorContext, shared_volume: Optional(Tuple[str, CacheVolume]) = None, docker_service_name: Optional[str] = None
 ) -> Container:
     """Create a container running dockerd, exposing its 2375 port, can be used as the docker host for docker-in-docker use cases.
 
     Args:
-        context (ConnectorTestContext): The current connector test context.
+        context (ConnectorContext): The current connector context.
         shared_volume (Optional, optional): A tuple in the form of (mounted path, cache volume) that will be mounted to the dockerd container. Defaults to None.
         docker_service_name (Optional[str], optional): The name of the docker service, appended to volume name, useful context isolation. Defaults to None.
 
@@ -281,7 +281,7 @@ def with_dockerd_service(
 
 
 def with_bound_docker_host(
-    context: ConnectorTestContext,
+    context: ConnectorContext,
     container: Container,
     shared_volume: Optional(Tuple[str, CacheVolume]) = None,
     docker_service_name: Optional[str] = None,
@@ -289,7 +289,7 @@ def with_bound_docker_host(
     """Bind a container to a docker host. It will use the dockerd service as a docker host.
 
     Args:
-        context (ConnectorTestContext): The current connector test context.
+        context (ConnectorContext): The current connector context.
         container (Container): The container to bind to the docker host.
         shared_volume (Optional, optional): A tuple in the form of (mounted path, cache volume) that will be both mounted to the container and the dockerd container. Defaults to None.
         docker_service_name (Optional[str], optional): The name of the docker service, useful context isolation. Defaults to None.
@@ -308,12 +308,12 @@ def with_bound_docker_host(
 
 
 def with_docker_cli(
-    context: ConnectorTestContext, shared_volume: Optional(Tuple[str, CacheVolume]) = None, docker_service_name: Optional[str] = None
+    context: ConnectorContext, shared_volume: Optional(Tuple[str, CacheVolume]) = None, docker_service_name: Optional[str] = None
 ) -> Container:
     """Create a container with the docker CLI installed and bound to a persistent docker host.
 
     Args:
-        context (ConnectorTestContext): The current connector test context.
+        context (ConnectorContext): The current connector context.
         shared_volume (Optional, optional): A tuple in the form of (mounted path, cache volume) that will be both mounted to the container and the dockerd container. Defaults to None.
         docker_service_name (Optional[str], optional): The name of the docker service, useful context isolation. Defaults to None.
 
@@ -324,11 +324,11 @@ def with_docker_cli(
     return with_bound_docker_host(context, docker_cli, shared_volume, docker_service_name)
 
 
-async def with_connector_acceptance_test(context: ConnectorTestContext, connector_under_test_image_tar: File) -> Container:
+async def with_connector_acceptance_test(context: ConnectorContext, connector_under_test_image_tar: File) -> Container:
     """Create a container to run connector acceptance tests, bound to a persistent docker host.
 
     Args:
-        context (ConnectorTestContext): The current connector test context.
+        context (ConnectorContext): The current connector context.
         connector_under_test_image_tar (File): The file containing the tar archive the image of the connector under test.
     Returns:
         Container: A container with connector acceptance tests installed.
@@ -355,7 +355,7 @@ async def with_connector_acceptance_test(context: ConnectorTestContext, connecto
 
 
 def with_gradle(
-    context: ConnectorTestContext,
+    context: ConnectorContext,
     sources_to_include: List[str] = None,
     bind_to_docker_host: bool = True,
     docker_service_name: Optional[str] = "gradle",
@@ -363,7 +363,7 @@ def with_gradle(
     """Create a container with Gradle installed and bound to a persistent docker host.
 
     Args:
-        context (ConnectorTestContext): The current connector test context.
+        context (ConnectorContext): The current connector context.
         sources_to_include (List[str], optional): List of additional source path to mount to the container. Defaults to None.
         bind_to_docker_host (bool): Whether to bind the gradle container to a docker host.
         docker_service_name (Optional[str], optional): The name of the docker service, useful context isolation. Defaults to "gradle".
@@ -419,13 +419,11 @@ def with_gradle(
         return openjdk_with_docker
 
 
-async def load_image_to_docker_host(
-    context: ConnectorTestContext, tar_file: File, image_tag: str, docker_service_name: Optional[str] = None
-):
+async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str, docker_service_name: Optional[str] = None):
     """Load a docker image tar archive to the docker host.
 
     Args:
-        context (ConnectorTestContext): The current connector test context.
+        context (ConnectorContext): The current connector context.
         tar_file (File): The file object holding the docker image tar archive.
         image_tag (str): The tag to create on the image if it has no tag.
         docker_service_name (str): Name of the docker service, useful for context isolation.
@@ -476,7 +474,7 @@ def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_p
     )
 
 
-def with_integration_base(context: PipelineContext, jdk_version: str = "17.0.4") -> Container:
+def with_integration_base(context: PipelineContext, build_platform: str, jdk_version: str = "17.0.4") -> Container:
     """Create an integration base container.
 
     Reproduce with Dagger the Dockerfile defined here: airbyte-integrations/bases/base/Dockerfile
@@ -484,7 +482,7 @@ def with_integration_base(context: PipelineContext, jdk_version: str = "17.0.4")
     base_sh = context.get_repo_dir("airbyte-integrations/bases/base", include=["base.sh"]).file("base.sh")
 
     return (
-        context.dagger_client.container()
+        context.dagger_client.container(platform=build_platform)
         .from_(f"amazoncorretto:{jdk_version}")
         .with_workdir("/airbyte")
         .with_file("base.sh", base_sh)
@@ -494,7 +492,7 @@ def with_integration_base(context: PipelineContext, jdk_version: str = "17.0.4")
     )
 
 
-async def with_java_base(context: PipelineContext, jdk_version: str = "17.0.4") -> Container:
+async def with_java_base(context: PipelineContext, build_platform: str, jdk_version: str = "17.0.4") -> Container:
     """Create a java base container.
 
     Reproduce with Dagger the Dockerfile defined here: airbyte-integrations/bases/base-java/Dockerfile_
@@ -505,7 +503,7 @@ async def with_java_base(context: PipelineContext, jdk_version: str = "17.0.4") 
     java_base_version = await get_version_from_dockerfile(dockerfile)
 
     return (
-        with_integration_base(context, jdk_version)
+        with_integration_base(context, build_platform, jdk_version)
         .with_exec(["yum", "install", "-y", "tar", "openssl"])
         .with_exec(["yum", "clean", "all"])
         .with_workdir("/airbyte")
@@ -522,11 +520,11 @@ async def with_java_base(context: PipelineContext, jdk_version: str = "17.0.4") 
     )
 
 
-async def with_airbyte_java_connector(context: ConnectorTestContext, connector_java_tar_file: File):
+async def with_airbyte_java_connector(context: ConnectorContext, connector_java_tar_file: File, build_platform: str):
     dockerfile = context.get_connector_dir(include=["Dockerfile"]).file("Dockerfile")
     connector_version = await get_version_from_dockerfile(dockerfile)
     application = context.connector.technical_name
-    java_base = await with_java_base(context)
+    java_base = await with_java_base(context, build_platform)
     enable_sentry = await should_enable_sentry(dockerfile)
 
     return (

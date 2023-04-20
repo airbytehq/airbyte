@@ -39,6 +39,8 @@ If you don't want to use the remote secrets please call airbyte-ci connectors-ci
 airbyte-ci connectors-ci --use-remote-secrets=False
 ```
 
+ 
+
 ### Environment variables required for CI run:
 
 - `GCP_GSM_CREDENTIALS`: the credentials to connect to GSM
@@ -52,26 +54,26 @@ airbyte-ci connectors-ci --use-remote-secrets=False
 (source-pokeapi does not require GSM access)
 
 ```bash
-airbyte-ci connectors test --name=source-pokeapi
+airbyte-ci connectors --name=source-pokeapi test
 ```
 
 ### **Run the pipeline for multiple connectors**
 
 ```bash
-airbyte-ci connectors test --name=source-pokeapi --name=source-openweather
+airbyte-ci connectors --name=source-pokeapi --name=source-openweather test
 ```
 
 ### **Run the pipeline for generally available connectors**
 
 ```bash
-airbyte-ci connectors test --release-stage=generally_available
+airbyte-ci connectors --release-stage=generally_available test
 ```
 
 ### **Run the pipeline for the connectors you changed on the branch**
 
 ```bash
 touch airbyte-integrations/connectors/source-pokeapi/random_file_addition.txt
-airbyte-ci connectors test --modified #the source-pokeapi pipeline should run
+airbyte-ci connectors --modified test #the source-pokeapi pipeline should run
 ```
 
 ### Local VS. CI
@@ -88,7 +90,7 @@ The main differences are that:
 - The pipeline will pull the branch under test from Airbyte's GitHub repo
 - The pipeline will upload per connector test reports to S3
 
-## What does a connector pipeline run
+### What does a connector test pipeline run
 
 ```mermaid
 flowchart TB
@@ -113,12 +115,35 @@ This is the DAG we expect for every connector for which the pipeline is triggere
 The Airbyte git repo will be the local one if you use `--is-local=True` command line option.
 The connector secrets won't be downloaded nor uploaded if you use the `--use-remote-secrets=False` command line option.
 
+## Running the Connector build pipeline
+You can build connector images that will be available on your docker host.
+Both linux/arm64 and linux/amd64 will be built but only the image corresponding to your architecture will be loaded to your host.
 
-### Performance benchmarks
+```bash
+airbyte-ci connectors --name=source-postgres build
+```
 
-| Connector      | Run integration test GHA duration                                      | Dagger POC duration (CI no cache)                                      |
-| -------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| source-pokeapi | [7mn22s](https://github.com/airbytehq/airbyte/actions/runs/4395453220) | [5mn26s](https://github.com/airbytehq/airbyte/actions/runs/4403595746) |
+**You can build multiple connectors in a single command:**
+
+Build all the modified connectors on your branch (given you committed the changes):
+```bash
+airbyte-ci connectors --modified
+```
+
+Build only source-postgres and source-pokeapi:
+```bash
+airbyte-ci connectors --name=source-postgres --name=source-pokeapi build
+```
+
+Build all GA connectors:
+```bash
+airbyte-ci connectors --release-stage=generally_available build
+```
+
+Build all GA java connectors:
+```bash
+airbyte-ci connectors --release-stage=generally_available --language=java build
+```
 
 ## Running the Metadata pipelines
 The new metadata service also uses dagger for its reproducible CI pipeline.

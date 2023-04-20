@@ -3,13 +3,12 @@
 #
 import uuid
 from pathlib import Path
-from typing import Optional, Set, List
+from typing import List, Optional, Set
 
 import asyncer
 import dagger
-
-from ci_connector_ops.pipelines.actions.environments import with_poetry_module, with_python_base, with_pip_packages
-from ci_connector_ops.pipelines.bases import Step, StepStatus, TestReport, StepResult
+from ci_connector_ops.pipelines.actions.environments import with_pip_packages, with_poetry_module, with_python_base
+from ci_connector_ops.pipelines.bases import Report, Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.contexts import PipelineContext
 from ci_connector_ops.pipelines.utils import DAGGER_CONFIG, METADATA_FILE_NAME, execute_concurrently
 
@@ -188,9 +187,11 @@ async def run_metadata_validation_pipeline(
             validation_steps = [MetadataValidation(metadata_pipeline_context, metadata_path).run for metadata_path in metadata_to_validate]
 
             results = await execute_concurrently(validation_steps, concurrency=10)
-            metadata_pipeline_context.test_report = TestReport(pipeline_context=metadata_pipeline_context, steps_results=results)
+            metadata_pipeline_context.report = Report(
+                pipeline_context=metadata_pipeline_context, steps_results=results, name="METADATA VALIDATION RESULTS"
+            )
 
-        return metadata_pipeline_context.test_report.success
+        return metadata_pipeline_context.report.success
 
 
 async def run_metadata_lib_test_pipeline(
@@ -221,9 +222,11 @@ async def run_metadata_lib_test_pipeline(
                 module_path=METADATA_LIB_MODULE_PATH,
             )
             result = await test_lib_step.run(["pytest"])
-            metadata_pipeline_context.test_report = TestReport(pipeline_context=metadata_pipeline_context, steps_results=[result])
+            metadata_pipeline_context.report = Report(
+                pipeline_context=metadata_pipeline_context, steps_results=[result], name="METADATA LIB TEST RESULTS"
+            )
 
-    return metadata_pipeline_context.test_report.success
+    return metadata_pipeline_context.report.success
 
 
 async def run_metadata_orchestrator_test_pipeline(
@@ -249,9 +252,11 @@ async def run_metadata_orchestrator_test_pipeline(
         async with metadata_pipeline_context:
             test_orch_step = TestOrchestrator(context=metadata_pipeline_context)
             result = await test_orch_step.run()
-            metadata_pipeline_context.test_report = TestReport(pipeline_context=metadata_pipeline_context, steps_results=[result])
+            metadata_pipeline_context.report = Report(
+                pipeline_context=metadata_pipeline_context, steps_results=[result], name="METADATA ORCHESTRATOR TEST RESULTS"
+            )
 
-    return metadata_pipeline_context.test_report.success
+    return metadata_pipeline_context.report.success
 
 
 async def run_metadata_upload_pipeline(
@@ -285,9 +290,9 @@ async def run_metadata_upload_pipeline(
                     for metadata_path in metadata_to_upload
                 ]
             )
-            pipeline_context.test_report = TestReport(pipeline_context, results)
+            pipeline_context.report = Report(pipeline_context, results, name="METADATA UPLOAD RESULTS")
 
-        return pipeline_context.test_report.success
+        return pipeline_context.report.success
 
 
 async def run_metadata_orchestrator_deploy_pipeline(
@@ -314,5 +319,7 @@ async def run_metadata_orchestrator_deploy_pipeline(
         async with metadata_pipeline_context:
             steps = [TestOrchestrator(context=metadata_pipeline_context), DeployOrchestrator(context=metadata_pipeline_context)]
             steps_results = await run_steps(steps)
-            metadata_pipeline_context.test_report = TestReport(pipeline_context=metadata_pipeline_context, steps_results=steps_results)
-    return metadata_pipeline_context.test_report.success
+            metadata_pipeline_context.report = Report(
+                pipeline_context=metadata_pipeline_context, steps_results=steps_results, name="METADATA ORCHESTRATOR DEPLOY RESULTS"
+            )
+    return metadata_pipeline_context.report.success

@@ -6,7 +6,7 @@
 from typing import List
 
 from ci_connector_ops.pipelines.bases import StepResult
-from ci_connector_ops.pipelines.contexts import ConnectorTestContext
+from ci_connector_ops.pipelines.contexts import ConnectorContext
 from ci_connector_ops.pipelines.tests import java_connectors, python_connectors
 from ci_connector_ops.pipelines.tests.common import AcceptanceTests, QaChecks  # noqa
 from ci_connector_ops.utils import ConnectorLanguage
@@ -25,11 +25,11 @@ LANGUAGE_MAPPING = {
 }
 
 
-async def run_qa_checks(context: ConnectorTestContext) -> List[StepResult]:
+async def run_qa_checks(context: ConnectorContext) -> List[StepResult]:
     """Run the QA checks on a connector.
 
     Args:
-        context (ConnectorTestContext): The current connector test context.
+        context (ConnectorContext): The current connector context.
 
     Returns:
         List[StepResult]: The results of the QA checks steps.
@@ -38,11 +38,11 @@ async def run_qa_checks(context: ConnectorTestContext) -> List[StepResult]:
     return [await QaChecks(context).run()]
 
 
-async def run_code_format_checks(context: ConnectorTestContext) -> List[StepResult]:
+async def run_code_format_checks(context: ConnectorContext) -> List[StepResult]:
     """Run the code format checks according to the connector language.
 
     Args:
-        context (ConnectorTestContext): The current connector test context.
+        context (ConnectorContext): The current connector context.
 
     Returns:
         List[StepResult]: The results of the code format checks steps.
@@ -55,11 +55,11 @@ async def run_code_format_checks(context: ConnectorTestContext) -> List[StepResu
         return []
 
 
-async def run_all_tests(context: ConnectorTestContext) -> List[StepResult]:
+async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     """Run all the tests steps according to the connector language.
 
     Args:
-        context (ConnectorTestContext): The current connector test context.
+        context (ConnectorContext): The current connector context.
 
     Returns:
         List[StepResult]: The results of the tests steps.
