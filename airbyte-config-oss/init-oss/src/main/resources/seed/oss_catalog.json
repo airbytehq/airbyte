@@ -17335,7 +17335,7 @@
     "sourceDefinitionId": "b5ea17b1-f170-46dc-bc31-cc744ca984c1",
     "name": "Microsoft SQL Server (MSSQL)",
     "dockerRepository": "airbyte/source-mssql",
-    "dockerImageTag": "1.0.13",
+    "dockerImageTag": "1.0.14",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mssql",
     "icon": "mssql.svg",
     "sourceType": "database",
@@ -18303,7 +18303,7 @@
     "sourceDefinitionId": "435bb9a5-7887-4809-aa58-28c27df0d7ad",
     "name": "MySQL",
     "dockerRepository": "airbyte/source-mysql",
-    "dockerImageTag": "2.0.17",
+    "dockerImageTag": "2.0.18",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mysql",
     "icon": "mysql.svg",
     "sourceType": "database",
@@ -21029,7 +21029,7 @@
     "sourceDefinitionId": "decd338e-5647-4c0b-adf4-da0e75f5a750",
     "name": "Postgres",
     "dockerRepository": "airbyte/source-postgres",
-    "dockerImageTag": "2.0.23",
+    "dockerImageTag": "2.0.24",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/postgres",
     "icon": "postgresql.svg",
     "sourceType": "database",
@@ -28243,7 +28243,7 @@
     "sourceDefinitionId": "31e3242f-dee7-4cdc-a4b8-8e06c5458517",
     "name": "SFTP Bulk",
     "dockerRepository": "airbyte/source-sftp-bulk",
-    "dockerImageTag": "0.1.1",
+    "dockerImageTag": "0.1.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/sftp-bulk",
     "icon": "sftp.svg",
     "sourceType": "file",
@@ -28307,13 +28307,21 @@
             "order": 6,
             "examples": [ "csv", "json" ]
           },
+          "separator": {
+            "title": "CSV Separator (Optional)",
+            "description": "The separator used in the CSV files. Define None if you want to use the Sniffer functionality",
+            "type": "string",
+            "default": ",",
+            "examples": [ "," ],
+            "order": 7
+          },
           "folder_path": {
             "title": "Folder Path (Optional)",
             "description": "The directory to search files for sync",
             "type": "string",
             "default": "",
             "examples": [ "/logs/2022" ],
-            "order": 7
+            "order": 8
           },
           "file_pattern": {
             "title": "File Pattern (Optional)",
@@ -28321,14 +28329,14 @@
             "type": "string",
             "default": "",
             "examples": [ "log-([0-9]{4})([0-9]{2})([0-9]{2}) - This will filter files which  `log-yearmmdd`" ],
-            "order": 8
+            "order": 9
           },
           "file_most_recent": {
             "title": "Most recent file (Optional)",
             "description": "Sync only the most recent file for the configured folder path and file pattern",
             "type": "boolean",
             "default": false,
-            "order": 9
+            "order": 10
           },
           "start_date": {
             "type": "string",
@@ -28337,7 +28345,7 @@
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
             "examples": [ "2017-01-25T00:00:00Z" ],
             "description": "The date from which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
-            "order": 10
+            "order": 11
           }
         }
       },
