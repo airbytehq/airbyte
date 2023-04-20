@@ -3,10 +3,14 @@
 #
 
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+import math
+import datetime
+import dateutil.parser
+import pytz
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -60,12 +64,15 @@ class MemcareStream(HttpStream, ABC):
         super().__init__(**kwargs)
         self.funeral_homes = [funeral_home.strip(
         ) for funeral_home in config.get('funeral_homes').split(',')]
+        sync_from = datetime.datetime.strptime(
+            config.get('sync_from'), "%Y-%m-%d")
+        self.sync_from = sync_from.replace(tzinfo=pytz.UTC)
         self.per = 100
         self.page = 1
         self.params = {
             "per": self.per,
-            "page": self.page
-        }
+            "page": self.page,
+            "order": "created_asc"}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -91,9 +98,57 @@ class MemcareStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = self.params.copy()
-        if self.next_page_token:
+        if next_page_token:
             params.update(next_page_token)
         return params
+
+    def parse_response(self,
+                       response: requests.Response,
+                       *,
+                       sync_mode: SyncMode,
+                       stream_state: Mapping[str, Any],
+                       stream_slice: Mapping[str, Any] = None,
+                       next_page_token: Mapping[str, Any] = None,) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        print(response.url)
+        yield from [{**data, "funeral_home": stream_slice["funeral_home"]} for data in response.json().get('data', [])]
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        for funeral_home in self.funeral_homes:
+            self.page = 1
+            yield {"funeral_home": funeral_home, "is_incremental": sync_mode == SyncMode.incremental}
+
+
+class IncrementalMemcareStream(MemcareStream, ABC):
+    state_checkpoint_interval = math.inf
+
+    def __init__(self, config: Mapping[str, Any]):
+        super().__init__(config)
+
+    @property
+    @abstractmethod
+    def cursor_field(self) -> str:
+        """
+        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
+        and define a cursor field.
+        """
+        pass
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        and returning an updated state object.
+        """
+        print("current stream state")
+        print(current_stream_state)
+        new_state = current_stream_state.copy()
+        new_state.update({self.cursor_field+latest_record.get("funeral_home")
+                         : datetime.datetime.now().replace(tzinfo=pytz.UTC)})
+        return new_state
 
     def parse_response(self,
                        response: requests.Response,
@@ -104,19 +159,28 @@ class MemcareStream(HttpStream, ABC):
         """
         :return an iterable containing each record in the response
         """
-        yield from [{**data, "funeral_home": stream_slice["funeral_home"]} for data in response.json().get('data', [])]
+        print(response.url)
+        all_data = response.json().get('data', [])
+        print("before", len(all_data))
+        funeral_home = stream_slice.get("funeral_home")
+        if stream_slice.get('is_incremental'):
+            print("INCREMENTAL")
+            sync_start = stream_state.get(
+                self.cursor_field+funeral_home, self.sync_from)
+            if isinstance(sync_start, str):
+                sync_start = dateutil.parser.isoparse(sync_start)
+            print(sync_start)
+            print(all_data)
+            all_data = [data for data in all_data if dateutil.parser.isoparse(data.get(
+                self.cursor_field)) >= sync_start]
+            print("after", len(all_data))
+        yield from [{**data, "funeral_home": funeral_home} for data in all_data]
 
-    def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        for funeral_home in self.funeral_homes:
-            self.page = 1
-            yield {"funeral_home": funeral_home}
 
-
-class Memory(MemcareStream):
+class Memory(IncrementalMemcareStream):
 
     primary_key = "id"
+    cursor_field = "created_at"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -127,8 +191,6 @@ class Memory(MemcareStream):
 class SourceMemcare(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
-
         See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
         for an example.
 
