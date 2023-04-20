@@ -129,7 +129,7 @@ def connectors(
 @click.pass_context
 def test(
     ctx: click.Context,
-):
+) -> bool:
     """Runs a test pipeline for the selected connectors.
 
     Args:
@@ -172,11 +172,13 @@ def test(
             should_send=ctx.obj.get("ci_context") == CIContext.PULL_REQUEST,
             logger=logger,
         )
+        return False
+    return True
 
 
 @connectors.command(cls=DaggerPipelineCommand, help="Build all images for the selected connectors.")
 @click.pass_context
-def build(ctx: click.Context):
+def build(ctx: click.Context) -> bool:
     click.secho(f"Will build the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}.", fg="green")
     connectors_contexts = [
         ConnectorContext(
@@ -191,4 +193,5 @@ def build(ctx: click.Context):
         )
         for connector in ctx.obj["selected_connectors"]
     ]
-    return anyio.run(run_connectors_build_pipelines, connectors_contexts, ctx.obj["concurrency"])
+    anyio.run(run_connectors_build_pipelines, connectors_contexts, ctx.obj["concurrency"])
+    return True
