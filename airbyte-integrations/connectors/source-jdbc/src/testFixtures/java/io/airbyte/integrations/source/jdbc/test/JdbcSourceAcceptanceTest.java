@@ -389,7 +389,8 @@ public abstract class JdbcSourceAcceptanceTest {
   @Test
   void testDiscoverWithMultipleSchemas() throws Exception {
     // clickhouse and mysql do not have a concept of schemas, so this test does not make sense for them.
-    if (getDriverClass().toLowerCase().contains("mysql") || getDriverClass().toLowerCase().contains("clickhouse")) {
+    String driverClass = getDriverClass().toLowerCase();
+    if (driverClass.contains("mysql") || driverClass.contains("clickhouse") || driverClass.contains("teradata")) {
       return;
     }
 
@@ -836,10 +837,11 @@ public abstract class JdbcSourceAcceptanceTest {
 
   // See https://github.com/airbytehq/airbyte/issues/14732 for rationale and details.
   @Test
-  void testIncrementalWithConcurrentInsertion() throws Exception {
+  public void testIncrementalWithConcurrentInsertion() throws Exception {
+    final String driverName = getDriverClass().toLowerCase();
     final String namespace = getDefaultNamespace();
     final String fullyQualifiedTableName = getFullyQualifiedTableName(TABLE_NAME_AND_TIMESTAMP);
-    final String columnDefinition = String.format("name VARCHAR(200) NOT NULL, timestamp %s NOT NULL", COL_TIMESTAMP_TYPE);
+    final String columnDefinition = String.format("name VARCHAR(200) NOT NULL, %s %s NOT NULL", COL_TIMESTAMP, COL_TIMESTAMP_TYPE);
 
     // 1st sync
     database.execute(ctx -> {
@@ -877,7 +879,12 @@ public abstract class JdbcSourceAcceptanceTest {
         .filter(r -> r.getType() == Type.RECORD)
         .map(r -> r.getRecord().getData().get(COL_NAME).asText())
         .toList();
-    assertEquals(List.of("a", "b"), firstSyncNames);
+    // teradata doesn't make insertion order guarantee when equal ordering value
+    if (driverName.contains("teradata")) {
+      assertThat(List.of("a", "b"), Matchers.containsInAnyOrder(firstSyncNames.toArray()));
+    } else {
+      assertEquals(List.of("a", "b"), firstSyncNames);
+    }
 
     // 2nd sync
     database.execute(ctx -> {
@@ -927,7 +934,14 @@ public abstract class JdbcSourceAcceptanceTest {
         .filter(r -> r.getType() == Type.RECORD)
         .map(r -> r.getRecord().getData().get(COL_NAME).asText())
         .toList();
-    assertEquals(List.of("c", "d", "e", "f"), thirdSyncExpectedNames);
+
+    // teradata doesn't make insertion order guarantee when equal ordering value
+    if (driverName.contains("teradata")) {
+      assertThat(List.of("c", "d", "e", "f"), Matchers.containsInAnyOrder(thirdSyncExpectedNames.toArray()));
+    } else {
+      assertEquals(List.of("c", "d", "e", "f"), thirdSyncExpectedNames);
+    }
+
   }
 
   private JsonNode getStateData(final AirbyteMessage airbyteMessage, final String streamName) {
@@ -1158,7 +1172,8 @@ public abstract class JdbcSourceAcceptanceTest {
 
   protected String getDefaultNamespace() {
     // mysql does not support schemas. it namespaces using database names instead.
-    if (getDriverClass().toLowerCase().contains("mysql") || getDriverClass().toLowerCase().contains("clickhouse")) {
+    if (getDriverClass().toLowerCase().contains("mysql") || getDriverClass().toLowerCase().contains("clickhouse") ||
+        getDriverClass().toLowerCase().contains("teradata")) {
       return config.get(JdbcUtils.DATABASE_KEY).asText();
     } else {
       return SCHEMA_NAME;
