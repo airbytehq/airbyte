@@ -1,4 +1,4 @@
-# Connector Builder Compatibility Guide
+# Compatibility Guide
 Answer the following questions to determine whether the Connector Builder is the right tool to build the connector you need:
 - [ ] [Is it an HTTP API returning a collection of records synchronously?](#is-the-integration-an-http-api-returning-a-collection-of-records-synchronously)
 - [ ] [Is the API using one of the following authentication mechanism?](#what-type-of-authentication-is-required)

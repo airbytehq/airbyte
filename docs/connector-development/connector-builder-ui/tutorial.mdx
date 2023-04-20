@@ -72,6 +72,8 @@ The actual API Key you copied from apilayer.com will not be part of the connecto
 
 ![Global configuration](./assets/tutorial-global-config.png)
 
+You can find more information about authentication method on the [authentication concept page](./authentication).
+
 ### Setting up and testing a stream
 
 Now that you configured how to talk the API, let's set up the stream of records that will be sent to a destination later on. To do so, click the button with the plus icon next to the "Streams" section in the side menu and fill out the form:
@@ -115,6 +117,8 @@ By default, the stream schema is set to a simple object with unspecified propert
 The warning icon disappears indicating that the declared schema of your stream matches the test data.
 
 <img src={SchemaTab} width="600" alt="Schema tab" />
+
+You can find more information about schema declaration on the [record processing concept page](./record-processing).
 
 ## Step 3 - Advanced configuration
 
@@ -174,6 +178,8 @@ Now, you should see a dropdown above the records view that lets you step through
 
 When used in a connection, the connector will make sure exchange rates for the same day are not requested multiple times - the date of the last fetched record will be stored and the next scheduled sync will pick up from where the previous one stopped.
 
+You can find more information about incremental syncs on the [incremental sync concept page](./incremental-sync).
+
 ### Adding transformations
 
 Note that a warning icon should show next to the "Detected schema" tab - using the per-date endpoint instead of the latest endpoint slightly changed the shape of the records by adding a `historical` property. As we don't need this property in our destination, we can remove it using a transformation.
@@ -186,6 +192,8 @@ To do so, follow these steps:
 The `historical` property in the records tab and the schema warning should disappear.
 
 ![Transformation](./assets/tutorial-transformation.png)
+
+You can find more information about incremental syncs on the [incremental sync concept page](./incremental-sync).
 
 ## Step 4 - Publishing and syncing
 
@@ -216,11 +224,11 @@ Congratulations! You just completed the following steps:
 ## Next steps
 
 This tutorial didn't go into depth about all features that can be used in the connector builder. Check out the concept pages for more information about certain topics:
-* Authentication
-* Record processing
-* Pagination
-* Error handling
-* Incremental syncs
-* Partitioning
+* [Authentication](./authentication)
+* [Record processing](./record-processing)
+* [Pagination](./pagination)
+* [Error handling](./error-handling)
+* [Incremental sync](./incremental-sync)
+* [Partitioning](./partitioning)
 
-Not every possible API can be consumed by connectors configured in the connector builder. The [compatibility guide](/connector-development/config-based/connector-builder-compatibility#oauth) can help determining whether another technology should be used to integrate an API with the Airbyte platform.
+Not every possible API can be consumed by connectors configured in the connector builder. The [compatibility guide](/connector-development/connector-builder-ui/connector-builder-compatibility#oauth) can help determining whether another technology should be used to integrate an API with the Airbyte platform.

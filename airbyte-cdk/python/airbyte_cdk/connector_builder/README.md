@@ -1,6 +1,6 @@
 # Connector Builder Backend
 
-This is the backend for requests from the [Connector Builder](https://docs.airbyte.com/connector-development/config-based/connector-builder-ui/).
+This is the backend for requests from the [Connector Builder](https://docs.airbyte.com/connector-development/connector-builder-ui/overview/).
 
 ## Local development
 
