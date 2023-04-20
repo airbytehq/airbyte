@@ -50,7 +50,7 @@ be printed at the end.
 
 3. If you intend to patch the connector, these files can be placed in the root directory of the connector
 and copied in Dockerfile. The following files are supported:
-    1. `spec.patch.json`: to patch the connector's endpoint_spec, the patch is applied per RFC7396 JSON Merge
+    1. `spec.patch.json`: to patch the connector's endpoint_spec, the patch is applied as specified by [RFC7396 JSON Merge](https://www.rfc-editor.org/rfc/rfc7396.txt)
     2. `spec.map.json`: to map fields from endpoint_spec. Keys and values are JSON pointers. Each key: value in this file is processed by moving whatever is at the value pointer to the key pointer
     3. `oauth2.patch.json`: to patch the connector's oauth2 spec. This patch overrides the connector's oauth2 spec
     4. `documentation_url.patch.json`: to patch the connector's
