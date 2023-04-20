@@ -103,16 +103,11 @@
 - name: Amplitude
   sourceDefinitionId: fa9f58c6-2d03-4237-aaa4-07d75e0c1396
   dockerRepository: airbyte/source-amplitude
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/amplitude
   icon: amplitude.svg
   sourceType: api
   releaseStage: generally_available
-  resourceRequirements:
-    jobSpecific:
-      - jobType: sync
-        resourceRequirements:
-          memory_limit: "8Gi"
   allowedHosts:
     hosts:
       - amplitude.com

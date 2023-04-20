@@ -1112,6 +1112,54 @@
     "custom": false,
     "releaseStage": "alpha"
   }, {
+    "destinationDefinitionId": "e088acb6-9780-4568-880c-54c2dd7f431b",
+    "name": "Cumul.io",
+    "dockerRepository": "airbyte/destination-cumulio",
+    "dockerImageTag": "0.1.0",
+    "documentationUrl": "https://docs.airbyte.com/integrations/destinations/cumulio",
+    "icon": "cumulio.svg",
+    "spec": {
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/cumulio",
+      "connectionSpecification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Destination Cumulio",
+        "type": "object",
+        "required": [ "api_host", "api_key", "api_token" ],
+        "additionalProperties": true,
+        "properties": {
+          "api_host": {
+            "title": "Cumul.io API Host URL",
+            "description": "URL of the Cumul.io API (e.g. 'https://api.cumul.io', 'https://api.us.cumul.io', or VPC-specific API url). Defaults to 'https://api.cumul.io'.",
+            "default": "https://api.cumul.io",
+            "type": "string",
+            "order": 0
+          },
+          "api_key": {
+            "title": "Cumul.io API Key",
+            "description": "An API key generated in Cumul.io's platform (can be generated here: https://app.cumul.io/start/profile/integration).",
+            "type": "string",
+            "airbyte_secret": true,
+            "order": 1
+          },
+          "api_token": {
+            "title": "Cumul.io API Token",
+            "description": "The corresponding API token generated in Cumul.io's platform (can be generated here: https://app.cumul.io/start/profile/integration).",
+            "type": "string",
+            "airbyte_secret": true,
+            "order": 2
+          }
+        }
+      },
+      "supportsIncremental": true,
+      "supportsNormalization": false,
+      "supportsDBT": false,
+      "supported_destination_sync_modes": [ "overwrite", "append" ]
+    },
+    "tombstone": false,
+    "public": true,
+    "custom": false,
+    "releaseStage": "alpha"
+  }, {
     "destinationDefinitionId": "81740ce8-d764-4ea7-94df-16bb41de36ae",
     "name": "Chargify (Keen)",
     "dockerRepository": "airbyte/destination-keen",
@@ -8987,7 +9035,7 @@
     "sourceDefinitionId": "fa9f58c6-2d03-4237-aaa4-07d75e0c1396",
     "name": "Amplitude",
     "dockerRepository": "airbyte/source-amplitude",
-    "dockerImageTag": "0.2.2",
+    "dockerImageTag": "0.2.3",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/amplitude",
     "icon": "amplitude.svg",
     "sourceType": "api",
@@ -9044,14 +9092,6 @@
     "public": true,
     "custom": false,
     "releaseStage": "generally_available",
-    "resourceRequirements": {
-      "jobSpecific": [ {
-        "jobType": "sync",
-        "resourceRequirements": {
-          "memory_limit": "8Gi"
-        }
-      } ]
-    },
     "allowedHosts": {
       "hosts": [ "amplitude.com", "analytics.eu.amplitude.com" ]
     }
