@@ -149,6 +149,7 @@ jobs:
           - name: source-marketo
           - name: source-chargebee
           - name: source-klaviyo
+          - name: source-snapchat
 
     steps:
       - uses: actions/checkout@v2
