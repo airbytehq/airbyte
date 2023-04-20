@@ -18186,7 +18186,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sftp-bulk:0.1.1"
+- dockerImage: "airbyte/source-sftp-bulk:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/source/ftp"
     connectionSpecification:
@@ -18255,6 +18255,15 @@
           examples:
           - "csv"
           - "json"
+        separator:
+          title: "CSV Separator (Optional)"
+          description: "The separator used in the CSV files. Define None if you want\
+            \ to use the Sniffer functionality"
+          type: "string"
+          default: ","
+          examples:
+          - ","
+          order: 7
         folder_path:
           title: "Folder Path (Optional)"
           description: "The directory to search files for sync"
@@ -18262,7 +18271,7 @@
           default: ""
           examples:
           - "/logs/2022"
-          order: 7
+          order: 8
         file_pattern:
           title: "File Pattern (Optional)"
           description: "The regular expression to specify files for sync in a chosen\
@@ -18271,14 +18280,14 @@
           default: ""
           examples:
           - "log-([0-9]{4})([0-9]{2})([0-9]{2}) - This will filter files which  `log-yearmmdd`"
-          order: 8
+          order: 9
         file_most_recent:
           title: "Most recent file (Optional)"
           description: "Sync only the most recent file for the configured folder path\
             \ and file pattern"
           type: "boolean"
           default: false
-          order: 9
+          order: 10
         start_date:
           type: "string"
           title: "Start Date"
@@ -18289,7 +18298,7 @@
           description: "The date from which you'd like to replicate data for all incremental\
             \ streams, in the format YYYY-MM-DDT00:00:00Z. All data generated after\
             \ this date will be replicated."
-          order: 10
+          order: 11
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
