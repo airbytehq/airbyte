@@ -22,7 +22,7 @@ When the API documentation recommends that requests be retried after waiting a c
 
 #### Example
 
-The [Intercom API]() is an API that recommends a constant backoff strategy when retrying requests.
+The [Intercom API](https://developers.intercom.com/intercom-api-reference/reference/http-responses) is an API that recommends a constant backoff strategy when retrying requests.
 
 ### Exponential
 
