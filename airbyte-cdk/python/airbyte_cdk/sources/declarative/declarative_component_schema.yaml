@@ -1339,6 +1339,7 @@ macros:
     return_type: Datetime
     examples:
       - "{{ now_utc() }}"
+      - "{{ now_utc().strftime('%Y-%m-%d') }}"
   - title: Today (UTC)
     description: Returns the current date in UTC timezone. The output is a date object.
     arguments: {}
