@@ -31,6 +31,9 @@ class JinjaInterpolation(Interpolation):
     Additional information on jinja templating can be found at https://jinja.palletsprojects.com/en/3.1.x/templates/#
     """
 
+    ALIASES = {"stream_interval": "stream_slice",
+               "stream_partition": "stream_slice"}
+
     def __init__(self):
         self._environment = Environment()
         self._environment.filters.update(**filters)
@@ -38,6 +41,15 @@ class JinjaInterpolation(Interpolation):
 
     def eval(self, input_str: str, config: Config, default: Optional[str] = None, **additional_parameters):
         context = {"config": config, **additional_parameters}
+
+        for alias, equivalent in self.ALIASES.items():
+            if "stream_slice" in context:
+                if alias in context:
+                    pass
+                    #raise RuntimeError("")
+                else:
+                    context[alias] = context[equivalent]
+
         try:
             if isinstance(input_str, str):
                 result = self._eval(input_str, context)

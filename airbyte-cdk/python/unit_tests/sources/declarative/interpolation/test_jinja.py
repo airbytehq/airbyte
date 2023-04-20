@@ -46,6 +46,34 @@ def test_literals(test_name, s, value):
     val = interpolation.eval(s, None)
     assert val == value
 
+@pytest.mark.parametrize(
+    "test_name, context, input_string, expected_value",
+    [
+        ("test_get_value_from_stream_slice",
+         {"stream_slice": {"stream_slice_key": "hello"}},
+         "{{ stream_slice['stream_slice_key'] }}", "hello"),
+        ("test_get_value_from_stream_slice_no_stream_slice",
+         {},
+         "{{ stream_slice['stream_slice_key'] }}", None),
+        ("test_get_value_from_stream_partition",
+         {"stream_slice": {"stream_slice_key": "hello"}},
+         "{{ stream_partition['stream_slice_key'] }}", "hello"),
+        ("test_get_value_from_stream_partition_no_stream_slice",
+         {},
+         "{{ stream_partition['stream_slice_key'] }}", None),
+        ("test_get_value_from_stream_partition",
+         {"stream_slice": {"stream_slice_key": "hello"}},
+         "{{ stream_interval['stream_slice_key'] }}", "hello"),
+        ("test_get_value_from_stream_interval_no_stream_slice",
+         {},
+         "{{ stream_interval['stream_slice_key'] }}", None),
+    ],
+)
+def test_stream_slice_alias(test_name, context, input_string, expected_value):
+    config = {}
+    val = interpolation.eval(input_string, config, **context)
+    assert val == expected_value
+
 
 def test_positive_day_delta():
     delta_template = "{{ day_delta(25) }}"
