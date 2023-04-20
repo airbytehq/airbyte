@@ -6,6 +6,12 @@ set -e
 YAML_DIR=metadata_service/models/src
 OUTPUT_DIR=metadata_service/models/generated
 
+# Ensure the yaml directory exists
+if [ ! -d "$YAML_DIR" ]; then
+  echo "The yaml directory does not exist: $YAML_DIR"
+  exit 1
+fi
+
 
 rm -rf "$OUTPUT_DIR"/*.py
 mkdir -p "$OUTPUT_DIR"
