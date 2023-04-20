@@ -148,6 +148,7 @@ jobs:
           - name: source-freshdesk
           - name: source-marketo
           - name: source-chargebee
+          - name: source-klaviyo
 
     steps:
       - uses: actions/checkout@v2
