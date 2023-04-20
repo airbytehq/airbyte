@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - ${domain}
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:
