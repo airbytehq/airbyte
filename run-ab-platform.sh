@@ -4,8 +4,8 @@
 set -o nounset # -u exit if a variable is not set
 set -o errexit # -f exit for any command failure
 
-# Get the version specified in the .env file
-version_tag="v$(cat .env | grep ^VERSION | cut -d '=' -f 2)"
+# Get the latest release tag
+version_tag="$(git describe --abbrev=0 --tags)"
 
 # text color escape codes (please note \033 == \e but OSX doesn't respect the \e)
 blue_text='\033[94m'
