@@ -107,7 +107,7 @@ definitions:
           - "{{ config['api_key'] }}"
           - "Token token={{ config['api_key'] }}"
       header:
-        title: Header
+        title: Header Name
         description: The name of the HTTP header that will be set to the API key.
         type: string
         interpolation_context:
@@ -586,6 +586,8 @@ definitions:
           - "$ref": "#/definitions/MinMaxDatetime"
         examples:
           - "2021-01-1T00:00:00Z"
+          - "{{ now_utc() }}"
+          - "{{ now_local() }}"
       start_datetime:
         title: Start Datetime
         description: The datetime that determines the earliest record that should be synced.
@@ -594,6 +596,7 @@ definitions:
           - "$ref": "#/definitions/MinMaxDatetime"
         examples:
           - "2020-01-1T00:00:00Z"
+          - "{{ config['start_time'] }}"
       step:
         title: Step
         description: The size of the time window (ISO8601 duration).
@@ -933,7 +936,7 @@ definitions:
           - 10
       response_filters:
         title: Response Filters
-        description: List of response filters to iterate on when deciding how to handle an error.
+        description: List of response filters to iterate on when deciding how to handle an error. When using an array of multiple filters, the filters will be applied sequentially and the response will be selected if it matches any of the filter's predicate.
         type: array
         items:
           "$ref": "#/definitions/HttpResponseFilter"
@@ -1164,7 +1167,7 @@ definitions:
         type: object
         additionalProperties: true
   HttpResponseFilter:
-    description: A filter that is used to select on properties of the HTTP response received.
+    description: A filter that is used to select on properties of the HTTP response received. When used with additional filters, a response will be selected if it matches any of the filter's criteria.
     type: object
     required:
       - type
@@ -1236,7 +1239,7 @@ definitions:
         enum: [InlineSchemaLoader]
       schema:
         title: Schema
-        description: Describes a streams' schema.
+        description: Describes a streams' schema. Refer to the [Data Types documentation](https://docs.airbyte.com/understanding-airbyte/supported-data-types/) for more details on which types are valid.
         type: object
   JsonFileSchemaLoader:
     title: Json File Schema Loader
@@ -1284,6 +1287,8 @@ definitions:
         title: Cursor Field
         description: While iterating over list values, the name of field used to reference a list value.
         type: string
+        interpolation_context:
+          - config
         examples:
           - "section"
           - "{{ config['section_key'] }}"
@@ -1295,6 +1300,8 @@ definitions:
           - type: array
             items:
               type: string
+        interpolation_context:
+          - config
         examples:
           - ["section_a", "section_b", "section_c"]
           - "{{ config['sections'] }}"
@@ -1503,7 +1510,7 @@ definitions:
         type: string
         enum: [OffsetIncrement]
       page_size:
-        title: Page Size
+        title: Limit
         description: The number of records to include in each pages.
         anyOf:
           - type: integer
@@ -1566,11 +1573,11 @@ definitions:
           - "id"
           - "{{ config['parent_record_id'] }}"
       stream:
-        title: Stream
-        description:
+        title: Parent Stream
+        description: Reference to the parent stream.
         "$ref": "#/definitions/DeclarativeStream"
       partition_field:
-        title: Partition Field
+        title: Current Parent Key Value Identifier
         description: While iterating over parent records during a sync, the parent_key value can be referenced by using this field.
         type: string
         examples:
@@ -1692,7 +1699,8 @@ definitions:
         type: string
         enum: [RequestOption]
       field_name:
-        title: Configures which key should be used in the location that the descriptor is being injected into
+        title: Request Option
+        description: Configures which key should be used in the location that the descriptor is being injected into
         type: string
         examples:
           - segment_id
@@ -1860,7 +1868,7 @@ definitions:
         type: string
         enum: [WaitTimeFromHeader]
       header:
-        title: Response Header
+        title: Response Header Name
         description: The name of the response header defining how long to wait before retrying.
         type: string
         interpolation_context:
