@@ -131,9 +131,10 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         config.get(JdbcUtils.PORT_KEY).asText(),
         encodedDatabaseName));
 
-    if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
+    jdbcUrl.append("prepareThreshold=0").append(AMPERSAND);
+    /*if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
       jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText()).append(AMPERSAND);
-    }
+    }*/
 
     final Map<String, String> sslParameters = parseSSLConfig(config);
     if (config.has(PARAM_SSL_MODE) && config.get(PARAM_SSL_MODE).has(PARAM_CA_CERTIFICATE)) {
@@ -156,7 +157,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
 
     jdbcUrl.append(toJDBCQueryParams(sslParameters));
-    LOGGER.debug("jdbc url: {}", jdbcUrl.toString());
+    LOGGER.info("jdbc url: {}", jdbcUrl.toString());
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
         .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
