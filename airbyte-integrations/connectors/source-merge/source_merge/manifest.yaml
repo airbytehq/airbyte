@@ -57,6 +57,41 @@ definitions:
     $parameters:
       path: "/account-details"
 
+  activities_stream:
+    $ref: "#/definitions/base_stream"
+    name: "activities"
+    primary_key: "id"
+    $parameters:
+      path: "/activities"
+
+  applications_stream:
+    $ref: "#/definitions/base_stream"
+    name: "applications"
+    primary_key: "id"
+    $parameters:
+      path: "/applications"
+
+  attachments_stream:
+    $ref: "#/definitions/base_stream"
+    name: "attachments"
+    primary_key: "id"
+    $parameters:
+      path: "/attachments"
+
+  candidates_stream:
+    $ref: "#/definitions/base_stream"
+    name: "candidates"
+    primary_key: "id"
+    $parameters:
+      path: "/candidates"
+
+  departments_stream:
+    $ref: "#/definitions/base_stream"
+    name: "departments"
+    primary_key: "id"
+    $parameters:
+      path: "/departments"
+
   sync_status_stream:
     $ref: "#/definitions/base_stream"
     name: "sync_status"
@@ -73,6 +108,11 @@ definitions:
 
 streams:
   - "#/definitions/account_details_stream"
+  - "#/definitions/activities_stream"
+  - "#/definitions/applications_stream"
+  - "#/definitions/attachments_stream"
+  - "#/definitions/candidates_stream"
+  - "#/definitions/departments_stream"
   - "#/definitions/sync_status_stream"
   - "#/definitions/users_stream"
 
@@ -80,5 +120,10 @@ check:
   type: CheckStream
   stream_names:
     - "account_details"
+    - "activities"
+    - "applications"
+    - "attachments"
+    - "candidates"
+    - "departments"
     - "sync_status"
     - "users"
