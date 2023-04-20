@@ -17,12 +17,20 @@ definitions:
       type: BearerAuthenticator
       api_token: "{{ config['api_token'] }}"
 
+  selective_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ response.next }}"
+    page_token_option:
+      type: RequestPath
+
   retriever:
     type: SimpleRetriever
     record_selector:
       $ref: "#/definitions/selector"
     paginator:
-      type: NoPagination
+      $ref: "#/definitions/selective_paginator"
     requester:
       $ref: "#/definitions/requester"
 
