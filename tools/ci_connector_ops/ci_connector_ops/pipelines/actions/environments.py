@@ -474,48 +474,37 @@ def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_p
     )
 
 
-def with_integration_base(context: PipelineContext, build_platform: Platform, jdk_version: str = "17.0.4") -> Container:
-    """Create an integration base container.
-
-    Reproduce with Dagger the Dockerfile defined here: airbyte-integrations/bases/base/Dockerfile
-    """
-    base_sh = context.get_repo_dir("airbyte-integrations/bases/base", include=["base.sh"]).file("base.sh")
-
+def with_integration_base(context: PipelineContext, build_platform: Platform) -> Container:
     return (
         context.dagger_client.container(platform=build_platform)
-        .from_(f"amazoncorretto:{jdk_version}")
+        .from_("amazonlinux:2022.0.20220831.1")
         .with_workdir("/airbyte")
-        .with_file("base.sh", base_sh)
+        .with_file("base.sh", context.get_repo_dir("airbyte-integrations/bases/base", include=["base.sh"]).file("base.sh"))
         .with_env_variable("AIRBYTE_ENTRYPOINT", "/airbyte/base.sh")
+        .with_entrypoint("/airbyte/base.sh")
         .with_label("io.airbyte.version", "0.1.0")
         .with_label("io.airbyte.name", "airbyte/integration-base")
     )
 
 
-async def with_java_base(context: PipelineContext, build_platform: Platform, jdk_version: str = "17.0.4") -> Container:
-    """Create a java base container.
+def with_integration_base_java(context: PipelineContext, build_platform: Platform, jdk_version: str = "17.0.4") -> Container:
 
-    Reproduce with Dagger the Dockerfile defined here: airbyte-integrations/bases/base-java/Dockerfile_
-    """
-    datadog_java_agent = context.dagger_client.http("https://dtdg.co/latest-java-tracer")
-    javabase_sh = context.get_repo_dir("airbyte-integrations/bases/base-java", include=["javabase.sh"]).file("javabase.sh")
-    dockerfile = context.get_repo_dir("airbyte-integrations/bases/base-java", include=["Dockerfile"]).file("Dockerfile")
-    java_base_version = await get_version_from_dockerfile(dockerfile)
-
+    integration_base = with_integration_base(context, build_platform)
     return (
-        with_integration_base(context, build_platform, jdk_version)
-        .with_exec(["yum", "install", "-y", "tar", "openssl"])
-        .with_exec(["yum", "clean", "all"])
+        context.dagger_client.container(platform=build_platform)
+        .from_(f"amazoncorretto:{jdk_version}")
+        .with_directory("/airbyte", integration_base.directory("/airbyte"))
         .with_workdir("/airbyte")
-        .with_file("dd-java-agent.jar", datadog_java_agent)
-        .with_file("javabase.sh", javabase_sh)
+        .with_file("dd-java-agent.jar", context.dagger_client.http("https://dtdg.co/latest-java-tracer"))
+        .with_file("javabase.sh", context.get_repo_dir("airbyte-integrations/bases/base-java", include=["javabase.sh"]).file("javabase.sh"))
         .with_env_variable("AIRBYTE_SPEC_CMD", "/airbyte/javabase.sh --spec")
         .with_env_variable("AIRBYTE_CHECK_CMD", "/airbyte/javabase.sh --check")
         .with_env_variable("AIRBYTE_DISCOVER_CMD", "/airbyte/javabase.sh --discover")
         .with_env_variable("AIRBYTE_READ_CMD", "/airbyte/javabase.sh --read")
         .with_env_variable("AIRBYTE_WRITE_CMD", "/airbyte/javabase.sh --write")
         .with_env_variable("AIRBYTE_ENTRYPOINT", "/airbyte/base.sh")
-        .with_label("io.airbyte.version", java_base_version)
+        .with_entrypoint(["/airbyte/base.sh"])
+        .with_label("io.airbyte.version", "0.1.2")
         .with_label("io.airbyte.name", "airbyte/integration-base-java")
     )
 
@@ -566,7 +555,7 @@ def with_normalization(context: ConnectorContext) -> Container:
     return normalization_directory_with_sshtunneling.docker_build(normalization_dockerfile_name)
 
 
-async def with_java_base_and_normalization(context: PipelineContext, build_platform: Platform) -> Container:
+async def with_integration_base_java_and_normalization(context: PipelineContext, build_platform: Platform) -> Container:
     yum_packages_to_install = [
         "python3",
         "python3-devel",
@@ -578,9 +567,10 @@ async def with_java_base_and_normalization(context: PipelineContext, build_platf
     dbt_adapter_package = DESTINATION_SPECIFIC_NORMALIZATION_ADAPTER_MAPPING.get(context.connector.technical_name, "dbt-bigquery==1.0.0")
 
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
-    java_base = await with_java_base(context, build_platform)
+
     return (
-        java_base.with_exec(["yum", "install", "-y"] + yum_packages_to_install)
+        with_integration_base_java(context, build_platform)
+        .with_exec(["yum", "install", "-y"] + yum_packages_to_install)
         .with_exec(["alternatives", "--install", "/usr/bin/python", "python", "/usr/bin/python3", "60"])
         .with_mounted_cache("/root/.cache/pip", pip_cache)
         .with_exec(["python", "-m", "ensurepip", "--upgrade"])
@@ -602,22 +592,35 @@ async def with_java_base_and_normalization(context: PipelineContext, build_platf
 
 async def with_airbyte_java_connector(context: ConnectorContext, connector_java_tar_file: File, build_platform: Platform):
     dockerfile = context.get_connector_dir(include=["Dockerfile"]).file("Dockerfile")
-    connector_version = await get_version_from_dockerfile(dockerfile)
-    application = context.connector.technical_name
-    if context.connector.supports_normalization:
-        java_base = await with_java_base_and_normalization(context, build_platform)
-    else:
-        java_base = await with_java_base(context, build_platform)
+    # TODO find a way to infer this without the Dockerfile. From metadata.yaml?
     enable_sentry = await should_enable_sentry(dockerfile)
+    connector_version = await get_version_from_dockerfile(dockerfile)
 
-    return (
-        java_base.with_workdir("/airbyte")
-        .with_env_variable("APPLICATION", application)
+    application = context.connector.technical_name
+
+    build_stage = (
+        with_integration_base_java(context, build_platform)
+        .with_workdir("/airbyte")
+        .with_env_variable("APPLICATION", context.connector.technical_name)
+        .with_entrypoint([])
         .with_file(f"{application}.tar", connector_java_tar_file)
         .with_exec(["tar", "xf", f"{application}.tar", "--strip-components=1"])
         .with_exec(["rm", "-rf", f"{application}.tar"])
+    )
+
+    if context.connector.supports_normalization:
+        base = await with_integration_base_java_and_normalization(context, build_platform)
+    else:
+        base = await with_integration_base_java(context, build_platform)
+
+    return (
+        base.with_workdir("/airbyte")
+        .with_env_variable("APPLICATION", application)
+        .with_env_variable("ENABLE_SENTRY", str(enable_sentry).lower())
+        .with_directory("builts_artifacts", build_stage.directory("/airbyte"))
+        .with_exec(["sh", "-c", "mv builts_artifacts/* ."])
+        .with_exec(["rm", "-rf", "builts_artifacts"])
+        # TODO get version from metadata
         .with_label("io.airbyte.version", connector_version)
         .with_label("io.airbyte.name", f"airbyte/{application}")
-        .with_env_variable("ENABLE_SENTRY", str(enable_sentry).lower())
-        .with_entrypoint("/airbyte/base.sh")
     )
