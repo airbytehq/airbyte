@@ -159,7 +159,7 @@ Once you've finished iterating on the changes to a connector as specified in its
         * `airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml` if it is a source
         * `airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml` if it is a destination.
    
-   * Then run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/a534bb2a8f29b20e3cc7c52fef1bc3c34783695d/airbyte-config-oss/specs) for more information.
+   * Then run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/a534bb2a8f29b20e3cc7c52fef1bc3c34783695d/airbyte-config/specs) for more information.
 
 5. The new version of the connector is now available for everyone who uses it. Thank you!
 
