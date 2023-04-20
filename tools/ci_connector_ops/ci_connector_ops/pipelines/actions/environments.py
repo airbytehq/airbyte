@@ -550,6 +550,8 @@ def with_normalization(context, normalization_dockerfile_name: str) -> Container
 
 
 def with_airbyte_python_connector(context: ConnectorContext, build_platform: Platform):
+    pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
+
     return (
         context.dagger_client.container(platform=build_platform)
         .from_("python:3.9-slim")
@@ -561,6 +563,7 @@ def with_airbyte_python_connector(context: ConnectorContext, build_platform: Pla
             context.get_connector_dir(include=["main.py", "setup.py", context.connector.technical_name.replace("-", "_")]),
         )
         .with_workdir("/airbyte/integration_code")
+        .with_mounted_cache("/root/.cache/pip", pip_cache)
         .with_exec(["pip", "install", "."])
         .with_env_variable("AIRBYTE_ENTRYPOINT", "python /airbyte/integration_code/main.py")
         .with_entrypoint(["python", "/airbyte/integration_code/main.py"])
