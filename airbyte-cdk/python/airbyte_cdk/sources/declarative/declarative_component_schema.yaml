@@ -57,12 +57,14 @@ definitions:
         interpolation_context:
           - config
           - record
+          - stream_interval
+          - stream_partition
           - stream_slice
           - stream_state
         examples:
           - "{{ record['updates'] }}"
           - "{{ record['MetaData']['LastUpdatedTime'] }}"
-          - "{{ stream_slice['segment_id'] }}"
+          - "{{ stream_partition['segment_id'] }}"
       $parameters:
         type: object
         additionalProperties: true
@@ -1060,11 +1062,13 @@ definitions:
         interpolation_context:
           - config
           - next_page_token
-          - stream_state
+          - stream_interval
+          - stream_partition
           - stream_slice
+          - stream_state
         examples:
           - "/products"
-          - "/quotes/{{ stream_slice['id'] }}/quote_line_groups"
+          - "/quotes/{{ stream_partition['id'] }}/quote_line_groups"
           - "/trades/{{ config['symbol_id'] }}/history"
       authenticator:
         title: Authenticator
@@ -1108,12 +1112,14 @@ definitions:
               type: string
         interpolation_context:
           - next_page_token
+          - stream_interval
+          - stream_partition
           - stream_slice
           - stream_state
         examples:
           - |
             [{"clause": {"type": "timestamp", "operator": 10, "parameters":
-                [{"value": {{ stream_slice['start_time'] | int * 1000 }} }]
+                [{"value": {{ stream_interval['start_time'] | int * 1000 }} }]
               }, "orderBy": 1, "columnName": "Timestamp"}]/
       request_body_json:
         title: Request Body JSON Payload
@@ -1125,6 +1131,8 @@ definitions:
               type: string
         interpolation_context:
           - next_page_token
+          - stream_interval
+          - stream_partition
           - stream_slice
           - stream_state
         examples:
@@ -1141,6 +1149,8 @@ definitions:
               type: string
         interpolation_context:
           - next_page_token
+          - stream_interval
+          - stream_partition
           - stream_slice
           - stream_state
         examples:
@@ -1156,11 +1166,13 @@ definitions:
               type: string
         interpolation_context:
           - next_page_token
+          - stream_interval
+          - stream_partition
           - stream_slice
           - stream_state
         examples:
           - unit: "day"
-          - query: 'last_event_time BETWEEN TIMESTAMP "{{ stream_slice.start_time }}" AND TIMESTAMP "{{ stream_slice.end_time }}"'
+          - query: 'last_event_time BETWEEN TIMESTAMP "{{ stream_interval.start_time }}" AND TIMESTAMP "{{ stream_interval.end_time }}"'
           - searchIn: "{{ ','.join(config.get('search_in', [])) }}"
           - sort_by[asc]: updated_at
       $parameters:
@@ -1625,10 +1637,12 @@ definitions:
           - config
           - next_page_token
           - record
+          - stream_interval
+          - stream_partition
           - stream_slice
           - stream_state
         examples:
-          - "{{ record['created_at'] >= stream_slice['start_time'] }}"
+          - "{{ record['created_at'] >= stream_interval['start_time'] }}"
           - "{{ record.status in ['active', 'expired'] }}"
       $parameters:
         type: object
