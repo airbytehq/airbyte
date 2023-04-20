@@ -19,7 +19,7 @@ from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.pipelines.connectors import run_connectors_pipelines
 from ci_connector_ops.pipelines.publish import run_connector_publish_pipeline
 from ci_connector_ops.pipelines.tests import run_connector_test_pipeline
-from ci_connector_ops.pipelines.utils import DaggerPipelineCommand, get_modified_connectors
+from ci_connector_ops.pipelines.utils import DaggerPipelineCommand, get_modified_connectors, get_modified_metadata_files
 from ci_connector_ops.utils import ConnectorLanguage, get_all_released_connectors
 from rich.logging import RichHandler
 
@@ -124,8 +124,6 @@ def connectors(
         click.secho("No connector were selected according to your inputs. Please double check your filters.", fg="yellow")
         sys.exit(0)
 
-    ctx.obj["modified_connectors_in_commit"] = get_modified_connectors(ctx.obj["modified_files_in_commit"])
-    ctx.obj["modified_connectors_name_in_commit"] = [c.technical_name for c in ctx.obj["modified_connectors_in_commit"]]
     ctx.obj["selected_connectors"] = selected_connectors
     ctx.obj["selected_connectors_names"] = [c.technical_name for c in selected_connectors]
 
@@ -223,12 +221,12 @@ def build(ctx: click.Context) -> bool:
 def publish(ctx: click.Context, pre_release: bool, spec_cache_service_account_key: str, spec_cache_bucket_name: str):
     if ctx.obj["is_local"]:
         click.confirm(
-            "Publishing from a local environment is not recommend and require to be logged in to Airbyte's DockerHub registry, do you want to continue?",
+            "Publishing from a local environment is not recommend and requires to be logged in Airbyte's DockerHub registry, do you want to continue?",
             abort=True,
         )
     if ctx.obj["modified"]:
-        selected_connectors = ctx.obj["modified_connectors_in_commit"]
-        selected_connectors_names = ctx.obj["modified_connectors_name_in_commit"]
+        selected_connectors = get_modified_connectors(get_modified_metadata_files(ctx.obj["modified_files_in_commit"]))
+        selected_connectors_names = [connector.technical_name for connector in selected_connectors]
     else:
         selected_connectors = ctx.obj["selected_connectors"]
         selected_connectors_names = ctx.obj["selected_connectors_names"]

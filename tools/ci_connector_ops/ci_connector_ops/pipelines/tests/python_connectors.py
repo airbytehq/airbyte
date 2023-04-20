@@ -40,7 +40,7 @@ class CodeFormatChecks(Step):
         Returns:
             StepResult: Failure or success of the code format checks with stdout and stderr.
         """
-        connector_under_test = environments.with_airbyte_connector(self.context)
+        connector_under_test = environments.with_python_connector_installed(self.context)
         formatter = (
             connector_under_test.with_exec(["echo", "Running black"])
             .with_exec(self.RUN_BLACK_CMD)
