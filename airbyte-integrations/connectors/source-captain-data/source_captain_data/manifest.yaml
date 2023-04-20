@@ -150,7 +150,7 @@ check:
 
 spec:
   type: Spec
-  documentationUrl: https://docs.captaindata.co/#1da39f5f-a26f-4a53-9e84-3e4b28077eae
+  documentationUrl: https://docs.airbyte.com/integrations/sources/captain-data
   connection_specification:
     title: Captain Data Spec
     type: object

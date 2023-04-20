@@ -3,7 +3,10 @@
   "type": "object",
   "properties": {
     "accounts": {
-      "type": ["null", "array"]
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
     },
     "configuration": {
       "type": ["null", "object"]

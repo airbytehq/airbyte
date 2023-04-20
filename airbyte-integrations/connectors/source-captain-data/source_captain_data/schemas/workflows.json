@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "created_at": {
       "type": ["null", "string"]
@@ -12,7 +13,21 @@
       "type": ["null", "integer"]
     },
     "steps": {
-      "type": ["null", "array"]
+      "items": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "step_uid": {
+            "type": "string"
+          },
+          "uid": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
     },
     "template_uid": {
       "type": ["null", "string"]
