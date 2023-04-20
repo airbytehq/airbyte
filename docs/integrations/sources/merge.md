@@ -50,6 +50,17 @@ The Merge source connector supports the following [sync modes](https://docs.airb
 ## Supported Streams
 
 - account_details
+- activities
+- applications
+- attachments
+- candidates
+- departments
+- eeocs
+- interviews
+- job-interview-stages
+- jobs
+- offers
+- offices
 - sync_status
 - users
 

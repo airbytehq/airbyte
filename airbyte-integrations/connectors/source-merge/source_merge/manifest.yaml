@@ -92,6 +92,48 @@ definitions:
     $parameters:
       path: "/departments"
 
+  eeocs_stream:
+    $ref: "#/definitions/base_stream"
+    name: "eeocs"
+    primary_key: "id"
+    $parameters:
+      path: "/eeocs"
+
+  interviews_stream:
+    $ref: "#/definitions/base_stream"
+    name: "interviews"
+    primary_key: "id"
+    $parameters:
+      path: "/interviews"
+
+  job-interview-stages_stream:
+    $ref: "#/definitions/base_stream"
+    name: "job-interview-stages"
+    primary_key: "id"
+    $parameters:
+      path: "/job-interview-stages"
+
+  jobs_stream:
+    $ref: "#/definitions/base_stream"
+    name: "jobs"
+    primary_key: "id"
+    $parameters:
+      path: "/jobs"
+
+  offices_stream:
+    $ref: "#/definitions/base_stream"
+    name: "offices"
+    primary_key: "id"
+    $parameters:
+      path: "/offices"
+
+  offers_stream:
+    $ref: "#/definitions/base_stream"
+    name: "offers"
+    primary_key: "id"
+    $parameters:
+      path: "/offers"
+
   sync_status_stream:
     $ref: "#/definitions/base_stream"
     name: "sync_status"
@@ -113,6 +155,12 @@ streams:
   - "#/definitions/attachments_stream"
   - "#/definitions/candidates_stream"
   - "#/definitions/departments_stream"
+  - "#/definitions/eeocs_stream"
+  - "#/definitions/interviews_stream"
+  - "#/definitions/job-interview-stages_stream"
+  - "#/definitions/jobs_stream"
+  - "#/definitions/offers_stream"
+  - "#/definitions/offices_stream"
   - "#/definitions/sync_status_stream"
   - "#/definitions/users_stream"
 
@@ -125,5 +173,11 @@ check:
     - "attachments"
     - "candidates"
     - "departments"
+    - "eeocs"
+    - "interviews"
+    - "job-interview-stages"
+    - "jobs"
+    - "offers"
+    - "offices"
     - "sync_status"
     - "users"

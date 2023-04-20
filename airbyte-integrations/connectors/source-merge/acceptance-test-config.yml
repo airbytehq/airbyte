@@ -29,6 +29,18 @@ acceptance_tests:
             bypass_reason: "Merge is under beta stage and thus endpoint cannot be seeded manually"
           - name: "departments"
             bypass_reason: "Merge is under beta stage and thus endpoint cannot be seeded manually"
+          - name: "eeocs"
+            bypass_reason: "Merge is under beta stage and thus endpoint cannot be seeded manually"
+          - name: "interviews"
+            bypass_reason: "Merge is under beta stage and thus endpoint cannot be seeded manually"
+          - name: "job-interview-stages"
+            bypass_reason: "Merge is under beta stage and thus endpoint cannot be seeded manually"
+          - name: "jobs"
+            bypass_reason: "Merge is under beta stage and thus endpoint cannot be seeded manually"
+          - name: "offers"
+            bypass_reason: "Merge is under beta stage and thus endpoint cannot be seeded manually"
+          - name: "offices"
+            bypass_reason: "Merge is under beta stage and thus endpoint cannot be seeded manually"
 # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
         # expect_records:
         #   path: "integration_tests/expected_records.jsonl"
