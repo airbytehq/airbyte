@@ -62,7 +62,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
 
   private BigQuery bigquery;
   private Dataset dataset;
-  private JsonNode config;
+  protected JsonNode config;
   private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   @Override
