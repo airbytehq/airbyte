@@ -750,7 +750,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-bigquery:1.2.20"
+- dockerImage: "airbyte/destination-bigquery:1.3.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/bigquery"
     connectionSpecification:
@@ -922,6 +922,20 @@
                 - "Delete all tmp files from GCS"
                 - "Keep all tmp files in GCS"
                 order: 4
+              file_buffer_count:
+                title: "File Buffer Count"
+                type: "integer"
+                minimum: 10
+                maximum: 50
+                default: 10
+                description: "Number of file buffers allocated for writing data. Increasing\
+                  \ this number is beneficial for connections using Change Data Capture\
+                  \ (CDC) and up to the number of streams within a connection. Increasing\
+                  \ the number of file buffers past the maximum number of streams\
+                  \ has deteriorating effects"
+                examples:
+                - "10"
+                order: 5
         credentials_json:
           type: "string"
           description: "The contents of the JSON service account key. Check out the\
@@ -970,7 +984,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:1.2.20"
+- dockerImage: "airbyte/destination-bigquery-denormalized:1.3.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/bigquery"
     connectionSpecification:
@@ -1097,6 +1111,20 @@
                 - "Delete all tmp files from GCS"
                 - "Keep all tmp files in GCS"
                 order: 4
+              file_buffer_count:
+                title: "File Buffer Count"
+                type: "integer"
+                minimum: 10
+                maximum: 50
+                default: 10
+                description: "Number of file buffers allocated for writing data. Increasing\
+                  \ this number is beneficial for connections using Change Data Capture\
+                  \ (CDC) and up to the number of streams within a connection. Increasing\
+                  \ the number of file buffers past the maximum number of streams\
+                  \ has deteriorating effects"
+                examples:
+                - "10"
+                order: 5
         credentials_json:
           type: "string"
           description: "The contents of the JSON service account key. Check out the\
