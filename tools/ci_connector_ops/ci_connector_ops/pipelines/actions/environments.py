@@ -55,7 +55,7 @@ def with_python_base(context: PipelineContext, python_image_name: str = "python:
     base_container = (
         context.dagger_client.container()
         .from_(python_image_name)
-        .with_mounted_cache("/root/.cache/pip", pip_cache, sharing=CacheSharingMode.LOCKED)
+        .with_mounted_cache("/root/.cache/pip", pip_cache)
         .with_mounted_directory("/tools", context.get_repo_dir("tools", include=["ci_credentials", "ci_common_utils"]))
         .with_exec(["pip", "install", "--upgrade", "pip"])
     )
