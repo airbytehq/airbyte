@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+    paths:
+      - "airbyte-integrations/connectors/**/metadata.yaml"
   workflow_dispatch:
     inputs:
       connectors-options:
