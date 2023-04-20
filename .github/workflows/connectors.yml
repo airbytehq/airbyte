@@ -146,6 +146,7 @@ jobs:
           - name: source-slack
           - name: source-airtable
           - name: source-freshdesk
+          - name: source-marketo
 
     steps:
       - uses: actions/checkout@v2
