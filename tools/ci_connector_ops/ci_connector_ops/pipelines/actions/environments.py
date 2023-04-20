@@ -555,7 +555,7 @@ def with_normalization(context: ConnectorContext) -> Container:
     return normalization_directory_with_sshtunneling.docker_build(normalization_dockerfile_name)
 
 
-async def with_integration_base_java_and_normalization(context: PipelineContext, build_platform: Platform) -> Container:
+def with_integration_base_java_and_normalization(context: PipelineContext, build_platform: Platform) -> Container:
     yum_packages_to_install = [
         "python3",
         "python3-devel",
@@ -608,9 +608,9 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
     )
 
     if context.connector.supports_normalization:
-        base = await with_integration_base_java_and_normalization(context, build_platform)
+        base = with_integration_base_java_and_normalization(context, build_platform)
     else:
-        base = await with_integration_base_java(context, build_platform)
+        base = with_integration_base_java(context, build_platform)
 
     return (
         base.with_workdir("/airbyte")
