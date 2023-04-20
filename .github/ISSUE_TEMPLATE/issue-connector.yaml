@@ -47,5 +47,5 @@ body:
       label: Contribute
       description: Are you willing to submit the fix?
       options:
-        - label: Yes
+        - label: Yes, I want to contribute
           required: true
