@@ -1239,7 +1239,7 @@ definitions:
         enum: [InlineSchemaLoader]
       schema:
         title: Schema
-        description: Describes a streams' schema. Refer to the [Data Types documentation](https://docs.airbyte.com/understanding-airbyte/supported-data-types/) for more details on which types are valid.
+        description: Describes a streams' schema. Refer to the <a href="https://docs.airbyte.com/understanding-airbyte/supported-data-types/">Data Types documentation</a> for more details on which types are valid.
         type: object
   JsonFileSchemaLoader:
     title: Json File Schema Loader
