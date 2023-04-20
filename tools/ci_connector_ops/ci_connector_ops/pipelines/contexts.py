@@ -345,7 +345,7 @@ class ConnectorContext(PipelineContext):
         self.report.print()
         self.logger.info(self.report.to_json())
 
-        local_reports_path_root = "tools/ci_connector_ops/reports/"
+        local_reports_path_root = "tools/ci_connector_ops/pipeline_reports/"
         connector_name = self.report.pipeline_context.connector.technical_name
         connector_version = self.report.pipeline_context.connector.version
         git_revision = self.report.pipeline_context.git_revision
