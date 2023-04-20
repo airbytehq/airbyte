@@ -111,7 +111,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "jobs/{{ stream_partition.parent_id }}/openings"
+        path: "jobs/{{ stream_slice.parent_id }}/openings"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -126,7 +126,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "applications/{{ stream_partition.parent_id }}/demographics/answers"
+        path: "applications/{{ stream_slice.parent_id }}/demographics/answers"
     incremental_sync:
       type: CustomIncrementalSync
       class_name: source_greenhouse.components.GreenHouseSubstreamSlicer
@@ -143,7 +143,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "applications/{{ stream_partition.parent_id }}/scheduled_interviews"
+        path: "applications/{{ stream_slice.parent_id }}/scheduled_interviews"
     incremental_sync:
       type: CustomIncrementalSync
       class_name: source_greenhouse.components.GreenHouseSubstreamSlicer
@@ -172,7 +172,7 @@ definitions:
         $ref: "#/definitions/retriever"
         requester:
           $ref: "#/definitions/requester"
-          path: "demographics/questions/{{ stream_partition.parent_id }}/answer_options"
+          path: "demographics/questions/{{ stream_slice.parent_id }}/answer_options"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -194,7 +194,7 @@ definitions:
         $ref: "#/definitions/retriever"
         requester:
           $ref: "#/definitions/requester"
-          path: "demographics/question_sets/{{ stream_partition.parent_id }}/questions"
+          path: "demographics/question_sets/{{ stream_slice.parent_id }}/questions"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -220,12 +220,12 @@ definitions:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "jobs_stages"
-      path: "jobs/{{ stream_partition.parent_id }}/stages"
+      path: "jobs/{{ stream_slice.parent_id }}/stages"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "jobs/{{ stream_partition.parent_id }}/stages"
+        path: "jobs/{{ stream_slice.parent_id }}/stages"
     incremental_sync:
       type: CustomIncrementalSync
       class_name: source_greenhouse.components.GreenHouseSubstreamSlicer
