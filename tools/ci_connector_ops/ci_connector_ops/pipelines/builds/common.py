@@ -8,7 +8,7 @@ import docker
 from ci_connector_ops.pipelines.bases import Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.contexts import ConnectorContext
 from ci_connector_ops.pipelines.utils import export_container_to_tarball
-from dagger import Container
+from dagger import Container, Platform
 
 
 class BuildConnectorImageBase(Step, ABC):
@@ -16,7 +16,7 @@ class BuildConnectorImageBase(Step, ABC):
     def title(self):
         return f"Build {self.context.connector.technical_name} docker image for platform {self.build_platform}"
 
-    def __init__(self, context: ConnectorContext, build_platform) -> None:
+    def __init__(self, context: ConnectorContext, build_platform: Platform) -> None:
         self.build_platform = build_platform
         super().__init__(context)
 
