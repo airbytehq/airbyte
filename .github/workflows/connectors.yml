@@ -150,6 +150,7 @@ jobs:
           - name: source-chargebee
           - name: source-klaviyo
           - name: source-snapchat-marketing
+          - name: source-recharge
 
     steps:
       - uses: actions/checkout@v2
