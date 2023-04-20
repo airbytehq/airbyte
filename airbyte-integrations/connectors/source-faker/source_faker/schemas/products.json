@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": "number" },
+    "make": { "type": "string" },
+    "model": { "type": "string" },
+    "year": { "type": "number" },
+    "price": { "type": "number" },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    }
+  }
+}

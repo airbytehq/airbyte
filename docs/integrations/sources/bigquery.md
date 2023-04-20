@@ -18,7 +18,7 @@ The BigQuery source does not alter the schema present in your database. Dependin
 
 The BigQuery data types mapping:
 
-| CockroachDb Type | Resulting Type | Notes |
+| BigQuery Type | Resulting Type | Notes |
 | :--- | :--- | :--- |
 | `BOOL` | Boolean |  |
 | `INT64` | Number |  |

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.writer;
@@ -13,8 +13,8 @@ import io.airbyte.integrations.destination.s3.avro.S3AvroWriter;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
 import io.airbyte.integrations.destination.s3.jsonl.S3JsonlWriter;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.sql.Timestamp;
 import org.apache.avro.Schema;
 import org.slf4j.Logger;

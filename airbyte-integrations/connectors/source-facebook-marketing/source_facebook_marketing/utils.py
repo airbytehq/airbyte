@@ -1,12 +1,10 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
 
 import pendulum
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import Stream
 from pendulum import DateTime
 
 logger = logging.getLogger("airbyte")
@@ -22,6 +20,11 @@ def validate_start_date(start_date: DateTime) -> DateTime:
     now = pendulum.now(tz=start_date.tzinfo)
     today = now.replace(microsecond=0, second=0, minute=0, hour=0)
     retention_date = today.subtract(months=DATA_RETENTION_PERIOD)
+    if retention_date.day != today.day:
+        # `.subtract(months=37)` can be erroneous, for instance:
+        # 2023-03-31 - 37 month = 2020-02-29 which is incorrect, should be 2020-03-01
+        # that's why we're adjusting the date to the 1st day of the next month
+        retention_date = retention_date.replace(month=retention_date.month + 1, day=1)
 
     if start_date > now:
         message = f"The start date cannot be in the future. Set start date to today's date - {today}."
@@ -42,11 +45,3 @@ def validate_end_date(start_date: DateTime, end_date: DateTime) -> DateTime:
         logger.warning(message)
         return start_date
     return end_date
-
-
-def read_full_refresh(stream_instance: Stream):
-    slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh)
-    for _slice in slices:
-        records = stream_instance.read_records(stream_slice=_slice, sync_mode=SyncMode.full_refresh)
-        for record in records:
-            yield record

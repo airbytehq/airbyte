@@ -27,8 +27,8 @@ Schema:
       - max_retries
     additionalProperties: true
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       response_filters:
         type: array
         items:
@@ -59,8 +59,8 @@ Schema:
       - action
     additionalProperties: true
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       action:
         "$ref": "#/definitions/ResponseAction"
       http_codes:
@@ -114,7 +114,7 @@ requester:
   <...>
   error_handler:
     response_filters:
-        - error_message_contain: "ignorethisresponse"
+        - error_message_contains: "ignorethisresponse"
           action: IGNORE
 ```
 
@@ -143,8 +143,8 @@ requester:
     response_filters:
         - http_codes: [ 404 ]
           action: IGNORE
-                    - http_codes: [ 429 ]
-                    action: RETRY
+        - http_codes: [ 429 ]
+          action: RETRY
 ```
 
 ## Backoff Strategies
@@ -174,8 +174,8 @@ Schema:
     type: object
     additionalProperties: true
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       factor:
         type: integer
         default: 5
@@ -194,8 +194,8 @@ Schema:
     required:
       - backoff_time_in_seconds
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       backoff_time_in_seconds:
         type: number
 ```
@@ -214,8 +214,8 @@ Schema:
     required:
       - header
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       header:
         type: string
       regex:
@@ -263,8 +263,8 @@ Schema:
     required:
       - header
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       header:
         type: string
       regex:
@@ -320,8 +320,8 @@ Schema:
     required:
       - error_handlers
     additionalProperties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       error_handlers:
         type: array
         items:

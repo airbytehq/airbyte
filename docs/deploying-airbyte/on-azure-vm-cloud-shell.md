@@ -1,6 +1,6 @@
 # Deploy Airbyte on Azure (Cloud Shell)
 
-This page guides you through deploying Airbyte Open Source on a Microsoft Azure VM by setting up the deployment environment, installing and starting Airbyte, and connecting it to the VM.
+This page guides you through deploying Airbyte Open Source on a [Microsoft Azure VM](https://learn.microsoft.com/en-us/azure/virtual-machines/) by setting up the deployment environment, installing and starting Airbyte, and connecting it to the VM.
 
 :::info
 
@@ -36,14 +36,13 @@ Install Docker and Docker Compose in the VM:
 4. To install Docker Compose, run the following command:
 
     ```bash
-    sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
+    sudo apt-get install docker-compose-plugin -y
     ```
 
 5. Check Docker Compose version:
 
     ```bash
-    docker-compose --version
+    docker compose version
     ```
 
 6. Close the SSH connection to ensure that the group modification is considered:
@@ -78,16 +77,14 @@ Download Airbyte and deploy it in the VM using Docker Compose:
 3. Download Airbyte from GitHub: 
 
     ```bash
-    wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
+    wget https://raw.githubusercontent.com/airbytehq/airbyte-platform/main/{.env,flags.yml,docker-compose.yaml}
     ```
 
-4. Start Airbyte by running the following command:
+4. To start Airbyte, run the following command:
 
     ```bash
-    sudo docker-compose up -d
+    sudo docker compose up -d
     ```
-    This step takes about two minutes to complete. When done, you will see the cursor prompt.
-
 
 ## Connect to Airbyte
 
@@ -100,14 +97,11 @@ Test a remote connection to your VM locally and verify that Airbyte is up and ru
     ```bash 
     ssh -N -L 8000:localhost:8000 -i <your SSH key file> <admin username>@<IP address>
     ```
-	As a result, nothing happens. The cursor prompt keeps blinking.
 
 4. Open a web browser and navigate to `http://localhost:8000`. You will see Airbyte’s landing page. 
 
-:::danger
-
-For security reasons, it is strongly recommended not to expose Airbyte on Internet available ports. Future versions will add support for SSL and authentication.
-
+:::caution
+For security reasons, we strongly recommend not exposing Airbyte on Internet available ports.
 :::
 
 ## Troubleshooting

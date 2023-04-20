@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -35,7 +35,7 @@ config = {"option": "OPTION"}
     ],
 )
 def test_interpolated_request_params(test_name, input_request_params, expected_request_params):
-    provider = InterpolatedRequestOptionsProvider(config=config, request_parameters=input_request_params, options={})
+    provider = InterpolatedRequestOptionsProvider(config=config, request_parameters=input_request_params, parameters={})
 
     actual_request_params = provider.get_request_params(stream_state=state, stream_slice=stream_slice, next_page_token=next_page_token)
 
@@ -64,7 +64,7 @@ def test_interpolated_request_params(test_name, input_request_params, expected_r
     ],
 )
 def test_interpolated_request_json(test_name, input_request_json, expected_request_json):
-    provider = InterpolatedRequestOptionsProvider(config=config, request_body_json=input_request_json, options={})
+    provider = InterpolatedRequestOptionsProvider(config=config, request_body_json=input_request_json, parameters={})
 
     actual_request_json = provider.get_request_body_json(stream_state=state, stream_slice=stream_slice, next_page_token=next_page_token)
 
@@ -82,7 +82,7 @@ def test_interpolated_request_json(test_name, input_request_json, expected_reque
     ],
 )
 def test_interpolated_request_data(test_name, input_request_data, expected_request_data):
-    provider = InterpolatedRequestOptionsProvider(config=config, request_body_data=input_request_data, options={})
+    provider = InterpolatedRequestOptionsProvider(config=config, request_body_data=input_request_data, parameters={})
 
     actual_request_data = provider.get_request_body_data(stream_state=state, stream_slice=stream_slice, next_page_token=next_page_token)
 
@@ -93,4 +93,4 @@ def test_error_on_create_for_both_request_json_and_data():
     request_json = {"body_key": "{{ stream_slice['start_date'] }}"}
     request_data = "interpolate_me=5&invalid={{ config['option'] }}"
     with pytest.raises(ValueError):
-        InterpolatedRequestOptionsProvider(config=config, request_body_json=request_json, request_body_data=request_data, options={})
+        InterpolatedRequestOptionsProvider(config=config, request_body_json=request_json, request_body_data=request_data, parameters={})

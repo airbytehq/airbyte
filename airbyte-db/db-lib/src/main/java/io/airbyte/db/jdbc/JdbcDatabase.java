@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
@@ -29,6 +29,8 @@ import java.util.stream.StreamSupport;
 public abstract class JdbcDatabase extends SqlDatabase {
 
   protected final JdbcCompatibleSourceOperations<?> sourceOperations;
+  protected Exception streamException;
+  protected boolean isStreamFailed;
 
   public JdbcDatabase(final JdbcCompatibleSourceOperations<?> sourceOperations) {
     this.sourceOperations = sourceOperations;

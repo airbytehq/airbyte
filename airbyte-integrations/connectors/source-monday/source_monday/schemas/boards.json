@@ -27,7 +27,7 @@
         "title": { "type": ["null", "string"] }
       }
     },
-    "id": { "type": ["null", "integer"] },
+    "id": { "type": ["null", "string"] },
     "name": { "type": ["null", "string"] },
     "owner": {
       "type": ["null", "object"],

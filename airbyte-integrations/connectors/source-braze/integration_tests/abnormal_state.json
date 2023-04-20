@@ -1,0 +1,26 @@
+{
+  "campaigns_analytics": {
+    "time": "2050-12-13",
+    "campaign_id": "a9b2442f-ff68-49dd-96e0-b9318957cd9a"
+  },
+  "canvases_analytics": {
+    "time": "2050-12-13",
+    "canvas_id": "c73f8e7f-c6a5-441d-b227-46cb70f9f7d2"
+  },
+  "events_analytics": {
+  },
+  "kpi_daily_new_users": {
+  },
+  "kpi_daily_active_users": {
+  },
+  "kpi_daily_app_uninstalls": {
+  },
+  "cards_analytics": {
+    "time": "2050-12-13",
+    "card_id": "609e4d4c-367b-4c87-a8ad-b1f903d058fd"
+  },
+  "segments_analytics": {
+    "time": "2050-12-13",
+    "segment_id": "8b922b25-dcc6-4e4d-b345-f7b06106046c"
+  }
+}
