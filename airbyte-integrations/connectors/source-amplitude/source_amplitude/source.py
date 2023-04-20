@@ -37,7 +37,7 @@ class SourceAmplitude(YamlDeclarativeSource):
                 authenticator=auth,
                 start_date=config["start_date"],
                 data_region=config["data_region"],
-                event_time_interval=config.get("event_time_interval", None),
+                event_time_interval={"size_unit": "hours", "size": config.get("request_time_range", 24)},
             )
         )
         return streams
