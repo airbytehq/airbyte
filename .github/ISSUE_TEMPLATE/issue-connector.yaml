@@ -1,6 +1,6 @@
 name: Connector Issue
 about: Use this when you're facing issue with connector
-title: ""
+title: "Connector Issue: "
 labels: [type/bug, area/connectors, needs-triage]
 body:
   - type: input
@@ -36,7 +36,7 @@ body:
     id: logs
     attributes:
       label: Relevant log output
-      description: >-
+      description: |
         Please copy and paste any relevant log output. 
         This will be automatically formatted into code, so no need for backticks.
         We strongly recommend to upload the log file to further debugging.

@@ -1,6 +1,6 @@
 name: Platform Issue
 about: Use this when you're facing a platform, deploy or infrastructure issue.
-title: ""
+title: "Platform Issue: "
 labels: [type/bug, area/platform, needs-triage]
 body:
   - type: input
@@ -29,7 +29,7 @@ body:
     id: logs
     attributes:
       label: Relevant log output
-      description: >-
+      description: |
         Please copy and paste any relevant log output. 
         This will be automatically formatted into code, so no need for backticks.
         We strongly recommend to upload the log file to further debugging.
