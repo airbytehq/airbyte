@@ -33,6 +33,8 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2023.04.20
+1. Fixed inviteUserModal
 #### 2023.04.19
 1. Optimize data flow table logic Switch and Drown change logic
 #### 2023.04.17
