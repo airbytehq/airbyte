@@ -2,6 +2,7 @@ use doc::ptr::Token;
 use serde_json::json;
 
 use crate::errors::Error;
+use serde_json::Map;
 
 
 /// Given a document_schema_json and key ptrs, updates the document_schema to ensure that
@@ -99,41 +100,56 @@ pub fn fix_document_schema_keys(mut doc: serde_json::Value, key_ptrs: Vec<String
     Ok(doc)
 }
 
-pub fn fix_nonstandard_jsonschema_attributes(schema: &mut serde_json::Value) {
+pub fn traverse_jsonschema<F>(schema: &mut serde_json::Value, f: &mut F)
+where F: FnMut(&mut Map<String, serde_json::Value>) -> () {
     match schema {
         serde_json::Value::Object(map) => {
-            // airbyte sometimes hides some fields from their config but keeps them
-            // for backward compatibility
-            map.remove("airbyte_hidden");
-
-            // "group" is an attribute airbyte uses internally
-            map.remove("group");
-
-            // a mapping from a jsonschema type to an internal airbyte type
-            map.remove("airbyte_type");
-
+            f(map);
             // keys under properties are schemas, so we need to run on those as well
             map.get_mut("properties").map(|props| {
                 match props {
                     serde_json::Value::Object(inner_map) => {
                         inner_map.values_mut().for_each(|v| {
-                            fix_nonstandard_jsonschema_attributes(v)
+                            traverse_jsonschema(v, f);
                         });
                     },
                     _ => ()
                 }
             });
-            map.get_mut("items").map(fix_nonstandard_jsonschema_attributes);
+            map.get_mut("items").map(|item| traverse_jsonschema(item, f));
         }
         _ => ()
     }
+}
+
+pub fn fix_nonstandard_jsonschema_attributes(schema: &mut serde_json::Value) {
+    traverse_jsonschema(schema, &mut |map: &mut Map<String, serde_json::Value>| {
+        // airbyte sometimes hides some fields from their config but keeps them
+        // for backward compatibility
+        map.remove("airbyte_hidden");
+
+        // "group" is an attribute airbyte uses internally
+        map.remove("group");
+
+        // a mapping from a jsonschema type to an internal airbyte type
+        map.remove("airbyte_type");
+    })
+}
+
+// enums are usually incomplete and new types are added to SaaS connectors over time which leads to enums breaking frequently
+// they also do not usually have a specific materialization type, so we just remove them to avoid
+// schema violations over time
+pub fn remove_enums(schema: &mut serde_json::Value) {
+    traverse_jsonschema(schema, &mut |map: &mut Map<String, serde_json::Value>| {
+        map.remove("enum");
+    })
 }
 
 #[cfg(test)]
 mod test {
     use serde_json::json;
 
-    use super::{fix_document_schema_keys, fix_nonstandard_jsonschema_attributes};
+    use super::{fix_document_schema_keys, fix_nonstandard_jsonschema_attributes, remove_enums};
 
     #[test]
     fn test_fix_document_schema_keys_prop() {
@@ -381,7 +397,11 @@ mod test {
                     "type": ["object", "null"],
                     "properties": {
                         "group": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "group": "x",
+                                "type": "string"
+                            }
                         },
                         "airbyte_type": {
                             "type": "string",
@@ -407,7 +427,10 @@ mod test {
                         "type": ["object", "null"],
                         "properties": {
                             "group": {
-                                "type": "string"
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
                             },
                             "airbyte_type": {
                                 "type": "string"
@@ -416,6 +439,34 @@ mod test {
                                 "type": ["string", "null"]
                             }
                         }
+                    }
+                }
+            })
+        );
+    }
+
+    #[test]
+    #[allow(non_snake_case)]
+    fn test_remove_enums() {
+        let doc_schema = r#"{
+            "type": ["object", "null"],
+            "properties": {
+                "my_key": {
+                    "type": ["string"],
+                    "enum": ["a", "b", "c"]
+                }
+            }
+        }"#.to_string();
+
+        let mut doc = serde_json::from_str(&doc_schema).unwrap();
+        remove_enums(&mut doc);
+        assert_eq!(
+            doc,
+            json!({
+                "type": ["object", "null"],
+                "properties": {
+                    "my_key": {
+                        "type": ["string"]
                     }
                 }
             })

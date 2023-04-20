@@ -31,7 +31,7 @@ use tempfile::{Builder, TempDir};
 
 use json_patch::merge;
 
-use super::fix_document_schema::{fix_document_schema_keys, fix_nonstandard_jsonschema_attributes};
+use super::fix_document_schema::{fix_document_schema_keys, fix_nonstandard_jsonschema_attributes, remove_enums};
 use super::normalize::{normalize_doc, NormalizationEntry};
 use super::remap::remap;
 
@@ -249,6 +249,7 @@ impl AirbyteSourceInterceptor {
                 }
 
                 fix_nonstandard_jsonschema_attributes(&mut doc_schema);
+                remove_enums(&mut doc_schema);
 
                 resp.bindings.push(response::discovered::Binding {
                     recommended_name,
