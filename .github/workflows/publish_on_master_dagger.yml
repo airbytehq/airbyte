@@ -30,7 +30,10 @@ jobs:
         uses: ./.github/actions/run-dagger-pipeline
         with:
           # Only pre-release images are published until the correct behavior is observed in prod.
-          subcommand: "connectors --modified publish --pre-release"
+          # Setting concurrency to 1 for safety:
+          # High concurrency can lead to resource issues for java connectors.
+          # As speed is not a concern in this context I think not publishing connectors in parallel is fine.
+          subcommand: "connectors --concurrency=1 --modified publish --pre-release"
           context: "master"
       - name: Publish connectors
         id: publish-connectors
