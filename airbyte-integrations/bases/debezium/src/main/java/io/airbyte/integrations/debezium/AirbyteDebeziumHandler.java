@@ -70,7 +70,7 @@ public class AirbyteDebeziumHandler<T> {
         schemaHistoryManager(new EmptySavedInfo()));
     tableSnapshotPublisher.start(queue);
 
-    final AutoCloseableIterator<ChangeEvent<String, String>> eventIterator = new DebeziumRecordIterator<>(
+    final AutoCloseableIterator<ChangeEventWithMetadata> eventIterator = new DebeziumRecordIterator<>(
         queue,
         targetPosition,
         tableSnapshotPublisher::hasClosed,
@@ -102,7 +102,7 @@ public class AirbyteDebeziumHandler<T> {
     publisher.start(queue);
 
     // handle state machine around pub/sub logic.
-    final AutoCloseableIterator<ChangeEvent<String, String>> eventIterator = new DebeziumRecordIterator<>(
+    final AutoCloseableIterator<ChangeEventWithMetadata> eventIterator = new DebeziumRecordIterator<>(
         queue,
         targetPosition,
         publisher::hasClosed,
@@ -114,9 +114,10 @@ public class AirbyteDebeziumHandler<T> {
             : DebeziumStateDecoratingIterator.SYNC_CHECKPOINT_DURATION;
     final Long syncCheckpointRecords = config.get("sync_checkpoint_records") != null ? config.get("sync_checkpoint_records").asLong()
         : DebeziumStateDecoratingIterator.SYNC_CHECKPOINT_RECORDS;
-    return AutoCloseableIterators.fromIterator(new DebeziumStateDecoratingIterator(
+    return AutoCloseableIterators.fromIterator(new DebeziumStateDecoratingIterator<>(
         eventIterator,
         cdcStateHandler,
+        targetPosition,
         cdcMetadataInjector,
         emittedAt,
         offsetManager,
