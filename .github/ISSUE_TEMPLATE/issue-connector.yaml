@@ -1,5 +1,5 @@
 name: Connector Issue
-about: Use this when you're facing issue with connector
+description: Use this when you're facing issue with connector
 title: "Connector Issue: "
 labels: [type/bug, area/connectors, needs-triage]
 body:
