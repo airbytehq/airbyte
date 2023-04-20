@@ -252,7 +252,9 @@ async def run_metadata_orchestrator_test_pipeline(
         async with metadata_pipeline_context:
             test_orch_step = TestOrchestrator(context=metadata_pipeline_context)
             result = await test_orch_step.run()
-            metadata_pipeline_context.test_report = Report(pipeline_context=metadata_pipeline_context, steps_results=[result])
+            metadata_pipeline_context.report = Report(
+                pipeline_context=metadata_pipeline_context, steps_results=[result], name="METADATA ORCHESTRATOR TEST RESULTS"
+            )
 
     return metadata_pipeline_context.report.success
 
