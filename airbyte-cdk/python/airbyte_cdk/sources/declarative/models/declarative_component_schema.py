@@ -28,7 +28,7 @@ class AddedFieldDefinition(BaseModel):
         examples=[
             "{{ record['updates'] }}",
             "{{ record['MetaData']['LastUpdatedTime'] }}",
-            "{{ stream_slice['segment_id'] }}",
+            "{{ stream_partition['segment_id'] }}",
         ],
         title="Value",
     )
@@ -647,7 +647,7 @@ class RecordFilter(BaseModel):
         "",
         description="The predicate to filter a record. Records will be removed if evaluated to False.",
         examples=[
-            "{{ record['created_at'] >= stream_slice['start_time'] }}",
+            "{{ record['created_at'] >= stream_interval['start_time'] }}",
             "{{ record.status in ['active', 'expired'] }}",
         ],
     )
@@ -1054,7 +1054,7 @@ class HttpRequester(BaseModel):
         description="Path the specific API endpoint that this stream represents. Do not put sensitive information (e.g. API tokens) into this field - Use the Authentication component for this.",
         examples=[
             "/products",
-            "/quotes/{{ stream_slice['id'] }}/quote_line_groups",
+            "/quotes/{{ stream_partition['id'] }}/quote_line_groups",
             "/trades/{{ config['symbol_id'] }}/history",
         ],
     )
@@ -1089,7 +1089,7 @@ class HttpRequester(BaseModel):
         None,
         description="Specifies how to populate the body of the request with a non-JSON payload. If returns a ready text that it will be sent as is. If returns a dict that it will be converted to a urlencoded form.",
         examples=[
-            '[{"clause": {"type": "timestamp", "operator": 10, "parameters":\n    [{"value": {{ stream_slice[\'start_time\'] | int * 1000 }} }]\n  }, "orderBy": 1, "columnName": "Timestamp"}]/\n'
+            '[{"clause": {"type": "timestamp", "operator": 10, "parameters":\n    [{"value": {{ stream_interval[\'start_time\'] | int * 1000 }} }]\n  }, "orderBy": 1, "columnName": "Timestamp"}]/\n'
         ],
         title="Request Body Payload (Non-JSON)",
     )
@@ -1113,7 +1113,9 @@ class HttpRequester(BaseModel):
         description="Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.",
         examples=[
             {"unit": "day"},
-            {"query": 'last_event_time BETWEEN TIMESTAMP "{{ stream_slice.start_time }}" AND TIMESTAMP "{{ stream_slice.end_time }}"'},
+            {
+                "query": 'last_event_time BETWEEN TIMESTAMP "{{ stream_interval.start_time }}" AND TIMESTAMP "{{ stream_interval.end_time }}"'
+            },
             {"searchIn": "{{ ','.join(config.get('search_in', [])) }}"},
             {"sort_by[asc]": "updated_at"},
         ],
