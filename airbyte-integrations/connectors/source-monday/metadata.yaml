@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - api.monday.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:
