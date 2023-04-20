@@ -1,5 +1,5 @@
 data:
-  catalogs:
+  registries:
     cloud:
       dockerImageTag: 0.3.26
       dockerRepository: airbyte/destination-postgres-strict-encrypt
