@@ -5,8 +5,8 @@
 import datetime
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-
 from urllib.parse import urlparse
+
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
