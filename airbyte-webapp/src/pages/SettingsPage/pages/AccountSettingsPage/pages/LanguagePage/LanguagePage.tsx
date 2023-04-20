@@ -45,7 +45,7 @@ const LanguagePage: React.FC = () => {
         setIsUpdated(false);
         setIsLoading(false);
       });
-  }, []);
+  }, [language]);
 
   return (
     <PageContainer>

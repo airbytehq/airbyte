@@ -33,6 +33,10 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2023.04.19
+1. Optimize data flow table logic Switch and Drown change logic
+#### 2023.04.17
+1. Fixed react-intl compiling without HTML tag `<b>`
 #### 2023.04.13
 1. Update select scrollBar style
 #### 2023.04.04

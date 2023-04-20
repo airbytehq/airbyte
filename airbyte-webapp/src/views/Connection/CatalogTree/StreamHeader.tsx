@@ -91,7 +91,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
 
   const streamHeaderContentStyle = classnames(styles.streamHeaderContent, {
     [styles.greenBackground]: changedSelected && isEnabled,
-    [styles.redBackground]: changedSelected && !isEnabled,
+    // [styles.redBackground]: changedSelected && !isEnabled,
     [styles.purpleBackground]: isSelected,
     [styles.redBorder]: hasError,
   });
@@ -120,7 +120,13 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
       </ArrowCell>
       <div className={streamHeaderContentStyle}>
         <HeaderCell flex={0.4}>
-          <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={mode === "readonly"} />
+          <Switch
+            small
+            checked={stream.config?.selected}
+            onChange={onSelectStream}
+            disabled={mode === "readonly"}
+            key={`stream-config-${stream.config?.selected}-${stream.id}`}
+          />
         </HeaderCell>
         <HeaderCell ellipsis title={stream.stream?.namespace || ""}>
           {stream.stream?.namespace || (

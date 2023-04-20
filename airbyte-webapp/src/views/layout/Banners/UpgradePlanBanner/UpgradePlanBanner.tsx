@@ -73,7 +73,11 @@ export const UpgradePlanBanner: React.FC<IProps> = ({ onBillingPage }) => {
         <Text>
           <FormattedMessage
             id={
-              remainingDaysForFreeTrial() >= 0 ? "upgrade.plan.trialPeriod.countdown" : "upgrade.plan.trialPeriod.end"
+              remainingDaysForFreeTrial() > 0
+                ? "upgrade.plan.trialPeriod.countdown"
+                : remainingDaysForFreeTrial() === 0
+                ? "upgrade.plan.trialPeriod.countdown.today"
+                : "upgrade.plan.trialPeriod.end"
             }
             values={{ count: remainingDaysForFreeTrial() }}
           />
