@@ -31,7 +31,11 @@ class JinjaInterpolation(Interpolation):
     Additional information on jinja templating can be found at https://jinja.palletsprojects.com/en/3.1.x/templates/#
     """
 
-    ALIASES = {"stream_interval": "stream_slice", "stream_partition": "stream_slice"}
+    # These aliases are used to deprecate existing keywords without breaking all existing connectors.
+    ALIASES = {
+        "stream_interval": "stream_slice", # Use stream_interval to access incremental_sync values
+        "stream_partition": "stream_slice" # Use stream_partition to access partition router's values
+    }
 
     def __init__(self):
         self._environment = Environment()
@@ -43,6 +47,7 @@ class JinjaInterpolation(Interpolation):
 
         for alias, equivalent in self.ALIASES.items():
             if alias in context:
+                # This is unexpected. We could ignore or log a warning, but failing loudly should result in fewer surprises
                 raise ValueError(
                     f"Found reserved keyword {alias} in interpolation context. This is unexpected and indicative of a bug in the CDK."
                 )
