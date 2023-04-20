@@ -74,6 +74,8 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -92,7 +94,7 @@ import org.slf4j.LoggerFactory;
 public class PostgresSource extends AbstractJdbcSource<PostgresType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
-  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
+  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 0;
   public static final String PARAM_SSLMODE = "sslmode";
   public static final String SSL_MODE = "ssl_mode";
   public static final String SSL_ROOT_CERT = "sslrootcert";
@@ -573,7 +575,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         // However, this approach doesn't account for different row sizes.
         AirbyteTraceMessageUtility.emitEstimateTrace(PLATFORM_DATA_INCREASE_FACTOR * syncByteCount, Type.STREAM, syncRowCount, tableName, schemaName);
         LOGGER.info(String.format("Estimate for table: %s : {sync_row_count: %s, sync_bytes: %s, total_table_row_count: %s, total_table_bytes: %s}",
-            fullTableName, syncRowCount, syncByteCount, syncRowCount, syncByteCount));
+            fullTableName, syncRowCount, humanReadableByteCountSI(syncByteCount), syncRowCount, humanReadableByteCountSI(syncByteCount)));
       }
     } catch (final SQLException e) {
       LOGGER.warn("Error occurred while attempting to estimate sync size", e);
@@ -615,7 +617,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       // However, this approach doesn't account for different row sizes
       AirbyteTraceMessageUtility.emitEstimateTrace(PLATFORM_DATA_INCREASE_FACTOR * syncByteCount, Type.STREAM, syncRowCount, tableName, schemaName);
       LOGGER.info(String.format("Estimate for table: %s : {sync_row_count: %s, sync_bytes: %s, total_table_row_count: %s, total_table_bytes: %s}",
-          fullTableName, syncRowCount, syncByteCount, tableRowCount, tableRowCount));
+          fullTableName, syncRowCount, humanReadableByteCountSI(syncByteCount), tableRowCount, humanReadableByteCountSI(tableByteCount)));
     } catch (final SQLException e) {
       LOGGER.warn("Error occurred while attempting to estimate sync size", e);
     }
@@ -677,4 +679,15 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     return result.get(0).get("count").asLong();
   }
 
+  public static String humanReadableByteCountSI(long bytes) {
+    if (-1000 < bytes && bytes < 1000) {
+      return bytes + " B";
+    }
+    final CharacterIterator ci = new StringCharacterIterator("kMGTPE");
+    while (bytes <= -999_950 || bytes >= 999_950) {
+      bytes /= 1000;
+      ci.next();
+    }
+    return String.format("%.1f %cB", bytes / 1000.0, ci.current());
+  }
 }

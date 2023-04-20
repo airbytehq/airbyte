@@ -112,9 +112,9 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     // This corresponds to the initial sync for in INCREMENTAL_MODE. The ordering of the records matters as intermediate state messages are emitted.
     if (syncMode.equals(SyncMode.INCREMENTAL)) {
       final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
-      return queryTable(database, String.format("SELECT %s FROM %s ORDER BY %s ASC",
+      return queryTable(database, String.format("SELECT %s FROM %s",
           enquoteIdentifierList(columnNames, getQuoteString()),
-          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField));
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())));
     } else {
       // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering of the records.
       return queryTable(database, String.format("SELECT %s FROM %s",
