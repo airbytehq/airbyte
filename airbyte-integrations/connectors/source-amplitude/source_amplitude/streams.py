@@ -76,6 +76,14 @@ class Events(HttpStream):
     def time_interval(self) -> dict:
         return {self.event_time_interval.get("size_unit"): self.event_time_interval.get("size")}
 
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        # save state value in source native format
+        if self.compare_date_template:
+            latest_state = pendulum.parse(latest_record[self.cursor_field]).strftime(self.compare_date_template)
+        else:
+            latest_state = latest_record.get(self.cursor_field, "")
+        return {self.cursor_field: max(latest_state, current_stream_state.get(self.cursor_field, ""))}
+
     def _get_date_time_items_from_schema(self):
         """
         Get all properties from schema with format: 'date-time'
