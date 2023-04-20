@@ -30,10 +30,9 @@ public class BigQueryAvroSerializedBuffer extends AvroSerializedBuffer {
   private final BigQueryRecordFormatter recordFormatter;
 
   public BigQueryAvroSerializedBuffer(final BufferStorage bufferStorage,
-      final CodecFactory codecFactory,
-      final Schema schema,
-      final BigQueryRecordFormatter recordFormatter)
-      throws Exception {
+                                      final CodecFactory codecFactory,
+                                      final Schema schema,
+                                      final BigQueryRecordFormatter recordFormatter) throws Exception {
     super(bufferStorage, codecFactory, schema);
     this.recordFormatter = recordFormatter;
   }
@@ -43,11 +42,10 @@ public class BigQueryAvroSerializedBuffer extends AvroSerializedBuffer {
     dataFileWriter.append(avroRecordFactory.getAvroRecord(recordFormatter.formatRecord(record)));
   }
 
-  public static BufferCreateFunction createBufferFunction(
-      final S3AvroFormatConfig config,
-      final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
-      final BiFunction<BigQueryRecordFormatter, AirbyteStreamNameNamespacePair, Schema> schemaCreator,
-      final Callable<BufferStorage> createStorageFunction) {
+  public static BufferCreateFunction createBufferFunction(final S3AvroFormatConfig config,
+                                                          final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
+                                                          final BiFunction<BigQueryRecordFormatter, AirbyteStreamNameNamespacePair, Schema> schemaCreator,
+                                                          final Callable<BufferStorage> createStorageFunction) {
     final CodecFactory codecFactory = config.getCodecFactory();
     return (pair, catalog) -> {
       final AirbyteStream stream = catalog.getStreams()

@@ -107,8 +107,7 @@ public class S3ConsumerFactory {
     return new AirbyteStreamNameNamespacePair(config.getStreamName(), config.getNamespace());
   }
 
-  private FlushBufferFunction flushBufferFunction(
-                                                  final BlobStorageOperations storageOperations,
+  private FlushBufferFunction flushBufferFunction(final BlobStorageOperations storageOperations,
                                                   final List<WriteConfig> writeConfigs,
                                                   final ConfiguredAirbyteCatalog catalog) {
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig =

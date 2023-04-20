@@ -62,8 +62,7 @@ public class AvroSerializedBuffer extends BaseSerializedBuffer {
     dataFileWriter.close();
   }
 
-  public static BufferCreateFunction createFunction(
-                                                    final S3AvroFormatConfig config,
+  public static BufferCreateFunction createFunction(final S3AvroFormatConfig config,
                                                     final Callable<BufferStorage> createStorageFunction) {
     final CodecFactory codecFactory = config.getCodecFactory();
     return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) -> {

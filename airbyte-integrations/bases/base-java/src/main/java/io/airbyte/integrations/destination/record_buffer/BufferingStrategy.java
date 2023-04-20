@@ -38,7 +38,7 @@ public interface BufferingStrategy extends AutoCloseable {
   void flushSingleBuffer(AirbyteStreamNameNamespacePair stream, SerializableBuffer buffer) throws Exception;
 
   /**
-   * Flush all writers that were buffering message data so far.
+   * Flush all buffers that were buffering message data so far.
    */
   void flushAllBuffers() throws Exception;
 

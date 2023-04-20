@@ -39,13 +39,13 @@ public class BigQueryStagingConsumerFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryStagingConsumerFactory.class);
 
   public AirbyteMessageConsumer create(final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog,
-      final Consumer<AirbyteMessage> outputRecordCollector,
-      final BigQueryStagingOperations bigQueryGcsOperations,
-      final BufferCreateFunction onCreateBuffer,
-      final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
-      final Function<String, String> tmpTableNameTransformer,
-      final Function<String, String> targetTableNameTransformer) {
+                                      final ConfiguredAirbyteCatalog catalog,
+                                      final Consumer<AirbyteMessage> outputRecordCollector,
+                                      final BigQueryStagingOperations bigQueryGcsOperations,
+                                      final BufferCreateFunction onCreateBuffer,
+                                      final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
+                                      final Function<String, String> tmpTableNameTransformer,
+                                      final Function<String, String> targetTableNameTransformer) {
     final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs = createWriteConfigs(
         config,
         catalog,
@@ -177,7 +177,7 @@ public class BigQueryStagingConsumerFactory {
    * @return
    */
   private OnCloseFunction onCloseFunction(final BigQueryStagingOperations bigQueryGcsOperations,
-      final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs) {
+                                          final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs) {
     return (hasFailed) -> {
       /*
        * Previously the hasFailed value was used to commit any remaining staged files into destination,

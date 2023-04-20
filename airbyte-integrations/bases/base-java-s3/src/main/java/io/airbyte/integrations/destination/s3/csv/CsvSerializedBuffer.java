@@ -70,8 +70,7 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
     csvPrinter.close();
   }
 
-  public static BufferCreateFunction createFunction(
-                                                    final S3CsvFormatConfig config,
+  public static BufferCreateFunction createFunction(final S3CsvFormatConfig config,
                                                     final Callable<BufferStorage> createStorageFunction) {
     return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) -> {
       if (config == null) {

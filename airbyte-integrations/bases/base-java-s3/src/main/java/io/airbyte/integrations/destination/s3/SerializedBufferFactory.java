@@ -41,8 +41,7 @@ public class SerializedBufferFactory {
    * creating a new buffer where to store data. Note that we typically associate which format is being
    * stored in the storage object thanks to its file extension.
    */
-  public static BufferCreateFunction getCreateFunction(
-                                                       final S3DestinationConfig config,
+  public static BufferCreateFunction getCreateFunction(final S3DestinationConfig config,
                                                        final Function<String, BufferStorage> createStorageFunctionWithoutExtension) {
     final S3FormatConfig formatConfig = config.getFormatConfig();
     LOGGER.info("S3 format config: {}", formatConfig.toString());
