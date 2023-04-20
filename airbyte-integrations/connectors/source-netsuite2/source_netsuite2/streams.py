@@ -116,6 +116,8 @@ class Transactions(IncrementalNetsuiteStream):
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
             record_type = record.get("type").replace(" ", "").lower()
+            if record_type == "payment":
+                record_type = "customerpayment"
             url = self.base_url + RECORD_PATH + record_type + "/" + record.get("id")
             args = {"method": "GET", "url": url, "params": {"expandSubResources": True}}
             prep_req = self._session.prepare_request(requests.Request(**args))
