@@ -57,7 +57,7 @@ class APIKeyAuthenticator(BaseModel):
         None,
         description="The name of the HTTP header that will be set to the API key.",
         examples=["Authorization", "Api-Token", "X-Auth-Token"],
-        title="Header",
+        title="Header Name",
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
@@ -487,7 +487,12 @@ class HttpResponseFilter(BaseModel):
 
 class InlineSchemaLoader(BaseModel):
     type: Literal["InlineSchemaLoader"]
-    schema_: Optional[Dict[str, Any]] = Field(None, alias="schema", description="Describes a streams' schema.", title="Schema")
+    schema_: Optional[Dict[str, Any]] = Field(
+        None,
+        alias="schema",
+        description='Describes a streams\' schema. Refer to the <a href="https://docs.airbyte.com/understanding-airbyte/supported-data-types/">Data Types documentation</a> for more details on which types are valid.',
+        title="Schema",
+    )
 
 
 class JsonFileSchemaLoader(BaseModel):
@@ -605,7 +610,7 @@ class OffsetIncrementLimitOffset(BaseModel):
         ...,
         description="The number of records to include in each pages.",
         examples=[100, "{{ config['page_size'] }}"],
-        title="Page Size",
+        title="Limit",
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
@@ -674,8 +679,9 @@ class RequestOption(BaseModel):
     type: Literal["RequestOption"]
     field_name: str = Field(
         ...,
+        description="Configures which key should be used in the location that the descriptor is being injected into",
         examples=["segment_id"],
-        title="Configures which key should be used in the location that the descriptor is being injected into",
+        title="Request Option",
     )
     inject_into: InjectInto = Field(
         ...,
@@ -720,7 +726,7 @@ class WaitTimeExtractedFromResponseHeader(BaseModel):
         ...,
         description="The name of the response header defining how long to wait before retrying.",
         examples=["Retry-After"],
-        title="Response Header",
+        title="Response Header Name",
     )
     regex: Optional[str] = Field(
         None,
@@ -829,13 +835,13 @@ class DatetimeBasedCursor(BaseModel):
     end_datetime: Union[str, MinMaxDatetime] = Field(
         ...,
         description="The datetime that determines the last record that should be synced.",
-        examples=["2021-01-1T00:00:00Z"],
+        examples=["2021-01-1T00:00:00Z", "{{ now_utc() }}", "{{ now_local() }}"],
         title="End Datetime",
     )
     start_datetime: Union[str, MinMaxDatetime] = Field(
         ...,
         description="The datetime that determines the earliest record that should be synced.",
-        examples=["2020-01-1T00:00:00Z"],
+        examples=["2020-01-1T00:00:00Z", "{{ config['start_time'] }}"],
         title="Start Datetime",
     )
     step: str = Field(
@@ -900,7 +906,7 @@ class DefaultErrorHandler(BaseModel):
     )
     response_filters: Optional[List[HttpResponseFilter]] = Field(
         None,
-        description="List of response filters to iterate on when deciding how to handle an error.",
+        description="List of response filters to iterate on when deciding how to handle an error. When using an array of multiple filters, the filters will be applied sequentially and the response will be selected if it matches any of the filter's predicate.",
         title="Response Filters",
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
@@ -1142,12 +1148,12 @@ class ParentStreamConfig(BaseModel):
         examples=["id", "{{ config['parent_record_id'] }}"],
         title="Parent Key",
     )
-    stream: DeclarativeStream = Field(..., title="Stream")
+    stream: DeclarativeStream = Field(..., description="Reference to the parent stream.", title="Parent Stream")
     partition_field: str = Field(
         ...,
         description="While iterating over parent records during a sync, the parent_key value can be referenced by using this field.",
         examples=["parent_id", "{{ config['parent_partition_field'] }}"],
-        title="Partition Field",
+        title="Current Parent Key Value Identifier",
     )
     request_option: Optional[RequestOption] = Field(
         None,
