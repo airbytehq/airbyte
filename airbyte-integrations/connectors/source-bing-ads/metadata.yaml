@@ -7,7 +7,7 @@ data:
       - login.windows-ppe.net
       - ads.microsoft.com
       - api.ads.microsoft.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:
