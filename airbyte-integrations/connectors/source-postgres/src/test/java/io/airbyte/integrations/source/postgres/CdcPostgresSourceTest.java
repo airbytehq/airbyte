@@ -139,6 +139,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
         .put(JdbcUtils.SSL_KEY, false)
         .put("is_test", true)
         .put("replication_method", replicationMethod)
+        .put("sync_checkpoint_records", 2)
         .build());
   }
 
@@ -611,10 +612,9 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
         .toListAndClose(secondBatchIterator);
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
-    // TODO : Re-enable when activating checkpointing for Postgres
-//    final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
-//    assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
-//    assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
+    final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
+    assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
+    assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
   }
 
   /** This test verify that multiple states are sent during the CDC process based on time ranges. We can
@@ -654,9 +654,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
         .toListAndClose(secondBatchIterator);
 
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
-    // TODO : Re-enable when activating checkpointing for Postgres
-//    final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
-//    assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
-//    assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
+    final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
+    assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
+    assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
   }
 }

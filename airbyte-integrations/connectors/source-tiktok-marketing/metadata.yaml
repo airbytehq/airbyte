@@ -3,7 +3,7 @@ data:
     hosts:
       - sandbox-ads.tiktok.com
       - business-api.tiktok.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:
