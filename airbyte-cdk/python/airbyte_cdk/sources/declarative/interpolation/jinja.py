@@ -31,8 +31,7 @@ class JinjaInterpolation(Interpolation):
     Additional information on jinja templating can be found at https://jinja.palletsprojects.com/en/3.1.x/templates/#
     """
 
-    ALIASES = {"stream_interval": "stream_slice",
-               "stream_partition": "stream_slice"}
+    ALIASES = {"stream_interval": "stream_slice", "stream_partition": "stream_slice"}
 
     def __init__(self):
         self._environment = Environment()
@@ -44,7 +43,9 @@ class JinjaInterpolation(Interpolation):
 
         for alias, equivalent in self.ALIASES.items():
             if alias in context:
-                raise ValueError(f"Found reserved keyword {alias} in interpolation context. This is unexpected and indicative of a bug in the CDK.")
+                raise ValueError(
+                    f"Found reserved keyword {alias} in interpolation context. This is unexpected and indicative of a bug in the CDK."
+                )
             elif equivalent in context:
                 context[alias] = context[equivalent]
 
