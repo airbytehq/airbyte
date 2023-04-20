@@ -321,6 +321,11 @@ async def execute_concurrently(steps: List[Callable], concurrency=5):
 async def export_container_to_tarball(context: ConnectorContext, container: Container) -> Tuple[Optional[File], Optional[Path]]:
     """Save the container image to the host filesystem as a tar archive.
 
+    Exporting a container image as a tar archive allows user to have a dagger built container image available on their host filesystem.
+    They can load this tar file to their main docker host with 'docker load'.
+    This mechanism is also used to share dagger built containers with other steps like AcceptanceTest that have their own dockerd service.
+    We 'docker load' this tar file to AcceptanceTest's docker host to make sure the container under test image is available for testing.
+
     Returns:
         Tuple[Optional[File], Optional[Path]]: A tuple with the file object holding the tar archive on the host and its path.
     """
