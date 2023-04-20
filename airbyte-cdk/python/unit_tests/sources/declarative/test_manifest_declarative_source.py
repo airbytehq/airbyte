@@ -855,6 +855,102 @@ def _create_page(response_body):
      (_create_page({"rates": [{"ABC": 0}, {"AED": 1}],"_metadata": {"next": "next"}}), _create_page({"rates": [{"USD": 2}],"_metadata": {"next": "next"}})) * 10,
      [{"ABC": 0}, {"AED": 1}],
      [call({}, {}, None)]),
+    ("test_read_manifest_with_added_fields",
+     {
+         "version": "0.34.2",
+         "type": "DeclarativeSource",
+         "check": {
+             "type": "CheckStream",
+             "stream_names": [
+                 "Rates"
+             ]
+         },
+         "streams": [
+             {
+                 "type": "DeclarativeStream",
+                 "name": "Rates",
+                 "primary_key": [],
+                 "schema_loader": {
+                     "type": "InlineSchemaLoader",
+                     "schema": {
+                         "$schema": "http://json-schema.org/schema#",
+                         "properties": {
+                             "ABC": {
+                                 "type": "number"
+                             },
+                             "AED": {
+                                 "type": "number"
+                             },
+                         },
+                         "type": "object"
+                     }
+                 },
+                 "transformations": [
+                     {
+                         "type": "AddFields",
+                         "fields": [
+                             {
+                                 "type": "AddedFieldDefinition",
+                                 "path": ["added_field_key"],
+                                 "value": "added_field_value"
+                             }
+                         ]
+                     }
+                 ],
+                 "retriever": {
+                     "type": "SimpleRetriever",
+                     "requester": {
+                         "type": "HttpRequester",
+                         "url_base": "https://api.apilayer.com",
+                         "path": "/exchangerates_data/latest",
+                         "http_method": "GET",
+                         "request_parameters": {},
+                         "request_headers": {},
+                         "request_body_json": {},
+                         "authenticator": {
+                             "type": "ApiKeyAuthenticator",
+                             "header": "apikey",
+                             "api_token": "{{ config['api_key'] }}"
+                         }
+                     },
+                     "record_selector": {
+                         "type": "RecordSelector",
+                         "extractor": {
+                             "type": "DpathExtractor",
+                             "field_path": [
+                                 "rates"
+                             ]
+                         }
+                     },
+                     "paginator": {
+                         "type": "NoPagination"
+                     }
+                 }
+             }
+         ],
+         "spec": {
+             "connection_specification": {
+                 "$schema": "http://json-schema.org/draft-07/schema#",
+                 "type": "object",
+                 "required": [
+                     "api_key"
+                 ],
+                 "properties": {
+                     "api_key": {
+                         "type": "string",
+                         "title": "API Key",
+                         "airbyte_secret": True
+                     }
+                 },
+                 "additionalProperties": True
+             },
+             "documentation_url": "https://example.org",
+             "type": "Spec"
+         }
+     },
+     (_create_page({"rates": [{"ABC": 0}, {"AED": 1}],"_metadata": {"next": "next"}}), _create_page({"rates": [{"USD": 2}],"_metadata": {"next": "next"}})) * 10,
+     [{"ABC": 0, "added_field_key": "added_field_value"}, {"AED": 1, "added_field_key": "added_field_value"}],
+     [call({}, {}, None)]),
     ("test_read_with_pagination_no_partitions",
      {
          "version": "0.34.2",
