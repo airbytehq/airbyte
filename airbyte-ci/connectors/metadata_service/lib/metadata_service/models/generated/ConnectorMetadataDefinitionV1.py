@@ -11,15 +11,24 @@ from pydantic import AnyUrl, BaseModel, Extra, Field
 
 
 class ConnectorType(Enum):
-    destination = 'destination'
-    source = 'source'
+    destination = "destination"
+    source = "source"
+
+
+class ConnectorSubtype(Enum):
+    api = "api"
+    database = "database"
+    file = "file"
+    custom = "custom"
+    message_queue = "message_queue"
+    unknown = "unknown"
 
 
 class ReleaseStage(Enum):
-    alpha = 'alpha'
-    beta = 'beta'
-    generally_available = 'generally_available'
-    source = 'source'
+    alpha = "alpha"
+    beta = "beta"
+    generally_available = "generally_available"
+    source = "source"
 
 
 class AllowedHosts(BaseModel):
@@ -28,7 +37,7 @@ class AllowedHosts(BaseModel):
 
     hosts: Optional[List[str]] = Field(
         None,
-        description='An array of hosts that this connector can connect to.  AllowedHosts not being present for the source or destination means that access to all hosts is allowed.  An empty list here means that no network access is granted.',
+        description="An array of hosts that this connector can connect to.  AllowedHosts not being present for the source or destination means that access to all hosts is allowed.  An empty list here means that no network access is granted.",
     )
 
 
@@ -38,15 +47,15 @@ class NormalizationDestinationDefinitionConfig(BaseModel):
 
     normalizationRepository: str = Field(
         ...,
-        description='a field indicating the name of the repository to be used for normalization. If the value of the flag is NULL - normalization is not used.',
+        description="a field indicating the name of the repository to be used for normalization. If the value of the flag is NULL - normalization is not used.",
     )
     normalizationTag: str = Field(
         ...,
-        description='a field indicating the tag of the docker repository to be used for normalization.',
+        description="a field indicating the tag of the docker repository to be used for normalization.",
     )
     normalizationIntegrationType: str = Field(
         ...,
-        description='a field indicating the type of integration dialect to use for normalization.',
+        description="a field indicating the type of integration dialect to use for normalization.",
     )
 
 
@@ -56,7 +65,7 @@ class SuggestedStreams(BaseModel):
 
     streams: Optional[List[str]] = Field(
         None,
-        description='An array of streams that this connector suggests the average user will want.  SuggestedStreams not being present for the source means that all streams are suggested.  An empty list here means that no streams are suggested.',
+        description="An array of streams that this connector suggests the average user will want.  SuggestedStreams not being present for the source means that all streams are suggested.  An empty list here means that no streams are suggested.",
     )
 
 
@@ -71,13 +80,13 @@ class ResourceRequirements(BaseModel):
 
 
 class JobType(Enum):
-    get_spec = 'get_spec'
-    check_connection = 'check_connection'
-    discover_schema = 'discover_schema'
-    sync = 'sync'
-    reset_connection = 'reset_connection'
-    connection_updater = 'connection_updater'
-    replicate = 'replicate'
+    get_spec = "get_spec"
+    check_connection = "check_connection"
+    discover_schema = "discover_schema"
+    sync = "sync"
+    reset_connection = "reset_connection"
+    connection_updater = "connection_updater"
+    replicate = "replicate"
 
 
 class JobTypeResourceLimit(BaseModel):
@@ -94,12 +103,12 @@ class ActorDefinitionResourceRequirements(BaseModel):
 
     default: Optional[ResourceRequirements] = Field(
         None,
-        description='if set, these are the requirements that should be set for ALL jobs run for this actor definition.',
+        description="if set, these are the requirements that should be set for ALL jobs run for this actor definition.",
     )
     jobSpecific: Optional[List[JobTypeResourceLimit]] = None
 
 
-class CatalogOverrides(BaseModel):
+class RegistryOverrides(BaseModel):
     class Config:
         extra = Extra.forbid
 
@@ -118,12 +127,12 @@ class CatalogOverrides(BaseModel):
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
 
 
-class Catalog(BaseModel):
+class Registry(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    oss: Optional[CatalogOverrides] = None
-    cloud: Optional[CatalogOverrides] = None
+    oss: Optional[RegistryOverrides] = None
+    cloud: Optional[RegistryOverrides] = None
 
 
 class Data(BaseModel):
@@ -137,9 +146,9 @@ class Data(BaseModel):
     license: str
     supportUrl: AnyUrl
     githubIssueLabel: str
-    connectorSubtype: str
+    connectorSubtype: ConnectorSubtype
     releaseStage: ReleaseStage
-    catalogs: Optional[Catalog] = None
+    registries: Optional[Registry] = None
     allowedHosts: Optional[AllowedHosts] = None
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
     suggestedStreams: Optional[SuggestedStreams] = None
