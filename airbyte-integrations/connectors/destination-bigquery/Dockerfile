@@ -4,8 +4,6 @@ WORKDIR /airbyte
 
 ENV APPLICATION destination-bigquery
 
-COPY invoke.sh invoke.sh
-
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1 && rm -rf ${APPLICATION}.tar
@@ -32,6 +30,7 @@ RUN dbt deps
 WORKDIR /airbyte
 
 ENV APPLICATION destination-bigquery
+ENV AIRBYTE_NORMALIZATION_INTEGRATION bigquery
 ENV ENABLE_SENTRY true
 
 COPY --from=build /airbyte /airbyte
@@ -39,4 +38,4 @@ COPY --from=build /airbyte /airbyte
 LABEL io.airbyte.version=1.3.0
 LABEL io.airbyte.name=airbyte/destination-bigquery
 
-ENTRYPOINT ["/airbyte/invoke.sh"]
+ENTRYPOINT ["/airbyte/run_with_normalization.sh"]
