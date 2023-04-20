@@ -147,6 +147,7 @@ jobs:
           - name: source-airtable
           - name: source-freshdesk
           - name: source-marketo
+          - name: source-chargebee
 
     steps:
       - uses: actions/checkout@v2
