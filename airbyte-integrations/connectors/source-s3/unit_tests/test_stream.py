@@ -578,9 +578,9 @@ class TestIncrementalFileStream:
             path_pattern="**/prefix*.csv"
         )
         assert stream_instance._schema == {
-            "_ab_additional_properties": "object",
-            "_ab_source_file_last_modified": "string",
-            "_ab_source_file_url": "string",
+            "_ab_additional_properties": {"type": "object"},
+            "_ab_source_file_last_modified": {"type": "string"},
+            "_ab_source_file_url": {"type": "string"},
             "column_A": "string",
             "column_B": "integer",
             "column_C": "boolean",

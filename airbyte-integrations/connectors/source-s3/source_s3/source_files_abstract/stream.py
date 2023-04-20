@@ -179,15 +179,21 @@ class FileStream(Stream, ABC):
 
     @property
     def _schema(self) -> Mapping[str, Any]:
-        extra_fields = {self.ab_additional_col: "object", self.ab_last_mod_col: "string", self.ab_file_name_col: "string"}
+        extra_fields = {
+            self.ab_additional_col: {"type": "object"},
+            self.ab_last_mod_col: {"type": "string"},
+            self.ab_file_name_col: {"type": "string"},
+        }
         schema = self._raw_schema
         return {**schema, **extra_fields}
 
     def get_json_schema(self) -> Mapping[str, Any]:
         # note: making every non-airbyte column nullable for compatibility
-        properties: Mapping[str, Any] = {
-            column: {"type": ["null", typ]} if column not in self.airbyte_columns else {"type": typ} for column, typ in self._schema.items()
-        }
+        properties: Mapping[str, Any] = (
+            {column: {"type": ["null", typ]} if column not in self.airbyte_columns else typ for column, typ in self._schema.items()}
+            if self._format["filetype"] != "avro"
+            else self._schema
+        )
         properties[self.ab_last_mod_col]["format"] = "date-time"
         return {"type": "object", "properties": properties}
 
