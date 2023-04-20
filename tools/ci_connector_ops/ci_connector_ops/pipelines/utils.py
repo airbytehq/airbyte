@@ -291,11 +291,11 @@ class DaggerPipelineCommand(click.Command):
             Any: The invocation return value.
         """
         command_name = self.name
-        click.secho(f"Running {command_name}...")
+        click.secho(f"Running Dagger Command {command_name}...")
         try:
             pipeline_success = super().invoke(ctx)
             if not pipeline_success:
-                raise DaggerError(f"{command_name} failed.")
+                raise DaggerError(f"Dagger Command {command_name} failed.")
         except DaggerError as e:
             click.secho(str(e), err=True, fg="red")
             return sys.exit(1)
