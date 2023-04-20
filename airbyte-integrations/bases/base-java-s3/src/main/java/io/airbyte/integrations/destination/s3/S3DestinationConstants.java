@@ -21,6 +21,9 @@ public final class S3DestinationConstants {
   // Flattening for CSV and JSONL
   public static final String FLATTENING_ARG_NAME = "flattening";
 
+  // Stringify for JSONL
+  public static final String STRINGIFY_ARG_NAME = "stringify";
+
   private S3DestinationConstants() {}
 
 }
