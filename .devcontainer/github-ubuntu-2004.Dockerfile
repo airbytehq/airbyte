@@ -48,7 +48,8 @@ RUN apt update -y \
     zip \
     openjdk-17-jdk \
     openjdk-17-jre \
-    protobuf-compiler
+    protobuf-compiler \
+    gettext-base
 
 RUN add-apt-repository ppa:deadsnakes/ppa
 
