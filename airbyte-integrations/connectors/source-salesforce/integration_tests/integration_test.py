@@ -8,6 +8,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+import pendulum
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
@@ -66,8 +67,7 @@ def update_note(stream, note_id, headers):
 
 
 def get_stream_state():
-    state_date = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-    return {"LastModifiedDate": state_date}
+    return {"LastModifiedDate": pendulum.now(tz="UTC").add(days=-1).isoformat(timespec="milliseconds")}
 
 
 def test_update_for_deleted_record(stream):
