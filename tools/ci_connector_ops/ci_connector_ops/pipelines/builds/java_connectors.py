@@ -11,6 +11,10 @@ from ci_connector_ops.pipelines.builds.common import BuildConnectorImageBase
 from dagger import Container, File, QueryError
 
 
+class NormalizationBuildError(Exception):
+    pass
+
+
 class BuildConnectorImage(BuildConnectorImageBase, GradleTask):
     """
     A step to build a Java connector image using the distTar Gradle task.
@@ -45,5 +49,5 @@ class BuildConnectorImage(BuildConnectorImageBase, GradleTask):
             java_connector = await environments.with_airbyte_java_connector(self.context, tar_file, self.build_platform)
             step_result = await self.get_step_result(java_connector.with_exec(["spec"]))
             return step_result, java_connector
-        except QueryError as e:
+        except (QueryError, NormalizationBuildError) as e:
             return StepResult(self, StepStatus.FAILURE, stderr=str(e)), None

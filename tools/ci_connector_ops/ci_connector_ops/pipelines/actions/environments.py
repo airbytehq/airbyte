@@ -10,7 +10,7 @@ import uuid
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from ci_connector_ops.pipelines.utils import get_file_contents, get_version_from_dockerfile, should_enable_sentry, slugify
-from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Secret
+from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Platform, Secret
 
 if TYPE_CHECKING:
     from ci_connector_ops.pipelines.contexts import ConnectorContext, PipelineContext
@@ -474,7 +474,7 @@ def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_p
     )
 
 
-def with_integration_base(context: PipelineContext, build_platform: str, jdk_version: str = "17.0.4") -> Container:
+def with_integration_base(context: PipelineContext, build_platform: Platform, jdk_version: str = "17.0.4") -> Container:
     """Create an integration base container.
 
     Reproduce with Dagger the Dockerfile defined here: airbyte-integrations/bases/base/Dockerfile
@@ -492,7 +492,7 @@ def with_integration_base(context: PipelineContext, build_platform: str, jdk_ver
     )
 
 
-async def with_java_base(context: PipelineContext, build_platform: str, jdk_version: str = "17.0.4") -> Container:
+async def with_java_base(context: PipelineContext, build_platform: Platform, jdk_version: str = "17.0.4") -> Container:
     """Create a java base container.
 
     Reproduce with Dagger the Dockerfile defined here: airbyte-integrations/bases/base-java/Dockerfile_
@@ -520,11 +520,94 @@ async def with_java_base(context: PipelineContext, build_platform: str, jdk_vers
     )
 
 
-async def with_airbyte_java_connector(context: ConnectorContext, connector_java_tar_file: File, build_platform: str):
+BASE_DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING = {
+    "destination-clickhouse": "clickhouse.Dockerfile",
+    "destination-duckdb": "duckdb.Dockerfile",
+    "destination-mssql": "mssql.Dockerfile",
+    "destination-mysql": "mysql.Dockerfile",
+    "destination-oracle": "oracle.Dockerfile",
+    "destination-tidb": "tidb.Dockerfile",
+    "destination-bigquery": "Dockerfile",
+    "destination-redshift": "redshift.Dockerfile",
+    "destination-snowflake": "snowflake.Dockerfile",
+}
+
+BASE_DESTINATION_SPECIFIC_NORMALIZATION_ADAPTER_MAPPING = {
+    "destination-clickhouse": "dbt-clickhouse>=1.4.0",
+    "destination-duckdb": "duckdb.Dockerfile",
+    "destination-mssql": "dbt-sqlserver==1.0.0",
+    "destination-mysql": "dbt-mysql==1.0.0",
+    "destination-oracle": "dbt-oracle==0.4.3",
+    "destination-tidb": "dbt-tidb==1.0.1",
+    "destination-bigquery": "dbt-bigquery==1.0.0",
+}
+
+DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING = {
+    **BASE_DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING,
+    **{f"{k}-strict-encrypt": v for k, v in BASE_DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING.items()},
+}
+
+DESTINATION_SPECIFIC_NORMALIZATION_ADAPTER_MAPPING = {
+    **BASE_DESTINATION_SPECIFIC_NORMALIZATION_ADAPTER_MAPPING,
+    **{f"{k}-strict-encrypt": v for k, v in BASE_DESTINATION_SPECIFIC_NORMALIZATION_ADAPTER_MAPPING.items()},
+}
+
+
+def with_normalization(context: ConnectorContext) -> Container:
+    normalization_directory = context.get_repo_dir("airbyte-integrations/bases/base-normalization")
+    sshtunneling_file = context.get_repo_dir(
+        "airbyte-connector-test-harnesses/acceptance-test-harness/src/main/resources", include="sshtunneling.sh"
+    ).file("sshtunneling.sh")
+    normalization_directory_with_build = normalization_directory.with_new_directory("build")
+    normalization_directory_with_sshtunneling = normalization_directory_with_build.with_file("build/sshtunneling.sh", sshtunneling_file)
+    normalization_dockerfile_name = DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING.get(
+        context.connector.technical_name, "Dockerfile"
+    )
+    return normalization_directory_with_sshtunneling.docker_build(normalization_dockerfile_name)
+
+
+async def with_java_base_and_normalization(context: PipelineContext, build_platform: Platform) -> Container:
+    yum_packages_to_install = [
+        "python3",
+        "python3-devel",
+        "jq",
+        "sshpass",
+        "git",
+    ]
+
+    dbt_adapter_package = DESTINATION_SPECIFIC_NORMALIZATION_ADAPTER_MAPPING.get(context.connector.technical_name, "dbt-bigquery==1.0.0")
+
+    pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
+    java_base = await with_java_base(context, build_platform)
+    return (
+        java_base.with_exec(["yum", "install", "-y"] + yum_packages_to_install)
+        .with_exec(["alternatives", "--install", "/usr/bin/python", "python", "/usr/bin/python3", "60"])
+        .with_mounted_cache("/root/.cache/pip", pip_cache)
+        .with_exec(["python", "-m", "ensurepip", "--upgrade"])
+        .with_exec(["pip3", "install", dbt_adapter_package])
+        .with_directory("airbyte_normalization", with_normalization(context).directory("/airbyte"))
+        .with_workdir("airbyte_normalization")
+        .with_exec(["sh", "-c", "mv * .."])
+        .with_workdir("/airbyte")
+        .with_exec(["rm", "-rf", "airbyte_normalization"])
+        .with_workdir("/airbyte/base_python_structs")
+        .with_exec(["pip3", "install", "."])
+        .with_workdir("/airbyte/normalization_code")
+        .with_exec(["pip3", "install", "."])
+        .with_workdir("/airbyte/normalization_code/dbt-template/")
+        .with_exec(["dbt", "deps"])
+        .with_workdir("/airbyte")
+    )
+
+
+async def with_airbyte_java_connector(context: ConnectorContext, connector_java_tar_file: File, build_platform: Platform):
     dockerfile = context.get_connector_dir(include=["Dockerfile"]).file("Dockerfile")
     connector_version = await get_version_from_dockerfile(dockerfile)
     application = context.connector.technical_name
-    java_base = await with_java_base(context, build_platform)
+    if context.connector.supports_normalization:
+        java_base = await with_java_base_and_normalization(context, build_platform)
+    else:
+        java_base = await with_java_base(context, build_platform)
     enable_sentry = await should_enable_sentry(dockerfile)
 
     return (
@@ -538,13 +621,3 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
         .with_env_variable("ENABLE_SENTRY", str(enable_sentry).lower())
         .with_entrypoint("/airbyte/base.sh")
     )
-
-
-def with_normalization(context, normalization_dockerfile_name: str) -> Container:
-    normalization_directory = context.get_repo_dir("airbyte-integrations/bases/base-normalization")
-    sshtunneling_file = context.get_repo_dir(
-        "airbyte-connector-test-harnesses/acceptance-test-harness/src/main/resources", include="sshtunneling.sh"
-    ).file("sshtunneling.sh")
-    normalization_directory_with_build = normalization_directory.with_new_directory("build")
-    normalization_directory_with_sshtunneling = normalization_directory_with_build.with_file("build/sshtunneling.sh", sshtunneling_file)
-    return normalization_directory_with_sshtunneling.docker_build(normalization_dockerfile_name)
