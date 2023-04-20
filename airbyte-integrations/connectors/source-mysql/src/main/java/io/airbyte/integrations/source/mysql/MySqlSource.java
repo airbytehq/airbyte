@@ -294,7 +294,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
       return Collections.singletonList(
           AutoCloseableIterators.concatWithEagerClose(AirbyteTraceMessageUtility::emitStreamStatusTrace, snapshotIterator,
-              AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier)));
+              AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)));
     } else {
       LOGGER.info("using CDC: {}", false);
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager,
