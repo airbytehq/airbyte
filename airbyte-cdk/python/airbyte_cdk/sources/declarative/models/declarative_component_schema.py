@@ -14,7 +14,7 @@ from pydantic import BaseModel, Extra, Field
 from typing_extensions import Literal
 
 
-class DefinitionOfFieldToAdd(BaseModel):
+class AddedFieldDefinition(BaseModel):
     type: Literal["AddedFieldDefinition"]
     path: List[str] = Field(
         ...,
@@ -37,7 +37,7 @@ class DefinitionOfFieldToAdd(BaseModel):
 
 class AddFields(BaseModel):
     type: Literal["AddFields"]
-    fields: List[DefinitionOfFieldToAdd] = Field(
+    fields: List[AddedFieldDefinition] = Field(
         ...,
         description="List of transformations (path and corresponding value) that will be added to the record.",
         title="Fields",
@@ -45,7 +45,7 @@ class AddFields(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class APIKeyAuthenticator(BaseModel):
+class ApiKeyAuthenticator(BaseModel):
     type: Literal["ApiKeyAuthenticator"]
     api_token: str = Field(
         ...,
@@ -67,7 +67,7 @@ class AuthFlowType(Enum):
     oauth1_0 = "oauth1.0"
 
 
-class BasicHTTPAuthenticator(BaseModel):
+class BasicHttpAuthenticator(BaseModel):
     type: Literal["BasicHttpAuthenticator"]
     username: str = Field(
         ...,
@@ -84,7 +84,7 @@ class BasicHTTPAuthenticator(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class BearerTokenAuthenticator(BaseModel):
+class BearerAuthenticator(BaseModel):
     type: Literal["BearerAuthenticator"]
     api_token: str = Field(
         ...,
@@ -95,7 +95,7 @@ class BearerTokenAuthenticator(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class StreamsToCheck(BaseModel):
+class CheckStream(BaseModel):
     type: Literal["CheckStream"]
     stream_names: List[str] = Field(
         ...,
@@ -105,7 +105,7 @@ class StreamsToCheck(BaseModel):
     )
 
 
-class ConstantBackoff(BaseModel):
+class ConstantBackoffStrategy(BaseModel):
     type: Literal["ConstantBackoffStrategy"]
     backoff_time_in_seconds: Union[float, str] = Field(
         ...,
@@ -260,7 +260,7 @@ class CustomTransformation(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class OAuth2(BaseModel):
+class OAuthAuthenticator(BaseModel):
     type: Literal["OAuthAuthenticator"]
     client_id: str = Field(
         ...,
@@ -425,7 +425,7 @@ class SingleUseRefreshTokenOAuthAuthenticator(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class ExponentialBackoff(BaseModel):
+class ExponentialBackoffStrategy(BaseModel):
     type: Literal["ExponentialBackoffStrategy"]
     factor: Optional[Union[float, str]] = Field(
         5,
@@ -436,7 +436,7 @@ class ExponentialBackoff(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class HTTPMethodEnum(Enum):
+class HttpMethodEnum(Enum):
     GET = "GET"
     POST = "POST"
 
@@ -539,7 +539,7 @@ class MinMaxDatetime(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class NoAuthentication(BaseModel):
+class NoAuth(BaseModel):
     type: Literal["NoAuth"]
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
@@ -604,7 +604,7 @@ class OAuthConfigSpecification(BaseModel):
     )
 
 
-class OffsetIncrementLimitOffset(BaseModel):
+class OffsetIncrement(BaseModel):
     type: Literal["OffsetIncrement"]
     page_size: Union[int, str] = Field(
         ...,
@@ -720,7 +720,7 @@ class SessionTokenAuthenticator(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class WaitTimeExtractedFromResponseHeader(BaseModel):
+class WaitTimeFromHeader(BaseModel):
     type: Literal["WaitTimeFromHeader"]
     header: str = Field(
         ...,
@@ -737,7 +737,7 @@ class WaitTimeExtractedFromResponseHeader(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class WaitUntilTimeDefinedInResponseHeader(BaseModel):
+class WaitUntilTimeFromHeader(BaseModel):
     type: Literal["WaitUntilTimeFromHeader"]
     header: str = Field(
         ...,
@@ -853,7 +853,7 @@ class DatetimeBasedCursor(BaseModel):
     end_time_option: Optional[RequestOption] = Field(
         None,
         description="Optionally configures how the end datetime will be sent in requests to the source API.",
-        title="End Time Request Option",
+        title="Inject End Time Into Outgoing HTTP Request",
     )
     lookback_window: Optional[str] = Field(
         None,
@@ -876,7 +876,7 @@ class DatetimeBasedCursor(BaseModel):
     start_time_option: Optional[RequestOption] = Field(
         None,
         description="Optionally configures how the start datetime will be sent in requests to the source API.",
-        title="Start Time Request Option",
+        title="Inject Start Time Into Outgoing HTTP Request",
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
@@ -886,11 +886,11 @@ class DefaultErrorHandler(BaseModel):
     backoff_strategies: Optional[
         List[
             Union[
-                ConstantBackoff,
+                ConstantBackoffStrategy,
                 CustomBackoffStrategy,
-                ExponentialBackoff,
-                WaitTimeExtractedFromResponseHeader,
-                WaitUntilTimeDefinedInResponseHeader,
+                ExponentialBackoffStrategy,
+                WaitTimeFromHeader,
+                WaitUntilTimeFromHeader,
             ]
         ]
     ] = Field(
@@ -914,7 +914,7 @@ class DefaultErrorHandler(BaseModel):
 
 class DefaultPaginator(BaseModel):
     type: Literal["DefaultPaginator"]
-    pagination_strategy: Union[CursorPagination, CustomPaginationStrategy, OffsetIncrementLimitOffset, PageIncrement,] = Field(
+    pagination_strategy: Union[CursorPagination, CustomPaginationStrategy, OffsetIncrement, PageIncrement] = Field(
         ...,
         description="Strategy defining how records are paginated.",
         title="Pagination Strategy",
@@ -1013,7 +1013,7 @@ class CompositeErrorHandler(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class HTTPRequester(BaseModel):
+class HttpRequester(BaseModel):
     type: Literal["HttpRequester"]
     url_base: str = Field(
         ...,
@@ -1035,13 +1035,13 @@ class HTTPRequester(BaseModel):
     )
     authenticator: Optional[
         Union[
-            APIKeyAuthenticator,
-            BasicHTTPAuthenticator,
-            BearerTokenAuthenticator,
+            ApiKeyAuthenticator,
+            BasicHttpAuthenticator,
+            BearerAuthenticator,
             CustomAuthenticator,
-            OAuth2,
+            OAuthAuthenticator,
             SingleUseRefreshTokenOAuthAuthenticator,
-            NoAuthentication,
+            NoAuth,
             SessionTokenAuthenticator,
         ]
     ] = Field(
@@ -1054,7 +1054,7 @@ class HTTPRequester(BaseModel):
         description="Error handler component that defines how to handle errors.",
         title="Error Handler",
     )
-    http_method: Optional[Union[str, HTTPMethodEnum]] = Field(
+    http_method: Optional[Union[str, HttpMethodEnum]] = Field(
         "GET",
         description="The HTTP method used to fetch data from the source (can be GET or POST).",
         examples=["GET", "POST"],
@@ -1102,7 +1102,7 @@ class DeclarativeSource(BaseModel):
         extra = Extra.forbid
 
     type: Literal["DeclarativeSource"]
-    check: StreamsToCheck
+    check: CheckStream
     streams: List[DeclarativeStream]
     version: str
     schemas: Optional[Schemas] = None
@@ -1169,7 +1169,7 @@ class SimpleRetriever(BaseModel):
         ...,
         description="Component that describes how to extract records from a HTTP response.",
     )
-    requester: Union[CustomRequester, HTTPRequester] = Field(
+    requester: Union[CustomRequester, HttpRequester] = Field(
         ...,
         description="Requester component that describes how to prepare HTTP requests to send to the source API.",
     )
