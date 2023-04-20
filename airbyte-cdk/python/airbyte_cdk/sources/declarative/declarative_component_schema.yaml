@@ -1284,8 +1284,8 @@ definitions:
         type: string
         enum: [ListPartitionRouter]
       cursor_field:
-        title: Cursor Field
-        description: While iterating over list values, the name of field used to reference a list value.
+        title: Current Partition Value Identifier
+        description: While iterating over list values, the name of field used to reference a list value. The partition value can be accessed with string interpolation. e.g. "{{ stream_partition['my_key'] }}" where "my_key" is the value of the cursor_field.
         type: string
         interpolation_context:
           - config
@@ -1293,7 +1293,7 @@ definitions:
           - "section"
           - "{{ config['section_key'] }}"
       values:
-        title: Values
+        title: Partition Values
         description: The list of attributes being iterated over and used as input for the requests made to the source API.
         anyOf:
           - type: string
@@ -1306,7 +1306,7 @@ definitions:
           - ["section_a", "section_b", "section_c"]
           - "{{ config['sections'] }}"
       request_option:
-        title: Request Option
+        title: Inject Partition Value Into Outgoing HTTP Request
         description: A request option describing where the list value should be injected into and under what field name if applicable.
         "$ref": "#/definitions/RequestOption"
       $parameters:
@@ -1499,7 +1499,7 @@ definitions:
               type: string,
               path_in_connector_config: ["credentials", "client_secret"]
   OffsetIncrement:
-    title: Offset Increment (Limit-Offset)
+    title: Offset Increment
     description: Pagination strategy that returns the number of records reads so far and returns it as the next page token.
     type: object
     required:
@@ -1542,7 +1542,7 @@ definitions:
           - 100
           - "100"
       start_from_page:
-        title: Start Index
+        title: Start From Page
         description: Index of the first page to request.
         type: integer
         default: 0

@@ -627,7 +627,7 @@ class PageIncrement(BaseModel):
         0,
         description="Index of the first page to request.",
         examples=[0, 1],
-        title="Start Index",
+        title="Start From Page",
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
@@ -954,20 +954,20 @@ class ListPartitionRouter(BaseModel):
     type: Literal["ListPartitionRouter"]
     cursor_field: str = Field(
         ...,
-        description="While iterating over list values, the name of field used to reference a list value.",
+        description='While iterating over list values, the name of field used to reference a list value. The partition value can be accessed with string interpolation. e.g. "{{ stream_partition[\'my_key\'] }}" where "my_key" is the value of the cursor_field.',
         examples=["section", "{{ config['section_key'] }}"],
-        title="Cursor Field",
+        title="Current Partition Value Identifier",
     )
     values: Union[str, List[str]] = Field(
         ...,
         description="The list of attributes being iterated over and used as input for the requests made to the source API.",
         examples=[["section_a", "section_b", "section_c"], "{{ config['sections'] }}"],
-        title="Values",
+        title="Partition Values",
     )
     request_option: Optional[RequestOption] = Field(
         None,
         description="A request option describing where the list value should be injected into and under what field name if applicable.",
-        title="Request Option",
+        title="Inject Partition Value Into Outgoing HTTP Request",
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
