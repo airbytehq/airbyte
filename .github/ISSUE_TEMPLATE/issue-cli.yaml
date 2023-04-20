@@ -1,6 +1,6 @@
 name: CLI Issue
 about: Use this when you're using the Octavia CLI.
-title: ""
+title: "Octavia CLI Issue: "
 labels: [type/bug, area/octavia-cli, needs-triage]
 body:
   - type: input
@@ -19,7 +19,7 @@ body:
     id: logs
     attributes:
       label: Relevant log output
-      description: >-
+      description: |
         Please copy and paste any relevant log output. 
         This will be automatically formatted into code, so no need for backticks.
         We strongly recommend to upload the log file to further debugging.
