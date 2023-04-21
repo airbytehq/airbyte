@@ -6,6 +6,7 @@ import datetime
 
 import pytest
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
+from freezegun import freeze_time
 
 interpolation = JinjaInterpolation()
 
@@ -54,6 +55,15 @@ def test_positive_day_delta():
 
     # We need to assert against an earlier delta since the interpolation function runs datetime.now() a few milliseconds earlier
     assert val > (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=24, hours=23)).strftime("%Y-%m-%dT%H:%M:%S.%f%z")
+
+
+def test_positive_day_delta_with_format():
+    delta_template = "{{ day_delta(25,format='%Y-%m-%d') }}"
+    interpolation = JinjaInterpolation()
+
+    with freeze_time("2021-01-01 03:04:05"):
+        val = interpolation.eval(delta_template, {})
+        assert val == '2021-01-26'
 
 
 def test_negative_day_delta():

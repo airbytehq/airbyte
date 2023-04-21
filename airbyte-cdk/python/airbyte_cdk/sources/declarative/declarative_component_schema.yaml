@@ -1953,3 +1953,90 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+interpolation:
+  variables:
+    - title: config
+      description: The connector configuration. The config's keys match the keys defined in the spec.
+    - title: headers
+      description: The HTTP headers from the last response received from the API.
+    - title: last_records
+      description: List of records extracted from the last response received from the API.
+    - title: record
+      description: The record being processed.
+    - title: response
+      description: The body of the last response received from the API.
+    - title: stream_interval
+      description:
+    - title: stream_partition
+      description: The current partition being processed.
+    - title: stream_slice
+      description: This variable is deprecated. Use stream_interval or stream_partition instead.
+    - title: stream_state
+      description: The current state of the stream.
+  macros:
+    - title: Now (Local)
+      description: Returns the current date and time using the local to the machine running the sync. We recommend using now_utc() instead of now_local() because it is more predictable.
+      arguments: {}
+      return_type: Datetime
+      examples:
+        - "{{ now_local() }}"
+    - title: Now (UTC)
+      description: Returns the current date and time in the UTC timezone.
+      arguments: {}
+      return_type: Datetime
+      examples:
+        - "{{ now_utc() }}"
+        - "{{ now_utc().strftime('%Y-%m-%d') }}"
+    - title: Today (UTC)
+      description: Returns the current date in UTC timezone. The output is a date object.
+      arguments: {}
+      return_type: Date
+      examples:
+        - "{{ today_utc() }}"
+    - title: Timestamp
+      description: Converts a number or a string representing a datetime (formatted as ISO8601) to a timestamp. If the input is a number, it is converted to an int. If no timezone is specified, the string is interpreted as UTC.
+      arguments:
+        datetime: A string formatted as ISO8601 or an integer representing a unix timestamp
+      return_type: int
+      examples:
+        - "{{ timestamp(1646006400) }}"
+        - "{{ timestamp('2022-02-28') }}"
+        - "{{ timestamp('2022-02-28T00:00:00Z') }}"
+        - "{{ timestamp('2022-02-28 00:00:00Z') }}"
+        - "{{ timestamp('2022-02-28T00:00:00:-08:00') }}"
+    - title: Max
+      description: Returns the largest object of a iterable, or or two or more arguments.
+      arguments:
+        args: iterable or a sequence of two or more arguments
+      return_type: Any
+      examples:
+        - "{{ max(2, 3) }}"
+        - "{{ max([2, 3]) }}"
+    - title: Day Delta
+      description: Returns the datetime of now() + num_days.
+      arguments:
+        num_days: The number of days to add to now
+        format: How to format the output string
+      return_type: str
+      examples:
+        - "{{ day_delta(25) }}"
+        - "{{ day_delta(25, format='%Y-%m-%d') }}"
+        - "{{ config['start_time'] + day_delta(2) }}"
+    - title: Duration
+      description: Converts an ISO8601 duratioin to datetime.timedelta.
+      arguments:
+        duration_string: "A string representing an ISO8601 duration. See https://www.digi.com/resources/documentation/digidocs//90001488-13/reference/r_iso_8601_duration_format.htm for more details."
+      return_type: datetime.timedelta
+      examples:
+        - "{{ duration('P1D') }}"
+        - "{{ duration('P6DT23H') }}"
+        - "{{ (now_utc() - duration('P1D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+    - title: Format Datetime
+      description: Converts a datetime or a datetime-string to the specified format.
+      arguments:
+        datetime: The datetime object or a string to convert. If datetime is a string, it must be formatted as ISO8601.
+        format: The datetime format
+      return_type: str
+      examples:
+        - "{{ format_datetime(config['start_time'], '%Y-%m-%d') }}"
+        - "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
