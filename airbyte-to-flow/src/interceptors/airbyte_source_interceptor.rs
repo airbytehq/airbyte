@@ -32,7 +32,7 @@ use tempfile::{Builder, TempDir};
 use json_patch::merge;
 
 use super::fix_document_schema::{fix_document_schema_keys, fix_nonstandard_jsonschema_attributes, remove_enums};
-use super::normalize::{normalize_doc, NormalizationEntry};
+use super::normalize::{normalize_doc, automatic_normalizations, NormalizationEntry};
 use super::remap::remap;
 
 const PROTOCOL_VERSION: u32 = 3032023;
@@ -53,7 +53,11 @@ const SELECTED_STREAMS_FILE_NAME: &str = "selected_streams.json";
 
 // SavedBinding records the binding index and applicable normalizations obtained from a Pull
 // request.
-type SavedBinding = (usize, Option<Vec<NormalizationEntry>>);
+struct SavedBinding {
+    i: usize,
+    normalizations: Option<Vec<NormalizationEntry>>,
+    doc_schema: serde_json::Value,
+}
 
 pub struct AirbyteSourceInterceptor {
     validate_request: Arc<Mutex<Option<request::Validate>>>,
@@ -376,10 +380,14 @@ impl AirbyteSourceInterceptor {
                 .map(|p| sj::from_str::<Vec<NormalizationEntry>>(&p))
                 .transpose()?;
 
-                stream_to_binding.lock().await.insert(resource.stream.clone(), (i, normalizations));
-
                 let mut projections = HashMap::new();
                 if let Some(ref collection) = binding.collection {
+                    stream_to_binding.lock().await
+                        .insert(resource.stream.clone(), SavedBinding {
+                            i,
+                            normalizations,
+                            doc_schema: serde_json::from_str(&collection.write_schema_json)?
+                        });
                     for p in &collection.projections {
                         projections.insert(p.field.clone(), p.ptr.clone());
                     }
@@ -460,15 +468,16 @@ impl AirbyteSourceInterceptor {
                     let v = serde_json::to_vec(&resp)?;
                     Ok(Some((v.into(), (stb, stream))))
                 } else if let Some(mut record) = message.record {
-                    let stream_to_binding = stb.lock().await;
+                    let mut stream_to_binding = stb.lock().await;
                     let binding = stream_to_binding
-                        .get(&record.stream)
+                        .get_mut(&record.stream)
                         .ok_or(Error::DanglingConnectorRecord(record.stream.clone()))?;
 
-                    normalize_doc(&mut record.data, &binding.1);
+                    automatic_normalizations(&mut record.data, &mut binding.doc_schema);
+                    normalize_doc(&mut record.data, &binding.normalizations);
 
                     resp.captured = Some(response::Captured {
-                        binding: binding.0 as u32,
+                        binding: binding.i as u32,
                         doc_json: record.data.to_string(),
                     });
                     drop(stream_to_binding);

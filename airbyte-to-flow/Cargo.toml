@@ -11,6 +11,8 @@ flow_cli_common = { git = "https://github.com/estuary/flow" }
 proto-flow = { git = "https://github.com/estuary/flow", version = "0.0.0" }
 json = { git = "https://github.com/estuary/flow", version = "0.0.0" }
 
+dateparser = "*"
+chrono = "*"
 json-patch = "*"
 validator = { version = "*", features = ["derive"] }
 anyhow = "*"

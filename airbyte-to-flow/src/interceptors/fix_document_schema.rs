@@ -100,30 +100,30 @@ pub fn fix_document_schema_keys(mut doc: serde_json::Value, key_ptrs: Vec<String
     Ok(doc)
 }
 
-pub fn traverse_jsonschema<F>(schema: &mut serde_json::Value, f: &mut F)
-where F: FnMut(&mut Map<String, serde_json::Value>) -> () {
+pub fn traverse_jsonschema<F>(schema: &mut serde_json::Value, f: &mut F, ptr: String)
+where F: FnMut(&mut Map<String, serde_json::Value>, &str) -> () {
     match schema {
         serde_json::Value::Object(map) => {
-            f(map);
+            f(map, &ptr);
             // keys under properties are schemas, so we need to run on those as well
             map.get_mut("properties").map(|props| {
                 match props {
                     serde_json::Value::Object(inner_map) => {
-                        inner_map.values_mut().for_each(|v| {
-                            traverse_jsonschema(v, f);
+                        inner_map.iter_mut().for_each(|(key, v)| {
+                            traverse_jsonschema(v, f, format!("{ptr}/{key}"));
                         });
                     },
                     _ => ()
                 }
             });
-            map.get_mut("items").map(|item| traverse_jsonschema(item, f));
+            map.get_mut("items").map(|item| traverse_jsonschema(item, f, format!("{ptr}/-")));
         }
         _ => ()
     }
 }
 
 pub fn fix_nonstandard_jsonschema_attributes(schema: &mut serde_json::Value) {
-    traverse_jsonschema(schema, &mut |map: &mut Map<String, serde_json::Value>| {
+    traverse_jsonschema(schema, &mut |map: &mut Map<String, serde_json::Value>, _| {
         // airbyte sometimes hides some fields from their config but keeps them
         // for backward compatibility
         map.remove("airbyte_hidden");
@@ -136,16 +136,16 @@ pub fn fix_nonstandard_jsonschema_attributes(schema: &mut serde_json::Value) {
 
         // another attribute that is sometimes used in airbyte schemas
         map.remove("name");
-    })
+    }, "".to_string())
 }
 
 // enums are usually incomplete and new types are added to SaaS connectors over time which leads to enums breaking frequently
 // they also do not usually have a specific materialization type, so we just remove them to avoid
 // schema violations over time
 pub fn remove_enums(schema: &mut serde_json::Value) {
-    traverse_jsonschema(schema, &mut |map: &mut Map<String, serde_json::Value>| {
+    traverse_jsonschema(schema, &mut |map: &mut Map<String, serde_json::Value>, _| {
         map.remove("enum");
-    })
+    }, "".to_string())
 }
 
 #[cfg(test)]

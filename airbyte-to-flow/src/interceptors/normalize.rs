@@ -1,7 +1,11 @@
+use chrono::SecondsFormat;
 use json::schema::formats::Format;
 use json::validator::ValidationResult;
 use regex::Regex;
 use serde::Deserialize;
+use crate::interceptors::fix_document_schema::traverse_jsonschema;
+use serde_json::Map;
+use dateparser::parse;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -18,7 +22,7 @@ pub enum Normalization {
 
 pub fn normalize_doc(
     doc: &mut serde_json::Value,
-    normalizations: &Option<Vec<NormalizationEntry>>,
+    normalizations: &Option<Vec<NormalizationEntry>>
 ) {
     normalizations.as_ref().map(|entries| {
         for entry in entries {
@@ -29,6 +33,38 @@ pub fn normalize_doc(
             }
         }
     });
+}
+
+pub fn automatic_normalizations(
+    doc: &mut serde_json::Value,
+    schema: &mut serde_json::Value,
+) {
+    traverse_jsonschema(schema, &mut |map: &mut Map<String, serde_json::Value>, ptr: &str| {
+        if map.get("format").and_then(|f| f.as_str()) == Some("date-time") {
+            let pointer = doc::Pointer::from_str(ptr);
+            eprintln!("ptr {:#?}", ptr);
+            normalize_to_rfc3339(doc, pointer);
+        }
+    }, "".to_string())
+}
+
+fn normalize_to_rfc3339(doc: &mut serde_json::Value, ptr: doc::Pointer) {
+    if let Some(val) = ptr.query(doc) {
+        eprintln!("queried ptr");
+        val.to_owned().as_str().map(|v| {
+            match Format::Date.validate(v) {
+                ValidationResult::Valid => (), // Already a valid date
+                _ => {
+                    let parsed = parse(v);
+                    if let Ok(parsed) = parsed {
+                        let formatted = parsed.to_rfc3339_opts(SecondsFormat::AutoSi, true);
+                            ptr.create_value(doc)
+                            .map(|v| *v = serde_json::json!(formatted.as_str()));
+                    }
+                }
+            };
+        });
+    }
 }
 
 lazy_static::lazy_static! {
@@ -113,6 +149,34 @@ mod tests {
         for mut case in cases {
             normalize_doc(&mut case.0, &normalizations);
             assert_eq!(case.0, case.1);
+        }
+    }
+
+    #[test]
+    fn automatic_normalizations_rfc3339() {
+        let cases = vec![
+            (
+                serde_json::json!({
+                    "type": "object",
+                    "properties": {
+                        "created": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    }
+                }),
+                serde_json::json!({
+                    "created": "2023-01-30 02:34:15"
+                }),
+                serde_json::json!({
+                    "created": "2023-01-30T02:34:15Z",
+                }),
+            )
+        ];
+
+        for (mut schema, mut input, expected) in cases {
+            automatic_normalizations(&mut input, &mut schema);
+            assert_eq!(input, expected);
         }
     }
 }
