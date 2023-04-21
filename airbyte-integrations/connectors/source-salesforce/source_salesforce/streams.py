@@ -579,6 +579,7 @@ def transform_empty_string_to_none(instance: Any, schema: Any):
 
 class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
     state_checkpoint_interval = 500
+    STREAM_SLICE_STEP = 120
 
     def __init__(self, replication_key: str, start_date: Optional[str], **kwargs):
         super().__init__(**kwargs)
@@ -591,6 +592,28 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         if start_date:
             return pendulum.parse(start_date).strftime("%Y-%m-%dT%H:%M:%SZ")  # type: ignore[attr-defined,no-any-return]
         return None
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        base, start, end = (None, None, None)
+
+        now = pendulum.now(tz="UTC")
+        initial_date = pendulum.parse((stream_state or {}).get(self.cursor_field, self.start_date), tz="UTC")
+        period_end = initial_date.add(days=now.diff(initial_date).in_days())
+
+        slice_number = 1
+        while not end == now:
+            base = period_end.subtract(days=period_end.diff(initial_date).in_days())
+            start = base.add(days=(slice_number - 1) * self.STREAM_SLICE_STEP)
+            end = min(now, base.add(days=slice_number * self.STREAM_SLICE_STEP))
+
+            yield {
+                "start_date": start.isoformat(timespec="milliseconds"),
+                "end_date": end.isoformat(timespec="milliseconds")
+            }
+
+            slice_number = slice_number + 1
 
     def request_params(
         self,
@@ -647,7 +670,6 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
 
 
 class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSalesforceStream):
-    STREAM_SLICE_STEP = 120
 
     def next_page_token(self, last_record: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
@@ -656,28 +678,6 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
                 "primary_key": last_record.get(self.primary_key)
             }
         return None
-
-    def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        base, start, end = (None, None, None)
-
-        now = pendulum.now(tz="UTC")
-        initial_date = pendulum.parse((stream_state or {}).get(self.cursor_field, self.start_date), tz="UTC")
-        period_end = initial_date.add(days=now.diff(initial_date).in_days())
-
-        slice_number = 1
-        while not end == now:
-            base = period_end.subtract(days=period_end.diff(initial_date).in_days())
-            start = base.add(days=(slice_number - 1) * self.STREAM_SLICE_STEP)
-            end = min(now, base.add(days=slice_number * self.STREAM_SLICE_STEP))
-
-            yield {
-                "start_date": start.isoformat(timespec="milliseconds"),
-                "end_date": end.isoformat(timespec="milliseconds")
-            }
-
-            slice_number = slice_number + 1
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
