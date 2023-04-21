@@ -13,11 +13,7 @@ CLOUD_SUFFIX = "_cloud"
 
 """
 TODO
-1. move to html helpers
-2. add airbyte logo
 3. Update to use legacy registry (for now)
-4. Add comments
-5. move constants to config
 6. Output json and html
 7. ensure you can view gcs html with out downloading it
 8. Ensure this is triggered on new reports
