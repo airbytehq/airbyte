@@ -1,0 +1,16 @@
+{
+    "properties": {
+        "id": {
+            "max-length": null
+        },
+        "name": {
+            "max-length": null
+        },
+        "invoice_name": {
+            "max-length": null
+        },
+        "currency_code": {
+            "max-length": null
+        }
+    }
+}

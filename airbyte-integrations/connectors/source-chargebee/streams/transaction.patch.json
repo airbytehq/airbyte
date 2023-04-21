@@ -1,0 +1,100 @@
+{
+    "properties": {
+        "id": {
+            "max-length": null
+        },
+        "customer_id": {
+            "max-length": null
+        },
+        "subscription_id": {
+            "max-length": null
+        },
+        "gateway_account_id": {
+            "max-length": null
+        },
+        "payment_source_id": {
+            "max-length": null
+        },
+        "refrence_number": {
+            "max-length": null
+        },
+        "id_at_gateway": {
+            "max-length": null
+        },
+        "error_code": {
+            "max-length": null
+        },
+        "error-text": {
+            "max-length": null
+        },
+        "fraud_reason": {
+            "max-length": null
+        },
+        "masked_card_number": {
+            "max-length": null
+        },
+        "reference_transaction_id": {
+            "max-length": null
+        },
+        "refunded_txn_id": {
+            "max-length": null
+        },
+        "reference_authorization_id": {
+            "max-length": null
+        },
+        "reversal_transaction_id": {
+            "max-length": null
+        },
+        "iin": {
+            "max-length": null
+        },
+        "last4": {
+            "max-length": null
+        },
+        "merchant_reference_id": {
+            "max-length": null
+        },
+        "linked_invoices": {
+            "items": {
+              "properties": {
+                "invoice_id": {
+                  "max-length": null
+                }
+              }
+            }
+          },
+          "linked_credit_notes": {
+            "items": {
+              "properties": {
+                "cn_id": {
+                  "max-length": null
+                }
+              }
+            }
+          },
+          "cn_create_reason_code": {
+            "max-length": null
+          },
+          "cn_reference_invoice_id": {
+            "max-length": null
+          },
+          "linked_refunds": {
+            "items": {
+              "properties": {
+                "txn_id": {
+                  "max-length": null
+                }
+              }
+            }
+          },
+          "linked_payments": {
+            "items": {
+              "properties": {
+                "id": {
+                  "max-length": null
+                }
+              }
+            }
+        }
+    }
+}
