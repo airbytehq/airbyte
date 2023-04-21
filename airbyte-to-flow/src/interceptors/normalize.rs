@@ -42,7 +42,6 @@ pub fn automatic_normalizations(
     traverse_jsonschema(schema, &mut |map: &mut Map<String, serde_json::Value>, ptr: &str| {
         if map.get("format").and_then(|f| f.as_str()) == Some("date-time") {
             let pointer = doc::Pointer::from_str(ptr);
-            eprintln!("ptr {:#?}", ptr);
             normalize_to_rfc3339(doc, pointer);
         }
     }, "".to_string())
@@ -50,9 +49,8 @@ pub fn automatic_normalizations(
 
 fn normalize_to_rfc3339(doc: &mut serde_json::Value, ptr: doc::Pointer) {
     if let Some(val) = ptr.query(doc) {
-        eprintln!("queried ptr");
         val.to_owned().as_str().map(|v| {
-            match Format::Date.validate(v) {
+            match Format::DateTime.validate(v) {
                 ValidationResult::Valid => (), // Already a valid date
                 _ => {
                     let parsed = parse(v);
