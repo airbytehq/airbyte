@@ -1,6 +1,6 @@
 
 
-# Cumul.io Destination connector
+# Cumul.io
 
 
 ## General
