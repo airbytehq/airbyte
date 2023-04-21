@@ -36,7 +36,7 @@ def test_source_streams():
     with open("sample_files/config.json") as f:
         config = json.load(f)
     streams = SourceStripe().streams(config=config)
-    assert len(streams) == 26
+    assert len(streams) == 27
 
 
 @pytest.fixture(name="config")
