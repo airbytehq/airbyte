@@ -152,6 +152,7 @@ jobs:
           - name: source-snapchat-marketing
           - name: source-recharge
           - name: source-mixpanel
+          - name: source-harvest
 
     steps:
       - uses: actions/checkout@v2
