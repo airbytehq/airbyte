@@ -21,7 +21,7 @@ Currently, this connector requires 30+MB of memory for each stream. When syncing
 ### 2. Create a metastore and attach it to workspace
 > **_IMPORTANT:_** The metastore should be in the same region as the workspaces you want to use to access the data. Make sure that this matches the region of the cloud storage bucket you created earlier.
 
-#### Setup storage bucket and IAM role in AWS 
+#### Setup storage bucket and IAM role in AWS
  Follow [Configure a storage bucket and IAM role in AWS](https://docs.databricks.com/data-governance/unity-catalog/get-started.html#configure-a-storage-bucket-and-iam-role-in-aws) to setup AWS bucket with necessary permissions.
 
 #### Create metastore
@@ -47,7 +47,7 @@ Currently, this connector requires 30+MB of memory for each stream. When syncing
   ![](../../.gitbook/assets/destination/databricks/databricks_open_worspace.png)
 
 - Create SQL warehouse:
-  
+
 - ![](../../.gitbook/assets/destination/databricks/databricks_new_warehouse.png)
   - Switch to SQL tab
   - Click New button
@@ -66,7 +66,7 @@ Currently, this connector requires 30+MB of memory for each stream. When syncing
 
   ![](../../.gitbook/assets/destination/databricks/databricks_sql_warehouse_connection_details.png)
 
-> **_IMPORTANT:_** `Server hostname`, `Port`, `HTTP path` are used for Airbyte connection 
+> **_IMPORTANT:_** `Server hostname`, `Port`, `HTTP path` are used for Airbyte connection
 
 ### 5. Create Databricks Cluster
 > **_TIP:_** If you use Databricks SQL Warehouse skip this step
@@ -102,7 +102,7 @@ Currently, this connector requires 30+MB of memory for each stream. When syncing
 
   ![](../../.gitbook/assets/destination/databricks/dtabricks_token_user_new.png)
 
-- In the new window put a comment (Optional) and lifetime: 
+- In the new window put a comment (Optional) and lifetime:
 
   ![](../../.gitbook/assets/destination/databricks/databricks_generate_token.png)
 
@@ -120,7 +120,7 @@ Currently, this connector requires 30+MB of memory for each stream. When syncing
 
   ![](../../.gitbook/assets/destination/databricks/databricks_new_external_location.png)
 
-> **_TIP:_** The new `Storage credential` can be added in the `Storage Credentials` tab or use same as for Metastore. 
+> **_TIP:_** The new `Storage credential` can be added in the `Storage Credentials` tab or use same as for Metastore.
 
 ## Airbyte Setup
 ### Databricks fields
@@ -136,7 +136,7 @@ You could choose a data source type
  - Amazon S3 (External storage)
  - Azure Blob Storage (External storage)
 
-#### Managed tables data source type 
+#### Managed tables data source type
 
 Please check Databricks documentation about [What is managed tables](https://docs.databricks.com/lakehouse/data-objects.html#what-is-a-managed-table)
 
@@ -145,13 +145,13 @@ Please check Databricks documentation about [What is managed tables](https://doc
 #### Amazon S3 data source type (External storage)
 > **_IMPORTANT:_** Make sure the `External Locations` has been added to the workspace. Check [Adding External Locations](#8-adding-external-locations-optional) step.
 
-Provide your Amazon S3 data: 
+Provide your Amazon S3 data:
 - `S3 Bucket Name` - The bucket name
 - `S3 Bucket Path` - Subdirectory under the above bucket to sync the data into
 - `S3 Bucket Region` - See [here](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions) for all region codes.
 > **_IMPORTANT:_** The metastore should be in the same region as the workspaces you want to use to access the data. Make sure that this matches the region of the cloud storage bucket you created earlier.
 - `S3 Access Key ID` - Corresponding key to the above key id
-- `S3 Secret Access Key` - 
+- `S3 Secret Access Key` -
   - See [this](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) on how to generate an access key.
   - We recommend creating an Airbyte-specific user. This user will require [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_s3_rw-bucket.html) to objects in the bucket.
 - `S3 Filename pattern` - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: {date}, {date:yyyy_MM}, {timestamp}, {timestamp:millis}, {timestamp:micros}, {part_number}, {sync_id}, {format_extension}. Please, don't use empty space and not supportable placeholders, as they won't be recognized
@@ -261,7 +261,8 @@ Suppose you are interested in learning more about the Databricks connector or de
 
 | Version | Date       | Pull Request                                                                                                                                                             | Subject                                                                                                                  |
 |:--------|:-----------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
-| 1.0.1   | 2023-03-30 | [\#23965](https://github.com/airbytehq/airbyte/pull/24657)                                                                                                               | Fix support for external tables on S3                                                                                    |
+| 1.0.2   | 2023-04-20 | [\#25366](https://github.com/airbytehq/airbyte/pull/25366)                                                                                                               | Fix default catalog to be `hive_metastore`                                                                               |
+| 1.0.1   | 2023-03-30 | [\#24657](https://github.com/airbytehq/airbyte/pull/24657)                                                                                                               | Fix support for external tables on S3                                                                                    |
 | 1.0.0   | 2023-03-21 | [\#23965](https://github.com/airbytehq/airbyte/pull/23965)                                                                                                               | Added: Managed table storage type, Databricks Catalog field                                                              |
 | 0.3.1   | 2022-10-15 | [\#18032](https://github.com/airbytehq/airbyte/pull/18032)                                                                                                               | Add `SSL=1` to the JDBC URL to ensure SSL connection.                                                                    |
 | 0.3.0   | 2022-10-14 | [\#15329](https://github.com/airbytehq/airbyte/pull/15329)                                                                                                               | Add support for Azure storage.                                                                                           |
