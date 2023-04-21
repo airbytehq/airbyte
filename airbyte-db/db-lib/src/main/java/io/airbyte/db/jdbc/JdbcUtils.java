@@ -55,7 +55,7 @@ public class JdbcUtils {
   public static final String USERNAME_KEY = "username";
   public static final String MODE_KEY = "mode";
   public static final String AMPERSAND = "&";
-  public static final String EQUALS = "=";https://github.com/airbytehq/airbyte/pull/25386/files
+  public static final String EQUALS = "=";
 
   // An estimate for how much additional data in sent over the wire due to conversion of source data
   // into {@link AirbyteMessage}. This is due to
