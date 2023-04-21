@@ -4,8 +4,51 @@ from google.cloud import storage
 from google.oauth2 import service_account
 
 from dagster import StringSource, InitResourceContext, Noneable, resource
-from dagster_gcp.gcs.file_manager import GCSFileManager
+from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
 
+import uuid
+from typing import Optional
+import dagster._check as check
+from dagster._core.storage.file_manager import (
+    check_file_like_obj,
+)
+
+class ContentTypeAwareGCSFileManger(GCSFileManager):
+    """
+    Slighlty modified dagster_gcp.gcs.file_manager.GCSFileManager
+    to allow setting the content type of the file
+    """
+
+    def get_content_type(self, ext):
+        if ext == "csv":
+            return "text/csv"
+        elif ext == "json":
+            return "application/json"
+        elif ext == "html":
+            return "text/html"
+        elif ext == "md":
+            return "text/markdown"
+        else:
+            return "text/plain"
+
+
+    def write(self, file_obj, mode="wb", ext=None, key: Optional[str] = None):
+        """
+        Reworked from dagster_gcp.gcs.file_manager.GCSFileManager.write
+
+        As the original method does not allow to set the content type of the file
+        """
+        key = check.opt_str_param(key, "key", default=str(uuid.uuid4()))
+        check_file_like_obj(file_obj)
+        gcs_key = self.get_full_key(key + (("." + ext) if ext is not None else ""))
+        bucket_obj = self._client.bucket(self._gcs_bucket)
+        blob = bucket_obj.blob(gcs_key)
+        blob.content_type = self.get_content_type(ext)
+        blob.upload_from_file(file_obj)
+        return GCSFileHandle(self._gcs_bucket, gcs_key)
+
+def get_public_url_for_gcs_file_handle(file_handle: GCSFileHandle):
+    return f"https://storage.googleapis.com/{file_handle.gcs_bucket}/{file_handle.gcs_key}"
 
 @resource(config_schema={"gcp_gcs_cred_string": StringSource})
 def gcp_gcs_client(resource_context: InitResourceContext) -> storage.Client:
@@ -47,7 +90,7 @@ def gcs_file_manager(resource_context) -> GCSFileManager:
 
     storage_client = resource_context.resources.gcp_gcs_client
 
-    return GCSFileManager(
+    return ContentTypeAwareGCSFileManger(
         client=storage_client,
         gcs_bucket=resource_context.resource_config["gcs_bucket"],
         gcs_base_key=resource_context.resource_config["prefix"],

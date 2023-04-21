@@ -3,6 +3,7 @@ from dagster import MetadataValue, Output, asset
 from typing import List
 from orchestrator.templates.render import render_connector_registry_report_markdown, render_connector_registry_locations_html
 from orchestrator.config import CONNECTOR_REPO_NAME, CONNECTORS_TEST_RESULT_BUCKET_URL
+from orchestrator.resources.gcp import get_public_url_for_gcs_file_handle
 import urllib.parse
 
 GROUP_NAME = "registry_reports"
@@ -10,12 +11,6 @@ GROUP_NAME = "registry_reports"
 OSS_SUFFIX = "_oss"
 CLOUD_SUFFIX = "_cloud"
 
-
-"""
-TODO
-6. Output json and html
-7. ensure you can view gcs html with out downloading it
-"""
 
 # 🔗 HTML Renderers
 
@@ -283,31 +278,20 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
         sources_table=dataframe_to_table_html(all_sources_dataframe, columns_to_show),
     )
 
-    markdown_preview = all_connectors_dataframe.head(100).to_markdown()
-    markdown_string = all_connectors_dataframe.to_markdown()
     json_string = all_connectors_dataframe.to_json(orient="records")
 
     metadata_file_directory = context.resources.metadata_file_directory
 
     registry_report_directory_manager = context.resources.registry_report_directory_manager
 
-    md_file_handle = registry_report_directory_manager.write_data(markdown_string.encode(), ext="md", key=report_file_name)
     json_file_handle = registry_report_directory_manager.write_data(json_string.encode(), ext="json", key=report_file_name)
     html_file_handle = registry_report_directory_manager.write_data(html_string.encode(), ext="html", key=report_file_name)
 
-    md_local_file_handle = metadata_file_directory.write_data(markdown_string.encode(), ext="md", key=report_file_name)
-    json_local_file_handle = metadata_file_directory.write_data(json_string.encode(), ext="json", key=report_file_name)
-    html_local_file_handle = metadata_file_directory.write_data(html_string.encode(), ext="html", key=report_file_name)
-
     metadata = {
-        "first_100_preview": MetadataValue.md(markdown_preview),
+        "first_10_preview": MetadataValue.md(all_connectors_dataframe.head(10).to_markdown()),
         "json": MetadataValue.json(json_string),
-        "md_gcs_path": MetadataValue.path(md_file_handle.gcs_path),
-        "json_gcs_path": MetadataValue.path(json_file_handle.gcs_path),
-        "html_gcs_path": MetadataValue.path(html_file_handle.gcs_path),
-        "md_local_path": MetadataValue.path(md_local_file_handle.path),
-        "json_local_path": MetadataValue.path(json_local_file_handle.path),
-        "html_local_path": MetadataValue.path(html_local_file_handle.path),
+        "json_gcs_url": MetadataValue.url(get_public_url_for_gcs_file_handle(json_file_handle)),
+        "html_gcs_url": MetadataValue.url(get_public_url_for_gcs_file_handle(html_file_handle)),
     }
     return Output(metadata=metadata, value=html_file_handle)
 
