@@ -58,6 +58,11 @@ public class JsonLSerializedBufferTest {
     runTest(new FileBuffer(JSON_FILE_EXTENSION), true, 205L, 215L, getExpectedString());
   }
 
+  @Test
+  public void testStringifyJsonL() throws Exception {
+    runTest(new FileBuffer(JSON_FILE_EXTENSION), true, 205L, 215L, getExpectedString());
+  }
+
   private static String getExpectedString() {
     return Jsons.serialize(MESSAGE_DATA);
   }
