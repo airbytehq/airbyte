@@ -55,7 +55,7 @@ public class JdbcUtils {
   public static final String USERNAME_KEY = "username";
   public static final String MODE_KEY = "mode";
   public static final String AMPERSAND = "&";
-  public static final String EQUALS = "=";
+  public static final String EQUALS = "=";https://github.com/airbytehq/airbyte/pull/25386/files
 
   // An estimate for how much additional data in sent over the wire due to conversion of source data
   // into {@link AirbyteMessage}. This is due to
@@ -105,8 +105,11 @@ public class JdbcUtils {
       final String[] keyValuePairs = jdbcPropertiesString.split(delimiter);
       for (final String kv : keyValuePairs) {
         final String[] split = kv.split("=");
-        if (split.length == 2 || (split.length == 3 && kv.contains("sessionVariables")) {
+        if (split.length == 2) {
           parameters.put(split[0], split[1]);
+        }
+        else if (split.length == 3 && kv.contains("sessionVariables") {
+          parameters.put(split[0], split[1] + split[2]);
         } else {
           throw new IllegalArgumentException(
               "jdbc_url_params must be formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). Got "
