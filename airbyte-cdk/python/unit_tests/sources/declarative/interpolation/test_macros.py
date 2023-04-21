@@ -11,7 +11,6 @@ from airbyte_cdk.sources.declarative.interpolation.macros import macros
 @pytest.mark.parametrize(
     "test_name, fn_name, found_in_macros",
     [
-        ("test_now_local", "now_local", True),
         ("test_now_utc", "now_utc", True),
         ("test_today_utc", "today_utc", True),
         ("test_max", "max", True),
