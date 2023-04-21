@@ -11,6 +11,9 @@
         },
         "currency_code": {
             "max-length": null
-        }
+        },
+        "invoice_notes": {
+            "max-length": null
+        },
     }
 }
