@@ -14,7 +14,7 @@ This page contains the setup guide and reference information for the Zendesk Cha
 <!-- env:cloud -->
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Zendesk Chat** from the Source type dropdown.
 4. Enter the name for the Zendesk Chat connector.
@@ -41,7 +41,7 @@ This page contains the setup guide and reference information for the Zendesk Cha
 
 The Zendesk Chat source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 * [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 * [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 * [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
@@ -78,6 +78,8 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                          |
 |:--------| :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
+| 0.1.14  | 2023-02-10 | [24190](https://github.com/airbytehq/airbyte/pull/24190) | Fix remove too high min/max from account stream  |
+| 0.1.13  | 2023-02-10 | [22819](https://github.com/airbytehq/airbyte/pull/22819) | Specified date formatting in specification                                                     |
 | 0.1.12  | 2023-01-27 | [22026](https://github.com/airbytehq/airbyte/pull/22026) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
 | 0.1.11  | 2022-10-18 | [17745](https://github.com/airbytehq/airbyte/pull/17745) | Add Engagements Stream and fix infity looping                                                                            |
 | 0.1.10  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                                                    |

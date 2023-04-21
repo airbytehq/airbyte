@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -14,7 +14,7 @@ TEST_REQUIREMENTS = [
     "pytest-faker==2.0.0",
     "pytest-mock~=3.6.1",
     "requests-mock",
-    "source-acceptance-test",
+    "connector-acceptance-test",
 ]
 
 setup(

@@ -34,20 +34,20 @@
       "format": "date-time"
     },
     "shared": {
-      "type": ["null", "string"]
+      "type": ["null", "boolean"]
     },
     "open_tracking_enabled": {
-      "type": ["null", "string"]
+      "type": ["null", "boolean"]
     },
     "click_tracking_enabled": {
-      "type": ["null", "string"]
+      "type": ["null", "boolean"]
     },
     "cadence_template": {
-      "type": ["null", "string"]
+      "type": ["null", "boolean"]
     },
     "counts": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "sent_emails": {
           "type": ["null", "integer"]
@@ -68,7 +68,7 @@
     },
     "template_owner": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["null", "integer"]
@@ -80,7 +80,7 @@
     },
     "team_template": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["null", "string"]
@@ -92,7 +92,7 @@
     },
     "_links": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "attachments": {
           "type": ["null", "string"]
@@ -100,18 +100,29 @@
       }
     },
     "groups": {
-      "type": ["null", "object"],
-      "additionalProperties": false,
-      "properties": {
-        "id": {
-          "type": ["null", "integer"]
-        },
-        "_href": {
-          "type": ["null", "string"]
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "_href": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
         }
       }
     },
-
     "tags": {
       "type": ["null", "array"],
       "items": {

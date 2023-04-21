@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -37,7 +37,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 @ExtendWith(SystemStubsExtension.class)
-public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
+public abstract class AbstractSshPostgresSourceAcceptanceTest extends AbstractPostgresSourceAcceptanceTest {
 
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
@@ -49,9 +49,10 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
   private final SshBastionContainer bastion = new SshBastionContainer();
   private PostgreSQLContainer<?> db;
 
-  private static void populateDatabaseTestData() throws Exception {
+  private void populateDatabaseTestData() throws Exception {
+    final var outerConfig = bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, List.of("public")), false);
     SshTunnel.sshWrap(
-        config,
+        outerConfig,
         JdbcUtils.HOST_LIST_KEY,
         JdbcUtils.PORT_LIST_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
@@ -85,7 +86,7 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     startTestContainers();
-    config = bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, List.of("public")));
+    config = bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, List.of("public")), true);
     populateDatabaseTestData();
 
   }
@@ -103,16 +104,6 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     bastion.stopAndCloseContainers(db);
-  }
-
-  @Override
-  protected String getImageName() {
-    return "airbyte/source-postgres:dev";
-  }
-
-  @Override
-  protected ConnectorSpecification getSpec() throws Exception {
-    return SshHelpers.getSpecAndInjectSsh();
   }
 
   @Override

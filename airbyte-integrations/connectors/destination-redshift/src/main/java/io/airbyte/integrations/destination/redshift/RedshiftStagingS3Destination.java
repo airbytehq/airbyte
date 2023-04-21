@@ -1,13 +1,13 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redshift;
 
 import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
-import static io.airbyte.integrations.destination.redshift.constants.RedshiftDestinationConstants.UPLOADING_METHOD;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.SSL_JDBC_PARAMETERS;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.getJdbcConfig;
+import static io.airbyte.integrations.destination.redshift.constants.RedshiftDestinationConstants.UPLOADING_METHOD;
 import static io.airbyte.integrations.destination.redshift.util.RedshiftUtil.findS3Options;
 import static io.airbyte.integrations.destination.s3.S3DestinationConfig.getS3DestinationConfig;
 
@@ -22,6 +22,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
@@ -49,6 +50,10 @@ import org.slf4j.LoggerFactory;
 public class RedshiftStagingS3Destination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftStagingS3Destination.class);
+
+  public static Destination sshWrappedDestination() {
+    return new SshWrappedDestination(new RedshiftStagingS3Destination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+  }
 
   public RedshiftStagingS3Destination() {
     super(RedshiftInsertDestination.DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations());
@@ -133,8 +138,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
     final EncryptionConfig encryptionConfig =
-        config.has(UPLOADING_METHOD) ?
-            EncryptionConfig.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
+        config.has(UPLOADING_METHOD) ? EncryptionConfig.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
     final JsonNode s3Options = findS3Options(config);
     final S3DestinationConfig s3Config = getS3DestinationConfig(s3Options);
     final int numberOfFileBuffers = getNumberOfFileBuffers(s3Options);
@@ -159,11 +163,11 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   /**
-   * Retrieves user configured file buffer amount so as long it doesn't exceed the maximum number
-   * of file buffers and sets the minimum number to the default
+   * Retrieves user configured file buffer amount so as long it doesn't exceed the maximum number of
+   * file buffers and sets the minimum number to the default
    *
-   * NOTE: If Out Of Memory Exceptions (OOME) occur, this can be a likely cause as this hard limit
-   * has not been thoroughly load tested across all instance sizes
+   * NOTE: If Out Of Memory Exceptions (OOME) occur, this can be a likely cause as this hard limit has
+   * not been thoroughly load tested across all instance sizes
    *
    * @param config user configurations
    * @return number of file buffers if configured otherwise default

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.dynamodb;
@@ -80,6 +80,7 @@ public class DynamodbDataFactory {
         .put("region", dynamodbContainer.getRegion())
         .put("access_key_id", dynamodbContainer.getAccessKey())
         .put("secret_access_key", dynamodbContainer.getSecretKey())
+        .put("reserved_attribute_names", "name, field.name, field-name")
         .build());
   }
 

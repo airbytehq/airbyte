@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -187,3 +187,10 @@ class EmailActivity(IncrementalMailChimpStream):
         for item in data:
             for activity_item in item.pop("activity", []):
                 yield {**item, **activity_item}
+
+class Reports(IncrementalMailChimpStream):
+    cursor_field = "send_time"
+    data_field = "reports"
+
+    def path(self, **kwargs) -> str:
+        return "reports"
