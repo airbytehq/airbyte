@@ -596,23 +596,18 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        base, start, end = (None, None, None)
-
+        start, end = (None, None)
         now = pendulum.now(tz="UTC")
         initial_date = pendulum.parse((stream_state or {}).get(self.cursor_field, self.start_date), tz="UTC")
-        period_end = initial_date.add(days=now.diff(initial_date).in_days())
 
         slice_number = 1
         while not end == now:
-            base = period_end.subtract(days=period_end.diff(initial_date).in_days())
-            start = base.add(days=(slice_number - 1) * self.STREAM_SLICE_STEP)
-            end = min(now, base.add(days=slice_number * self.STREAM_SLICE_STEP))
-
+            start = initial_date.add(days=(slice_number - 1) * self.STREAM_SLICE_STEP)
+            end = min(now, initial_date.add(days=slice_number * self.STREAM_SLICE_STEP))
             yield {
                 "start_date": start.isoformat(timespec="milliseconds"),
                 "end_date": end.isoformat(timespec="milliseconds")
             }
-
             slice_number = slice_number + 1
 
     def request_params(
@@ -695,9 +690,9 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
         order_by_clause = ""
 
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            primary_key = (next_page_token or {}).get("primary_key", "")
-            if primary_key:
-                where_conditions.append(f"{self.primary_key} > '{primary_key}'")
+            last_primary_key = (next_page_token or {}).get("primary_key", "")
+            if last_primary_key:
+                where_conditions.append(f"{self.primary_key} > '{last_primary_key}'")
             order_by_fields = ", ".join([self.cursor_field, self.primary_key] if self.primary_key else [self.cursor_field])
             order_by_clause = f"ORDER BY {order_by_fields} ASC LIMIT {self.page_size}"
 
