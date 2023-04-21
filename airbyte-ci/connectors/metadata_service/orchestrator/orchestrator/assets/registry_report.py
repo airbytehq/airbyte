@@ -11,7 +11,6 @@ CLOUD_SUFFIX = "_cloud"
 
 # TODO choose a damn case
 def get_github_url(docker_repo_name, github_connector_folders):
-    print(f"YEEEHAW!!! {docker_repo_name}")
     if not isinstance(docker_repo_name, str):
         return None
 
@@ -20,6 +19,19 @@ def get_github_url(docker_repo_name, github_connector_folders):
         return f"https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/{connector_name}"
     else:
         return None
+
+def docker_image_different(row):
+    docker_image_oss = row["dockerRepository_oss"]
+    docker_image_cloud = row["dockerRepository_cloud"]
+    docker_image_version_oss = row["dockerImageTag_oss"]
+    docker_image_version_cloud = row["dockerImageTag_cloud"]
+    if docker_image_oss == docker_image_cloud and docker_image_version_oss == docker_image_version_cloud:
+        return False
+    else:
+        return True
+
+
+
 
 
 def augment_and_normalize_connector_dataframes(
@@ -79,9 +91,8 @@ def augment_and_normalize_connector_dataframes(
         lambda x: get_github_url(x, github_connector_folders)
     )
 
-    # total_registry["docs_url"] = total_registry.apply(
-    #     lambda x: get_github_url(x, github_connector_folders)
-    # )
+
+    total_registry["docker_image_different"] = total_registry.apply(docker_image_different, axis=1)
 
     # Rename column primaryKey to 'definitionId'
     total_registry.rename(columns={primaryKey: "definitionId"}, inplace=True)
@@ -206,6 +217,7 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
         "icon_oss",
         "github_url",
         "releaseStage_oss",
+        "documentationUrl_oss",
         "connector_type",
         "dockerRepository_oss",
         "dockerImageTag_oss",
@@ -213,6 +225,7 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
         "dockerImageTag_cloud",
         "is_oss",
         "is_cloud",
+        "docker_image_different",
 
         # "is_source_controlled",
         # "is_spec_cached",
@@ -220,7 +233,6 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
         # build_status_badge
         # Do they match??
         # CDK version
-        # docs
         # issues
         # repo
         # source
