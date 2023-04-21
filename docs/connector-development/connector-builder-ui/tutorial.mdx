@@ -158,7 +158,7 @@ In this section, we'll update the source to read historical data instead of only
 According to the API documentation, we can read the exchange rate for a specific date range by querying the `"/exchangerates_data/{date}"` endpoint instead of `"/exchangerates_data/latest"`.
 
 To configure your connector to request every day individually, follow these steps:
-* On top of the form, change the "Path URL" input to `/exchangerates_data/{{ stream_slice.start_time }}` to inject the date to fetch data for into the path of the request
+* On top of the form, change the "Path URL" input to `/exchangerates_data/{{ stream_interval.start_time }}` to inject the date to fetch data for into the path of the request
 * Enable "Incremental sync" for the Rates stream
 * Set the "Cursor field" to `date` - this is the property in our records to check what date got synced last
 * Set the "Datetime format" to `%Y-%m-%d` to match the format of the date in the record returned from the API
