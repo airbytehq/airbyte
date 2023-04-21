@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import copy
-import json
 from typing import List
 
 import pandas as pd
@@ -178,6 +177,7 @@ def persist_registry_to_json(
     file_handle = registry_directory_manager.write_data(registry_json.encode("utf-8"), ext="json", key=registry_file_name)
     return file_handle
 
+
 def generate_and_persist_registry(
     metadata_definitions: List[MetadataDefinition],
     cached_specs: OutputDataFrame,
@@ -273,4 +273,3 @@ def oss_destinations_dataframe(oss_registry_from_metadata: ConnectorRegistryV0) 
     oss_registry_from_metadata_dict = to_json_sanitized_dict(oss_registry_from_metadata)
     destinations = oss_registry_from_metadata_dict["destinations"]
     return output_dataframe(pd.DataFrame(destinations))
-

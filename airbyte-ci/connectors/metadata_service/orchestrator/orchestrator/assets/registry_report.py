@@ -1,7 +1,7 @@
 import pandas as pd
 from dagster import MetadataValue, Output, asset
 from typing import List
-from orchestrator.templates.render import render_connector_registry_report_markdown, render_connector_registry_locations_html
+from orchestrator.templates.render import render_connector_registry_locations_html
 from orchestrator.config import CONNECTOR_REPO_NAME, CONNECTORS_TEST_RESULT_BUCKET_URL
 from orchestrator.resources.gcp import get_public_url_for_gcs_file_handle
 import urllib.parse
@@ -14,17 +14,22 @@ CLOUD_SUFFIX = "_cloud"
 
 # 🔗 HTML Renderers
 
+
 def simple_link_html(url):
     if url:
         return f'<a href="{url}" target="_blank">🔗 Link</a>'
     else:
         return None
 
+
 def icon_image_html(icon):
-    github_icon_base = f"https://raw.githubusercontent.com/{CONNECTOR_REPO_NAME}/master/airbyte-config-oss/init-oss/src/main/resources/icons"
+    github_icon_base = (
+        f"https://raw.githubusercontent.com/{CONNECTOR_REPO_NAME}/master/airbyte-config-oss/init-oss/src/main/resources/icons"
+    )
     icon_size = "30"
     icon_link = f'<img src="{github_icon_base}/{icon}" height="{icon_size}" height="{icon_size}"/>' if icon else "x"
-    return icon_link;
+    return icon_link
+
 
 def test_badge_html(test_summary_url):
     if not test_summary_url:
@@ -34,7 +39,9 @@ def test_badge_html(test_summary_url):
     test_summary_url_encoded = urllib.parse.quote(test_summary_url)
     return f'<img src="{image_shield_base}?url={test_summary_url_encoded}">'
 
+
 # 🖼️ Dataframe Columns
+
 
 def github_url(docker_repo_name, github_connector_folders):
     if not isinstance(docker_repo_name, str):
@@ -60,6 +67,7 @@ def issue_url(row):
     )
     return f"https://github.com/{CONNECTOR_REPO_NAME}/issues?q=is:open+is:issue+label:{issues_label}"
 
+
 def merge_docker_repo_and_version(row, suffix):
     docker_repo = row[f"dockerRepository{suffix}"]
     docker_version = row[f"dockerImageTag{suffix}"]
@@ -68,6 +76,7 @@ def merge_docker_repo_and_version(row, suffix):
         return None
 
     return f"{docker_repo}:{docker_version}"
+
 
 def test_summary_url(row):
     docker_repo_name = row["dockerRepository_oss"]
@@ -78,7 +87,9 @@ def test_summary_url(row):
 
     return f"{CONNECTORS_TEST_RESULT_BUCKET_URL}/tests/summary/connectors/{connector}/badge.json"
 
+
 # 📊 Dataframe Augmentation
+
 
 def augment_and_normalize_connector_dataframes(
     cloud_df: pd.DataFrame, oss_df: pd.DataFrame, primaryKey: str, connector_type: str, github_connector_folders: List[str]
@@ -94,7 +105,6 @@ def augment_and_normalize_connector_dataframes(
     # Add a column 'is_oss' to indicate if an image/version pair is in the oss registry
     oss_df["is_oss"] = True
 
-
     # Merge the two registries on the 'image' and 'version' columns
     total_registry = pd.merge(oss_df, cloud_df, how="outer", suffixes=(OSS_SUFFIX, CLOUD_SUFFIX), on=primaryKey)
 
@@ -104,13 +114,10 @@ def augment_and_normalize_connector_dataframes(
     # Replace NaN values in the 'is_cloud' and 'is_oss' columns with False
     total_registry[["is_cloud", "is_oss"]] = total_registry[["is_cloud", "is_oss"]].fillna(False)
 
-
     # Set connectorType to 'source' or 'destination'
     total_registry["connector_type"] = connector_type
 
-    total_registry["github_url"] = total_registry["dockerRepository_oss"].apply(
-        lambda x: github_url(x, github_connector_folders)
-    )
+    total_registry["github_url"] = total_registry["dockerRepository_oss"].apply(lambda x: github_url(x, github_connector_folders))
 
     total_registry["issue_url"] = total_registry.apply(issue_url, axis=1)
     total_registry["test_summary_url"] = total_registry.apply(test_summary_url, axis=1)
@@ -118,15 +125,16 @@ def augment_and_normalize_connector_dataframes(
     # Merge docker repo and version into separate columns
     total_registry["docker_image_oss"] = total_registry.apply(lambda x: merge_docker_repo_and_version(x, OSS_SUFFIX), axis=1)
     total_registry["docker_image_cloud"] = total_registry.apply(lambda x: merge_docker_repo_and_version(x, CLOUD_SUFFIX), axis=1)
-    total_registry["docker_images_match"] = total_registry.apply(
-        lambda x: x["docker_image_oss"] == x["docker_image_cloud"], axis=1)
+    total_registry["docker_images_match"] = total_registry.apply(lambda x: x["docker_image_oss"] == x["docker_image_cloud"], axis=1)
 
     # Rename column primaryKey to 'definitionId'
     total_registry.rename(columns={primaryKey: "definitionId"}, inplace=True)
 
     return total_registry
 
+
 # Dataframe to HTML
+
 
 def dataframe_to_table_html(df: pd.DataFrame, column_mapping: List[dict]) -> str:
     """
@@ -136,29 +144,16 @@ def dataframe_to_table_html(df: pd.DataFrame, column_mapping: List[dict]) -> str
     # convert true and false to checkmarks and x's
     df.replace({True: "✅", False: "❌"}, inplace=True)
 
-    title_mapping = {
-        column_info["column"]: column_info["title"]
-        for column_info in column_mapping
-    }
+    title_mapping = {column_info["column"]: column_info["title"] for column_info in column_mapping}
 
     df.rename(columns=title_mapping, inplace=True)
 
-    html_formatters = {
-        column_info["title"]: column_info["formatter"]
-        for column_info in column_mapping
-        if "formatter" in column_info
-    }
+    html_formatters = {column_info["title"]: column_info["formatter"] for column_info in column_mapping if "formatter" in column_info}
 
     columns = [column_info["title"] for column_info in column_mapping]
 
     return df.to_html(
-        columns=columns,
-        justify="left",
-        formatters=html_formatters,
-        escape=False,
-        classes="styled-table",
-        na_rep="❌",
-        render_links=True
+        columns=columns, justify="left", formatters=html_formatters, escape=False, classes="styled-table", na_rep="❌", render_links=True
     )
 
 
@@ -166,10 +161,9 @@ def dataframe_to_table_html(df: pd.DataFrame, column_mapping: List[dict]) -> str
 
 # TODO (ben): Update these assets to reference the new registry once deployed
 
+
 @asset(group_name=GROUP_NAME)
-def all_sources_dataframe(
-    legacy_cloud_sources_dataframe, legacy_oss_sources_dataframe, github_connector_folders
-) -> pd.DataFrame:
+def all_sources_dataframe(legacy_cloud_sources_dataframe, legacy_oss_sources_dataframe, github_connector_folders) -> pd.DataFrame:
     """
     Merge the cloud and oss sources registries into a single dataframe.
     """
@@ -199,7 +193,8 @@ def all_destinations_dataframe(
         github_connector_folders=github_connector_folders,
     )
 
-@asset(required_resource_keys={"registry_report_directory_manager", "metadata_file_directory"}, group_name=GROUP_NAME)
+
+@asset(required_resource_keys={"registry_report_directory_manager"}, group_name=GROUP_NAME)
 def connector_registry_report(context, all_destinations_dataframe, all_sources_dataframe):
     """
     Generate a report of the connector registry.
@@ -280,8 +275,6 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
 
     json_string = all_connectors_dataframe.to_json(orient="records")
 
-    metadata_file_directory = context.resources.metadata_file_directory
-
     registry_report_directory_manager = context.resources.registry_report_directory_manager
 
     json_file_handle = registry_report_directory_manager.write_data(json_string.encode(), ext="json", key=report_file_name)
@@ -294,4 +287,3 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
         "html_gcs_url": MetadataValue.url(get_public_url_for_gcs_file_handle(html_file_handle)),
     }
     return Output(metadata=metadata, value=html_file_handle)
-

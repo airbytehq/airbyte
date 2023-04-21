@@ -13,6 +13,7 @@ from dagster._core.storage.file_manager import (
     check_file_like_obj,
 )
 
+
 class ContentTypeAwareGCSFileManger(GCSFileManager):
     """
     Slighlty modified dagster_gcp.gcs.file_manager.GCSFileManager
@@ -31,7 +32,6 @@ class ContentTypeAwareGCSFileManger(GCSFileManager):
         else:
             return "text/plain"
 
-
     def write(self, file_obj, mode="wb", ext=None, key: Optional[str] = None):
         """
         Reworked from dagster_gcp.gcs.file_manager.GCSFileManager.write
@@ -47,8 +47,10 @@ class ContentTypeAwareGCSFileManger(GCSFileManager):
         blob.upload_from_file(file_obj)
         return GCSFileHandle(self._gcs_bucket, gcs_key)
 
+
 def get_public_url_for_gcs_file_handle(file_handle: GCSFileHandle):
     return f"https://storage.googleapis.com/{file_handle.gcs_bucket}/{file_handle.gcs_key}"
+
 
 @resource(config_schema={"gcp_gcs_cred_string": StringSource})
 def gcp_gcs_client(resource_context: InitResourceContext) -> storage.Client:

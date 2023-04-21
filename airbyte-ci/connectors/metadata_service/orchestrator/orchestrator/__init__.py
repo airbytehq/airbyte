@@ -25,16 +25,18 @@ from orchestrator.sensors.metadata import metadata_updated_sensor
 from orchestrator.config import REPORT_FOLDER, REGISTRIES_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
 
-ASSETS = load_assets_from_modules([
-    github,
-    specs_secrets_mask,
-    spec_cache,
-    metadata,
-    registry,
-    legacy_registry,
-    registry_report,
-    dev,
-])
+ASSETS = load_assets_from_modules(
+    [
+        github,
+        specs_secrets_mask,
+        spec_cache,
+        metadata,
+        registry,
+        legacy_registry,
+        registry_report,
+        dev,
+    ]
+)
 
 
 RESOURCES = {

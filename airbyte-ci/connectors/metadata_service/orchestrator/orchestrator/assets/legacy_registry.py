@@ -15,6 +15,7 @@ from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegis
 
 GROUP_NAME = "legacy_registry"
 
+
 @asset(group_name=GROUP_NAME)
 def legacy_cloud_sources_dataframe(legacy_cloud_registry_dict: dict) -> OutputDataFrame:
     sources = legacy_cloud_registry_dict["sources"]
