@@ -7,7 +7,7 @@
         "client_secret",
         "refresh_token"
         ],
-      properties: {
+      "properties": {
       "client_id": {
         "title": "Client ID",
         "type": "string",
