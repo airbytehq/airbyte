@@ -1056,7 +1056,7 @@ definitions:
           - "https://connect.squareup.com/v2"
           - "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
       path:
-        Path: Path
+        title: URL Path
         description: Path the specific API endpoint that this stream represents. Do not put sensitive information (e.g. API tokens) into this field - Use the Authentication component for this.
         type: string
         interpolation_context:
