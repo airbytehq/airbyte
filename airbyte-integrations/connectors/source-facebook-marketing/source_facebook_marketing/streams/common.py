@@ -36,11 +36,9 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
     def reduce_request_record_limit(details):
         _, exc, _ = sys.exc_info()
         if (
-            details.get("kwargs", {}).get("params", {}).get("limit")
-            and exc.http_status() == http.client.INTERNAL_SERVER_ERROR
-            and exc.api_error_message() == "Please reduce the amount of data you're asking for, then retry your request"
+                details.get("kwargs", {}).get("params", {}).get("limit")
         ):
-            details["kwargs"]["params"]["limit"] = int(int(details["kwargs"]["params"]["limit"]) / 2)
+            details["kwargs"]["params"]["limit"] = int(int(details["kwargs"]["params"]["limit"]) / 4)
 
     def should_retry_api_error(exc):
         if isinstance(exc, FacebookRequestError):
@@ -63,6 +61,19 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
             )
         return True
 
+    # Save the original limit value
+    original_limit = wait_gen_kwargs.get("kwargs", {}).get("params", {}).get("limit")
+
+    # Wrap the decorated function with another function that resets the limit value after a successful API call
+    def reset_limit_decorator(f):
+        def wrapper(*args, **kwargs):
+            result = f(*args, **kwargs)
+            # Reset the limit value after the API call is successful
+            if original_limit:
+                kwargs["params"]["limit"] = original_limit
+            return result
+        return wrapper
+
     return backoff.on_exception(
         backoff_type,
         exception,
@@ -70,7 +81,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         on_backoff=[log_retry_attempt, reduce_request_record_limit],
         giveup=lambda exc: not should_retry_api_error(exc),
         **wait_gen_kwargs,
-    )
+    )(reset_limit_decorator)
 
 
 def deep_merge(a: Any, b: Any) -> Any:
