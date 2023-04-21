@@ -105,7 +105,7 @@ public class JdbcUtils {
       final String[] keyValuePairs = jdbcPropertiesString.split(delimiter);
       for (final String kv : keyValuePairs) {
         final String[] split = kv.split("=");
-        if (split.length == 2) {
+        if (split.length == 2 || (split.length == 3 && kv.contains("sessionVariables")) {
           parameters.put(split[0], split[1]);
         } else {
           throw new IllegalArgumentException(
