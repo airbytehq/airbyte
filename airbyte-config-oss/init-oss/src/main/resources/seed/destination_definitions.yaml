@@ -116,6 +116,13 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/convex
   icon: convex.svg
   releaseStage: alpha
+- name: Starburst Galaxy
+  destinationDefinitionId: 4528e960-6f7b-4412-8555-7e0097e1da17
+  dockerRepository: airbyte/destination-starburst-galaxy
+  dockerImageTag: 0.0.1
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/starburst-galaxy
+  icon: starburst-galaxy.svg
+  releaseStage: alpha
 - name: Databricks Lakehouse
   destinationDefinitionId: 072d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-databricks

@@ -1,0 +1,12 @@
+{
+  "string_type" : "sample_string",
+  "integer_type" : 5389,
+  "number_type" : 78.32,
+  "boolean_type" : false,
+  "binary_type" : "RkRY",
+  "date_type" : "2021-01-01",
+  "timestamp_with_tz_type" : "2021-01-01T02:06:13Z",
+  "timestamp_without_tz_type" : "2023-03-01T04:05:01Z",
+  "time_with_tz_type" : "12:23:01.541+05:00",
+  "time_without_tz_type" : "12:16:04"
+}
