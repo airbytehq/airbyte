@@ -12,19 +12,19 @@
         "title": "Client ID",
         "type": "string",
         "description": "The Client ID of your Snapchat developer application.",
-        "airbyte_secret": true,
+        "airbyte_secret": true
       },
       "client_secret": {
         "title": "Client Secret",
         "type": "string",
         "description": "The Client Secret of your Snapchat developer application.",
-        "airbyte_secret": true,
+        "airbyte_secret": true
       },
       "refresh_token": {
         "title": "Refresh Token",
         "type": "string",
         "description": "Refresh Token to renew the expired Access Token.",
-        "airbyte_secret": true,
+        "airbyte_secret": true
       }
       }
       },
