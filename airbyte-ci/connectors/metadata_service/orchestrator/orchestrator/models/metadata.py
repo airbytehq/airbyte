@@ -1,4 +1,4 @@
-from metadata_service.models.generated.ConnectorMetadataDefinitionV1 import ConnectorMetadataDefinitionV1
+from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from pydantic import ValidationError
 
 from pydantic import ValidationError
@@ -25,6 +25,8 @@ class PydanticDelayValidationMixin:
         except ValidationError as e:
             return (False, e)
 
+
+class PydanticDictMixin:
     def __getitem__(self, key: str):
         return self.__dict__[key]
 
@@ -32,5 +34,9 @@ class PydanticDelayValidationMixin:
         self.__dict__[key] = value
 
 
-class PartialMetadataDefinition(PydanticDelayValidationMixin, ConnectorMetadataDefinitionV1):
+class PartialMetadataDefinition(PydanticDelayValidationMixin, PydanticDictMixin, ConnectorMetadataDefinitionV0):
+    pass
+
+
+class MetadataDefinition(PydanticDictMixin, ConnectorMetadataDefinitionV0):
     pass

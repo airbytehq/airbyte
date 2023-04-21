@@ -6,8 +6,9 @@ import pathlib
 import pytest
 import yaml
 from metadata_service import gcs_upload
-from metadata_service.models.generated.ConnectorMetadataDefinitionV1 import ConnectorMetadataDefinitionV1
+from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from pydantic import ValidationError
+from metadata_service.constants import METADATA_FILE_NAME
 
 
 @pytest.mark.parametrize(
@@ -28,9 +29,9 @@ from pydantic import ValidationError
 )
 def test_upload_metadata_to_gcs_valid_metadata(mocker, valid_metadata_yaml_files, version_blob_exists, version_blob_etag, latest_blob_etag):
     metadata_file_path = pathlib.Path(valid_metadata_yaml_files[0])
-    metadata = ConnectorMetadataDefinitionV1.parse_obj(yaml.safe_load(metadata_file_path.read_text()))
-    expected_version_key = f"metadata/{metadata.data.dockerRepository}/{metadata.data.dockerImageTag}/metadata.yaml"
-    expected_latest_key = f"metadata/{metadata.data.dockerRepository}/latest/metadata.yaml"
+    metadata = ConnectorMetadataDefinitionV0.parse_obj(yaml.safe_load(metadata_file_path.read_text()))
+    expected_version_key = f"metadata/{metadata.data.dockerRepository}/{metadata.data.dockerImageTag}/{METADATA_FILE_NAME}"
+    expected_latest_key = f"metadata/{metadata.data.dockerRepository}/latest/{METADATA_FILE_NAME}"
 
     mock_credentials = mocker.Mock()
     mock_storage_client = mocker.Mock()

@@ -7,16 +7,23 @@ from orchestrator.assets.registry import (
     cloud_sources_dataframe,
 )
 
-from orchestrator.assets.metadata import registry_derived_metadata_definitions
+from orchestrator.assets.metadata import legacy_registry_derived_metadata_definitions
+
+from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
 
 
 def test_no_missing_ids(oss_registry_dict, cloud_registry_dict):
-    cloud_destinations_df = cloud_destinations_dataframe(cloud_registry_dict).value
-    cloud_sources_df = cloud_sources_dataframe(cloud_registry_dict).value
-    oss_destinations_df = oss_destinations_dataframe(oss_registry_dict).value
-    oss_sources_df = oss_sources_dataframe(oss_registry_dict).value
+    oss_registry_model = ConnectorRegistryV0.parse_obj(oss_registry_dict)
+    cloud_registry_model = ConnectorRegistryV0.parse_obj(cloud_registry_dict)
 
-    metadata_def = registry_derived_metadata_definitions(cloud_sources_df, cloud_destinations_df, oss_sources_df, oss_destinations_df).value
+    cloud_destinations_df = cloud_destinations_dataframe(cloud_registry_model).value
+    cloud_sources_df = cloud_sources_dataframe(cloud_registry_model).value
+    oss_destinations_df = oss_destinations_dataframe(oss_registry_model).value
+    oss_sources_df = oss_sources_dataframe(oss_registry_model).value
+
+    metadata_def = legacy_registry_derived_metadata_definitions(
+        cloud_sources_df, cloud_destinations_df, oss_sources_df, oss_destinations_df
+    ).value
     metadata_definition_ids = [definition["data"]["definitionId"] for definition in metadata_def]
     unique_metadata_definition_ids = set(metadata_definition_ids)
 
@@ -55,12 +62,17 @@ def assert_in_expected_registry(metadata_def, oss_registry_dict, cloud_registry_
 
 
 def test_in_correct_registry(oss_registry_dict, cloud_registry_dict):
-    cloud_destinations_df = cloud_destinations_dataframe(cloud_registry_dict).value
-    cloud_sources_df = cloud_sources_dataframe(cloud_registry_dict).value
-    oss_destinations_df = oss_destinations_dataframe(oss_registry_dict).value
-    oss_sources_df = oss_sources_dataframe(oss_registry_dict).value
+    oss_registry_model = ConnectorRegistryV0.parse_obj(oss_registry_dict)
+    cloud_registry_model = ConnectorRegistryV0.parse_obj(cloud_registry_dict)
 
-    metadata_def = registry_derived_metadata_definitions(cloud_sources_df, cloud_destinations_df, oss_sources_df, oss_destinations_df).value
+    cloud_destinations_df = cloud_destinations_dataframe(cloud_registry_model).value
+    cloud_sources_df = cloud_sources_dataframe(cloud_registry_model).value
+    oss_destinations_df = oss_destinations_dataframe(oss_registry_model).value
+    oss_sources_df = oss_sources_dataframe(oss_registry_model).value
+
+    metadata_def = legacy_registry_derived_metadata_definitions(
+        cloud_sources_df, cloud_destinations_df, oss_sources_df, oss_destinations_df
+    ).value
     for definition in metadata_def:
         assert_in_expected_registry(definition, oss_registry_dict, cloud_registry_dict)
 
@@ -92,11 +104,16 @@ def has_correct_cloud_docker_image(metadata_def, cloud_registry_dict):
 
 
 def test_registry_override(oss_registry_dict, cloud_registry_dict):
-    cloud_destinations_df = cloud_destinations_dataframe(cloud_registry_dict).value
-    cloud_sources_df = cloud_sources_dataframe(cloud_registry_dict).value
-    oss_destinations_df = oss_destinations_dataframe(oss_registry_dict).value
-    oss_sources_df = oss_sources_dataframe(oss_registry_dict).value
+    oss_registry_model = ConnectorRegistryV0.parse_obj(oss_registry_dict)
+    cloud_registry_model = ConnectorRegistryV0.parse_obj(cloud_registry_dict)
 
-    metadata_def = registry_derived_metadata_definitions(cloud_sources_df, cloud_destinations_df, oss_sources_df, oss_destinations_df).value
+    cloud_destinations_df = cloud_destinations_dataframe(cloud_registry_model).value
+    cloud_sources_df = cloud_sources_dataframe(cloud_registry_model).value
+    oss_destinations_df = oss_destinations_dataframe(oss_registry_model).value
+    oss_sources_df = oss_sources_dataframe(oss_registry_model).value
+
+    metadata_def = legacy_registry_derived_metadata_definitions(
+        cloud_sources_df, cloud_destinations_df, oss_sources_df, oss_destinations_df
+    ).value
     for definition in metadata_def:
         assert has_correct_cloud_docker_image(definition, cloud_registry_dict)

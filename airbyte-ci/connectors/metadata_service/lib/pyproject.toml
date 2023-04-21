@@ -28,7 +28,7 @@ pytest-mock = "^3.10.0"
 metadata_service = "metadata_service.commands:metadata_service"
 
 [tool.poe.tasks]
-generate-models = "datamodel-codegen --input metadata_service/models/src/ConnectorMetadataDefinitionV1.yaml --output metadata_service/models/generated/ConnectorMetadataDefinitionV1.py --use-title-as-name --use-double-quotes --disable-timestamp"
+generate-models = { shell = "./bin/generate-python-classes.sh" }
 
 [build-system]
 requires = ["poetry-core"]

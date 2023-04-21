@@ -1,0 +1,68 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte-platform/blob/main/airbyte-config/config-models/src/main/resources/types/ConnectorRegistrySourceDefinition.yaml
+title: ConnectorRegistrySourceDefinition
+description: describes a source
+type: object
+required:
+  - sourceDefinitionId
+  - name
+  - dockerRepository
+  - dockerImageTag
+  - documentationUrl
+  - spec
+additionalProperties: true
+properties:
+  sourceDefinitionId:
+    type: string
+    format: uuid
+  name:
+    type: string
+  dockerRepository:
+    type: string
+  dockerImageTag:
+    type: string
+  documentationUrl:
+    type: string
+  icon:
+    type: string
+  sourceType:
+    type: string
+    enum:
+      - api
+      - file
+      - database
+      - custom
+  spec:
+    type: object
+  tombstone:
+    description: if false, the configuration is active. if true, then this
+      configuration is permanently off.
+    type: boolean
+    default: false
+  public:
+    description: true if this connector definition is available to all workspaces
+    type: boolean
+    default: false
+  custom:
+    description: whether this is a custom connector definition
+    type: boolean
+    default: false
+  releaseStage:
+    "$ref": ReleaseStage.yaml
+  releaseDate:
+    description: The date when this connector was first released, in yyyy-mm-dd format.
+    type: string
+    format: date
+  resourceRequirements:
+    "$ref": ActorDefinitionResourceRequirements.yaml
+  protocolVersion:
+    type: string
+    description: the Airbyte Protocol version supported by the connector
+  allowedHosts:
+    "$ref": AllowedHosts.yaml
+  suggestedStreams:
+    "$ref": SuggestedStreams.yaml
+  maxSecondsBetweenMessages:
+    description: Number of seconds allowed between 2 airbyte protocol messages. The source will timeout if this delay is reach
+    type: integer

@@ -6,6 +6,7 @@ import pathlib
 import click
 from metadata_service.gcs_upload import upload_metadata_to_gcs
 from metadata_service.validators.metadata_validator import validate_metadata_file
+from metadata_service.constants import METADATA_FILE_NAME
 from pydantic import ValidationError
 
 
@@ -17,15 +18,15 @@ def metadata_service():
 @metadata_service.command(help="Validate a given metadata YAML file.")
 @click.argument("file_path", type=click.Path(exists=True, path_type=pathlib.Path))
 def validate(file_path: pathlib.Path):
-    file_path = file_path if not file_path.is_dir() else file_path / "metadata.yaml"
+    file_path = file_path if not file_path.is_dir() else file_path / METADATA_FILE_NAME
 
     click.echo(f"Validating {file_path}...")
 
     is_valid, error = validate_metadata_file(file_path)
     if is_valid:
-        click.echo(f"{file_path} is a valid ConnectorMetadataDefinitionV1 YAML file.")
+        click.echo(f"{file_path} is a valid ConnectorMetadataDefinitionV0 YAML file.")
     else:
-        click.echo(f"{file_path} is not a valid ConnectorMetadataDefinitionV1 YAML file.")
+        click.echo(f"{file_path} is not a valid ConnectorMetadataDefinitionV0 YAML file.")
         click.echo(str(error))
         exit(1)
 
@@ -37,7 +38,7 @@ def validate(file_path: pathlib.Path):
     "--service-account-file-path", "-sa", type=click.Path(exists=True, path_type=pathlib.Path), envvar="GOOGLE_APPLICATION_CREDENTIALS"
 )
 def upload(metadata_file_path: pathlib.Path, bucket_name: str, service_account_file_path: pathlib.Path):
-    metadata_file_path = metadata_file_path if not metadata_file_path.is_dir() else metadata_file_path / "metadata.yaml"
+    metadata_file_path = metadata_file_path if not metadata_file_path.is_dir() else metadata_file_path / METADATA_FILE_NAME
     try:
         uploaded, blob_id = upload_metadata_to_gcs(bucket_name, metadata_file_path, service_account_file_path)
     except (ValidationError, FileNotFoundError) as e:
