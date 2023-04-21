@@ -37,7 +37,7 @@ public class S3JsonlFormatConfig implements S3FormatConfig {
             : Flattening.NO,
         formatConfig.has(COMPRESSION_ARG_NAME)
             ? CompressionTypeHelper.parseCompressionType(formatConfig.get(COMPRESSION_ARG_NAME))
-            : DEFAULT_COMPRESSION_TYPE
+            : DEFAULT_COMPRESSION_TYPE,
         formatConfig.has(STRINGIFY_ARG_NAME)
             ? Stringify.fromValue(formatConfig.get(STRINGIFY_ARG_NAME).asText())
             : Stringify.NO);
