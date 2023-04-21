@@ -589,7 +589,6 @@ definitions:
         examples:
           - "2021-01-1T00:00:00Z"
           - "{{ now_utc() }}"
-          - "{{ now_local() }}"
       start_datetime:
         title: Start Datetime
         description: The datetime that determines the earliest record that should be synced.
