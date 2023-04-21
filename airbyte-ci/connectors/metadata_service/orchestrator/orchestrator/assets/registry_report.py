@@ -153,7 +153,7 @@ def dataframe_to_table_html(df: pd.DataFrame, column_mapping: List[dict]) -> str
     columns = [column_info["title"] for column_info in column_mapping]
 
     return df.to_html(
-        columns=columns, justify="left", formatters=html_formatters, escape=False, classes="styled-table", na_rep="❌", render_links=True
+        columns=columns, justify="left", index=False, formatters=html_formatters, escape=False, classes="styled-table", na_rep="❌", render_links=True
     )
 
 
@@ -206,12 +206,12 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
 
     columns_to_show = [
         {
-            "column": "definitionId",
-            "title": "Definition Id",
+            "column": "name_oss",
+            "title": "Connector Name",
         },
         {
-            "column": "name_oss",
-            "title": "Name",
+            "column": "definitionId",
+            "title": "Definition Id",
         },
         {
             "column": "icon_oss",

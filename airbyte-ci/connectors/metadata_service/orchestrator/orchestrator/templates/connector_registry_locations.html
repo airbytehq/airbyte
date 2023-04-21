@@ -5,8 +5,12 @@
 {% block content %}
 <h1>Airbyte Connector Registries</h1>
 <h2>Sources</h2>
-{{ sources_table }}
+<div class="table-container test">
+  {{ sources_table }}
+</div>
 
 <h2>Destinations</h2>
-{{ destinations_table }}
+<div class="table-container">
+  {{ destinations_table }}
+</div>
 {% endblock %}
