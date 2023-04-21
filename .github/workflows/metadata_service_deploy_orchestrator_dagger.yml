@@ -11,9 +11,9 @@ jobs:
   connector_metadata_service_deploy_orchestrator:
     name: Connector metadata service deploy orchestrator
     runs-on: medium-runner
-    env:
-      CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
     steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
       - name: Deploy the metadata orchestrator
         id: metadata-orchestrator-deploy-orchestrator-pipeline
         uses: ./.github/actions/run-dagger-pipeline
@@ -21,3 +21,4 @@ jobs:
           subcommand: "metadata deploy orchestrator"
         env:
           DAGSTER_CLOUD_API_TOKEN: ${{ secrets.DAGSTER_CLOUD_METADATA_API_TOKEN }}
+          CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
