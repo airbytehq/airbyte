@@ -2,13 +2,14 @@ import pandas as pd
 from dagster import MetadataValue, Output, asset
 from typing import List
 from orchestrator.templates.render import render_connector_registry_report_markdown, render_connector_registry_locations_html
+from orchestrator.config import CONNECTOR_REPO_NAME, CONNECTORS_TEST_RESULT_BUCKET_URL
 import urllib.parse
 
 GROUP_NAME = "registry_reports"
+
 OSS_SUFFIX = "_oss"
 CLOUD_SUFFIX = "_cloud"
 
-github_org_project = "airbytehq/airbyte"
 
 """
 TODO
@@ -17,36 +18,45 @@ TODO
 3. Update to use legacy registry (for now)
 4. Add comments
 5. move constants to config
+6. Output json and html
+7. ensure you can view gcs html with out downloading it
+8. Ensure this is triggered on new reports
 """
 
-# HELPERS
-
-# TODO choose a damn case
-def github_url(docker_repo_name, github_connector_folders):
-    if not isinstance(docker_repo_name, str):
-        return None
-
-    connector_name = docker_repo_name.replace("airbyte/", "")
-    if connector_name in github_connector_folders:
-        return f"https://github.com/{github_org_project}/blob/master/airbyte-integrations/connectors/{connector_name}"
-    else:
-        return None
-
-def docker_images_match(row):
-    docker_image_oss = row["dockerRepository_oss"]
-    docker_image_cloud = row["dockerRepository_cloud"]
-    docker_image_version_oss = row["dockerImageTag_oss"]
-    docker_image_version_cloud = row["dockerImageTag_cloud"]
-    if docker_image_oss == docker_image_cloud and docker_image_version_oss == docker_image_version_cloud:
-        return False
-    else:
-        return True
+# 🔗 HTML Renderers
 
 def simple_link_html(url):
     if url:
         return f'<a href="{url}" target="_blank">🔗 Link</a>'
     else:
         return None
+
+def icon_image_html(icon):
+    github_icon_base = f"https://raw.githubusercontent.com/{CONNECTOR_REPO_NAME}/master/airbyte-config-oss/init-oss/src/main/resources/icons"
+    icon_size = "30"
+    icon_link = f'<img src="{github_icon_base}/{icon}" height="{icon_size}" height="{icon_size}"/>' if icon else "x"
+    return icon_link;
+
+def test_badge_html(test_summary_url):
+    if not test_summary_url:
+        return None
+
+    image_shield_base = "https://img.shields.io/endpoint"
+    test_summary_url_encoded = urllib.parse.quote(test_summary_url)
+    return f'<img src="{image_shield_base}?url={test_summary_url_encoded}">'
+
+# 🖼️ Dataframe Columns
+
+def github_url(docker_repo_name, github_connector_folders):
+    if not isinstance(docker_repo_name, str):
+        return None
+
+    connector_name = docker_repo_name.replace("airbyte/", "")
+    if connector_name in github_connector_folders:
+        return f"https://github.com/{CONNECTOR_REPO_NAME}/blob/master/airbyte-integrations/connectors/{connector_name}"
+    else:
+        return None
+
 
 def issue_url(row):
     docker_repo = row["dockerRepository_oss"]
@@ -59,14 +69,7 @@ def issue_url(row):
         f"connectors/{'source' if 'source-' in code_name else 'destination'}/"
         f"{code_name.replace('source-', '').replace('destination-', '')}"
     )
-    return f"https://github.com/{github_org_project}/issues?q=is:open+is:issue+label:{issues_label}"
-
-
-def icon_image_html(icon):
-    github_icon_base = f"https://raw.githubusercontent.com/{github_org_project}/master/airbyte-config-oss/init-oss/src/main/resources/icons"
-    icon_size = "30"
-    icon_link = f'<img src="{github_icon_base}/{icon}" height="{icon_size}" height="{icon_size}"/>' if icon else "x"
-    return icon_link;
+    return f"https://github.com/{CONNECTOR_REPO_NAME}/issues?q=is:open+is:issue+label:{issues_label}"
 
 def merge_docker_repo_and_version(row, suffix):
     docker_repo = row[f"dockerRepository{suffix}"]
@@ -84,16 +87,9 @@ def test_summary_url(row):
 
     connector = docker_repo_name.replace("airbyte/", "")
 
-    return f"https://dnsgjos7lj2fu.cloudfront.net/tests/summary/connectors/{connector}/badge.json"
+    return f"{CONNECTORS_TEST_RESULT_BUCKET_URL}/tests/summary/connectors/{connector}/badge.json"
 
-
-def test_badge_html(test_summary_url):
-    if not test_summary_url:
-        return None
-
-    image_shield_base = "https://img.shields.io/endpoint"
-    test_summary_url_encoded = urllib.parse.quote(test_summary_url)
-    return f'<img src="{image_shield_base}?url={test_summary_url_encoded}">'
+# 📊 Dataframe Augmentation
 
 def augment_and_normalize_connector_dataframes(
     cloud_df: pd.DataFrame, oss_df: pd.DataFrame, primaryKey: str, connector_type: str, github_connector_folders: List[str]
@@ -140,6 +136,41 @@ def augment_and_normalize_connector_dataframes(
 
     return total_registry
 
+# Dataframe to HTML
+
+def dataframe_to_table_html(df: pd.DataFrame, column_mapping: List[dict]) -> str:
+    """
+    Convert a dataframe to an HTML table.
+    """
+
+    # convert true and false to checkmarks and x's
+    df.replace({True: "✅", False: "❌"}, inplace=True)
+
+    title_mapping = {
+        column_info["column"]: column_info["title"]
+        for column_info in column_mapping
+    }
+
+    df.rename(columns=title_mapping, inplace=True)
+
+    html_formatters = {
+        column_info["title"]: column_info["formatter"]
+        for column_info in column_mapping
+        if "formatter" in column_info
+    }
+
+    columns = [column_info["title"] for column_info in column_mapping]
+
+    return df.to_html(
+        columns=columns,
+        justify="left",
+        formatters=html_formatters,
+        escape=False,
+        classes="styled-table",
+        na_rep="❌",
+        render_links=True
+    )
+
 
 # ASSETS
 
@@ -179,7 +210,7 @@ def all_destinations_dataframe(
 @asset(required_resource_keys={"registry_report_directory_manager", "metadata_file_directory"}, group_name=GROUP_NAME)
 def connector_registry_report(context, all_destinations_dataframe, all_sources_dataframe):
     """
-    TODO
+    Generate a report of the connector registry.
     """
 
     columns_to_show = [
@@ -246,47 +277,15 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
         },
     ]
 
-        # "is_source_controlled",
-        # "is_spec_cached",
-
-        # build_status_badge
-        # Do they match??
-        # CDK version
-        # issues
-        # repo
-        # source
-
-    # convert true and false to checkmarks and x's
-    all_sources_dataframe.replace({True: "✅", False: "❌"}, inplace=True)
-    all_destinations_dataframe.replace({True: "✅", False: "❌"}, inplace=True)
-
-
-    title_mapping = {
-        column_info["column"]: column_info["title"]
-        for column_info in columns_to_show
-    }
-
-    all_sources_dataframe.rename(columns=title_mapping, inplace=True)
-
-    html_formatters = {
-        column_info["title"]: column_info["formatter"]
-        for column_info in columns_to_show
-        if "formatter" in column_info
-    }
-
-    columns_to_show = [column_info["title"] for column_info in columns_to_show]
-
     html_string = render_connector_registry_locations_html(
-        destinations_table="",
-        # destinations_table=all_destinations_dataframe[columns_to_show].to_html(columns=columns_to_show, col_space="16rem", formatters=html_formatters, escape=False, classes="styled-table", na_rep="None", render_links=True),
-        sources_table=all_sources_dataframe.to_html(columns=columns_to_show, justify="left", formatters=html_formatters, escape=False, classes="styled-table", na_rep="❌", render_links=True),
+        destinations_table=dataframe_to_table_html(all_destinations_dataframe, columns_to_show),
+        sources_table=dataframe_to_table_html(all_sources_dataframe, columns_to_show),
     )
 
     registry_report_directory_manager = context.resources.registry_report_directory_manager
     metadata_file_directory = context.resources.metadata_file_directory
     # file_handle = registry_report_directory_manager.write_data(markdown.encode(), ext="md", key="connector_registry_report")
     # file_handle = registry_report_directory_manager.write_data(all_destinations_dataframe.to_json().encode(), ext="json", key="connector_registry_report")
-
 
     file_handle = metadata_file_directory.write_data(html_string.encode(), ext="html", key="connector_registry_report")
 
