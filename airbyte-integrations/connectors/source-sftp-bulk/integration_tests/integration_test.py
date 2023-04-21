@@ -187,6 +187,17 @@ def test_get_files_pattern_json(config: Mapping, configured_catalog: ConfiguredA
         assert res.record.data["int_col"] == 2
 
 
+def test_get_files_pattern_json_new_separator(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
+    source = SourceFtp()
+    result_iter = source.read(logger, {**config, "file_pattern": "test_2.+"}, configured_catalog, None)
+    result = list(result_iter)
+    assert len(result) == 1
+    for res in result:
+        assert res.type == Type.RECORD
+        assert res.record.data["string_col"] == "hello"
+        assert res.record.data["int_col"] == 1
+
+
 def test_get_files_pattern_no_match_json(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     source = SourceFtp()
     result = source.read(logger, {**config, "file_pattern": "bad_pattern.+"}, configured_catalog, None)
@@ -197,7 +208,7 @@ def test_get_files_no_pattern_csv(config: Mapping, configured_catalog: Configure
     source = SourceFtp()
     result_iter = source.read(logger, {**config, "file_type": "csv", "folder_path": "files/csv"}, configured_catalog, None)
     result = list(result_iter)
-    assert len(result) == 2
+    assert len(result) == 4
     for res in result:
         assert res.type == Type.RECORD
         assert res.record.data["string_col"] in ["foo", "hello"]
@@ -208,6 +219,33 @@ def test_get_files_pattern_csv(config: Mapping, configured_catalog: ConfiguredAi
     source = SourceFtp()
     result_iter = source.read(
         logger, {**config, "file_type": "csv", "folder_path": "files/csv", "file_pattern": "test_1.+"}, configured_catalog, None
+    )
+    result = list(result_iter)
+    assert len(result) == 2
+    for res in result:
+        assert res.type == Type.RECORD
+        assert res.record.data["string_col"] in ["foo", "hello"]
+        assert res.record.data["int_col"] in [1, 2]
+
+
+def test_get_files_pattern_csv_new_separator(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
+    source = SourceFtp()
+    result_iter = source.read(
+        logger, {**config, "file_type": "csv", "folder_path": "files/csv", "file_pattern": "test_2.+"}, configured_catalog, None
+    )
+    result = list(result_iter)
+    assert len(result) == 2
+    for res in result:
+        assert res.type == Type.RECORD
+        assert res.record.data["string_col"] in ["foo", "hello"]
+        assert res.record.data["int_col"] in [1, 2]
+
+
+def test_get_files_pattern_csv_new_separator_with_config(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
+    source = SourceFtp()
+    result_iter = source.read(
+        logger, {**config, "file_type": "csv", "folder_path": "files/csv", "separator": ";", "file_pattern": "test_2.+"},
+        configured_catalog, None
     )
     result = list(result_iter)
     assert len(result) == 2

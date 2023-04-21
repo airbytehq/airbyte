@@ -103,16 +103,11 @@
 - name: Amplitude
   sourceDefinitionId: fa9f58c6-2d03-4237-aaa4-07d75e0c1396
   dockerRepository: airbyte/source-amplitude
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/amplitude
   icon: amplitude.svg
   sourceType: api
   releaseStage: generally_available
-  resourceRequirements:
-    jobSpecific:
-      - jobType: sync
-        resourceRequirements:
-          memory_limit: "8Gi"
   allowedHosts:
     hosts:
       - amplitude.com
@@ -2505,7 +2500,7 @@
 - name: SFTP Bulk
   sourceDefinitionId: 31e3242f-dee7-4cdc-a4b8-8e06c5458517
   dockerRepository: airbyte/source-sftp-bulk
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/sftp-bulk
   icon: sftp.svg
   sourceType: file
