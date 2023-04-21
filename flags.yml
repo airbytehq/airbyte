@@ -7,5 +7,9 @@ flags:
     serve: true
   - name: connectors.versionOverridesEnabled
     serve: true
+  - name: billing.newTrialPolicy
+    serve: false
   - name: heartbeat-max-seconds-between-messages
     serve: "10800"
+  - name: validation.removeValidationLimit
+    serve: false
