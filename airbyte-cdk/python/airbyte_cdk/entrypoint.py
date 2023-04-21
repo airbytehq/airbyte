@@ -90,11 +90,7 @@ class AirbyteEntrypoint(object):
                 if cmd == "check":
                     yield from map(AirbyteEntrypoint.airbyte_message_to_string, self.check(source_spec, config))
                 elif cmd == "discover":
-                    self.set_up_secret_filter(config, source_spec.connectionSpecification)
-                    if self.source.check_config_against_spec:
-                        self.validate_connection(source_spec, config)
-                    catalog = self.source.discover(self.logger, config)
-                    yield AirbyteMessage(type=Type.CATALOG, catalog=catalog).json(exclude_unset=True)
+                    yield from map(AirbyteEntrypoint.airbyte_message_to_string, self.discover(source_spec, config))
                 elif cmd == "read":
                     config_catalog = self.source.read_catalog(parsed_args.catalog)
                     state = self.source.read_state(parsed_args.state)
@@ -103,7 +99,7 @@ class AirbyteEntrypoint(object):
                 else:
                     raise Exception("Unexpected command " + cmd)
 
-    def check(self, source_spec: ConnectorSpecification, config: TConfig) -> Iterable[AirbyteTracedException]:
+    def check(self, source_spec: ConnectorSpecification, config: TConfig) -> Iterable[AirbyteMessage]:
         self.set_up_secret_filter(config, source_spec.connectionSpecification)
         try:
             self.validate_connection(source_spec, config)
@@ -120,6 +116,13 @@ class AirbyteEntrypoint(object):
             self.logger.error("Check failed")
 
         yield AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=check_result)
+
+    def discover(self, source_spec: ConnectorSpecification, config: TConfig) -> Iterable[AirbyteMessage]:
+        self.set_up_secret_filter(config, source_spec.connectionSpecification)
+        if self.source.check_config_against_spec:
+            self.validate_connection(source_spec, config)
+        catalog = self.source.discover(self.logger, config)
+        yield AirbyteMessage(type=Type.CATALOG, catalog=catalog)
 
     def read(self, source_spec: ConnectorSpecification, config: TConfig, catalog: TCatalog, state: TState) -> Iterable[AirbyteMessage]:
         self.set_up_secret_filter(config, source_spec.connectionSpecification)
