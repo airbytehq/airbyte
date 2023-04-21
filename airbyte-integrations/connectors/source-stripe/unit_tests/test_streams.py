@@ -31,6 +31,7 @@ from source_stripe.streams import (
     SetupIntents,
     SubscriptionItems,
     Subscriptions,
+    SubscriptionSchedule,
     Transfers,
 )
 
@@ -169,6 +170,7 @@ def config_fixture():
         (Products, {}, "products"),
         (Subscriptions, {}, "subscriptions"),
         (SubscriptionItems, {}, "subscription_items"),
+        (SubscriptionSchedule, {}, "subscription_schedules"),
         (Transfers, {}, "transfers"),
         (Refunds, {}, "refunds"),
         (PaymentIntents, {}, "payment_intents"),
