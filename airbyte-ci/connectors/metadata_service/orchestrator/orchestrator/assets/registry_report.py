@@ -11,6 +11,7 @@ CLOUD_SUFFIX = "_cloud"
 
 # TODO choose a damn case
 def get_github_url(docker_repo_name, github_connector_folders):
+    print(f"YEEEHAW!!! {docker_repo_name}")
     if not isinstance(docker_repo_name, str):
         return None
 
@@ -77,6 +78,10 @@ def augment_and_normalize_connector_dataframes(
     total_registry["github_url"] = total_registry["dockerRepository_oss"].apply(
         lambda x: get_github_url(x, github_connector_folders)
     )
+
+    # total_registry["docs_url"] = total_registry.apply(
+    #     lambda x: get_github_url(x, github_connector_folders)
+    # )
 
     # Rename column primaryKey to 'definitionId'
     total_registry.rename(columns={primaryKey: "definitionId"}, inplace=True)
@@ -192,13 +197,15 @@ def all_destinations_dataframe(
 @asset(required_resource_keys={"registry_report_directory_manager"}, group_name=GROUP_NAME)
 def connector_registry_report(context, all_destinations_dataframe, all_sources_dataframe):
     """
-    Generate a markdown report of the connector registry locations.
+    TODO
     """
 
     columns_to_show = [
         "definitionId",
         "name_oss",
         "icon_oss",
+        "github_url",
+        "releaseStage_oss",
         "connector_type",
         "dockerRepository_oss",
         "dockerImageTag_oss",
@@ -206,14 +213,13 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
         "dockerImageTag_cloud",
         "is_oss",
         "is_cloud",
-        "github_url",
+
         # "is_source_controlled",
         # "is_spec_cached",
 
         # build_status_badge
         # Do they match??
         # CDK version
-        # Release stage
         # docs
         # issues
         # repo
@@ -231,9 +237,11 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
 
     registry_report_directory_manager = context.resources.registry_report_directory_manager
     file_handle = registry_report_directory_manager.write_data(markdown.encode(), ext="md", key="connector_registry_report")
+    file_handle = registry_report_directory_manager.write_data(all_destinations_dataframe.to_json().encode(), ext="json", key="connector_registry_report")
 
     metadata = {
         "preview": MetadataValue.md(markdown),
+        "preview2": MetadataValue.json(all_destinations_dataframe.to_json()),
         "gcs_path": MetadataValue.url(file_handle.gcs_path),
     }
     return Output(metadata=metadata, value=file_handle)
