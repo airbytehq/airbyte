@@ -26,6 +26,15 @@ class DoordashStream(HttpStream, ABC):
 
 # Basic incremental stream
 class IncrementalDoordashStream(DoordashStream):    
+    http_method = "POST"
+
+    # Value to pass to DoorDash. Default to order detail fields. Subclass should override.
+    report_type = "ORDER_DETAIL"
+    cursor_field = "ACTIVE_DATE"
+
+    def path(self, **kwargs) -> str:
+        return ""
+    
     def get_updated_state(
         self,
         current_stream_state: MutableMapping[str, Any],
@@ -36,14 +45,13 @@ class IncrementalDoordashStream(DoordashStream):
         new_cursor_value = max(latest_record_cursor_value, current_state_cursor_value)
         return {self.cursor_field: new_cursor_value}
 
-
     def request_body_json(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
-        store_ids: List[int] = [], report_type: str = "ORDER_DETAIL"
+        store_ids: List[int] = []
     ) -> Optional[Mapping]:        
         start_date = self.start_date_from_config        
-        if stream_state.get('ACTIVE_DATE_UTC'):
-            start_date = stream_state.get('ACTIVE_DATE_UTC')
+        if stream_state.get(self.cursor_field):
+            start_date = stream_state.get(self.cursor_field)
         
         # Remove the time portion of it if it's present.
         if len(start_date) > 10:
@@ -63,21 +71,13 @@ class IncrementalDoordashStream(DoordashStream):
             "store_ids": store_ids,
             "start_date": start_date,
             "end_date": end_date,
-            "report_type": report_type
+            "report_type": self.report_type
         }
         self.logger.info(f"Sending request: {request_json}")
         return request_json
     
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None    
-
-class OrderDetails(IncrementalDoordashStream):
-    cursor_field = "ACTIVE_DATE_UTC"
-    primary_key = "ORDER_ITEM_ID"
-    http_method = "POST"
-
-    def path(self, **kwargs) -> str:
-        return ""
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # Initial create report request would provide a report ID.
@@ -91,7 +91,7 @@ class OrderDetails(IncrementalDoordashStream):
         time_start = time.time()
         time_current = time_start
         get_report_response = requests.get(get_report_url, headers=self.authenticator.get_auth_header())
-        while get_report_response.json()['report_status'] != 'SUCCEEDED' and time_current - time_start < 600: 
+        while not get_report_response.ok or (get_report_response.json()['report_status'] != 'SUCCEEDED' and time_current - time_start < 600): 
             time.sleep(delay)
             delay += delay
             get_report_response = requests.get(get_report_url, headers=self.authenticator.get_auth_header())
@@ -122,13 +122,30 @@ class OrderDetails(IncrementalDoordashStream):
                         zip_obj.extract(file_name, path=temp_dir)
 
                         # Load the extracted CSV.
-                        with open(csv_dest, 'r') as f:
+                        with open(csv_dest, 'r', encoding='utf_8') as f:
                             self.logger.info(f'Reading rows from {csv_dest}.')
                             csv_reader = csv.DictReader(f)
 
                             # Yield return each row as a json record.
                             for row in csv_reader:
                                 yield row
+
+
+class OrderDetails(IncrementalDoordashStream):    
+    primary_key = "ORDER_ITEM_ID"
+
+
+class TransactionDetails(IncrementalDoordashStream):
+    report_type = "TRANSACTION_DETAIL"
+    cursor_field = "TIMESTAMP_LOCAL_DATE"
+    primary_key = "TRANSACTION_ID"
+
+
+class TemporaryDeactivations(IncrementalDoordashStream):
+    report_type = "TEMPORARY_DEACTIVATION"
+    cursor_field = "CREATED_AT_TIME"
+    primary_key = ["STORE_ID", "CREATED_AT_TIME"]
+
 
 class SourceDoordash(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -149,4 +166,6 @@ class SourceDoordash(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = TokenAuthenticator(token=config['api_key'])  
-        return [OrderDetails(authenticator=auth, config=config)]
+        return [OrderDetails(authenticator=auth, config=config), 
+                TransactionDetails(authenticator=auth, config=config),
+                TemporaryDeactivations(authenticator=auth, config=config)]
