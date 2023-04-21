@@ -1,5 +1,11 @@
 {
+  "required": [
+  "credentials"  
+  ],
   "properties": {
+    "client_id": null,
+    "client_secret": null,
+    "refresh_token": null,
     "credentials": {
       "x-oauth2-provider": "snapchat",
       "required": [
