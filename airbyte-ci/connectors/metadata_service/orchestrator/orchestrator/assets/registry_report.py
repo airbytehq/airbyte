@@ -31,7 +31,33 @@ def docker_image_different(row):
         return True
 
 
+def icon_image_html(icon):
+    github_org_project = "airbytehq/airbyte"
+    github_icon_base = f"https://raw.githubusercontent.com/{github_org_project}/master/airbyte-config-oss/init-oss/src/main/resources/icons"
+    icon_size = "30"
+    icon_link = f'<img src="{github_icon_base}/{icon}" height="{icon_size}" height="{icon_size}"/>' if icon else "x"
+    return icon_link;
 
+    # github_code_base = f"https://github.com/{github_org_project}/tree/master/airbyte-integrations/connectors"
+    # name = definition.get("name")
+    # code_name = definition.get("dockerRepository").split("/")[1]
+    # icon = definition.get("icon", "")
+    # icon_link = f'<img alt="{name} icon" src="{github_icon_base}/{icon}" height="{icon_size}" height="{icon_size}"/>' if icon else "x"
+    # docker_image = f"{definition.get('dockerRepository')}:{definition.get('dockerImageTag')}"
+    # release_stage = definition.get("releaseStage", "unknown")
+    # documentation_url = definition.get("documentationUrl", "")
+    # doc_link = f"[docs]({documentation_url})" if documentation_url else "missing"
+
+    # # We are trying to build a string like connectors/destination/mysql. We need to determine if this
+    # # is a source or destination, lower-case, and then append back some stuff
+    # issues_label = (
+    #     f"connectors/{'source' if 'source-' in code_name else 'destination'}/"
+    #     f"{code_name.replace('source-', '').replace('destination-', '')}"
+    # )
+    # issues_link = f"[{issues_label}](https://github.com/{github_org_project}/issues?q=is:open+is:issue+label:{issues_label})"
+    # # https://github.com/airbytehq/airbyte/issues?q=is:open+is:issue+label:connectors/destination/mysql
+    # code_link = f"[{code_name}]({github_code_base}/{code_name})"
+    # id = f"<small>`{definition.get(type.lower() + 'DefinitionId')}`</small>"
 
 
 def augment_and_normalize_connector_dataframes(
@@ -205,7 +231,7 @@ def all_destinations_dataframe(
         github_connector_folders=github_connector_folders,
     )
 
-@asset(required_resource_keys={"registry_report_directory_manager"}, group_name=GROUP_NAME)
+@asset(required_resource_keys={"registry_report_directory_manager", "metadata_file_directory"}, group_name=GROUP_NAME)
 def connector_registry_report(context, all_destinations_dataframe, all_sources_dataframe):
     """
     TODO
@@ -247,14 +273,24 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
         sources_markdown=all_sources_dataframe[columns_to_show].to_markdown(),
     )
 
+    html_formatters = {
+        "icon_oss": icon_image_html,
+    }
+
+    html_string = all_destinations_dataframe[columns_to_show].to_html(formatters=html_formatters, escape=False)
+
     registry_report_directory_manager = context.resources.registry_report_directory_manager
-    file_handle = registry_report_directory_manager.write_data(markdown.encode(), ext="md", key="connector_registry_report")
-    file_handle = registry_report_directory_manager.write_data(all_destinations_dataframe.to_json().encode(), ext="json", key="connector_registry_report")
+    metadata_file_directory = context.resources.metadata_file_directory
+    # file_handle = registry_report_directory_manager.write_data(markdown.encode(), ext="md", key="connector_registry_report")
+    # file_handle = registry_report_directory_manager.write_data(all_destinations_dataframe.to_json().encode(), ext="json", key="connector_registry_report")
+
+
+    file_handle = metadata_file_directory.write_data(html_string.encode(), ext="html", key="connector_registry_report")
 
     metadata = {
         "preview": MetadataValue.md(markdown),
-        "preview2": MetadataValue.json(all_destinations_dataframe.to_json()),
-        "gcs_path": MetadataValue.url(file_handle.gcs_path),
+        # "preview2": MetadataValue.json(all_destinations_dataframe.to_json()),
+        "gcs_path": MetadataValue.path(file_handle.path),
     }
     return Output(metadata=metadata, value=file_handle)
 
