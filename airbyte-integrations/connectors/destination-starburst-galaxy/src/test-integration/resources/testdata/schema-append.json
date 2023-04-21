@@ -1,0 +1,23 @@
+{
+  "type": ["object"],
+  "properties": {
+    "c_row": {
+      "type": ["null", "object"],
+      "properties": {
+        "first_name": {
+          "type": "string"
+        }
+      }
+    },
+    "c_array": {
+      "type": "array",
+      "items":
+      {
+        "type": "string"
+      }
+    },
+    "c_new_column": {
+      "type": ["null", "integer"]
+    }
+  }
+}

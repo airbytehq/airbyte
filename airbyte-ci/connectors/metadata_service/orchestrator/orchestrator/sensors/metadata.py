@@ -26,8 +26,8 @@ def metadata_updated_sensor(job, resources_def) -> SensorDefinition:
 
             context.log.info(f"Old etag cursor: {etags_cursor}")
 
-            metadata_file_blobs = resources.metadata_file_blobs
-            new_etags_cursor_set = {blob.etag for blob in metadata_file_blobs}
+            latest_metadata_file_blobs = resources.latest_metadata_file_blobs
+            new_etags_cursor_set = {blob.etag for blob in latest_metadata_file_blobs}
             context.log.info(f"New etag cursor: {new_etags_cursor_set}")
 
             # Note: ETAGs are GCS's way of providing a version number for a file
