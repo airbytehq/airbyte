@@ -3,7 +3,7 @@ data:
     hosts:
       - accounts.snapchat.com
       - adsapi.snapchat.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:
