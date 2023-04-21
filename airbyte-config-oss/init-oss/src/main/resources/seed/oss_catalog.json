@@ -1698,7 +1698,7 @@
     "destinationDefinitionId": "072d5540-f236-4294-ba7c-ade8fd918496",
     "name": "Databricks Lakehouse",
     "dockerRepository": "airbyte/destination-databricks",
-    "dockerImageTag": "1.0.1",
+    "dockerImageTag": "1.0.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/databricks",
     "icon": "databricks.svg",
     "spec": {
@@ -9035,7 +9035,7 @@
     "sourceDefinitionId": "fa9f58c6-2d03-4237-aaa4-07d75e0c1396",
     "name": "Amplitude",
     "dockerRepository": "airbyte/source-amplitude",
-    "dockerImageTag": "0.2.2",
+    "dockerImageTag": "0.2.3",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/amplitude",
     "icon": "amplitude.svg",
     "sourceType": "api",
@@ -9092,14 +9092,6 @@
     "public": true,
     "custom": false,
     "releaseStage": "generally_available",
-    "resourceRequirements": {
-      "jobSpecific": [ {
-        "jobType": "sync",
-        "resourceRequirements": {
-          "memory_limit": "8Gi"
-        }
-      } ]
-    },
     "allowedHosts": {
       "hosts": [ "amplitude.com", "analytics.eu.amplitude.com" ]
     }
@@ -23946,7 +23938,7 @@
     "sourceDefinitionId": "200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b",
     "name": "Snapchat Marketing",
     "dockerRepository": "airbyte/source-snapchat-marketing",
-    "dockerImageTag": "0.1.15",
+    "dockerImageTag": "0.1.16",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/snapchat-marketing",
     "icon": "snapchat.svg",
     "sourceType": "api",
