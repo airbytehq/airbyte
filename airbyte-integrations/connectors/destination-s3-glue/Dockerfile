@@ -14,5 +14,5 @@ ENV APPLICATION destination-s3-glue
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.1.5
+LABEL io.airbyte.version=0.1.6
 LABEL io.airbyte.name=airbyte/destination-s3-glue
