@@ -1,7 +1,7 @@
 import pandas as pd
 from dagster import MetadataValue, Output, asset
 from typing import List
-from orchestrator.templates.render import render_connector_registry_report_markdown
+from orchestrator.templates.render import render_connector_registry_report_markdown, render_connector_registry_locations_html
 
 GROUP_NAME = "registry_reports"
 OSS_SUFFIX = "_oss"
@@ -277,7 +277,10 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
         "icon_oss": icon_image_html,
     }
 
-    html_string = all_destinations_dataframe[columns_to_show].to_html(formatters=html_formatters, escape=False)
+    html_string = render_connector_registry_locations_html(
+        destinations_table=all_destinations_dataframe[columns_to_show].to_html(columns=columns_to_show, col_space="16rem" formatters=html_formatters, escape=False, classes="styled-table", na_rep="None", render_links=True),
+        sources_table=all_sources_dataframe[columns_to_show].to_html(columns=columns_to_show, col_space="16rem" formatters=html_formatters, escape=False, classes="styled-table", na_rep="None", render_links=True),
+    )
 
     registry_report_directory_manager = context.resources.registry_report_directory_manager
     metadata_file_directory = context.resources.metadata_file_directory
