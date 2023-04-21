@@ -72,9 +72,9 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
     while (!currentIterator().hasNext()) {
       try {
         currentIterator().close();
-        emitStopStreamStatus(getAirbyteStream(), true);
+        emitCompleteStreamStatus(getAirbyteStream());
       } catch (final Exception e) {
-        emitStopStreamStatus(getAirbyteStream(), false);
+        emitIncompleteStreamStatus(getAirbyteStream());
         throw new RuntimeException(e);
       }
 
@@ -93,7 +93,7 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
       }
       return currentIterator().next();
     } catch (final RuntimeException e) {
-      emitStopStreamStatus(getAirbyteStream(), false);
+      emitIncompleteStreamStatus(getAirbyteStream());
       throw e;
     } finally {
       if (firstRead) {
@@ -146,28 +146,34 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
   private void emitRunningStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream) {
     airbyteStream.ifPresent(s -> {
       LOGGER.info("RUNNING -> {}", s);
-      emitStreamStatus(s, AirbyteStreamStatus.RUNNING, Optional.empty());
+      emitStreamStatus(s, AirbyteStreamStatus.RUNNING);
     });
   }
 
   private void emitStartStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream) {
     airbyteStream.ifPresent(s -> {
       LOGGER.info("STARTING -> {}", s);
-      emitStreamStatus(s, AirbyteStreamStatus.STARTED, Optional.empty());
+      emitStreamStatus(s, AirbyteStreamStatus.STARTED);
     });
   }
 
-  private void emitStopStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream, final boolean successful) {
+  private void emitCompleteStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream) {
     airbyteStream.ifPresent(s -> {
-      LOGGER.info("STOPPING({}) -> {}", successful, s);
-      emitStreamStatus(s, AirbyteStreamStatus.STOPPED, Optional.of(successful));
+      LOGGER.info("COMPLETE -> {}", s);
+      emitStreamStatus(s, AirbyteStreamStatus.COMPLETE);
+    });
+  }
+
+  private void emitIncompleteStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream) {
+    airbyteStream.ifPresent(s -> {
+      LOGGER.info("COMPLETE -> {}", s);
+      emitStreamStatus(s, AirbyteStreamStatus.INCOMPLETE);
     });
   }
 
   private void emitStreamStatus(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
-                                final AirbyteStreamStatus airbyteStreamStatus,
-                                final Optional<Boolean> success) {
-    airbyteStreamStatusConsumer.ifPresent(c -> c.accept(new AirbyteStreamStatusHolder(airbyteStreamNameNamespacePair, airbyteStreamStatus, success)));
+                                final AirbyteStreamStatus airbyteStreamStatus) {
+    airbyteStreamStatusConsumer.ifPresent(c -> c.accept(new AirbyteStreamStatusHolder(airbyteStreamNameNamespacePair, airbyteStreamStatus)));
   }
 
 }
