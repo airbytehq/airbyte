@@ -1057,6 +1057,7 @@ class HttpRequester(BaseModel):
             "/quotes/{{ stream_partition['id'] }}/quote_line_groups",
             "/trades/{{ config['symbol_id'] }}/history",
         ],
+        title="URL Path",
     )
     authenticator: Optional[
         Union[
