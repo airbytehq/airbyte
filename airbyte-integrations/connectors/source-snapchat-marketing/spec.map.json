@@ -1,0 +1,5 @@
+{
+  "/client_id": "/credentials/client_id",
+  "/client_secret": "/credentials/client_secret",
+  "/refresh_token": "/credentials/refresh_token"
+}
