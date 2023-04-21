@@ -25,7 +25,7 @@ def registry_updated_sensor(job, resources_def) -> SensorDefinition:
             context.log.info(f"Old etag cursor: {etag_cursor}")
 
             new_etag_cursor = serialize_composite_etags_cursor(
-                [resources.latest_oss_registry_gcs_file.etag, resources.latest_cloud_registry_gcs_file.etag]
+                [resources.latest_oss_registry_gcs_blob.etag, resources.latest_cloud_registry_gcs_blob.etag]
             )
             context.log.info(f"New etag cursor: {new_etag_cursor}")
 
