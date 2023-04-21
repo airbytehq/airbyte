@@ -13,10 +13,8 @@ CLOUD_SUFFIX = "_cloud"
 
 """
 TODO
-3. Update to use legacy registry (for now)
 6. Output json and html
 7. ensure you can view gcs html with out downloading it
-8. Ensure this is triggered on new reports
 """
 
 # 🔗 HTML Renderers
@@ -122,6 +120,7 @@ def augment_and_normalize_connector_dataframes(
     total_registry["issue_url"] = total_registry.apply(issue_url, axis=1)
     total_registry["test_summary_url"] = total_registry.apply(test_summary_url, axis=1)
 
+    # Merge docker repo and version into separate columns
     total_registry["docker_image_oss"] = total_registry.apply(lambda x: merge_docker_repo_and_version(x, OSS_SUFFIX), axis=1)
     total_registry["docker_image_cloud"] = total_registry.apply(lambda x: merge_docker_repo_and_version(x, CLOUD_SUFFIX), axis=1)
     total_registry["docker_images_match"] = total_registry.apply(
@@ -169,6 +168,7 @@ def dataframe_to_table_html(df: pd.DataFrame, column_mapping: List[dict]) -> str
 
 
 # ASSETS
+
 # TODO (ben): Update these assets to reference the new registry once deployed
 
 @asset(group_name=GROUP_NAME)
@@ -209,6 +209,10 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
     """
     Generate a report of the connector registry.
     """
+
+    report_file_name = "connector_registry_report"
+    all_connectors_dataframe = pd.concat([all_destinations_dataframe, all_sources_dataframe])
+    all_connectors_dataframe.reset_index(inplace=True)
 
     columns_to_show = [
         {
@@ -279,17 +283,31 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
         sources_table=dataframe_to_table_html(all_sources_dataframe, columns_to_show),
     )
 
-    registry_report_directory_manager = context.resources.registry_report_directory_manager
-    metadata_file_directory = context.resources.metadata_file_directory
-    # file_handle = registry_report_directory_manager.write_data(markdown.encode(), ext="md", key="connector_registry_report")
-    # file_handle = registry_report_directory_manager.write_data(all_destinations_dataframe.to_json().encode(), ext="json", key="connector_registry_report")
+    markdown_preview = all_connectors_dataframe.head(100).to_markdown()
+    markdown_string = all_connectors_dataframe.to_markdown()
+    json_string = all_connectors_dataframe.to_json(orient="records")
 
-    file_handle = metadata_file_directory.write_data(html_string.encode(), ext="html", key="connector_registry_report")
+    metadata_file_directory = context.resources.metadata_file_directory
+
+    registry_report_directory_manager = context.resources.registry_report_directory_manager
+
+    md_file_handle = registry_report_directory_manager.write_data(markdown_string.encode(), ext="md", key=report_file_name)
+    json_file_handle = registry_report_directory_manager.write_data(json_string.encode(), ext="json", key=report_file_name)
+    html_file_handle = registry_report_directory_manager.write_data(html_string.encode(), ext="html", key=report_file_name)
+
+    md_local_file_handle = metadata_file_directory.write_data(markdown_string.encode(), ext="md", key=report_file_name)
+    json_local_file_handle = metadata_file_directory.write_data(json_string.encode(), ext="json", key=report_file_name)
+    html_local_file_handle = metadata_file_directory.write_data(html_string.encode(), ext="html", key=report_file_name)
 
     metadata = {
-        # "preview": MetadataValue.md(markdown),
-        # "preview2": MetadataValue.json(all_destinations_dataframe.to_json()),
-        "gcs_path": MetadataValue.path(file_handle.path),
+        "first_100_preview": MetadataValue.md(markdown_preview),
+        "json": MetadataValue.json(json_string),
+        "md_gcs_path": MetadataValue.path(md_file_handle.gcs_path),
+        "json_gcs_path": MetadataValue.path(json_file_handle.gcs_path),
+        "html_gcs_path": MetadataValue.path(html_file_handle.gcs_path),
+        "md_local_path": MetadataValue.path(md_local_file_handle.path),
+        "json_local_path": MetadataValue.path(json_local_file_handle.path),
+        "html_local_path": MetadataValue.path(html_local_file_handle.path),
     }
-    return Output(metadata=metadata, value=file_handle)
+    return Output(metadata=metadata, value=html_file_handle)
 

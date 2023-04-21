@@ -18,7 +18,7 @@ from orchestrator.assets import (
     dev,
 )
 
-from orchestrator.jobs.registry import generate_registry_markdown, generate_local_metadata_files, generate_registry
+from orchestrator.jobs.registry import generate_registry_reports, generate_local_metadata_files, generate_registry
 from orchestrator.sensors.registry import registry_updated_sensor
 from orchestrator.sensors.metadata import metadata_updated_sensor
 
@@ -58,13 +58,13 @@ RESOURCES = {
 }
 
 SENSORS = [
-    registry_updated_sensor(job=generate_registry_markdown, resources_def=RESOURCES),
+    registry_updated_sensor(job=generate_registry_reports, resources_def=RESOURCES),
     metadata_updated_sensor(job=generate_registry, resources_def=RESOURCES),
 ]
 
 SCHEDULES = []
 
-JOBS = [generate_registry_markdown, generate_local_metadata_files]
+JOBS = [generate_registry_reports, generate_local_metadata_files]
 
 """
 START HERE
