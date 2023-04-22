@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Top Reviews Schema",
+  "additionalProperties": true,
+  "type": "object",
+  "properties": {
+    "image_url": {
+        "type": ["null", "string"]
+      },
+    "score": {
+      "type": ["null", "number"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "content": {
+      "type": ["null", "string"]
+    },
+    "product_url": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}
