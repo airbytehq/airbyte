@@ -49,13 +49,11 @@ class StepStatus(Enum):
         """
         if exit_code == 0:
             return StepStatus.SUCCESS
-        if exit_code == 1:
-            return StepStatus.FAILURE
         # pytest returns a 5 exit code when no test is found.
-        if exit_code == 5:
+        elif exit_code == 5:
             return StepStatus.SKIPPED
         else:
-            raise ValueError(f"No step status is mapped to exit code {exit_code}")
+            return StepStatus.FAILURE
 
     def get_rich_style(self) -> Style:
         """Match color used in the console output to the step status."""
