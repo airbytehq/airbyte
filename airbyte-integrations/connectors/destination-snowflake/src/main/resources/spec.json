@@ -437,6 +437,16 @@
         "description": "Number of file buffers allocated for writing data. Increasing this number is beneficial for connections using Change Data Capture (CDC) and up to the number of streams within a connection. Increasing the number of file buffers past the maximum number of streams has deteriorating effects",
         "examples": ["10"],
         "order": 9
+      },
+      "transformation_threads": {
+        "description": "When running customer transformations or Basic normalization for a source with many tables being synchronized, it can be advantageous to increase the number of threads utilised to complete the transformations more quickly.",
+        "title": "Transformation threads",
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 64,
+        "default": 5,
+        "examples": ["10"],
+        "order": 9
       }
     }
   },
