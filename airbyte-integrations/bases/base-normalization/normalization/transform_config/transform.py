@@ -224,7 +224,7 @@ class TransformConfig:
             "database": config["database"].upper(),
             "warehouse": config["warehouse"].upper(),
             "schema": config["schema"].upper(),
-            "threads": 5,
+            "threads": config.get("transformation_threads", 5),
             "client_session_keep_alive": False,
             "query_tag": "normalization",
             "retry_all": True,
