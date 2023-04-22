@@ -1,4 +1,8 @@
 {
-  "properties": {
+  "start_date": {
+    "domain_url": {
+      "description": "Start Date for data extraction in ISO format. Date must be in range from 3 years till 12 hrs before present time: https://datatracker.ietf.org/doc/html/rfc3339#section-5.6",
+      "format": "date"
+    }
   }
 }
