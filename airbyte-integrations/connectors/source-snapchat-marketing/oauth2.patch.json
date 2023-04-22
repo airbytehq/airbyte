@@ -1,7 +1,7 @@
 {
   "provider": "snapchat",
-  "authUrlTemplate": "https://accounts.snapchat.com/accounts/oauth2/auth?client_id={{{ client_id }}}&client_secret={{{ client_secret }}}&redirect_uri={{{ redirect_uri }}}&scope=snapchat-marketing-api&response_type=code&state={{{ state }}}",
-  "accessTokenUrlTemplate": "https://accounts.snapchat.com/accounts/oauth2/token",
+  "authUrlTemplate": "https://accounts.snapchat.com/login/oauth2/authorize?client_id={{{ client_id }}}&client_secret={{{ client_secret }}}&redirect_uri={{{ redirect_uri }}}&scope=snapchat-marketing-api&response_type=code&state={{{ state }}}",
+  "accessTokenUrlTemplate": "https://accounts.snapchat.com/login/oauth2/access_token",
   "accessTokenBody": "grant_type=authorization_code&redirect_uri={{{ redirect_uri }}}&code={{{ code }}}",
   "accessTokenHeaders": {"Content-Type": "application/x-www-form-urlencoded", "Authorization": "Basic {{#basicauth}}{{{ client_id }}}:{{{ client_secret }}}{{/basicauth}}"},
   "accessTokenResponseMap": {"refresh_token": "/refresh_token"}
