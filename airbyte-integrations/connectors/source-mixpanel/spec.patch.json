@@ -1,4 +1,10 @@
 {
   "properties": {
+    "project_id": {
+      "description": "Your project ID number. See the docs for more information on how to obtain this: https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id"
+    },
+    "project_timezone": {
+      "description": "Time zone in which integer date times are stored. The project timezone may be found in the project settings in the Mixpanel console: https://help.mixpanel.com/hc/en-us/articles/115004547203-Manage-Timezones-for-Projects-in-Mixpanel"
+    }
   }
 }

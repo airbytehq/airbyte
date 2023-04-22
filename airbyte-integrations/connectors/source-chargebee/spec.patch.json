@@ -1,4 +1,10 @@
 {
   "properties": {
+    "site_api_key": {
+      "description": "Chargebee API Key. See the docs for more information: https://go.estuary.dev/76k99m"
+    },
+    "product_catalog": {
+      "description": "Product Catalog version of your Chargebee site. Instructions on how to find your version you may find under 'API Version' section here: https://apidocs.chargebee.com/docs/api?prod_cat_ver=2"
+    }
   }
 }

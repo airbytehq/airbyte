@@ -153,6 +153,10 @@ jobs:
           - name: source-recharge
           - name: source-mixpanel
           - name: source-harvest
+          - name: source-zendesk-talk
+          - name: source-zendesk-chat
+          - name: source-twilio
+          - name: source-paypal-transaction
 
     steps:
       - uses: actions/checkout@v2

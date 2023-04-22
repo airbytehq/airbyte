@@ -1,4 +1,13 @@
 {
   "properties": {
+    "domain_url": {
+      "description": "Your Marketo Base URL. See the docs for info on how to obtain this: https://go.estuary.dev/oguDHO"
+    },
+    "client_id": {
+      "description": "The Client ID of your Marketo developer application. See the docs for info on how to obtain this: https://go.estuary.dev/oguDHO"
+    },
+    "client_secret": {
+      "description": "The Client Secret of your Marketo developer application. See the docs for info on how to obtain this: https://go.estuary.dev/oguDHO"
+    }
   }
 }

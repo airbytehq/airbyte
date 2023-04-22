@@ -1,4 +1,7 @@
 {
   "properties": {
+    "api_key": {
+      "description": "Klaviyo API Key. See our docs if you need help finding this key: https://go.estuary.dev/JqH0gQ"
+    }
   }
 }
