@@ -1,0 +1,9 @@
+{
+    "provider": "zendesk",
+    "authUrlTemplate": "https://{{{ config.subdomain }}}.zendesk.com/oauth/authorizations/new?",
+    "accessTokenUrlTemplate": "",
+    "accessTokenBody": "",
+    "accessTokenHeaders": {},
+    "accessTokenResponseMap": {}
+  }
+  
