@@ -439,14 +439,14 @@
         "order": 9
       },
       "transformation_threads": {
-        "description": "When running customer transformations or Basic normalization for a source with many tables being synchronized, it can be advantageous to increase the number of threads utilised to complete the transformations more quickly.",
-        "title": "Transformation threads",
+        "description": "When running custom transformations or basic normalization for a source with many smaller tables being synchronized, it can be advantageous to increase the number of threads utilised to complete the transformations more quickly.",
+        "title": "Transformation Threads",
         "type": "integer",
         "minimum": 1,
         "maximum": 64,
         "default": 5,
         "examples": ["10"],
-        "order": 9
+        "order": 10
       }
     }
   },
