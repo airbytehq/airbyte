@@ -1,6 +1,10 @@
 version: "0.29.0"
 
 definitions:
+  yotpo_extractor:
+    type: DpathExtractor
+    field_path: ["reviews"]
+
   yotpo_stream_requester:
     type: HttpRequester
     url_base: "https://api.yotpo.com/v1"
@@ -36,30 +40,35 @@ definitions:
     request_parameters:
       utoken: "{{ config['access_token'] }}"
 
-  reviews_stream:
+  yotpo_paginator:
+    type: "DefaultPaginator"
+    page_size_option:
+      type: "RequestOption"
+      inject_into: "request_parameter"
+      field_name: "count"
+    pagination_strategy:
+      type: "OffsetIncrement"
+      page_size: 1
+    page_token_option:
+      type: "RequestOption"
+      field_name: "page"
+      inject_into: "request_parameter"
+
+  yotpo_base:
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
       record_selector:
         type: RecordSelector
         extractor:
-          type: DpathExtractor
-          field_path: ["reviews"]
+          $ref: "#/definitions/yotpo_extractor"
       paginator:
-        type: "DefaultPaginator"
-        page_size_option:
-          type: "RequestOption"
-          inject_into: "request_parameter"
-          field_name: "count"
-        pagination_strategy:
-          type: "OffsetIncrement"
-          page_size: 1
-        page_token_option:
-          type: "RequestOption"
-          field_name: "page"
-          inject_into: "request_parameter"
+        $ref: "#/definitions/yotpo_paginator"
       requester:
         $ref: "#/definitions/yotpo_stream_requester"
+
+  reviews_stream:
+    $ref: "#/definitions/yotpo_base"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "updated_at"
