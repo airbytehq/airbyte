@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.35.1
+low-code: Add title, description, and examples for all fields in the manifest schema
+
+## 0.35.0
+low-code: simplify session token authenticator interface
+
 ## 0.34.3
 low-code: fix typo in ManifestDeclarativeSource
 
