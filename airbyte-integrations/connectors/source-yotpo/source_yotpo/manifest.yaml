@@ -55,7 +55,6 @@ definitions:
   reviews_stream:
     $parameters:
       extractorPath: "reviews"
-      paginatorAvailability: "true"
       path: "/apps/{{ config['app_key'] }}/reviews"
       requesterUrl: "https://api.yotpo.com/v1"
     $ref: "#/definitions/yotpo_base"
@@ -78,7 +77,6 @@ definitions:
   email_analytics_stream:
     $parameters:
       extractorPath: "date_series_points"
-      paginatorAvailability: "false"
       path: "/emails/{{ config['app_key'] }}/emails_sent"
       requesterUrl: "https://api.yotpo.com/analytics/v1"
     $ref: "#/definitions/yotpo_base_without_pagination"
@@ -87,7 +85,6 @@ definitions:
   raw_data_stream:
     $parameters:
       extractorPath: "records"
-      paginatorAvailability: "false"
       path: "/emails/{{ config['app_key'] }}/export/raw_data"
       requesterUrl: "https://api.yotpo.com/analytics/v1"
     $ref: "#/definitions/yotpo_base_without_pagination"
@@ -97,7 +94,6 @@ definitions:
     $parameters:
       extractorPath: |
         "response", "unsubscribers"
-      paginatorAvailability: "true"
       requesterUrl: "https://api.yotpo.com"
       path: "/apps/{{ config['app_key'] }}/unsubscribers"
     $ref: "#/definitions/yotpo_base"
@@ -107,7 +103,6 @@ definitions:
     $parameters:
       extractorPath: |
         "response", "webhook_events"
-      paginatorAvailability: "false"
       requesterUrl: "https://api.yotpo.com"
       path: "/webhook_events"
     $ref: "#/definitions/yotpo_base_without_pagination"
@@ -117,7 +112,6 @@ definitions:
     $parameters:
       extractorPath: |
         "response", "webhooks"
-      paginatorAvailability: "false"
       requesterUrl: "https://api.yotpo.com"
       path: "/apps/{{ config['app_key'] }}/webhooks"
     $ref: "#/definitions/yotpo_base_without_pagination"
