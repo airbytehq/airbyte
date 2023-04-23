@@ -3,7 +3,7 @@ version: "0.29.0"
 definitions:
   yotpo_extractor:
     type: DpathExtractor
-    field_path: ["reviews"]
+    field_path: ["{{ parameters['extractorPath'] }}"]
 
   yotpo_stream_requester:
     type: HttpRequester
@@ -24,14 +24,6 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['access_token'] }}"
-
-  privacy_stream_requester:
-    type: HttpRequester
-    url_base: "https://api.yotpo.com/privacy"
-    http_method: "GET"
-    request_parameters:
-      utoken: "{{ config['access_token'] }}"
-      email: "{{ config['email'] }}"
 
   analytics_stream_requester:
     type: HttpRequester
@@ -68,10 +60,14 @@ definitions:
         $ref: "#/definitions/yotpo_stream_requester"
 
   reviews_stream:
+    $parameters:
+      extractorPath: "reviews"
+      paginatorAvailability: "true"
+      path: "/apps/{{ config['app_key'] }}/reviews"
     $ref: "#/definitions/yotpo_base"
     incremental_sync:
       type: DatetimeBasedCursor
-      cursor_field: "updated_at"
+      cursor_field: "created_at"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
       cursor_granularity: "PT0.000001S"
       lookback_window: "P31D"
@@ -84,10 +80,12 @@ definitions:
       step: "P1M"
     name: "reviews"
     primary_key: "id"
-    $parameters:
-      path: "/apps/{{ config['app_key'] }}/reviews"
 
   email_analytics_stream:
+    $parameters:
+      extractorPath: "date_series_points"
+      paginatorAvailability: "false"
+      path: "/emails/{{ config['app_key'] }}/emails_sent"
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
@@ -101,10 +99,12 @@ definitions:
       requester:
         $ref: "#/definitions/analytics_stream_requester"
     name: "email_analytics"
-    $parameters:
-      path: "/emails/{{ config['app_key'] }}/emails_sent?token={{ config['access_token'] }}"
 
   raw_data_stream:
+    $parameters:
+      extractorPath: "records"
+      paginatorAvailability: "false"
+      path: "/emails/{{ config['app_key'] }}/export/raw_data"
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
@@ -118,8 +118,6 @@ definitions:
       requester:
         $ref: "#/definitions/analytics_stream_requester"
     name: "raw_data"
-    $parameters:
-      path: "/emails/{{ config['app_key'] }}/export/raw_data?token={{ config['access_token'] }}"
 
   unsubscribers_stream:
     type: DeclarativeStream
@@ -136,7 +134,7 @@ definitions:
         $ref: "#/definitions/yotpo_stream_plain_requester"
     name: "unsubscribers"
     $parameters:
-      path: "/apps/{{ config['app_key'] }}/unsubscribers?utoken={{ config['access_token'] }}"
+      path: "/apps/{{ config['app_key'] }}/unsubscribers"
 
   webhook_events_stream:
     type: DeclarativeStream
@@ -153,7 +151,7 @@ definitions:
         $ref: "#/definitions/yotpo_stream_plain_requester"
     name: "webhook_events"
     $parameters:
-      path: "/webhook_events?utoken={{ config['access_token'] }}"
+      path: "/webhook_events"
 
   webhooks_stream:
     type: DeclarativeStream
