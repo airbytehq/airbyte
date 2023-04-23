@@ -23,6 +23,10 @@ acceptance_tests:
             bypass_reason: "Sandbox account cannot seed the endpoint"
           - name: "unsubscribers"
             bypass_reason: "Sandbox account cannot seed the endpoint"
+          - name: "webhooks"
+            bypass_reason: "Sandbox account cannot seed the endpoint"
+          - name: "webhook_events"
+            bypass_reason: "Sandbox account cannot seed the endpoint"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           extra_fields: no

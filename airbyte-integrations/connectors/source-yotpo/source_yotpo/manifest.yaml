@@ -7,27 +7,7 @@ definitions:
 
   yotpo_stream_requester:
     type: HttpRequester
-    url_base: "https://api.yotpo.com/v1"
-    http_method: "GET"
-    request_parameters:
-      utoken: "{{ config['access_token'] }}"
-    authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config['access_token'] }}"
-
-  yotpo_stream_plain_requester:
-    type: HttpRequester
-    url_base: "https://api.yotpo.com"
-    http_method: "GET"
-    request_parameters:
-      utoken: "{{ config['access_token'] }}"
-    authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config['access_token'] }}"
-
-  analytics_stream_requester:
-    type: HttpRequester
-    url_base: "https://api.yotpo.com/analytics/v1"
+    url_base: "{{ parameters['requesterUrl'] }}"
     http_method: "GET"
     request_parameters:
       utoken: "{{ config['access_token'] }}"
@@ -59,11 +39,25 @@ definitions:
       requester:
         $ref: "#/definitions/yotpo_stream_requester"
 
+  yotpo_base_without_pagination:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          $ref: "#/definitions/yotpo_extractor"
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/yotpo_stream_requester"
+
   reviews_stream:
     $parameters:
       extractorPath: "reviews"
       paginatorAvailability: "true"
       path: "/apps/{{ config['app_key'] }}/reviews"
+      requesterUrl: "https://api.yotpo.com/v1"
     $ref: "#/definitions/yotpo_base"
     incremental_sync:
       type: DatetimeBasedCursor
@@ -86,18 +80,8 @@ definitions:
       extractorPath: "date_series_points"
       paginatorAvailability: "false"
       path: "/emails/{{ config['app_key'] }}/emails_sent"
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["date_series_points"]
-      paginator:
-        type: NoPagination
-      requester:
-        $ref: "#/definitions/analytics_stream_requester"
+      requesterUrl: "https://api.yotpo.com/analytics/v1"
+    $ref: "#/definitions/yotpo_base_without_pagination"
     name: "email_analytics"
 
   raw_data_stream:
@@ -105,70 +89,39 @@ definitions:
       extractorPath: "records"
       paginatorAvailability: "false"
       path: "/emails/{{ config['app_key'] }}/export/raw_data"
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["records"]
-      paginator:
-        type: NoPagination
-      requester:
-        $ref: "#/definitions/analytics_stream_requester"
+      requesterUrl: "https://api.yotpo.com/analytics/v1"
+    $ref: "#/definitions/yotpo_base_without_pagination"
     name: "raw_data"
 
   unsubscribers_stream:
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["response", "unsubscribers"]
-      paginator:
-        type: NoPagination
-      requester:
-        $ref: "#/definitions/yotpo_stream_plain_requester"
-    name: "unsubscribers"
     $parameters:
+      extractorPath: |
+        "response", "unsubscribers"
+      paginatorAvailability: "true"
+      requesterUrl: "https://api.yotpo.com"
       path: "/apps/{{ config['app_key'] }}/unsubscribers"
+    $ref: "#/definitions/yotpo_base"
+    name: "unsubscribers"
 
   webhook_events_stream:
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["response", "webhook_events"]
-      paginator:
-        type: NoPagination
-      requester:
-        $ref: "#/definitions/yotpo_stream_plain_requester"
-    name: "webhook_events"
     $parameters:
+      extractorPath: |
+        "response", "webhook_events"
+      paginatorAvailability: "false"
+      requesterUrl: "https://api.yotpo.com"
       path: "/webhook_events"
+    $ref: "#/definitions/yotpo_base_without_pagination"
+    name: "webhook_events"
 
   webhooks_stream:
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["response", "webhooks"]
-      paginator:
-        type: NoPagination
-      requester:
-        $ref: "#/definitions/yotpo_stream_plain_requester"
-    name: "webhooks"
     $parameters:
+      extractorPath: |
+        "response", "webhooks"
+      paginatorAvailability: "false"
+      requesterUrl: "https://api.yotpo.com"
       path: "/apps/{{ config['app_key'] }}/webhooks"
+    $ref: "#/definitions/yotpo_base_without_pagination"
+    name: "webhooks"
 
 streams:
   - "#/definitions/email_analytics_stream"
