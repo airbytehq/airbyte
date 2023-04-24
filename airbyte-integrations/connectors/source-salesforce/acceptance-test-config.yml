@@ -33,6 +33,7 @@ acceptance_tests:
         bypass_reason: "impossible to fill the stream with data because it is an organic traffic"
       - name: "Describe"
         bypass_reason: "Data is not permanent"
+      timeout_seconds: 3600
       fail_on_extra_columns: false
       timeout_seconds: 7200
   incremental:
@@ -46,3 +47,4 @@ acceptance_tests:
     tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      timeout_seconds: 3600

@@ -22,7 +22,16 @@
       "type": ["null", "integer"]
     },
     "current_phase": {
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "end_date": {
+          "type": ["null", "integer"]
+        },
+        "start_date": {
+          "type": ["null", "integer"]
+        }
+      }
     },
     "customer": {
       "type": ["null", "string"]
