@@ -79,8 +79,8 @@ class MetadataUpload(PoetryRun):
             .with_new_file(
                 self.GCS_CREDENTIALS_CONTAINER_PATH, gcs_credentials.replace("\n", "")
             )
-            .with_env_variable("DOCKER_HUB_USERNAME", docker_hub_username_secret)
-            .with_env_variable("DOCKER_HUB_PASSWORD", docker_hub_password_secret)
+            .with_secret_variable("DOCKER_HUB_USERNAME", docker_hub_username_secret)
+            .with_secret_variable("DOCKER_HUB_PASSWORD", docker_hub_password_secret)
             # The cache buster ensures we always run the upload command (in case of remote bucket change)
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
         )
