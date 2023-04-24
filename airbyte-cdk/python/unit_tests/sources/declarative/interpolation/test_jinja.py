@@ -34,15 +34,16 @@ def test_get_value_from_a_list_of_mappings():
 
 
 @pytest.mark.parametrize(
-    "test_name, s, value",
+    "s, value",
     [
-        ("test_number", "{{1}}", 1),
-        ("test_list", "{{[1,2]}}", [1, 2]),
-        ("test_dict", "{{ {1:2} }}", {1: 2}),
-        ("test_addition", "{{ 1+2 }}", 3),
+        pytest.param("{{1}}", 1, id="test_number"),
+        pytest.param("{{1}}", 1, id="test_number"),
+        pytest.param("{{[1,2]}}", [1, 2], id="test_list"),
+        pytest.param("{{ {1:2} }}", {1: 2}, id="test_dict"),
+        pytest.param("{{ 1+2 }}", 3, id="test_addition"),
     ],
 )
-def test_literals(test_name, s, value):
+def test_literals(s, value):
     val = interpolation.eval(s, None)
     assert val == value
 
@@ -88,12 +89,12 @@ def test_stream_slice_alias(context, input_string, expected_value):
 
 
 @pytest.mark.parametrize(
-    "test_name, alias", [
-        ("test_error_is_raised_if_stream_interval_in_context", "stream_interval"),
-        ("test_error_is_raised_if_stream_partition_in_context", "stream_partition"),
+    "alias", [
+        pytest.param("stream_interval", id="test_error_is_raised_if_stream_interval_in_context"),
+        pytest.param("stream_partition", id="test_error_is_raised_if_stream_partition_in_context"),
     ]
 )
-def test_error_is_raised_if_alias_is_already_in_context(test_name, alias):
+def test_error_is_raised_if_alias_is_already_in_context(alias):
     config = {}
     context = {alias: "a_value"}
     with pytest.raises(ValueError):
