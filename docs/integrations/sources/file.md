@@ -191,7 +191,7 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
-| 0.3.0   | 2023-04-24 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add datatime format parsing support for csv files                                                       |
+| 0.3.0   | 2023-04-24 | [25445](https://github.com/airbytehq/airbyte/pull/25445) | Add datatime format parsing support for csv files                                                       |
 | 0.2.38  | 2023-04-12 | [23759](https://github.com/airbytehq/airbyte/pull/23759) | Fix column data types for numerical values                                                              |
 | 0.2.37  | 2023-04-06 | [24525](https://github.com/airbytehq/airbyte/pull/24525) | Fix examples in spec                                                                                    |
 | 0.2.36  | 2023-03-27 | [24588](https://github.com/airbytehq/airbyte/pull/24588) | Remove traceback from user messages.                                                                    |
