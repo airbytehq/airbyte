@@ -15,7 +15,7 @@ from ci_connector_ops.pipelines.actions.remote_storage import upload_to_gcs
 from ci_connector_ops.pipelines.bases import ConnectorReport, Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.contexts import ConnectorContext
 from ci_connector_ops.pipelines.pipelines import metadata
-from ci_connector_ops.pipelines.utils import with_stderr, with_stdout
+from ci_connector_ops.pipelines.utils import with_exit_code, with_stderr, with_stdout
 from dagger import Container, File, QueryError, Secret
 
 
@@ -41,17 +41,18 @@ class CheckConnectorImageDoesNotExist(PublishStep):
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
             .with_exec(["docker", "manifest", "inspect", self.docker_image_name])
         )
+        manifest_inspect_exit_code = await with_exit_code(manifest_inspect)
         manifest_inspect_stderr = await with_stderr(manifest_inspect)
         manifest_inspect_stdout = await with_stdout(manifest_inspect)
 
-        if "no such manifest" in manifest_inspect_stderr:
+        if manifest_inspect_exit_code != 0 and "no such manifest" in manifest_inspect_stderr:
             return StepResult(self, status=StepStatus.SUCCESS, stdout=f"No manifest found for {self.context.docker_image_from_metadata}.")
         else:
             try:
                 manifests = json.loads(manifest_inspect_stdout.replace("\n", "")).get("manifests", [])
                 available_platforms = {f"{manifest['platform']['os']}/{manifest['platform']['architecture']}" for manifest in manifests}
-                if available_platforms.issubset(set(builds.BUILD_PLATFORMS)):
-                    return StepResult(self, status=StepStatus.FAILURE, stderr=f"{self.context.docker_image_from_metadata} already exists.")
+                if set(builds.BUILD_PLATFORMS).issubset(available_platforms):
+                    return StepResult(self, status=StepStatus.SKIPPED, stderr=f"{self.context.docker_image_from_metadata} already exists.")
                 else:
                     return StepResult(
                         self, status=StepStatus.SUCCESS, stdout=f"No all manifests found for {self.context.docker_image_from_metadata}."
@@ -181,14 +182,19 @@ async def run_connector_publish_pipeline(
                 "metadata_service_account_key", os.environ["METADATA_SERVICE_ACCOUNT_KEY"]
             )
 
-            steps_to_build = [
+            steps_before_ready_to_publish = [
                 metadata.MetadataValidation(context, context.metadata_path),
                 CheckConnectorImageDoesNotExist(context, pre_release),
-                BuildConnectorForPublish(context),
             ]
+            steps_before_ready_to_publish_results = await run_steps(steps_before_ready_to_publish)
+            if not steps_before_ready_to_publish_results[-1].status is StepStatus.SUCCESS:
+                context.report = ConnectorReport(context, steps_before_ready_to_publish_results, name="PUBLISH RESULTS")
+                return context.report
+            else:
+                step_results = steps_before_ready_to_publish_results
 
-            steps_to_build_results = await run_steps(steps_to_build)
-            build_connector_results = steps_to_build_results[-1]
+            build_connector_results = await BuildConnectorForPublish(context).run()
+            step_results.append(build_connector_results)
             built_connector_platform_variants = build_connector_results.output_artifact
 
             steps_to_publish = [
@@ -200,6 +206,6 @@ async def run_connector_publish_pipeline(
                 metadata.MetadataUpload(context, context.metadata_path, metadata_bucket_name, await metadata_service_account.plaintext()),
             ]
 
-            publish_results = await run_steps(steps_to_publish, results=steps_to_build_results)
-            context.report = ConnectorReport(context, publish_results, name="PUBLISH RESULTS")
+            step_results = await run_steps(steps_to_publish, results=step_results)
+            context.report = ConnectorReport(context, step_results, name="PUBLISH RESULTS")
         return context.report

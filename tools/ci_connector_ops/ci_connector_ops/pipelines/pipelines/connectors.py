@@ -16,7 +16,7 @@ GITHUB_GLOBAL_DESCRIPTION = "Running connectors tests"
 
 async def run_connectors_pipelines(
     contexts: List[ConnectorContext], connector_pipeline: Callable, pipeline_name: str, concurrency: int, *args
-):
+) -> List[ConnectorContext]:
     """Run a connector pipeline for all the connector contexts."""
     semaphore = anyio.Semaphore(concurrency)
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
@@ -24,3 +24,4 @@ async def run_connectors_pipelines(
             for context in contexts:
                 context.dagger_client = dagger_client.pipeline(f"{context.connector.technical_name} - {pipeline_name}")
                 tg.start_soon(connector_pipeline, context, semaphore, *args)
+    return contexts

@@ -14,7 +14,7 @@ import anyio
 import click
 import dagger
 from ci_connector_ops.pipelines.builds import run_connector_build_pipeline
-from ci_connector_ops.pipelines.contexts import CIContext, ConnectorContext
+from ci_connector_ops.pipelines.contexts import CIContext, ConnectorContext, ContextState
 from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.pipelines.connectors import run_connectors_pipelines
 from ci_connector_ops.pipelines.publish import run_connector_publish_pipeline
@@ -270,7 +270,7 @@ def publish(
         )
         for connector in selected_connectors
     ]
-    anyio.run(
+    connectors_contexts = anyio.run(
         run_connectors_pipelines,
         connectors_contexts,
         run_connector_publish_pipeline,
@@ -280,4 +280,4 @@ def publish(
         spec_cache_bucket_name,
         metadata_service_bucket_name,
     )
-    return True
+    return all(context.state is ContextState.SUCCESSFUL for context in connectors_contexts)
