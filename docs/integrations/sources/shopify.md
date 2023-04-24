@@ -146,6 +146,7 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                   |
 |:--------|:-----------|:----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| 0.3.3   | 2023-04-12 | [25110](https://github.com/airbytehq/airbyte/pull/25110)  | Fix issue when `cursor_field` is `"None"`, added missing properties to stream schemas, fixed `access_scopes` validation error                                                           |
 | 0.3.2   | 2023-02-27 | [23473](https://github.com/airbytehq/airbyte/pull/23473)  | Fixed OOM / Memory leak issue for Airbyte Cloud                                                           |
 | 0.3.1   | 2023-01-16 | [21461](https://github.com/airbytehq/airbyte/pull/21461)  | Add `discount_applications` to `orders` stream                                                            |
 | 0.3.0   | 2022-11-16 | [19492](https://github.com/airbytehq/airbyte/pull/19492)  | Add support for graphql and add a graphql products stream                                                 |

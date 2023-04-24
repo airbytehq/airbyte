@@ -81,6 +81,7 @@
         "description": "The date you would like to replicate data from. Format: YYYY-MM-DD. Any data before this date will not be replicated.",
         "examples": ["2021-01-01"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "format": "date",
         "order": 3
       }
     }
