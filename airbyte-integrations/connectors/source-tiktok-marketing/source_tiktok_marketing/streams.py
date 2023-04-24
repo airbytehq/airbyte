@@ -656,7 +656,17 @@ class BasicReports(IncrementalTiktokStream, ABC):
             )
 
         if self.report_level == ReportLevel.AD:
-            result.extend(["adgroup_id", "ad_name", "ad_text"])
+            result.extend([
+                "adgroup_id", 
+                "ad_name", 
+                "ad_text",
+                "total_purchase_value",
+                "total_onsite_shopping_value",
+                "onsite_shopping",
+                "vta_purchase",
+                "cta_purchase",
+                "total_pageview",
+            ])
 
         return result
 

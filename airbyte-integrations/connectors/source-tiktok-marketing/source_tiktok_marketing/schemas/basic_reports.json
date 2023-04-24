@@ -140,6 +140,24 @@
         },
         "frequency": {
           "type": ["null", "string"]
+        },
+        "total_purchase_value": {
+          "type": ["null", "string"]
+        },
+        "total_onsite_shopping_value": {
+          "type": ["null", "string"]
+        },
+        "onsite_shopping": {
+          "type": ["null", "string"]
+        },
+        "vta_purchase": {
+          "type": ["null", "string"]
+        },
+        "cta_purchase": {
+          "type": ["null", "string"]
+        },
+        "total_pageview": {
+          "type": ["null", "string"]
         }
       }
     },
