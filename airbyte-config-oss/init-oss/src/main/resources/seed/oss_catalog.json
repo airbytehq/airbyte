@@ -13557,7 +13557,7 @@
     "sourceDefinitionId": "ef69ef6e-aa7f-4af1-a01d-ef775033524e",
     "name": "GitHub",
     "dockerRepository": "airbyte/source-github",
-    "dockerImageTag": "0.4.7",
+    "dockerImageTag": "0.4.8",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/github",
     "icon": "github.svg",
     "sourceType": "api",
@@ -17071,7 +17071,7 @@
     "sourceDefinitionId": "b03a9f3e-22a5-11eb-adc1-0242ac120002",
     "name": "Mailchimp",
     "dockerRepository": "airbyte/source-mailchimp",
-    "dockerImageTag": "0.3.5",
+    "dockerImageTag": "0.4.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mailchimp",
     "icon": "mailchimp.svg",
     "sourceType": "api",
@@ -20605,7 +20605,7 @@
     "sourceDefinitionId": "5cb7e5fe-38c2-11ec-8d3d-0242ac130003",
     "name": "Pinterest",
     "dockerRepository": "airbyte/source-pinterest",
-    "dockerImageTag": "0.2.4",
+    "dockerImageTag": "0.2.5",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/pinterest",
     "icon": "pinterest.svg",
     "sourceType": "api",
@@ -20621,7 +20621,7 @@
           "start_date": {
             "type": "string",
             "title": "Start Date",
-            "description": "A date in the format YYYY-MM-DD. If you have not set a date, it would be defaulted to latest allowed date by api (914 days from today).",
+            "description": "A date in the format YYYY-MM-DD. If you have not set a date, it would be defaulted to latest allowed date by api (89 days from today).",
             "examples": [ "2022-07-28" ]
           },
           "status": {
@@ -23498,7 +23498,7 @@
     "sourceDefinitionId": "9da77001-af33-4bcd-be46-6252bf9342b9",
     "name": "Shopify",
     "dockerRepository": "airbyte/source-shopify",
-    "dockerImageTag": "0.3.2",
+    "dockerImageTag": "0.3.3",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/shopify",
     "icon": "shopify.svg",
     "sourceType": "api",
@@ -23582,6 +23582,7 @@
             "description": "The date you would like to replicate data from. Format: YYYY-MM-DD. Any data before this date will not be replicated.",
             "examples": [ "2021-01-01" ],
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "format": "date",
             "order": 3
           }
         }
@@ -24766,7 +24767,7 @@
     "sourceDefinitionId": "e094cb9a-26de-4645-8761-65c0c425d1de",
     "name": "Stripe",
     "dockerRepository": "airbyte/source-stripe",
-    "dockerImageTag": "3.4.0",
+    "dockerImageTag": "3.4.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/stripe",
     "icon": "stripe.svg",
     "sourceType": "api",

@@ -1,0 +1,48 @@
+name: (WIP) Publish connectors
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "airbyte-integrations/connectors/**/metadata.yaml"
+  workflow_dispatch:
+    inputs:
+      connectors-options:
+        description: "Options to pass to the 'airbyte-ci connectors' command group"
+        default: "--name=source-pokeapi"
+      publish-options:
+        description: "Options to pass to the 'airbyte-ci connectors publish' command"
+        default: "--pre-release"
+jobs:
+  publish_connectors:
+    name: Publish connectors
+    runs-on: medium-runner
+    env:
+      CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+      SPEC_CACHE_BUCKET_NAME: io-airbyte-cloud-spec-cache
+      METADATA_SERVICE_BUCKET_NAME: dev-airbyte-cloud-connector-metadata-service
+      GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+      SPEC_CACHE_SERVICE_ACCOUNT_KEY: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY }}
+      METADATA_SERVICE_ACCOUNT_KEY: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Publish modified connectors
+        id: publish-modified-connectors
+        if: github.event_name == 'push'
+        uses: ./.github/actions/run-dagger-pipeline
+        with:
+          # Only pre-release images are published until the correct behavior is observed in prod.
+          # Setting concurrency to 1 for safety:
+          # High concurrency can lead to resource issues for java connectors.
+          # As speed is not a concern in this context I think not publishing connectors in parallel is fine.
+          subcommand: "connectors --concurrency=1 --modified publish --pre-release"
+          context: "master"
+      - name: Publish connectors
+        id: publish-connectors
+        if: github.event_name == 'workflow_dispatch'
+        uses: ./.github/actions/run-dagger-pipeline
+        with:
+          subcommand: "connectors ${{ github.event.inputs.connectors-options }} publish ${{ github.event.inputs.publish-options }}"
+          context: "manual"
