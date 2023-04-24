@@ -38,10 +38,17 @@ You will need to choose an existing database or create a new database that will 
 
 ### Setup the ByteHouse Destination in Airbyte
 
-You should now have all the requirements needed to configure ByteHouse as a destination in the UI. You'll need the following information to configure the ClickHouse destination:
+You should now have all the requirements needed to configure ByteHouse as a destination in the UI. You'll need the following information to configure the ByteHouse destination:
 
 * **Host**
 * **Port**
 * **API Key**
 * **Database**
 * **Jdbc_url_params**
+
+
+## Changelog
+
+| Version | Date       | Pull Request                                               | Subject                   |
+|:--------|:-----------|:-----------------------------------------------------------|:--------------------------|
+| 0.0.1   | 2023-04-24 | [\#25421](https://github.com/airbytehq/airbyte/pull/25421)   | Add ByteHouse destination |
