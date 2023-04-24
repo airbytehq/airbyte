@@ -47,5 +47,3 @@ https://dagger.io/
 Tuple.com is a collaboration and screen-sharing tool which we use to build Airbyte. They offer a generous free tier for OSS projects.
 
 [![Tuple](https://img.shields.io/badge/Tuple%20❤️%20OSS-5A67D8?style=for-the-badge&logo=tuple)](https://tuple.app/github-badge)
-
-https://tuple.app/
