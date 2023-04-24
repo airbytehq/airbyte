@@ -1968,18 +1968,18 @@ interpolation:
         - Server: nginx
           Date: Mon, 24 Apr 2023 20:17:21 GMT
           Content-Type: application/json
-          Content-Length: '420'
+          Content-Length: "420"
           Connection: keep-alive
           referrer-policy: strict-origin-when-cross-origin
           x-content-type-options: nosniff
-          x-ratelimit-limit: '600'
-          x-ratelimit-remaining: '598'
-          x-ratelimit-reset: '39'
+          x-ratelimit-limit: "600"
+          x-ratelimit-remaining: "598"
+          x-ratelimit-reset: "39"
     - title: last_records
       description: List of records extracted from the last response received from the API.
       type: list
       examples:
-        - - name: 'Test List: 19'
+        - - name: "Test List: 19"
             id: 0236d6d2
             contact_count: 20
             _metadata:
@@ -2003,7 +2003,7 @@ interpolation:
       type: object
       examples:
         - result:
-            - name: 'Test List: 19'
+            - name: "Test List: 19"
               id: 0236d6d2-75d2-42c5-962d-603e0deaf8d1
               contact_count: 20
               _metadata:
