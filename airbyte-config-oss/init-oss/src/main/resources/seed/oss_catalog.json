@@ -20605,7 +20605,7 @@
     "sourceDefinitionId": "5cb7e5fe-38c2-11ec-8d3d-0242ac130003",
     "name": "Pinterest",
     "dockerRepository": "airbyte/source-pinterest",
-    "dockerImageTag": "0.2.4",
+    "dockerImageTag": "0.2.5",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/pinterest",
     "icon": "pinterest.svg",
     "sourceType": "api",
@@ -20621,7 +20621,7 @@
           "start_date": {
             "type": "string",
             "title": "Start Date",
-            "description": "A date in the format YYYY-MM-DD. If you have not set a date, it would be defaulted to latest allowed date by api (914 days from today).",
+            "description": "A date in the format YYYY-MM-DD. If you have not set a date, it would be defaulted to latest allowed date by api (89 days from today).",
             "examples": [ "2022-07-28" ]
           },
           "status": {
