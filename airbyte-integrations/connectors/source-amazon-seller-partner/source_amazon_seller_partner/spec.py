@@ -81,7 +81,6 @@ class AmazonSellerPartnerConfig(BaseModel):
         examples=["500", "1980"],
     )
 
-    aws_environment: AWSEnvironment = Field(description="Select the AWS Environment.", title="AWS Environment")
     region: AWSRegion = Field(description="Select the AWS Region.", title="AWS Region")
 
 

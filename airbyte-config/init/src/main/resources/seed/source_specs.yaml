@@ -736,13 +736,6 @@
             - "500"
             - "1980"
           type: "integer"
-        aws_environment:
-          title: "AWSEnvironment"
-          description: "An enumeration."
-          enum:
-            - "PRODUCTION"
-            - "SANDBOX"
-          type: "string"
         region:
           title: "AWSRegion"
           description: "An enumeration."
@@ -777,17 +770,9 @@
         - "aws_secret_key"
         - "role_arn"
         - "replication_start_date"
-        - "aws_environment"
         - "region"
       additionalProperties: true
       definitions:
-        AWSEnvironment:
-          title: "AWSEnvironment"
-          description: "An enumeration."
-          enum:
-            - "PRODUCTION"
-            - "SANDBOX"
-          type: "string"
         AWSRegion:
           title: "AWSRegion"
           description: "An enumeration."
