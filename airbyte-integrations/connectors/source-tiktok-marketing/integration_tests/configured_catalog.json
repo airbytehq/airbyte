@@ -164,6 +164,18 @@
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
       "primary_key": [["advertiser_id"], ["stat_time_day"], ["gender"], ["age"]]
+    },
+    {
+      "stream": {
+        "name": "ads_audience_reports_by_province_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["ad_id"], ["province_id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["stat_time_day"],
+      "primary_key": [["ad_id"], ["province_id"]]
     }
   ]
 }

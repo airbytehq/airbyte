@@ -51,6 +51,21 @@ NOT_AUDIENCE_METRICS = [
     "real_time_app_install",
     "real_time_app_install_cost",
     "app_install",
+    "profile_visits_rate",
+    "purchase",
+    "purchase_rate",
+    "registration",
+    "registration_rate",
+    "sales_lead",
+    "sales_lead_rate",
+    "cost_per_app_install",
+    "cost_per_purchase",
+    "cost_per_registration",
+    "total_purchase_value",
+    "cost_per_sales_lead",
+    "cost_per_total_sales_lead",
+    "cost_per_total_app_event_add_to_cart",
+    "total_app_event_add_to_cart"
 ]
 
 T = TypeVar("T")
@@ -76,13 +91,14 @@ T = TypeVar("T")
 #         | └─AdGroupAudienceReportsByPlatform     (11 ad_group_audience_reports_by_platform)
 #         ├─AdsAudienceReports                     (12 ads_audience_reports)
 #         | ├─AdsAudienceReportsByCountry          (13 ads_audience_reports_by_country)
-#         | └─AdsAudienceReportsByPlatform         (14 ads_audience_reports_by_platform)
-#         ├─AdvertisersAudienceReports             (15 advertisers_audience_reports)
-#         | ├─AdvertisersAudienceReportsByCountry  (16 advertisers_audience_reports_by_country)
-#         | └─AdvertisersAudienceReportsByPlatform (17 advertisers_audience_reports_by_platform)
-#         └─CampaignsAudienceReports               (18 campaigns_audience_reports)
-#           ├─CampaignsAudienceReportsByCountry    (19 campaigns_audience_reports_by_country)
-#           └─CampaignsAudienceReportsByPlatform   (20 campaigns_audience_reports_by_platform)
+#         | ├─AdsAudienceReportsByPlatform         (14 ads_audience_reports_by_platform)
+#         | └─AdsAudienceReportsByProvince         (15 ads_audience_reports_by_province)
+#         ├─AdvertisersAudienceReports             (16 advertisers_audience_reports)
+#         | ├─AdvertisersAudienceReportsByCountry  (17 advertisers_audience_reports_by_country)
+#         | └─AdvertisersAudienceReportsByPlatform (18 advertisers_audience_reports_by_platform)
+#         └─CampaignsAudienceReports               (19 campaigns_audience_reports)
+#           ├─CampaignsAudienceReportsByCountry    (20 campaigns_audience_reports_by_country)
+#           └─CampaignsAudienceReportsByPlatform   (21 campaigns_audience_reports_by_platform)
 
 
 @total_ordering
@@ -612,6 +628,21 @@ class BasicReports(IncrementalTiktokStream, ABC):
             "real_time_app_install",
             "real_time_app_install_cost",
             "app_install",
+            "profile_visits_rate",
+            "purchase",
+            "purchase_rate",
+            "registration",
+            "registration_rate",
+            "sales_lead",
+            "sales_lead_rate",
+            "cost_per_app_install",
+            "cost_per_purchase",
+            "cost_per_registration",
+            "total_purchase_value",
+            "cost_per_sales_lead",
+            "cost_per_total_sales_lead",
+            "cost_per_total_app_event_add_to_cart",
+            "total_app_event_add_to_cart"
         ]
 
         if self.report_level == ReportLevel.ADVERTISER and self.report_granularity == ReportGranularity.DAY:
@@ -750,6 +781,9 @@ class AudienceReport(BasicReports, ABC):
     def _get_reporting_dimensions(self):
         result = super()._get_reporting_dimensions()
         result += self.audience_dimensions
+        # In the case of province breakdown, the date dimension is not supported
+        if self.audience_dimensions == ["province_id"] and "stat_time_day" in result:
+            result.remove("stat_time_day")
         return result
 
     def request_params(
@@ -830,3 +864,9 @@ class AdvertisersAudienceReportsByPlatform(AdvertisersAudienceReports):
     """Custom reports for advertisers by platform"""
 
     audience_dimensions = ["platform"]
+
+
+class AdsAudienceReportsByProvince(AdsAudienceReports):
+    """Custom reports for ads by province"""
+
+    audience_dimensions = ["province_id"]
