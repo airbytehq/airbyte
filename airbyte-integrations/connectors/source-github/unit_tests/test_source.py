@@ -145,6 +145,7 @@ def test_organization_or_repo_available():
         (("airbytehq/airbyte", ), True),
         (("airbytehq/airbyte-test", "airbytehq/airbyte_test", "airbytehq/airbyte-test/another-repo"), True),
         (("air232bytehq/air32byte", "airbyte_hq/another-repo", "airbytehq/*", "airbytehq/airbyte"), True),
+        (("airbyte_hq/another.repo", "airbytehq/*", "airbytehq/airbyte"), True),
     ],
 )
 def test_config_validation(repos_config, expected):
