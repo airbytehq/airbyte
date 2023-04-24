@@ -180,14 +180,26 @@ async def run_connector_publish_pipeline(
             metadata_service_account: dagger.Secret = context.dagger_client.set_secret(
                 "metadata_service_account_key", os.environ["METADATA_SERVICE_ACCOUNT_KEY"]
             )
-
+            metadata_upload_step = metadata.MetadataUpload(
+                context, context.metadata_path, metadata_bucket_name, await metadata_service_account.plaintext()
+            )
             steps_before_ready_to_publish = [
                 metadata.MetadataValidation(context, context.metadata_path),
                 CheckConnectorImageDoesNotExist(context, pre_release),
             ]
             steps_before_ready_to_publish_results = await run_steps(steps_before_ready_to_publish)
-            if not steps_before_ready_to_publish_results[-1].status is StepStatus.SUCCESS:
-                context.report = ConnectorReport(context, steps_before_ready_to_publish_results, name="PUBLISH RESULTS")
+
+            if steps_before_ready_to_publish_results[-1].status is not StepStatus.SUCCESS:
+                if steps_before_ready_to_publish_results[-1].status is StepStatus.SKIPPED:
+                    context.logger.info(
+                        "The connector version is already published. Let's upload metadata.yaml to GCS even if no version bump happened."
+                    )
+                    metadata_upload_results = await metadata_upload_step.run()
+                    context.report = ConnectorReport(
+                        context, steps_before_ready_to_publish_results + [metadata_upload_results], name="PUBLISH RESULTS"
+                    )
+                else:
+                    context.report = ConnectorReport(context, steps_before_ready_to_publish_results, name="PUBLISH RESULTS")
                 return context.report
             else:
                 step_results = steps_before_ready_to_publish_results
@@ -206,7 +218,7 @@ async def run_connector_publish_pipeline(
                     (built_connector_platform_variants[0],),
                 ),
                 (PushConnectorImageToRegistry(context, pre_release), (built_connector_platform_variants,)),
-                metadata.MetadataUpload(context, context.metadata_path, metadata_bucket_name, await metadata_service_account.plaintext()),
+                metadata_upload_step,
             ]
 
             step_results = await run_steps(steps_to_publish, results=step_results)
