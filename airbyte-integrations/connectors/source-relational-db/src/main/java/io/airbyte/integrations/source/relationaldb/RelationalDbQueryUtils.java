@@ -11,11 +11,15 @@ import io.airbyte.db.SqlDatabase;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for methods to query a relational db.
  */
 public class RelationalDbQueryUtils {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(RelationalDbQueryUtils.class);
 
   public static String getIdentifierWithQuoting(final String identifier, final String quoteString) {
     // double-quoted values within a database name or column name should be wrapped with extra
@@ -60,6 +64,7 @@ public class RelationalDbQueryUtils {
   public static <Database extends SqlDatabase> AutoCloseableIterator<JsonNode> queryTable(final Database database, final String sqlQuery) {
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
+        LOGGER.info("Queueing query: {}", sqlQuery);
         final Stream<JsonNode> stream = database.unsafeQuery(sqlQuery);
         return AutoCloseableIterators.fromStream(stream);
       } catch (final Exception e) {

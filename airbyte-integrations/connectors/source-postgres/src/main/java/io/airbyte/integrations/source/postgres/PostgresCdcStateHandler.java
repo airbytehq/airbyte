@@ -12,10 +12,11 @@ import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
-import java.util.Map;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+import java.util.Optional;
 
 public class PostgresCdcStateHandler implements CdcStateHandler {
 
@@ -24,6 +25,11 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
 
   public PostgresCdcStateHandler(final StateManager stateManager) {
     this.stateManager = stateManager;
+  }
+
+  @Override
+  public boolean isCdcCheckpointEnabled() {
+    return true;
   }
 
   @Override
@@ -60,5 +66,4 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
     final AirbyteStateMessage stateMessage = stateManager.emit(Optional.empty());
     return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
   }
-
 }

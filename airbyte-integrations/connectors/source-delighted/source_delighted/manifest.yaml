@@ -1,4 +1,4 @@
-version: "0.1.0"
+version: "0.29.0"
 
 definitions:
   selector:
@@ -24,7 +24,7 @@ definitions:
     datetime_format: "%s"
     cursor_granularity: "PT1S"
     start_datetime:
-      datetime: "{{ config['since'] }}"
+      datetime: "{{ format_datetime(config['since'], '%Y-%m-%d %H:%M:%S') }}"
       datetime_format: "%Y-%m-%d %H:%M:%S"
     end_datetime:
       datetime: "{{ today_utc() }}"
