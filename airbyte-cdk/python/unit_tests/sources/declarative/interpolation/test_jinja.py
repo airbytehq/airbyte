@@ -48,29 +48,40 @@ def test_literals(test_name, s, value):
 
 
 @pytest.mark.parametrize(
-    "test_name, context, input_string, expected_value",
+    "context, input_string, expected_value",
     [
-        ("test_get_value_from_stream_slice",
-         {"stream_slice": {"stream_slice_key": "hello"}},
-         "{{ stream_slice['stream_slice_key'] }}", "hello"),
-        ("test_get_value_from_stream_slice_no_stream_slice",
-         {},
-         "{{ stream_slice['stream_slice_key'] }}", None),
-        ("test_get_value_from_stream_partition",
-         {"stream_slice": {"stream_slice_key": "hello"}},
-         "{{ stream_partition['stream_slice_key'] }}", "hello"),
-        ("test_get_value_from_stream_partition_no_stream_slice",
-         {},
-         "{{ stream_partition['stream_slice_key'] }}", None),
-        ("test_get_value_from_stream_partition",
-         {"stream_slice": {"stream_slice_key": "hello"}},
-         "{{ stream_interval['stream_slice_key'] }}", "hello"),
-        ("test_get_value_from_stream_interval_no_stream_slice",
-         {},
-         "{{ stream_interval['stream_slice_key'] }}", None),
+        pytest.param(
+            {"stream_slice": {"stream_slice_key": "hello"}},
+            "{{ stream_slice['stream_slice_key'] }}",
+            "hello",
+            id="test_get_value_from_stream_slice"),
+        pytest.param(
+            {},
+            "{{ stream_slice['stream_slice_key'] }}",
+            None,
+            id="test_get_value_from_stream_slice_no_slice"
+        ),
+        pytest.param(
+            {"stream_slice": {"stream_slice_key": "hello"}},
+            "{{ stream_partition['stream_slice_key'] }}",
+            "hello",
+            id="test_get_value_from_stream_slicer"
+        ),
+        pytest.param(
+            {},
+            "{{ stream_partition['stream_slice_key'] }}",
+            None,
+            id="test_get_value_from_stream_partition_no_stream_slice"
+        ),
+        pytest.param(
+            {"stream_slice": {"stream_slice_key": "hello"}},
+            "{{ stream_interval['stream_slice_key'] }}",
+            "hello",
+            id="test_get_value_from_stream_interval"
+        )
     ],
 )
-def test_stream_slice_alias(test_name, context, input_string, expected_value):
+def test_stream_slice_alias(context, input_string, expected_value):
     config = {}
     val = interpolation.eval(input_string, config, **context)
     assert val == expected_value
