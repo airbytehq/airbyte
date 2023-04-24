@@ -30,7 +30,6 @@ RUN dbt deps
 WORKDIR /airbyte
 
 ENV APPLICATION destination-bigquery
-ENV ENABLE_SENTRY true
 
 COPY --from=build /airbyte /airbyte
 
