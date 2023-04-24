@@ -20,16 +20,16 @@ from dagger import Container, File, QueryError, Secret
 
 
 class PublishStep(Step, ABC):
-    def __init__(self, context: ConnectorContext, pre_release: bool = True) -> None:
-        super().__init__(context)
-        self.pre_release = pre_release
-
     @property
     def docker_image_name(self):
         if self.pre_release:
             return f"{self.context.docker_image_from_metadata}-dev.{self.context.git_revision[:10]}"
         else:
             return self.context.docker_image_from_metadata
+
+    def __init__(self, context: ConnectorContext, pre_release: bool = True) -> None:
+        super().__init__(context)
+        self.pre_release = pre_release
 
 
 class CheckConnectorImageDoesNotExist(PublishStep):
@@ -105,23 +105,6 @@ class UploadSpecToCache(PublishStep):
     default_spec_file_name = "spec.json"
     cloud_spec_file_name = "spec.cloud.json"
 
-    def _parse_spec_output(self, spec_output: str) -> str:
-        for line in spec_output.split("\n"):
-            try:
-                parsed_json = json.loads(line)
-                if parsed_json["type"] == "SPEC":
-                    return json.dumps(parsed_json)
-            except (json.JSONDecodeError, KeyError):
-                continue
-        raise InvalidSpecOutputError("Could not parse the output of the spec command.")
-
-    async def _get_connector_spec(self, connector: Container, deployment_mode: str) -> str:
-        spec_output = await connector.with_env_variable("DEPLOYMENT_MODE", deployment_mode).with_exec(["spec"]).stdout()
-        return self._parse_spec_output(spec_output)
-
-    def _get_spec_as_file(self, spec: str, name="spec_to_cache.json") -> File:
-        return self.context.get_connector_dir().with_new_file(name, spec).file(name)
-
     @property
     def spec_key_prefix(self):
         return "specs/" + self.docker_image_name.replace(":", "/")
@@ -138,6 +121,23 @@ class UploadSpecToCache(PublishStep):
         super().__init__(context, pre_release)
         self.spec_bucket_name = spec_bucket_name
         self.gcs_credentials = gcs_credentials
+
+    def _parse_spec_output(self, spec_output: str) -> str:
+        for line in spec_output.split("\n"):
+            try:
+                parsed_json = json.loads(line)
+                if parsed_json["type"] == "SPEC":
+                    return json.dumps(parsed_json)
+            except (json.JSONDecodeError, KeyError):
+                continue
+        raise InvalidSpecOutputError("Could not parse the output of the spec command.")
+
+    async def _get_connector_spec(self, connector: Container, deployment_mode: str) -> str:
+        spec_output = await connector.with_env_variable("DEPLOYMENT_MODE", deployment_mode).with_exec(["spec"]).stdout()
+        return self._parse_spec_output(spec_output)
+
+    def _get_spec_as_file(self, spec: str, name="spec_to_cache.json") -> File:
+        return self.context.get_connector_dir().with_new_file(name, spec).file(name)
 
     async def _run(self, built_connector: Container) -> List[StepResult]:
         oss_spec: str = await self._get_connector_spec(built_connector, "OSS")
