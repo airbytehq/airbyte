@@ -1,39 +1,48 @@
 connector_image: airbyte/source-shopify:dev
-tests:
+test_strictness_level: high
+acceptance_tests:
   spec:
-    - spec_path: "source_shopify/spec.json"
+    tests:
+      - spec_path: "source_shopify/spec.json"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
-    - config_path: "secrets/config_old.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config_old.json"
-      status: "failed"
-    - config_path: "secrets/config_oauth.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_oauth_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+      - config_path: "secrets/config_old.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config_old.json"
+        status: "failed"
+      - config_path: "secrets/config_oauth.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_oauth_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
-    - config_path: "secrets/config_old.json"
-    - config_path: "secrets/config_oauth.json"
+    tests:
+      - config_path: "secrets/config.json"
+      - config_path: "secrets/config_old.json"
+      - config_path: "secrets/config_oauth.json"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 7200
-      # some streams hold data only for some time, therefore certain streams could be empty while sync.
-      # 'abandoned_checkouts' stream holds data up to 1 month.
-      empty_streams: ["abandoned_checkouts", "balance_transactions"]
+    tests:
+      - config_path: "secrets/config.json"
+        timeout_seconds: 3600
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+        empty_streams:
+          - name: abandoned_checkouts
+            bypass_reason: The stream holds data up to 1 month then records are removed by Shopify.
+          - name: balance_transactions
+            bypass_reason: The stream requires real purchases to fill in the data.
   incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state_path: "integration_tests/abnormal_state.json"
-      timeout_seconds: 3600
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state: 
+          future_state_path: "integration_tests/abnormal_state.json"
+        timeout_seconds: 3600
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 7200
-      ignored_fields:
-        "products_graph_ql": ["onlineStorePreviewUrl", "updatedAt", "totalInventory"]
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 3600
