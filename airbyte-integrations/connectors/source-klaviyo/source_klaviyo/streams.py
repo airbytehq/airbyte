@@ -84,7 +84,7 @@ class IncrementalKlaviyoStream(KlaviyoStream, ABC):
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
         """How often to checkpoint state (i.e: emit a STATE message)"""
-        return 100
+        return self.page_size
 
     @property
     @abstractmethod
