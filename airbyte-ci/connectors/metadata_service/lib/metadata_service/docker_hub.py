@@ -3,7 +3,7 @@ import requests
 from typing import List
 
 
-def authenticate_docker_hub() -> str:
+def get_docker_hub_auth_token() -> str:
     docker_username = os.environ.get("DOCKER_HUB_USERNAME")
     docker_password = os.environ.get("DOCKER_HUB_PASSWORD")
 
@@ -22,7 +22,7 @@ def authenticate_docker_hub() -> str:
 
 
 def get_image_tags(repo: str, image: str) -> List[str]:
-    token = authenticate_docker_hub()
+    token = get_docker_hub_auth_token()
     headers = {"Authorization": f"JWT {token}"}
 
     tags_url = f"https://hub.docker.com/v2/repositories/{repo}/{image}/tags/"
