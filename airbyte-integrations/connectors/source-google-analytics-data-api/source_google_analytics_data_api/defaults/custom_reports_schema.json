@@ -28,7 +28,6 @@
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
-              "required": ["dimension", "dateRange"],
               "properties": {
                 "name": {
                   "type": ["null", "string"]
