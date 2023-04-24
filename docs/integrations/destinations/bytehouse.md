@@ -42,8 +42,6 @@ You should now have all the requirements needed to configure ByteHouse as a dest
 
 * **Host**
 * **Port**
-* **Account**
-* **Username**
-* **Password**
+* **API Key**
 * **Database**
 * **Jdbc_url_params**
