@@ -1,0 +1,41 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Bling Spec
+  type: object
+  required:
+    - email
+    - password
+    - url_merchant
+    - merchant
+    - start_date
+  properties:
+    email:
+      title: API Key
+      type: string
+      description: API Access Key
+      order: 0
+    password:
+      title: Shop ID
+      type: string
+      description: "Shop ID"
+      airbyte_secret: true
+      order: 1
+    url_merchant:
+      title: API Key
+      type: string
+      description: API Access Key
+      order: 2
+    merchant:
+      title: Merchant Code
+      type: string
+      description: "Merchant code with 5 characters length"
+      order: 3
+      examples:
+        - "BRXYZ"
+        - "MXABC"
+    start_date:
+      title: Start Date (DD/MM/YYYY format)
+      type: string
+      description: Start replication date
+      order: 4
