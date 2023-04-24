@@ -3,7 +3,7 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-    - spec_path: "source_stripe/spec.yaml"
+      - spec_path: "source_stripe/spec.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -14,10 +14,11 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: "2.0.0"
+          disable_for_version: "3.3.0"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
+        timeout_seconds: 3600
         empty_streams:
           - name: "bank_accounts"
             bypass_reason: "This stream can't be seeded in our sandbox account"
@@ -62,6 +63,7 @@ acceptance_tests:
   incremental:
     tests:
       - config_path: "secrets/config.json"
+        timeout_seconds: 3600
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:

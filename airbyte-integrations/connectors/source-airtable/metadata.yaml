@@ -3,7 +3,7 @@ data:
     hosts:
       - api.airtable.com
       - airtable.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:
