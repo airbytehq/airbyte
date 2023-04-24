@@ -73,4 +73,16 @@ public class RelationalDbQueryUtils {
     });
   }
 
-}
+  public static <Database extends SqlDatabase> AutoCloseableIterator<JsonNode> queryTable(final Database database, final List<String> sqlQueries) {
+    return AutoCloseableIterators.lazyIterator(() -> {
+      try {
+        LOGGER.info("Queueing query: {}", sqlQueries);
+        final Stream<JsonNode> stream = database.unsafeQueries(sqlQueries);
+        return AutoCloseableIterators.fromStream(stream);
+      } catch (final Exception e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
+
+  }

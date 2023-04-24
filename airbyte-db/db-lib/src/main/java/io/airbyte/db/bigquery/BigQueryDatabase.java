@@ -117,6 +117,11 @@ public class BigQueryDatabase extends SqlDatabase {
     return query(sql, parameterValueList);
   }
 
+  @Override
+  public Stream<JsonNode> unsafeQueries(List<String> sql, String... params) throws Exception {
+    return null;
+  }
+
   public Stream<JsonNode> query(final String sql, final List<QueryParameterValue> params) throws Exception {
     final ImmutablePair<Job, String> result = executeQuery(bigQuery, getQueryConfig(sql, params));
 

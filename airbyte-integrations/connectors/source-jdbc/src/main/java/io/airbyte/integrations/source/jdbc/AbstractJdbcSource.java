@@ -58,6 +58,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,6 +71,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -112,9 +117,72 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     // This corresponds to the initial sync for in INCREMENTAL_MODE. The ordering of the records matters as intermediate state messages are emitted.
     if (syncMode.equals(SyncMode.INCREMENTAL)) {
       final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
-      return queryTable(database, String.format("SELECT %s FROM %s ORDER BY %s ASC",
-          enquoteIdentifierList(columnNames, getQuoteString()),
-          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField));
+      final String columnList = enquoteIdentifierList(columnNames, getQuoteString());
+      final String qualifiedTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString());
+
+      /*//get min value
+      try {
+        AtomicReference<OffsetDateTime> minDate = new AtomicReference<>();
+        AtomicReference<OffsetDateTime> maxDate = new AtomicReference<>();
+        AtomicLong quickCount = new AtomicLong();
+        List<OffsetDateTime> stream = database.unsafeResultSetQuery(connection -> connection.createStatement().executeQuery("select MIN(created_at) from %s".formatted(qualifiedTableName)),
+            resultSet -> resultSet.getObject("min", OffsetDateTime.class)).toList();
+
+        stream.stream().findFirst().ifPresent(d -> {
+          LOGGER.info("*** min is {}", d.toString());
+          minDate.set(d);
+        });
+
+        stream = database.unsafeResultSetQuery(connection -> connection.createStatement().executeQuery("select MAX(created_at) from %s".formatted(qualifiedTableName)),
+            resultSet -> resultSet.getObject("max", OffsetDateTime.class)).toList();
+
+        stream.stream().findFirst().ifPresent(d -> {
+          LOGGER.info("*** max is {}", d.toString());
+          maxDate.set(d);
+        });
+
+
+        Stream<Long> countStream = database.unsafeResultSetQuery(connection -> connection.createStatement().executeQuery("SELECT reltuples::bigint AS estimate FROM pg_class WHERE oid = '%s'::regclass".formatted(qualifiedTableName)),
+            resultSet -> resultSet.getLong("estimate"));
+
+        countStream.findFirst().ifPresent(l -> {
+          LOGGER.info("*** estimate {}", l);
+          quickCount.set(l);
+        });
+        final Duration dur = Duration.between(minDate.get(), maxDate.get());
+        long sec = dur.getSeconds();
+        double eachRec = (double)quickCount.get() / (double)sec;
+        LOGGER.info("*** each record easimated {} seconds", eachRec);
+
+        //get 50,000 records
+        long weNeed = 50_000L;
+        var lowerLimit = minDate.get();
+        var upperLimit = minDate.get().plus((long)(weNeed * eachRec), ChronoUnit.SECONDS);
+        String testQuery = "select count(%s) from %s where %s > '%s' AND %s <= '%s'".formatted(quotedCursorField, qualifiedTableName, quotedCursorField, lowerLimit.toString(), quotedCursorField, upperLimit.toString());
+        LOGGER.info("*** query {}", testQuery);
+        List<Long> firstAttemptList = database.bufferedResultSetQuery(connection -> connection.createStatement().executeQuery(testQuery),
+            resultSet -> resultSet.getLong("count"));
+
+        long firstAttempt = firstAttemptList.get(0);
+        LOGGER.info("*** first attempt got {} records", firstAttempt);
+        double ratio = (double)weNeed / (double)firstAttempt;
+        long actualOffset = (long)(weNeed * eachRec * ratio);
+        LOGGER.info("*** ratio {} actualOffset {} seconds", ratio, actualOffset);
+        upperLimit = minDate.get().plus(actualOffset, ChronoUnit.SECONDS);
+        String secondAttemptQuery = "select count(%s) from %s where %s > '%s' AND %s <= '%s'".formatted(quotedCursorField, qualifiedTableName, quotedCursorField, lowerLimit.toString(), quotedCursorField, upperLimit.toString());
+
+        LOGGER.info("*** 2nd query {}", testQuery);
+        List<Long> secondAttemptList = database.bufferedResultSetQuery(connection -> connection.createStatement().executeQuery(testQuery),
+            resultSet -> resultSet.getLong("count"));
+
+        long secondAttempt = secondAttemptList.get(0);
+        LOGGER.info("*** second attempt got {} records", secondAttempt);
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }*/
+
+      return queryTable(database,
+          List.of("SELECT %s FROM %s where \"created_at\" > '2005-10-15 18:58:59+00' and \"created_at\" <= '2005-10-16 01:25:20+00' ORDER BY %s ASC".formatted(columnList, qualifiedTableName, quotedCursorField)));
     } else {
       // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering of the records.
       return queryTable(database, String.format("SELECT %s FROM %s",

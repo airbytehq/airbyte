@@ -43,4 +43,8 @@ public class AdaptiveStreamingQueryConfig implements JdbcStreamingQueryConfig {
     }
   }
 
+  @Override
+  public int getFetchSize() {
+    return currentFetchSize;
+  }
 }

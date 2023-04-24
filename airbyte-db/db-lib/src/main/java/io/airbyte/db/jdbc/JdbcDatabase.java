@@ -10,12 +10,14 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
 import io.airbyte.db.SqlDatabase;
+import io.airbyte.db.jdbc.streaming.JdbcStreamingQueryConfig;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -90,6 +92,56 @@ public abstract class JdbcDatabase extends SqlDatabase {
     }, false);
   }
 
+  protected <T> Stream<T> toUnsafeStreams(final List<PreparedStatement> statements,
+      final CheckedFunction<ResultSet, T, SQLException> mapper) {
+    final var it = statements.iterator();
+    return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
+      private ResultSet currentResultSet = null;
+      private ResultSet getNext() {
+        try {
+          if (currentResultSet == null || !currentResultSet.next()) {
+            if (currentResultSet != null) {
+              currentResultSet.close();
+            }
+            while (it.hasNext()) {
+              final var statement = it.next();
+              currentResultSet = it.next().executeQuery();
+              if (currentResultSet.next()) {
+                return currentResultSet;
+              } else {
+                currentResultSet.close();
+              }
+            }
+            return null;
+          }
+          return currentResultSet;
+        } catch (final SQLException ex) {
+          return null;
+        }
+      }
+      @Override
+      public boolean tryAdvance(final Consumer<? super T> action) {
+        try {
+          final var resultSet = getNext();
+          if (resultSet == null) {
+            return false;
+          }
+          action.accept(mapper.apply(resultSet));
+          return true;
+
+
+        } catch (final SQLException e) {
+//          LOGGER.error("SQLState: {}, Message: {}", e.getSQLState(), e.getMessage());
+          streamException = e;
+          isStreamFailed = true;
+          // throwing an exception in tryAdvance() method lead to the endless loop in Spliterator and stream
+          // will never close
+          return false;
+        }
+      }
+
+    }, false);
+  }
   /**
    * Use a connection to create a {@link ResultSet} and map it into a list. The entire
    * {@link ResultSet} will be buffered in memory before the list is returned. The caller does not
@@ -160,6 +212,11 @@ public abstract class JdbcDatabase extends SqlDatabase {
                                             CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException;
 
+  @MustBeClosed
+  public abstract <T> Stream<T> unsafeQueries(CheckedFunction<Connection, List<PreparedStatement>, SQLException> statementCreator,
+      CheckedFunction<ResultSet, T, SQLException> recordTransform)
+      throws SQLException;
+
   /**
    * Json query is a common use case for
    * {@link JdbcDatabase#unsafeQuery(CheckedFunction, CheckedFunction)}. So this method is created as
@@ -202,6 +259,24 @@ public abstract class JdbcDatabase extends SqlDatabase {
         ++i;
       }
       return statement;
+    }, sourceOperations::rowToJson);
+  }
+
+  @MustBeClosed
+  @Override
+  public Stream<JsonNode> unsafeQueries(final List<String> sql, final String... params) throws SQLException {
+    return unsafeQueries(connection -> {
+      final List<PreparedStatement> statements = new ArrayList<>();
+      for (final String s : sql){
+        final PreparedStatement statement = connection.prepareStatement(s);
+        int i = 1;
+        for (final String param : params) {
+          statement.setString(i, param);
+          ++i;
+        }
+        statements.add(statement);
+      }
+      return statements;
     }, sourceOperations::rowToJson);
   }
 

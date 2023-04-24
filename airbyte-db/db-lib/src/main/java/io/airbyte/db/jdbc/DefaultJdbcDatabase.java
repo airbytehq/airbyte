@@ -4,6 +4,7 @@
 
 package io.airbyte.db.jdbc;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.errorprone.annotations.MustBeClosed;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -110,6 +111,23 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
       throws SQLException {
     final Connection connection = dataSource.getConnection();
     return toUnsafeStream(statementCreator.apply(connection).executeQuery(), recordTransform)
+        .onClose(() -> {
+          try {
+            LOGGER.info("closing connection");
+            connection.close();
+          } catch (final SQLException e) {
+            throw new RuntimeException(e);
+          }
+        });
+  }
+
+  @Override
+  @MustBeClosed
+  public <T> Stream<T> unsafeQueries(final CheckedFunction<Connection, List<PreparedStatement>, SQLException> statementCreator,
+      final CheckedFunction<ResultSet, T, SQLException> recordTransform)
+      throws SQLException {
+    final Connection connection = dataSource.getConnection();
+    return toUnsafeStreams(statementCreator.apply(connection), recordTransform)
         .onClose(() -> {
           try {
             LOGGER.info("closing connection");

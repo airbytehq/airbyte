@@ -21,4 +21,6 @@ public interface JdbcStreamingQueryConfig extends CheckedBiConsumer<ResultSet, O
 
   void initialize(final Connection connection, final Statement statement) throws SQLException;
 
+  default int getFetchSize() { return 0;}
+
 }
