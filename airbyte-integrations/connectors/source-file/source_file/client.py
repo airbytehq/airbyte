@@ -392,7 +392,6 @@ class Client:
                     for df in self.load_dataframes(fp):
                         columns = fields.intersection(set(df.columns)) if fields else df.columns
                         df.replace({np.nan: None}, inplace=True)
-                        print(fields)
                         yield from df[list(columns)].to_dict(orient="records")
             except ConnectionResetError:
                 logger.info(f"Catched `connection reset error - 104`, stream: {self.stream_name} ({self.reader.full_url})")
