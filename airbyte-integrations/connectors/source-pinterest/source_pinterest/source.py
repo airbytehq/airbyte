@@ -339,7 +339,7 @@ class AdAnalytics(PinterestAnalyticsStream):
 class SourcePinterest(AbstractSource):
     def _validate_and_transform(self, config: Mapping[str, Any]):
         today = pendulum.today()
-        AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP = 914
+        AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP = 89
         latest_date_allowed_by_api = today.subtract(days=AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP)
 
         start_date = config["start_date"]
