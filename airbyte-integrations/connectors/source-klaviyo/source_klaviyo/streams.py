@@ -82,6 +82,11 @@ class IncrementalKlaviyoStream(KlaviyoStream, ABC):
         self._start_ts = int(pendulum.parse(start_date).timestamp())
 
     @property
+    def state_checkpoint_interval(self) -> Optional[int]:
+        """How often to checkpoint state (i.e: emit a STATE message)"""
+        return self.page_size
+
+    @property
     @abstractmethod
     def cursor_field(self) -> Union[str, List[str]]:
         """
