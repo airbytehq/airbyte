@@ -68,7 +68,7 @@ class SourceGithub(AbstractSource):
         Returns:
             True if config valid, False if it's not
         """
-        pattern = re.compile(r"^(?:[\w-]+/)+(?:\*|[\w-]+)$")
+        pattern = re.compile(r"^(?:[\w.-]+/)+(?:\*|[\w.-]+)$")
 
         for repo in config_repositories:
             if not pattern.match(repo):
