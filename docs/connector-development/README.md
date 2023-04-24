@@ -117,7 +117,7 @@ In order to enable normalization for a destination connector, you'll need to set
 ### New connectors
 If you're adding normalization to a new connector, you'll need to first add a destination definitions entry:
 1. Add a new connector definition in `airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml`. You can copy an existing entry and modify it to match your connector, generating a new UUIDv4 for the `destinationDefinitionId`.
-2. Run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/master/airbyte-config-oss/specs) for more information.
+2. Run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/master/airbyte-config-oss/specs-oss) for more information.
 
 ### Add normalization fields
 
@@ -159,7 +159,7 @@ Once you've finished iterating on the changes to a connector as specified in its
         * `airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml` if it is a source
         * `airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml` if it is a destination.
    
-   * Then run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/a534bb2a8f29b20e3cc7c52fef1bc3c34783695d/airbyte-config-oss/specs) for more information.
+   * Then run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/master/airbyte-config-oss/specs-oss) for more information.
 
 5. The new version of the connector is now available for everyone who uses it. Thank you!
 

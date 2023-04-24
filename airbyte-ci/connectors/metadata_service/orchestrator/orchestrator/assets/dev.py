@@ -1,11 +1,15 @@
 import pandas as pd
 import yaml
+import json
 from pydash.collections import key_by
 from deepdiff import DeepDiff
-from dagster import Output, asset, OpExecutionContext
+from dagster import Output, asset, OpExecutionContext, MetadataValue
 from typing import List
+
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 from orchestrator.models.metadata import PartialMetadataDefinition
+
+from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
 
 
 """
@@ -139,27 +143,27 @@ OVERRIDES = {
 # HELPERS
 
 
-def key_catalog_entries(catalog: List[dict]) -> dict:
+def key_registry_entries(registry: List[dict]) -> dict:
     """Transforms a List of connectors into a dictionary keyed by the connector id.
 
     Args:
-        catalog (List[dict]): List of connectors
+        registry (List[dict]): List of connectors
 
     Returns:
         dict: Dictionary of connectors keyed by the connector id
     """
-    catalog_keyed = catalog.copy()
+    registry_keyed = registry.copy()
     for connector_type, id_field in [("sources", "sourceDefinitionId"), ("destinations", "destinationDefinitionId")]:
-        catalog_keyed[connector_type] = key_by(catalog_keyed[connector_type], id_field)
-    return catalog_keyed
+        registry_keyed[connector_type] = key_by(registry_keyed[connector_type], id_field)
+    return registry_keyed
 
 
-def diff_catalogs(catalog_dict_1: dict, catalog_dict_2: dict) -> DeepDiff:
-    """Compares two catalogs and returns a DeepDiff object.
+def diff_registries(registry_dict_1: dict, registry_dict_2: dict) -> DeepDiff:
+    """Compares two registries and returns a DeepDiff object.
 
     Args:
-        catalog_dict_1 (dict)
-        catalog_dict_2 (dict)
+        registry_dict_1 (dict)
+        registry_dict_2 (dict)
 
     Returns:
         DeepDiff
@@ -173,29 +177,31 @@ def diff_catalogs(catalog_dict_1: dict, catalog_dict_2: dict) -> DeepDiff:
         r"protocolVersion",
     ]
 
-    # TODO (ben) remove this when checking the final catalog from GCS metadata
+    # TODO (ben) remove this when checking the final registry from GCS metadata
     temporarily_ignored_fields = [
         r"spec",
     ]
 
     excludedRegex = new_metadata_fields + removed_metadata_fields + temporarily_ignored_fields
-    keyed_catalog_dict_1 = key_catalog_entries(catalog_dict_1)
-    keyed_catalog_dict_2 = key_catalog_entries(catalog_dict_2)
+    keyed_registry_dict_1 = key_registry_entries(registry_dict_1)
+    keyed_registry_dict_2 = key_registry_entries(registry_dict_2)
 
-    return DeepDiff(keyed_catalog_dict_1, keyed_catalog_dict_2, ignore_order=True, exclude_regex_paths=excludedRegex, verbose_level=2)
+    return DeepDiff(keyed_registry_dict_1, keyed_registry_dict_2, ignore_order=True, exclude_regex_paths=excludedRegex, verbose_level=2)
 
 
 # ASSETS
 
 
 @asset(group_name=GROUP_NAME)
-def overrode_metadata_definitions(catalog_derived_metadata_definitions: List[PartialMetadataDefinition]) -> List[PartialMetadataDefinition]:
+def overrode_metadata_definitions(
+    legacy_registry_derived_metadata_definitions: List[PartialMetadataDefinition],
+) -> List[PartialMetadataDefinition]:
     """
     Overrides the metadata definitions with the values in the OVERRIDES dictionary.
     This is useful for ensuring all connectors are passing validation when we go live.
     """
     overrode_definitions = []
-    for metadata_definition in catalog_derived_metadata_definitions:
+    for metadata_definition in legacy_registry_derived_metadata_definitions:
         definition_id = metadata_definition["data"]["definitionId"]
         if definition_id in OVERRIDES:
             metadata_definition["data"].update(OVERRIDES[definition_id])
@@ -228,37 +234,69 @@ def persist_metadata_definitions(context: OpExecutionContext, overrode_metadata_
 
 
 @asset(group_name=GROUP_NAME)
-def cloud_catalog_diff(cloud_catalog_from_metadata: dict, latest_cloud_catalog_dict: dict) -> dict:
+def cloud_registry_diff(cloud_registry_from_metadata: ConnectorRegistryV0, legacy_cloud_registry: ConnectorRegistryV0) -> dict:
     """
-    Compares the cloud catalog from the metadata with the latest OSS catalog.
+    Compares the cloud registry from the metadata with the latest OSS registry.
     """
-    return diff_catalogs(latest_cloud_catalog_dict, cloud_catalog_from_metadata).to_dict()
+    cloud_registry_from_metadata_dict = json.loads(cloud_registry_from_metadata.json())
+    legacy_cloud_registry_dict = json.loads(legacy_cloud_registry.json())
+    return diff_registries(legacy_cloud_registry_dict, cloud_registry_from_metadata_dict).to_dict()
 
 
 @asset(group_name=GROUP_NAME)
-def oss_catalog_diff(oss_catalog_from_metadata: dict, latest_oss_catalog_dict: dict) -> dict:
+def oss_registry_diff(oss_registry_from_metadata: ConnectorRegistryV0, legacy_oss_registry: ConnectorRegistryV0) -> dict:
     """
-    Compares the OSS catalog from the metadata with the latest OSS catalog.
+    Compares the OSS registry from the metadata with the latest OSS registry.
     """
-    return diff_catalogs(latest_oss_catalog_dict, oss_catalog_from_metadata).to_dict()
+    oss_registry_from_metadata_dict = json.loads(oss_registry_from_metadata.json())
+    legacy_oss_registry_dict = json.loads(legacy_oss_registry.json())
+    return diff_registries(legacy_oss_registry_dict, oss_registry_from_metadata_dict).to_dict()
 
 
 @asset(group_name=GROUP_NAME)
-def cloud_catalog_diff_dataframe(cloud_catalog_diff: dict) -> OutputDataFrame:
-    diff_df = pd.DataFrame.from_dict(cloud_catalog_diff)
+def cloud_registry_diff_dataframe(cloud_registry_diff: dict) -> OutputDataFrame:
+    diff_df = pd.DataFrame.from_dict(cloud_registry_diff)
     return output_dataframe(diff_df)
 
 
 @asset(group_name=GROUP_NAME)
-def oss_catalog_diff_dataframe(oss_catalog_diff: dict) -> OutputDataFrame:
-    diff_df = pd.DataFrame.from_dict(oss_catalog_diff)
+def oss_registry_diff_dataframe(oss_registry_diff: dict) -> OutputDataFrame:
+    diff_df = pd.DataFrame.from_dict(oss_registry_diff)
     return output_dataframe(diff_df)
 
 
-@asset(required_resource_keys={"metadata_file_blobs"}, group_name=GROUP_NAME)
-def metadata_directory_report(context):
-    metadata_file_blobs = context.resources.metadata_file_blobs
-    blobs = [blob.name for blob in metadata_file_blobs if blob.name.endswith("metadata.yaml")]
+@asset(required_resource_keys={"latest_metadata_file_blobs"}, group_name=GROUP_NAME)
+def metadata_directory_report(context: OpExecutionContext):
+    latest_metadata_file_blobs = context.resources.latest_metadata_file_blobs
+    blobs = [blob.name for blob in latest_metadata_file_blobs]
     blobs_df = pd.DataFrame(blobs)
 
     return output_dataframe(blobs_df)
+
+
+@asset(required_resource_keys={"registry_report_directory_manager"}, group_name=GROUP_NAME)
+def oss_registry_diff_report(context: OpExecutionContext, oss_registry_diff_dataframe: pd.DataFrame):
+    markdown = oss_registry_diff_dataframe.to_markdown()
+
+    registry_report_directory_manager = context.resources.registry_report_directory_manager
+    file_handle = registry_report_directory_manager.write_data(markdown.encode(), ext="md", key="dev/oss_registry_diff_report")
+
+    metadata = {
+        "preview": MetadataValue.md(markdown),
+        "gcs_path": MetadataValue.url(file_handle.gcs_path),
+    }
+    return Output(metadata=metadata, value=file_handle)
+
+
+@asset(required_resource_keys={"registry_report_directory_manager"}, group_name=GROUP_NAME)
+def cloud_registry_diff_report(context: OpExecutionContext, cloud_registry_diff_dataframe: pd.DataFrame):
+    markdown = cloud_registry_diff_dataframe.to_markdown()
+
+    registry_report_directory_manager = context.resources.registry_report_directory_manager
+    file_handle = registry_report_directory_manager.write_data(markdown.encode(), ext="md", key="dev/cloud_registry_diff_report")
+
+    metadata = {
+        "preview": MetadataValue.md(markdown),
+        "gcs_path": MetadataValue.url(file_handle.gcs_path),
+    }
+    return Output(metadata=metadata, value=file_handle)
