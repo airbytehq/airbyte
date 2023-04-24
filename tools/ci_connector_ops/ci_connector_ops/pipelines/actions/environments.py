@@ -626,22 +626,28 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
 
 def with_airbyte_python_connector(context: ConnectorContext, build_platform: Platform):
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
-
-    return (
-        context.dagger_client.container(platform=build_platform)
-        .from_("python:3.9-slim")
-        .with_exec(["apt-get", "update"])
-        .with_exec(["apt-get", "install", "bash"])
-        .with_exec(["rm", "-rf", "/var/lib/apt/lists/*"])
-        .with_directory(
-            "/airbyte/integration_code",
-            context.get_connector_dir(include=["main.py", "setup.py", context.connector.technical_name.replace("-", "_")]),
-        )
-        .with_workdir("/airbyte/integration_code")
+    base = context.dagger_client.container(platform=build_platform).from_("python:3.9.11-alpine3.15")
+    snake_case_name = context.connector.technical_name.replace("-", "_")
+    entrypoint = ["python", "/airbyte/integration_code/main.py"]
+    builder = (
+        base.with_workdir("/airbyte/integration_code")
+        .with_exec(["apk", "--no-cache", "upgrade"])
         .with_mounted_cache("/root/.cache/pip", pip_cache)
-        .with_exec(["pip", "install", "."])
-        .with_env_variable("AIRBYTE_ENTRYPOINT", "python /airbyte/integration_code/main.py")
-        .with_entrypoint(["python", "/airbyte/integration_code/main.py"])
+        .with_exec(["pip", "install", "--upgrade", "pip"])
+        .with_exec(["apk", "--no-cache", "add", "tzdata", "build-base"])
+        .with_file("setup.py", context.get_connector_dir(include="setup.py").file("setup.py"))
+        .with_exec(["pip", "install", "--prefix=/install", "."])
+    )
+    return (
+        base.with_workdir("/airbyte/integration_code")
+        .with_directory("/usr/local", builder.directory("/install"))
+        .with_file("/usr/localtime", builder.file("/usr/share/zoneinfo/Etc/UTC"))
+        .with_new_file("/etc/timezone", "Etc/UTC")
+        .with_exec(["apk", "--no-cache", "add", "bash"])
+        .with_file("main.py", context.get_connector_dir(include="main.py").file("main.py"))
+        .with_directory(snake_case_name, context.get_connector_dir(include=snake_case_name).directory(snake_case_name))
+        .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint))
+        .with_entrypoint(entrypoint)
         .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
     )

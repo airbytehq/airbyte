@@ -67,10 +67,9 @@ class BuildConnectorForPublish(Step):
 
     async def _run(self) -> StepResult:
         build_connectors_results = (await builds.run_connector_build(self.context)).values()
-
-        if not all([build_result.status is StepStatus.SUCCESS for build_result in build_connectors_results]):
-            return StepResult(self, status=StepStatus.FAILURE), []
-
+        for build_result in build_connectors_results:
+            if build_result.status is not StepStatus.SUCCESS:
+                return build_result
         built_connectors_platform_variants = [step_result.output_artifact for step_result in build_connectors_results]
 
         return StepResult(self, status=StepStatus.SUCCESS, output_artifact=built_connectors_platform_variants)
@@ -195,6 +194,10 @@ async def run_connector_publish_pipeline(
 
             build_connector_results = await BuildConnectorForPublish(context).run()
             step_results.append(build_connector_results)
+            if build_connector_results.status is not StepStatus.SUCCESS:
+                context.report = ConnectorReport(context, step_results, name="PUBLISH RESULTS")
+                return context.report
+
             built_connector_platform_variants = build_connector_results.output_artifact
 
             steps_to_publish = [
