@@ -19,10 +19,9 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sources import Source
-import requests
 
 
-class SourceLeadsquareUsers(Source):
+class SourceLeadsquareLeads(Source):
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration
@@ -36,20 +35,7 @@ class SourceLeadsquareUsers(Source):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            request_host = config['leadsquare-host']
-            access_key = config['leadsquare-access-key']
-            secret_key = config['leadsquare-secret-key']
-
-            leadsquare_response = requests.get(
-                url=f'{request_host}/v2/UserManagement.svc/Users.Get',
-                params={
-                    "accessKey": access_key,
-                    "secretKey": secret_key,
-                },
-            )
-
-            if 200 <= leadsquare_response.status_code < 300:
-                return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+            # Not Implemented
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
@@ -72,55 +58,18 @@ class SourceLeadsquareUsers(Source):
             - json_schema providing the specifications of expected schema for this stream (a list of columns described
             by their names and types)
         """
-        user_fields = {
-            "userId": {
-                "type": "string"
-            },
-            "firstName": {
-                "type": "string",
-            },
-            "lastName": {
-                "type": "string"
-            },
-            "EmailAddress": {
-                "type": "string"
-            },
-            "role": {
-                "type": "string"
-            },
-            "statusCode": {
-                "type": "number"
-            },
-            "tag": {
-                "type": ["string", "null"]
-            },
-            "isPhoneCallAgent": {
-                "type": "boolean",
-                "default": False
-            },
-        }
+        streams = []
 
-        stream_name = "LeadSquareUsers"
-
-        json_schema = {
+        stream_name = "TableName"  # Example
+        json_schema = {  # Example
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
-            "properties": user_fields,
+            "properties": {"columnName": {"type": "string"}},
         }
 
-        streams = [
-            {
-                "name": stream_name,
-                "supported_sync_modes": [
-                    "full_refresh",
-                    "incremental"
-                ],
-                "source_defined_cursor": True,
-                ""
-                "json_schema": json_schema
-            }
-        ]
+        # Not Implemented
 
+        streams.append(AirbyteStream(name=stream_name, json_schema=json_schema))
         return AirbyteCatalog(streams=streams)
 
     def read(
@@ -145,42 +94,12 @@ class SourceLeadsquareUsers(Source):
 
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
-        stream_name = "LeadSquareUsers"
+        stream_name = "TableName"  # Example
+        data = {"columnName": "Hello World"}  # Example
 
-        try:
-            request_host = config['leadsquare-host']
-            access_key = config['leadsquare-access-key']
-            secret_key = config['leadsquare-secret-key']
+        # Not Implemented
 
-            leadsquare_response = requests.get(
-                url=f'{request_host}/v2/UserManagement.svc/Users.Get',
-                params={
-                    "accessKey": access_key,
-                    "secretKey": secret_key,
-                },
-            )
-
-            if 200 <= leadsquare_response.status_code < 300:
-                for leadsquare_users in leadsquare_response.json():
-
-                    data = {
-                        "userId": leadsquare_users["ID"],
-                        "firstName": leadsquare_users["FirstName"],
-                        "lastName": leadsquare_users["LastName"],
-                        "emailAddress": leadsquare_users["EmailAddress"],
-                        "role": leadsquare_users["Role"],
-                        "statusCode": leadsquare_users["StatusCode"],
-                        "tag": leadsquare_users["Tag"],
-                        "isPhoneCallAgent": leadsquare_users["IsPhoneCallAgent"],
-                    }
-
-                    yield AirbyteMessage(
-                        type=Type.RECORD,
-                        record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
-                    )
-
-            else:
-                logger.error(f'LeadSquare Response Threw {leadsquare_response.status_code} with {leadsquare_response.status_code}')
-        except Exception as e:
-            logger.error(f'Error while running activity query: {str(e)}')
-
+        yield AirbyteMessage(
+            type=Type.RECORD,
+            record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
+        )
