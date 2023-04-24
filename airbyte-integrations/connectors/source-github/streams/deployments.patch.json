@@ -27,9 +27,7 @@
                 "owner": {
                     "type": ["object", "null"],
                     "properties": {
-                        "id": {
-                            "type": ["string", "null"]
-                        },
+                        "id": { "type": ["string", "integer", "null"], "format": "integer" },
                         "type": {
                             "type": ["string", "null"]
                         }
