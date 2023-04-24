@@ -11640,7 +11640,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-pinterest:0.2.4"
+- dockerImage: "airbyte/source-pinterest:0.2.5"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pinterest"
     connectionSpecification:
@@ -11655,7 +11655,7 @@
           type: "string"
           title: "Start Date"
           description: "A date in the format YYYY-MM-DD. If you have not set a date,\
-            \ it would be defaulted to latest allowed date by api (914 days from today)."
+            \ it would be defaulted to latest allowed date by api (89 days from today)."
           examples:
           - "2022-07-28"
         status:
