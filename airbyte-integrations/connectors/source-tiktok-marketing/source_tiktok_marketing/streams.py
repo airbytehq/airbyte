@@ -51,6 +51,12 @@ NOT_AUDIENCE_METRICS = [
     "real_time_app_install",
     "real_time_app_install_cost",
     "app_install",
+    "total_purchase_value",
+    "total_onsite_shopping_value",
+    "onsite_shopping",
+    "vta_purchase",
+    "cta_purchase",
+    "total_pageview",
 ]
 
 T = TypeVar("T")
