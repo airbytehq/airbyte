@@ -10,7 +10,7 @@ from typing import List, Tuple
 import anyio
 import dagger
 from ci_connector_ops.pipelines import builds
-from ci_connector_ops.pipelines.actions import environments
+from ci_connector_ops.pipelines.actions import environments, run_steps
 from ci_connector_ops.pipelines.actions.remote_storage import upload_to_gcs
 from ci_connector_ops.pipelines.bases import ConnectorReport, Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.contexts import ConnectorContext
@@ -64,15 +64,15 @@ class BuildConnectorForPublish(Step):
 
     title = "Build connector for publish"
 
-    async def _run(self) -> Tuple[StepResult, List[Container]]:
-        build_connector_results_per_platform = await builds.run_connector_build(self.context)
-        build_connector_results = [build_result for build_result, _ in build_connector_results_per_platform.values()]
-        built_connectors = [built_connector for _, built_connector in build_connector_results_per_platform.values()]
+    async def _run(self) -> StepResult:
+        build_connectors_results = (await builds.run_connector_build(self.context)).values()
 
-        if not all([build_result.status is StepStatus.SUCCESS for build_result in build_connector_results]):
+        if not all([build_result.status is StepStatus.SUCCESS for build_result in build_connectors_results]):
             return StepResult(self, status=StepStatus.FAILURE), []
 
-        return StepResult(self, status=StepStatus.SUCCESS), built_connectors
+        built_connectors_platform_variants = [step_result.output_artifact for step_result in build_connectors_results]
+
+        return StepResult(self, status=StepStatus.SUCCESS, output_artifact=built_connectors_platform_variants)
 
 
 class PushConnectorImageToRegistry(PublishStep):
@@ -139,7 +139,7 @@ class UploadSpecToCache(PublishStep):
     def _get_spec_as_file(self, spec: str, name="spec_to_cache.json") -> File:
         return self.context.get_connector_dir().with_new_file(name, spec).file(name)
 
-    async def _run(self, built_connector: Container) -> List[StepResult]:
+    async def _run(self, built_connector: Container) -> StepResult:
         oss_spec: str = await self._get_connector_spec(built_connector, "OSS")
         cloud_spec: str = await self._get_connector_spec(built_connector, "CLOUD")
 
@@ -148,13 +148,13 @@ class UploadSpecToCache(PublishStep):
         if oss_spec != cloud_spec:
             specs_to_uploads.append(self.cloud_spec_key, self._get_spec_as_file(cloud_spec, "cloud_spec_to_cache.json"))
 
-        upload_results = []
         for key, file in specs_to_uploads:
             exit_code, stdout, stderr = await upload_to_gcs(
                 self.context.dagger_client, file, key, self.spec_bucket_name, self.gcs_credentials
             )
-            upload_results.append(StepResult(self, status=StepStatus.from_exit_code(exit_code), stdout=stdout, stderr=stderr))
-        return upload_results
+            if exit_code != 0:
+                return StepResult(self, status=StepStatus.FAILURE, stdout=stdout, stderr=stderr)
+        return StepResult(self, status=StepStatus.SUCCESS)
 
 
 async def run_connector_publish_pipeline(
@@ -174,7 +174,6 @@ async def run_connector_publish_pipeline(
     """
     async with semaphore:
         async with context:
-            report_name = "PUBLISH RESULTS"
             spec_cache_service_account: dagger.Secret = context.dagger_client.set_secret(
                 "spec_cache_service_account_key", os.environ["SPEC_CACHE_SERVICE_ACCOUNT_KEY"]
             )
@@ -182,51 +181,25 @@ async def run_connector_publish_pipeline(
                 "metadata_service_account_key", os.environ["METADATA_SERVICE_ACCOUNT_KEY"]
             )
 
-            metadata_validation_step = metadata.MetadataValidation(context, context.metadata_path)
-            check_connector_image_does_not_exists_step = CheckConnectorImageDoesNotExist(context, pre_release)
-            build_connector_step = BuildConnectorForPublish(context)
-            upload_spec_to_cache_step = UploadSpecToCache(context, pre_release, spec_bucket_name, spec_cache_service_account)
-            push_connector_image_to_registry_step = PushConnectorImageToRegistry(context, pre_release)
-            metadata_upload_step = metadata.MetadataUpload(
-                context, context.metadata_path, metadata_bucket_name, await metadata_service_account.plaintext()
-            )
-            step_results = []
+            steps_to_build = [
+                metadata.MetadataValidation(context, context.metadata_path),
+                CheckConnectorImageDoesNotExist(context, pre_release),
+                BuildConnectorForPublish(context),
+            ]
 
-            # TODO this sequence of "return on Failure" is not beautiful.
-            # We'll improve this soon with a different and global approach to chain steps.
-            metadata_validation_result = await metadata_validation_step.run()
-            step_results.append(metadata_validation_result)
-            if metadata_validation_result.status is StepStatus.FAILURE:
-                context.report = ConnectorReport(context, step_results, name=report_name)
-                return context.report
+            steps_to_build_results = await run_steps(steps_to_build)
+            build_connector_results = steps_to_build_results[-1]
+            built_connector_platform_variants = build_connector_results.output_artifact
 
-            check_connector_image_does_not_exists_result = await check_connector_image_does_not_exists_step.run()
-            step_results.append(check_connector_image_does_not_exists_result)
-            if check_connector_image_does_not_exists_result.status is StepStatus.FAILURE:
-                context.report = ConnectorReport(context, step_results, name=report_name)
-                return context.report
+            steps_to_publish = [
+                (
+                    UploadSpecToCache(context, pre_release, spec_bucket_name, spec_cache_service_account),
+                    (built_connector_platform_variants[0],),
+                ),
+                (PushConnectorImageToRegistry(context, pre_release), (built_connector_platform_variants,)),
+                metadata.MetadataUpload(context, context.metadata_path, metadata_bucket_name, await metadata_service_account.plaintext()),
+            ]
 
-            build_connector_result, built_connectors = await build_connector_step.run()
-            step_results.append(build_connector_result)
-            if build_connector_result.status is StepStatus.FAILURE:
-                context.report = ConnectorReport(context, step_results, name=report_name)
-                return context.report
-
-            upload_spec_to_cache_results: List[StepResult] = await upload_spec_to_cache_step.run(built_connectors[0])
-            step_results += upload_spec_to_cache_results
-            if any(
-                [upload_spec_to_cache_result.status is StepStatus.FAILURE for upload_spec_to_cache_result in upload_spec_to_cache_results]
-            ):
-                context.report = ConnectorReport(context, step_results, name=report_name)
-                return context.report
-
-            push_connector_image_to_registry_result = await push_connector_image_to_registry_step.run(built_connectors)
-            step_results.append(push_connector_image_to_registry_result)
-            if push_connector_image_to_registry_result.status is StepStatus.FAILURE:
-                context.report = ConnectorReport(context, step_results, name=report_name)
-                return context.report
-
-            metadata_upload_results = await metadata_upload_step.run()
-            step_results.append(metadata_upload_results)
-            context.report = ConnectorReport(context, step_results, name=report_name)
+            publish_results = await run_steps(steps_to_publish, results=steps_to_build_results)
+            context.report = ConnectorReport(context, publish_results, name="PUBLISH RESULTS")
         return context.report
