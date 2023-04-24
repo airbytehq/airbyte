@@ -6,8 +6,9 @@
 import platform
 from typing import Optional, Tuple
 
-from ci_connector_ops.pipelines.bases import StepResult
-from ci_connector_ops.pipelines.builds import java_connectors, python_connectors
+import anyio
+from ci_connector_ops.pipelines.bases import ConnectorReport, StepResult
+from ci_connector_ops.pipelines.builds import common, java_connectors, python_connectors
 from ci_connector_ops.pipelines.contexts import ConnectorContext
 from ci_connector_ops.utils import ConnectorLanguage
 from dagger import Container, Platform
@@ -46,3 +47,26 @@ async def run_connector_build(context: ConnectorContext) -> dict[str, Tuple[Step
         per_platform_containers[build_platform] = await BuildConnectorImage(context, build_platform).run()
 
     return per_platform_containers
+
+
+async def run_connector_build_pipeline(context: ConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
+    """Run a build pipeline for a single connector.
+
+    Args:
+        context (ConnectorContext): The initialized connector context.
+
+    Returns:
+        ConnectorReport: The reports holding builds results.
+    """
+    async with semaphore:
+        async with context:
+            build_results_per_platform = await run_connector_build(context)
+            step_results = list(build_results_per_platform.values())
+            if context.is_local:
+                build_result_for_local_platform = build_results_per_platform[LOCAL_BUILD_PLATFORM]
+                load_image_result = await common.LoadContainerToLocalDockerHost(
+                    context, build_result_for_local_platform.output_artifact
+                ).run()
+                step_results.append(load_image_result)
+            context.report = ConnectorReport(context, step_results, name="BUILD RESULTS")
+        return context.report

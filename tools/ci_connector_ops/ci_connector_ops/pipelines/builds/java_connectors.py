@@ -3,12 +3,10 @@
 #
 
 
-from typing import Optional, Tuple
-
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.bases import GradleTask, StepResult, StepStatus
 from ci_connector_ops.pipelines.builds.common import BuildConnectorImageBase
-from dagger import Container, File, QueryError
+from dagger import File, QueryError
 
 
 class BuildConnectorImage(BuildConnectorImageBase, GradleTask):
@@ -39,11 +37,10 @@ class BuildConnectorImage(BuildConnectorImageBase, GradleTask):
             )
         return distTar.file(tar_files[0])
 
-    async def _run(self) -> Tuple[StepResult, Optional[Container]]:
+    async def _run(self) -> StepResult:
         try:
             tar_file = await self.build_tar()
             java_connector = await environments.with_airbyte_java_connector(self.context, tar_file, self.build_platform)
-            step_result = await self.get_step_result(java_connector.with_exec(["spec"]))
-            return step_result, java_connector
+            return await self.get_step_result(java_connector.with_exec(["spec"]))
         except QueryError as e:
-            return StepResult(self, StepStatus.FAILURE, stderr=str(e)), None
+            return StepResult(self, StepStatus.FAILURE, stderr=str(e))
