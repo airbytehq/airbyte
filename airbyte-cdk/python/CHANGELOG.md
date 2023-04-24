@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.35.2
+Connector builder scrubs secrets from raw request and response
+
 ## 0.35.1
 low-code: Add title, description, and examples for all fields in the manifest schema
 
