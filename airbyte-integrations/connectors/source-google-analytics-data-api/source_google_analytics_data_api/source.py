@@ -92,7 +92,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
     @property
     def cursor_field(self) -> Optional[str]:
-        return "date" if "date" in self.config.get("dimensions") else []
+        return "date" if "date" in self.config.get("dimensions", {}) else []
 
     @staticmethod
     def add_primary_key() -> dict:
