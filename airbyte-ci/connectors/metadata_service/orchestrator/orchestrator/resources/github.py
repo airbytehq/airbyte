@@ -3,9 +3,12 @@ from dagster import StringSource, InitResourceContext, resource
 from github import Github, Repository, ContentFile
 
 
-@resource
-def github_client() -> Github:
-    return Github()
+@resource(
+    config_schema={"github_token": StringSource},
+)
+def github_client(resource_context: InitResourceContext) -> Github:
+    github_token = resource_context.resource_config["github_token"]
+    return Github(github_token)
 
 
 @resource(
