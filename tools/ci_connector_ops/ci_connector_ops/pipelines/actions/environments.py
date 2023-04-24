@@ -9,7 +9,7 @@ from __future__ import annotations
 import uuid
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
-from ci_connector_ops.pipelines.utils import get_file_contents, get_version_from_dockerfile, should_enable_sentry, slugify
+from ci_connector_ops.pipelines.utils import get_file_contents, should_enable_sentry, slugify
 from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Platform, Secret
 
 if TYPE_CHECKING:
@@ -594,7 +594,6 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
     dockerfile = context.get_connector_dir(include=["Dockerfile"]).file("Dockerfile")
     # TODO find a way to infer this without the Dockerfile. From metadata.yaml?
     enable_sentry = await should_enable_sentry(dockerfile)
-    connector_version = await get_version_from_dockerfile(dockerfile)
 
     application = context.connector.technical_name
 
@@ -605,10 +604,6 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
         .with_file(f"{application}.tar", connector_java_tar_file)
         .with_exec(["tar", "xf", f"{application}.tar", "--strip-components=1"])
         .with_exec(["rm", "-rf", f"{application}.tar"])
-        .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
-        .with_label("io.airbyte.name", f"airbyte/{application}")
-        .with_env_variable("ENABLE_SENTRY", str(enable_sentry).lower())
-        .with_entrypoint("/airbyte/base.sh")
     )
 
     if context.connector.supports_normalization:
@@ -623,9 +618,8 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
         .with_directory("builts_artifacts", build_stage.directory("/airbyte"))
         .with_exec(["sh", "-c", "mv builts_artifacts/* ."])
         .with_exec(["rm", "-rf", "builts_artifacts"])
-        # TODO get version from metadata
-        .with_label("io.airbyte.version", connector_version)
-        .with_label("io.airbyte.name", f"airbyte/{application}")
+        .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
+        .with_label("io.airbyte.name", context.metadata["dockerRepository"])
         .with_entrypoint(["/airbyte/base.sh"])
     )
 
