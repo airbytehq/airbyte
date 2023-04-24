@@ -604,10 +604,7 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         while not end == now:
             start = initial_date.add(days=(slice_number - 1) * self.STREAM_SLICE_STEP)
             end = min(now, initial_date.add(days=slice_number * self.STREAM_SLICE_STEP))
-            yield {
-                "start_date": start.isoformat(timespec="milliseconds"),
-                "end_date": end.isoformat(timespec="milliseconds")
-            }
+            yield {"start_date": start.isoformat(timespec="milliseconds"), "end_date": end.isoformat(timespec="milliseconds")}
             slice_number = slice_number + 1
 
     def request_params(
@@ -632,7 +629,7 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         )
         end_date = (stream_slice or {}).get("end_date", pendulum.now(tz="UTC").isoformat(timespec="milliseconds"))
 
-        select_fields = ','.join(property_chunk.keys())
+        select_fields = ",".join(property_chunk.keys())
         table_name = self.name
         where_conditions = []
         order_by_clause = ""
@@ -665,13 +662,9 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
 
 
 class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSalesforceStream):
-
     def next_page_token(self, last_record: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            return {
-                "next_token": last_record[self.cursor_field],
-                "primary_key": last_record.get(self.primary_key)
-            }
+            return {"next_token": last_record[self.cursor_field], "primary_key": last_record.get(self.primary_key)}
         return None
 
     def request_params(
@@ -680,11 +673,11 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
         start_date = max(
             (stream_state or {}).get(self.cursor_field, ""),
             (stream_slice or {}).get("start_date", ""),
-            (next_page_token or {}).get("start_date", "")
+            (next_page_token or {}).get("start_date", ""),
         )
         end_date = stream_slice["end_date"]
 
-        select_fields = ", ".join(self.get_json_schema().get('properties', {}).keys())
+        select_fields = ", ".join(self.get_json_schema().get("properties", {}).keys())
         table_name = self.name
         where_conditions = [f"{self.cursor_field} >= {start_date}", f"{self.cursor_field} < {end_date}"]
         order_by_clause = ""
