@@ -23,32 +23,39 @@ This page guides you through setting up the Zendesk Support source connector.
 ## Supported sync modes
 
 The Zendesk Support source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
- - Full Refresh - overwrite
- - Full Refresh - append
- - Incremental - append
+ - Full Refresh | Overwrite
+ - Full Refresh | Append
+ - Incremental Sync | Append
+ - Incremental Sync | Deduped History
 
-## Supported streams 
+## Supported streams
+
+:::note
+There are two types of incremental sync:
+1. Incremental (standard server-side, where API returns only the data updated or generated since the last sync)
+2. Client-Side Incremental (API returns all available data and connector filters out only new records)
+:::
 
 The Zendesk Support source connector supports the following streams:
 
 * [Brands](https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands)
 * [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles)
-* [Groups](https://developer.zendesk.com/rest_api/docs/support/groups)
-* [Group Memberships](https://developer.zendesk.com/rest_api/docs/support/group_memberships)
-* [Macros](https://developer.zendesk.com/rest_api/docs/support/macros)
-* [Organizations](https://developer.zendesk.com/rest_api/docs/support/organizations)
-* [Satisfaction Ratings](https://developer.zendesk.com/rest_api/docs/support/satisfaction_ratings)
+* [Groups](https://developer.zendesk.com/rest_api/docs/support/groups) \(Incremental\)
+* [Group Memberships](https://developer.zendesk.com/rest_api/docs/support/group_memberships) \(Incremental\)
+* [Macros](https://developer.zendesk.com/rest_api/docs/support/macros) \(Incremental\)
+* [Organizations](https://developer.zendesk.com/rest_api/docs/support/organizations) \(Incremental\)
+* [Satisfaction Ratings](https://developer.zendesk.com/rest_api/docs/support/satisfaction_ratings) \(Incremental\)
 * [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules)
 * [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies)
 * [Tags](https://developer.zendesk.com/rest_api/docs/support/tags)
-* [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based)
-* [Ticket Audits](https://developer.zendesk.com/rest_api/docs/support/ticket_audits)
-* [Ticket Comments](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export)
-* [Ticket Fields](https://developer.zendesk.com/rest_api/docs/support/ticket_fields)
-* [Ticket Forms](https://developer.zendesk.com/rest_api/docs/support/ticket_forms)
-* [Ticket Metrics](https://developer.zendesk.com/rest_api/docs/support/ticket_metrics)
-* [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/)
-* [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export)
+* [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based) \(Incremental\)
+* [Ticket Audits](https://developer.zendesk.com/rest_api/docs/support/ticket_audits) \(Client-Side Incremental\)
+* [Ticket Comments](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export)  \(Incremental\)
+* [Ticket Fields](https://developer.zendesk.com/rest_api/docs/support/ticket_fields) \(Incremental\)
+* [Ticket Forms](https://developer.zendesk.com/rest_api/docs/support/ticket_forms) \(Incremental\)
+* [Ticket Metrics](https://developer.zendesk.com/rest_api/docs/support/ticket_metrics) \(Incremental\)
+* [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/) \(Incremental\)
+* [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export) \(Incremental\)
 
 ## Performance considerations
 
@@ -60,7 +67,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `0.2.27` | 2023-03-22 | [22817](https://github.com/airbytehq/airbyte/pull/22817) | Specified date formatting in specification                                                     |
+| `0.2.27` | 2023-03-22 | [22817](https://github.com/airbytehq/airbyte/pull/22817) | Specified date formatting in specification                                                                                                                                                                                         |
 | `0.2.26` | 2023-03-20 | [24252](https://github.com/airbytehq/airbyte/pull/24252) | Handle invalid `start_date` when checking connection                                                                                                                                                                               |
 | `0.2.25` | 2023-02-28 | [22308](https://github.com/airbytehq/airbyte/pull/22308) | Add `AvailabilityStrategy` for all streams                                                                                                                                                                                         |
 | `0.2.24` | 2023-02-17 | [23246](https://github.com/airbytehq/airbyte/pull/23246) | Handle `StartTimeTooRecent` error for Tickets stream                                                                                                                                                                               |
