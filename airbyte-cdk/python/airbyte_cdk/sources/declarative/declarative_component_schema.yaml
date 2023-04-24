@@ -1956,23 +1956,35 @@ definitions:
 interpolation:
   variables:
     - title: config
-      description: The connector configuration. The config's keys match the keys defined in the spec.
+      description: The connector configuration. The config's keys match the keys defined in the spec. The object's keys are the same keys as user-defined fields as defined by the connection specification.
+      type: object
     - title: headers
-      description: The HTTP headers from the last response received from the API.
+      description: The HTTP headers from the last response received from the API. The object's keys are the header names from the response.
+      type: object
     - title: last_records
       description: List of records extracted from the last response received from the API.
+      type: list
+    - title: next_page_token
+    - description: "Object describing the token to fetch the next page of records. The object is always of the form {'next_page_token': <token>}"
+      type: object
     - title: record
-      description: The record being processed.
+      description: The record being processed. The object's keys are the same keys as the records produced by the RecordSelector.
+      type: object
     - title: response
-      description: The body of the last response received from the API.
+      description: The body of the last response received from the API. The object's keys are the same keys as the response body's.
+      type: object
     - title: stream_interval
-      description:
+      description: The current stream interval being processed. The keys are defined by the incremental sync component. Default keys are `start_time` and `end_time`.
+      type: object
     - title: stream_partition
-      description: The current partition being processed.
+      description: The current stream partition being processed. The keys are defined by the partition router component.
+      type: object
     - title: stream_slice
       description: This variable is deprecated. Use stream_interval or stream_partition instead.
+      type: object
     - title: stream_state
-      description: The current state of the stream.
+      description: The current state of the stream. The object's keys are defined by the incremental sync's and partition router's cursor_field.
+      type: object
   macros:
     - title: Now (Local)
       description: Returns the current date and time using the local to the machine running the sync. We recommend using now_utc() instead of now_local() because it is more predictable.
