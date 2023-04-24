@@ -445,13 +445,13 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
       if (stream.getSyncMode().equals(SyncMode.INCREMENTAL)) {
         final String streamName = stream.getStream().getName();
         final String schemaName = stream.getStream().getNamespace();
-        final String cursorField = (stream.getCursorField() != null && stream.getCursorField().size() > 0) ? stream.getCursorField().get(0) : "";
+        final String cursorFieldName = stream.getCursorField() != null && stream.getCursorField().size() != 0 ? stream.getCursorField().get(0) : "";
         final ResultSet indexInfo = database.getMetaData().getIndexInfo(null,
             schemaName,
             streamName,
             false,
             false);
-        LOGGER.info("Discovering indexes for schema \"{}\", table \"{}\", cursor_field \"{}\"", schemaName, streamName, cursorField);
+        LOGGER.info("Discovering indexes for schema \"{}\", table \"{}\", with cursor field \"{}\"", schemaName, streamName, cursorFieldName);
         while (indexInfo.next()) {
           LOGGER.info("Index name: {}, Column: {}, Unique: {}",
               indexInfo.getString(JDBC_INDEX_NAME),
