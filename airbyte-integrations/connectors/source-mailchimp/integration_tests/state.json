@@ -16,6 +16,13 @@
   {
     "type": "STREAM",
     "stream": {
+      "stream_state": { "create_time": "2220-11-23T05:42:11+00:00" },
+      "stream_descriptor": { "name": "automations" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
       "stream_state": {
         "49d68626f3": { "timestamp": "2220-11-23T05:42:10+00:00" }
       },

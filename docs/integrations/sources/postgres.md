@@ -2,10 +2,6 @@
 
 This page contains the setup guide and reference information for the Postgres source connector for CDC and non-CDC workflows.
 
-:::note
-The Postgres source performs best on small databases (under 100GB).
-:::
-
 ## When to use Postgres with CDC
 
 Configure Postgres with CDC if:
@@ -388,16 +384,25 @@ Normally under the CDC mode, the Postgres source will first run a full refresh s
 > Saved offset is before Replication slot's confirmed_flush_lsn, Airbyte will trigger sync from scratch
 
 The root causes is that the WALs needed for the incremental sync has been removed by Postgres. This can occur under the following scenarios:
-
+        
 - When there are lots of database updates resulting in more WAL files than allowed in the `pg_wal` directory, Postgres will purge or archive the WAL files. This scenario is preventable. Possible solutions include:
   - Sync the data source more frequently. The downside is that more computation resources will be consumed, leading to a higher Airbyte bill.
   - Set a higher `wal_keep_size`. If no unit is provided, it is in megabytes, and the default is `0`. See detailed documentation [here](https://www.postgresql.org/docs/current/runtime-config-replication.html#GUC-WAL-KEEP-SIZE). The downside of this approach is that more disk space will be needed.
 - When the Postgres connector successfully reads the WAL and acknowledges it to Postgres, but the destination connector fails to consume the data, the Postgres connector will try to read the same WAL again, which may have been removed by Postgres, since the WAL record is already acknowledged. This scenario is rare, because it can happen, and currently there is no way to prevent it. The correct behavior is to perform a full refresh.
 
+### Temporary File Size Limit
+
+Some larger tables may encounter an error related to the temporary file size limit such as `temporary file size exceeds temp_file_limit`. To correct this error increase the [temp_file_limit](https://postgresqlco.nf/doc/en/param/temp_file_limit/).
+
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.24  | 2022-04-19 | [25345](https://github.com/airbytehq/airbyte/pull/25345) | Logging : Log database indexes per stream                                                                                                                                  |
+| 2.0.23  | 2022-04-19 | [24582](https://github.com/airbytehq/airbyte/pull/24582) | CDC : Enable frequent state emission during incremental syncs + refactor for performance improvement                                                                       |
+| 2.0.22  | 2022-04-17 | [25220](https://github.com/airbytehq/airbyte/pull/25220) | Logging changes : Log additional metadata & clean up noisy logs                                                                                                            |
+| 2.0.21  | 2022-04-12 | [25131](https://github.com/airbytehq/airbyte/pull/25131) | Make Client Certificate and Client Key always show                                                                                                                         |
 | 2.0.20  | 2022-04-11 | [24859](https://github.com/airbytehq/airbyte/pull/24859) | Removed SSL toggle and rely on SSL mode dropdown to enable/disable SSL                                                                                                     |
 | 2.0.19  | 2022-04-11 | [24656](https://github.com/airbytehq/airbyte/pull/24656) | CDC minor refactor                                                                                                                                                         |
 | 2.0.18  | 2022-04-06 | [24820](https://github.com/airbytehq/airbyte/pull/24820) | Fix data loss bug during an initial failed non-CDC incremental sync                                                                                                        |

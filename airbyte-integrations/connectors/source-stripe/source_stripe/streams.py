@@ -45,7 +45,6 @@ class StripeStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-
         # Stripe default pagination is 10, max is 100
         params = {"limit": 100}
         for key in ("created[gte]", "created[lte]"):
@@ -427,6 +426,7 @@ class Plans(IncrementalStripeStream):
         params["expand[]"] = ["data.tiers"]
         return params
 
+
 class Products(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/products/list
@@ -474,6 +474,17 @@ class SubscriptionItems(StripeSubStream):
         params = super().request_params(stream_slice=stream_slice, **kwargs)
         params["subscription"] = stream_slice[self.parent_id]
         return params
+
+
+class SubscriptionSchedule(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/subscription_schedules
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "subscription_schedules"
 
 
 class Transfers(IncrementalStripeStream):
@@ -671,3 +682,24 @@ class ExternalAccountCards(ExternalAccount):
     """
 
     object = "card"
+
+
+class SetupIntents(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/setup_intents/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "setup_intents"
+
+
+class Accounts(StripeStream):
+    """
+    Docs: https://stripe.com/docs/api/accounts/list
+    Even the endpoint allow to filter based on created the data usually don't have this field.
+    """
+
+    def path(self, **kwargs):
+        return "accounts"

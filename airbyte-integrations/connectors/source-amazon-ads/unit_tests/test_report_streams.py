@@ -103,6 +103,15 @@ METRIC_RESPONSE = b64decode(
 )
 METRICS_COUNT = 5
 
+METRIC_RESPONSE_WITHOUT_ASIN_PK = b64decode(
+    """
+    H4sIAAAAAAAAClXMvQrCMBQF4L1PETIbyM1v4+giLr6AOAQTStH+ECsi4r
+    t7aZOKwx3u+TjnVBHyxiOEXnw3+rbpD4FuSe205IYrvvnHo+8iMr3jf4us
+    xKzHnK0lmls+7NPwGOdFapTjINXPcmy0FByELjD51MRpQesAUSooeI2v55
+    DCrp1ZAwipnF1HMy9lZ7StJRdAET/V+Qv1VRgd7AAAAA==
+"""
+)
+
 
 def setup_responses(init_response=None, init_response_products=None, init_response_brands=None, status_response=None, metric_response=None):
     if init_response:
@@ -204,6 +213,23 @@ def test_products_report_stream(config):
     stream_slice = {"profile": profiles[0], "reportDate": "2021-07-25", "retry_count": 3}
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
     assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)
+
+
+@responses.activate
+def test_products_report_stream_without_pk(config):
+    setup_responses(
+        init_response_products=REPORT_INIT_RESPONSE,
+        status_response=REPORT_STATUS_RESPONSE,
+        metric_response=METRIC_RESPONSE_WITHOUT_ASIN_PK,
+    )
+
+    profiles = make_profiles(profile_type="vendor")
+
+    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
+    stream_slice = {"profile": profiles[0], "reportDate": "2021-07-25", "retry_count": 3}
+    metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
+
+    assert len(metrics) == len(stream.metrics_map)
 
 
 @responses.activate
