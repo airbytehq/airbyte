@@ -55,10 +55,6 @@ class MixpanelStream(HttpStream, ABC):
 
         super().__init__(authenticator=authenticator)
 
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return HttpAvailabilityStrategy()
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """Define abstract method"""
         return None
