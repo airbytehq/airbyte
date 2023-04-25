@@ -2030,7 +2030,7 @@ interpolation:
       description: This variable is deprecated. Use stream_interval or stream_partition instead.
       type: object
     - title: stream_state
-      description: The current state of the stream. The object's keys are defined by the incremental sync's and partition router's cursor_field.
+      description: The current state of the stream. The object's keys are defined by the incremental sync's cursor_field the and partition router's values.
       type: object
       examples:
         - created_at: "2020-01-01 00:00:00.000+00:00"
