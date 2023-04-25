@@ -141,16 +141,17 @@ public class JdbcUtils {
    * Helper method for logging bytes in a human-readable format. This method logs in SI units
    * (B/kB/MB/GB)
    */
-  public static String humanReadableByteCountSI(long bytes) {
+  public static String humanReadableByteCountSI(final long bytes) {
     if (-1000 < bytes && bytes < 1000) {
       return bytes + " B";
     }
     final CharacterIterator ci = new StringCharacterIterator("kMGTPE");
+    long formattedBytes = bytes;
     while (bytes <= -999_950 || bytes >= 999_950) {
-      bytes /= 1000;
+      formattedBytes /= 1000;
       ci.next();
     }
-    return String.format("%.1f %cB", bytes / 1000.0, ci.current());
+    return String.format("%.1f %cB", formattedBytes / 1000.0, ci.current());
   }
 
   /**
