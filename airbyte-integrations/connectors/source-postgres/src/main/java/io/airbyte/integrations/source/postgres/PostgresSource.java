@@ -574,7 +574,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         // However, this approach doesn't account for different row sizes.
         AirbyteTraceMessageUtility.emitEstimateTrace(PLATFORM_DATA_INCREASE_FACTOR * syncByteCount, Type.STREAM, syncRowCount, tableName, schemaName);
         LOGGER.info(String.format("Estimate for table in full refresh mode: %s : {rows_to_sync: %s, data_to_sync: %s}",
-            fullTableName, NumberFormat.getInstance().format(syncRowCount)), JdbcUtils.humanReadableByteCountSI(syncByteCount));
+            fullTableName, NumberFormat.getInstance().format(syncRowCount), JdbcUtils.humanReadableByteCountSI(syncByteCount)));
       }
     } catch (final SQLException e) {
       LOGGER.warn("Error occurred while attempting to estimate sync size", e);
