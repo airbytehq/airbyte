@@ -13,12 +13,14 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from requests.exceptions import RequestException
 
 from .auth import ShopifyAuthenticator
 from .graphql import get_query_products
 from .transform import DataTypeEnforcer
 from .utils import SCOPES_MAPPING, ApiTypeEnum
 from .utils import EagerlyCachedStreamState as stream_state_cache
+from .utils import ErrorAccessScopes
 from .utils import ShopifyRateLimiter as limiter
 
 
@@ -70,29 +72,43 @@ class ShopifyStream(HttpStream, ABC):
     @limiter.balance_rate_limit()
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if response.status_code is requests.codes.OK:
-            json_response = response.json()
-            records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
-            # transform method was implemented according to issue 4841
-            # Shopify API returns price fields as a string and it should be converted to number
-            # this solution designed to convert string into number, but in future can be modified for general purpose
-            if isinstance(records, dict):
-                # for cases when we have a single record as dict
+            try:
+                json_response = response.json()
+                records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
+                yield from self.produce_records(records)
+            except RequestException as e:
+                self.logger.warn(f"Unexpected error in `parse_ersponse`: {e}, the actual response data: {response.text}")
+                yield {}
+
+    def produce_records(self, records: Union[Iterable[Mapping[str, Any]], Mapping[str, Any]] = None) -> Iterable[Mapping[str, Any]]:
+        # transform method was implemented according to issue 4841
+        # Shopify API returns price fields as a string and it should be converted to number
+        # this solution designed to convert string into number, but in future can be modified for general purpose
+        if isinstance(records, dict):
+            # for cases when we have a single record as dict
+            # add shop_url to the record to make querying easy
+            records["shop_url"] = self.config["shop"]
+            yield self._transformer.transform(records)
+        else:
+            # for other cases
+            for record in records:
                 # add shop_url to the record to make querying easy
-                records["shop_url"] = self.config["shop"]
-                yield self._transformer.transform(records)
-            else:
-                # for other cases
-                for record in records:
-                    # add shop_url to the record to make querying easy
-                    record["shop_url"] = self.config["shop"]
-                    yield self._transformer.transform(record)
+                record["shop_url"] = self.config["shop"]
+                yield self._transformer.transform(record)
 
     def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == 404:
-            self.logger.warn(f"Stream `{self.name}` is not available, skipping...")
+        error_mapping = {
+            404: f"Stream `{self.name}` - not available or missing, skipping...",
+            403: f"Stream `{self.name}` - insufficient permissions, skipping...",
+            # extend the mapping with more handable errors, if needed.
+        }
+        status = response.status_code
+        if status in error_mapping.keys():
             setattr(self, "raise_on_http_errors", False)
+            self.logger.warn(error_mapping.get(status))
             return False
-        return super().should_retry(response)
+        else:
+            return super().should_retry(response)
 
     @property
     @abstractmethod
@@ -117,12 +133,9 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         return 0 if self.cursor_field == "id" else ""
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {
-            self.cursor_field: max(
-                latest_record.get(self.cursor_field, self.default_state_comparison_value),
-                current_stream_state.get(self.cursor_field, self.default_state_comparison_value),
-            )
-        }
+        last_record_value = latest_record.get(self.cursor_field) or self.default_state_comparison_value
+        current_state_value = current_stream_state.get(self.cursor_field) or self.default_state_comparison_value
+        return {self.cursor_field: max(last_record_value, current_state_value)}
 
     @stream_state_cache.cache_stream_state
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
@@ -430,18 +443,12 @@ class ProductsGraphQl(IncrementalShopifyStream):
     @limiter.balance_rate_limit(api_type=ApiTypeEnum.graphql.value)
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if response.status_code is requests.codes.OK:
-            json_response = response.json()["data"]["products"]["nodes"]
-            if isinstance(json_response, dict):
-                # for cases when we have a single record as dict
-                # add shop_url to the record to make querying easy
-                json_response["shop_url"] = self.config["shop"]
-                yield json_response
-            else:
-                # for other cases
-                for record in json_response:
-                    # add shop_url to the record to make querying easy
-                    record["shop_url"] = self.config["shop"]
-                    yield record
+            try:
+                json_response = response.json()["data"]["products"]["nodes"]
+                yield from self.produce_records(json_response)
+            except RequestException as e:
+                self.logger.warn(f"Unexpected error in `parse_ersponse`: {e}, the actual response data: {response.text}")
+                yield {}
 
 
 class MetafieldProducts(MetafieldShopifySubstream):
@@ -825,9 +832,14 @@ class SourceShopify(AbstractSource):
     @staticmethod
     def get_user_scopes(config):
         session = requests.Session()
+        url = f"https://{config['shop']}.myshopify.com/admin/oauth/access_scopes.json"
         headers = config["authenticator"].get_auth_header()
-        response = session.get(f"https://{config['shop']}.myshopify.com/admin/oauth/access_scopes.json", headers=headers).json()
-        return response["access_scopes"]
+        response = session.get(url, headers=headers).json()
+        access_scopes = response.get("access_scopes")
+        if access_scopes:
+            return access_scopes
+        else:
+            raise ErrorAccessScopes(f"Reason: {response}")
 
     @staticmethod
     def format_name(name):

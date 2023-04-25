@@ -4,12 +4,18 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +61,34 @@ public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestin
 
   protected void tearDownGcs() {
     BigQueryDestinationTestUtils.tearDownGcs(s3Client, config, LOGGER);
+  }
+
+  /*
+   * FileBuffer Default Tests
+   */
+  @Test
+  public void testGetFileBufferDefault() {
+    final BigQueryDestination destination = new BigQueryDestination();
+    assertEquals(destination.getNumberOfFileBuffers(config),
+        FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
+  }
+
+  @Test
+  public void testGetFileBufferMaxLimited() {
+    final JsonNode defaultConfig = Jsons.clone(config);
+    ((ObjectNode) defaultConfig).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 100);
+    final BigQueryDestination destination = new BigQueryDestination();
+    assertEquals(destination.getNumberOfFileBuffers(defaultConfig), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
+  }
+
+  @Test
+  public void testGetMinimumFileBufferCount() {
+    final JsonNode defaultConfig = Jsons.clone(config);
+    ((ObjectNode) defaultConfig).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 1);
+    final BigQueryDestination destination = new BigQueryDestination();
+    // User cannot set number of file counts below the default file buffer count, which is existing
+    // behavior
+    assertEquals(destination.getNumberOfFileBuffers(defaultConfig), FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
   }
 
 }

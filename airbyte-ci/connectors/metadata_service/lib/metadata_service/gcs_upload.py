@@ -7,7 +7,7 @@ from typing import Tuple
 import yaml
 from google.cloud import storage
 from google.oauth2 import service_account
-from metadata_service.models.generated.ConnectorMetadataDefinitionV1 import ConnectorMetadataDefinitionV1
+from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
 
 
@@ -38,7 +38,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, service_a
     """
     uploaded = False
     raw_metadata = yaml.safe_load(metadata_file_path.read_text())
-    metadata = ConnectorMetadataDefinitionV1.parse_obj(raw_metadata)
+    metadata = ConnectorMetadataDefinitionV0.parse_obj(raw_metadata)
 
     credentials = service_account.Credentials.from_service_account_file(service_account_file_path)
     storage_client = storage.Client(credentials=credentials)
