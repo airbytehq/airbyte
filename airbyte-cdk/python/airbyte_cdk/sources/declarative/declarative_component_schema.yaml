@@ -1990,7 +1990,7 @@ interpolation:
             _metadata:
               self: https://api.sendgrid.com/v3/marketing/lists/041ee031
     - title: next_page_token
-    - description: Object describing the token to fetch the next page of records. The object has a single key "next_page_token".
+      description: Object describing the token to fetch the next page of records. The object has a single key "next_page_token".
       type: object
       examples:
         - next_page_token: 3
