@@ -14,7 +14,7 @@ from ci_connector_ops.pipelines.builds.java_connectors import BuildConnectorImag
 from ci_connector_ops.pipelines.builds.normalization import BuildOrPullNormalization
 from ci_connector_ops.pipelines.contexts import ConnectorContext
 from ci_connector_ops.pipelines.tests.common import AcceptanceTests
-from ci_connector_ops.pipelines.utils import export_container_to_tarball
+from ci_connector_ops.pipelines.utils import export_container_to_tarball, slugify
 from dagger import File, QueryError
 
 
@@ -79,7 +79,9 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
         context.logger.info(f"This connector supports normalization: will build {normalization_image}.")
         build_normalization_results = await BuildOrPullNormalization(context, normalization_image).run()
         normalization_container = build_normalization_results.output_artifact
-        normalization_tar_file, _ = await export_container_to_tarball(context, normalization_container)
+        normalization_tar_file, _ = await export_container_to_tarball(
+            context, normalization_container, tar_file_name=f"{slugify(context.connector.normalization_repository)}.tar"
+        )
         step_results.append(build_normalization_results)
     else:
         normalization_tar_file = None
