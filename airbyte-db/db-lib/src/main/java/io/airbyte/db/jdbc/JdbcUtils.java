@@ -160,7 +160,8 @@ public class JdbcUtils {
    */
   public static String humanReadableByteCountBin(final long bytes) {
     final long absB = bytes == Long.MIN_VALUE ? Long.MAX_VALUE : Math.abs(bytes);
-    if (absB < 1024) {
+    final int bytePrefixCount = 1024;
+    if (absB < bytePrefixCount) {
       return bytes + " B";
     }
     long value = absB;
