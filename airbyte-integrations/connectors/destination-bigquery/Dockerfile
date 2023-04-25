@@ -31,7 +31,6 @@ WORKDIR /airbyte
 
 ENV APPLICATION destination-bigquery
 ENV AIRBYTE_NORMALIZATION_INTEGRATION bigquery
-ENV ENABLE_SENTRY true
 
 COPY --from=build /airbyte /airbyte
 

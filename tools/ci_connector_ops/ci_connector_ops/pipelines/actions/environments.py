@@ -9,7 +9,7 @@ from __future__ import annotations
 import uuid
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
-from ci_connector_ops.pipelines.utils import get_file_contents, should_enable_sentry, slugify
+from ci_connector_ops.pipelines.utils import get_file_contents, slugify
 from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Platform, Secret
 
 if TYPE_CHECKING:
@@ -592,9 +592,6 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
 
 async def with_airbyte_java_connector(context: ConnectorContext, connector_java_tar_file: File, build_platform: Platform):
     dockerfile = context.get_connector_dir(include=["Dockerfile"]).file("Dockerfile")
-    # TODO find a way to infer this without the Dockerfile. From metadata.yaml?
-    enable_sentry = await should_enable_sentry(dockerfile)
-
     application = context.connector.technical_name
 
     build_stage = (
@@ -614,7 +611,6 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
     return (
         base.with_workdir("/airbyte")
         .with_env_variable("APPLICATION", application)
-        .with_env_variable("ENABLE_SENTRY", str(enable_sentry).lower())
         .with_directory("builts_artifacts", build_stage.directory("/airbyte"))
         .with_exec(["sh", "-c", "mv builts_artifacts/* ."])
         .with_exec(["rm", "-rf", "builts_artifacts"])
