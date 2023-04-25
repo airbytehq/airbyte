@@ -24845,7 +24845,7 @@
     "sourceDefinitionId": "dd4632f4-15e0-4649-9b71-41719fb1fdee",
     "name": "SurveyCTO",
     "dockerRepository": "airbyte/source-surveycto",
-    "dockerImageTag": "0.1.0",
+    "dockerImageTag": "0.1.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/surveycto",
     "icon": "surveycto.svg",
     "sourceType": "api",
@@ -24879,7 +24879,7 @@
           "form_id": {
             "type": "array",
             "title": "Form's Id",
-            "description": "Unique identifier for one of the forms",
+            "description": "Unique identifier for one of your forms",
             "order": 3
           },
           "start_date": {
@@ -24889,7 +24889,7 @@
             "examples": [ "Jan 09, 2022 00:00:00 AM" ],
             "default": "Jan 09, 2022 00:00:00 AM",
             "order": 4,
-            "pattern": "^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dic) [0-9]{2}, [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2} (AM|PM)$"
+            "pattern": "^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{2}, [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2} (AM|PM)$"
           }
         }
       },
