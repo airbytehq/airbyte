@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.util;
 
 import java.util.concurrent.RejectedExecutionException;
@@ -36,4 +40,5 @@ public class CloseableResourceManagerTest {
     Assertions.assertFalse(closed.get());
     Assertions.assertTrue(thrown);
   }
+
 }

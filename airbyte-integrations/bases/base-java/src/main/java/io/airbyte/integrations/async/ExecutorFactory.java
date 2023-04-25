@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.async;
 
 import io.airbyte.integrations.util.CloseableResourceManager;
@@ -13,12 +17,11 @@ import org.slf4j.LoggerFactory;
 /**
  * Create a ThreadPoolExecutor for execution of background tasks, etc.
  *
- * Opinionaed in the use of a blocking RejectedExecutionHandler in the event of
- * a full task list. Recommend you don't set the task list too high. If your process
- * is not making progress, we shouldn't require a very large task queue.
+ * Opinionaed in the use of a blocking RejectedExecutionHandler in the event of a full task list.
+ * Recommend you don't set the task list too high. If your process is not making progress, we
+ * shouldn't require a very large task queue.
  *
- * Clean up and close the Executor by calling CloseableResourceManager.closeAll()
- * when done.
+ * Clean up and close the Executor by calling CloseableResourceManager.closeAll() when done.
  */
 public class ExecutorFactory {
 
@@ -31,18 +34,19 @@ public class ExecutorFactory {
   public static ThreadPoolExecutor getExecutor(final int maxWorkQueueSize) {
     final BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<>(maxWorkQueueSize);
 
-    final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(CORE_THREAD_POOL_SIZE, MAXIMUM_THREAD_POOL_SIZE, KEEP_ALIVE_TIME_MILLIS, TimeUnit.MILLISECONDS, workQueue, new BlockingCallerPolicy());
+    final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(CORE_THREAD_POOL_SIZE, MAXIMUM_THREAD_POOL_SIZE, KEEP_ALIVE_TIME_MILLIS,
+        TimeUnit.MILLISECONDS, workQueue, new BlockingCallerPolicy());
 
     // track this resource so we can shut it down at the end of processing
     CloseableResourceManager.getInstance().addCloseable(() -> shutdown(threadPoolExecutor));
     return threadPoolExecutor;
   }
 
-   static void shutdown(final ThreadPoolExecutor threadPoolExecutor) {
+  static void shutdown(final ThreadPoolExecutor threadPoolExecutor) {
     shutdown(threadPoolExecutor, DEFAULT_AWAIT_TERMINATION_SECONDS);
-   }
+  }
 
-   static void shutdown(final ThreadPoolExecutor threadPoolExecutor, final int awaitTerminationSeconds) {
+  static void shutdown(final ThreadPoolExecutor threadPoolExecutor, final int awaitTerminationSeconds) {
     threadPoolExecutor.shutdown();
     try {
       if (!threadPoolExecutor.awaitTermination(awaitTerminationSeconds, TimeUnit.SECONDS)) {
@@ -56,7 +60,8 @@ public class ExecutorFactory {
   }
 
   /**
-   * A RejectedExecutionHandler that will block until there is room in the queue to add a new Runnable.
+   * A RejectedExecutionHandler that will block until there is room in the queue to add a new
+   * Runnable.
    */
   static class BlockingCallerPolicy implements RejectedExecutionHandler {
 
@@ -74,5 +79,7 @@ public class ExecutorFactory {
         throw new RejectedExecutionException("Unexpected InterruptedException", e);
       }
     }
+
   }
+
 }
