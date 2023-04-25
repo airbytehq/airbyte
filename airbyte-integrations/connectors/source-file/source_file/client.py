@@ -423,7 +423,12 @@ class Client:
                 prev_frame_column_type = fields.get(col)
                 df_type = df[col].dtype
                 fields[col] = self.dtype_to_json_type(prev_frame_column_type, df_type)
-        return {field: ({"type": ["string", "null"], "format": "datetime"} if fields[field] == "datetime" else {"type": [fields[field], "null"]}) for field in fields}
+        return {
+            field: (
+                {"type": ["string", "null"], "format": "datetime"} if fields[field] == "datetime" else {"type": [fields[field], "null"]}
+            )
+            for field in fields
+        }
 
     def streams(self, empty_schema: bool = False) -> Iterable:
         """Discovers available streams"""
