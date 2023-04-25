@@ -1,0 +1,9 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "createdAt": "9999-04-12T18:13:36.000Z" },
+      "stream_descriptor": { "name": "operations" }
+    }
+  }
+]
