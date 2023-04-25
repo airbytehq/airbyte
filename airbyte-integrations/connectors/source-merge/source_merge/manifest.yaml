@@ -38,7 +38,7 @@ definitions:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/retriever"
-  
+
   account_details_stream:
     type: DeclarativeStream
     retriever:
@@ -108,7 +108,7 @@ definitions:
 
   job-interview-stages_stream:
     $ref: "#/definitions/base_stream"
-    name: "job-interview-stages"
+    name: "job_interview_stages"
     primary_key: "id"
     $parameters:
       path: "/job-interview-stages"

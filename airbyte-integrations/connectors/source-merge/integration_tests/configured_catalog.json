@@ -74,7 +74,7 @@
     },
     {
       "stream": {
-        "name": "job-interview-stages",
+        "name": "job_interview_stages",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
