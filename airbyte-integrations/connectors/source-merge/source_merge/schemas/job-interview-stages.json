@@ -13,6 +13,9 @@
     "name": {
       "type": ["null", "string"]
     },
+    "modified_at": {
+      "type": ["null", "string"]
+    },
     "job": {
       "type": ["null", "string"]
     },

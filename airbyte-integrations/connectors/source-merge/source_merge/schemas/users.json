@@ -10,6 +10,9 @@
     "remote_data": {
       "type": ["null", "string"]
     },
+    "modified_at": {
+      "type": ["null", "string"]
+    },
     "field_mappings": {
       "type": ["null", "object"],
       "properties": {
