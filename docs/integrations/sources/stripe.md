@@ -14,7 +14,7 @@ This page guides you through the process of setting up the Stripe source connect
 ## Set up the Stripe source connector
 
 1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
-2. Click **Sources** and then click **+ New source**. 
+2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Stripe** from the Source type dropdown.
 4. Enter a name for your source.
 5. For **Account ID**, enter your [Stripe `Account ID`](https://dashboard.stripe.com/settings/account).
@@ -66,6 +66,7 @@ The Stripe source connector supports the following streams:
 - [Plans](https://stripe.com/docs/api/plans/list) \(Incremental\)
 - [Products](https://stripe.com/docs/api/products/list) \(Incremental\)
 - [Refunds](https://stripe.com/docs/api/refunds/list) \(Incremental\)
+- [SetupIntents](https://stripe.com/docs/api/setup_intents/list) \(Incremental\)
 - [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
 - [Subscription Schedule](https://stripe.com/docs/api/subscription_schedules) \(Incremental\)
 - [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
@@ -84,6 +85,8 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.1   | 2023-04-24 | [23389](https://github.com/airbytehq/airbyte/pull/23389) | Add `customer_tax_ids` to `Invoices` |
+| 3.4.0   | 2023-03-20 | [23963](https://github.com/airbytehq/airbyte/pull/23963) | Add `SetupIntents` stream |
 | 3.3.0   | 2023-04-12 | [25136](https://github.com/airbytehq/airbyte/pull/25136) | Add stream `Accounts`                                                        |
 | 3.2.0   | 2023-04-10 | [23624](https://github.com/airbytehq/airbyte/pull/23624) | Add new stream `Subscription Schedule`                                                                                                               |
 | 3.1.0   | 2023-03-10 | [19906](https://github.com/airbytehq/airbyte/pull/19906) | Expand `tiers` when syncing `Plans` streams                                                                                                          |
@@ -97,7 +100,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 | 1.0.2   | 2023-02-09 | [22659](https://github.com/airbytehq/airbyte/pull/22659) | Set `AvailabilityStrategy` for all streams                                                                                                           |
 | 1.0.1   | 2023-01-27 | [22042](https://github.com/airbytehq/airbyte/pull/22042) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                                          |
 | 1.0.0   | 2023-01-25 | [21858](https://github.com/airbytehq/airbyte/pull/21858) | Update the `Subscriptions` and `Invoices` stream schemas                                                                                             |
-| 0.1.40  | 2022-10-20 | [18228](https://github.com/airbytehq/airbyte/pull/18228) | Update the `Payment Intents` stream schema                                                                                                           |
+| 0.1.40  | 2022-10-20 | [18228](https://github.com/airbytehq/airbyte/pull/18228) | Update the `PaymentIntents` stream schema                                                                                                           |
 | 0.1.39  | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream states.                                                                                                                        |
 | 0.1.38  | 2022-09-09 | [16537](https://github.com/airbytehq/airbyte/pull/16537) | Fix `redeem_by` field type for `customers` stream                                                                                                    |
 | 0.1.37  | 2022-08-16 | [15686](https://github.com/airbytehq/airbyte/pull/15686) | Fix the bug when the stream couldn't be fetched due to limited permission set, if so - it should be skipped                                          |
