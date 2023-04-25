@@ -1,4 +1,4 @@
-name: Metadata Service CI
+name: Connector metadata service CI
 
 on:
   workflow_dispatch:
@@ -6,18 +6,23 @@ on:
     paths:
       - "airbyte-ci/connectors/metadata_service/**"
 jobs:
-  metadata_service_ci:
-    name: Metadata Service CI
-    timeout-minutes: 240 # 4 hours
+  connector_metadata_service_ci:
+    name: Connector metadata service CI
     runs-on: medium-runner
+    env:
+      CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
-      - name: Run Metadata unit test pipeline
-        id: pipelinerun
+      - name: Run test pipeline for the metadata lib
+        id: metadata-lib-test-pipeline
         uses: ./.github/actions/run-dagger-pipeline
         with:
           subcommand: "metadata test lib"
           context: "pull_request"
-        env:
-          CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+      - name: Run test for the metadata orchestrator
+        id: metadata-orchestrator-test-pipeline
+        uses: ./.github/actions/run-dagger-pipeline
+        with:
+          subcommand: "metadata test orchestrator"
+          context: "pull_request"

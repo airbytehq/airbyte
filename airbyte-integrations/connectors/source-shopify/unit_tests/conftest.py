@@ -4,6 +4,7 @@
 
 
 import pytest
+import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 
@@ -33,3 +34,12 @@ def catalog_with_streams():
         return ConfiguredAirbyteCatalog(streams=streams)
 
     return _catalog_with_streams
+
+
+@pytest.fixture
+def response_with_bad_json():
+    bad_json_str = '{"customers": [{ "field1": "test1", "field2": }]}'
+    response = requests.Response()
+    response.status_code = 200
+    response._content = bad_json_str.encode("utf-8")
+    return response
