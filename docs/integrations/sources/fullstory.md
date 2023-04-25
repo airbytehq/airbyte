@@ -13,7 +13,7 @@ API Key (which acts as bearer token) is mandate for this connector to work, It c
 - Get a FullStory api key via settings (ref - https://app.fullstory.com/ui/o-1K942V-na1/settings/apikeys)
 - Setup params (All params are required)
 - Available params
-  - api_key: The auto generated id
+  - api_key: The generated api key
   - uid: The unique identifier which can be configured in the fullstory script, under FS.identify
   - start_date: Date filter for eligible streams, enter
 
