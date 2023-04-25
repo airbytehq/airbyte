@@ -442,11 +442,11 @@ class TestTransformConfig:
 
     def test_transform_clickhouse(self):
         input = {
-            "host": "airbyte.io", 
-            "port": 9440, 
-            "database": "default", 
-            "username": "ch", 
-            "password": "password1234", 
+            "host": "airbyte.io",
+            "port": 9440,
+            "database": "default",
+            "username": "ch",
+            "password": "password1234",
             "ssl": True,
             "transformation_threads": 16,
         }
