@@ -1,3 +1,4 @@
+#!/bin/bash
 # Intentionally no set -e, because we want to run normalization even if the destination fails
 set -o pipefail
 
