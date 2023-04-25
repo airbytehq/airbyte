@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import TYPE_CHECKING, ClassVar, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, ClassVar, List, Optional, Tuple
 
 import asyncer
 from ci_connector_ops.pipelines.actions import environments
@@ -49,13 +49,11 @@ class StepStatus(Enum):
         """
         if exit_code == 0:
             return StepStatus.SUCCESS
-        if exit_code == 1:
-            return StepStatus.FAILURE
         # pytest returns a 5 exit code when no test is found.
-        if exit_code == 5:
+        elif exit_code == 5:
             return StepStatus.SKIPPED
         else:
-            raise ValueError(f"No step status is mapped to exit code {exit_code}")
+            return StepStatus.FAILURE
 
     def get_rich_style(self) -> Style:
         """Match color used in the console output to the step status."""
@@ -128,7 +126,13 @@ class Step(ABC):
             soon_exit_code = task_group.soonify(with_exit_code)(container)
             soon_stderr = task_group.soonify(with_stderr)(container)
             soon_stdout = task_group.soonify(with_stdout)(container)
-        return StepResult(self, StepStatus.from_exit_code(soon_exit_code.value), stderr=soon_stderr.value, stdout=soon_stdout.value)
+        return StepResult(
+            self,
+            StepStatus.from_exit_code(soon_exit_code.value),
+            stderr=soon_stderr.value,
+            stdout=soon_stdout.value,
+            output_artifact=container,
+        )
 
 
 class PytestStep(Step, ABC):
@@ -196,6 +200,7 @@ class StepResult:
     created_at: datetime = field(default_factory=datetime.utcnow)
     stderr: Optional[str] = None
     stdout: Optional[str] = None
+    output_artifact: Any = None
 
     def __repr__(self) -> str:  # noqa D105
         return f"{self.step.title}: {self.status.value}"
