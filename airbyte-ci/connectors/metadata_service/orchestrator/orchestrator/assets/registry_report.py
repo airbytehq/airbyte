@@ -1,43 +1,20 @@
 import pandas as pd
 from dagster import MetadataValue, Output, asset
 from typing import List
-from orchestrator.templates.render import render_connector_registry_locations_html
+from orchestrator.templates.render import (
+    render_connector_registry_locations_html,
+    dataframe_to_table_html,
+    simple_link_html,
+    icon_image_html,
+    test_badge_html,
+    ColumnInfo,
+)
 from orchestrator.config import CONNECTOR_REPO_NAME, CONNECTORS_TEST_RESULT_BUCKET_URL
-import urllib.parse
 
 GROUP_NAME = "registry_reports"
 
 OSS_SUFFIX = "_oss"
 CLOUD_SUFFIX = "_cloud"
-
-
-# 🔗 HTML Renderers
-
-
-def simple_link_html(url: str) -> str:
-    if url:
-        return f"<a href=\"{url}\" target=\"_blank\">🔗 Link</a>"
-    else:
-        return None
-
-
-def icon_image_html(icon):
-    github_icon_base = (
-        f"https://raw.githubusercontent.com/{CONNECTOR_REPO_NAME}/master/airbyte-config-oss/init-oss/src/main/resources/icons"
-    )
-    icon_size = "30"
-    icon_link = f"<img src=\"{github_icon_base}/{icon}\" height=\"{icon_size}\" height=\"{icon_size}\"/>" if icon else "x"
-    return icon_link
-
-
-def test_badge_html(test_summary_url: str) -> str:
-    if not test_summary_url:
-        return None
-
-    image_shield_base = "https://img.shields.io/endpoint"
-    test_summary_url_encoded = urllib.parse.quote(test_summary_url)
-    return f"<img src=\"{image_shield_base}?url={test_summary_url_encoded}\">"
-
 
 # 🖼️ Dataframe Columns
 
@@ -51,6 +28,15 @@ def github_url(docker_repo_name: str, github_connector_folders: List[str]) -> st
         return f"https://github.com/{CONNECTOR_REPO_NAME}/blob/master/airbyte-integrations/connectors/{connector_name}"
     else:
         return None
+
+
+def icon_url(row: pd.DataFrame) -> str:
+    icon_file_name = row["icon_oss"]
+
+    github_icon_base = (
+        f"https://raw.githubusercontent.com/{CONNECTOR_REPO_NAME}/master/airbyte-config-oss/init-oss/src/main/resources/icons"
+    )
+    return f"{github_icon_base}/{icon_file_name}"
 
 
 def issue_url(row: pd.DataFrame) -> str:
@@ -120,6 +106,7 @@ def augment_and_normalize_connector_dataframes(
 
     total_registry["issue_url"] = total_registry.apply(issue_url, axis=1)
     total_registry["test_summary_url"] = total_registry.apply(test_summary_url, axis=1)
+    total_registry["icon_url"] = total_registry.apply(test_summary_url, axis=1)
 
     # Merge docker repo and version into separate columns
     total_registry["docker_image_oss"] = total_registry.apply(lambda x: merge_docker_repo_and_version(x, OSS_SUFFIX), axis=1)
@@ -130,30 +117,6 @@ def augment_and_normalize_connector_dataframes(
     total_registry.rename(columns={primary_key: "definitionId"}, inplace=True)
 
     return total_registry
-
-
-# Dataframe to HTML
-
-
-def dataframe_to_table_html(df: pd.DataFrame, column_mapping: List[dict]) -> str:
-    """
-    Convert a dataframe to an HTML table.
-    """
-
-    # convert true and false to checkmarks and x's
-    df.replace({True: "✅", False: "❌"}, inplace=True)
-
-    title_mapping = {column_info["column"]: column_info["title"] for column_info in column_mapping}
-
-    df.rename(columns=title_mapping, inplace=True)
-
-    html_formatters = {column_info["title"]: column_info["formatter"] for column_info in column_mapping if "formatter" in column_info}
-
-    columns = [column_info["title"] for column_info in column_mapping]
-
-    return df.to_html(
-        columns=columns, justify="left", index=False, formatters=html_formatters, escape=False, classes="styled-table", na_rep="❌", render_links=True
-    )
 
 
 # ASSETS
@@ -203,7 +166,7 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
     all_connectors_dataframe = pd.concat([all_destinations_dataframe, all_sources_dataframe])
     all_connectors_dataframe.reset_index(inplace=True)
 
-    columns_to_show = [
+    columns_to_show: List[ColumnInfo] = [
         {
             "column": "name_oss",
             "title": "Connector Name",
@@ -213,7 +176,7 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
             "title": "Definition Id",
         },
         {
-            "column": "icon_oss",
+            "column": "icon_url",
             "title": "Icon",
             "formatter": icon_image_html,
         },
@@ -268,8 +231,8 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
     ]
 
     html_string = render_connector_registry_locations_html(
-        destinations_table=dataframe_to_table_html(all_destinations_dataframe, columns_to_show),
-        sources_table=dataframe_to_table_html(all_sources_dataframe, columns_to_show),
+        destinations_table_html=dataframe_to_table_html(all_destinations_dataframe, columns_to_show),
+        sources_table_html=dataframe_to_table_html(all_sources_dataframe, columns_to_show),
     )
 
     json_string = all_connectors_dataframe.to_json(orient="records")

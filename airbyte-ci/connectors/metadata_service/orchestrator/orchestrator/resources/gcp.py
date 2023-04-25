@@ -13,10 +13,12 @@ from dagster._core.storage.file_manager import (
     check_file_like_obj,
 )
 
+
 class PublicGCSFileHandle(GCSFileHandle):
     @property
     def public_url(self):
         return f"https://storage.googleapis.com/{self.gcs_bucket}/{self.gcs_key}"
+
 
 class ContentTypeAwareGCSFileManager(GCSFileManager):
     """

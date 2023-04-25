@@ -1,5 +1,3 @@
-import pandas as pd
-from metadata_service.spec_cache import CachedSpec
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
 
 
