@@ -579,6 +579,7 @@ def transform_empty_string_to_none(instance: Any, schema: Any):
 
 class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
     state_checkpoint_interval = 500
+    STREAM_SLICE_STEP = 120
 
     def __init__(self, replication_key: str, start_date: Optional[str], **kwargs):
         super().__init__(**kwargs)
@@ -591,6 +592,20 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         if start_date:
             return pendulum.parse(start_date).strftime("%Y-%m-%dT%H:%M:%SZ")  # type: ignore[attr-defined,no-any-return]
         return None
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        start, end = (None, None)
+        now = pendulum.now(tz="UTC")
+        initial_date = pendulum.parse((stream_state or {}).get(self.cursor_field, self.start_date), tz="UTC")
+
+        slice_number = 1
+        while not end == now:
+            start = initial_date.add(days=(slice_number - 1) * self.STREAM_SLICE_STEP)
+            end = min(now, initial_date.add(days=slice_number * self.STREAM_SLICE_STEP))
+            yield {"start_date": start.isoformat(timespec="milliseconds"), "end_date": end.isoformat(timespec="milliseconds")}
+            slice_number = slice_number + 1
 
     def request_params(
         self,
@@ -607,14 +622,28 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
 
         property_chunk = property_chunk or {}
 
-        stream_date = stream_state.get(self.cursor_field)
-        start_date = stream_date or self.start_date
+        start_date = max(
+            (stream_state or {}).get(self.cursor_field, self.start_date),
+            (stream_slice or {}).get("start_date", ""),
+            (next_page_token or {}).get("start_date", ""),
+        )
+        end_date = (stream_slice or {}).get("end_date", pendulum.now(tz="UTC").isoformat(timespec="milliseconds"))
 
-        query = f"SELECT {','.join(property_chunk.keys())} FROM {self.name} "
+        select_fields = ",".join(property_chunk.keys())
+        table_name = self.name
+        where_conditions = []
+        order_by_clause = ""
+
         if start_date:
-            query += f"WHERE {self.cursor_field} >= {start_date} "
+            where_conditions.append(f"{self.cursor_field} >= {start_date}")
+        if end_date:
+            where_conditions.append(f"{self.cursor_field} < {end_date}")
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            query += f"ORDER BY {self.cursor_field} ASC"
+            order_by_clause = f"ORDER BY {self.cursor_field} ASC"
+
+        where_clause = f"WHERE {' AND '.join(where_conditions)}"
+        query = f"SELECT {select_fields} FROM {table_name} {where_clause} {order_by_clause}"
+
         return {"q": query}
 
     @property
@@ -635,34 +664,33 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
 class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSalesforceStream):
     def next_page_token(self, last_record: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            page_token: str = last_record[self.cursor_field]
-            res = {"next_token": page_token}
-            # use primary key as additional filtering param, if cursor_field is not increased from previous page
-            if self.primary_key and self.prev_start_date == page_token:
-                res["primary_key"] = last_record[self.primary_key]
-            return res
+            return {"next_token": last_record[self.cursor_field], "primary_key": last_record.get(self.primary_key)}
         return None
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        selected_properties = self.get_json_schema().get("properties", {})
+        start_date = max(
+            (stream_state or {}).get(self.cursor_field, ""),
+            (stream_slice or {}).get("start_date", ""),
+            (next_page_token or {}).get("start_date", ""),
+        )
+        end_date = stream_slice["end_date"]
 
-        stream_date = stream_state.get(self.cursor_field)
-        next_token = (next_page_token or {}).get("next_token")
-        primary_key = (next_page_token or {}).get("primary_key")
-        start_date = next_token or stream_date or self.start_date
-        self.prev_start_date = start_date
+        select_fields = ", ".join(self.get_json_schema().get("properties", {}).keys())
+        table_name = self.name
+        where_conditions = [f"{self.cursor_field} >= {start_date}", f"{self.cursor_field} < {end_date}"]
+        order_by_clause = ""
 
-        query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
-        if start_date:
-            if primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
-                query += f"WHERE ({self.cursor_field} = {start_date} AND {self.primary_key} > '{primary_key}') OR ({self.cursor_field} > {start_date}) "
-            else:
-                query += f"WHERE {self.cursor_field} >= {start_date} "
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            order_by_fields = [self.cursor_field, self.primary_key] if self.primary_key else [self.cursor_field]
-            query += f"ORDER BY {','.join(order_by_fields)} ASC LIMIT {self.page_size}"
+            last_primary_key = (next_page_token or {}).get("primary_key", "")
+            if last_primary_key:
+                where_conditions.append(f"{self.primary_key} > '{last_primary_key}'")
+            order_by_fields = ", ".join([self.cursor_field, self.primary_key] if self.primary_key else [self.cursor_field])
+            order_by_clause = f"ORDER BY {order_by_fields} ASC LIMIT {self.page_size}"
+
+        where_clause = f"WHERE {' AND '.join(where_conditions)}"
+        query = f"SELECT {select_fields} FROM {table_name} {where_clause} {order_by_clause}"
         return {"q": query}
 
 

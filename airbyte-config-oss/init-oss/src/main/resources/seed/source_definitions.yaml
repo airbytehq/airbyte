@@ -1161,7 +1161,7 @@
 - name: Mailchimp
   sourceDefinitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
   dockerRepository: airbyte/source-mailchimp
-  dockerImageTag: 0.3.5
+  dockerImageTag: 0.4.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailchimp
   icon: mailchimp.svg
   sourceType: api
@@ -1830,7 +1830,7 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 2.0.9
+  dockerImageTag: 2.0.10
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
@@ -1896,7 +1896,7 @@
 - name: Shopify
   sourceDefinitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
   dockerRepository: airbyte/source-shopify
-  dockerImageTag: 0.3.2
+  dockerImageTag: 0.3.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/shopify
   icon: shopify.svg
   sourceType: api
@@ -2024,7 +2024,7 @@
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 3.4.0
+  dockerImageTag: 3.4.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api
