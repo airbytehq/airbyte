@@ -30,9 +30,12 @@ RUN dbt deps
 WORKDIR /airbyte
 
 ENV APPLICATION destination-bigquery
+ENV AIRBYTE_NORMALIZATION_INTEGRATION bigquery
 ENV ENABLE_SENTRY true
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=1.3.0
+LABEL io.airbyte.version=1.3.1
 LABEL io.airbyte.name=airbyte/destination-bigquery
+
+ENTRYPOINT ["/airbyte/run_with_normalization.sh"]
