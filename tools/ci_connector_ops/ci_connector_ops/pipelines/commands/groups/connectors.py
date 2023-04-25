@@ -108,7 +108,7 @@ def connectors(
     )
 
     selected_connectors = get_all_released_connectors()
-    modified_connectors = get_modified_connectors(ctx.obj["modified_files_in_branch"])
+    modified_connectors = get_modified_connectors(ctx.obj["modified_files"])
     if modified:
         selected_connectors = modified_connectors
     else:
@@ -246,7 +246,7 @@ def publish(
             abort=True,
         )
     if ctx.obj["modified"]:
-        selected_connectors = get_modified_connectors(get_modified_metadata_files(ctx.obj["modified_files_in_commit"]))
+        selected_connectors = get_modified_connectors(get_modified_metadata_files(ctx.obj["modified_files"]))
         selected_connectors_names = [connector.technical_name for connector in selected_connectors]
     else:
         selected_connectors = ctx.obj["selected_connectors"]
