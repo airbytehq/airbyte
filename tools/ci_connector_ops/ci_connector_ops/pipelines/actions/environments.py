@@ -230,7 +230,7 @@ def with_pip_packages(base_container: Container, packages_to_install: List[str])
         Container: A container with the pip packages installed.
 
     """
-    package_install_command = ["python", "-m", "pip", "install"]
+    package_install_command = ["pip", "install"]
     return base_container.with_exec(package_install_command + packages_to_install)
 
 
