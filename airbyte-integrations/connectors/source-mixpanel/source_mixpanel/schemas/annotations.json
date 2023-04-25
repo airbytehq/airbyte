@@ -22,10 +22,10 @@
           "type": ["null", "integer"]
         },
         "first_name": {
-          "type" : "string"
+          "type" : ["null", "string"]
         },
         "last_name": {
-          "type" : "string"
+          "type" : ["null", "string"]
         }
       }
     }
