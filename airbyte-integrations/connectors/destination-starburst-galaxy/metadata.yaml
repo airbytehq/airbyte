@@ -1,0 +1,18 @@
+data:
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: b76be0a6-27dc-4560-95f6-2623da0bd7b6
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-starbust-galaxy
+  githubIssueLabel: destination-starbust-galaxy
+  icon: starburst-galaxy.svg
+  license: MIT
+  name: Startbust Galaxy
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/starbust-galaxy
+metadataSpecVersion: "1.0"
