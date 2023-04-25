@@ -10,6 +10,8 @@ from orchestrator.assets.registry import (
     cloud_sources_dataframe,
     oss_registry_from_metadata,
     cloud_registry_from_metadata,
+)
+from orchestrator.assets.legacy_registry import (
     legacy_oss_registry_dict,
     legacy_oss_registry,
 )
