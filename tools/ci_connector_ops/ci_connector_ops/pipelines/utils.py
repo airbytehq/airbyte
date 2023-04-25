@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import datetime
+import json
 import re
 import sys
 import unicodedata
@@ -345,3 +346,10 @@ async def export_container_to_tarball(
         return exported_file, local_path
     else:
         return None, None
+
+
+def sanitize_gcs_service_account_key(raw_value: str) -> str:
+    try:
+        return json.dumps(json.loads(raw_value))
+    except json.JSONDecodeError:
+        return raw_value
