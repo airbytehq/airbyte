@@ -15,7 +15,7 @@ from ci_connector_ops.pipelines.actions.remote_storage import upload_to_gcs
 from ci_connector_ops.pipelines.bases import ConnectorReport, Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.contexts import ConnectorContext
 from ci_connector_ops.pipelines.pipelines import metadata
-from ci_connector_ops.pipelines.utils import with_exit_code, with_stderr, with_stdout
+from ci_connector_ops.pipelines.utils import sanitize_gcs_service_account_key, with_exit_code, with_stderr, with_stdout
 from dagger import Container, File, QueryError, Secret
 
 
@@ -174,11 +174,12 @@ async def run_connector_publish_pipeline(
     """
     async with semaphore:
         async with context:
-            spec_cache_service_account: dagger.Secret = context.dagger_client.set_secret(
-                "spec_cache_service_account_key", os.environ["SPEC_CACHE_SERVICE_ACCOUNT_KEY"]
-            )
+
             metadata_service_account: dagger.Secret = context.dagger_client.set_secret(
-                "metadata_service_account_key", os.environ["METADATA_SERVICE_ACCOUNT_KEY"]
+                "metadata_service_account_key", sanitize_gcs_service_account_key(os.environ["METADATA_SERVICE_ACCOUNT_KEY"])
+            )
+            spec_cache_service_account: dagger.Secret = context.dagger_client.set_secret(
+                "spec_cache_service_account_key", sanitize_gcs_service_account_key(os.environ["SPEC_CACHE_SERVICE_ACCOUNT_KEY"])
             )
             metadata_upload_step = metadata.MetadataUpload(
                 context, context.metadata_path, metadata_bucket_name, await metadata_service_account.plaintext()
