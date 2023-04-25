@@ -43,6 +43,7 @@ connectionSpecification:
       examples:
         - "2022-10-01T00:00:00Z"
       order: 5
+      format: date-time
     end_date:
       title: End date
       pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
@@ -54,3 +55,4 @@ connectionSpecification:
         - "2022-10-01T00:00:00Z"
       type: string
       order: 6
+      format: date-time
