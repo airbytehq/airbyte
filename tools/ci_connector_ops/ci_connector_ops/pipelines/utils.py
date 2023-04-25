@@ -334,7 +334,8 @@ async def export_container_to_tarball(
         Tuple[Optional[File], Optional[Path]]: A tuple with the file object holding the tar archive on the host and its path.
     """
     if tar_file_name is None:
-        tar_file_name = slugify(f"{context.connector.technical_name}_{context.git_revision}.tar")
+        tar_file_name = f"{context.connector.technical_name}_{context.git_revision}.tar"
+    tar_file_name = slugify(tar_file_name)
     local_path = Path(f"{context.host_image_export_dir_path}/{tar_file_name}")
     export_success = await container.export(str(local_path))
     if export_success:
