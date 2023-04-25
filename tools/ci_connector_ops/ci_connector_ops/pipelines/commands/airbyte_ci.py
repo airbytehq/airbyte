@@ -6,7 +6,13 @@
 
 import click
 from ci_connector_ops.pipelines.contexts import CIContext
-from ci_connector_ops.pipelines.utils import get_current_epoch_time, get_current_git_branch, get_current_git_revision, get_modified_files
+from ci_connector_ops.pipelines.utils import (
+    get_current_epoch_time,
+    get_current_git_branch,
+    get_current_git_revision,
+    get_modified_files_in_branch,
+    get_modified_files_in_commit,
+)
 
 from .groups.connectors import connectors
 from .groups.metadata import metadata
@@ -46,7 +52,9 @@ def airbyte_ci(
     )
     ctx.obj["ci_context"] = ci_context
     ctx.obj["pipeline_start_timestamp"] = pipeline_start_timestamp
-    ctx.obj["modified_files"] = get_modified_files(git_branch, git_revision, diffed_branch, is_local)
+    ctx.obj["modified_files_in_branch"] = get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
+    ctx.obj["modified_files_in_commit"] = get_modified_files_in_commit(git_branch, git_revision, is_local)
+    ctx.obj["modified_files"] = ctx.obj["modified_files_in_commit"] if git_branch == "master" else ctx.obj["modified_files_in_branch"]
 
 
 airbyte_ci.add_command(connectors)
