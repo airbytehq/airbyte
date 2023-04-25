@@ -75,8 +75,9 @@ export default function ManifestYamlDefinitions() {
     <Heading as="h2" id="variables">Interpolation variables</Heading>
     <p>All string properties that list out available variables allow <a href="https://jinja.palletsprojects.com/en/3.0.x/templates/#expressions">jinja expressions</a>. They can be used by placing them in double curly braces: <code>{"{{ config.property }}"}</code>. The following variables are available</p>
     {schema.interpolation.variables.map((variable) => <React.Fragment key={variable.title}>
-      <Heading as="h3" id={`/variables/${variable.title}`}>{variable.title}</Heading>
+      <Heading as="h3" id={`/variables/${variable.title}`}><Name name={variable.title} definition={variable} /></Heading>
       <Description text={variable.description} />
+      <Examples examples={variable.examples} />
     </React.Fragment>)}
 
     <Heading as="h2" id="macros">Interpolation macros</Heading>
