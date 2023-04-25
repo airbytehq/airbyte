@@ -42,6 +42,9 @@ function Definition({ name, definition }) {
         {Object.entries(definition.properties || {}).filter(([name]) => name !== "type" && name !== "definitions").map(([name, property]) => <li key={name}>
           <Heading as="h4"><Name name={name} definition={property} /></Heading>
           <Description text={property.description} />
+          {name === "$parameters" &&
+          <Description text={"Set parameters that are inherited to all children. See the [section in the advanced topics](/connector-development/config-based/advanced-topics#parameters) for more details."} />
+          }
           {property.anyOf && <>Type: <ul>
             {property.anyOf.map((type, index) => <li key={index}>
               {type["$ref"] && <a href={`${type["$ref"]}`}><code>{type["$ref"]}</code></a>}
