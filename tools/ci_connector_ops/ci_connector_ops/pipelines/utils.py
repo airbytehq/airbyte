@@ -320,7 +320,9 @@ async def execute_concurrently(steps: List[Callable], concurrency=5):
     return [task.value for task in tasks]
 
 
-async def export_container_to_tarball(context: ConnectorContext, container: Container) -> Tuple[Optional[File], Optional[Path]]:
+async def export_container_to_tarball(
+    context: ConnectorContext, container: Container, tar_file_name: Optional[str] = None
+) -> Tuple[Optional[File], Optional[Path]]:
     """Save the container image to the host filesystem as a tar archive.
 
     Exporting a container image as a tar archive allows user to have a dagger built container image available on their host filesystem.
@@ -331,8 +333,9 @@ async def export_container_to_tarball(context: ConnectorContext, container: Cont
     Returns:
         Tuple[Optional[File], Optional[Path]]: A tuple with the file object holding the tar archive on the host and its path.
     """
-    container_id = await container.id()
-    tar_file_name = f"{container_id[:100]}.tar"
+    if tar_file_name is None:
+        tar_file_name = f"{context.connector.technical_name}_{context.git_revision}.tar"
+    tar_file_name = slugify(tar_file_name)
     local_path = Path(f"{context.host_image_export_dir_path}/{tar_file_name}")
     export_success = await container.export(str(local_path))
     if export_success:
