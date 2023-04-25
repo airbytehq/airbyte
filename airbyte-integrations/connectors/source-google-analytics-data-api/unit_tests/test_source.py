@@ -65,8 +65,8 @@ def config_gen(config):
 def test_check(requests_mock, config_gen):
     requests_mock.register_uri("POST", "https://oauth2.googleapis.com/token", json={"access_token": "access_token", "expires_in": 3600, "token_type": "Bearer"})
     requests_mock.register_uri("GET", "https://analyticsdata.googleapis.com/v1beta/properties/108176369/metadata", json={
-        "dimensions": [{"apiName": "date"}, {"apiName": "country"}],
-        "metrics": [{"apiName": "totalUsers"}, {"apiName": "screenPageViews"}],
+        "dimensions": [{"apiName": "date"}, {"apiName": "country"}, {"apiName": "language"}, {"apiName": "browser"}],
+        "metrics": [{"apiName": "totalUsers"}, {"apiName": "screenPageViews"}, {"apiName": "sessions"}],
     })
     requests_mock.register_uri("POST", "https://analyticsdata.googleapis.com/v1beta/properties/108176369:runReport",
                                json={"dimensionHeaders": [{"name": "date"}, {"name": "country"}],
@@ -89,6 +89,8 @@ def test_check(requests_mock, config_gen):
     assert source.check(logger, config_gen(custom_reports='[{"name": "daily_active_users", "dimensions": ["date"], "metrics": ["totalUsers"]}]')) == AirbyteConnectionStatus(status=Status.FAILED, message="'custom_reports: daily_active_users already exist as a default report(s).'")
     assert source.check(logger, config_gen(custom_reports='[{"name": "name", "dimensions": ["unknown"], "metrics": ["totalUsers"]}]')) == AirbyteConnectionStatus(status=Status.FAILED, message="'custom_reports: invalid dimension(s): unknown for the custom report: name'")
     assert source.check(logger, config_gen(custom_reports='[{"name": "name", "dimensions": ["date"], "metrics": ["unknown"]}]')) == AirbyteConnectionStatus(status=Status.FAILED, message="'custom_reports: invalid metric(s): unknown for the custom report: name'")
+    assert source.check(logger, config_gen(custom_reports='[{"name": "cohort_report", "dimensions": ["cohort", "cohortNthDay"], "metrics": ["cohortActiveUsers"], "cohortSpec": {"cohorts": [{"dimension": "firstSessionDate", "dateRange": {"startDate": "2023-01-01", "endDate": "2023-01-01"}}], "cohortsRange": {"endOffset": 100}}}]')) == AirbyteConnectionStatus(status=Status.FAILED, message='"custom_reports.0.cohortSpec.cohortsRange: \'granularity\' is a required property"')
+    assert source.check(logger, config_gen(custom_reports='[{"name": "pivot_report", "dateRanges": [{ "startDate": "2020-09-01", "endDate": "2020-09-15" }], "dimensions": ["browser", "country", "language"], "metrics": ["sessions"], "pivots": {}}]')) == AirbyteConnectionStatus(status=Status.FAILED, message='"custom_reports.0.pivots: {} is not of type \'null\', \'array\'"')
     assert source.check(logger, config_gen(credentials={"auth_type": "Service", "credentials_json": "invalid"})) == AirbyteConnectionStatus(status=Status.FAILED, message="'credentials.credentials_json is not valid JSON'")
     assert source.check(logger, config_gen(date_ranges_start_date="2022-20-20")) == AirbyteConnectionStatus(status=Status.FAILED, message='"time data \'2022-20-20\' does not match format \'%Y-%m-%d\'"')
 

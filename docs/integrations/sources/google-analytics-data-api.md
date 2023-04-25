@@ -38,9 +38,9 @@ Use the service account email address to [add a user](https://support.google.com
 4. Click `Authenticate your account` by selecting Oauth or Service Account for Authentication.
 5. Log in and Authorize the Google Analytics account.
 6. Enter the [**Property ID**](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id) whose events are tracked.
-7. Enter the **Start Date** from which to replicate report data in the format YYYY-MM-DD.
+7. Enter the **Start Date** from which to replicate report data in the format YYYY-MM-DD. (Not applied to custom Cohort reports).
 8. Enter the **Custom Reports (Optional)** a JSON array describing the custom reports you want to sync from Google Analytics.
-9. Enter the **Data request time increment in days (Optional)**. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364.
+9. Enter the **Data request time increment in days (Optional)**. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364. (Not applied to custom Cohort reports).
 
 **For Airbyte Open Source:**
 
@@ -49,9 +49,9 @@ Use the service account email address to [add a user](https://support.google.com
 3. On the source setup page, select **Google Analytics 4 (GA4)** from the Source type dropdown and enter a name for this connector.
 4. Select Service Account for Authentication in dropdown list and enter **Service Account JSON Key** from Step 1.
 5. Enter the [**Property ID**](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id) whose events are tracked.
-6. Enter the **Start Date** from which to replicate report data in the format YYYY-MM-DD.
+6. Enter the **Start Date** from which to replicate report data in the format YYYY-MM-DD. (Not applied to custom Cohort reports).
 7. Enter the **Custom Reports (Optional)** a JSON array describing the custom reports you want to sync from Google Analytics.
-8. Enter the **Data request time increment in days (Optional)**. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364.
+8. Enter the **Data request time increment in days (Optional)**. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364. (Not applied to custom Cohort reports).
 
 
 ## Supported sync modes
@@ -80,12 +80,11 @@ This connector outputs the following incremental streams:
 
 ## Connector-specific features
 
-* Connector supports multiple custom reports with user provided [Dimensions and metrics](https://ga-dev-tools.web.app/dimensions-metrics-explorer/)
-
 :::note
 
-  * Custom reports should be provided in format `[{"name": "<report-name>", "dimensions": ["<dimension-name>", ...], "metrics": ["<metric-name>", ...]}]`
-  * To enable Incremental sync for Custom reports, you need to include the `date` dimension.
+  * Custom reports should be provided in format `[{"name": "<report-name>", "dimensions": ["<dimension-name>", ...], "metrics": ["<metric-name>", ...], "cohortSpec": "<cohortSpec>", "pivots": "<pivots>"}]`
+  * Both `pivots` and `cohortSpec` are optional. Detailed description of the `cohortSpec` and the `pivots` objects you can find [here](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/CohortSpec) and [here](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/Pivot).
+  * To enable Incremental sync for Custom reports, you need to include the `date` dimension (except for custom Cohort reports).
 :::
 
 ## Performance Considerations
@@ -103,12 +102,13 @@ This connector outputs the following incremental streams:
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                       |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------|
-| 0.1.3   | 2023-03-10 | [23872](https://github.com/airbytehq/airbyte/pull/23872) | Fix parse + cursor for custom reports                                         |
-| 0.1.2   | 2023-03-07 | [23822](https://github.com/airbytehq/airbyte/pull/23822) | Improve `rate limits` customer faced error messages and retry logic for `429` |
-| 0.1.1   | 2023-01-10 | [21169](https://github.com/airbytehq/airbyte/pull/21169) | Slicer updated, unit tests added                                              |
-| 0.1.0   | 2023-01-08 | [20889](https://github.com/airbytehq/airbyte/pull/20889) | Improved config validation, SAT                                               |
-| 0.0.3   | 2022-08-15 | [15229](https://github.com/airbytehq/airbyte/pull/15229) | Source Google Analytics Data Api: code refactoring                            |
-| 0.0.2   | 2022-07-27 | [15087](https://github.com/airbytehq/airbyte/pull/15087) | fix documentationUrl                                                          |
-| 0.0.1   | 2022-05-09 | [12701](https://github.com/airbytehq/airbyte/pull/12701) | Introduce Google Analytics Data API source                                    |
+| Version | Date       | Pull Request                                             | Subject                                                                                |
+|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------|
+| 0.2.0   | 2023-04-13 | [25179](https://github.com/airbytehq/airbyte/pull/25179) | Implement support for custom Cohort and Pivot reports                                  |
+| 0.1.3   | 2023-03-10 | [23872](https://github.com/airbytehq/airbyte/pull/23872) | Fix parse + cursor for custom reports                                                  |
+| 0.1.2   | 2023-03-07 | [23822](https://github.com/airbytehq/airbyte/pull/23822) | Improve `rate limits` customer faced error messages and retry logic for `429`          |
+| 0.1.1   | 2023-01-10 | [21169](https://github.com/airbytehq/airbyte/pull/21169) | Slicer updated, unit tests added                                                       |
+| 0.1.0   | 2023-01-08 | [20889](https://github.com/airbytehq/airbyte/pull/20889) | Improved config validation, SAT                                                        |
+| 0.0.3   | 2022-08-15 | [15229](https://github.com/airbytehq/airbyte/pull/15229) | Source Google Analytics Data Api: code refactoring                                     |
+| 0.0.2   | 2022-07-27 | [15087](https://github.com/airbytehq/airbyte/pull/15087) | fix documentationUrl                                                                   |
+| 0.0.1   | 2022-05-09 | [12701](https://github.com/airbytehq/airbyte/pull/12701) | Introduce Google Analytics Data API source                                             |

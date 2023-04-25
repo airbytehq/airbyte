@@ -87,13 +87,12 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
     _record_date_format = "%Y%m%d"
     primary_key = "uuid"
-    cursor_field = None
 
     metadata = MetadataDescriptor()
 
-    def __init__(self, *args, config: Mapping[str, Any], **kwargs):
-        self.cursor_field = "date" if "date" in config.get("dimensions") else []
-        super().__init__(*args, config=config, **kwargs)
+    @property
+    def cursor_field(self) -> Optional[str]:
+        return "date" if "date" in self.config.get("dimensions", {}) else []
 
     @staticmethod
     def add_primary_key() -> dict:
@@ -233,6 +232,46 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
                 start_date += datetime.timedelta(days=self.config["window_in_days"])
 
 
+class PivotReport(GoogleAnalyticsDataApiBaseStream):
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        payload = super().request_body_json(stream_state, stream_slice, next_page_token)
+        payload["pivots"] = self.config["pivots"]
+        return payload
+
+    def path(
+        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"properties/{self.config['property_id']}:runPivotReport"
+
+
+class CohortReportMixin:
+    cursor_field = []
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from [None]
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        # https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/CohortSpec#Cohort.FIELDS.date_range
+        # In a cohort request, this dateRange is required and the dateRanges in the RunReportRequest or RunPivotReportRequest
+        # must be unspecified.
+        payload = super().request_body_json(stream_state, stream_slice, next_page_token)
+        payload.pop("dateRanges")
+        payload["cohortSpec"] = self.config["cohort_spec"]
+        return payload
+
+
 class GoogleAnalyticsDataApiMetadataStream(GoogleAnalyticsDataApiAbstractStream):
     """
     https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/getMetadata
@@ -339,6 +378,14 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
 
     @staticmethod
     def instantiate_report_class(report: dict, config: Mapping[str, Any]) -> GoogleAnalyticsDataApiBaseStream:
-        return type(report["name"], (GoogleAnalyticsDataApiBaseStream,), {})(
-            config=dict(**config, metrics=report["metrics"], dimensions=report["dimensions"]), authenticator=config["authenticator"]
-        )
+        cohort_spec = report.get("cohortSpec")
+        pivots = report.get("pivots")
+        stream_config = {"metrics": report["metrics"], "dimensions": report["dimensions"], **config}
+        report_class_tuple = (GoogleAnalyticsDataApiBaseStream,)
+        if pivots:
+            stream_config["pivots"] = pivots
+            report_class_tuple = (PivotReport,)
+        if cohort_spec:
+            stream_config["cohort_spec"] = cohort_spec
+            report_class_tuple = (CohortReportMixin, *report_class_tuple)
+        return type(report["name"], report_class_tuple, {})(config=stream_config, authenticator=config["authenticator"])
