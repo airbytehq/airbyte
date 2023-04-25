@@ -2016,8 +2016,8 @@ interpolation:
       description: The current stream interval being processed. The keys are defined by the incremental sync component. Default keys are `start_time` and `end_time`.
       type: object
       examples:
-        - start_date: "2020-01-01 00:00:00.000+00:00"
-          end_date: "2020-01-02 00:00:00.000+00:00"
+        - start_time: "2020-01-01 00:00:00.000+00:00"
+          end_time: "2020-01-02 00:00:00.000+00:00"
     - title: stream_partition
       description: The current stream partition being processed. The keys are defined by the partition router component.
       type: object
