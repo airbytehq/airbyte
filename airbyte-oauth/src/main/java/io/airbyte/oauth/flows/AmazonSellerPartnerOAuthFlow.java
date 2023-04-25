@@ -41,6 +41,7 @@ public class AmazonSellerPartnerOAuthFlow extends BaseOAuth2Flow {
     IT(EU_AUTH_URL),
     NL("sellercentral.amazon.nl"),
     SA("sellercentral.amazon.sa"),
+    SE("sellercentral.amazon.se"),
     TR("sellercentral.amazon.com.tr"),
     UK(EU_AUTH_URL),
     GB(EU_AUTH_URL),
