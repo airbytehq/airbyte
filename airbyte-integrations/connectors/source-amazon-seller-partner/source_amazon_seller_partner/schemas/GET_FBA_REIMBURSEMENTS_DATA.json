@@ -3,6 +3,7 @@
   "description" : "FBA Reimbursements Data Reports",
   "type" : "object",
   "$schema" : "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
   "properties" : {
     "approval-date": {
               "type": [
