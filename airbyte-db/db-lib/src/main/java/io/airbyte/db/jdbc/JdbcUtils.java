@@ -138,7 +138,8 @@ public class JdbcUtils {
   }
 
   /**
-   * Helper method for logging bytes in a human-readable format. This method logs in SI units (B/kB/MB/GB)
+   * Helper method for logging bytes in a human-readable format. This method logs in SI units
+   * (B/kB/MB/GB)
    */
   public static String humanReadableByteCountSI(long bytes) {
     if (-1000 < bytes && bytes < 1000) {
@@ -153,7 +154,8 @@ public class JdbcUtils {
   }
 
   /**
-   * Helper method for logging bytes in a human-readable format. This method logs in Binary units (B/KiB/MiB/GiB)
+   * Helper method for logging bytes in a human-readable format. This method logs in Binary units
+   * (B/KiB/MiB/GiB)
    */
   public static String humanReadableByteCountBin(final long bytes) {
     final long absB = bytes == Long.MIN_VALUE ? Long.MAX_VALUE : Math.abs(bytes);
@@ -169,4 +171,5 @@ public class JdbcUtils {
     value *= Long.signum(bytes);
     return String.format("%.1f %ciB", value / 1024.0, ci.current());
   }
+
 }
