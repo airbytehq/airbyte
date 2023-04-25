@@ -1,12 +1,16 @@
 {% extends 'base.html' %}
 
-{% block title%}Connector Registries{% endblock %}
+{% block title%}Airbyte Connector Registry{% endblock %}
 
 {% block content %}
-<h1>Connector Registries</h1>
+<h1>Airbyte Connector Registries</h1>
 <h2>Sources</h2>
-{{ sources_table }}
+<div class="table-container test">
+  {{ sources_table_html }}
+</div>
 
 <h2>Destinations</h2>
-{{ destinations_table }}
+<div class="table-container">
+  {{ destinations_table_html }}
+</div>
 {% endblock %}
