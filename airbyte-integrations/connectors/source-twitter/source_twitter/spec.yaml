@@ -6,6 +6,7 @@ connectionSpecification:
   required:
     - api_key
     - query
+    - tweet_fields
   additionalProperties: true
   properties:
     api_key:
@@ -17,7 +18,7 @@ connectionSpecification:
     query:
       type: string
       title: Search Query
-      description: Query for matching Tweets. You can learn how to build this query by reading <a href="https://developer.twitter.com/en/docs/twitter-api/tweets/search/integrate/build-a-query"> build a query guide </a>.
+      description: Query for matching Tweets. You can learn how to build this query by reading <a href="https://developer.twitter.com/en/docs/twitter-api/tweets/search/integrate/build-a-query">build a query guide</a>.
       order: 1
     start_date:
       type: string
@@ -31,3 +32,34 @@ connectionSpecification:
       description: "The end date for retrieving tweets must be a minimum of 10 seconds prior to the request time."
       format: date-time
       order: 3
+    tweet_fields:
+      type: string
+      title: Tweet Fields
+      description: Adittional information related to the Tweet object. See the <a href="https://developer.twitter.com/en/docs/twitter-api/data-dictionary/object-model/tweet">docs</a> for more information.
+      default: author_id,conversation_id,created_at,in_reply_to_user_id,lang
+      order: 4
+    user_fields:
+      type: string
+      title: User Fields
+      description: Adittional information related to the User object. See the <a href="https://developer.twitter.com/en/docs/twitter-api/data-dictionary/object-model/user">docs</a> for more information.
+      order: 5
+    media_fields:
+      type: string
+      title: Media Fields
+      description: Adittional information related to the Media object. See the <a href="https://developer.twitter.com/en/docs/twitter-api/data-dictionary/object-model/media">docs</a> for more information.
+      order: 6
+    poll_fields:
+      type: string
+      title: Poll Fields
+      description: Adittional information related to the Poll object. See the <a href="https://developer.twitter.com/en/docs/twitter-api/data-dictionary/object-model/poll">docs</a> for more information.
+      order: 7
+    place_fields:
+      type: string
+      title: Place Fields
+      description: Adittional information related to the Place object. See the <a href="https://developer.twitter.com/en/docs/twitter-api/data-dictionary/object-model/place">docs</a> for more information.
+      order: 8
+    expansions:
+      title: Expansions
+      description: Expand objects previously referenced in the other parameters. See the <a href="https://developer.twitter.com/en/docs/twitter-api/expansions">docs</a> for more information.
+      type: string
+      order: 9

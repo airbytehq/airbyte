@@ -3,7 +3,18 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": {
-        "name": "tweets"
+        "name": "tweets_basic"
+      },
+      "stream_state": {
+        "created_at": "2099-01-01T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "tweets_advanced"
       },
       "stream_state": {
         "created_at": "2099-01-01T00:00:00.000Z"

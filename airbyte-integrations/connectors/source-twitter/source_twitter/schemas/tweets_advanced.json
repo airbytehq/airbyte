@@ -1,0 +1,273 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "data": {
+      "items": {
+        "properties": {
+          "author_id": {
+            "type": "string"
+          },
+          "context_annotations": {
+            "items": {
+              "properties": {
+                "domain": {
+                  "properties": {
+                    "description": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "entity": {
+                  "properties": {
+                    "description": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "edit_history_tweet_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "entities": {
+            "properties": {
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "end": {
+                      "type": "integer"
+                    },
+                    "normalized_text": {
+                      "type": "string"
+                    },
+                    "probability": {
+                      "type": "number"
+                    },
+                    "start": {
+                      "type": "integer"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "hashtags": {
+                "items": {
+                  "properties": {
+                    "end": {
+                      "type": "integer"
+                    },
+                    "start": {
+                      "type": "integer"
+                    },
+                    "tag": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "mentions": {
+                "items": {
+                  "properties": {
+                    "end": {
+                      "type": "integer"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "start": {
+                      "type": "integer"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "urls": {
+                "items": {
+                  "properties": {
+                    "description": {
+                      "type": "string"
+                    },
+                    "display_url": {
+                      "type": "string"
+                    },
+                    "end": {
+                      "type": "integer"
+                    },
+                    "expanded_url": {
+                      "type": "string"
+                    },
+                    "images": {
+                      "items": {
+                        "properties": {
+                          "height": {
+                            "type": "integer"
+                          },
+                          "url": {
+                            "type": "string"
+                          },
+                          "width": {
+                            "type": "integer"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "media_key": {
+                      "type": "string"
+                    },
+                    "start": {
+                      "type": "integer"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "unwound_url": {
+                      "type": "string"
+                    },
+                    "url": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          },
+          "id": {
+            "type": "string"
+          },
+          "lang": {
+            "type": "string"
+          },
+          "public_metrics": {
+            "properties": {
+              "impression_count": {
+                "type": "integer"
+              },
+              "like_count": {
+                "type": "integer"
+              },
+              "quote_count": {
+                "type": "integer"
+              },
+              "reply_count": {
+                "type": "integer"
+              },
+              "retweet_count": {
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "includes": {
+      "properties": {
+        "users": {
+          "items": {
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "location": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "public_metrics": {
+                "properties": {
+                  "followers_count": {
+                    "type": "integer"
+                  },
+                  "following_count": {
+                    "type": "integer"
+                  },
+                  "listed_count": {
+                    "type": "integer"
+                  },
+                  "tweet_count": {
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
+              },
+              "username": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "meta": {
+      "properties": {
+        "newest_id": {
+          "type": "string"
+        },
+        "next_token": {
+          "type": "string"
+        },
+        "oldest_id": {
+          "type": "string"
+        },
+        "result_count": {
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "type": "object"
+}
