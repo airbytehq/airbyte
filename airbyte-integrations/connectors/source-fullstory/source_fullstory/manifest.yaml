@@ -7,15 +7,6 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['api_key'] }}"
-
-  large_value_filter:
-    type: CustomFilter
-    filter_function: |
-      def filter_records(records, stream_state, config):
-          max_state_value = stream_state.get("createdAt", "9999-04-12T18:13:36.000Z")
-          if max_state_value == "9999-04-12T18:13:36.000Z":
-              return []
-          return records
   retriever:
     type: SimpleRetriever
     record_selector:
@@ -48,8 +39,6 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-      filters:
-        - $ref: "#/definitions/large_value_filter"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "createdAt"
@@ -83,8 +72,6 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        filters:
-          - $ref: "#/definitions/large_value_filter"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "created"
