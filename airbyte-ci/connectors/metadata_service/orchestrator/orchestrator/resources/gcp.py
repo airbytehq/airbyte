@@ -13,8 +13,12 @@ from dagster._core.storage.file_manager import (
     check_file_like_obj,
 )
 
+class PublicGCSFileHandle(GCSFileHandle):
+    @property
+    def public_url(self):
+        return f"https://storage.googleapis.com/{self.gcs_bucket}/{self.gcs_key}"
 
-class ContentTypeAwareGCSFileManger(GCSFileManager):
+class ContentTypeAwareGCSFileManager(GCSFileManager):
     """
     Slighlty modified dagster_gcp.gcs.file_manager.GCSFileManager
     to allow setting the content type of the file
@@ -45,11 +49,7 @@ class ContentTypeAwareGCSFileManger(GCSFileManager):
         blob = bucket_obj.blob(gcs_key)
         blob.content_type = self.get_content_type(ext)
         blob.upload_from_file(file_obj)
-        return GCSFileHandle(self._gcs_bucket, gcs_key)
-
-
-def get_public_url_for_gcs_file_handle(file_handle: GCSFileHandle):
-    return f"https://storage.googleapis.com/{file_handle.gcs_bucket}/{file_handle.gcs_key}"
+        return PublicGCSFileHandle(self._gcs_bucket, gcs_key)
 
 
 @resource(config_schema={"gcp_gcs_cred_string": StringSource})
@@ -92,7 +92,7 @@ def gcs_file_manager(resource_context) -> GCSFileManager:
 
     storage_client = resource_context.resources.gcp_gcs_client
 
-    return ContentTypeAwareGCSFileManger(
+    return ContentTypeAwareGCSFileManager(
         client=storage_client,
         gcs_bucket=resource_context.resource_config["gcs_bucket"],
         gcs_base_key=resource_context.resource_config["prefix"],

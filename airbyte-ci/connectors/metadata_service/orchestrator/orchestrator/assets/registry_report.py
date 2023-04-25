@@ -3,7 +3,6 @@ from dagster import MetadataValue, Output, asset
 from typing import List
 from orchestrator.templates.render import render_connector_registry_locations_html
 from orchestrator.config import CONNECTOR_REPO_NAME, CONNECTORS_TEST_RESULT_BUCKET_URL
-from orchestrator.resources.gcp import get_public_url_for_gcs_file_handle
 import urllib.parse
 
 GROUP_NAME = "registry_reports"
@@ -15,9 +14,9 @@ CLOUD_SUFFIX = "_cloud"
 # 🔗 HTML Renderers
 
 
-def simple_link_html(url):
+def simple_link_html(url: str) -> str:
     if url:
-        return f'<a href="{url}" target="_blank">🔗 Link</a>'
+        return f"<a href=\"{url}\" target=\"_blank\">🔗 Link</a>"
     else:
         return None
 
@@ -27,23 +26,23 @@ def icon_image_html(icon):
         f"https://raw.githubusercontent.com/{CONNECTOR_REPO_NAME}/master/airbyte-config-oss/init-oss/src/main/resources/icons"
     )
     icon_size = "30"
-    icon_link = f'<img src="{github_icon_base}/{icon}" height="{icon_size}" height="{icon_size}"/>' if icon else "x"
+    icon_link = f"<img src=\"{github_icon_base}/{icon}\" height=\"{icon_size}\" height=\"{icon_size}\"/>" if icon else "x"
     return icon_link
 
 
-def test_badge_html(test_summary_url):
+def test_badge_html(test_summary_url: str) -> str:
     if not test_summary_url:
         return None
 
     image_shield_base = "https://img.shields.io/endpoint"
     test_summary_url_encoded = urllib.parse.quote(test_summary_url)
-    return f'<img src="{image_shield_base}?url={test_summary_url_encoded}">'
+    return f"<img src=\"{image_shield_base}?url={test_summary_url_encoded}\">"
 
 
 # 🖼️ Dataframe Columns
 
 
-def github_url(docker_repo_name, github_connector_folders):
+def github_url(docker_repo_name: str, github_connector_folders: List[str]) -> str:
     if not isinstance(docker_repo_name, str):
         return None
 
@@ -54,7 +53,7 @@ def github_url(docker_repo_name, github_connector_folders):
         return None
 
 
-def issue_url(row):
+def issue_url(row: pd.DataFrame) -> str:
     docker_repo = row["dockerRepository_oss"]
     if not isinstance(docker_repo, str):
         print(f"no docker repo: {row}")
@@ -68,7 +67,7 @@ def issue_url(row):
     return f"https://github.com/{CONNECTOR_REPO_NAME}/issues?q=is:open+is:issue+label:{issues_label}"
 
 
-def merge_docker_repo_and_version(row, suffix):
+def merge_docker_repo_and_version(row: pd.DataFrame, suffix: str) -> str:
     docker_repo = row[f"dockerRepository{suffix}"]
     docker_version = row[f"dockerImageTag{suffix}"]
 
@@ -78,7 +77,7 @@ def merge_docker_repo_and_version(row, suffix):
     return f"{docker_repo}:{docker_version}"
 
 
-def test_summary_url(row):
+def test_summary_url(row: pd.DataFrame) -> str:
     docker_repo_name = row["dockerRepository_oss"]
     if not isinstance(docker_repo_name, str):
         return None
@@ -92,8 +91,8 @@ def test_summary_url(row):
 
 
 def augment_and_normalize_connector_dataframes(
-    cloud_df: pd.DataFrame, oss_df: pd.DataFrame, primaryKey: str, connector_type: str, github_connector_folders: List[str]
-):
+    cloud_df: pd.DataFrame, oss_df: pd.DataFrame, primary_key: str, connector_type: str, github_connector_folders: List[str]
+) -> pd.DataFrame:
     """
     Normalize the cloud and oss connector dataframes and merge them into a single dataframe.
     Augment the dataframe with additional columns that indicate if the connector is in the cloud registry, oss registry, and if the metadata is valid.
@@ -106,10 +105,10 @@ def augment_and_normalize_connector_dataframes(
     oss_df["is_oss"] = True
 
     # Merge the two registries on the 'image' and 'version' columns
-    total_registry = pd.merge(oss_df, cloud_df, how="outer", suffixes=(OSS_SUFFIX, CLOUD_SUFFIX), on=primaryKey)
+    total_registry = pd.merge(oss_df, cloud_df, how="outer", suffixes=(OSS_SUFFIX, CLOUD_SUFFIX), on=primary_key)
 
     # remove duplicates from the merged dataframe
-    total_registry = total_registry.drop_duplicates(subset=primaryKey, keep="first")
+    total_registry = total_registry.drop_duplicates(subset=primary_key, keep="first")
 
     # Replace NaN values in the 'is_cloud' and 'is_oss' columns with False
     total_registry[["is_cloud", "is_oss"]] = total_registry[["is_cloud", "is_oss"]].fillna(False)
@@ -125,10 +124,10 @@ def augment_and_normalize_connector_dataframes(
     # Merge docker repo and version into separate columns
     total_registry["docker_image_oss"] = total_registry.apply(lambda x: merge_docker_repo_and_version(x, OSS_SUFFIX), axis=1)
     total_registry["docker_image_cloud"] = total_registry.apply(lambda x: merge_docker_repo_and_version(x, CLOUD_SUFFIX), axis=1)
-    total_registry["docker_images_match"] = total_registry.apply(lambda x: x["docker_image_oss"] == x["docker_image_cloud"], axis=1)
+    total_registry["docker_images_match"] = total_registry["docker_image_oss"] == total_registry["docker_image_cloud"]
 
-    # Rename column primaryKey to 'definitionId'
-    total_registry.rename(columns={primaryKey: "definitionId"}, inplace=True)
+    # Rename column primary_key to 'definitionId'
+    total_registry.rename(columns={primary_key: "definitionId"}, inplace=True)
 
     return total_registry
 
@@ -171,7 +170,7 @@ def all_sources_dataframe(legacy_cloud_sources_dataframe, legacy_oss_sources_dat
     return augment_and_normalize_connector_dataframes(
         cloud_df=legacy_cloud_sources_dataframe,
         oss_df=legacy_oss_sources_dataframe,
-        primaryKey="sourceDefinitionId",
+        primary_key="sourceDefinitionId",
         connector_type="source",
         github_connector_folders=github_connector_folders,
     )
@@ -188,7 +187,7 @@ def all_destinations_dataframe(
     return augment_and_normalize_connector_dataframes(
         cloud_df=legacy_cloud_destinations_dataframe,
         oss_df=legacy_oss_destinations_dataframe,
-        primaryKey="destinationDefinitionId",
+        primary_key="destinationDefinitionId",
         connector_type="destination",
         github_connector_folders=github_connector_folders,
     )
@@ -283,7 +282,7 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
     metadata = {
         "first_10_preview": MetadataValue.md(all_connectors_dataframe.head(10).to_markdown()),
         "json": MetadataValue.json(json_string),
-        "json_gcs_url": MetadataValue.url(get_public_url_for_gcs_file_handle(json_file_handle)),
-        "html_gcs_url": MetadataValue.url(get_public_url_for_gcs_file_handle(html_file_handle)),
+        "json_gcs_url": MetadataValue.url(json_file_handle.public_url),
+        "html_gcs_url": MetadataValue.url(html_file_handle.public_url),
     }
     return Output(metadata=metadata, value=html_file_handle)
