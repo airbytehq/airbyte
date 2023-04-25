@@ -32,6 +32,8 @@ def github_url(docker_repo_name: str, github_connector_folders: List[str]) -> st
 
 def icon_url(row: pd.DataFrame) -> str:
     icon_file_name = row["icon_oss"]
+    if not isinstance(icon_file_name, str):
+        return None
 
     github_icon_base = (
         f"https://raw.githubusercontent.com/{CONNECTOR_REPO_NAME}/master/airbyte-config-oss/init-oss/src/main/resources/icons"
@@ -106,7 +108,7 @@ def augment_and_normalize_connector_dataframes(
 
     total_registry["issue_url"] = total_registry.apply(issue_url, axis=1)
     total_registry["test_summary_url"] = total_registry.apply(test_summary_url, axis=1)
-    total_registry["icon_url"] = total_registry.apply(test_summary_url, axis=1)
+    total_registry["icon_url"] = total_registry.apply(icon_url, axis=1)
 
     # Merge docker repo and version into separate columns
     total_registry["docker_image_oss"] = total_registry.apply(lambda x: merge_docker_repo_and_version(x, OSS_SUFFIX), axis=1)
