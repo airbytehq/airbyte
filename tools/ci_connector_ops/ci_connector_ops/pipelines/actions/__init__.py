@@ -34,7 +34,7 @@ async def run_steps(
     if any(result.status is StepStatus.FAILURE for result in results):
         skipped_results = []
         for step_and_run_args in steps_and_run_args:
-            if isinstance(steps_and_run_args, Tuple):
+            if isinstance(step_and_run_args, Tuple):
                 skipped_results.append(step_and_run_args[0].skip())
             else:
                 skipped_results.append(step_and_run_args.skip())

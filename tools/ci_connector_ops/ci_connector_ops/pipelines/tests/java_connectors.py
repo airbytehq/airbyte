@@ -79,7 +79,9 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
         context.logger.info(f"This connector supports normalization: will build {normalization_image}.")
         build_normalization_results = await BuildOrPullNormalization(context, normalization_image).run()
         normalization_container = build_normalization_results.output_artifact
-        normalization_tar_file, _ = await export_container_to_tarball(context, normalization_container)
+        normalization_tar_file, _ = await export_container_to_tarball(
+            context, normalization_container, tar_file_name=f"{context.connector.normalization_repository}_{context.git_revision}.tar"
+        )
         step_results.append(build_normalization_results)
     else:
         normalization_tar_file = None
