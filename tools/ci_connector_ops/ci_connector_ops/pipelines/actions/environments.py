@@ -624,7 +624,18 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
     )
 
 
-def with_airbyte_python_connector(context: ConnectorContext, build_platform: Platform):
+def with_airbyte_python_connector(context: ConnectorContext, build_platform):
+    pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
+    return (
+        context.dagger_client.container(platform=build_platform)
+        .with_mounted_cache("/root/.cache/pip", pip_cache)
+        .build(context.get_connector_dir())
+        .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
+        .with_label("io.airbyte.name", context.metadata["dockerRepository"])
+    )
+
+
+def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_platform: Platform):
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
     base = context.dagger_client.container(platform=build_platform).from_("python:3.9.11-alpine3.15")
     snake_case_name = context.connector.technical_name.replace("-", "_")
