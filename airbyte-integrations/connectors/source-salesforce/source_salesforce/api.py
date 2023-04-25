@@ -206,7 +206,7 @@ UNSUPPORTED_STREAMS = ["ActivityMetric", "ActivityMetricRollup"]
 
 class Salesforce:
     logger = logging.getLogger("airbyte")
-    version = "v52.0"
+    version = "v53.0"
     parallel_tasks_size = 100
     # https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm
     # Request Size Limits
