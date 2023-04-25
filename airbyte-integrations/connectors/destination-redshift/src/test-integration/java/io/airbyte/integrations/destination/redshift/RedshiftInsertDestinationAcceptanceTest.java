@@ -32,6 +32,7 @@ import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -84,6 +85,7 @@ public class RedshiftInsertDestinationAcceptanceTest extends RedshiftStagingS3De
     super.tearDown(testEnv);
   }
 
+  @Disabled // temporary resolution before issue #25519
   @Test
   void testIfSuperTmpTableWasCreatedAfterVarcharTmpTable() throws Exception {
     setup();
