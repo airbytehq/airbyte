@@ -43,6 +43,7 @@ def test_upload_metadata_to_gcs_valid_metadata(mocker, valid_metadata_yaml_files
 
     mocker.patch.object(gcs_upload.service_account.Credentials, "from_service_account_file", mocker.Mock(return_value=mock_credentials))
     mocker.patch.object(gcs_upload.storage, "Client", mocker.Mock(return_value=mock_storage_client))
+    mocker.patch.object(gcs_upload, "validate_metadata_images_in_dockerhub", mocker.Mock(return_value=(True, None)))
 
     # Call function under tests
 

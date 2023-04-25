@@ -1294,6 +1294,24 @@ dotenv = ["python-dotenv (>=0.10.4)"]
 email = ["email-validator (>=1.0.3)"]
 
 [[package]]
+name = "pydash"
+version = "7.0.1"
+description = "The kitchen sink of Python utility libraries for doing \"stuff\" in a functional way. Based on the Lo-Dash Javascript library."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pydash-7.0.1-py3-none-any.whl", hash = "sha256:bff1ac86758a8f78c3dfd1edb406e3a234fda9be2575eb060c25d5cc01d1c776"},
+    {file = "pydash-7.0.1.tar.gz", hash = "sha256:35a3d1e9508481ebeee5e134956d0ad382d3f2c51aba92ce24e133673b2e2898"},
+]
+
+[package.dependencies]
+typing-extensions = ">=3.10"
+
+[package.extras]
+dev = ["Sphinx", "black", "build", "coverage", "docformatter", "flake8", "flake8-black", "flake8-bugbear", "flake8-isort", "importlib-metadata (<5)", "invoke", "isort", "mypy", "pylint", "pytest", "pytest-cov", "pytest-mypy-testing", "sphinx-autodoc-typehints", "sphinx-rtd-theme", "tox", "twine", "wheel"]
+
+[[package]]
 name = "pyparsing"
 version = "3.0.9"
 description = "pyparsing module - Classes and methods to define and execute parsing grammars"
@@ -1684,4 +1702,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "f1bf172c1612339ff9c900073e1dc7d8b5cae2936b7ca9c2fa43b39c8ecb0eb0"
+content-hash = "4ea24f7e8608b98f9b92168804acea0b0ede5669479ed248977fce4e2b9cf383"
