@@ -2,7 +2,7 @@ import Diff from './assets/record-processing-schema-diff.png';
 
 # Record processing
 
-Builder connectors always make HTTP requests, receive the responses and emit records. Besides making the right requests, it's important to properly hand over the records to the system:
+Connectors built with the connector builder always make HTTP requests, receive the responses and emit records. Besides making the right requests, it's important to properly hand over the records to the system:
 * Extract the records (record selection)
 * Do optional post-processing (transformations)
 * Provide record meta data to the system to inform downstream processes (primary key and declared schema)
@@ -337,3 +337,5 @@ The second difference will likely cause problems:
 The `subject` field was detected as `string`, but is configured to be a `number` in the declared schema. As the API returned string subjects during testing, it's likely this will also happen during syncs which would render the declared schema inaccurate. Depending on the situation this can be fixed in multiple ways:
 * If the API changed and subject is always a string now, the declared schema should be updated to reflect this: `"subject": { "type": "string" }`
 * If the API is sometimes returning subject as number of string depending on the record, the declared schema should be updated to allow both data types: `"subject": { "type": ["string","number"] }`
+
+A common situation is that certain record fields do not have any any values for the test read data, so they are set to `null`. In the detected schema, these field are of type `"null"` which is most likely not correct for all cases. In these situations, the declared schema should be manually corrected.

@@ -47,7 +47,7 @@ As this fulfills the requirements for incremental syncs, we can configure the "I
 * "Cursor field" is set to `webPublicationDate`
 * "Datetime format" is set to `%Y-%m-%dT%H:%M:%SZ`
 * "Cursor granularity is set to `PT1S` as this API can handle date/time values on the second level
-* "Start datetime" is set to "config value"
+* "Start datetime" is set to "user input" to allow the user of the connector configuring a Source to specify the time to start syncing
 * "End datetime" is set to "now" to fetch all articles up to the current date
 * "Inject start time into outgoing HTTP request" is set to `request_parameter` with "Field" set to `from-date`
 * "Inject end time into outgoing HTTP request" is set to `request_parameter` with "Field" set to `to-date`
@@ -79,6 +79,10 @@ curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=<b>2023-
 </pre>
 
 The `from-date` is set to the cutoff date of articles synced already and the `to-date` is set to the current date.
+
+:::info
+In some cases, it's helpful to reference the start and end date of the interval that's currently synced, for example if it needs to be injected into the URL path of the current stream. In these cases it can be referenced using the `{{ stream_interval.start_date }}` and `{{ stream_interval.end_date }}` placeholders. Check out [the tutorial](./tutorial.mdx#adding-incremental-reads) for such a case.
+:::
 
 ## Advanced settings
 
