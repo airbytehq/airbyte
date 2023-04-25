@@ -1226,7 +1226,7 @@
     hosts:
       - "*.mktorest.com"
 - name: Merge
-  sourceDefinitionId: <To-be-given>
+  sourceDefinitionId: 23240e9e-d14a-43bc-899f-72ea304d1994
   dockerRepository: airbyte/source-merge
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/merge
