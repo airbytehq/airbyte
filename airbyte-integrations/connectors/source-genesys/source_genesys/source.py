@@ -17,7 +17,8 @@ class GenesysStream(HttpStream, ABC):
     url_base = "https://api.mypurecloud.com.au/api/v2/"
     page_size = 500
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, api_base_url, *args, **kwargs):
+        self.url_base = api_base_url + "/api/v2/"
         super().__init__(*args, **kwargs)
 
     def backoff_time(self, response: requests.Response) -> Optional[int]:
@@ -29,7 +30,8 @@ class GenesysStream(HttpStream, ABC):
         response_json = response.json()
 
         if response_json.get("nextUri"):
-            next_query_string = urllib.parse.urlsplit(response_json.get("nextUri")).query
+            next_query_string = urllib.parse.urlsplit(
+                response_json.get("nextUri")).query
             return dict(urllib.parse.parse_qsl(next_query_string))
 
     def request_params(
@@ -268,7 +270,24 @@ class SourceGenesys(AbstractSource):
             "Asia Pacific (Sydney)": "https://login.mypurecloud.com.au",
         }
         base_url = GENESYS_TENANT_ENDPOINT_MAP.get(config["tenant_endpoint"])
-        args = {"authenticator": GenesysOAuthAuthenticator(base_url, config["client_id"], config["client_secret"])}
+
+        GENESYS_API_SERVER_MAP: Dict = {
+            "Americas (US East)": "https://api.mypurecloud.com",
+            "Americas (US East 2)": "https://api.use2.us-gov-pure.cloud",
+            "Americas (US West)": "https://api.usw2.pure.cloud",
+            "Americas (Canada)": "https://api.cac1.pure.cloud",
+            "Americas (São Paulo)": "https://api.sae1.pure.cloud",
+            "EMEA (Frankfurt)": "https://api.mypurecloud.de",
+            "EMEA (Dublin)": "https://api.mypurecloud.ie",
+            "EMEA (London)": "https://api.euw2.pure.cloud",
+            "Asia Pacific (Mumbai)": "https://api.aps1.pure.cloud",
+            "Asia Pacific (Seoul)": "https://api.apne2.pure.cloud",
+            "Asia Pacific (Sydney)": "https://api.mypurecloud.com.au",
+        }
+
+        api_base_url = GENESYS_API_SERVER_MAP.get(config["tenant_endpoint"])
+        args = {"api_base_url": api_base_url, "authenticator": GenesysOAuthAuthenticator(
+            base_url, config["client_id"], config["client_secret"])}
 
         # response = self.get_connection_response(config)
         # response.raise_for_status()
