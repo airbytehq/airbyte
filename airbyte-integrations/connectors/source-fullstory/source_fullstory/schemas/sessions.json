@@ -5,13 +5,13 @@
   "type": "object",
   "properties": {
     "userId": {
-      "type": ["null", "integer"]
+      "type": ["null", "integer", "string"]
     },
     "sessionId": {
-      "type": ["null", "integer"]
+      "type": ["null", "integer", "string"]
     },
     "createdTime": {
-      "type": ["null", "integer"]
+      "type": ["null", "integer", "string"]
     },
     "fsUrl": {
       "type": ["null", "string"]

@@ -15,30 +15,29 @@ definitions:
         type: DpathExtractor
         field_path: ["{{ parameters.name }}"]
       paginator:
-        type: NoPagination
-      # paginator:
-      #   type: "DefaultPaginator"
-      #   page_size_option:
-      #     type: "RequestOption"
-      #     inject_into: "request_parameter"
-      #     field_name: "{{ response['meta']['per_page'] }}"
-      #   pagination_strategy:
-      #     type: "PageIncrement"
-      #     page_size: 5
-      # page_token_option:
-      #   type: "RequestOption"
-      #   inject_into: "request_parameter"
-      #   field_name: "{{ response['meta']['page'] }}"
+        type: "DefaultPaginator"
+
+        pagination_strategy:
+          type: "TokenBased"
+          token_field: "nextPaginationToken"
+          token_option:
+            type: "RequestOption"
+            inject_into: "request_parameter"
+            field_name: "pagination_token"
+
+    requester:
+      $ref: "#/definitions/requester"
+
+  base_stream:
+    retriever:
+      $ref: "#/definitions/retriever"
 
   operations_stream:
     type: DeclarativeStream
     $parameters:
       name: "operations"
       path: "/operations/v1"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
+    $ref: "#/definitions/base_stream"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "createdAt"
@@ -58,20 +57,15 @@ definitions:
     $parameters:
       name: "sessions"
       path: "/sessions/v2?{{ 'uid=' ~ config['uid'] }}"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
+    $ref: "#/definitions/base_stream"
 
   segments_stream:
     type: DeclarativeStream
     $parameters:
       name: "segments"
       path: "/segments/v1"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
+    $ref: "#/definitions/base_stream"
+
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "created"
@@ -92,70 +86,49 @@ definitions:
     $parameters:
       name: "blockrules"
       path: "/settings/recording/v1/blocking"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
+    $ref: "#/definitions/base_stream"
 
   domainsettings_stream:
     type: DeclarativeStream
     $parameters:
       name: "domainsettings"
       path: "/settings/recording/v1/domain"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
+    $ref: "#/definitions/base_stream"
 
   geosettings_stream:
     type: DeclarativeStream
     $parameters:
       name: "geosettings"
       path: "/settings/recording/v1/geo"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
+    $ref: "#/definitions/base_stream"
 
   recordingfeatures_stream:
     type: DeclarativeStream
     $parameters:
       name: "recordingfeatures"
       path: "/settings/recording/v1/features"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
+    $ref: "#/definitions/base_stream"
 
   targetrules_stream:
     type: DeclarativeStream
     $parameters:
       name: "sessionTargetingRules"
       path: "/settings/recording/v1/targeting"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
+    $ref: "#/definitions/base_stream"
 
   webhooks_stream:
     type: DeclarativeStream
     $parameters:
       name: "webhooks"
       path: "/webhooks/v1/endpoints"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
+    $ref: "#/definitions/base_stream"
 
   event-types_stream:
     type: DeclarativeStream
     $parameters:
       name: "eventDefs"
       path: "/webhooks/v1/event-types"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
+    $ref: "#/definitions/base_stream"
 
 streams:
   - "#/definitions/sessions_stream"
