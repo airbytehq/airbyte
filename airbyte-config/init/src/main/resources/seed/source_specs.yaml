@@ -737,8 +737,8 @@
             - "1980"
           type: "integer"
         region:
-          title: "AWSRegion"
-          description: "An enumeration."
+          title: "Region"
+          description: "The region where your Amazon store is."
           enum:
             - "AE"
             - "AU"
@@ -774,8 +774,8 @@
       additionalProperties: true
       definitions:
         AWSRegion:
-          title: "AWSRegion"
-          description: "An enumeration."
+          title: "Region"
+          description: "The region where your Amazon store is."
           enum:
             - "AE"
             - "AU"
