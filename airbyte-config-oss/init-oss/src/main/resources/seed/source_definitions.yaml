@@ -2036,7 +2036,7 @@
 - name: SurveyCTO
   sourceDefinitionId: dd4632f4-15e0-4649-9b71-41719fb1fdee
   dockerRepository: airbyte/source-surveycto
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/surveycto
   icon: surveycto.svg
   sourceType: api
