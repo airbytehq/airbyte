@@ -18,7 +18,7 @@ from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
-from .utils import analytics_columns, to_datetime_str
+from .utils import get_analytics_columns, to_datetime_str
 
 # For Pinterest analytics streams rate limit is 300 calls per day / per user.
 # once hit - response would contain `code` property with int.
@@ -179,7 +179,7 @@ class IncrementalPinterestStream(PinterestStream, ABC):
         date_slices = []
 
         while start_date < end_date:
-            # the amount of days for each data-chunk begining from start_date
+            # the amount of days for each data-chunk beginning from start_date
             end_date_slice = start_date.add(days=self.window_in_days)
             date_slices.append({"start_date": to_datetime_str(start_date), "end_date": to_datetime_str(end_date_slice)})
 
@@ -246,7 +246,7 @@ class PinterestAnalyticsStream(IncrementalPinterestSubStream):
                 "start_date": stream_slice["start_date"],
                 "end_date": stream_slice["end_date"],
                 "granularity": self.granularity,
-                "columns": analytics_columns,
+                "columns": get_analytics_columns(),
             }
         )
 
@@ -339,7 +339,7 @@ class AdAnalytics(PinterestAnalyticsStream):
 class SourcePinterest(AbstractSource):
     def _validate_and_transform(self, config: Mapping[str, Any]):
         today = pendulum.today()
-        AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP = 914
+        AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP = 89
         latest_date_allowed_by_api = today.subtract(days=AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP)
 
         start_date = config["start_date"]
