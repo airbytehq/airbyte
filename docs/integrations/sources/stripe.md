@@ -14,7 +14,7 @@ This page guides you through the process of setting up the Stripe source connect
 ## Set up the Stripe source connector
 
 1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
-2. Click **Sources** and then click **+ New source**. 
+2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Stripe** from the Source type dropdown.
 4. Enter a name for your source.
 5. For **Account ID**, enter your [Stripe `Account ID`](https://dashboard.stripe.com/settings/account).
@@ -85,6 +85,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.1   | 2023-04-24 | [23389](https://github.com/airbytehq/airbyte/pull/23389) | Add `customer_tax_ids` to `Invoices` |
 | 3.4.0   | 2023-03-20 | [23963](https://github.com/airbytehq/airbyte/pull/23963) | Add `SetupIntents` stream |
 | 3.3.0   | 2023-04-12 | [25136](https://github.com/airbytehq/airbyte/pull/25136) | Add stream `Accounts`                                                        |
 | 3.2.0   | 2023-04-10 | [23624](https://github.com/airbytehq/airbyte/pull/23624) | Add new stream `Subscription Schedule`                                                                                                               |

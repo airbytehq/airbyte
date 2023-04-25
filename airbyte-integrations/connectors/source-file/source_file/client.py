@@ -364,6 +364,8 @@ class Client:
             return "number"
         if dtype == "bool" and (not current_type or current_type == "boolean"):
             return "boolean"
+        if dtype == "datetime64[ns]":
+            return "datetime"
         return "string"
 
     @property
@@ -419,8 +421,14 @@ class Client:
             for col in df.columns:
                 # if data type of the same column differs in dataframes, we choose the broadest one
                 prev_frame_column_type = fields.get(col)
-                fields[col] = self.dtype_to_json_type(prev_frame_column_type, df[col].dtype)
-        return {field: {"type": [fields[field], "null"]} for field in fields}
+                df_type = df[col].dtype
+                fields[col] = self.dtype_to_json_type(prev_frame_column_type, df_type)
+        return {
+            field: (
+                {"type": ["string", "null"], "format": "datetime"} if fields[field] == "datetime" else {"type": [fields[field], "null"]}
+            )
+            for field in fields
+        }
 
     def streams(self, empty_schema: bool = False) -> Iterable:
         """Discovers available streams"""
