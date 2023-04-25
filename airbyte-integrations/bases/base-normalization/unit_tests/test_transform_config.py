@@ -137,6 +137,7 @@ class TestTransformConfig:
             "credentials_json": '{ "type": "service_account-json" }',
             "transformation_priority": "interactive",
             "dataset_location": "EU",
+            "transformation_threads": 16
         }
 
         actual_output = TransformConfig().transform_bigquery(input)
@@ -149,7 +150,7 @@ class TestTransformConfig:
             "keyfile_json": {"type": "service_account-json"},
             "location": "EU",
             "retries": 3,
-            "threads": 8,
+            "threads": 16,
         }
 
         actual_keyfile = actual_output["keyfile_json"]
@@ -218,6 +219,7 @@ class TestTransformConfig:
             "password": "password123",
             "database": "my_db",
             "schema": "public",
+            "transformation_threads": 16
         }
 
         actual = TransformConfig().transform_postgres(input)
@@ -228,7 +230,7 @@ class TestTransformConfig:
             "pass": "password123",
             "port": 5432,
             "schema": "public",
-            "threads": 8,
+            "threads": 16,
             "user": "a user",
         }
 
@@ -277,6 +279,7 @@ class TestTransformConfig:
             "schema": "AIRBYTE_SCHEMA",
             "username": "AIRBYTE_USER",
             "password": "password123",
+            "transformation_threads": 16
         }
 
         actual = TransformConfig().transform_snowflake(input)
@@ -288,7 +291,7 @@ class TestTransformConfig:
             "query_tag": "normalization",
             "role": "AIRBYTE_ROLE",
             "schema": "AIRBYTE_SCHEMA",
-            "threads": 5,
+            "threads": 16,
             "retry_all": True,
             "retry_on_database_errors": True,
             "connect_retries": 3,
@@ -382,39 +385,6 @@ class TestTransformConfig:
         assert expected == actual
         assert extract_schema(actual) == "AIRBYTE_SCHEMA"
 
-    def test_transform_snowflake_override_transformation_threads(self):
-        input = {
-            "host": "http://123abc.us-east-7.aws.snowflakecomputing.com",
-            "role": "AIRBYTE_ROLE",
-            "warehouse": "AIRBYTE_WAREHOUSE",
-            "database": "AIRBYTE_DATABASE",
-            "schema": "AIRBYTE_SCHEMA",
-            "username": "AIRBYTE_USER",
-            "password": "password123",
-            "transformation_threads": 16
-        }
-
-        actual = TransformConfig().transform_snowflake(input)
-        expected = {
-            "account": "123abc.us-east-7.aws",
-            "client_session_keep_alive": False,
-            "database": "AIRBYTE_DATABASE",
-            "password": "password123",
-            "query_tag": "normalization",
-            "role": "AIRBYTE_ROLE",
-            "schema": "AIRBYTE_SCHEMA",
-            "threads": 16,
-            "retry_all": True,
-            "retry_on_database_errors": True,
-            "connect_retries": 3,
-            "connect_timeout": 15,
-            "type": "snowflake",
-            "user": "AIRBYTE_USER",
-            "warehouse": "AIRBYTE_WAREHOUSE",
-        }
-
-        assert expected == actual
-
     def test_transform_mysql(self):
         input = {
             "type": "mysql5",
@@ -424,6 +394,7 @@ class TestTransformConfig:
             "schema": "public",
             "username": "a user",
             "password": "password1234",
+            "transformation_threads": 16,
         }
 
         actual = TransformConfig().transform_mysql(input)
@@ -435,6 +406,7 @@ class TestTransformConfig:
             "database": "my_db",
             "username": "a user",
             "password": "password1234",
+            "threads": 16
         }
 
         assert expected == actual
@@ -461,6 +433,7 @@ class TestTransformConfig:
             "database": "my_db",
             "username": "SA",
             "password": "password1234",
+            "threads": 4
         }
 
         assert expected == actual
@@ -468,7 +441,15 @@ class TestTransformConfig:
         assert extract_schema(actual) == "my_db"
 
     def test_transform_clickhouse(self):
-        input = {"host": "airbyte.io", "port": 9440, "database": "default", "username": "ch", "password": "password1234", "ssl": True}
+        input = {
+            "host": "airbyte.io", 
+            "port": 9440, 
+            "database": "default", 
+            "username": "ch", 
+            "password": "password1234", 
+            "ssl": True,
+            "transformation_threads": 16,
+        }
 
         actual = TransformConfig().transform_clickhouse(input)
         expected = {
@@ -481,6 +462,7 @@ class TestTransformConfig:
             "user": "ch",
             "password": "password1234",
             "secure": True,
+            "threads": 16,
         }
 
         assert expected == actual
@@ -522,6 +504,7 @@ class TestTransformConfig:
             "schema": "public",
             "username": "a user",
             "password": "password1234",
+            "transformation_threads": 16
         }
 
         actual = TransformConfig().transform_tidb(input)
@@ -533,6 +516,7 @@ class TestTransformConfig:
             "database": "ti_db",
             "username": "a user",
             "password": "password1234",
+            "threads": 16,
         }
 
         assert expected == actual
@@ -543,6 +527,7 @@ class TestTransformConfig:
             "type": "duckdb",
             "destination_path": "/local/testing.duckdb",
             "schema": "quackqauck",
+            "transformation_threads": 16
         }
 
         actual = TransformConfig().transform_duckdb(input)
@@ -550,6 +535,7 @@ class TestTransformConfig:
             "type": "duckdb",
             "path": "/local/testing.duckdb",
             "schema": "quackqauck",
+            "threads": 16
         }
 
         assert expected == actual
@@ -566,6 +552,7 @@ class TestTransformConfig:
             "type": "duckdb",
             "path": "/local/testing.duckdb",
             "schema": "main",
+            "threads": 4
         }
 
         assert expected == actual

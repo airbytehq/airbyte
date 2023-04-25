@@ -146,7 +146,7 @@ class TransformConfig:
             "project": project_id,
             "dataset": dataset_id,
             "priority": config.get("transformation_priority", "interactive"),
-            "threads": 8,
+            "threads": config.get("transformation_threads", 8),
             "retries": 3,
         }
         if "credentials_json" in config:
@@ -174,7 +174,7 @@ class TransformConfig:
             "port": config["port"],
             "dbname": config["database"],
             "schema": config["schema"],
-            "threads": 8,
+            "threads": config.get("transformation_threads", 8),
         }
 
         ssl = config.get("ssl")
@@ -205,7 +205,7 @@ class TransformConfig:
             "port": config["port"],
             "dbname": config["database"],
             "schema": config["schema"],
-            "threads": 4,
+            "threads": config.get("transformation_threads", 4),
         }
         return dbt_config
 
@@ -270,6 +270,7 @@ class TransformConfig:
             "database": config["database"],
             "username": config["username"],
             "password": config.get("password", ""),
+            "threads": config.get("transformation_threads", 4),
         }
         return dbt_config
 
@@ -285,7 +286,7 @@ class TransformConfig:
             "port": config["port"],
             "dbname": config["sid"],
             "schema": config["schema"],
-            "threads": 4,
+            "threads": config.get("transformation_threads", 4),
         }
         return dbt_config
 
@@ -307,7 +308,7 @@ class TransformConfig:
             "database": config["database"],
             "user": config["username"],
             "password": config["password"],
-            "threads": 8,
+            "threads": config.get("transformation_threads", 8),
             # "authentication": "sql",
             # "trusted_connection": True,
         }
@@ -325,6 +326,7 @@ class TransformConfig:
             "port": config["port"],
             "schema": config["database"],
             "user": config["username"],
+            "threads": config.get("transformation_threads", 4),
         }
         if "password" in config:
             dbt_config["password"] = config["password"]
@@ -347,6 +349,7 @@ class TransformConfig:
             "database": config["database"],
             "username": config["username"],
             "password": config.get("password", ""),
+            "threads": config.get("transformation_threads", 4),
         }
         return dbt_config
 
@@ -357,6 +360,7 @@ class TransformConfig:
             "type": "duckdb",
             "path": config["destination_path"],
             "schema": config["schema"] if "schema" in config else "main",
+            "threads": config.get("transformation_threads", 4),
         }
         return dbt_config
 

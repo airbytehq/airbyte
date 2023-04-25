@@ -443,7 +443,7 @@
         "title": "Transformation Threads",
         "type": "integer",
         "minimum": 1,
-        "maximum": 64,
+        "maximum": 128,
         "default": 5,
         "examples": ["10"],
         "order": 10
