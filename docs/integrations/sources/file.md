@@ -79,12 +79,13 @@ For example, if the format `CSV` is selected, then options from the [read_csv](h
 
 - It is therefore possible to customize the `delimiter` (or `sep`) to in case of tab separated files.
 - Header line can be ignored with `header=0` and customized with `names`
+- Parse dates for in specified columns 
 - etc
 
 We would therefore provide in the `reader_options` the following json:
 
 ```
-{ "sep" : "\t", "header" : 0, "names": ["column1", "column2"]}
+{ "sep" : "\t", "header" : 0, "names": ["column1", "column2"], "parse_dates": ["column2"]}
 ```
 
 In case you select `JSON` format, then options from the [read_json](https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html#io-json-reader) reader are available.
@@ -190,17 +191,18 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
+| 0.3.0   | 2023-04-24 | [25445](https://github.com/airbytehq/airbyte/pull/25445) | Add datatime format parsing support for csv files                                                       |
 | 0.2.38  | 2023-04-12 | [23759](https://github.com/airbytehq/airbyte/pull/23759) | Fix column data types for numerical values                                                              |
 | 0.2.37  | 2023-04-06 | [24525](https://github.com/airbytehq/airbyte/pull/24525) | Fix examples in spec                                                                                    |
 | 0.2.36  | 2023-03-27 | [24588](https://github.com/airbytehq/airbyte/pull/24588) | Remove traceback from user messages.                                                                    |
 | 0.2.35  | 2023-03-03 | [24278](https://github.com/airbytehq/airbyte/pull/24278) | Read only file header when checking connectivity; read only a single chunk when discovering the schema. |
-| 0.2.34  | 2023-03-03 | [23723](https://github.com/airbytehq/airbyte/pull/23723) | Update description in spec, make user-friendly error messages and docs.                            |
+| 0.2.34  | 2023-03-03 | [23723](https://github.com/airbytehq/airbyte/pull/23723) | Update description in spec, make user-friendly error messages and docs.                                 |
 | 0.2.33  | 2023-01-04 | [21012](https://github.com/airbytehq/airbyte/pull/21012) | Fix special characters bug                                                                              |
 | 0.2.32  | 2022-12-21 | [20740](https://github.com/airbytehq/airbyte/pull/20740) | Source File: increase SSH timeout to 60s                                                                |
 | 0.2.31  | 2022-11-17 | [19567](https://github.com/airbytehq/airbyte/pull/19567) | Source File: bump 0.2.31                                                                                |
 | 0.2.30  | 2022-11-10 | [19222](https://github.com/airbytehq/airbyte/pull/19222) | Use AirbyteConnectionStatus for "check" command                                                         |
 | 0.2.29  | 2022-11-08 | [18587](https://github.com/airbytehq/airbyte/pull/18587) | Fix pandas read_csv header none issue.                                                                  |
-| 0.2.28  | 2022-10-27 | [18428](https://github.com/airbytehq/airbyte/pull/18428) | Added retry logic for `Connection reset error - 104`                                                    |
+| 0.2.28  | 2022-10-27 | [18428](https://github.com/airbytehq/airbyte/pull/18428) | Add retry logic for `Connection reset error - 104`                                                      |
 | 0.2.27  | 2022-10-26 | [18481](https://github.com/airbytehq/airbyte/pull/18481) | Fix check for wrong format                                                                              |
 | 0.2.26  | 2022-10-18 | [18116](https://github.com/airbytehq/airbyte/pull/18116) | Transform Dropbox shared link                                                                           |
 | 0.2.25  | 2022-10-14 | [17994](https://github.com/airbytehq/airbyte/pull/17994) | Handle `UnicodeDecodeError` during discover step.                                                       |
@@ -212,7 +214,7 @@ In order to read large files from a remote location, this connector uses the [sm
 | 0.2.19  | 2022-08-19 | [15768](https://github.com/airbytehq/airbyte/pull/15768) | Convert 'nan' to 'null'                                                                                 |
 | 0.2.18  | 2022-08-16 | [15698](https://github.com/airbytehq/airbyte/pull/15698) | Cache binary stream to file for discover                                                                |
 | 0.2.17  | 2022-08-11 | [15501](https://github.com/airbytehq/airbyte/pull/15501) | Cache binary stream to file                                                                             |
-| 0.2.16  | 2022-08-10 | [15293](https://github.com/airbytehq/airbyte/pull/15293) | added support for encoding reader option                                                                |
+| 0.2.16  | 2022-08-10 | [15293](https://github.com/airbytehq/airbyte/pull/15293) | Add support for encoding reader option                                                                  |
 | 0.2.15  | 2022-08-05 | [15269](https://github.com/airbytehq/airbyte/pull/15269) | Bump `smart-open` version to 6.0.0                                                                      |
 | 0.2.12  | 2022-07-12 | [14535](https://github.com/airbytehq/airbyte/pull/14535) | Fix invalid schema generation for JSON files                                                            |
 | 0.2.11  | 2022-07-12 | [9974](https://github.com/airbytehq/airbyte/pull/14588)  | Add support to YAML format                                                                              |
