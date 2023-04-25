@@ -18,6 +18,7 @@ runs:
       run: echo "::set-output name=start-timestamp::$(date +%s)"
       shell: bash
     - name: Login to DockerHub
+      shell: bash
       run: "docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}"
       env:
         DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
