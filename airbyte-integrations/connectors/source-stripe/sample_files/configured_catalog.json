@@ -2834,6 +2834,21 @@
               "type": ["null", "object"],
               "properties": {}
             },
+            "customer_tax_ids": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "type": {
+                    "type": ["null", "string"]
+                  },
+                  "value": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            },
             "charge": {
               "type": ["null", "string"]
             },

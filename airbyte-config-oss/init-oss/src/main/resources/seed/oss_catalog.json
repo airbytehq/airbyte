@@ -1695,6 +1695,147 @@
     "custom": false,
     "releaseStage": "alpha"
   }, {
+    "destinationDefinitionId": "4528e960-6f7b-4412-8555-7e0097e1da17",
+    "name": "Starburst Galaxy",
+    "dockerRepository": "airbyte/destination-starburst-galaxy",
+    "dockerImageTag": "0.0.1",
+    "documentationUrl": "https://docs.airbyte.com/integrations/destinations/starburst-galaxy",
+    "icon": "starburst-galaxy.svg",
+    "spec": {
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/starburst-galaxy",
+      "connectionSpecification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Starburst Galaxy Destination Spec",
+        "type": "object",
+        "required": [ "accept_terms", "server_hostname", "username", "password", "catalog", "staging_object_store" ],
+        "properties": {
+          "accept_terms": {
+            "title": "Agree to the Starburst Galaxy terms & conditions",
+            "type": "boolean",
+            "description": "You must agree to the Starburst Galaxy <a href=\"https://www.starburst.io/terms/\">terms & conditions</a> to use this connector.",
+            "default": false,
+            "order": 1
+          },
+          "server_hostname": {
+            "title": "Hostname",
+            "type": "string",
+            "description": "Starburst Galaxy cluster hostname.",
+            "examples": [ "abc-12345678-wxyz.trino.galaxy-demo.io" ],
+            "order": 2
+          },
+          "port": {
+            "title": "Port",
+            "type": "string",
+            "description": "Starburst Galaxy cluster port.",
+            "default": "443",
+            "examples": [ "443" ],
+            "order": 3
+          },
+          "username": {
+            "title": "User",
+            "type": "string",
+            "description": "Starburst Galaxy user.",
+            "examples": [ "user@example.com" ],
+            "order": 4
+          },
+          "password": {
+            "title": "Password",
+            "type": "string",
+            "description": "Starburst Galaxy password for the specified user.",
+            "examples": [ "password" ],
+            "airbyte_secret": true,
+            "order": 5
+          },
+          "catalog": {
+            "title": "Amazon S3 catalog",
+            "type": "string",
+            "description": "Name of the Starburst Galaxy Amazon S3 catalog.",
+            "examples": [ "sample_s3_catalog" ],
+            "order": 6
+          },
+          "catalog_schema": {
+            "title": "Amazon S3 catalog schema",
+            "type": "string",
+            "description": "The default Starburst Galaxy Amazon S3 catalog schema where tables are written to if the source does not specify a namespace. Defaults to \"public\".",
+            "default": "public",
+            "examples": [ "public" ],
+            "order": 7
+          },
+          "staging_object_store": {
+            "title": "Staging object store",
+            "type": "object",
+            "description": "Temporary storage on which temporary Iceberg table is created.",
+            "oneOf": [ {
+              "title": "Amazon S3",
+              "required": [ "object_store_type", "s3_bucket_name", "s3_bucket_path", "s3_bucket_region", "s3_access_key_id", "s3_secret_access_key" ],
+              "properties": {
+                "object_store_type": {
+                  "type": "string",
+                  "enum": [ "S3" ],
+                  "default": "S3",
+                  "order": 1
+                },
+                "s3_bucket_name": {
+                  "title": "S3 bucket name",
+                  "type": "string",
+                  "description": "Name of the S3 bucket",
+                  "examples": [ "airbyte_staging" ],
+                  "order": 1
+                },
+                "s3_bucket_path": {
+                  "title": "S3 bucket path",
+                  "type": "string",
+                  "description": "Directory in the S3 bucket where staging data is stored.",
+                  "examples": [ "temp_airbyte__sync/test" ],
+                  "order": 2
+                },
+                "s3_bucket_region": {
+                  "title": "S3 bucket region",
+                  "type": "string",
+                  "default": "us-east-1",
+                  "description": "The region of the S3 bucket.",
+                  "enum": [ "ap-northeast-1", "ap-southeast-1", "ap-southeast-2", "ca-central-1", "eu-central-1", "eu-west-1", "eu-west-2", "eu-west-3", "us-east-1", "us-east-2", "us-west-1", "us-west-2" ],
+                  "order": 3
+                },
+                "s3_access_key_id": {
+                  "title": "Access key",
+                  "type": "string",
+                  "description": "Access key with access to the bucket. Airbyte requires read and write permissions to a given bucket.",
+                  "examples": [ "A012345678910EXAMPLE" ],
+                  "airbyte_secret": true,
+                  "order": 4
+                },
+                "s3_secret_access_key": {
+                  "title": "Secret key",
+                  "type": "string",
+                  "description": "Secret key used with the specified access key.",
+                  "examples": [ "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY" ],
+                  "airbyte_secret": true,
+                  "order": 5
+                }
+              }
+            } ],
+            "order": 8
+          },
+          "purge_staging_table": {
+            "title": "Purge staging Iceberg table",
+            "type": "boolean",
+            "description": "Defaults to 'true'. Switch to 'false' for debugging purposes.",
+            "default": true,
+            "order": 9
+          }
+        }
+      },
+      "supportsIncremental": true,
+      "supportsNormalization": false,
+      "supportsDBT": false,
+      "supported_destination_sync_modes": [ "overwrite", "append" ]
+    },
+    "tombstone": false,
+    "public": true,
+    "custom": false,
+    "releaseStage": "alpha"
+  }, {
     "destinationDefinitionId": "072d5540-f236-4294-ba7c-ade8fd918496",
     "name": "Databricks Lakehouse",
     "dockerRepository": "airbyte/destination-databricks",
@@ -5961,7 +6102,7 @@
     "destinationDefinitionId": "471e5cab-8ed1-49f3-ba11-79c687784737",
     "name": "S3 Glue",
     "dockerRepository": "airbyte/destination-s3-glue",
-    "dockerImageTag": "0.1.5",
+    "dockerImageTag": "0.1.6",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/s3-glue",
     "icon": "s3-glue.svg",
     "spec": {
@@ -12721,7 +12862,7 @@
     "sourceDefinitionId": "778daa7c-feaf-4db6-96f3-70fd645acc77",
     "name": "File (CSV, JSON, Excel, Feather, Parquet)",
     "dockerRepository": "airbyte/source-file",
-    "dockerImageTag": "0.2.38",
+    "dockerImageTag": "0.3.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/file",
     "icon": "file.svg",
     "sourceType": "file",
@@ -13416,7 +13557,7 @@
     "sourceDefinitionId": "ef69ef6e-aa7f-4af1-a01d-ef775033524e",
     "name": "GitHub",
     "dockerRepository": "airbyte/source-github",
-    "dockerImageTag": "0.4.7",
+    "dockerImageTag": "0.4.8",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/github",
     "icon": "github.svg",
     "sourceType": "api",
@@ -16930,7 +17071,7 @@
     "sourceDefinitionId": "b03a9f3e-22a5-11eb-adc1-0242ac120002",
     "name": "Mailchimp",
     "dockerRepository": "airbyte/source-mailchimp",
-    "dockerImageTag": "0.3.5",
+    "dockerImageTag": "0.4.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mailchimp",
     "icon": "mailchimp.svg",
     "sourceType": "api",
@@ -20464,7 +20605,7 @@
     "sourceDefinitionId": "5cb7e5fe-38c2-11ec-8d3d-0242ac130003",
     "name": "Pinterest",
     "dockerRepository": "airbyte/source-pinterest",
-    "dockerImageTag": "0.2.4",
+    "dockerImageTag": "0.2.5",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/pinterest",
     "icon": "pinterest.svg",
     "sourceType": "api",
@@ -20480,7 +20621,7 @@
           "start_date": {
             "type": "string",
             "title": "Start Date",
-            "description": "A date in the format YYYY-MM-DD. If you have not set a date, it would be defaulted to latest allowed date by api (914 days from today).",
+            "description": "A date in the format YYYY-MM-DD. If you have not set a date, it would be defaulted to latest allowed date by api (89 days from today).",
             "examples": [ "2022-07-28" ]
           },
           "status": {
@@ -22946,7 +23087,7 @@
     "sourceDefinitionId": "b117307c-14b6-41aa-9422-947e34922962",
     "name": "Salesforce",
     "dockerRepository": "airbyte/source-salesforce",
-    "dockerImageTag": "2.0.9",
+    "dockerImageTag": "2.0.10",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/salesforce",
     "icon": "salesforce.svg",
     "sourceType": "api",
@@ -23357,7 +23498,7 @@
     "sourceDefinitionId": "9da77001-af33-4bcd-be46-6252bf9342b9",
     "name": "Shopify",
     "dockerRepository": "airbyte/source-shopify",
-    "dockerImageTag": "0.3.2",
+    "dockerImageTag": "0.3.3",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/shopify",
     "icon": "shopify.svg",
     "sourceType": "api",
@@ -23441,6 +23582,7 @@
             "description": "The date you would like to replicate data from. Format: YYYY-MM-DD. Any data before this date will not be replicated.",
             "examples": [ "2021-01-01" ],
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "format": "date",
             "order": 3
           }
         }
@@ -24625,7 +24767,7 @@
     "sourceDefinitionId": "e094cb9a-26de-4645-8761-65c0c425d1de",
     "name": "Stripe",
     "dockerRepository": "airbyte/source-stripe",
-    "dockerImageTag": "3.3.0",
+    "dockerImageTag": "3.4.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/stripe",
     "icon": "stripe.svg",
     "sourceType": "api",
