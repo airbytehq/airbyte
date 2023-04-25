@@ -10,7 +10,7 @@
       "start_date": {
         "type": "string",
         "title": "Start Date",
-        "description": "A date in the format YYYY-MM-DD. If you have not set a date, it would be defaulted to latest allowed date by api (914 days from today).",
+        "description": "A date in the format YYYY-MM-DD. If you have not set a date, it would be defaulted to latest allowed date by api (89 days from today).",
         "examples": ["2022-07-28"]
       },
       "status": {
