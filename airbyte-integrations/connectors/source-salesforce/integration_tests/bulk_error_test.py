@@ -44,7 +44,7 @@ def get_any_real_stream(input_config: Mapping[str, Any]) -> Stream:
 
 def test_not_queryable_stream(caplog, input_config):
     stream = get_any_real_stream(input_config)
-    url = f"{stream.sf_api.instance_url}/services/data/v52.0/jobs/query"
+    url = f"{stream.sf_api.instance_url}/services/data/{stream.sf_api.version}/jobs/query"
 
     # test non queryable BULK streams
     query = "Select Id, Subject from ActivityHistory"
