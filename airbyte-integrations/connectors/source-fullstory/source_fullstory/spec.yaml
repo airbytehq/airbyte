@@ -13,12 +13,12 @@ connectionSpecification:
       title: API Key
       type: string
       description: API Key for the fullstory.com API.
-      #airbyte_secret: true
+      airbyte_secret: true
     uid:
       title: User ID
       type: string
       description: User ID for the fullstory.com API.
-      #airbyte_secret: true
+      airbyte_secret: true
     start_date:
       title: Start Date
       type: string
@@ -26,4 +26,4 @@ connectionSpecification:
       pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$"
       examples:
         - "2022-03-01T00:00:00.000Z"
-      #format: "date-time"
+      format: "date-time"
