@@ -58,6 +58,14 @@ acceptance_tests:
               bypass_reason: "dynamically created field"
             - name: averageSessionDuration
               bypass_reason: "dynamically created field"
+          cohort_report:
+            - name: uuid
+              bypass_reason: "dynamically created field"
+          pivot_report:
+            - name: uuid
+              bypass_reason: "dynamically created field"
+            - name: sessions
+              bypass_reason: "volatile data"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
@@ -95,9 +103,15 @@ acceptance_tests:
               bypass_reason: "dynamically created field"
             - name: averageSessionDuration
               bypass_reason: "dynamically created field"
+          cohort_report:
+            - name: uuid
+              bypass_reason: "dynamically created field"
+          pivot_report:
+            - name: uuid
+              bypass_reason: "dynamically created field"
   incremental:
     tests:
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
+        configured_catalog_path: "integration_tests/incremental_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
