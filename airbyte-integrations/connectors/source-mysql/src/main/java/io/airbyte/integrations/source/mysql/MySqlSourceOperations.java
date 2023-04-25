@@ -34,6 +34,7 @@ import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_DECIMAL_DIGITS;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
 
@@ -191,8 +192,17 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
         // When CHAR[N] and VARCHAR[N] columns have binary character set, the returned
         // types are BINARY[N] and VARBINARY[N], respectively. So we don't need to
         // convert them here. This is verified in MySqlSourceDatatypeTest.
+        case DECIMAL -> {
+          if (field.get(INTERNAL_DECIMAL_DIGITS) != null && field.get(INTERNAL_DECIMAL_DIGITS).asInt() == 0) {
+            return BIGINT;
+          }
+        }
+        case DECIMAL_UNSIGNED -> {
+          if (field.get(INTERNAL_DECIMAL_DIGITS) != null && field.get(INTERNAL_DECIMAL_DIGITS).asInt() == 0) {
+            return BIGINT_UNSIGNED;
+          }
+        }
       }
-
       return literalType;
     } catch (final IllegalArgumentException ex) {
       LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s (type name: %s). Casting to VARCHAR.",
