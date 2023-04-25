@@ -1,10 +1,11 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 import logging
 
+import pytest
 from airbyte_cdk.sources.streams.http.auth import (
     BasicHttpAuthenticator,
     MultipleTokenAuthenticator,
@@ -135,13 +136,32 @@ class TestOauth2Authenticator:
             refresh_access_token_headers=TestOauth2Authenticator.refresh_access_token_headers,
         )
 
-        token = oauth.refresh_access_token()
+        token, expires_in = oauth.refresh_access_token()
 
-        assert ("token", 10) == token
+        assert isinstance(expires_in, int)
+        assert ("token", 10) == (token, expires_in)
         for header in self.refresh_access_token_headers:
             assert header in mock_refresh_token_call.last_request.headers
             assert self.refresh_access_token_headers[header] == mock_refresh_token_call.last_request.headers[header]
         assert mock_refresh_token_call.called
+
+    @pytest.mark.parametrize("error_code", (429, 500, 502, 504))
+    def test_refresh_access_token_retry(self, error_code, requests_mock):
+        oauth = Oauth2Authenticator(
+            TestOauth2Authenticator.refresh_endpoint,
+            TestOauth2Authenticator.client_id,
+            TestOauth2Authenticator.client_secret,
+            TestOauth2Authenticator.refresh_token
+        )
+        requests_mock.post(
+            TestOauth2Authenticator.refresh_endpoint,
+            [
+                {"status_code": error_code}, {"status_code": error_code}, {"json": {"access_token": "token", "expires_in": 10}}
+            ]
+        )
+        token, expires_in = oauth.refresh_access_token()
+        assert (token, expires_in) == ("token", 10)
+        assert requests_mock.call_count == 3
 
     def test_refresh_access_authenticator(self):
         oauth = Oauth2Authenticator(

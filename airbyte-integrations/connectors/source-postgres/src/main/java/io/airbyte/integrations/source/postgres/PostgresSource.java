@@ -1,22 +1,35 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.db.jdbc.JdbcUtils.AMPERSAND;
 import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
+import static io.airbyte.db.jdbc.JdbcUtils.PLATFORM_DATA_INCREASE_FACTOR;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
+import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_PASS;
+import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_URL;
 import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.PARAM_CA_CERTIFICATE;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.DISABLE;
+import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.parseSSLConfig;
+import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.NULL_CURSOR_VALUE_NO_SCHEMA_QUERY;
+import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY;
+import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.ROW_COUNT_RESULT_COL;
+import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TABLE_ESTIMATE_QUERY;
+import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TOTAL_BYTES_RESULT_COL;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getIdentifierWithQuoting;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import datadog.trace.api.Trace;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -28,32 +41,33 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.integrations.debezium.internals.PostgresDebeziumStateUtil;
+import io.airbyte.integrations.debezium.internals.postgres.PostgresCdcTargetPosition;
+import io.airbyte.integrations.debezium.internals.postgres.PostgresDebeziumStateUtil;
+import io.airbyte.integrations.debezium.internals.postgres.PostgresReplicationConnection;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
+import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
+import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
-import io.airbyte.integrations.source.relationaldb.models.CdcState;
-import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.util.HostPortResolver;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteGlobalState;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.CommonField;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteEstimateTraceMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -67,9 +81,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.OptionalLong;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,12 +93,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
-
   public static final String PARAM_SSLMODE = "sslmode";
   public static final String SSL_MODE = "ssl_mode";
-  public static final String PARAM_SSL = "ssl";
-  public static final String PARAM_SSL_TRUE = "true";
-  public static final String PARAM_SSL_FALSE = "false";
   public static final String SSL_ROOT_CERT = "sslrootcert";
 
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
@@ -90,22 +102,22 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public static final String SSL_KEY = "sslkey";
   public static final String SSL_PASSWORD = "sslpassword";
   public static final String MODE = "mode";
+
   private List<String> schemas;
+
+  private Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc;
   private final FeatureFlags featureFlags;
   private static final Set<String> INVALID_CDC_SSL_MODES = ImmutableSet.of("allow", "prefer");
+  private int stateEmissionFrequency;
 
   public static Source sshWrappedSource() {
-    return new SshWrappedSource(new PostgresSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+    return new SshWrappedSource(new PostgresSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, "security");
   }
 
   PostgresSource() {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new PostgresSourceOperations());
     this.featureFlags = new EnvVariableFeatureFlags();
-  }
-
-  @Override
-  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
-    return Collections.emptyMap();
+    this.stateEmissionFrequency = INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
   @Override
@@ -158,7 +170,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  @Override
   public String toJDBCQueryParams(final Map<String, String> sslParams) {
     return Objects.isNull(sslParams) ? ""
         : sslParams.entrySet()
@@ -166,8 +177,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
             .map((entry) -> {
               try {
                 final String result = switch (entry.getKey()) {
-                  case AbstractJdbcSource.SSL_MODE -> PARAM_SSLMODE + EQUALS + toSslJdbcParam(SslMode.valueOf(entry.getValue()))
-                      + JdbcUtils.AMPERSAND + PARAM_SSL + EQUALS + (entry.getValue() == DISABLE ? PARAM_SSL_FALSE : PARAM_SSL_TRUE);
+                  case JdbcSSLConnectionUtils.SSL_MODE -> PARAM_SSLMODE + EQUALS + toSslJdbcParam(SslMode.valueOf(entry.getValue()));
                   case CA_CERTIFICATE_PATH -> SSL_ROOT_CERT + EQUALS + entry.getValue();
                   case CLIENT_KEY_STORE_URL -> SSL_KEY + EQUALS + Path.of(new URI(entry.getValue()));
                   case CLIENT_KEY_STORE_PASS -> SSL_PASSWORD + EQUALS + entry.getValue();
@@ -188,6 +198,19 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   @Override
+  protected Set<String> getExcludedViews() {
+    return Set.of("pg_stat_statements", "pg_stat_statements_info");
+  }
+
+  @Override
+  protected void logPreSyncDebugData(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog)
+      throws SQLException {
+    super.logPreSyncDebugData(database, catalog);
+    PostgresQueryUtils.logXminStatus(database);
+  }
+
+  @Override
+  @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
     final AirbyteCatalog catalog = super.discover(config);
 
@@ -197,6 +220,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           .map(PostgresCdcCatalogHelper::removeIncrementalWithoutPk)
           .map(PostgresCdcCatalogHelper::setIncrementalToSourceDefined)
           .map(PostgresCdcCatalogHelper::addCdcMetadataColumns)
+          // If we're in CDC mode and a stream is not in the publication, the user should only be able to sync this in FULL_REFRESH mode
+          .map(stream -> PostgresCdcCatalogHelper.setFullRefreshForNonPublicationStreams(stream, publicizedTablesInCdc))
           .collect(toList());
 
       catalog.setStreams(streams);
@@ -206,17 +231,15 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   @Override
-  public List<TableInfo<CommonField<PostgresType>>> discoverInternal(final JdbcDatabase database) throws Exception {
-    final List<TableInfo<CommonField<PostgresType>>> rawTables = discoverRawTables(database);
-    final Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc = PostgresCdcCatalogHelper.getPublicizedTables(database);
+  public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
+    final JdbcDatabase database = super.createDatabase(config);
+    this.publicizedTablesInCdc = PostgresCdcCatalogHelper.getPublicizedTables(database);
+    return database;
+  }
 
-    if (publicizedTablesInCdc.isEmpty()) {
-      return rawTables;
-    }
-    // under cdc mode, only return tables that are in the publication
-    return rawTables.stream()
-        .filter(table -> publicizedTablesInCdc.contains(new AirbyteStreamNameNamespacePair(table.getName(), table.getNameSpace())))
-        .collect(toList());
+  @Override
+  public List<TableInfo<CommonField<PostgresType>>> discoverInternal(final JdbcDatabase database) throws Exception {
+    return discoverRawTables(database);
   }
 
   public List<TableInfo<CommonField<PostgresType>>> discoverRawTables(final JdbcDatabase database) throws Exception {
@@ -224,11 +247,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       // process explicitly selected (from UI) schemas
       final List<TableInfo<CommonField<PostgresType>>> internals = new ArrayList<>();
       for (final String schema : schemas) {
-        LOGGER.info("Checking schema: {}", schema);
+        LOGGER.debug("Checking schema: {}", schema);
         final List<TableInfo<CommonField<PostgresType>>> tables = super.discoverInternal(database, schema);
         internals.addAll(tables);
         for (final TableInfo<CommonField<PostgresType>> table : tables) {
-          LOGGER.info("Found table: {}.{}", table.getNameSpace(), table.getName());
+          LOGGER.debug("Found table: {}.{}", table.getNameSpace(), table.getName());
         }
       }
       return internals;
@@ -238,7 +261,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     }
   }
 
-  private List<JsonNode> getReplicationSlot(final JdbcDatabase database, final JsonNode config) {
+  @VisibleForTesting
+  List<JsonNode> getReplicationSlot(final JdbcDatabase database, final JsonNode config) {
     try {
       return database.queryJsons(connection -> {
         final String sql = "SELECT * FROM pg_replication_slots WHERE slot_name = ? AND plugin = ? AND database = ?";
@@ -256,6 +280,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     }
   }
 
+  @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
   @Override
   public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config)
       throws Exception {
@@ -267,7 +292,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         final List<JsonNode> matchingSlots = getReplicationSlot(database, config);
 
         if (matchingSlots.size() != 1) {
-          throw new RuntimeException(
+          throw new ConfigErrorException(
               "Expected exactly one replication slot but found " + matchingSlots.size()
                   + ". Please read the docs and add a replication slot to your database.");
         }
@@ -283,7 +308,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         }, sourceOperations::rowToJson);
 
         if (matchingPublications.size() != 1) {
-          throw new RuntimeException(
+          throw new ConfigErrorException(
               "Expected exactly one publication but found " + matchingPublications.size()
                   + ". Please read the docs and add a publication to your database.");
         }
@@ -293,25 +318,21 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       checkOperations.add(database -> {
         PostgresUtils.checkFirstRecordWaitTime(config);
       });
+
+      // Verify that a CDC connection can be created
+      checkOperations.add(database -> {
+        /**
+         * TODO: Next line is required for SSL connections so the JDBC_URL is set with all required
+         * parameters. This needs to be handle by createConnection function instead. Created issue
+         * https://github.com/airbytehq/airbyte/issues/23380.
+         */
+        final JsonNode databaseConfig = database.getDatabaseConfig();
+        // Empty try statement as we only need to verify that the connection can be created.
+        try (final Connection connection = PostgresReplicationConnection.createConnection(databaseConfig)) {}
+      });
     }
 
     return checkOperations;
-  }
-
-  @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
-                                                    final ConfiguredAirbyteCatalog catalog,
-                                                    final JsonNode state)
-      throws Exception {
-    // this check is used to ensure that have the pgoutput slot available so Debezium won't attempt to
-    // create it.
-    final AirbyteConnectionStatus check = check(config);
-
-    if (check.getStatus().equals(Status.FAILED)) {
-      throw new RuntimeException("Unable establish a connection: " + check.getMessage());
-    }
-
-    return super.read(config, catalog, state);
   }
 
   @Override
@@ -329,22 +350,38 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final JsonNode state =
           (stateManager.getCdcStateManager().getCdcState() == null || stateManager.getCdcStateManager().getCdcState().getState() == null) ? null
               : Jsons.clone(stateManager.getCdcStateManager().getCdcState().getState());
-      final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(
+
+      final OptionalLong savedOffset = postgresDebeziumStateUtil.savedOffset(
           Jsons.clone(PostgresCdcProperties.getDebeziumDefaultProperties(database)),
           catalog,
           state,
+          sourceConfig);
+
+      // We should always be able to extract offset out of state if it's not null
+      if (state != null && savedOffset.isEmpty()) {
+        throw new RuntimeException(
+            "Unable extract the offset out of state, State mutation might not be working. " + state.asText());
+      }
+
+      final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(
           // We can assume that there will be only 1 replication slot cause before the sync starts for
           // Postgres CDC,
           // we run all the check operations and one of the check validates that the replication slot exists
           // and has only 1 entry
           getReplicationSlot(database, sourceConfig).get(0),
-          sourceConfig);
+          savedOffset);
 
       if (!savedOffsetAfterReplicationSlotLSN) {
         LOGGER.warn("Saved offset is before Replication slot's confirmed_flush_lsn, Airbyte will trigger sync from scratch");
+      } else if (PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
+        postgresDebeziumStateUtil.commitLSNToPostgresDatabase(database.getDatabaseConfig(),
+            savedOffset,
+            sourceConfig.get("replication_method").get("replication_slot").asText(),
+            sourceConfig.get("replication_method").get("publication").asText(),
+            PostgresUtils.getPluginValue(sourceConfig.get("replication_method")));
       }
 
-      final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
+      final AirbyteDebeziumHandler<Long> handler = new AirbyteDebeziumHandler<>(sourceConfig,
           PostgresCdcTargetPosition.targetPosition(database), false, firstRecordWaitTime);
       final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
       final List<ConfiguredAirbyteStream> streamsToSnapshot = identifyStreamsToSnapshot(catalog, stateManager);
@@ -353,7 +390,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           postgresCdcStateHandler,
           new PostgresCdcConnectorMetadataInjector(),
           PostgresCdcProperties.getDebeziumDefaultProperties(database),
-          emittedAt);
+          emittedAt,
+          false);
       if (!savedOffsetAfterReplicationSlotLSN || streamsToSnapshot.isEmpty()) {
         return Collections.singletonList(incrementalIteratorSupplier.get());
       }
@@ -381,6 +419,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
                  FROM   pg_class c
                  JOIN   pg_namespace n on c.relnamespace = n.oid
                  WHERE  has_table_privilege(c.oid, 'SELECT')
+                 AND    has_schema_privilege(current_user, nspname, 'USAGE')
                  -- r = ordinary table, i = index, S = sequence, t = TOAST table, v = view, m = materialized view, c = composite type, f = foreign table, p = partitioned table, I = partitioned index
                  AND    relkind in ('r', 'm', 'v', 't', 'f', 'p')
                  and    ((? is null) OR nspname = ?)
@@ -422,27 +461,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     return false;
   }
 
-  // TODO This is a temporary override so that the Postgres source can take advantage of per-stream
-  // state
-  @Override
-  protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
-    if (!featureFlags.useStreamCapableState()) {
-      return List.of(new AirbyteStateMessage()
-          .withType(AirbyteStateType.LEGACY)
-          .withData(Jsons.jsonNode(new DbState())));
-    }
-    if (getSupportedStateType(config) == AirbyteStateType.GLOBAL) {
-      final AirbyteGlobalState globalState = new AirbyteGlobalState()
-          .withSharedState(Jsons.jsonNode(new CdcState()))
-          .withStreamStates(List.of());
-      return List.of(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState));
-    } else {
-      return List.of(new AirbyteStateMessage()
-          .withType(AirbyteStateType.STREAM)
-          .withStream(new AirbyteStreamState()));
-    }
-  }
-
   @Override
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
     if (!featureFlags.useStreamCapableState()) {
@@ -453,7 +471,12 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   @Override
   protected int getStateEmissionFrequency() {
-    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
+    return this.stateEmissionFrequency;
+  }
+
+  @VisibleForTesting
+  protected void setStateEmissionFrequencyForDebug(final int stateEmissionFrequency) {
+    this.stateEmissionFrequency = stateEmissionFrequency;
   }
 
   public static void main(final String[] args) throws Exception {
@@ -464,10 +487,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   @Override
+  @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     if (PostgresUtils.isCdc(config)) {
       if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)) {
-        String sslModeValue = config.get(SSL_MODE).get(MODE).asText();
+        final String sslModeValue = config.get(SSL_MODE).get(MODE).asText();
         if (INVALID_CDC_SSL_MODES.contains(sslModeValue)) {
           return new AirbyteConnectionStatus()
               .withStatus(Status.FAILED)
@@ -480,7 +504,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     return super.check(config);
   }
 
-  @Override
   protected String toSslJdbcParam(final SslMode sslMode) {
     return toSslJdbcParamInternal(sslMode);
   }
@@ -497,6 +520,161 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     };
     LOGGER.info("{} toSslJdbcParam {}", sslMode.name(), result);
     return result;
+  }
+
+  @Override
+  protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName)
+      throws SQLException {
+    final String query;
+    final String resultColName = "nullValue";
+    // Query: Only if cursor column allows null values, query whether it contains one
+    if (StringUtils.isNotBlank(schema)) {
+      query = String.format(NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY,
+          schema, tableName, columnName, schema, tableName, columnName, resultColName);
+    } else {
+      query = String.format(NULL_CURSOR_VALUE_NO_SCHEMA_QUERY,
+          tableName, columnName, tableName, columnName, resultColName);
+    }
+    LOGGER.debug("null value query: {}", query);
+    final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(query),
+        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+    Preconditions.checkState(jsonNodes.size() == 1);
+    final boolean nullValExist = jsonNodes.get(0).get(resultColName.toLowerCase()).booleanValue(); // For some reason value in node is lowercase
+    LOGGER.debug("null value exist: {}", nullValExist);
+    return !nullValExist;
+  }
+
+  @Override
+  protected void estimateFullRefreshSyncSize(final JdbcDatabase database,
+                                             final ConfiguredAirbyteStream configuredAirbyteStream) {
+    try {
+      final String schemaName = configuredAirbyteStream.getStream().getNamespace();
+      final String tableName = configuredAirbyteStream.getStream().getName();
+      final String fullTableName =
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString());
+
+      final List<JsonNode> tableEstimateResult = getFullTableEstimate(database, fullTableName, schemaName, tableName);
+
+      if (!tableEstimateResult.isEmpty() && tableEstimateResult.get(0).has(ROW_COUNT_RESULT_COL) &&
+          tableEstimateResult.get(0).has(TOTAL_BYTES_RESULT_COL)) {
+        final long syncRowCount = tableEstimateResult.get(0).get(ROW_COUNT_RESULT_COL).asLong();
+        final long syncByteCount = tableEstimateResult.get(0).get(TOTAL_BYTES_RESULT_COL).asLong();
+
+        // The fast count query can return negative or otherwise invalid results for small tables. In this
+        // case, we can skip emitting an
+        // estimate trace altogether since the sync will likely complete quickly.
+        if (syncRowCount <= 0) {
+          return;
+        }
+
+        // Here, we double the bytes estimate to account for serialization. Perhaps a better way to do this
+        // is to
+        // read a row and Stringify it to better understand the accurate volume of data sent over the wire.
+        // However, this approach doesn't account for different row sizes.
+        AirbyteTraceMessageUtility.emitEstimateTrace(PLATFORM_DATA_INCREASE_FACTOR * syncByteCount, Type.STREAM, syncRowCount, tableName, schemaName);
+        LOGGER.info(String.format("Estimate for table: %s : {sync_row_count: %s, sync_bytes: %s, total_table_row_count: %s, total_table_bytes: %s}",
+            fullTableName, syncRowCount, syncByteCount, syncRowCount, syncByteCount));
+      }
+    } catch (final SQLException e) {
+      LOGGER.warn("Error occurred while attempting to estimate sync size", e);
+    }
+  }
+
+  @Override
+  protected void estimateIncrementalSyncSize(final JdbcDatabase database,
+                                             final ConfiguredAirbyteStream configuredAirbyteStream,
+                                             final CursorInfo cursorInfo,
+                                             final PostgresType cursorFieldType) {
+    try {
+      final String schemaName = configuredAirbyteStream.getStream().getNamespace();
+      final String tableName = configuredAirbyteStream.getStream().getName();
+      final String fullTableName =
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString());
+
+      final List<JsonNode> tableEstimateResult = getFullTableEstimate(database, fullTableName, schemaName, tableName);
+
+      final long tableRowCount = tableEstimateResult.get(0).get(ROW_COUNT_RESULT_COL).asLong();
+      final long tableByteCount = tableEstimateResult.get(0).get(TOTAL_BYTES_RESULT_COL).asLong();
+
+      // The fast count query can return negative or otherwise invalid results for small tables. In this
+      // case, we can skip emitting an
+      // estimate trace altogether since the sync will likely complete quickly.
+      if (tableRowCount <= 0) {
+        return;
+      }
+
+      final long syncRowCount;
+      final long syncByteCount;
+
+      syncRowCount = getIncrementalTableRowCount(database, fullTableName, cursorInfo, cursorFieldType);
+      syncByteCount = (tableByteCount / tableRowCount) * syncRowCount;
+
+      // Here, we double the bytes estimate to account for serialization. Perhaps a better way to do this
+      // is to
+      // read a row and Stringify it to better understand the accurate volume of data sent over the wire.
+      // However, this approach doesn't account for different row sizes
+      AirbyteTraceMessageUtility.emitEstimateTrace(PLATFORM_DATA_INCREASE_FACTOR * syncByteCount, Type.STREAM, syncRowCount, tableName, schemaName);
+      LOGGER.info(String.format("Estimate for table: %s : {sync_row_count: %s, sync_bytes: %s, total_table_row_count: %s, total_table_bytes: %s}",
+          fullTableName, syncRowCount, syncByteCount, tableRowCount, tableRowCount));
+    } catch (final SQLException e) {
+      LOGGER.warn("Error occurred while attempting to estimate sync size", e);
+    }
+  }
+
+  private List<JsonNode> getFullTableEstimate(final JdbcDatabase database,
+                                              final String fullTableName,
+                                              final String schemaName,
+                                              final String tableName)
+      throws SQLException {
+    // Construct the table estimate query.
+    final String tableEstimateQuery =
+        String.format(TABLE_ESTIMATE_QUERY, schemaName, tableName, ROW_COUNT_RESULT_COL, fullTableName, TOTAL_BYTES_RESULT_COL);
+    LOGGER.debug("table estimate query: {}", tableEstimateQuery);
+    final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(tableEstimateQuery),
+        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+    Preconditions.checkState(jsonNodes.size() == 1);
+    return jsonNodes;
+  }
+
+  private long getIncrementalTableRowCount(final JdbcDatabase database,
+                                           final String fullTableName,
+                                           final CursorInfo cursorInfo,
+                                           final PostgresType cursorFieldType)
+      throws SQLException {
+    final String quotedCursorField = getIdentifierWithQuoting(cursorInfo.getCursorField(), getQuoteString());
+
+    // Calculate actual number of rows to sync here.
+    final List<JsonNode> result = database.queryJsons(
+        connection -> {
+          LOGGER.info("Preparing query for table: {}", fullTableName);
+          final String operator;
+          if (cursorInfo.getCursorRecordCount() <= 0L) {
+            operator = ">";
+          } else {
+            final long actualRecordCount = getActualCursorRecordCount(
+                connection, fullTableName, quotedCursorField, cursorFieldType, cursorInfo.getCursor());
+            LOGGER.info("Table {} cursor count: expected {}, actual {}", fullTableName, cursorInfo.getCursorRecordCount(), actualRecordCount);
+            if (actualRecordCount == cursorInfo.getCursorRecordCount()) {
+              operator = ">";
+            } else {
+              operator = ">=";
+            }
+          }
+
+          final StringBuilder sql = new StringBuilder(String.format("SELECT COUNT(*) FROM %s WHERE %s %s ?",
+              fullTableName,
+              quotedCursorField,
+              operator));
+
+          final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
+          LOGGER.info("Executing query for table {}: {}", fullTableName, preparedStatement);
+          sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, cursorInfo.getCursor());
+          return preparedStatement;
+        },
+        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+
+    Preconditions.checkState(result.size() == 1);
+    return result.get(0).get("count").asLong();
   }
 
 }

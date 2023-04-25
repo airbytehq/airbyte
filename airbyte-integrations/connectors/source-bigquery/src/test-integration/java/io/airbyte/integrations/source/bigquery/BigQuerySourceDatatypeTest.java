@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.bigquery;
@@ -22,11 +22,8 @@ import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.api.AfterEach;
 
-@TestInstance(Lifecycle.PER_CLASS)
 public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
@@ -42,12 +39,12 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   }
 
   @Override
-  protected JsonNode getConfig() throws Exception {
+  protected JsonNode getConfig() {
     return config;
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) {
 
   }
 
@@ -344,7 +341,7 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     return null;
   }
 
-  @AfterAll
+  @AfterEach
   public void cleanTestInstance() {
     database.getRealDatabase().cleanDataSet(getNameSpace());
   }

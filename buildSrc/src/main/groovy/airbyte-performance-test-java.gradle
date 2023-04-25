@@ -22,7 +22,7 @@ class AirbytePerformanceTestJavaPlugin implements Plugin<Project> {
         }
 
         project.task('performanceTestJava', type: Test) {
-            testClassesDirs += project.sourceSets.performanceTestJava.output.classesDirs
+            testClassesDirs = project.sourceSets.performanceTestJava.output.classesDirs
             classpath += project.sourceSets.performanceTestJava.runtimeClasspath
 
             systemProperty "cpuLimit", System.getProperty("cpuLimit")

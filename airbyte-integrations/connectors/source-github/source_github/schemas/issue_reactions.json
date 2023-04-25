@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": ["null", "object"],
   "properties": {
     "id": {
@@ -16,7 +16,7 @@
       "format": "date-time"
     },
     "user": {
-      "$ref": "user.json"
+      "$ref": "user_graphql.json"
     },
     "repository": {
       "type": "string"
