@@ -5,21 +5,10 @@ This page contains the setup guide and reference information for Amazon Seller P
 ## Prerequisites
 
 * Store Name
-* App Id
-* Amazon SP account
-* AWS Access Key
-* AWS Secret Access Key
-* Role ARN
-* AWS Environment
-* AWS Region
+* Amazon SP Account
+* Region
 
 ## Setup guide
-
-### Step 1: Set up Amazon Seller Partner
-
-[Register](https://developer-docs.amazon.com/sp-api/docs/registering-your-application) Amazon Seller Partner application. [Create](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html) IAM user.
-
-### Step 2: Set up the Amazon Seller Partner data source
 
 1. Select **Amazon Seller Partner** from the Source list.
 
@@ -27,31 +16,21 @@ This page contains the setup guide and reference information for Amazon Seller P
 
 3. Enter your Amazon **Store Name**.
 
-4. Enter your Amazon **App ID**.
+4. **Authenticate your Amazon Seller Partner Account**.
 
-5. **Authenticate your Amazon Seller Partner account**.
+5. **Max wait time for reports (in seconds)** is the maximum number of minutes the connector waits for the generation of a report for streams.
 
-6. Enter your **AWS Access Key**.
+6. **Period In Days** will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync. 
 
-7. Enter your **AWS Secret Access Key**.
+7. Select your the **Region** of your store.
 
-8. Enter your **Role ARN**.
+8. **End Date (optional)** - any data after this date will not be replicated.
 
-9. Select your **AWS Environment**.
+9. **Start Date** - Any data before this date will not be replicated.
 
-10. **Max wait time for reports (in seconds)** is the maximum number of minutes the connector waits for the generation of a report for streams.
+10. **Report Options** is additional information passed to reports. Must be a valid json string.
 
-11. **Period In Days** will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync. 
-
-12. Select your **AWS Region**.
-
-13. **End Date (Optional)** - any data after this date will not be replicated.
-
-14. **Start Date** - Any data before this date will not be replicated.
-
-15. **Report Options** is additional information passed to reports. Must be a valid json string.
-
-16. Click **Set up source**.
+11. Click **Save & Test**.
 
 ## Supported sync modes
 
@@ -91,6 +70,10 @@ This source is capable of syncing the following streams:
 ## Report options
 
 Make sure to configure the [required parameters](https://developer-docs.amazon.com/sp-api/docs/report-type-values) in the report options setting for the reports configured.
+
+## Troubleshooting
+
+Max number of tables that can be synced at a time is 6,000. We advise you to adjust your settings if it fails to fetch schema due to max number of tables reached.
 
 ## Data type mapping
 
