@@ -422,5 +422,10 @@ class TestJdbcUtils {
       assertExpectedOutputTypes(connection);
     }
   }
+  
+  @Test
+  void testParseJdbcParameters() {
+    Map<String, String> parameters = JdbcUtils.parseJdbcParameters("sessionVariables=max_execution_time=10000", "$");
+  }
 
 }

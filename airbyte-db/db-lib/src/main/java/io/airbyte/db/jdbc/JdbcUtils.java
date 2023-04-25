@@ -107,8 +107,7 @@ public class JdbcUtils {
         final String[] split = kv.split("=");
         if (split.length == 2) {
           parameters.put(split[0], split[1]);
-        }
-        else if (split.length == 3 && kv.contains("sessionVariables")) {
+        } else if (split.length == 3 && kv.contains("sessionVariables")) {
           parameters.put(split[0], split[1] + split[2]);
         } else {
           throw new IllegalArgumentException(
