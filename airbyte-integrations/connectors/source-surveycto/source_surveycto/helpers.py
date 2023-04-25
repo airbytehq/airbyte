@@ -3,7 +3,6 @@
 #
 
 import base64
-from datetime import datetime
 
 import requests
 from bigquery_schema_generator.generate_schema import SchemaGenerator

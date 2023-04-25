@@ -5,7 +5,6 @@
 
 import base64
 from abc import ABC
-from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
