@@ -78,7 +78,7 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.0 | 2022-10-14 | [17494](https://github.com/airbytehq/airbyte/pull/17494) | New DuckDB destination |
-
+| Version | Date | Pull Request | Subject                                                                                                                        |
+| :--- | :--- | :--- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.0   | 2023-04-25 | [\#25409](https://github.com/airbytehq/airbyte/pull/25409) | Add parameter to configure the number threads utilised for transformations |
+| 0.1.0 | 2022-10-14 | [17494](https://github.com/airbytehq/airbyte/pull/17494) | New DuckDB destination                                                         |

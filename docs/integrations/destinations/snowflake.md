@@ -287,6 +287,7 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:----------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.5.0   | 2023-04-25 | [\#25409](https://github.com/airbytehq/airbyte/pull/25409) | Add parameter to configure the number threads utilised for transformations                                                                                  |
 | 0.4.61          | 2023-03-30 | [#24736](https://github.com/airbytehq/airbyte/pull/24736)  | Improve behavior when throttled by AWS API                                                                                                          |
 | 0.4.60          | 2023-03-30 | [#24698](https://github.com/airbytehq/airbyte/pull/24698)  | Add option in spec to allow increasing the stream buffer size to 50                                                                                 |
 | 0.4.59          | 2023-03-23 | [#23904](https://github.com/airbytehq/airbyte/pull/24405)  | Fail faster in certain error cases                                                                                                                  |

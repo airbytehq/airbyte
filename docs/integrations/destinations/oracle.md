@@ -114,10 +114,11 @@ Airbyte has the ability to connect to the Oracle source with 3 network connectiv
 
 | Version | Date       | Pull Request                                            | Subject                                                                                                                     |
 |:--------|:-----------|:--------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------|
-| 0.1.19   | 2022-07-26 | [\#10719](https://github.com/airbytehq/airbyte/pull/) | Destination Oracle: added custom JDBC parameters support.                                        |
-| 0.1.7   | 2022-07-14 | [\#14618](https://github.com/airbytehq/airbyte/pull/14618) | Removed additionalProperties: false from JDBC destination connectors |
-| 0.1.5   | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
-| 0.1.4   | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling and remove DBT support                                                                    |
-| 0.1.3   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                                  |
-| 0.1.2   | 2021-01-29 | [\#9177](https://github.com/airbytehq/airbyte/pull/9177) | Update connector fields title/description                                                                                   |
-| 0.1.1   | 2021-11-08 | [\#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count                         |
+| 0.2.0   | 2023-04-25 | [\#25409](https://github.com/airbytehq/airbyte/pull/25409) | Add parameter to configure the number threads utilised for transformations                                               |
+| 0.1.19   | 2022-07-26 | [\#10719](https://github.com/airbytehq/airbyte/pull/) | Destination Oracle: added custom JDBC parameters support.                                                                    |
+| 0.1.7   | 2022-07-14 | [\#14618](https://github.com/airbytehq/airbyte/pull/14618) | Removed additionalProperties: false from JDBC destination connectors                                                     |
+| 0.1.5   | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance                                                                                     |
+| 0.1.4   | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling and remove DBT support                                                                   |
+| 0.1.3   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                                 |
+| 0.1.2   | 2021-01-29 | [\#9177](https://github.com/airbytehq/airbyte/pull/9177) | Update connector fields title/description                                                                                  |
+| 0.1.1   | 2021-11-08 | [\#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count                        |
