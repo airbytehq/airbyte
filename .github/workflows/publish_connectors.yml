@@ -30,6 +30,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
+      - name: Login to DockerHub
+        run: "docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}"
       - name: Publish modified connectors
         id: publish-modified-connectors
         if: github.event_name == 'push'
