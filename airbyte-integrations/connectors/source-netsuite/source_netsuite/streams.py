@@ -13,9 +13,9 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from requests_oauthlib import OAuth1
 from source_netsuite.constraints import (
     CUSTOM_INCREMENTAL_CURSOR,
+    DEFAULT_NETSUITE_INPUT_DATE_FORMAT,
     INCREMENTAL_CURSOR,
     META_PATH,
-    NETSUITE_INPUT_DATE_FORMATS,
     NETSUITE_OUTPUT_DATETIME_FORMAT,
     RECORD_PATH,
     REFERAL_SCHEMA,
@@ -34,11 +34,13 @@ class NetsuiteStream(HttpStream, ABC):
         base_url: str,
         start_datetime: str,
         window_in_days: int,
+        netsuite_input_date_format: str = DEFAULT_NETSUITE_INPUT_DATE_FORMAT,
     ):
         self.object_name = object_name
         self.base_url = base_url
         self.start_datetime = start_datetime
         self.window_in_days = window_in_days
+        self.netsuite_input_date_format = netsuite_input_date_format
         self.schemas = {}  # store subschemas to reduce API calls
         super().__init__(authenticator=auth)
 
@@ -48,10 +50,6 @@ class NetsuiteStream(HttpStream, ABC):
     index_datetime_format = 0
 
     raise_on_http_errors = True
-
-    @property
-    def default_datetime_format(self) -> str:
-        return NETSUITE_INPUT_DATE_FORMATS[self.index_datetime_format]
 
     @property
     def name(self) -> str:
@@ -132,7 +130,7 @@ class NetsuiteStream(HttpStream, ABC):
     def format_date(self, last_modified_date: str) -> str:
         # the date format returned is differnet than what we need to use in the query
         lmd_datetime = datetime.strptime(last_modified_date, NETSUITE_OUTPUT_DATETIME_FORMAT)
-        return lmd_datetime.strftime(self.default_datetime_format)
+        return lmd_datetime.strftime(self.netsuite_input_date_format)
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {}
@@ -180,13 +178,7 @@ class NetsuiteStream(HttpStream, ABC):
 
                     # handle data-format error
                     if "INVALID_PARAMETER" in error_code and "failed with date format" in detail_message:
-                        self.logger.warn(f"Stream `{self.name}`: cannot read using date format `{self.default_datetime_format}")
-                        self.index_datetime_format += 1
-                        if self.index_datetime_format < len(NETSUITE_INPUT_DATE_FORMATS):
-                            self.logger.warn(f"Stream `{self.name}`: retry using next date format `{self.default_datetime_format}")
-                            raise DateFormatExeption
-                        else:
-                            self.logger.error(f"DATE FORMAT exception. Cannot read using known formats {NETSUITE_INPUT_DATE_FORMATS}")
+                        self.logger.error(f"Stream `{self.name}`: cannot read using date format `{self.netsuite_input_date_format}")
 
                     # handle other known errors
                     self.logger.error(f"Stream `{self.name}`: {error_code} error occured, full error message: {detail_message}")
@@ -277,8 +269,8 @@ class IncrementalNetsuiteStream(NetsuiteStream):
         else:
             while start <= date.today():
                 next_day = start + timedelta(days=self.window_in_days)
-                slice_start = start.strftime(self.default_datetime_format)
-                slice_end = next_day.strftime(self.default_datetime_format)
+                slice_start = start.strftime(self.netsuite_input_date_format)
+                slice_end = next_day.strftime(self.netsuite_input_date_format)
                 yield {"start": slice_start, "end": slice_end}
                 start = next_day
 

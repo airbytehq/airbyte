@@ -6,5 +6,6 @@
   "token_secret": "a3c....",
   "start_datetime": "2022-06-01T00:00:01Z",
   "object_types": ["customer"],
-  "window_in_days": 30
+  "window_in_days": 30,
+  "netsuite_input_date_format": "%m...",
 }
