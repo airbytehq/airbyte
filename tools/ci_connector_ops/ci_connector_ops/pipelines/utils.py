@@ -11,7 +11,7 @@ import sys
 import unicodedata
 from glob import glob
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Set, Tuple
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Set, Tuple, Union
 
 import anyio
 import asyncer
@@ -214,17 +214,19 @@ def get_modified_files_in_commit(current_git_branch: str, current_git_revision: 
         return anyio.run(get_modified_files_in_commit_remote, current_git_branch, current_git_revision)
 
 
-def get_modified_connectors(modified_files: Set[str]) -> Set[Connector]:
+def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> Set[Connector]:
     """Create a set of modified connectors according to the modified files on the branch."""
     modified_connectors = []
     for file_path in modified_files:
-        if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) or file_path.startswith(DESTINATION_CONNECTOR_PATH_PREFIX):
-            modified_connectors.append(Connector(get_connector_name_from_path(file_path)))
+        if str(file_path).startswith(SOURCE_CONNECTOR_PATH_PREFIX) or str(file_path).startswith(DESTINATION_CONNECTOR_PATH_PREFIX):
+            modified_connectors.append(Connector(get_connector_name_from_path(str(file_path))))
     return set(modified_connectors)
 
 
-def get_modified_metadata_files(modified_files: Set[str]) -> Set[Path]:
-    return {Path(f) for f in modified_files if f.endswith(METADATA_FILE_NAME) and f.startswith("airbyte-integrations/connectors")}
+def get_modified_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Path]:
+    return {
+        Path(str(f)) for f in modified_files if str(f).endswith(METADATA_FILE_NAME) and str(f).startswith("airbyte-integrations/connectors")
+    }
 
 
 def get_all_metadata_files() -> Set[Path]:
