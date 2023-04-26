@@ -25,6 +25,7 @@ from azure.storage.blob import BlobServiceClient
 from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
+from openpyxl import load_workbook
 from yaml import safe_load
 
 from .utils import backoff_handler
@@ -336,6 +337,8 @@ class Client:
             elif self._reader_options == "excel_binary":
                 reader_options["engine"] = "pyxlsb"
                 yield from reader(fp, **reader_options)
+            elif self._reader_format == "excel":
+                yield from self.openpyxl_chunk_reader(fp)
             else:
                 yield reader(fp, **reader_options)
         except UnicodeDecodeError as err:
@@ -443,3 +446,17 @@ class Client:
                     "properties": self._stream_properties(fp, empty_schema=empty_schema, read_sample_chunk=True),
                 }
         yield AirbyteStream(name=self.stream_name, json_schema=json_schema, supported_sync_modes=[SyncMode.full_refresh])
+
+    def openpyxl_chunk_reader(self, file):
+        work_book = load_workbook(filename=file, read_only=True)
+        for sheetname in work_book.sheetnames:
+            work_sheet = work_book[sheetname]
+            data = work_sheet.values
+            cols = next(data)
+            start = 1
+            step = 500
+            end = work_sheet.max_row
+            while start <= end:
+                df = pd.DataFrame(data=(next(data) for _ in range(start, min(start + step, end))), columns=cols)
+                yield df
+                start += step
