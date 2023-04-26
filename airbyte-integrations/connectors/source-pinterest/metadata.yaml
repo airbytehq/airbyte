@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.2.6
   dockerRepository: airbyte/source-pinterest
   githubIssueLabel: source-pinterest
   icon: pinterest.svg

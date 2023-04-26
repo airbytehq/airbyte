@@ -40,12 +40,8 @@ acceptance_tests:
         status: succeed
   discovery:
     tests:
-      - backward_compatibility_tests_config:
-          disable_for_version: 0.2.3
-        config_path: secrets/config.json
-      - backward_compatibility_tests_config:
-          disable_for_version: 0.2.3
-        config_path: secrets/config_oauth.json
+      - config_path: secrets/config.json
+      - config_path: secrets/config_oauth.json
   full_refresh:
     tests:
       - config_path: secrets/config.json
@@ -58,8 +54,6 @@ acceptance_tests:
           future_state_path: integration_tests/abnormal_state.json
   spec:
     tests:
-      - backward_compatibility_tests_config:
-          disable_for_version: 0.1.2
-        spec_path: source_pinterest/spec.json
+      - spec_path: source_pinterest/spec.json
 connector_image: airbyte/source-pinterest:dev
 test_strictness_level: high
