@@ -108,7 +108,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
           String.format("SELECT %s FROM %s ORDER BY %s ASC", newIdentifiers,
               getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField);
       LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
-      return queryTable(database, preparedSqlQuery);
+      return queryTable(database, preparedSqlQuery, tableName, schemaName);
     } else {
       // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering of the records.
       final String newIdentifiers = getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
@@ -116,7 +116,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
           String.format("SELECT %s FROM %s", newIdentifiers, getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()));
 
       LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
-      return queryTable(database, preparedSqlQuery);
+      return queryTable(database, preparedSqlQuery, tableName, schemaName);
     }
   }
 

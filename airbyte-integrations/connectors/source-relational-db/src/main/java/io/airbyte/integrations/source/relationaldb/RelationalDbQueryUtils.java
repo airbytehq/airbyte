@@ -5,9 +5,11 @@
 package io.airbyte.integrations.source.relationaldb;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.SqlDatabase;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
@@ -61,16 +63,18 @@ public class RelationalDbQueryUtils {
     return quoteString + identifier + quoteString;
   }
 
-  public static <Database extends SqlDatabase> AutoCloseableIterator<JsonNode> queryTable(final Database database, final String sqlQuery) {
+  public static <Database extends SqlDatabase> AutoCloseableIterator<JsonNode> queryTable(final Database database, final String sqlQuery,
+      final String tableName, final String schemaName) {
+    final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         LOGGER.info("Queueing query: {}", sqlQuery);
         final Stream<JsonNode> stream = database.unsafeQuery(sqlQuery);
-        return AutoCloseableIterators.fromStream(stream);
+        return AutoCloseableIterators.fromStream(stream, airbyteStreamNameNamespacePair);
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
-    });
+    }, airbyteStreamNameNamespacePair);
   }
 
 }
