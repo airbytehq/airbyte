@@ -5,7 +5,16 @@
 from unittest import mock
 from unittest.mock import MagicMock, call
 
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteTraceMessage, Level, SyncMode, TraceType
+from airbyte_cdk.models import (
+    AirbyteLogMessage,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteTraceMessage,
+    Level,
+    SyncMode,
+    TraceType,
+    Type,
+)
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTransformation
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
@@ -24,8 +33,8 @@ def test_declarative_stream():
     records = [
         {"pk": 1234, "field": "value"},
         {"pk": 4567, "field": "different_value"},
-        AirbyteLogMessage(level=Level.INFO, message="This is a log  message"),
-        AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=12345),
+        AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="This is a log  message")),
+        AirbyteMessage(type=Type.TRACE, trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=12345)),
     ]
     stream_slices = [
         {"date": "2021-01-01"},
@@ -84,15 +93,17 @@ def test_declarative_stream_with_add_fields_transform():
     retriever_records = [
         {"pk": 1234, "field": "value"},
         {"pk": 4567, "field": "different_value"},
-        AirbyteLogMessage(level=Level.INFO, message="This is a log  message"),
-        AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=12345),
+        AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(data={"pk": 1357, "field": "a_value"}, emitted_at=12344, stream="stream")),
+        AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="This is a log  message")),
+        AirbyteMessage(type=Type.TRACE, trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=12345)),
     ]
 
     expected_records = [
         {"pk": 1234, "field": "value", "added_key": "added_value"},
         {"pk": 4567, "field": "different_value", "added_key": "added_value"},
-        AirbyteLogMessage(level=Level.INFO, message="This is a log  message"),
-        AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=12345),
+        AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(data={"pk": 1357, "field": "a_value", "added_key": "added_value"}, emitted_at=12344, stream="stream")),
+        AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="This is a log  message")),
+        AirbyteMessage(type=Type.TRACE, trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=12345)),
     ]
     stream_slices = [
         {"date": "2021-01-01"},
