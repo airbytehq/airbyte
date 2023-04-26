@@ -1,0 +1,7 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'us-docker.pkg.dev/$PROJECT_ID/airbyte-custom-connectors/source-b2w:${_B2W_VERSION}', './airbyte-integrations/connectors/source-b2w' ]
+substitutions:
+  _B2W_VERSION: '0.0.1'
+images:
+- 'us-docker.pkg.dev/$PROJECT_ID/airbyte-custom-connectors/source-b2w:${_B2W_VERSION}'

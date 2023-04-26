@@ -1,0 +1,41 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: B2W Spec 
+  type: object
+  required:
+    - X_User_Email
+    - x_Api_Key
+    - x_accountmanager_key
+    - merchant
+    - start_date
+  properties:
+    X_User_Email:
+      title: X_User_Email
+      type: string
+      description: B2W User Email
+      order: 0
+    x_Api_Key:
+      title: x_Api_Key
+      type: string
+      description: API Access Key
+      airbyte_secret: true
+      order: 1
+    x_accountmanager_key:
+      title: x_accountmanager_key
+      type: string
+      description: Unique ERP Account token
+      order: 2
+    merchant:
+      title: Merchant Code
+      type: string
+      description: "Merchant code with 5 characters length"
+      order: 3
+      examples:
+        - "BRXYZ"
+        - "MXABC"
+    start_date:
+      title: Start Date (DD/MM/YYYY format)
+      type: string
+      description: Start replication date
+      order: 4
