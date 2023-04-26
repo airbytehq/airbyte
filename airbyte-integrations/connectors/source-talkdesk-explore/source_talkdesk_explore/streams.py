@@ -14,11 +14,10 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 logger = AirbyteLogger()
 
-MAP_REGION_DOMAIN = { "US": ".com", "Europe": ".eu", "Canada": "ca.com" }
+MAP_REGION_DOMAIN = {"US": ".com", "Europe": ".eu", "Canada": "ca.com"}
+
 
 class BaseStream(HttpStream):
-
-
     @property
     def url_base(self) -> str:
         region_domain = MAP_REGION_DOMAIN.get(self.region)
