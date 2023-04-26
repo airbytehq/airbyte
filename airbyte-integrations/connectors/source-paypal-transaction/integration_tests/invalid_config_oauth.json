@@ -5,7 +5,7 @@
     "secret": "ENC__",
     "refresh_token": "__"
   },
-  "start_date": "2021-07-03T00:00:00Z",
-  "end_date": "2021-07-04T23:59:59Z",
+  "start_date": "2021-07-03T00:00:00+00:00",
+  "end_date": "2021-07-04T23:59:59+00:00",
   "is_sandbox": false
 }
