@@ -5,6 +5,7 @@ on:
     paths:
       - "airbyte-integrations/connectors/source-**"
       - "airbyte-integrations/connectors/destination-**"
+      - "airbyte-integrations/connectors/third-party/**"
 jobs:
   checklist_job:
     name: Add Connector Merge Checklist Job
