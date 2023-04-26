@@ -33,9 +33,13 @@ class WinningtempStream(HttpStream, ABC):
 
     def generate_access_token(self):
         encoded_str = base64.b64encode(
-            f"{self.client_id}:{self.client_secret}".encode("ascii")).decode("utf-8")
-        headers = {"accept": "application/json",
-                   "Authorization": f"Basic {encoded_str}"}
+            f"{self.client_id}:{self.client_secret}".encode("ascii")
+        ).decode("utf-8")
+
+        headers = {
+            "accept": "application/json",
+            "Authorization": f"Basic {encoded_str}"
+        }
         response = requests.post(f"{self.url_base}/auth", headers=headers)
 
         self.access_token = response.json().get("access_token", "")
@@ -63,8 +67,7 @@ class WinningtempStream(HttpStream, ABC):
             return data
         elif isinstance(data, dict):
             if self.dict_unnest:
-                unnested_data = [{**{"identifier": k}, **v}
-                                 for k, v in data.items()]
+                unnested_data = [{**{"identifier": k}, **v} for k, v in data.items()]
                 return unnested_data
             else:
                 return [data]
@@ -89,19 +92,19 @@ class WinningtempIncrementalStream(WinningtempStream, ABC):
     def cursor_field(self) -> str:
         return "date"
 
-    def get_week_start(self, date: pendulum.date.Date) -> pendulum.date.Date:
+    def get_week_start(self, date):
         return date.add(days=-((date.day_of_week - 1) % 7))
 
-    def get_week_end(self, date: pendulum.date.Date) -> pendulum.date.Date:
+    def get_week_end(self, date):
         return self.get_week_start(date).add(days=6)
 
-    def get_month_start(self, date: pendulum.date.Date) -> pendulum.date.Date:
+    def get_month_start(self, date):
         return pendulum.date(date.year, date.month, 1)
 
-    def get_month_end(self, date: pendulum.date.Date) -> pendulum.date.Date:
+    def get_month_end(self, date):
         return date.add(months=1).add(days=-1)
 
-    def get_max_date(self) -> pendulum.date.Date:
+    def get_max_date(self):
         today = pendulum.today().date()
         if self.is_monthly:
             return self.get_month_end(today)
@@ -117,14 +120,12 @@ class WinningtempIncrementalStream(WinningtempStream, ABC):
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
 
-        body = {key: value for key, value in stream_slice.items() if key in [
-            "start", "end"]}
-
+        body = {key: value for key, value in stream_slice.items() if key in ["start", "end"]}
         body = {**body, "showIndexByGrade": True, "indexDecimals": 2}
         return json.dumps(body)
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+            self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         start_date = stream_state.get(self.cursor_field, self.start_date)
         if isinstance(start_date, str):
@@ -133,7 +134,7 @@ class WinningtempIncrementalStream(WinningtempStream, ABC):
         for start, end in self.chunk_dates(start_date):
             yield {"start": str(start), "end": str(end)}
 
-    def chunk_dates(self, start_date: pendulum.date.Date) -> Iterable[Tuple[pendulum.date.Date, pendulum.date.Date]]:
+    def chunk_dates(self, start_date):
         stop = self.get_max_date()
         step = self.get_step()
         after_date = start_date
