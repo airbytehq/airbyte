@@ -108,7 +108,13 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       case BIGINT, BIGINT_UNSIGNED -> putBigInt(json, columnName, resultSet, colIndex);
       case FLOAT, FLOAT_UNSIGNED -> putFloat(json, columnName, resultSet, colIndex);
       case DOUBLE, DOUBLE_UNSIGNED -> putDouble(json, columnName, resultSet, colIndex);
-      case DECIMAL, DECIMAL_UNSIGNED -> putBigDecimal(json, columnName, resultSet, colIndex);
+      case DECIMAL, DECIMAL_UNSIGNED -> {
+        if (field.getDecimals() == 0) {
+          putBigInt(json, columnName, resultSet, colIndex);
+        } else {
+          putBigDecimal(json, columnName, resultSet, colIndex);
+        }
+      }
       case DATE -> putDate(json, columnName, resultSet, colIndex);
       case DATETIME -> putTimestamp(json, columnName, resultSet, colIndex);
       case TIMESTAMP -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
