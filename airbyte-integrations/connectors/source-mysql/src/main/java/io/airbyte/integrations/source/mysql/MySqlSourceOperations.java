@@ -111,14 +111,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       case DATETIME -> putTimestamp(json, columnName, resultSet, colIndex);
       case TIMESTAMP -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
       case TIME -> putTime(json, columnName, resultSet, colIndex);
-      case CHAR, VARCHAR -> {
-        if (field.isBinary()) {
-          // when character set is binary, the returned value is binary
-          putBinary(json, columnName, resultSet, colIndex);
-        } else {
-          putString(json, columnName, resultSet, colIndex);
-        }
-      }
+      case CHAR, VARCHAR -> putString(json, columnName, resultSet, colIndex);
       case TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, BINARY, VARBINARY, GEOMETRY -> putBinary(json, columnName, resultSet, colIndex);
       case TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, JSON, ENUM, SET -> putString(json, columnName, resultSet, colIndex);
       case NULL -> json.set(columnName, NullNode.instance);
