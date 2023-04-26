@@ -9,6 +9,7 @@ from google.cloud import storage
 from google.oauth2 import service_account
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
+from metadata_service.validators.metadata_validator import validate_metadata_images_in_dockerhub
 
 
 def get_metadata_file_path(dockerRepository: str, version: str) -> str:
@@ -39,6 +40,11 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, service_a
     uploaded = False
     raw_metadata = yaml.safe_load(metadata_file_path.read_text())
     metadata = ConnectorMetadataDefinitionV0.parse_obj(raw_metadata)
+
+    # Validate that the images are on DockerHub
+    is_valid, error = validate_metadata_images_in_dockerhub(metadata)
+    if not is_valid:
+        raise ValueError(error)
 
     credentials = service_account.Credentials.from_service_account_file(service_account_file_path)
     storage_client = storage.Client(credentials=credentials)

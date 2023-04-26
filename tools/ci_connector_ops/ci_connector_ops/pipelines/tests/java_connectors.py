@@ -7,7 +7,7 @@
 from typing import List, Optional
 
 import anyio
-from ci_connector_ops.pipelines.actions import environments, secrets
+from ci_connector_ops.pipelines.actions import environments, run_steps, secrets
 from ci_connector_ops.pipelines.bases import GradleTask, StepResult, StepStatus
 from ci_connector_ops.pipelines.builds import LOCAL_BUILD_PLATFORM
 from ci_connector_ops.pipelines.builds.java_connectors import BuildConnectorImage
@@ -70,64 +70,29 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     Returns:
         List[StepResult]: The results of all the tests steps.
     """
-    step_results = []
-    build_connector_step = BuildConnectorImage(context, LOCAL_BUILD_PLATFORM)
-    unit_tests_step = UnitTests(context)
-    build_normalization_step = None
+    context.secrets_dir = await secrets.get_connector_secret_dir(context)
+
+    step_results = await run_steps([BuildConnectorImage(context, LOCAL_BUILD_PLATFORM), UnitTests(context)])
+
     if context.connector.supports_normalization:
         normalization_image = f"{context.connector.normalization_repository}:dev"
         context.logger.info(f"This connector supports normalization: will build {normalization_image}.")
-        build_normalization_step = BuildOrPullNormalization(context, normalization_image)
-    integration_tests_java_step = IntegrationTestJava(context)
-    acceptance_tests_step = AcceptanceTests(context)
-
-    normalization_tar_file = None
-    if build_normalization_step:
-        context.logger.info("Run build normalization step.")
-        build_normalization_results, normalization_container = await build_normalization_step.run()
-        if build_normalization_results.status is StepStatus.FAILURE:
-            return step_results + [
-                build_normalization_results,
-                build_connector_step.skip(),
-                unit_tests_step.skip(),
-                integration_tests_java_step.skip(),
-                acceptance_tests_step.skip(),
-            ]
-        normalization_tar_file, _ = await export_container_to_tarball(context, normalization_container)
-        context.logger.info(f"{build_normalization_step.normalization_image} was successfully built.")
+        build_normalization_results = await BuildOrPullNormalization(context, normalization_image).run()
+        normalization_container = build_normalization_results.output_artifact
+        normalization_tar_file, _ = await export_container_to_tarball(
+            context, normalization_container, tar_file_name=f"{context.connector.normalization_repository}_{context.git_revision}.tar"
+        )
         step_results.append(build_normalization_results)
+    else:
+        normalization_tar_file = None
 
-    context.logger.info("Run build connector step")
-    build_connector_results, connector_container = await build_connector_step.run()
-    if build_connector_results.status is StepStatus.FAILURE:
-        return step_results + [
-            build_connector_results,
-            unit_tests_step.skip(),
-            integration_tests_java_step.skip(),
-            acceptance_tests_step.skip(),
-        ]
+    connector_container = step_results[0].output_artifact
     connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container)
-    context.logger.info("The connector was successfully built.")
-    step_results.append(build_connector_results)
 
-    context.secrets_dir = await secrets.get_connector_secret_dir(context)
-
-    context.logger.info("Run unit tests.")
-    unit_test_results = await unit_tests_step.run()
-    if unit_test_results.status is StepStatus.FAILURE:
-        return step_results + [
-            unit_test_results,
-            build_connector_step.skip(),
-            integration_tests_java_step.skip(),
-            acceptance_tests_step.skip(),
-        ]
-    context.logger.info("Unit tests successfully ran.")
-    step_results.append(unit_test_results)
-
-    context.logger.info("Start acceptance tests.")
-    acceptance_test_results = await acceptance_tests_step.run(connector_image_tar_file)
-    step_results.append(acceptance_test_results)
-    context.logger.info("Start integration tests.")
-    integration_test_results = await integration_tests_java_step.run(connector_image_tar_file, normalization_tar_file)
-    step_results.append(integration_test_results)
-    return step_results
+    return await run_steps(
+        [
+            (IntegrationTestJava(context), (connector_image_tar_file, normalization_tar_file)),
+            (AcceptanceTests(context), (connector_image_tar_file)),
+        ],
+        results=step_results,
+    )
