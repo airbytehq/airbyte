@@ -19,14 +19,19 @@ jobs:
     name: Publish connectors
     runs-on: medium-runner
     env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
+      AWS_DEFAULT_REGION: "us-east-2"
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
       CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-      SPEC_CACHE_BUCKET_NAME: io-airbyte-cloud-spec-cache
-      METADATA_SERVICE_BUCKET_NAME: dev-airbyte-cloud-connector-metadata-service
-      GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
-      SPEC_CACHE_SERVICE_ACCOUNT_KEY: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY }}
-      METADATA_SERVICE_ACCOUNT_KEY: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
-      DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
       DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+      GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+      METADATA_SERVICE_ACCOUNT_KEY: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+      METADATA_SERVICE_BUCKET_NAME: dev-airbyte-cloud-connector-metadata-service
+      SPEC_CACHE_BUCKET_NAME: io-airbyte-cloud-spec-cache
+      SPEC_CACHE_SERVICE_ACCOUNT_KEY: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
+      TEST_REPORTS_BUCKET_NAME: "airbyte-connector-build-status"
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2

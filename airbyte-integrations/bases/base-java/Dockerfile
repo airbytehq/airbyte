@@ -10,6 +10,7 @@ WORKDIR /airbyte
 ADD https://dtdg.co/latest-java-tracer dd-java-agent.jar
 
 COPY javabase.sh .
+COPY run_with_normalization.sh .
 
 # airbyte base commands
 ENV AIRBYTE_SPEC_CMD "/airbyte/javabase.sh --spec"

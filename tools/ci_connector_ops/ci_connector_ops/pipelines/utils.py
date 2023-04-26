@@ -6,12 +6,13 @@
 from __future__ import annotations
 
 import datetime
+import json
 import re
 import sys
 import unicodedata
 from glob import glob
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Set, Tuple
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Set, Tuple, Union
 
 import anyio
 import asyncer
@@ -214,17 +215,19 @@ def get_modified_files_in_commit(current_git_branch: str, current_git_revision: 
         return anyio.run(get_modified_files_in_commit_remote, current_git_branch, current_git_revision)
 
 
-def get_modified_connectors(modified_files: Set[str]) -> Set[Connector]:
+def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> Set[Connector]:
     """Create a set of modified connectors according to the modified files on the branch."""
     modified_connectors = []
     for file_path in modified_files:
-        if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) or file_path.startswith(DESTINATION_CONNECTOR_PATH_PREFIX):
-            modified_connectors.append(Connector(get_connector_name_from_path(file_path)))
+        if str(file_path).startswith(SOURCE_CONNECTOR_PATH_PREFIX) or str(file_path).startswith(DESTINATION_CONNECTOR_PATH_PREFIX):
+            modified_connectors.append(Connector(get_connector_name_from_path(str(file_path))))
     return set(modified_connectors)
 
 
-def get_modified_metadata_files(modified_files: Set[str]) -> Set[Path]:
-    return {Path(f) for f in modified_files if f.endswith(METADATA_FILE_NAME) and f.startswith("airbyte-integrations/connectors")}
+def get_modified_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Path]:
+    return {
+        Path(str(f)) for f in modified_files if str(f).endswith(METADATA_FILE_NAME) and str(f).startswith("airbyte-integrations/connectors")
+    }
 
 
 def get_all_metadata_files() -> Set[Path]:
@@ -277,13 +280,6 @@ async def get_version_from_dockerfile(dockerfile: File) -> str:
         raise Exception("Could not get the version from the Dockerfile labels.")
 
 
-async def should_enable_sentry(dockerfile: File) -> bool:
-    for line in await dockerfile.contents():
-        if "ENV ENABLE_SENTRY true" in line:
-            return True
-    return False
-
-
 class DaggerPipelineCommand(click.Command):
     def invoke(self, ctx: click.Context) -> Any:
         """Wrap parent invoke in a try catch suited to handle pipeline failures.
@@ -318,7 +314,9 @@ async def execute_concurrently(steps: List[Callable], concurrency=5):
     return [task.value for task in tasks]
 
 
-async def export_container_to_tarball(context: ConnectorContext, container: Container) -> Tuple[Optional[File], Optional[Path]]:
+async def export_container_to_tarball(
+    context: ConnectorContext, container: Container, tar_file_name: Optional[str] = None
+) -> Tuple[Optional[File], Optional[Path]]:
     """Save the container image to the host filesystem as a tar archive.
 
     Exporting a container image as a tar archive allows user to have a dagger built container image available on their host filesystem.
@@ -329,8 +327,9 @@ async def export_container_to_tarball(context: ConnectorContext, container: Cont
     Returns:
         Tuple[Optional[File], Optional[Path]]: A tuple with the file object holding the tar archive on the host and its path.
     """
-    container_id = await container.id()
-    tar_file_name = f"{container_id[:100]}.tar"
+    if tar_file_name is None:
+        tar_file_name = f"{context.connector.technical_name}_{context.git_revision}.tar"
+    tar_file_name = slugify(tar_file_name)
     local_path = Path(f"{context.host_image_export_dir_path}/{tar_file_name}")
     export_success = await container.export(str(local_path))
     if export_success:
@@ -340,3 +339,10 @@ async def export_container_to_tarball(context: ConnectorContext, container: Cont
         return exported_file, local_path
     else:
         return None, None
+
+
+def sanitize_gcs_service_account_key(raw_value: str) -> str:
+    try:
+        return json.dumps(json.loads(raw_value))
+    except json.JSONDecodeError:
+        return raw_value
