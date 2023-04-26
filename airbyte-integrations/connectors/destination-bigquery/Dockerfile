@@ -37,5 +37,5 @@ COPY --from=build /airbyte /airbyte
 LABEL io.airbyte.version=1.3.3
 LABEL io.airbyte.name=airbyte/destination-bigquery
 
-ENV AIRBYTE_ENTRYPOINT "/airbyte/base.sh"
+ENV AIRBYTE_ENTRYPOINT "/airbyte/run_with_normalization.sh"
 ENTRYPOINT ["/airbyte/run_with_normalization.sh"]
