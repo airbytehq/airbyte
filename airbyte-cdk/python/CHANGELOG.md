@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.36.0
+Emit stream status messages
+
 ## 0.35.4
 low-code: remove now_local() macro because it's too unpredictable
 
