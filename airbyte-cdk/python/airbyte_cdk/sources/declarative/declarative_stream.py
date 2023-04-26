@@ -118,7 +118,9 @@ class DeclarativeStream(Stream):
             record = message_or_record_data
         else:
             # Raise an error because this is unexpected and indicative of a typing problem in the CDK
-            raise ValueError(f"Unexpected record type. Expected {StreamData}. Got {type(message_or_record_data)}. This is probably due to a bug in the CDK.")
+            raise ValueError(
+                f"Unexpected record type. Expected {StreamData}. Got {type(message_or_record_data)}. This is probably due to a bug in the CDK."
+            )
         for transformation in self.transformations:
             transformation.transform(record, config=config, stream_state=self.state, stream_slice=stream_slice)
 

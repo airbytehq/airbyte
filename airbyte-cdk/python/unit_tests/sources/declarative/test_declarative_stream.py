@@ -5,7 +5,16 @@
 from unittest import mock
 from unittest.mock import MagicMock, call
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteLogMessage, AirbyteRecordMessage, AirbyteTraceMessage, Level, SyncMode, TraceType, Type
+from airbyte_cdk.models import (
+    AirbyteLogMessage,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteTraceMessage,
+    Level,
+    SyncMode,
+    TraceType,
+    Type,
+)
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTransformation
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition

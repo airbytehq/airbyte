@@ -10,13 +10,13 @@ from abc import ABC, abstractmethod
 from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
-from deprecated.classic import deprecated
-
 import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import AirbyteMessage, AirbyteStream, SyncMode
+
 # list of all possible HTTP methods which can be used for sending of request bodies
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from deprecated.classic import deprecated
 
 if typing.TYPE_CHECKING:
     from airbyte_cdk.sources import Source
