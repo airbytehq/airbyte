@@ -42,7 +42,7 @@ def test_csv_with_utf16_encoding(absolute_path, test_files):
     config_local_csv_utf16 = {
         "dataset_name": "AAA",
         "format": "csv",
-        "reader_options": '{"encoding":"utf_16"}',
+        "reader_options": '{"encoding":"utf_16", "parse_dates": [\"header5\"]}',
         "url": f"{absolute_path}/{test_files}/test_utf16.csv",
         "provider": {"storage": "local"},
     }
@@ -53,6 +53,7 @@ def test_csv_with_utf16_encoding(absolute_path, test_files):
             "header2": {"type": ["number", "null"]},
             "header3": {"type": ["number", "null"]},
             "header4": {"type": ["boolean", "null"]},
+            "header5": {"type": ["string", "null"], "format": "datetime"},
         },
         "type": "object",
     }
