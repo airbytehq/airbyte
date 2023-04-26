@@ -5,36 +5,45 @@ test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
-    - spec_path: "source_greenhouse/spec.json"
+      - spec_path: "source_greenhouse/spec.json"
   connection:
     tests:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/config_invalid.json"
-      status: "failed"
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/config_invalid.json"
+        status: "failed"
   discovery:
     tests:
-    - config_path: "secrets/config_users_only.json"
-    - config_path: "secrets/config.json"
+      - config_path: "secrets/config_users_only.json"
+      - config_path: "secrets/config.json"
   basic_read:
     tests:
-    - config_path: "secrets/config.json"
-      expect_records:
-        path: "integration_tests/expected_records.jsonl"
-      fail_on_extra_columns: false
-      ignored_fields:
-        users:
-          - name: updated_at
-            bypass_reason: "Updated when you login to account"
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+        fail_on_extra_columns: false
+        empty_streams:
+          - name: eeoc
+            bypass_reason: "No data"
+          - name: prospect_pools
+            bypass_reason: "No data"
+          - name: tags
+            bypass_reason: "No data"
+          - name: user_permissions
+            bypass_reason: "No Data"
+        ignored_fields:
+          users:
+            - name: updated_at
+              bypass_reason: "Updated when you login to account"
   full_refresh:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-    - config_path: "secrets/config_users_only.json"
-      configured_catalog_path: "integration_tests/configured_catalog_users_only.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+      - config_path: "secrets/config_users_only.json"
+        configured_catalog_path: "integration_tests/configured_catalog_users_only.json"
   incremental:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/incremental_configured_catalog.json"
-      future_state:
-        future_state_path: "integration_tests/abnormal_state.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/incremental_configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
