@@ -20376,7 +20376,7 @@
     "sourceDefinitionId": "d913b0f2-cc51-4e55-a44c-8ba1697b9239",
     "name": "Paypal Transaction",
     "dockerRepository": "airbyte/source-paypal-transaction",
-    "dockerImageTag": "0.1.12",
+    "dockerImageTag": "0.1.13",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/paypal-transaction",
     "icon": "paypal.svg",
     "sourceType": "api",
@@ -20411,8 +20411,9 @@
             "type": "string",
             "title": "Start Date",
             "description": "Start Date for data extraction in <a href=\"https://datatracker.ietf.org/doc/html/rfc3339#section-5.6\">ISO format</a>. Date must be in range from 3 years till 12 hrs before present time.",
-            "examples": [ "2021-06-11T23:59:59-00:00" ],
-            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[+-][0-9]{2}:[0-9]{2}$"
+            "examples": [ "2021-06-11T23:59:59", "2021-06-11T23:59:59+00:00" ],
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(|Z|[+-][0-9]{2}:[0-9]{2})$",
+            "format": "date-time"
           },
           "is_sandbox": {
             "title": "Sandbox",
