@@ -87,7 +87,7 @@ To do so, follow these steps:
 * Select the downloaded file
 * Change and test the connector
 
-Some examples:
+The following connectors are good showcases for real-world use cases:
 * The [Pendo.io API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-pendo/source_pendo/manifest.yaml) is a simple connector implementing multiple streams and api-key based authentication
 * The [News API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-news-api/source_news_api/manifest.yaml) implements pagination and user-configurable request parameters
 * The [CoinGecko API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-coingecko-coins/source_coingecko_coins/manifest.yaml) implements incremental syncs
