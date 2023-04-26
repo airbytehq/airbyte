@@ -129,6 +129,16 @@ class Campaigns(IncrementalMailChimpStream):
         return "campaigns"
 
 
+class Automations(IncrementalMailChimpStream):
+    """Doc Link: https://mailchimp.com/developer/marketing/api/automation/get-automation-info/"""
+
+    cursor_field = "create_time"
+    data_field = "automations"
+
+    def path(self, **kwargs) -> str:
+        return "automations"
+
+
 class EmailActivity(IncrementalMailChimpStream):
     cursor_field = "timestamp"
     filter_field = "since"
@@ -187,6 +197,7 @@ class EmailActivity(IncrementalMailChimpStream):
         for item in data:
             for activity_item in item.pop("activity", []):
                 yield {**item, **activity_item}
+
 
 class Reports(IncrementalMailChimpStream):
     cursor_field = "send_time"

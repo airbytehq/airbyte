@@ -35,7 +35,8 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
-import io.airbyte.integrations.debezium.internals.PostgresReplicationConnection;
+import io.airbyte.integrations.debezium.internals.postgres.PostgresCdcTargetPosition;
+import io.airbyte.integrations.debezium.internals.postgres.PostgresReplicationConnection;
 import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -138,6 +139,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
         .put(JdbcUtils.SSL_KEY, false)
         .put("is_test", true)
         .put("replication_method", replicationMethod)
+        .put("sync_checkpoint_records", 2)
         .build());
   }
 
@@ -234,7 +236,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected CdcTargetPosition cdcLatestTargetPosition() {
+  protected PostgresCdcTargetPosition cdcLatestTargetPosition() {
     final JdbcDatabase database = new DefaultJdbcDatabase(
         DataSourceFactory.create(
             config.get(JdbcUtils.USERNAME_KEY).asText(),
@@ -249,7 +251,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected CdcTargetPosition extractPosition(final JsonNode record) {
+  protected PostgresCdcTargetPosition extractPosition(final JsonNode record) {
     return new PostgresCdcTargetPosition(PgLsn.fromLong(record.get(CDC_LSN).asLong()));
   }
 
@@ -460,9 +462,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
   @Test
   void testReachedTargetPosition() {
-    final CdcTargetPosition ctp = cdcLatestTargetPosition();
-    final PostgresCdcTargetPosition pctp = (PostgresCdcTargetPosition) ctp;
-    final PgLsn target = pctp.targetLsn;
+    final PostgresCdcTargetPosition ctp = cdcLatestTargetPosition();
+    final PgLsn target = ctp.targetLsn;
     assertTrue(ctp.reachedTargetPosition(target.asLong() + 1));
     assertTrue(ctp.reachedTargetPosition(target.asLong()));
     assertFalse(ctp.reachedTargetPosition(target.asLong() - 1));
@@ -611,10 +612,9 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
         .toListAndClose(secondBatchIterator);
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
-    // TODO : Re-enable when activating checkpointing for Postgres
-//    final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
-//    assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
-//    assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
+    final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
+    assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
+    assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
   }
 
   /** This test verify that multiple states are sent during the CDC process based on time ranges. We can
@@ -654,9 +654,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
         .toListAndClose(secondBatchIterator);
 
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
-    // TODO : Re-enable when activating checkpointing for Postgres
-//    final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
-//    assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
-//    assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
+    final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
+    assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
+    assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
   }
 }

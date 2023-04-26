@@ -28,9 +28,10 @@ public class ConnectorMarkdownGenerator {
       .desc("name for the generated catalog json file").build();
   private static final Options OPTIONS = new Options().addOption(PROJECT_ROOT_OPTION).addOption(SEED_ROOT_OPTION).addOption(OUTPUT_FILENAME_OPTION);
 
-  private static final String githubCodeBase = "https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors";
+  private static final String githubOrgProject = "airbytehq/airbyte";
+  private static final String githubCodeBase = "https://github.com/" + githubOrgProject + "/tree/master/airbyte-integrations/connectors";
   private static final String githubIconBase =
-      "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-config-oss/init-oss/src/main/resources/icons";
+      "https://raw.githubusercontent.com/" + githubOrgProject + " /master/airbyte-config-oss/init-oss/src/main/resources/icons";
   private static final String iconSize = "30";
 
   public static void main(final String[] args) throws Exception {
@@ -87,11 +88,12 @@ public class ConnectorMarkdownGenerator {
     headers.add("Image");
     headers.add("Release Stage");
     headers.add("Docs");
+    headers.add("Issues");
     headers.add("Code");
     headers.add("ID");
 
     bodyParts.add("| " + String.join(" | ", headers) + " |");
-    bodyParts.add("|----|----|----|----|----|----|----|----|");
+    bodyParts.add("|----|----|----|----|----|----|----|----|----|");
     for (final JsonNode definition : definitions) {
       final String name = definition.get("name").asText();
       final String codeName = definition.get("dockerRepository").asText().split("/")[1];
@@ -102,11 +104,19 @@ public class ConnectorMarkdownGenerator {
       final String dockerImage = definition.get("dockerRepository").asText() + ":" + definition.get("dockerImageTag").asText();
       final String releaseStage = definition.get("releaseStage") != null ? definition.get("releaseStage").asText() : "unknown";
       final String documentationUrl = definition.get("documentationUrl") != null ? definition.get("documentationUrl").asText() : "";
-      final String docLink = !documentationUrl.equals("") ? "[link](" + documentationUrl + ")" : "missing";
-      final String codeLink = "[code](" + githubCodeBase + "/" + codeName + ")";
+      final String docLink = !documentationUrl.equals("") ? "[docs](" + documentationUrl + ")" : "missing";
+      // we are trying to build a string like connectors/destination/mysql. we need to determine if this
+      // is a source or destination, lower-case, and then append back some stuff
+      final String issuesLabel = "connectors/" + (codeName.contains("source-") ? "source" : "destination") + "/"
+          + codeName.replace("source-", "").replace("destination-", "");
+      final String issuesLink =
+          "[" + issuesLabel + "](https://github.com/" + githubOrgProject + "/issues?q=is:open+is:issue+label:" + issuesLabel + ")";
+      // https://github.com/airbytehq/airbyte/issues?q=is:open+is:issue+label:connectors/destination/mysql
+      final String codeLink = "[" + codeName + "](" + githubCodeBase + "/" + codeName + ")";
       final String id = "<small>`" + definition.get(type.toLowerCase() + "DefinitionId").asText() + "`</small>";
 
       bodyParts.add("| **" + name + "** | " + iconLink + " | " + type + " | " + dockerImage + " | " + releaseStage + " | " + docLink + " | "
+          + issuesLink + " | "
           + codeLink + " | " + id + " |");
     }
 
