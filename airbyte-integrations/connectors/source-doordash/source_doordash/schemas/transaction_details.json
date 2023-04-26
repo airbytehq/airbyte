@@ -1,0 +1,121 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "BUSINESS_ID": {
+        "type": ["null", "number"]
+      },
+      "STORE_ID": {
+        "type": ["null", "number"]
+      },
+      "TIMESTAMP_LOCAL_DATE": {
+        "type": ["null", "string"],
+        "format": "date-time"
+      },
+      "TIMESTAMP_LOCAL_TIME": {
+        "type": ["null", "string"],
+        "format": "date-time"
+      },
+      "TIMESTAMP_UTC_DATE": {
+        "type": ["null", "string"],
+        "format": "date-time"
+      },
+      "TIMESTAMP_UTC_TIME": {
+        "type": ["null", "string"],
+        "format": "date-time"
+      },           
+      "PAYOUT_DATE": {
+        "type": ["null", "string"]
+      },
+      "PAYOUT_TIME": {
+        "type": ["null", "string"]
+      }, 
+      "STORE_NAME": {
+        "type": ["null", "string"]
+      },   
+      "MERCHANT_STORE_ID": {
+        "type": ["null", "string"]
+      },
+      "TRANSACTION_TYPE": {
+        "type": ["null", "string"]
+      },
+      "TRANSACTION_ID": {
+        "type": ["null", "number"]
+      },
+      "DOORDASH_ORDER_ID": {
+        "type": ["null", "string"]
+      },
+      "MERCHANT_DELIVERY_ID": {
+        "type": ["null", "string"]
+      },
+      "EXTERNAL_ID": {
+        "type": ["null", "string"]
+      },
+      "DESCRIPTION": {
+        "type": ["null", "string"]
+      },
+      "FINAL_ORDER_STATUS": {
+        "type": ["null", "string"]
+      },
+      "CURRENCY": {
+        "type": ["null", "string"]
+      },
+      "SUBTOTAL": {
+        "type": ["null", "string"]
+      },
+      "TAX_SUBTOTAL": {
+        "type": ["null", "string"]
+      },
+      "COMMISSION": {
+        "type": ["null", "string"]
+      },
+      "COMMISSION_TAX": {
+        "type": ["null", "string"]
+      },
+      "MARKETING_FEE": {
+        "type": ["null", "string"]
+      },
+      "TIPS": {
+        "type": ["null", "string"]
+      },
+      "CREDIT": {
+        "type": ["null", "string"]
+      },
+      "DEBIT": {
+        "type": ["null", "string"]
+      },
+      "DOORDASH_TRANSACTION_ID": {
+        "type": ["null", "string"]
+      },
+      "PAYOUT_ID": {
+        "type": ["null", "string"]
+      },      
+      "TAX_REMITTED_BY_DOORDASH_TO_STATE": {
+        "type": ["null", "string"]
+      },
+      "SUBTOTAL_FOR_TAX": {
+        "type": ["null", "string"]
+      },
+      "DOORDASH_FUNDED_SUBTOTAL_DISCOUNT_AMOUNT": {
+        "type": ["null", "string"]
+      },
+      "MERCHANT_FUNDED_SUBTOTAL_DISCOUNT_AMOUNT": {
+        "type": ["null", "string"]
+      },
+      "CONSUMER_DELIVERY_FEE": {
+        "type": ["null", "string"]
+      },
+      "CONSUMER_SERVICE_FEE": {
+        "type": ["null", "string"]
+      },
+      "CONSUMER_SMALL_ORDER_FEE": {
+        "type": ["null", "string"]
+      },
+      "CONSUMER_LEGISLATIVE_FEE": {
+        "type": ["null", "string"]
+      },
+      "CONSUMER_TIP": {
+        "type": ["null", "string"]
+      }
+    }
+}

@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "BUSINESS_ID": {
+      "type": ["null", "number"]
+    },
+    "STORE_ID": {
+      "type": ["null", "number"]
+    },
+    "ACTIVE_DATE": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "ACTIVE_DATE_UTC": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "DD_ORDER_NUMBER": {
+      "type": ["null", "string"]
+    },
+    "MX_ORDER_NUMBER": {
+      "type": ["null", "string"]
+    },
+    "EXTERNAL_ORDER_ID": {
+      "type": ["null", "string"]
+    },   
+    "BUSINESS_NAME": {
+      "type": ["null", "string"]
+    },   
+    "STORE_NAME": {
+      "type": ["null", "string"]
+    },   
+    "MERCHANT_STORE_ID": {
+      "type": ["null", "string"]
+    },
+    "ITEM_MERCHANT_SUPPLIED_ID": {
+      "type": ["null", "string"]
+    },
+    "ORDER_ITEM_ID": {
+      "type": ["null", "string"]
+    },
+    "DD_ITEM_ID": {
+      "type": ["null", "number"]
+    },
+    "ITEM_NAME": {
+      "type": ["null", "string"]
+    },
+    "CATEGORY_NAME": {
+      "type": ["null", "string"]
+    },
+    "MENU_NAME": {
+      "type": ["null", "string"]
+    },
+    "TIMEZONE": {
+      "type": ["null", "string"]
+    },
+    "IS_CONSUMER_PICKUP": {
+      "type": ["null", "boolean"]
+    },
+    "DASHPASS": {
+      "type": ["null", "boolean"]
+    },
+    "ORIGINAL_ITEM_PRICE": {
+      "type": ["null", "number"]
+    },
+    "UNIT_PRICE": {
+      "type": ["null", "number"]
+    },
+    "ORDER_ITEM_QUANTITY": {
+      "type": ["null", "number"]
+    },
+    "SUBTOTAL": {
+      "type": ["null", "number"]
+    }       
+  }
+}
