@@ -133,6 +133,7 @@ First, ask yourself does your change correspond to any of the breaking changes a
 If so then follow this checklist below
 
 - [ ] Apply the label breaking-change to your PR
+- [ ] Apply a Major Version bump to your PR. See [Semantic Versioning for Connectors](#semantic-versioning-for-connectors) for more information.
 - [ ] Prepend your PR title with the 🚨🚨 emoji.
 - [ ] Add a section to the PR description titled Breaking Change that describes why this is a breaking change, and if possible how you can migrate users and/or rollback
 - [ ] Assign an Airbyte Engineer through the `airbytehq/connector-operations` group and have them start the [Connector Breaking Change Playbook](https://docs.google.com/document/d/1VYQggHbL_PN0dDDu7rCyzBLGRtX-R3cpwXaY8QxEgzw/edit#)
