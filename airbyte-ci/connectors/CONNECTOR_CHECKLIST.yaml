@@ -10,4 +10,3 @@ paths:
     - You've run `/publish` successfully on this PR
     - You've updated the connectors `metadata.yaml` file (new!)
     - You've updated the connectors enter in [source_definitions.yaml](https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml) or [destination_definitions.yaml](https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml) (deprecated)
-
