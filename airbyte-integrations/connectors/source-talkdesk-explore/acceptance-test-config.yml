@@ -1,6 +1,6 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
-connector_image: airbyte-local/source-talkdesk-explore:tests
+connector_image: airbyte/source-talkdesk-explore:dev
 tests:
   spec:
     - spec_path: "source_talkdesk_explore/spec.json"
