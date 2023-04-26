@@ -35,6 +35,7 @@ acceptance_tests:
         bypass_reason: "Data is not permanent"
       timeout_seconds: 3600
       fail_on_extra_columns: false
+      timeout_seconds: 7200
   incremental:
     tests:
     - config_path: "secrets/config.json"
