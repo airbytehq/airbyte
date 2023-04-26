@@ -4,15 +4,17 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Dict
 
 import requests
+import base64
+import pendulum
+import json
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-import base64
-import pendulum
+from airbyte_cdk.models import SyncMode
 
 
 # Basic full refresh stream
@@ -30,8 +32,10 @@ class WinningtempStream(HttpStream, ABC):
         self.generate_access_token()
 
     def generate_access_token(self):
-        encoded_str = base64.b64encode(f"{self.client_id}:{self.client_secret}".encode("ascii")).decode("utf-8")
-        headers = {"accept": "application/json", "Authorization": f"Basic {encoded_str}"}
+        encoded_str = base64.b64encode(
+            f"{self.client_id}:{self.client_secret}".encode("ascii")).decode("utf-8")
+        headers = {"accept": "application/json",
+                   "Authorization": f"Basic {encoded_str}"}
         response = requests.post(f"{self.url_base}/auth", headers=headers)
 
         self.access_token = response.json().get("access_token", "")
@@ -59,14 +63,17 @@ class WinningtempStream(HttpStream, ABC):
             return data
         elif isinstance(data, dict):
             if self.dict_unnest:
-                unnested_data = [{**{"identifier": k}, **v} for k, v in data.items()]
+                unnested_data = [{**{"identifier": k}, **v}
+                                 for k, v in data.items()]
                 return unnested_data
             else:
                 return [data]
         else:
-            raise "Invalid data type of in the response"
+            raise ValueError("Invalid data type in the response")
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        print(response.url)
+        print(response)
         records = self.unify_response(response)
         yield from records
 
@@ -76,38 +83,64 @@ class WinningtempIncrementalStream(WinningtempStream, ABC):
 
     def __init__(self, config: Mapping[str, Any], dict_unnest=False):
         super().__init__(config, dict_unnest)
-        self.date_from = None
-        self.date_to = None
-        self.initialize_date_ragne()
+        self.is_monthly = config.get('is_monthly', True)
 
     @property
     def cursor_field(self) -> str:
         return "date"
 
-    def get_closest_prev_monday(self, date):
+    def get_week_start(self, date: pendulum.date.Date) -> pendulum.date.Date:
         return date.add(days=-((date.day_of_week - 1) % 7))
 
-    def initialize_date_ragne(self):
-        self.date_from = self.get_closest_prev_monday(self.start_date).add(days=-7)
-        self.date_to = self.date_from.add(days=7)
+    def get_week_end(self, date: pendulum.date.Date) -> pendulum.date.Date:
+        return self.get_week_start(date).add(days=6)
+
+    def get_month_start(self, date: pendulum.date.Date) -> pendulum.date.Date:
+        return pendulum.date(date.year, date.month, 1)
+
+    def get_month_end(self, date: pendulum.date.Date) -> pendulum.date.Date:
+        return date.add(months=1).add(days=-1)
+
+    def get_max_date(self) -> pendulum.date.Date:
+        today = pendulum.today().date()
+        if self.is_monthly:
+            return self.get_month_end(today)
+        return self.get_week_end(today)
+
+    def get_step(self) -> Dict[str, int]:
+        return {"months": 1} if self.is_monthly else {"days": 7}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if self.date_from > pendulum.today():
-            return None
-        return {"next_date": str(self.date_from.date())}
+        return None
 
     def request_body_data(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        cursor_date = stream_state.get(self.cursor_field, self.date_from).add(days=-7)
 
-        self.date_from = max(cursor_date, self.date_from)
-        self.date_from = self.date_from.add(days=7)
-        self.date_to = self.date_to.add(days=7)
+        body = {key: value for key, value in stream_slice.items() if key in [
+            "start", "end"]}
 
-        date_from_str = str(self.date_from.date())
-        date_to_str = str(self.date_to.date())
-        return "{" + f'"start":"{date_from_str}","end":"{date_to_str}","showIndexByGrade":true,"indexDecimals":2' + "}"
+        body = {**body, "showIndexByGrade": True, "indexDecimals": 2}
+        return json.dumps(body)
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        start_date = stream_state.get(self.cursor_field, self.start_date)
+        if isinstance(start_date, str):
+            start_date = pendulum.parse(start_date)
+        start_date = self.get_month_start(start_date)
+        for start, end in self.chunk_dates(start_date):
+            yield {"start": str(start), "end": str(end)}
+
+    def chunk_dates(self, start_date: pendulum.date.Date) -> Iterable[Tuple[pendulum.date.Date, pendulum.date.Date]]:
+        stop = self.get_max_date()
+        step = self.get_step()
+        after_date = start_date
+        while after_date < stop:
+            before_date = min(stop, after_date.add(**step))
+            yield after_date, before_date
+            after_date = before_date.add(days=1)
 
     @property
     def http_method(self) -> str:
@@ -120,7 +153,9 @@ class WinningtempIncrementalStream(WinningtempStream, ABC):
         yield from data
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {self.cursor_field: self.date_from}
+        latest_record_date = pendulum.parse(
+            latest_record.get("date_to")).date()
+        return {self.cursor_field: str(latest_record_date)}
 
 
 class SegmentationGroups(WinningtempStream):
