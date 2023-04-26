@@ -106,8 +106,8 @@ class DeclarativeStream(Stream):
         config: Config,
         stream_slice: StreamSlice,
     ):
-        # If the input is an AirbyteRecord, transform the record's data
-        # If the input is another type of Airbyte Message, return it as is
+        # If the input is an AirbyteMessage with a record, transform the record's data
+        # If the input is another type of AirbyteMessage, return it as is
         # If the input is a dict, transform it
         if isinstance(message_or_record_data, AirbyteMessage):
             if message_or_record_data.record:
