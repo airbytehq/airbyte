@@ -118,7 +118,7 @@ class DeployOrchestrator(Step):
         )
 
         container_to_run = (
-            python_with_dependencies.with_directory("/src", parent_dir)
+            python_with_dependencies.with_mounted_directory("/src", parent_dir)
             .with_secret_variable("DAGSTER_CLOUD_API_TOKEN", dagster_cloud_api_token_secret)
             .with_workdir(f"/src/{METADATA_ORCHESTRATOR_MODULE_PATH}")
             .with_exec(["ls", "."])
