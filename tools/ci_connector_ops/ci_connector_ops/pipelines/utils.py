@@ -280,13 +280,6 @@ async def get_version_from_dockerfile(dockerfile: File) -> str:
         raise Exception("Could not get the version from the Dockerfile labels.")
 
 
-async def should_enable_sentry(dockerfile: File) -> bool:
-    for line in await dockerfile.contents():
-        if "ENV ENABLE_SENTRY true" in line:
-            return True
-    return False
-
-
 class DaggerPipelineCommand(click.Command):
     def invoke(self, ctx: click.Context) -> Any:
         """Wrap parent invoke in a try catch suited to handle pipeline failures.
