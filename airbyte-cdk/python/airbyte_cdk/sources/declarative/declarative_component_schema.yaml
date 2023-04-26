@@ -589,7 +589,6 @@ definitions:
         examples:
           - "2021-01-1T00:00:00Z"
           - "{{ now_utc() }}"
-          - "{{ now_local() }}"
       start_datetime:
         title: Start Datetime
         description: The datetime that determines the earliest record that should be synced.
@@ -1974,12 +1973,6 @@ interpolation:
     - title: stream_state
       description: The current state of the stream.
   macros:
-    - title: Now (Local)
-      description: Returns the current date and time using the local to the machine running the sync. We recommend using now_utc() instead of now_local() because it is more predictable.
-      arguments: {}
-      return_type: Datetime
-      examples:
-        - "{{ now_local() }}"
     - title: Now (UTC)
       description: Returns the current date and time in the UTC timezone.
       arguments: {}
