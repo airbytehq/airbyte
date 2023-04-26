@@ -9,8 +9,8 @@ from airbyte_cdk.sources.declarative.interpolation.filters import filters
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
 from airbyte_cdk.sources.declarative.interpolation.macros import macros
 from airbyte_cdk.sources.declarative.types import Config
-from jinja2.sandbox import Environment
 from jinja2.exceptions import UndefinedError
+from jinja2.sandbox import Environment
 
 
 class JinjaInterpolation(Interpolation):
@@ -40,16 +40,12 @@ class JinjaInterpolation(Interpolation):
     # These extensions are not installed so they're not currently a problem,
     # but we're still explicitely removing them from the jinja context.
     # At worst, this is documentation that we do NOT want to include these extensions because of the potential security risks
-    RESTRICTED_EXTENSIONS = [
-        'jinja2.ext.loopcontrols' # Adds support for break continue in loops
-    ]
+    RESTRICTED_EXTENSIONS = ["jinja2.ext.loopcontrols"]  # Adds support for break continue in loops
 
     # By default, these Python builtin functions are available in the Jinja context.
     # We explicitely remove them because of the potential security risk.
     # Please add a unit test to test_jinja.py when adding a restriction.
-    RESTRICTED_BUILTIN_FUNCTIONS = [
-        'range' #
-    ]
+    RESTRICTED_BUILTIN_FUNCTIONS = ["range"]  #
 
     def __init__(self):
         self._environment = Environment()

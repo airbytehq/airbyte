@@ -144,6 +144,7 @@ def test_macros(s, expected_value):
     val = interpolation.eval(s, config)
     assert val == expected_value
 
+
 @pytest.mark.parametrize(
     "template_string", [
         pytest.param("{{ import os) }}", id="test_jinja_with_import"),
@@ -152,10 +153,10 @@ def test_macros(s, expected_value):
 )
 def test_invalid_jinja_statements(template_string):
     interpolation = JinjaInterpolation()
-    config = {"key": JinjaInterpolation}
+    config = {"key": "value"}
     with pytest.raises(TemplateSyntaxError):
-        result = interpolation.eval(template_string, config=config)
-        raise ValueError(result)
+        interpolation.eval(template_string, config=config)
+
 
 @pytest.mark.parametrize("template_string", [
     pytest.param("""
@@ -166,8 +167,7 @@ def test_invalid_jinja_statements(template_string):
            {% set a = b %}
            {% set b = c %}
        {% endfor %}
-        {{ a }} 
-        """, id="test_jinja_with_very_long_running_compute"),
+        {{ a }}""", id="test_jinja_with_very_long_running_compute"),
     pytest.param("{{ eval ('2+2') }}", id="test_jinja_with_eval"),
     pytest.param("{{ getattr(config, 'key') }}", id="test_getattr"),
     pytest.param("{{ setattr(config, 'password', 'hunter2') }}", id="test_setattr"),
