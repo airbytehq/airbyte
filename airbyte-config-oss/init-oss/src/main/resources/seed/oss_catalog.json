@@ -15045,7 +15045,7 @@
     "sourceDefinitionId": "59f1e50a-331f-4f09-b3e8-2e8d4d355f44",
     "name": "Greenhouse",
     "dockerRepository": "airbyte/source-greenhouse",
-    "dockerImageTag": "0.3.1",
+    "dockerImageTag": "0.4.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/greenhouse",
     "icon": "greenhouse.svg",
     "sourceType": "api",
