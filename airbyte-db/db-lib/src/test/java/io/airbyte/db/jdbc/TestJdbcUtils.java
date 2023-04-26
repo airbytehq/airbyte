@@ -425,7 +425,10 @@ class TestJdbcUtils {
   
   @Test
   void testParseJdbcParameters() {
-    Map<String, String> parameters = JdbcUtils.parseJdbcParameters("sessionVariables=max_execution_time=10000", "$");
+    Map<String, String> parameters = JdbcUtils.parseJdbcParameters("theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar", "&");
+    assertEquals("max_execution_time=10000", parameters.get("sessionVariables"));
+    assertEquals("42", parameters.get("theAnswerToLiveAndEverything"));
+    assertEquals("bar", parameters.get("foo"));
   }
 
 }
