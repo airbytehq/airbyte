@@ -169,8 +169,10 @@ const AddUserModal: React.FC<IProps> = React.memo(({ onClose, roles }) => {
                                     {...field}
                                     label={index === 0 && <FormattedMessage id="user.addUserModal.email.fieldLabel" />}
                                     type="text"
-                                    error={!!meta.error && meta.touched}
-                                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
+                                    error={!!meta.error && meta.touched && !!field.value}
+                                    message={
+                                      meta.touched && meta.error && !!field.value && formatMessage({ id: meta.error })
+                                    }
                                     style={{ width: "100%" }}
                                   />
                                 )}
