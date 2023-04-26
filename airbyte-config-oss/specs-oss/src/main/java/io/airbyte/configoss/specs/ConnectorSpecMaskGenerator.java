@@ -42,6 +42,7 @@ public class ConnectorSpecMaskGenerator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConnectorSpecMaskGenerator.class);
 
+  // TODO download specs_secret_mask
   public static final String MASK_FILE = "specs_secrets_mask.yaml";
   private static final Option SPEC_ROOT_OPTION = Option.builder("s").longOpt("specs-root").hasArg(true).required(true)
       .desc("path to where spec files are stored").build();
