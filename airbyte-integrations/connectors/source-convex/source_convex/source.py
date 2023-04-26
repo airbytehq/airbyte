@@ -79,6 +79,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
         self.deployment_url = deployment_url
         self.table_name = table_name
         if json_schema:
+            json_schema["additionalProperties"] = True
             json_schema["properties"]["_ab_cdc_lsn"] = {"type": "number"}
             json_schema["properties"]["_ab_cdc_updated_at"] = {"type": "string"}
             json_schema["properties"]["_ab_cdc_deleted_at"] = {"anyOf": [{"type": "string"}, {"type": "null"}]}
