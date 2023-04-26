@@ -256,6 +256,48 @@ def test_parse_response(test_name, status_code, response_status, len_expected_re
         assert len(records) == len_expected_records
 
 
+def test_max_retries_given_error_handler_has_max_retries():
+    requester = MagicMock()
+    requester.error_handler = MagicMock()
+    requester.error_handler.max_retries = 10
+    retriever = SimpleRetriever(
+        name="stream_name",
+        primary_key=primary_key,
+        requester=requester,
+        record_selector=MagicMock(),
+        parameters={},
+        config={}
+    )
+    assert retriever.max_retries == 10
+
+
+def test_max_retries_given_error_handler_without_max_retries():
+    requester = MagicMock()
+    requester.error_handler = MagicMock(spec=[u'without_max_retries_attribute'])
+    retriever = SimpleRetriever(
+        name="stream_name",
+        primary_key=primary_key,
+        requester=requester,
+        record_selector=MagicMock(),
+        parameters={},
+        config={}
+    )
+    assert retriever.max_retries == 5
+
+
+def test_max_retries_given_disable_retries():
+    retriever = SimpleRetriever(
+        name="stream_name",
+        primary_key=primary_key,
+        requester=MagicMock(),
+        record_selector=MagicMock(),
+        disable_retries=True,
+        parameters={},
+        config={}
+    )
+    assert retriever.max_retries == 0
+
+
 @pytest.mark.parametrize(
     "test_name, response_action, retry_in, expected_backoff_time",
     [
