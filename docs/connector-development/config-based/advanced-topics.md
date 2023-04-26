@@ -236,7 +236,7 @@ In addition to passing additional values through the $parameters argument, macro
 For example,
 `"{{ max(2, 3) }}" -> 3`
 
-The macros available can be found [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/interpolation/macros.py).
+The macros and variables available in all possible contexts are documented in the [YAML Reference](./understanding-the-yaml-file/reference.md#variables).
 
 Additional information on jinja templating can be found at [https://jinja.palletsprojects.com/en/3.1.x/templates/#](https://jinja.palletsprojects.com/en/3.1.x/templates/#)
 
