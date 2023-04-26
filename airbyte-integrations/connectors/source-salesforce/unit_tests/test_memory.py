@@ -27,7 +27,7 @@ from source_salesforce.streams import BulkIncrementalSalesforceStream
     ],
 )
 def test_memory_download_data(stream_config, stream_api, n_records, first_size, first_peak):
-    job_full_url: str = "https://fase-account.salesforce.com/services/data/v52.0/jobs/query/7504W00000bkgnpQAA"
+    job_full_url: str = "https://fase-account.salesforce.com/services/data/v53.0/jobs/query/7504W00000bkgnpQAA"
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
     content = b'"Id","IsDeleted"'
     for _ in range(n_records):

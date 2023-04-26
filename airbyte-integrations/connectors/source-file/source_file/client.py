@@ -186,8 +186,8 @@ class URLFile:
             try:
                 credentials = json.loads(self._provider["service_account_json"])
             except json.decoder.JSONDecodeError as err:
-                error_msg = f"Failed to parse gcs service account json: {repr(err)}\n{traceback.format_exc()}"
-                logger.error(error_msg)
+                error_msg = f"Failed to parse gcs service account json: {repr(err)}"
+                logger.error(f"{error_msg}\n{traceback.format_exc()}")
                 raise ConfigurationError(error_msg) from err
 
         if credentials:
@@ -316,8 +316,8 @@ class Client:
         try:
             reader = readers[self._reader_format]
         except KeyError as err:
-            error_msg = f"Reader {self._reader_format} is not supported\n{traceback.format_exc()}"
-            logger.error(error_msg)
+            error_msg = f"Reader {self._reader_format} is not supported."
+            logger.error(f"{error_msg}\n{traceback.format_exc()}")
             raise ConfigurationError(error_msg) from err
 
         reader_options = {**self._reader_options}
@@ -339,8 +339,11 @@ class Client:
             else:
                 yield reader(fp, **reader_options)
         except UnicodeDecodeError as err:
-            error_msg = f"File {fp} can't be parsed with reader of chosen type ({self._reader_format})\n{traceback.format_exc()}"
-            logger.error(error_msg)
+            error_msg = (
+                f"File {fp} can't be parsed with reader of chosen type ({self._reader_format}). "
+                f"Please check provided Format and Reader Options. {repr(err)}."
+            )
+            logger.error(f"{error_msg}\n{traceback.format_exc()}")
             raise ConfigurationError(error_msg) from err
 
     @staticmethod
@@ -357,10 +360,12 @@ class Client:
             return current_type
         if dtype == object:
             return "string"
-        if dtype in number_types and (not current_type or current_type in number_types):
+        if dtype in number_types and (not current_type or current_type == "number"):
             return "number"
         if dtype == "bool" and (not current_type or current_type == "boolean"):
             return "boolean"
+        if dtype == "datetime64[ns]":
+            return "datetime"
         return "string"
 
     @property
@@ -416,8 +421,14 @@ class Client:
             for col in df.columns:
                 # if data type of the same column differs in dataframes, we choose the broadest one
                 prev_frame_column_type = fields.get(col)
-                fields[col] = self.dtype_to_json_type(prev_frame_column_type, df[col].dtype)
-        return {field: {"type": [fields[field], "null"]} for field in fields}
+                df_type = df[col].dtype
+                fields[col] = self.dtype_to_json_type(prev_frame_column_type, df_type)
+        return {
+            field: (
+                {"type": ["string", "null"], "format": "datetime"} if fields[field] == "datetime" else {"type": [fields[field], "null"]}
+            )
+            for field in fields
+        }
 
     def streams(self, empty_schema: bool = False) -> Iterable:
         """Discovers available streams"""

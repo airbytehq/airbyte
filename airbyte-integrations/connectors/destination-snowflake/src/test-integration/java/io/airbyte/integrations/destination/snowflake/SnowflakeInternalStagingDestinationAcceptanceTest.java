@@ -12,8 +12,8 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardCheckConnectionOutput.Status;
+import io.airbyte.configoss.StandardCheckConnectionOutput;
+import io.airbyte.configoss.StandardCheckConnectionOutput.Status;
 import io.airbyte.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -42,7 +42,7 @@ public class SnowflakeInternalStagingDestinationAcceptanceTest extends Snowflake
     final JsonNode config = Jsons.deserialize(IOs.readFile(
         Path.of("secrets/copy_insufficient_staging_roles_config.json")));
 
-    StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
+    final StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
 
     assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
     assertThat(standardCheckConnectionOutput.getMessage()).contains(NO_USER_PRIVILEGES_ERR_MSG);
@@ -60,7 +60,7 @@ public class SnowflakeInternalStagingDestinationAcceptanceTest extends Snowflake
     testSyncWithNormalizationWithKeyPairAuth(messagesFilename, catalogFilename, "secrets/config_key_pair_encrypted.json");
   }
 
-  private void testSyncWithNormalizationWithKeyPairAuth(String messagesFilename, String catalogFilename, String configName) throws Exception {
+  private void testSyncWithNormalizationWithKeyPairAuth(final String messagesFilename, final String catalogFilename, final String configName) throws Exception {
     if (!normalizationFromDefinition()) {
       return;
     }
