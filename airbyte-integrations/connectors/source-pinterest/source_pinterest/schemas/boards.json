@@ -44,11 +44,11 @@
     },
     "created_at": {
       "type": ["null", "string"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "board_pins_modified_at": {
       "type": ["null", "string"],
-      "format": "datetime"
+      "format": "date-time"
     }
   }
 }
