@@ -8,6 +8,7 @@ import click
 from ci_connector_ops.pipelines.contexts import CIContext
 from ci_connector_ops.pipelines.pipelines.metadata import (
     run_metadata_lib_test_pipeline,
+    run_metadata_orchestrator_deploy_pipeline,
     run_metadata_orchestrator_test_pipeline,
     run_metadata_upload_pipeline,
     run_metadata_validation_pipeline,
@@ -33,13 +34,12 @@ def metadata(ctx: click.Context):
 @metadata.command(cls=DaggerPipelineCommand, help="Commands related to validating the metadata files.")
 @click.option("--modified-only/--all", default=True)
 @click.pass_context
-def validate(ctx: click.Context, modified_only: bool):
+def validate(ctx: click.Context, modified_only: bool) -> bool:
     if modified_only:
-        modified_files = ctx.obj["modified_files_in_branch"]
-        metadata_to_validate = get_modified_metadata_files(modified_files)
+        metadata_to_validate = get_modified_metadata_files(ctx.obj["modified_files"])
         if not metadata_to_validate:
             click.secho("No modified metadata found. Skipping metadata validation.")
-            return
+            return True
     else:
         click.secho("Will run metadata validation on all the metadata files found in the repo.")
         metadata_to_validate = get_all_metadata_files()
@@ -68,16 +68,15 @@ def validate(ctx: click.Context, modified_only: bool):
 )
 @click.option("--modified-only/--all", default=True)
 @click.pass_context
-def upload(ctx: click.Context, gcs_bucket_name: str, gcs_credentials: str, modified_only: bool):
+def upload(ctx: click.Context, gcs_bucket_name: str, gcs_credentials: str, modified_only: bool) -> bool:
     if modified_only:
         if ctx.obj["ci_context"] is not CIContext.MASTER and ctx.obj["git_branch"] != "master":
             click.secho("Not on the master branch. Skipping metadata upload.")
-            return
-        modified_files = ctx.obj["modified_files_in_commit"]
-        metadata_to_upload = get_modified_metadata_files(modified_files)
+            return True
+        metadata_to_upload = get_modified_metadata_files(ctx.obj["modified_files"])
         if not metadata_to_upload:
             click.secho("No modified metadata found. Skipping metadata upload.")
-            return
+            return True
     else:
         metadata_to_upload = get_all_metadata_files()
 
@@ -97,6 +96,29 @@ def upload(ctx: click.Context, gcs_bucket_name: str, gcs_credentials: str, modif
     )
 
 
+# DEPLOY GROUP
+
+
+@metadata.group(help="Commands related to deploying components of the metadata service.")
+@click.pass_context
+def deploy(ctx: click.Context):
+    pass
+
+
+@deploy.command(cls=DaggerPipelineCommand, name="orchestrator", help="Deploy the metadata service orchestrator to production")
+@click.pass_context
+def deploy_orchestrator(ctx: click.Context) -> bool:
+    return anyio.run(
+        run_metadata_orchestrator_deploy_pipeline,
+        ctx.obj["is_local"],
+        ctx.obj["git_branch"],
+        ctx.obj["git_revision"],
+        ctx.obj.get("gha_workflow_run_url"),
+        ctx.obj.get("pipeline_start_timestamp"),
+        ctx.obj.get("ci_context"),
+    )
+
+
 # TEST GROUP
 
 
@@ -106,9 +128,9 @@ def test(ctx: click.Context):
     pass
 
 
-@test.command(cls=DaggerPipelineCommand, help="Run tests for the metadata service library.")
+@test.command(cls=DaggerPipelineCommand, name="lib", help="Run tests for the metadata service library.")
 @click.pass_context
-def lib(ctx: click.Context):
+def test_lib(ctx: click.Context) -> bool:
     return anyio.run(
         run_metadata_lib_test_pipeline,
         ctx.obj["is_local"],
@@ -120,9 +142,9 @@ def lib(ctx: click.Context):
     )
 
 
-@test.command(cls=DaggerPipelineCommand, help="Run tests for the metadata service orchestrator.")
+@test.command(cls=DaggerPipelineCommand, name="orchestrator", help="Run tests for the metadata service orchestrator.")
 @click.pass_context
-def orchestrator(ctx: click.Context):
+def test_orchestrator(ctx: click.Context) -> bool:
     return anyio.run(
         run_metadata_orchestrator_test_pipeline,
         ctx.obj["is_local"],
@@ -132,7 +154,3 @@ def orchestrator(ctx: click.Context):
         ctx.obj.get("pipeline_start_timestamp"),
         ctx.obj.get("ci_context"),
     )
-
-
-if __name__ == "__main__":
-    lib()
