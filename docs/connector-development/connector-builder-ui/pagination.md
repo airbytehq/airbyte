@@ -238,17 +238,19 @@ You can also configure how the cursor value is injected into the API Requests. I
 
 The "Page size" can optionally be specified as well; if so, how this page size gets injected into the HTTP requests can be configured similar to the above pagination methods.
 
-When using the "response" or "headers" option for obtaining the next page cursor, the connector will stop requesting more pages as soon as no value can be found at the specified location. In some situations, this is not sufficient. If you need more control over how to obtain the cursor value and when to stop requesting pages, use the "custom" option and specify the "stop condition" using a jinja placeholder. For example if your API also has a boolean `has_more` property included in the response to indicate if there are more items to be retrieved, the stop condition should be `{{ response.data.has_more is false }}`
+When using the "response" or "headers" option for obtaining the next page cursor, the connector will stop requesting more pages as soon as no value can be found at the specified location. In some situations, this is not sufficient. If you need more control over how to obtain the cursor value and when to stop requesting pages, use the "custom" option and specify the "stop condition" using a jinja placeholder. For example if your API also has a boolean `more_results` property included in the response to indicate if there are more items to be retrieved, the stop condition should be `{{ response.more_results is false }}`
 
 :::info
 
 One potential variant of cursor pagination is an API that takes in some sort of record identifier to "start after". For example, the [PartnerStack API](https://docs.partnerstack.com/docs/partner-api#pagination) endpoints accept a `starting_after` parameter to which a record `key` is supposed to be passed.
 
-In order to configure cursor pagination for this API in the connector builder, you will need to extract the `key` off of the last record returned by the previous request.
+In order to configure cursor pagination for this API in the connector builder, you will need to extract the `key` off of the last record returned by the previous request, using a "custom" next page cursor.
 This can be done in a couple different ways:
 
 1. If you want to access fields on the records that you have defined through the record selector, you can use the `{{ last_records }}` object; so accessing the `key` field of the last record would look like `{{ last_records[-1]['key'] }}`. The `[-1]` syntax points to the last item in that `last_records` array.
 2. If you want to instead access a field on the raw API response body (e.g. your record selector filtered out the field you need), then you can use the `{{ response }}` object; so accessing the `key` field of the last item would look like `{{ response['data']['items'][-1]['key'] }}`.
+
+This API also has a boolean `has_more` property included in the response to indicate if there are more items to be retrieved, so the stop condition in this case should be `{{ response.data.has_more is false }}`.
 
 :::
 
