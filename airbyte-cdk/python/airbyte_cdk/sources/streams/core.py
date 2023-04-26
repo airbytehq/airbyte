@@ -10,13 +10,13 @@ from abc import ABC, abstractmethod
 from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
-import airbyte_cdk.sources.utils.casing as casing
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteStream, AirbyteTraceMessage, SyncMode
+from deprecated.classic import deprecated
 
+import airbyte_cdk.sources.utils.casing as casing
+from airbyte_cdk.models import AirbyteMessage, AirbyteStream, SyncMode
 # list of all possible HTTP methods which can be used for sending of request bodies
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from deprecated.classic import deprecated
 
 if typing.TYPE_CHECKING:
     from airbyte_cdk.sources import Source
@@ -24,10 +24,8 @@ if typing.TYPE_CHECKING:
 
 # A stream's read method can return one of the following types:
 # Mapping[str, Any]: The content of an AirbyteRecordMessage
-# AirbyteRecordMessage: An AirbyteRecordMessage
-# AirbyteLogMessage: A log message
-# AirbyteTraceMessage: A trace message
-StreamData = Union[Mapping[str, Any], AirbyteLogMessage, AirbyteTraceMessage]
+# AirbyteMessage: An AirbyteRecordMessage
+StreamData = Union[Mapping[str, Any], AirbyteMessage]
 
 
 def package_name_from_class(cls: object) -> str:
