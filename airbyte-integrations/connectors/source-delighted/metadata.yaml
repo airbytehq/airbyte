@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - api.delighted.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:

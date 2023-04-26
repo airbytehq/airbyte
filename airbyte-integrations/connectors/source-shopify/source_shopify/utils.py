@@ -49,6 +49,15 @@ SCOPES_MAPPING = {
 }
 
 
+class ErrorAccessScopes(Exception):
+    """Raises the error if authenticated user doesn't have access to verify the grantted scopes."""
+
+    help_url = "https://shopify.dev/docs/api/usage/access-scopes#authenticated-access-scopes"
+
+    def __init__(self, message):
+        super().__init__(f"{message}. More info about: {self.help_url}")
+
+
 class UnrecognisedApiType(Exception):
     pass
 

@@ -3,8 +3,55 @@ import json
 from google.cloud import storage
 from google.oauth2 import service_account
 
-from dagster import StringSource, InitResourceContext, resource
-from dagster_gcp.gcs.file_manager import GCSFileManager
+from dagster import StringSource, InitResourceContext, Noneable, resource
+from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
+
+import uuid
+from typing import Optional
+import dagster._check as check
+from dagster._core.storage.file_manager import (
+    check_file_like_obj,
+)
+
+
+class PublicGCSFileHandle(GCSFileHandle):
+    @property
+    def public_url(self):
+        return f"https://storage.googleapis.com/{self.gcs_bucket}/{self.gcs_key}"
+
+
+class ContentTypeAwareGCSFileManager(GCSFileManager):
+    """
+    Slighlty modified dagster_gcp.gcs.file_manager.GCSFileManager
+    to allow setting the content type of the file
+    """
+
+    def get_content_type(self, ext):
+        if ext == "csv":
+            return "text/csv"
+        elif ext == "json":
+            return "application/json"
+        elif ext == "html":
+            return "text/html"
+        elif ext == "md":
+            return "text/markdown"
+        else:
+            return "text/plain"
+
+    def write(self, file_obj, mode="wb", ext=None, key: Optional[str] = None):
+        """
+        Reworked from dagster_gcp.gcs.file_manager.GCSFileManager.write
+
+        As the original method does not allow to set the content type of the file
+        """
+        key = check.opt_str_param(key, "key", default=str(uuid.uuid4()))
+        check_file_like_obj(file_obj)
+        gcs_key = self.get_full_key(key + (("." + ext) if ext is not None else ""))
+        bucket_obj = self._client.bucket(self._gcs_bucket)
+        blob = bucket_obj.blob(gcs_key)
+        blob.content_type = self.get_content_type(ext)
+        blob.upload_from_file(file_obj)
+        return PublicGCSFileHandle(self._gcs_bucket, gcs_key)
 
 
 @resource(config_schema={"gcp_gcs_cred_string": StringSource})
@@ -37,10 +84,7 @@ def gcs_bucket_manager(resource_context: InitResourceContext) -> storage.Bucket:
 
 @resource(
     required_resource_keys={"gcp_gcs_client"},
-    config_schema={
-        "gcs_bucket": StringSource,
-        "prefix": StringSource,
-    },
+    config_schema={"gcs_bucket": StringSource, "prefix": StringSource},
 )
 def gcs_file_manager(resource_context) -> GCSFileManager:
     """FileManager that provides abstract access to GCS.
@@ -50,7 +94,7 @@ def gcs_file_manager(resource_context) -> GCSFileManager:
 
     storage_client = resource_context.resources.gcp_gcs_client
 
-    return GCSFileManager(
+    return ContentTypeAwareGCSFileManager(
         client=storage_client,
         gcs_bucket=resource_context.resource_config["gcs_bucket"],
         gcs_base_key=resource_context.resource_config["prefix"],
@@ -60,7 +104,7 @@ def gcs_file_manager(resource_context) -> GCSFileManager:
 @resource(
     required_resource_keys={"gcs_bucket_manager"},
     config_schema={
-        "prefix": StringSource,
+        "prefix": Noneable(StringSource),
         "gcs_filename": StringSource,
     },
 )
@@ -75,12 +119,12 @@ def gcs_file_blob(resource_context: InitResourceContext) -> storage.Blob:
 
     prefix = resource_context.resource_config["prefix"]
     gcs_filename = resource_context.resource_config["gcs_filename"]
-    gcs_file_path = f"{prefix}/{gcs_filename}"
+    gcs_file_path = f"{prefix}/{gcs_filename}" if prefix else gcs_filename
 
     resource_context.log.info(f"retrieving gcs file blob for {gcs_file_path}")
 
     gcs_file_blob = bucket.get_blob(gcs_file_path)
-    if not gcs_file_blob.exists():
+    if not gcs_file_blob or not gcs_file_blob.exists():
         raise Exception(f"File does not exist at path: {gcs_file_path}")
 
     return gcs_file_blob

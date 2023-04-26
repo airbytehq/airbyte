@@ -56,6 +56,9 @@
     "admin_graphql_api_id": {
       "type": ["null", "string"]
     },
+    "duties": {
+      "type": ["null", "string"]
+    },
     "refund_line_items": {
       "type": ["null", "array"],
       "items": {
@@ -465,6 +468,34 @@
     },
     "shop_url": {
       "type": ["null", "string"]
+    },
+    "total_duties_set": {
+      "type": ["null", "object"],
+      "properties": {
+        "shop_money": {
+          "type": ["null", "object"],
+          "properties": {
+            "currency_code": {
+              "type": ["null", "string"]
+            },
+            "amount": {
+              "type": ["null", "number"]
+            }
+          }
+        },
+        "presentment_money": {
+          "type": ["null", "object"],
+          "properties": {
+            "currency_code": {
+              "type": ["null", "string"]
+            },
+            "amount": {
+              "type": ["null", "number"]
+            }
+          }
+        }
+      }
+      
     }
   }
 }
