@@ -24,7 +24,7 @@ if typing.TYPE_CHECKING:
 
 # A stream's read method can return one of the following types:
 # Mapping[str, Any]: The content of an AirbyteRecordMessage
-# AirbyteMessage: An AirbyteRecordMessage
+# AirbyteMessage: An AirbyteMessage. Could be of any type
 StreamData = Union[Mapping[str, Any], AirbyteMessage]
 
 
