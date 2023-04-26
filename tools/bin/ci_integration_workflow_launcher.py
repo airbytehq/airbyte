@@ -15,7 +15,7 @@ from functools import lru_cache
 from urllib.parse import parse_qsl, urljoin, urlparse
 
 import requests
-import yaml
+import json
 
 ORGANIZATION = "airbytehq"
 REPOSITORY = "airbyte"
@@ -25,8 +25,7 @@ BRANCH = "master"
 WORKFLOW_PATH = ".github/workflows/test-command.yml"
 RUN_UUID_REGEX = re.compile("^UUID ([0-9a-f-]+)$")
 SLEEP = 1200
-SOURCE_DEFINITIONS = "airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml"
-DESTINATION_DEFINITIONS = "./airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml"
+CONNECTOR_REGISTRY_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
 STAGES = ["alpha", "beta", "generally_available"]
 
 
@@ -35,6 +34,14 @@ if not GITHUB_TOKEN:
     logging.error("GITHUB_TOKEN not set...")
     sys.exit(1)
 
+def download_and_parse_registry_json():
+    response = requests.get(CONNECTOR_REGISTRY_URL)
+
+    if response.status_code == 200:
+        json_data = json.loads(response.text)
+        return json_data
+    else:
+        raise Exception(f"Error: Unable to download registry file from {CONNECTOR_REGISTRY_URL}. HTTP status code {response.status_code}")
 
 def check_start_aws_runner_failed(jobs):
     """
@@ -115,11 +122,12 @@ def get_gradlew_integrations():
 @lru_cache
 def get_definitions(definition_type):
     assert definition_type in ["source", "destination"]
-    filename = SOURCE_DEFINITIONS
-    if definition_type == "destination":
-        filename = DESTINATION_DEFINITIONS
-    with open(filename) as fp:
-        return yaml.safe_load(fp)
+
+    plural_key = definition_type + "s"
+
+    registry_data = download_and_parse_registry_json()
+    return registry_data[plural_key]
+
 
 
 def normalize_stage(stage):
