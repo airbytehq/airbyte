@@ -15,6 +15,7 @@ import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -26,6 +27,7 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.AbstractDbSource;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.SyncMode;
@@ -205,14 +207,15 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
                                                      final List<String> columnNames,
                                                      final String tableName,
                                                      final Bson filter) {
+    final AirbyteStreamNameNamespacePair airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, null);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<JsonNode> stream = database.read(tableName, columnNames, Optional.ofNullable(filter));
-        return AutoCloseableIterators.fromStream(stream);
+        return AutoCloseableIterators.fromStream(stream, airbyteStream);
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
-    });
+    }, airbyteStream);
   }
 
   private String buildConnectionString(final JsonNode config, final String credentials) {
