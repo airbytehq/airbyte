@@ -130,7 +130,7 @@ class IncrementalMarketoStream(MarketoStream):
         date_slices = []
 
         end_date = pendulum.parse(self.end_date) if self.end_date else pendulum.now()
-        while start_date <= end_date:
+        while start_date < end_date:
             # the amount of days for each data-chunk begining from start_date
             end_date_slice = start_date.add(days=self.window_in_days)
 
