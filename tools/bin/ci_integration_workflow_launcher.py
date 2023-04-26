@@ -34,6 +34,7 @@ if not GITHUB_TOKEN:
     logging.error("GITHUB_TOKEN not set...")
     sys.exit(1)
 
+
 def download_and_parse_registry_json():
     response = requests.get(CONNECTOR_REGISTRY_URL)
 
