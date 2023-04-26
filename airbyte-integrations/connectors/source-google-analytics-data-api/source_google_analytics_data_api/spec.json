@@ -85,7 +85,7 @@
       "date_ranges_start_date": {
         "type": "string",
         "title": "Start Date",
-        "description": "The start date from which to replicate report data in the format YYYY-MM-DD. Data generated before this date will not be included in the report.",
+        "description": "The start date from which to replicate report data in the format YYYY-MM-DD. Data generated before this date will not be included in the report. Not applied to custom Cohort reports.",
         "format": "date",
         "order": 2
       },
@@ -98,7 +98,7 @@
       "window_in_days": {
         "type": "integer",
         "title": "Data request time increment in days",
-        "description": "The time increment used by the connector when requesting data from the Google Analytics API. More information is available in the <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4/#sampling-in-reports\">the docs</a>. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364.",
+        "description": "The time increment used by the connector when requesting data from the Google Analytics API. More information is available in the <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4/#sampling-in-reports\">the docs</a>. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364. Not applied to custom Cohort reports.",
         "examples": [30, 60, 90, 120, 200, 364],
         "minimum": 1,
         "maximum": 364,

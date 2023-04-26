@@ -9,7 +9,7 @@
         "default_cursor_field": ["date"],
         "source_defined_primary_key": [["uuid"]]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -21,7 +21,7 @@
         "default_cursor_field": ["date"],
         "source_defined_primary_key": [["uuid"]]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -33,7 +33,7 @@
         "default_cursor_field": ["date"],
         "source_defined_primary_key": [["uuid"]]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -45,7 +45,7 @@
         "default_cursor_field": ["date"],
         "source_defined_primary_key": [["uuid"]]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -57,7 +57,7 @@
         "default_cursor_field": ["date"],
         "source_defined_primary_key": [["uuid"]]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -69,7 +69,7 @@
         "default_cursor_field": ["date"],
         "source_defined_primary_key": [["uuid"]]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -81,7 +81,7 @@
         "default_cursor_field": ["date"],
         "source_defined_primary_key": [["uuid"]]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -93,7 +93,27 @@
         "default_cursor_field": ["date"],
         "source_defined_primary_key": [["uuid"]]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "cohort_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["uuid"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "pivot_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["uuid"]]
+      },
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     }
   ]
