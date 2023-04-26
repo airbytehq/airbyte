@@ -450,10 +450,10 @@ def with_poetry(context: PipelineContext) -> Container:
     python_with_git = with_debian_packages(python_base_environment, ["git"])
     python_with_poetry = with_pip_packages(python_with_git, ["poetry"])
 
-    poetry_cache: CacheVolume = context.dagger_client.cache_volume("poetry_cache")
-    poetry_with_cache = python_with_poetry.with_mounted_cache("/root/.cache/pypoetry", poetry_cache, sharing=CacheSharingMode.SHARED)
+    # poetry_cache: CacheVolume = context.dagger_client.cache_volume("poetry_cache")
+    # poetry_with_cache = python_with_poetry.with_mounted_cache("/root/.cache/pypoetry", poetry_cache, sharing=CacheSharingMode.SHARED)
 
-    return poetry_with_cache
+    return python_with_poetry
 
 
 def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_path: str) -> Container:
@@ -591,7 +591,6 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
 
 
 async def with_airbyte_java_connector(context: ConnectorContext, connector_java_tar_file: File, build_platform: Platform):
-    dockerfile = context.get_connector_dir(include=["Dockerfile"]).file("Dockerfile")
     application = context.connector.technical_name
 
     build_stage = (
