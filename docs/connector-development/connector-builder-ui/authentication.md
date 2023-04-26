@@ -136,7 +136,7 @@ Some APIs require to include the access token in different parts of the request 
 * Add a user input as secret field on the "User inputs" page (e.g. named `api_key`)
 * On the stream page, add a new "Request parameter"
 * As key, configure the name of the query parameter the API requires (e.g. named `key`)
-* As value, configure a placeholder for the created user input (e.g. `{{ config['api_key'] }}`)
+* As value, configure a [placeholder](/connector-development/config-based/understanding-the-yaml-file/reference#variables) for the created user input (e.g. `{{ config['api_key'] }}`)
 
 The same approach can be used to add the token to the request body.
 
