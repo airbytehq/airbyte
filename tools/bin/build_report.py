@@ -25,14 +25,13 @@ import sys
 from typing import Dict, List, Optional
 
 import requests
-import yaml
+import json
 from slack_sdk import WebhookClient
 from slack_sdk.errors import SlackApiError
 
+
 # Global statics
-CONNECTOR_DEFINITIONS_DIR = "./airbyte-config-oss/init-oss/src/main/resources/seed"
-SOURCE_DEFINITIONS_YAML = f"{CONNECTOR_DEFINITIONS_DIR}/source_definitions.yaml"
-DESTINATION_DEFINITIONS_YAML = f"{CONNECTOR_DEFINITIONS_DIR}/destination_definitions.yaml"
+CONNECTOR_REGISTRY_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
 CONNECTORS_ROOT_PATH = "./airbyte-integrations/connectors"
 RELEVANT_BASE_MODULES = ["base-normalization", "connector-acceptance-test"]
 CONNECTOR_BUILD_OUTPUT_URL = "https://dnsgjos7lj2fu.cloudfront.net/tests/summary/connectors"
@@ -45,6 +44,15 @@ SUCCESS_DESTINATION = []
 NO_TESTS = []
 FAILED_LAST = []
 FAILED_2_LAST = []
+
+def download_and_parse_registry_json():
+    response = requests.get(CONNECTOR_REGISTRY_URL)
+
+    if response.status_code == 200:
+        json_data = json.loads(response.text)
+        return json_data
+    else:
+        raise Exception(f"Error: Unable to download registry file from {CONNECTOR_REGISTRY_URL}. HTTP status code {response.status_code}")
 
 
 def get_status_page(connector) -> str:
@@ -194,19 +202,16 @@ def get_connectors_with_release_stage(definitions_yaml: List, stages: List[str])
     return [definition["dockerRepository"] for definition in definitions_yaml if definition.get("releaseStage", "alpha") in stages]
 
 
-def read_definitions_yaml(path: str):
-    with open(path, "r") as file:
-        return yaml.safe_load(file)
-
-
 def get_connectors_with_release_stages(base_directory: str, connectors: List[str], relevant_stages=["beta", "generally_available"]):
     # TODO currently this also excludes shared libs like source-jdbc, we probably shouldn't do that, so we can get the build status of those
     #  modules as well.
     connector_label_to_connector_directory = get_docker_label_to_connector_directory(base_directory, connectors)
 
+    registry_data = download_and_parse_registry_json()
+
     connectors_with_desired_status = get_connectors_with_release_stage(
-        read_definitions_yaml(SOURCE_DEFINITIONS_YAML), relevant_stages
-    ) + get_connectors_with_release_stage(read_definitions_yaml(DESTINATION_DEFINITIONS_YAML), relevant_stages)
+        registry_data["sources"], relevant_stages
+    ) + get_connectors_with_release_stage(registry_data["destinations"], relevant_stages)
     # return appropriate directory names
     return [
         connector_label_to_connector_directory[label]
