@@ -1955,23 +1955,85 @@ definitions:
 interpolation:
   variables:
     - title: config
-      description: The connector configuration. The config's keys match the keys defined in the spec.
+      description: The connector configuration. The object's keys are the same as the the keys defined in the connection specification.
+      type: object
+      examples:
+        - start_date: 2010-01-01
+          api_key: "*****"
     - title: headers
-      description: The HTTP headers from the last response received from the API.
+      description: The HTTP headers from the last response received from the API. The object's keys are the header names from the response.
+      type: object
+      examples:
+        - Server: nginx
+          Date: Mon, 24 Apr 2023 20:17:21 GMT
+          Content-Type: application/json
+          Content-Length: "420"
+          Connection: keep-alive
+          referrer-policy: strict-origin-when-cross-origin
+          x-content-type-options: nosniff
+          x-ratelimit-limit: "600"
+          x-ratelimit-remaining: "598"
+          x-ratelimit-reset: "39"
     - title: last_records
       description: List of records extracted from the last response received from the API.
+      type: list
+      examples:
+        - - name: "Test List: 19"
+            id: 0236d6d2
+            contact_count: 20
+            _metadata:
+              self: https://api.sendgrid.com/v3/marketing/lists/0236d6d2
+          - name: List for CI tests, number 30
+            id: 041ee031
+            contact_count: 0
+            _metadata:
+              self: https://api.sendgrid.com/v3/marketing/lists/041ee031
+    - title: next_page_token
+      description: Object describing the token to fetch the next page of records. The object has a single key "next_page_token".
+      type: object
+      examples:
+        - next_page_token: 3
+        - next_page_token: https://api.sendgrid.com/v3/marketing/lists/0236d6d2-75d2-42c5-962d-603e0deaf8d1
     - title: record
-      description: The record being processed.
+      description: The record being processed. The object's keys are the same keys as the records produced by the RecordSelector.
+      type: object
     - title: response
-      description: The body of the last response received from the API.
+      description: The body of the last response received from the API. The object's keys are the same keys as the response body's.
+      type: object
+      examples:
+        - result:
+            - name: "Test List: 19"
+              id: 0236d6d2-75d2-42c5-962d-603e0deaf8d1
+              contact_count: 20
+              _metadata:
+                self: https://api.sendgrid.com/v3/marketing/lists/0236d6d2
+          _metadata:
+            self: https://api.sendgrid.com/v3/marketing/lists?page_size=1&page_token=
+            next: https://api.sendgrid.com/v3/marketing/lists?page_size=1&page_token=0236d6d2
+            count: 82
     - title: stream_interval
-      description:
+      description: The current stream interval being processed. The keys are defined by the incremental sync component. Default keys are `start_time` and `end_time`.
+      type: object
+      examples:
+        - start_time: "2020-01-01 00:00:00.000+00:00"
+          end_time: "2020-01-02 00:00:00.000+00:00"
     - title: stream_partition
-      description: The current partition being processed.
+      description: The current stream partition being processed. The keys are defined by the partition router component.
+      type: object
+      examples:
+        - survey_id: 1234
+        - strategy: DESKTOP
+        - survey_id: 1234
+          strategy: MOBILE
     - title: stream_slice
       description: This variable is deprecated. Use stream_interval or stream_partition instead.
+      type: object
     - title: stream_state
-      description: The current state of the stream.
+      description: The current state of the stream. The object's keys are defined by the incremental sync's cursor_field the and partition router's values.
+      type: object
+      examples:
+        - created_at: "2020-01-01 00:00:00.000+00:00"
+        - updated_at: "2020-01-02 00:00:00.000+00:00"
   macros:
     - title: Now (UTC)
       description: Returns the current date and time in the UTC timezone.
