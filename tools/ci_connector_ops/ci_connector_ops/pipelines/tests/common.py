@@ -25,7 +25,7 @@ class QaChecks(Step):
         https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/qa_checks.py
 
         Args:
-            context (ConnectorTestContext): The current test context, providing a connector object, a dagger client and a repository directory.
+            context (ConnectorContext): The current test context, providing a connector object, a dagger client and a repository directory.
         Returns:
             StepResult: Failure or success of the QA checks with stdout and stderr.
         """
