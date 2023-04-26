@@ -32117,7 +32117,7 @@
       "public": true,
       "custom": false,
       "releaseStage": "alpha"
-    }, {
+    },  {
         "sourceDefinitionId": "",
         "name": "Yotpo",
         "dockerRepository": "airbyte/source-yotpo",
@@ -32174,6 +32174,6 @@
         "allowedHosts": {
           "hosts": [ "api.yotpo.com" ]
         }
-    }
+      }
   ]
 }
