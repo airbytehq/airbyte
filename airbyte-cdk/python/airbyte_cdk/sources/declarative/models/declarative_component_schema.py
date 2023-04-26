@@ -860,7 +860,7 @@ class DatetimeBasedCursor(BaseModel):
     end_datetime: Union[str, MinMaxDatetime] = Field(
         ...,
         description="The datetime that determines the last record that should be synced.",
-        examples=["2021-01-1T00:00:00Z", "{{ now_utc() }}", "{{ now_local() }}"],
+        examples=["2021-01-1T00:00:00Z", "{{ now_utc() }}"],
         title="End Datetime",
     )
     start_datetime: Union[str, MinMaxDatetime] = Field(
