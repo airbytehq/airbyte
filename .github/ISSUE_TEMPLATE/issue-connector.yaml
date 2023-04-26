@@ -48,4 +48,4 @@ body:
       description: Are you willing to submit the fix?
       options:
         - label: Yes, I want to contribute
-          required: true
+          required: false
