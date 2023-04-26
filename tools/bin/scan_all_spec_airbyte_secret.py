@@ -14,10 +14,11 @@ import re
 import subprocess
 
 import docker
-import yaml
 
-SOURCE_DEFINITIONS = "airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml"
-DESTINATION_DEFINITIONS = "airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml"
+import requests
+import json
+
+CONNECTOR_REGISTRY_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
 SPECS_DIR = "specs"
 SPEC_FILE = "spec.json"
 PATTERNS = [
@@ -35,6 +36,15 @@ PATTERNS = [
     "appid",
 ]
 
+def download_and_parse_registry_json():
+    response = requests.get(CONNECTOR_REGISTRY_URL)
+
+    if response.status_code == 200:
+        json_data = json.loads(response.text)
+        return json_data
+    else:
+        raise Exception(f"Error: Unable to download registry file from {CONNECTOR_REGISTRY_URL}. HTTP status code {response.status_code}")
+
 
 def git_toplevel():
     process = subprocess.run(
@@ -43,10 +53,7 @@ def git_toplevel():
     return process.stdout.strip()
 
 
-def get_connectors(filename):
-    toplevel = git_toplevel()
-    with open(os.path.join(toplevel, filename)) as fp:
-        definitions = yaml.safe_load(fp)
+def get_connectors(definitions):
     res = {}
     for item in definitions:
         connector_name = item["dockerRepository"][len("airbyte/") :]
@@ -76,7 +83,11 @@ def get_spec(output):
 
 def generate_all_specs():
     client = docker.from_env()
-    connectors = get_connectors(SOURCE_DEFINITIONS) | get_connectors(DESTINATION_DEFINITIONS)
+    registry_data = download_and_parse_registry_json()
+    source_definitions = registry_data["sources"]
+    destination_definitions = registry_data["destinations"]
+
+    connectors = get_connectors(source_definitions) | get_connectors(destination_definitions)
     for connector_name, docker_image in connectors.items():
         logging.info(f"docker run -ti --rm {docker_image} spec")
         output = docker_run(client, docker_image)
