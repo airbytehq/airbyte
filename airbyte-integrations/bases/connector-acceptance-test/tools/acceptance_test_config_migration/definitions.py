@@ -5,17 +5,25 @@
 import logging
 from typing import List
 
-import yaml
-
-SOURCE_DEFINITIONS_FILE_PATH = "../../../../../airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml"
-
+import requests
+import json
 
 logging.basicConfig(level=logging.DEBUG)
 
+CONNECTOR_REGISTRY_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
+
+def download_and_parse_registry_json():
+    response = requests.get(CONNECTOR_REGISTRY_URL)
+
+    if response.status_code == 200:
+        json_data = json.loads(response.text)
+        return json_data
+    else:
+        raise Exception(f"Error: Unable to download registry file from {CONNECTOR_REGISTRY_URL}. HTTP status code {response.status_code}")
+
 
 def read_source_definitions():
-    with open(SOURCE_DEFINITIONS_FILE_PATH, "r") as source_definitions_file:
-        return yaml.safe_load(source_definitions_file)
+    return download_and_parse_registry_json()["sources"]
 
 
 def find_by_release_stage(source_definitions, release_stage):
