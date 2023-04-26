@@ -5,7 +5,7 @@
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteTraceMessage, SyncMode
+from airbyte_cdk.models import AirbyteMessage, SyncMode
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
@@ -114,8 +114,11 @@ class DeclarativeStream(Stream):
                 record = message_or_record_data.record.data
             else:
                 return message_or_record_data
-        else:
+        elif isinstance(message_or_record_data, dict):
             record = message_or_record_data
+        else:
+            # Raise an error because this is unexpected and indicative of a typing problem in the CDK
+            raise ValueError(f"Unexpected record type. Expected {StreamData}. Got {type(message_or_record_data)}. This is probably due to a bug in the CDK.")
         for transformation in self.transformations:
             transformation.transform(record, config=config, stream_state=self.state, stream_slice=stream_slice)
 
