@@ -110,7 +110,7 @@ public class JdbcUtils {
         if (split.length == 2) {
           parameters.put(split[0], split[1]);
         } else if (split.length == 3 && kv.contains("sessionVariables")) {
-          parameters.put(split[0], split[1] + split[2]);
+          parameters.put(split[0], split[1] + "=" + split[2]);
         } else {
           throw new IllegalArgumentException(
               "jdbc_url_params must be formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). Got "
