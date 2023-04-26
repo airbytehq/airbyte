@@ -191,7 +191,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     jdbcUrl.append("&tinyInt1isBit=true");
     // ensure the return year value is a Date; see the rationale
     // in the setJsonField method in MySqlSourceOperations.java
-    jdbcUrl.append("&yearIsDateType=true");
+    jdbcUrl.append("&yearIsDateType=false");
     if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
       jdbcUrl.append(JdbcUtils.AMPERSAND).append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
