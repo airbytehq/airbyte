@@ -74,7 +74,6 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.text.NumberFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -573,8 +572,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         // read a row and Stringify it to better understand the accurate volume of data sent over the wire.
         // However, this approach doesn't account for different row sizes.
         AirbyteTraceMessageUtility.emitEstimateTrace(PLATFORM_DATA_INCREASE_FACTOR * syncByteCount, Type.STREAM, syncRowCount, tableName, schemaName);
-        LOGGER.info(String.format("Estimate for table in full refresh mode: %s : {rows_to_sync: %s, data_to_sync: %s}",
-            fullTableName, NumberFormat.getInstance().format(syncRowCount), JdbcUtils.humanReadableByteCountSI(syncByteCount)));
+        LOGGER.info(String.format("Estimate for table: %s : {sync_row_count: %s, sync_bytes: %s, total_table_row_count: %s, total_table_bytes: %s}",
+            fullTableName, syncRowCount, syncByteCount, syncRowCount, syncByteCount));
       }
     } catch (final SQLException e) {
       LOGGER.warn("Error occurred while attempting to estimate sync size", e);
@@ -615,9 +614,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       // read a row and Stringify it to better understand the accurate volume of data sent over the wire.
       // However, this approach doesn't account for different row sizes
       AirbyteTraceMessageUtility.emitEstimateTrace(PLATFORM_DATA_INCREASE_FACTOR * syncByteCount, Type.STREAM, syncRowCount, tableName, schemaName);
-      LOGGER.info(String.format("Estimate for table in incremental mode: %s : {rows_to_sync: %s, data_to_sync: %s, table_row_count: %s, table_size: %s}",
-          fullTableName, NumberFormat.getInstance().format(syncRowCount), JdbcUtils.humanReadableByteCountSI(syncByteCount), NumberFormat.getInstance().format(tableRowCount),
-          JdbcUtils.humanReadableByteCountSI(tableByteCount)));
+      LOGGER.info(String.format("Estimate for table: %s : {sync_row_count: %s, sync_bytes: %s, total_table_row_count: %s, total_table_bytes: %s}",
+          fullTableName, syncRowCount, syncByteCount, tableRowCount, tableRowCount));
     } catch (final SQLException e) {
       LOGGER.warn("Error occurred while attempting to estimate sync size", e);
     }
