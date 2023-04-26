@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import copy
-import json
 from typing import List
 
 import pandas as pd
@@ -178,6 +177,7 @@ def persist_registry_to_json(
     file_handle = registry_directory_manager.write_data(registry_json.encode("utf-8"), ext="json", key=registry_file_name)
     return file_handle
 
+
 def generate_and_persist_registry(
     metadata_definitions: List[MetadataDefinition],
     cached_specs: OutputDataFrame,
@@ -273,56 +273,3 @@ def oss_destinations_dataframe(oss_registry_from_metadata: ConnectorRegistryV0) 
     oss_registry_from_metadata_dict = to_json_sanitized_dict(oss_registry_from_metadata)
     destinations = oss_registry_from_metadata_dict["destinations"]
     return output_dataframe(pd.DataFrame(destinations))
-
-
-# Old Registry
-
-
-@asset(group_name=GROUP_NAME)
-def legacy_cloud_sources_dataframe(legacy_cloud_registry_dict: dict) -> OutputDataFrame:
-    sources = legacy_cloud_registry_dict["sources"]
-    return output_dataframe(pd.DataFrame(sources))
-
-
-@asset(group_name=GROUP_NAME)
-def legacy_oss_sources_dataframe(legacy_oss_registry_dict: dict) -> OutputDataFrame:
-    sources = legacy_oss_registry_dict["sources"]
-    return output_dataframe(pd.DataFrame(sources))
-
-
-@asset(group_name=GROUP_NAME)
-def legacy_cloud_destinations_dataframe(legacy_cloud_registry_dict: dict) -> OutputDataFrame:
-    destinations = legacy_cloud_registry_dict["destinations"]
-    return output_dataframe(pd.DataFrame(destinations))
-
-
-@asset(group_name=GROUP_NAME)
-def legacy_oss_destinations_dataframe(legacy_oss_registry_dict: dict) -> OutputDataFrame:
-    destinations = legacy_oss_registry_dict["destinations"]
-    return output_dataframe(pd.DataFrame(destinations))
-
-
-@asset(required_resource_keys={"legacy_cloud_registry_gcs_blob"}, group_name=GROUP_NAME)
-def legacy_cloud_registry(legacy_cloud_registry_dict: dict) -> ConnectorRegistryV0:
-    return ConnectorRegistryV0.parse_obj(legacy_cloud_registry_dict)
-
-
-@asset(required_resource_keys={"legacy_oss_registry_gcs_blob"}, group_name=GROUP_NAME)
-def legacy_oss_registry(legacy_oss_registry_dict: dict) -> ConnectorRegistryV0:
-    return ConnectorRegistryV0.parse_obj(legacy_oss_registry_dict)
-
-
-@asset(required_resource_keys={"legacy_cloud_registry_gcs_blob"}, group_name=GROUP_NAME)
-def legacy_cloud_registry_dict(context: OpExecutionContext) -> dict:
-    oss_registry_file = context.resources.legacy_cloud_registry_gcs_blob
-    json_string = oss_registry_file.download_as_string().decode("utf-8")
-    oss_registry_dict = json.loads(json_string)
-    return oss_registry_dict
-
-
-@asset(required_resource_keys={"legacy_oss_registry_gcs_blob"}, group_name=GROUP_NAME)
-def legacy_oss_registry_dict(context: OpExecutionContext) -> dict:
-    oss_registry_file = context.resources.legacy_oss_registry_gcs_blob
-    json_string = oss_registry_file.download_as_string().decode("utf-8")
-    oss_registry_dict = json.loads(json_string)
-    return oss_registry_dict
