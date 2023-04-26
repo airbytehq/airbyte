@@ -80,13 +80,24 @@ module.exports = function (plop) {
     }
   });
 
+
   plop.setActionType('emitSuccess', function(answers, config, plopApi){
       console.log(getSuccessMessage(answers.name, plopApi.renderString(config.outputPath, answers), config.message));
   });
 
   plop.setGenerator('Python Destination', {
     description: 'Generate a destination connector written in Python',
-    prompts: [{type:'input', name:'name', 'message': 'Connector name e.g: redis'}],
+    prompts: [
+      {type:'input', name:'name', 'message': 'Connector name e.g: redis'},
+      {
+        type: 'input',
+        name : 'definitionId',
+        default: () => {
+          return uuid.v4();
+        },
+        message: 'Connector definition ID (UUID v.4). Press enter to use the auto generated one.',
+      },
+    ],
     actions: [
       {
         abortOnFail: true,
@@ -105,11 +116,21 @@ module.exports = function (plop) {
       {type: 'emitSuccess', outputPath: pythonDestinationOutputRoot}
     ]
 
-  })
+  })      
 
   plop.setGenerator('Python HTTP API Source', {
     description: 'Generate a Source that pulls data from a synchronous HTTP API.',
-    prompts: [{type: 'input', name: 'name', message: 'Source name e.g: "google-analytics"'}],
+    prompts: [
+      {type: 'input', name: 'name', message: 'Source name e.g: "google-analytics"'},
+      {
+        type: 'input',
+        name : 'definitionId',
+        default: () => {
+          return uuid.v4();
+        },
+        message: 'Connector definition ID (UUID v.4). Press enter to use the auto generated one.',
+      }
+    ],
     actions: [
       {
         abortOnFail: true,
@@ -139,7 +160,17 @@ module.exports = function (plop) {
 
   plop.setGenerator('Configuration Based Source', {
     description: 'Generate a Source that is described using a low code configuration file',
-    prompts: [{type: 'input', name: 'name', message: 'Source name e.g: "google-analytics"'}],
+    prompts: [
+      {type: 'input', name: 'name', message: 'Source name e.g: "google-analytics"'},
+      {
+        type: 'input',
+        name : 'definitionId',
+        default: () => {
+          return uuid.v4();
+        },
+        message: 'Connector definition ID (UUID v.4). Press enter to use the auto generated one.',
+      }
+    ],
         actions: [
       {
         abortOnFail: true,
@@ -174,6 +205,14 @@ module.exports = function (plop) {
         return name.endsWith('-singer') ? name.replace(/-singer$/, '') : name;
       }},
        {type: 'input', name: 'tap_name', message: 'Singer tap package e.g "tap-mixpanel"'},
+       {
+        type: 'input',
+        name : 'definitionId',
+        default: () => {
+          return uuid.v4();
+        },
+        message: 'Connector definition ID (UUID v.4). Press enter to use the auto generated one.',
+      }
     ],
     actions: [
        {
@@ -213,7 +252,17 @@ module.exports = function (plop) {
 
   plop.setGenerator('Python Source', {
         description: 'Generate a minimal Python Airbyte Source Connector that works with any kind of data source. Use this if none of the other Python templates serve your use case.',
-        prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
+        prompts: [
+          {type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'},
+          {
+            type: 'input',
+            name : 'definitionId',
+            default: () => {
+              return uuid.v4();
+            },
+            message: 'Connector definition ID (UUID v.4). Press enter to use the auto generated one.',
+          }
+        ],
         actions: [
             {
                 abortOnFail: true,
@@ -241,7 +290,17 @@ module.exports = function (plop) {
 
   plop.setGenerator('Java JDBC Source', {
     description: 'Generate a minimal Java JDBC Airbyte Source Connector.',
-    prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "mysql"'}],
+    prompts: [
+      {type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "mysql"'},
+      {
+        type: 'input',
+        name : 'definitionId',
+        default: () => {
+          return uuid.v4();
+        },
+        message: 'Connector definition ID (UUID v.4). Press enter to use the auto generated one.',
+      }
+    ],
     actions: [
       {
         abortOnFail: true,
@@ -256,7 +315,16 @@ module.exports = function (plop) {
 
   plop.setGenerator('Generic Source', {
       description: 'Use if none of the other templates apply to your use case.',
-      prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
+      prompts: [
+        {type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'},
+        {
+          type: 'input',
+          name : 'definitionId',
+          default: () => {
+            return uuid.v4();
+          },
+          message: 'Connector definition ID (UUID v.4). Press enter to use the auto generated one.',
+        }],
       actions: [
         {
           abortOnFail: true,
@@ -290,11 +358,11 @@ module.exports = function (plop) {
       },
       {
         type: 'input',
-        name: 'uuid',
+        name : 'definitionId',
         default: () => {
           return uuid.v4();
         },
-        message: 'Connector UUID (v4). Press enter to use the auto generated one.',
+        message: 'Connector definition ID (UUID v.4). Press enter to use the auto generated one.',
       },
     ],
     actions: [
