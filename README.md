@@ -117,3 +117,4 @@ See the [LICENSE](docs/project-overview/licenses/) file for licensing informatio
 ## Thank You
 
 Airbyte would not be possible without the support and assistance of other open-source tools and companies. Visit our [thank you page](THANK-YOU.md) to lear more about how we build Airbyte.
+
