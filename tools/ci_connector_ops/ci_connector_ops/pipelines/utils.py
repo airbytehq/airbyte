@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import datetime
+import json
 import re
 import sys
 import unicodedata
@@ -279,13 +280,6 @@ async def get_version_from_dockerfile(dockerfile: File) -> str:
         raise Exception("Could not get the version from the Dockerfile labels.")
 
 
-async def should_enable_sentry(dockerfile: File) -> bool:
-    for line in await dockerfile.contents():
-        if "ENV ENABLE_SENTRY true" in line:
-            return True
-    return False
-
-
 class DaggerPipelineCommand(click.Command):
     def invoke(self, ctx: click.Context) -> Any:
         """Wrap parent invoke in a try catch suited to handle pipeline failures.
@@ -345,3 +339,10 @@ async def export_container_to_tarball(
         return exported_file, local_path
     else:
         return None, None
+
+
+def sanitize_gcs_service_account_key(raw_value: str) -> str:
+    try:
+        return json.dumps(json.loads(raw_value))
+    except json.JSONDecodeError:
+        return raw_value
