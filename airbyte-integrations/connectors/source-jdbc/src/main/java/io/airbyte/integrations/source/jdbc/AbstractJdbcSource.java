@@ -442,21 +442,24 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
         database.getMetaData().getDatabaseProductVersion());
 
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      final String streamName = stream.getStream().getName();
-      final String schemaName = stream.getStream().getNamespace();
-      final ResultSet indexInfo = database.getMetaData().getIndexInfo(null,
-          schemaName,
-          streamName,
-          false,
-          false);
-      LOGGER.info("Discovering indexes for schema \"{}\", table \"{}\"", schemaName, streamName);
-      while (indexInfo.next()) {
-        LOGGER.info("Index name: {}, Column: {}, Unique: {}",
-            indexInfo.getString(JDBC_INDEX_NAME),
-            indexInfo.getString(JDBC_COLUMN_COLUMN_NAME),
-            !indexInfo.getBoolean(JDBC_INDEX_NON_UNIQUE));
+      if (stream.getSyncMode().equals(SyncMode.INCREMENTAL)) {
+        final String streamName = stream.getStream().getName();
+        final String schemaName = stream.getStream().getNamespace();
+        final String cursorFieldName = stream.getCursorField() != null && stream.getCursorField().size() != 0 ? stream.getCursorField().get(0) : "";
+        final ResultSet indexInfo = database.getMetaData().getIndexInfo(null,
+            schemaName,
+            streamName,
+            false,
+            false);
+        LOGGER.info("Discovering indexes for schema \"{}\", table \"{}\", with cursor field \"{}\"", schemaName, streamName, cursorFieldName);
+        while (indexInfo.next()) {
+          LOGGER.info("Index name: {}, Column: {}, Unique: {}",
+              indexInfo.getString(JDBC_INDEX_NAME),
+              indexInfo.getString(JDBC_COLUMN_COLUMN_NAME),
+              !indexInfo.getBoolean(JDBC_INDEX_NON_UNIQUE));
+        }
+        indexInfo.close();
       }
-      indexInfo.close();
     }
   }
 

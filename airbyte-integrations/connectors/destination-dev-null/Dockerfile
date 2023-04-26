@@ -13,7 +13,6 @@ FROM airbyte/integration-base-java:dev
 WORKDIR /airbyte
 
 ENV APPLICATION destination-dev-null
-ENV ENABLE_SENTRY true
 
 COPY --from=build /airbyte /airbyte
 

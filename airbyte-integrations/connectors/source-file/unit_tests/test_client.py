@@ -93,6 +93,7 @@ def test_load_nested_json(client, absolute_path, test_files):
         ("boolean", "bool", "boolean"),
         ("number", "int64", "number"),
         ("number", "float64", "number"),
+        ("number", "datetime64[ns]", "datetime"),
     ],
 )
 def test_dtype_to_json_type(client, current_type, dtype, expected):

@@ -67,13 +67,13 @@ async def upload_to_gcs(
     gcs_uri = f"gs://{bucket}/{key}"
     dagger_client = dagger_client.pipeline(f"Upload file to {gcs_uri}")
     cp_command = ["gcloud", "storage", "cp"] + flags + ["to_upload", gcs_uri]
-    cleaned_gcs_credentials = (await gcs_credentials.plaintext()).replace("\n", "")
 
     gcloud_container = (
         dagger_client.container()
         .from_(f"google/cloud-sdk:{GOOGLE_CLOUD_SDK_TAG}")
         .with_workdir("/upload")
-        .with_new_file("credentials.json", cleaned_gcs_credentials)
+        .with_new_file("credentials.json", await gcs_credentials.plaintext())
+        .with_env_variable("GOOGLE_APPLICATION_CREDENTIALS", "/upload/credentials.json")
         .with_file("to_upload", file_to_upload)
     )
     if not cache_upload:
@@ -81,10 +81,14 @@ async def upload_to_gcs(
     else:
         gcloud_container = gcloud_container.without_env_variable("CACHEBUSTER")
 
-    gcloud_container = gcloud_container.with_exec(["gcloud", "auth", "login", "--cred-file=credentials.json"]).with_exec(cp_command)
+    gcloud_auth_container = gcloud_container.with_exec(["gcloud", "auth", "login", "--cred-file=credentials.json"])
+    if (await with_exit_code(gcloud_auth_container)) == 1:
+        gcloud_auth_container = gcloud_container.with_exec(["gcloud", "auth", "activate-service-account", "--key-file", "credentials.json"])
+
+    gcloud_cp_container = gcloud_auth_container.with_exec(cp_command)
 
     async with asyncer.create_task_group() as task_group:
-        soon_exit_code = task_group.soonify(with_exit_code)(gcloud_container)
-        soon_stderr = task_group.soonify(with_stderr)(gcloud_container)
-        soon_stdout = task_group.soonify(with_stdout)(gcloud_container)
+        soon_exit_code = task_group.soonify(with_exit_code)(gcloud_cp_container)
+        soon_stderr = task_group.soonify(with_stderr)(gcloud_cp_container)
+        soon_stdout = task_group.soonify(with_stdout)(gcloud_cp_container)
     return soon_exit_code.value, soon_stdout.value, soon_stderr.value
