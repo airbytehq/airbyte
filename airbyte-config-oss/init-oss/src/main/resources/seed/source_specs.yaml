@@ -3179,10 +3179,11 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-convex:0.1.0"
+- dockerImage: "airbyte/source-convex:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/convex"
     connectionSpecification:
+      additionalProperties: true
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Convex Source Spec"
       type: "object"

@@ -11410,13 +11410,14 @@
     "sourceDefinitionId": "c332628c-f55c-4017-8222-378cfafda9b2",
     "name": "Convex",
     "dockerRepository": "airbyte/source-convex",
-    "dockerImageTag": "0.1.0",
+    "dockerImageTag": "0.1.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/convex",
     "icon": "convex.svg",
     "sourceType": "api",
     "spec": {
       "documentationUrl": "https://docs.airbyte.com/integrations/sources/convex",
       "connectionSpecification": {
+        "additionalProperties": true,
         "$schema": "http://json-schema.org/draft-07/schema#",
         "title": "Convex Source Spec",
         "type": "object",
