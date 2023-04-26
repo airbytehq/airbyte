@@ -1,28 +1,20 @@
 import React, { Suspense, useState } from "react";
-// import { FormattedMessage } from "react-intl";
 import { useEffectOnce } from "react-use";
 import styled from "styled-components";
 
-// import { Button } from "components";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 
 import { useAnalyticsService, useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
-// import useWorkspace from "hooks/services/useWorkspace";
-// import useRouterHook from "hooks/useRouter";
 import { useCurrentWorkspaceState } from "services/workspaces/WorkspacesService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
-// import { RoutePaths } from "../routePaths";
 import ConnectionStep from "./components/ConnectionStep";
 import DestinationStep from "./components/DestinationStep";
 import FinalStep from "./components/FinalStep";
-// import HighlightedText from "./components/HighlightedText";
 import LetterLine from "./components/LetterLine";
 import SourceStep from "./components/SourceStep";
-// import StepsCounter from "./components/StepsCounter";
-// import TitlesBlock from "./components/TitlesBlock";
 import WelcomeStep from "./components/WelcomeStep";
 import { StepType } from "./types";
 import useGetStepsConfig from "./useStepsConfig";
@@ -39,39 +31,20 @@ const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   position: relative;
 `;
 
-// const Footer = styled.div`
-//   width: 100%;
-//   height: 100px;
-//   border-radius: 10px;
-//   display: flex;
-//   align-items: center;
-//   justify-content: center;
-//   padding: 40px 20px 0;
-// `;
-
 const ScreenContent = styled.div`
   background-color: #2f3177;
   width: 100%;
   position: relative;
 `;
 
-// const TITLE_BY_STEP: Partial<Record<StepType, string>> = {
-//   [StepType.CREATE_SOURCE]: "FirstSource",
-//   [StepType.CREATE_DESTINATION]: "FirstDestination",
-//   [StepType.SET_UP_CONNECTION]: "Connection",
-// };
-
 const OnboardingPage: React.FC = () => {
   const analyticsService = useAnalyticsService();
   useTrackPage(PageTrackingCodes.ONBOARDING);
-
-  // const { push } = useRouterHook();
 
   useEffectOnce(() => {
     analyticsService.page("Onboarding Page");
   });
 
-  // const { finishOnboarding } = useWorkspace();
   const { hasConnections, hasDestinations, hasSources } = useCurrentWorkspaceState();
 
   const [animateExit, setAnimateExit] = useState(false);
@@ -87,11 +60,6 @@ const OnboardingPage: React.FC = () => {
     hasConnections,
     afterUpdateStep
   );
-
-  // const handleFinishOnboarding = () => {
-  //   finishOnboarding(currentStep);
-  //   push(RoutePaths.Connections);
-  // };
 
   return (
     <ConnectorDocumentationWrapper>
@@ -110,23 +78,7 @@ const OnboardingPage: React.FC = () => {
           big={currentStep === StepType.SET_UP_CONNECTION}
           medium={currentStep === StepType.INSTRUCTION || currentStep === StepType.FINAL}
         >
-          {/* <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />*/}
-          {/* <StepsCounter steps={steps} currentStep={currentStep} />*/}
           <Suspense fallback={<LoadingPage />}>
-            {/* {TITLE_BY_STEP[currentStep] && (*/}
-            {/*  <TitlesBlock*/}
-            {/*    title={*/}
-            {/*      <FormattedMessage*/}
-            {/*        id={`onboarding.create${TITLE_BY_STEP[currentStep]}`}*/}
-            {/*        values={{*/}
-            {/*          name: (name: React.ReactNode[]) => <HighlightedText>{name}</HighlightedText>,*/}
-            {/*        }}*/}
-            {/*      />*/}
-            {/*    }*/}
-            {/*  >*/}
-            {/*    <FormattedMessage id={`onboarding.create${TITLE_BY_STEP[currentStep]}.text`} />*/}
-            {/*  </TitlesBlock>*/}
-            {/* )}*/}
             <ApiErrorBoundary
               onError={(error) => {
                 setHasApiError(!!error);
@@ -153,15 +105,6 @@ const OnboardingPage: React.FC = () => {
               {currentStep === StepType.FINAL && <FinalStep />}
             </ApiErrorBoundary>
           </Suspense>
-          {/* <Footer>*/}
-          {/*  <Button secondary onClick={() => handleFinishOnboarding()}>*/}
-          {/*    {currentStep === StepType.FINAL ? (*/}
-          {/*      <FormattedMessage id="onboarding.closeOnboarding" />*/}
-          {/*    ) : (*/}
-          {/*      <FormattedMessage id="onboarding.skipOnboarding" />*/}
-          {/*    )}*/}
-          {/*  </Button>*/}
-          {/* </Footer>*/}
         </Content>
       </ScreenContent>
     </ConnectorDocumentationWrapper>

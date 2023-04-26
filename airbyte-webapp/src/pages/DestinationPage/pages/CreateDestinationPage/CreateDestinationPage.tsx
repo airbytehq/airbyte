@@ -46,7 +46,6 @@ export const CreateDestinationPage: React.FC = () => {
     setLoadingStatus(false);
     setTimeout(() => {
       setSuccessRequest(false);
-      //  push(`../${result.destinationId}`);
     }, 2000);
   };
 

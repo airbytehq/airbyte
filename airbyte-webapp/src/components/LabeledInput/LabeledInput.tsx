@@ -5,7 +5,7 @@ import { ControlLabels, ControlLabelsProps } from "components/LabeledControl";
 
 type LabeledInputProps = Pick<ControlLabelsProps, "success" | "message" | "label" | "labelAdditionLength"> & InputProps;
 
-const LabeledInput: React.FC<LabeledInputProps> = ({
+const LabeledInputComponent: React.FC<LabeledInputProps> = ({
   error,
   success,
   message,
@@ -24,4 +24,4 @@ const LabeledInput: React.FC<LabeledInputProps> = ({
   </ControlLabels>
 );
 
-export default LabeledInput;
+export const LabeledInput = React.memo(LabeledInputComponent);

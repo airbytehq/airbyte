@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React, { Suspense, lazy } from "react";
 import { FormattedMessage } from "react-intl";
 import { Navigate, Route, Routes } from "react-router-dom";
 import styled from "styled-components";
@@ -9,10 +9,8 @@ import { SideMenuItem } from "components/TabMenu";
 import useRouter from "hooks/useRouter";
 
 import { Sidebar } from "./components";
-// import AccountPage from "./pages/AccountPage";
-// import PasswordPage from "./pages/PasswordPage";
-import LanguagePage from "./pages/LanguagePage";
-import NotificationPage from "./pages/NotificationPage";
+const LanguagePage = lazy(() => import("./pages/LanguagePage"));
+const NotificationPage = lazy(() => import("./pages/NotificationPage"));
 
 const Container = styled.div`
   width: 100%;
@@ -24,7 +22,7 @@ const Container = styled.div`
 const ContentContainer = styled.div`
   padding: 20px 30px;
   width: 100%;
-  min-height: 490px;
+  min-height: 520px;
 `;
 
 export const AccountSettingsRoute = {
@@ -48,16 +46,6 @@ const AccountSettingsPage: React.FC = () => {
       name: <FormattedMessage id="settings.accountSetting.notifications" />,
       component: <NotificationPage />,
     },
-    // {
-    //   path: `${AccountSettingsRoute.Account}`,
-    //   name: <FormattedMessage id="settings.accountSetting.account" />,
-    //   component: <AccountPage />
-    // },
-    // {
-    //   path: `${AccountSettingsRoute.Password}`,
-    //   name: <FormattedMessage id="settings.accountSetting.password" />,
-    //   component: <PasswordPage />
-    // }
   ];
 
   const onSelectItem = (path: string) => push(path);

@@ -83,7 +83,6 @@ async function parseResponse<T>(
   responseType?: "blob",
   redirectUnauthenticatedUser?: () => void
 ): Promise<T> {
-  // const navigate = useNavigate();
   if (response.status === 204) {
     return {} as T;
   }

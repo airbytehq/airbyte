@@ -1,0 +1,115 @@
+@use "../../../scss/colors";
+
+.container {
+  background: #eff0f5;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  height: 100%;
+}
+
+.header {
+  min-height: 110px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 20px;
+
+  .rightPanel {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: 10px;
+
+    .hasAccountText {
+      color: #6b6b6f;
+      font-size: 16px;
+    }
+
+    .button {
+      background-color: #fff;
+      padding: 5px 10px;
+      font-style: normal;
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 17px;
+      color: colors.$blue;
+      border-radius: 5px;
+      border: 1px solid colors.$blue;
+      margin-left: 14px;
+    }
+  }
+}
+
+.messageBox {
+  position: relative;
+}
+
+.bodyPanel {
+  width: 100%;
+  height: calc(100% - 120px);
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.cardPanel {
+  max-width: 640px;
+
+  // height: 490px;
+  background: #fff;
+  border-radius: 0;
+  padding: 24px 20px;
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+.h3 {
+  font-size: 20px;
+  line-height: 27px;
+  color: #27272a;
+  font-weight: 700;
+  margin-bottom: 46px;
+}
+
+.text {
+  font-size: 16px;
+  line-height: 24px;
+  color: #27272a;
+  margin: 10px 0;
+  white-space: pre-line;
+}
+
+.links {
+  color: colors.$blue;
+  display: inline-block;
+  text-decoration: underline;
+}
+
+@media screen and (min-width: 640px) {
+  .header {
+    padding: 0 70px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    .rightPanel {
+      margin-top: 0;
+    }
+  }
+
+  .bodyPanel {
+    margin-top: 0;
+    height: calc(100vh - 220px);
+    border-radius: 12px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cardPanel {
+    max-width: 750px;
+    padding: 84px 60px;
+  }
+}

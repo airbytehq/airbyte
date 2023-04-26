@@ -19,15 +19,7 @@ const Content = styled.div`
 `;
 
 const Icon = styled(FontAwesomeIcon)`
-  //display: none;
   color: #4f46e5;
-
-  // tr:hover & {
-  //   display: block;
-  // }
-  // &:hover {
-  //   color: ${({ theme }) => theme.greyColor70};
-  // }
 `;
 const ConnectorCell: React.FC<IProps> = ({ onClick }) => {
   return (

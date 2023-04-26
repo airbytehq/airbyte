@@ -56,10 +56,6 @@ function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
   const { run, loading, done } = useRunOauthFlow(connector, onDone);
   const preparedValues = useMemo(() => getValues<Credentials>(values), [getValues, values]);
 
-  // const connectionObjectEmpty = preparedValues?.connectionConfiguration?.credentials
-  //   ? Object.keys(preparedValues.connectionConfiguration?.credentials).length <= 1
-  //   : true;
-  // TODO: Compatible with objects without credentials, such as ebay/Amazon Ads
   let connectionObjectEmpty = true;
   if (preparedValues?.connectionConfiguration?.credentials) {
     connectionObjectEmpty = Object.keys(preparedValues.connectionConfiguration?.credentials).length <= 1;

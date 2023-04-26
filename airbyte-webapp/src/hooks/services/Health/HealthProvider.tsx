@@ -1,25 +1,26 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useMemo, useState } from "react";
 
 import { HealthCheckRead } from "core/request/AirbyteClient";
 
-export interface HealthProviderValue {
+export interface Context {
   healthData: HealthCheckRead;
   setHealthData: React.Dispatch<React.SetStateAction<HealthCheckRead>>;
 }
 
-const HealthContext = createContext<HealthProviderValue | null>(null);
+const HealthContext = createContext<Context | null>(null);
 
 export const HealthProvider: React.FC = ({ children }) => {
   const [healthData, setHealthData] = useState<HealthCheckRead>({ available: false });
 
-  return <HealthContext.Provider value={{ healthData, setHealthData }}>{children}</HealthContext.Provider>;
+  const ctx = useMemo<Context>(() => ({ healthData, setHealthData }), [healthData]);
+
+  return <HealthContext.Provider value={ctx}>{children}</HealthContext.Provider>;
 };
 
-export const useHealth = (): HealthProviderValue => {
+export const useHealth = (): Context => {
   const healthContext = useContext(HealthContext);
-
   if (!healthContext) {
-    throw new Error("healthContext must be used within a");
+    throw new Error("useHealth must be used within a HealthProvider.");
   }
 
   return healthContext;

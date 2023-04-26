@@ -11,12 +11,7 @@ import AccountForm from "./components/AccountForm";
 
 const AccountPage: React.FC = () => {
   const workspace = useCurrentWorkspace();
-  const {
-    errorMessage,
-    successMessage,
-    // loading,
-    updateData,
-  } = useWorkspaceEditor();
+  const { errorMessage, successMessage, updateData } = useWorkspaceEditor();
 
   const onSubmit = async (data: { email: string }) => {
     await updateData({

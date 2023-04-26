@@ -5,7 +5,7 @@ import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceRead } from "core/request/AirbyteClient";
 import { SourceCloneRequestBody } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
-import { useUniqueFormId } from "hooks/services/FormChangeTracker"; // useFormChangeTrackerService
+import { useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useCloneSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
@@ -41,7 +41,6 @@ const SourceCopy: React.FC<SourceSettingsProps> = ({
   const { setDocumentationPanelOpen } = useDocumentationPanelContext();
   const formId = useUniqueFormId();
   const { query } = useRouter<{ id: string }, { id: string; "*": string }>();
-  // const { clearFormChange } = useFormChangeTrackerService();
 
   useTrackPage(PageTrackingCodes.SOURCE_ITEM_SETTINGS);
   useEffect(() => {

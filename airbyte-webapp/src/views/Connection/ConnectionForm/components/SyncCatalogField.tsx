@@ -20,7 +20,6 @@ import { BulkHeader } from "../../CatalogTree/components/BulkHeader";
 import { ConnectionFormMode } from "../ConnectionForm";
 import Search from "./Search";
 import styles from "./SyncCatalogField.module.scss";
-// import { ArrowCell, HeaderCell } from "./styles";
 
 const TreeViewContainer = styled.div<{ mode?: ConnectionFormMode }>`
   margin-bottom: 29px;
@@ -34,10 +33,8 @@ const TreeViewContainer = styled.div<{ mode?: ConnectionFormMode }>`
 const SubtitleCell = styled(Cell).attrs(() => ({ lighter: true }))`
   font-size: 10px;
   line-height: 12px;
-  // padding-top: 10px;
   width: 120px;
 `;
-// border-top: 1px solid ${({ theme }) => theme.greyColor0};
 const ClearSubtitleCell = styled(SubtitleCell)`
   border-top: none;
 `;
@@ -96,7 +93,12 @@ const CatalogHeader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => {
       <CatalogHeaderCell lighter>
         <FormattedMessage id="sources.source" />
         <InfoTooltip>
-          <FormattedMessage id="connectionForm.source.info" />
+          <FormattedMessage
+            id="connectionForm.source.info"
+            values={{
+              b: (b: React.ReactNode) => <b>{b}</b>,
+            }}
+          />
         </InfoTooltip>
       </CatalogHeaderCell>
       <CatalogHeaderCell />
@@ -122,9 +124,19 @@ const CatalogHeader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => {
       <CatalogHeaderCell lighter>
         <FormattedMessage id="connector.destination" />
         <InfoTooltip>
-          <FormattedMessage id="connectionForm.destinationName.info" />
+          <FormattedMessage
+            id="connectionForm.destinationName.info"
+            values={{
+              b: (b: React.ReactNode) => <b>{b}</b>,
+            }}
+          />
           <NextLineText>
-            <FormattedMessage id="connectionForm.destinationStream.info" />
+            <FormattedMessage
+              id="connectionForm.destinationStream.info"
+              values={{
+                b: (b: React.ReactNode) => <b>{b}</b>,
+              }}
+            />
           </NextLineText>
         </InfoTooltip>
       </CatalogHeaderCell>

@@ -84,15 +84,7 @@ const CreateSourcePage: React.FC = () => {
       <ConnectionStep lightMode type="source" />
       <ConnectorDocumentationWrapper>
         {currentStep === CreateStepTypes.TEST_CONNECTION && (
-          <>
-            {" "}
-            <TestConnection
-              onBack={handleBackButton}
-              onFinish={handleFinishButton}
-              isLoading={isLoading}
-              type="source"
-            />
-          </>
+          <TestConnection onBack={handleBackButton} onFinish={handleFinishButton} isLoading={isLoading} type="source" />
         )}
         {currentStep === CreateStepTypes.CREATE_SOURCE && (
           <FormPageContent>

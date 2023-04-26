@@ -50,7 +50,6 @@ const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({ con
       control={<StatusIcon {...statusIconProps} title={formatMessage({ id: statusIconProps.title })} />}
       placement="top"
     >
-      {/* {description} */}
       <FormattedMessage id={statusIconProps.title} />
     </Tooltip>
   ) : null;

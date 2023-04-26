@@ -54,8 +54,6 @@ const OptionContent = styled(OptionView)`
 
 const DropdownControl = styled(components.Control)<ControlProps<IDataItem, false>>`
   &.react-select__control {
-    // background: ${({ theme }) => theme.greyColor20};
-    // TODO: fix theme
     background: #e8e8ed;
     border-color: #e8e8ed;
     min-height: 30px;

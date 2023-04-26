@@ -8,13 +8,11 @@ import { Button, DropDownRow } from "components";
 import { ConfirmationModal } from "components/ConfirmationModal";
 import { Separator } from "components/Separator";
 
-import { ROLES } from "core/Constants/roles";
+import { ROLES, ROLES_ZH } from "core/Constants/roles";
 import { useAppNotification } from "hooks/services/AppNotification";
 import { useRoleOptions } from "services/roles/RolesService";
 import { useListUsers, useUserAsyncAction } from "services/users/UsersService";
 
-// import ChangeRoleModal from "./components/ChangeRoleModal";
-// import DeleteUserModal from "./components/DeleteUserModal";
 import InviteUserModal from "./components/InviteUserModal";
 import UserTable from "./components/UserTable";
 
@@ -46,7 +44,9 @@ const BtnText = styled.div`
 `;
 
 const UserManagementPage: React.FC = () => {
-  const roleOptions = useRoleOptions().filter((role) => role.label !== ROLES.Administrator_Owner);
+  const roleOptions = useRoleOptions().filter(
+    (role) => role.label !== ROLES.Administrator_Owner && role.label !== ROLES_ZH.Administrator_Owner
+  );
   const users = useListUsers();
   const { setNotification } = useAppNotification();
   const { onDeleteUser, onResendInvite, onUpdateRole } = useUserAsyncAction();
@@ -54,12 +54,15 @@ const UserManagementPage: React.FC = () => {
   const [userId, setUserId] = useState<string>("");
   const [userRole, setUserRole] = useState<number | undefined>();
 
-  // Delete user functionality
   const [deleteModal, setDeleteModal] = useState<boolean>(false);
   const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
   const toggleDeleteModal = () => setDeleteModal(!deleteModal);
   const onDelete = (userId: string) => {
     setUserId(userId);
+    toggleDeleteModal();
+  };
+  const onCancelDelete = () => {
+    setUserId("");
     toggleDeleteModal();
   };
   const onConfirmDelete = useCallback(async () => {
@@ -73,26 +76,19 @@ const UserManagementPage: React.FC = () => {
         setDeleteLoading(false);
       });
   }, [userId]);
-  const onCancelDelete = () => {
-    setUserId("");
-    toggleDeleteModal();
-  };
 
-  // Resend invite functionality
   const resendInvite = useCallback(async (userId: string) => {
     onResendInvite(userId)
       .then(() => {
         setNotification({ message: "user.resendInvite.message", type: "info" });
       })
-      .catch((err: any) => {
+      .catch((err: Error) => {
         setNotification({ message: err.message, type: "error" });
       });
   }, []);
 
-  // Change role user functionality
   const [changeRoleModal, setChangeRoleModal] = useState<boolean>(false);
   const [changeRoleLoading, setChangeRoleLoading] = useState<boolean>(false);
-
   const onChangeRole = (userId: string, option: DropDownRow.IDataItem) => {
     onCancelChangeRole();
     if (users.find((user) => user.id === userId)?.roleIndex !== option.value) {
@@ -101,9 +97,7 @@ const UserManagementPage: React.FC = () => {
       setUserRole(option.value);
     }
   };
-
   const toggleChangeRoleModal = () => setChangeRoleModal(!changeRoleModal);
-
   const onConfirmChangeRole = useCallback(async () => {
     setChangeRoleLoading(true);
     onUpdateRole({ id: userId, roleIndex: userRole as number })
@@ -112,19 +106,17 @@ const UserManagementPage: React.FC = () => {
         onCancelChangeRole();
         setNotification({ message: "user.changeRole.message", type: "info" });
       })
-      .catch((err: any) => {
+      .catch((err: Error) => {
         setChangeRoleLoading(false);
         setNotification({ message: err.message, type: "error" });
       });
   }, [userId, userRole]);
-
   const onCancelChangeRole = () => {
     toggleChangeRoleModal();
     setUserId("");
     setUserRole(undefined);
   };
 
-  // Add user funcationality
   const [addUserModal, setAddUserModal] = useState<boolean>(false);
   const toggleAddUserModal = () => setAddUserModal(!addUserModal);
 
@@ -159,7 +151,6 @@ const UserManagementPage: React.FC = () => {
           onSubmit={onConfirmChangeRole}
         />
       )}
-
       {deleteModal && (
         <ConfirmationModal
           title="user.deleteModal.heading"
@@ -170,23 +161,6 @@ const UserManagementPage: React.FC = () => {
           onSubmit={onConfirmDelete}
         />
       )}
-
-      {/* {changeRoleModal && (
-        <ChangeRoleModal
-          onClose={toggleChangeRoleModal}
-          onChangeRole={onConfirmChangeRole}
-          onCancel={onCancelChangeRole}
-          isLoading={changeRoleLoading}
-        />
-      )} */}
-      {/* {deleteModal && (
-        <DeleteUserModal
-          onClose={toggleDeleteModal}
-          onDelete={onConfirmDelete}
-          onCancel={onCancelDelete}
-          isLoading={deleteLoading}
-        />
-      )} */}
     </>
   );
 };

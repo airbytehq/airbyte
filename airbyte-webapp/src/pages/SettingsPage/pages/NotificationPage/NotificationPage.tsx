@@ -1,12 +1,10 @@
 import React, { useMemo, useState, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 
-// import HeadTitle from "components/HeadTitle";
-
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import useWorkspace, { useCurrentWorkspace, WebhookPayload } from "hooks/services/useWorkspace";
 
-import { Content } from "../SettingsComponents"; // SettingsCard
+import { Content } from "../SettingsComponents";
 import WebHookForm from "./components/WebHookForm";
 
 function useAsyncWithTimeout<K, T>(f: (data: K) => Promise<T>) {
@@ -65,20 +63,15 @@ const NotificationPage: React.FC = () => {
   );
 
   return (
-    <>
-      {/* <HeadTitle titles={[{ id: "sidebar.settings" }, { id: "settings.notifications" }]} /> */}
-      {/* <SettingsCard title={<FormattedMessage id="settings.notificationSettings" />}> */}
-      <Content>
-        <WebHookForm
-          webhook={initialValues}
-          onSubmit={onSubmitWebhook}
-          onTest={testWebhook}
-          errorMessage={errorMessage}
-          successMessage={successMessage}
-        />
-      </Content>
-      {/* </SettingsCard> */}
-    </>
+    <Content>
+      <WebHookForm
+        webhook={initialValues}
+        onSubmit={onSubmitWebhook}
+        onTest={testWebhook}
+        errorMessage={errorMessage}
+        successMessage={successMessage}
+      />
+    </Content>
   );
 };
 

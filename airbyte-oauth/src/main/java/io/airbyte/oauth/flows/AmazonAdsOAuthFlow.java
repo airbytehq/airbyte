@@ -18,8 +18,46 @@ import org.apache.http.client.utils.URIBuilder;
 
 public class AmazonAdsOAuthFlow extends BaseOAuth2Flow {
 
-  private static final String AUTHORIZE_URL = "https://www.amazon.com/ap/oa";
-  private static final String ACCESS_TOKEN_URL = "https://api.amazon.com/auth/o2/token";
+  enum RegionHost {
+
+    /**
+     * North America (NA) —— United States (US), Canada (CA), Mexico (MX), Brazil (BR)
+     */
+    NA("https://www.amazon.com/ap/oa", "https://api.amazon.com/auth/o2/token"),
+
+    /**
+     * Europe (EU) —— United Kingdom (UK), France (FR), Italy (IT), Spain (ES), Germany (DE),
+     * Netherlands (NL), United Arab Emirates (AE), Poland (PL), Turkey (TR), Egypt (EG), Saudi Arabia
+     * (SA), Sweden (SE), Belgium (BE), India (IN)
+     */
+    EU("https://eu.account.amazon.com/ap/oa", "https://api.amazon.co.uk/auth/o2/token"),
+
+    /**
+     * Far East (FE) —— Japan (JP), Australia (AU), Singapore (SG)
+     */
+    FE("https://apac.account.amazon.com/ap/oa", "https://api.amazon.co.jp/auth/o2/token"),
+    ;
+
+    private final String host;
+    private final String tokenUrl;
+
+    RegionHost(String host, String tokenUrl) {
+      this.host = host;
+      this.tokenUrl = tokenUrl;
+    }
+
+    public String getHost() {
+      return host;
+    }
+
+    public String getTokenUrl() {
+      return tokenUrl;
+    }
+
+  }
+
+  // private static final String AUTHORIZE_URL = "https://www.amazon.com/ap/oa";
+  // private static final String ACCESS_TOKEN_URL = "https://api.amazon.com/auth/o2/token";
 
   public AmazonAdsOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
@@ -44,8 +82,12 @@ public class AmazonAdsOAuthFlow extends BaseOAuth2Flow {
                                     final String redirectUrl,
                                     final JsonNode inputOAuthConfiguration)
       throws IOException {
+
+    final String regionCountry = getConfigValueUnsafe(inputOAuthConfiguration, "region");
+    String authUrl = RegionHost.valueOf(regionCountry).getHost();
+
     try {
-      return new URIBuilder(AUTHORIZE_URL)
+      return new URIBuilder(authUrl)
           .addParameter("client_id", clientId)
           .addParameter("scope", "advertising::campaign_management")
           .addParameter("response_type", "code")
@@ -78,7 +120,10 @@ public class AmazonAdsOAuthFlow extends BaseOAuth2Flow {
    */
   @Override
   protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
-    return ACCESS_TOKEN_URL;
+
+    final String regionCountry = getConfigValueUnsafe(inputOAuthConfiguration, "region");
+
+    return RegionHost.valueOf(regionCountry).getTokenUrl();
   }
 
 }

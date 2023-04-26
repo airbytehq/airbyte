@@ -39,13 +39,13 @@ function useApiHealthPoll(): void {
 
         if (syncSuccess) {
           setNotification({
-            message: formatMessage({ id: "sync.success.message" }, { message: syncSuccess[0] }),
+            message: formatMessage({ id: "sync.success.message" }, { connectionName: syncSuccess[0] }),
             type: "info",
           });
         }
         if (syncFail) {
           setNotification({
-            message: formatMessage({ id: "sync.fail.message" }, { message: syncFail[0] }),
+            message: formatMessage({ id: "sync.fail.message" }, { connectionName: syncFail[0] }),
             type: "error",
           });
         }

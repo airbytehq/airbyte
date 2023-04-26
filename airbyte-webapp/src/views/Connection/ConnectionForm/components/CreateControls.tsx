@@ -14,10 +14,6 @@ interface CreateControlsProps {
 
 const ButtonContainer = styled.div`
   padding: 15px 0;
-  // display: flex;
-  // align-items: center;
-  // justify-content: space-between;
-  // flex-direction: column;
 `;
 
 const LoadingContainer = styled(ButtonContainer)`
@@ -60,37 +56,6 @@ const ErrorText = styled.div`
   color: ${({ theme }) => theme.dangerColor};
   max-width: 400px;
 `;
-
-// const SubmitButton = styled(Button)`
-//   // margin-left: auto;
-//   width: 264px;
-//   height: 68px;
-//   border-radius: 6px;
-//   font-weight: 500;
-//   font-size: 18px;
-//   line-height: 22px;
-// `;
-
-// const BackButton = styled(Button)`
-//   // margin-left: auto;
-//   width: 264px;
-//   height: 68px;
-//   border-radius: 6px;
-//   font-weight: 500;
-//   font-size: 18px;
-//   line-height: 22px;
-//   background: #fff;
-//   color: #6b6b6f;
-//   border-color: #d1d5db;
-// `;
-
-// const ButtonRows = styled.div`
-//   display: flex;
-//   justify-content: space-around;
-//   align-items: center;
-//   margin-top: 40px;
-//   width: 100%;
-// `;
 
 const CreateControls: React.FC<CreateControlsProps> = ({ isSubmitting, errorMessage, isValid, onBack }) => {
   if (isSubmitting) {

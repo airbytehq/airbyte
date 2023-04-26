@@ -15,12 +15,13 @@ interface IProps {
 const DDLabel = styled.div`
   font-style: normal;
   font-weight: 500;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 20px;
   color: #374151;
+  margin-bottom: 10px;
 `;
 
-export const LanguageDropdown: React.FC<IProps> = ({ labelId, value, onChange }) => {
+export const LanguageDropdown: React.FC<IProps> = React.memo(({ labelId, value, onChange }) => {
   const languages: DropDownRow.IDataItem[] = [
     { label: "English", value: LOCALES.ENGLISH },
     { label: "简体中文", value: LOCALES.CHINESE_SIMPLIFIED },
@@ -42,4 +43,4 @@ export const LanguageDropdown: React.FC<IProps> = ({ labelId, value, onChange })
       />
     </>
   );
-};
+});

@@ -33,6 +33,22 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2023.04.20
+1. Fixed inviteUserModal
+#### 2023.04.19
+1. Optimize data flow table logic Switch and Drown change logic
+#### 2023.04.17
+1. Fixed react-intl compiling without HTML tag `<b>`
+#### 2023.04.13
+1. Update select scrollBar style
+#### 2023.04.04
+1. Settings/Change password UI
+2. Settings/Account UI
+3. Settings/Support UI
+#### 2023.03.31
+1. Email & verify screen UI
+2. Readjust the Source/Destination/Connection TestConnection component to remove scrolling
+3. Copy Source/Destination flows add test endpoint(check_connection_for_update)
 #### 2023.03.29
 1. BugFixed：plans run out modal error message
 2. Change BillingWarningBanner component style

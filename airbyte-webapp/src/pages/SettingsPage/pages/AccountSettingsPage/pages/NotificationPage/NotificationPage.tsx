@@ -18,7 +18,7 @@ const PageContainer = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
-  padding: 30px 16px;
+  padding: 30px 70px;
 `;
 
 export const CharacterInID = "__";
@@ -43,7 +43,7 @@ const NotificationPage: React.FC = () => {
   const createNotificationSetting = () => setUsageNotificationList((prev) => [newUsageItem, ...prev]);
 
   const saveNotificationSetting = (data: NotificationItem) => {
-    onCreateNotificationSetting(data).catch((err: any) => {
+    onCreateNotificationSetting(data).catch((err: Error) => {
       setNotification({ message: err.message, type: "error" });
     });
   };
@@ -74,7 +74,7 @@ const NotificationPage: React.FC = () => {
           }
           setUpdateLoading(false);
         })
-        .catch((err: any) => {
+        .catch((err: Error) => {
           setNotification({ message: err.message, type: "error" });
           setUpdateLoading(false);
         });
@@ -85,7 +85,7 @@ const NotificationPage: React.FC = () => {
     if (id.includes(CharacterInID)) {
       setUsageNotificationList((prev) => prev.filter((usageItem) => usageItem.id !== id));
     } else {
-      onDeleteNotificationSetting(id).catch((err: any) => {
+      onDeleteNotificationSetting(id).catch((err: Error) => {
         setNotification({ message: err.message, type: "error" });
       });
     }

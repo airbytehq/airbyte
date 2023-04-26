@@ -7,10 +7,10 @@ import { LoadingPage, DropDownRow } from "components";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import Breadcrumbs from "components/Breadcrumbs";
 import { CreateStepTypes } from "components/ConnectionStep";
-import { TableItemTitle, DefinitioDetails } from "components/ConnectorBlocks"; // StepsTypes
+import { TableItemTitle } from "components/ConnectorBlocks";
 import { ConnectorIcon } from "components/ConnectorIcon";
 import DeleteBlock from "components/DeleteBlock";
-import { TabMenu, CategoryItem } from "components/TabMenu";
+import { CategoryItem } from "components/TabMenu";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConnectionList } from "hooks/services/useConnectionHook";
@@ -28,6 +28,7 @@ import TestConnection from "views/Connector/TestConnection";
 import { useGetDestination } from "../../../../hooks/services/useDestinationHook";
 import DestinationConnectionTable from "./components/DestinationConnectionTable";
 import DestinationSettings from "./components/DestinationSettings";
+import HeaderSction from "./components/HeaderSection";
 
 interface PageConfig {
   menuConfig: CategoryItem[];
@@ -51,10 +52,6 @@ const Container = styled.div`
   flex-direction: column;
 `;
 
-const TabContainer = styled.div`
-  margin: 20px 20px 20px 0;
-`;
-
 const TableContainer = styled.div`
   margin-right: 70px;
 `;
@@ -62,7 +59,6 @@ const TableContainer = styled.div`
 const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   useTrackPage(PageTrackingCodes.DESTINATION_ITEM);
   const { params, push, pathname } = useRouter<unknown, { id: string; "*": string }>();
-  // const currentStep = useMemo<string>(() => (params["*"] === "" ? StepsTypes.OVERVIEW : params["*"]), [params]);
   const [currentStep, setCurrentStep] = useState(StepsTypes.CREATE_ENTITY);
   const [loadingStatus, setLoadingStatus] = useState<boolean>(true);
   const [fetchingConnectorError, setFetchingConnectorError] = useState<JSX.Element | string | null>(null);
@@ -119,17 +115,6 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
         },
       });
     }
-
-    // const path = `../${RoutePaths.ConnectionNew}`;
-    // const state =
-    //   data.value === "create-new-item"
-    //     ? { destinationId: destination.destinationId }
-    //     : {
-    //         sourceId: data.value,
-    //         destinationId: destination.destinationId,
-    //       };
-
-    // push(path, { state });
   };
 
   const goBack = () => {
@@ -139,10 +124,6 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   const onDelete = async () => {
     await deleteDestination({ connectionsWithDestination, destination });
   };
-
-  // const onCreateClick = () => {
-  //   push(`/${RoutePaths.Source}/${RoutePaths.SelectSource}`);
-  // };
 
   const menuItems: CategoryItem[] = pageConfig?.menuConfig || [
     {
@@ -160,7 +141,6 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
                 entity={destination.destinationName}
                 entityIcon={destinationDefinition.icon ? getIcon(destinationDefinition.icon) : null}
                 releaseStage={destinationDefinition.releaseStage}
-                // onClick={onCreateClick}
                 num={connectionsWithDestination.length}
                 btnText={<FormattedMessage id="sources.newSourceTitle" />}
               />
@@ -242,11 +222,27 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   return (
     <Container>
       <Breadcrumbs data={breadcrumbsData} currentStep={0} />
+      {currentStep === StepsTypes.TEST_CONNECTION && (
+        <HeaderSction
+          destinationDefinition={destinationDefinition}
+          data={menuItems}
+          onSelect={onSelectMenuItem}
+          activeItem={pathname}
+        />
+      )}
       <ConnectorDocumentationWrapper>
-        <DefinitioDetails name={destinationDefinition.name} icon={destinationDefinition.icon} type="destination" />
+        {/* <DefinitioDetails name={destinationDefinition.name} icon={destinationDefinition.icon} type="destination" />
         <TabContainer>
           <TabMenu data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} lastOne size="16" />
-        </TabContainer>
+        </TabContainer> */}
+        {currentStep !== StepsTypes.TEST_CONNECTION && (
+          <HeaderSction
+            destinationDefinition={destinationDefinition}
+            data={menuItems}
+            onSelect={onSelectMenuItem}
+            activeItem={pathname}
+          />
+        )}
         <ApiErrorBoundary>
           <Suspense fallback={<LoadingPage />}>
             <Routes>

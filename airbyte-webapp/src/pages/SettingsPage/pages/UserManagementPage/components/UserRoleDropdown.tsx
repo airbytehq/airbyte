@@ -12,7 +12,7 @@ interface IProps {
   name?: string;
 }
 
-const UserRoleDropDown: React.FC<IProps> = ({ value, roleDesc, options, onChange, name }) => {
+const UserRoleDropDown: React.FC<IProps> = React.memo(({ value, roleDesc, options, onChange, name }) => {
   const [selectedRole, setSelectedRole] = useState<number | undefined>();
 
   useEffect(() => {
@@ -37,6 +37,6 @@ const UserRoleDropDown: React.FC<IProps> = ({ value, roleDesc, options, onChange
       name={name}
     />
   );
-};
+});
 
 export default UserRoleDropDown;

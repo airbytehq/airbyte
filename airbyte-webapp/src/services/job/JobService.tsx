@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
-// import { useConfig } from "config";
 import { useUser } from "core/AuthContext";
 import { JobsService } from "core/domain/job/JobsService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
@@ -25,7 +24,6 @@ export const jobsKeys = {
 };
 
 function useGetJobService() {
-  // const config = useConfig();
   const { removeUser } = useUser();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(
@@ -37,11 +35,10 @@ function useGetJobService() {
 export const useListJobs = (listParams: JobListRequestBody) => {
   const service = useGetJobService();
   const result = useQuery(jobsKeys.list(listParams.configId, listParams.pagination), () => service.list(listParams), {
-    refetchInterval: 2500, // every 2,5 seconds,
+    refetchInterval: 2500,
     keepPreviousData: true,
     suspense: true,
   });
-  // cast to JobWithAttemptsRead[] because (suspense: true) means we will never get undefined
   return { jobs: result.data?.jobs as JobWithAttemptsRead[], isPreviousData: result.isPreviousData };
 };
 

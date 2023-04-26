@@ -16,18 +16,16 @@ const PageContainer = styled.div<{
   offsetTop: number;
 }>`
   height: calc(100% - ${({ offsetTop }) => offsetTop}px);
-  // flex:1;
 `;
 
 const PnelGrabber = styled.div<{
   offsetTop: number;
 }>`
-  height: calc(100% - ${({ offsetTop }) => offsetTop}px);
+  height: calc(100vh - ${({ offsetTop }) => offsetTop}px);
   padding: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  // flex:1;
 `;
 
 const LazyDocumentationPanel = lazy(() =>
@@ -40,10 +38,6 @@ interface PanelContainerProps {
     height: number;
   };
 }
-
-// interface ConnectorDocumentationProps {
-//   topComponent?: React.ReactNode;
-// }
 
 const LeftPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>> = ({ children, dimensions }) => {
   const width = dimensions?.width ?? 0;
@@ -58,7 +52,7 @@ const LeftPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>>
           </h3>
         </div>
       )}
-      <div>{children}</div>
+      {children}
     </div>
   );
 };
@@ -89,23 +83,20 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
 
   const divRef = useRef(null);
   useEffect(() => {
-    const top: number = divRef.current ? divRef.current?.["offsetTop"] : 0;
+    const top: number = divRef.current ? divRef.current?.["offsetTop"] + 10 : 0;
     setOffsetTop(top);
-  }, []);
+  }, [documentationPanelOpen]);
 
   return (
     <PageContainer ref={divRef} offsetTop={offsetTop}>
-      {/* // <PageContainer> className={styles.pageContainer}*/}
       <ReflexContainer orientation="vertical">
         <ReflexElement className={styles.leftPanelStyle} propagateDimensions minSize={150}>
           <LeftPanelContainer>{children}</LeftPanelContainer>
         </ReflexElement>
         {documentationPanelOpen && (
           <ReflexSplitter style={{ border: 0, background: "rgba(255, 165, 0, 0)", display: "flex" }}>
-            {/* <div className={styles.panelGrabber}> */}
             <PnelGrabber offsetTop={offsetTop}>
               <FontAwesomeIcon className={styles.grabberHandleIcon} icon={faGripLinesVertical} size="1x" />
-              {/* </div> */}
             </PnelGrabber>
           </ReflexSplitter>
         )}
@@ -119,7 +110,6 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
           </ReflexElement>
         )}
       </ReflexContainer>
-      {/* </PageContainer> */}
     </PageContainer>
   );
 };

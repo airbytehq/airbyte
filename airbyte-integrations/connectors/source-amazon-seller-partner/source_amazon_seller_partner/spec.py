@@ -81,7 +81,6 @@ class AmazonSellerPartnerConfig(BaseModel):
         examples=["500", "1980"],
     )
 
-    aws_environment: AWSEnvironment = Field(description="Select the AWS Environment.", title="AWS Environment")
     region: AWSRegion = Field(description="Select the AWS Region.", title="AWS Region")
 
 
@@ -98,20 +97,33 @@ advanced_auth = AdvancedAuth(
         complete_oauth_server_input_specification={
             "type": "object",
             "additionalProperties": False,
-            "properties": {"lwa_app_id": {"type": "string"}, "lwa_client_secret": {"type": "string"}},
+            "properties": {
+                "app_id": {"type": "string"},
+                "lwa_app_id": {"type": "string"},
+                "lwa_client_secret": {"type": "string"},
+                "aws_access_key": {"type": "string"},
+                "aws_secret_key": {"type": "string"},
+                "role_arn": {"type": "string"},
+            },
         },
         complete_oauth_server_output_specification={
             "type": "object",
             "additionalProperties": False,
             "properties": {
+                "app_id": {"type": "string", "path_in_connector_config": ["app_id"]},
                 "lwa_app_id": {"type": "string", "path_in_connector_config": ["lwa_app_id"]},
                 "lwa_client_secret": {"type": "string", "path_in_connector_config": ["lwa_client_secret"]},
+                "aws_access_key": {"type": "string", "path_in_connector_config": ["aws_access_key"]},
+                "aws_secret_key": {"type": "string", "path_in_connector_config": ["aws_secret_key"]},
+                "role_arn": {"type": "string", "path_in_connector_config": ["role_arn"]},
             },
         },
         oauth_user_input_from_connector_config_specification={
             "type": "object",
             "additionalProperties": False,
-            "properties": {"app_id": {"type": "string", "path_in_connector_config": ["app_id"]}},
+            "properties": {
+                "region": {"type": "string", "path_in_connector_config": ["region"]}
+            },
         },
     ),
 )

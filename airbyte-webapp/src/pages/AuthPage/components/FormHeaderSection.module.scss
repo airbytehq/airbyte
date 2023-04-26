@@ -19,6 +19,7 @@
   flex-direction: row;
   justify-content: flex-end;
   align-items: center;
+  margin-top: 10px;
 }
 
 .headRightText {
@@ -50,8 +51,6 @@
     align-items: flex-end;
     flex-direction: row;
     justify-content: space-between;
-
-    // margin: 24px 0 5%;
   }
 
   .headRight {
@@ -59,5 +58,6 @@
     flex-direction: row;
     justify-content: flex-end;
     align-items: center;
+    margin-top: 0;
   }
 }

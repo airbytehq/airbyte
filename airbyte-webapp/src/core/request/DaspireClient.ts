@@ -89,16 +89,10 @@ export interface IgnoreNotificationRead {
 
 type SecondParameter<T extends (...args: any) => any> = T extends (config: any, args: infer P) => any ? P : never;
 
-/**
- * @summary List all products registered in the current Daspire deployment
- */
 export const userInfo = (options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<UserInfo>({ url: `/user/info`, method: "get" }, options);
 };
 
-/**
- * @summary List all products registered in the current Daspire deployment
- */
 export const listProducts = (options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<ProductItemsList>({ url: `/product/item/rows`, method: "get" }, options);
 };

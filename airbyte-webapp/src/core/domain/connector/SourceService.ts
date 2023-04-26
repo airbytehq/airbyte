@@ -26,6 +26,7 @@ export class SourceService extends AirbyteRequestService {
   public async check_connection(
     params: {
       sourceId?: string;
+      sourceDefinitionId?: string;
       connectionConfiguration?: ConnectionConfiguration;
     },
     requestParams?: RequestInit
@@ -36,7 +37,7 @@ export class SourceService extends AirbyteRequestService {
         ...this.requestOptions,
         signal: requestParams?.signal,
       });
-    } else if (params.connectionConfiguration) {
+    } else if (params.connectionConfiguration || params.sourceDefinitionId) {
       result = await checkConnectionToSourceForUpdate(params as SourceUpdate, {
         ...this.requestOptions,
         signal: requestParams?.signal,

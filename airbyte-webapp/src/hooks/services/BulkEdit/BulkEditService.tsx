@@ -1,5 +1,5 @@
 import { setIn } from "formik";
-import React, { useContext, useMemo, useState } from "react";
+import React, { useContext, useMemo, useState, useEffect } from "react";
 import { useSet } from "react-use";
 
 import { SyncSchemaStream } from "core/domain/catalog";
@@ -15,6 +15,11 @@ interface BatchContext {
   selectedBatchNodes: SyncSchemaStream[];
   selectedBatchNodeIds: string[];
   onChangeOption: (
+    value:
+      | ((prevState: Partial<AirbyteStreamConfiguration>) => Partial<AirbyteStreamConfiguration>)
+      | Partial<AirbyteStreamConfiguration>
+  ) => void;
+  onChangeBulkSwitch: (
     value:
       | ((prevState: Partial<AirbyteStreamConfiguration>) => Partial<AirbyteStreamConfiguration>)
       | Partial<AirbyteStreamConfiguration>
@@ -35,14 +40,30 @@ const BatchEditProvider: React.FC<{
   const [selectedBatchNodes, { reset, toggle, add }] = useSet<string | undefined>(new Set());
   const [options, setOptions] = useState<Partial<AirbyteStreamConfiguration>>(defaultOptions);
 
+  useEffect(() => {
+    // TODO: Monitor the value change of Stream table Switch, and update the options.selected value in time
+    if (selectedBatchNodes.size > 0) {
+      const selectedNodes: SyncSchemaStream[] = nodes.filter((n) => selectedBatchNodes.has(n.id) && n.config?.selected);
+      if (selectedNodes.length === nodes.length) {
+        setOptions({ selected: true });
+      } else {
+        setOptions(defaultOptions);
+      }
+    }
+  }, [selectedBatchNodes, nodes, options.selected]);
+
   const resetBulk = () => {
     reset();
-    setOptions(defaultOptions);
+    // setOptions(defaultOptions);
   };
 
   const onApply = () => {
     const updatedConfig = nodes.map((node) =>
-      selectedBatchNodes.has(node.id) ? setIn(node, "config", { ...node.config, ...options }) : node
+      selectedBatchNodes.has(node.id)
+        ? options.syncMode && node.stream?.supportedSyncModes?.includes(options.syncMode)
+          ? setIn(node, "config", { ...node.config, ...options, selected: node.config?.selected })
+          : setIn(node, "config", { ...node.config, selected: node.config?.selected })
+        : node
     );
 
     update(updatedConfig);
@@ -52,6 +73,20 @@ const BatchEditProvider: React.FC<{
   const onCancel = () => {
     reset();
     resetBulk();
+  };
+
+  const onChangeBulkSwitch = (
+    newOptions:
+      | ((prevState: Partial<AirbyteStreamConfiguration>) => Partial<AirbyteStreamConfiguration>)
+      | Partial<AirbyteStreamConfiguration>
+  ) => {
+    setOptions({ ...options, ...newOptions });
+    const updatedConfig = nodes.map((node) =>
+      selectedBatchNodes.has(node.id) ? setIn(node, "config", { ...node.config, ...newOptions }) : node
+    );
+
+    update(updatedConfig);
+    // resetBulk();
   };
 
   const isActive = selectedBatchNodes.size > 0;
@@ -65,6 +100,7 @@ const BatchEditProvider: React.FC<{
     selectedBatchNodeIds: Array.from(selectedBatchNodes).filter((node): node is string => node !== undefined),
     selectedBatchNodes: nodes.filter((n) => selectedBatchNodes.has(n.id)),
     onChangeOption: (newOptions) => setOptions({ ...options, ...newOptions }),
+    onChangeBulkSwitch,
     options,
     onApply,
     onCancel,

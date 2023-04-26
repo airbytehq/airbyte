@@ -1,8 +1,6 @@
 import React from "react";
 import styled from "styled-components";
 
-// import { H1 } from "components/base";
-
 interface TitlesBlockProps {
   title: React.ReactNode;
   children?: React.ReactNode;

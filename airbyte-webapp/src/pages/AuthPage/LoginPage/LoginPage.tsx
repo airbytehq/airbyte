@@ -4,12 +4,13 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { LabeledInput, LoadingButton } from "components";
+import { LabeledInput, LoadingButton, Link } from "components";
 import Alert from "components/Alert";
 import HeadTitle from "components/HeadTitle";
 import { Separator } from "components/Separator";
 
 import { useUser } from "core/AuthContext";
+import { IAuthUser } from "core/AuthContext/authenticatedUser";
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { FormHeaderSection } from "pages/AuthPage/components/FormHeaderSection";
 import { useAuthenticationService } from "services/auth/AuthSpecificationService";
@@ -37,6 +38,11 @@ const SeperatorText = styled.div`
   font-size: 12px;
   color: #6b6b6f;
   margin: 0 37px;
+`;
+
+const ForgotPasswordContainer = styled.div`
+  text-align: right;
+  display: none;
 `;
 
 const LoginPageValidationSchema = yup.object().shape({
@@ -80,10 +86,10 @@ const LoginPage: React.FC = () => {
           validationSchema={LoginPageValidationSchema}
           onSubmit={async (values) => {
             Signin.post(values, user?.lang)
-              .then((res: any) => {
+              .then((res: IAuthUser) => {
                 setUser?.(res);
               })
-              .catch((err: any) => {
+              .catch((err: Error) => {
                 setErrorMessage(err.message);
               });
           }}
@@ -136,6 +142,11 @@ const LoginPage: React.FC = () => {
                   )}
                 </Field>
               </FieldItem>
+              <ForgotPasswordContainer>
+                <Link $clear medium to={`/${RoutePaths.ResetPassword}`}>
+                  <FormattedMessage id="resetPassword.forgot.title" />
+                </Link>
+              </ForgotPasswordContainer>
               <BottomBlock>
                 <LoadingButton
                   white
@@ -147,18 +158,6 @@ const LoginPage: React.FC = () => {
                   <FormattedMessage id="login.button" />
                 </LoadingButton>
               </BottomBlock>
-              {/* <div className={styles.signupLink}>
-              <FormattedMessage
-                id="login.signupDescription"
-                values={{
-                  signupLink: (
-                    <Link to={`/${RoutePaths.Signup}`} $clear>
-                      <FormattedMessage id="login.signup" />
-                    </Link>
-                  ),
-                }}
-              />
-            </div> */}
             </Form>
           )}
         </Formik>

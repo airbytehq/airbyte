@@ -24,7 +24,7 @@ class AmazonAdsConfig(BaseModel):
     source_name: str = Field(
         None,
         title="Source Name",
-        description='Table Source Identification',
+        description="Table Source Identification",
         order=0,
     )
 
@@ -119,6 +119,11 @@ advanced_auth = AdvancedAuth(
                 "client_id": {"type": "string", "path_in_connector_config": ["client_id"]},
                 "client_secret": {"type": "string", "path_in_connector_config": ["client_secret"]},
             },
+        },
+        oauth_user_input_from_connector_config_specification={
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {"region": {"type": "string", "path_in_connector_config": ["region"]}},
         },
     ),
 )

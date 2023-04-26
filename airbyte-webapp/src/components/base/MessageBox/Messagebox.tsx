@@ -4,12 +4,15 @@ import styled, { keyframes } from "styled-components";
 
 import { CrossIcon } from "components/icons/CrossIcon";
 
+import { useConfig } from "config";
+
 interface IProps {
   message?: string;
   onClose?: () => void;
   type: "info" | "error";
   position?: "left" | "center" | "right";
-  isString?: boolean; // components/SingletonCard
+  isString?: boolean;
+  fixed?: boolean;
 }
 
 export const SlideUpAnimation = keyframes`
@@ -23,7 +26,7 @@ export const SlideUpAnimation = keyframes`
   }
 `;
 
-const Container = styled.div<{ type: "info" | "error" }>`
+const Container = styled.div<{ type: "info" | "error"; fixed?: boolean }>`
   min-width: 600px;
   background: ${({ type }) => (type === "error" ? "#FEF2F2" : "#eff6ff")};
   border-radius: 6px;
@@ -32,7 +35,7 @@ const Container = styled.div<{ type: "info" | "error" }>`
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  position: fixed;
+  position: ${({ fixed }) => (fixed ? "fixed" : "absolute")};
   z-index: 1001;
   left: 50%;
   transform: translateX(-50%);
@@ -60,9 +63,11 @@ const CrossButton = styled.button`
   color: #1e40af;
 `;
 
-export const MessageBox: React.FC<IProps> = ({ message, onClose, type, position, isString }) => {
+export const MessageBox: React.FC<IProps> = ({ message, onClose, type, position, isString, fixed = true }) => {
+  const { notificationInterval } = useConfig();
+
   useEffect(() => {
-    const intervalID = setTimeout(() => onClose?.(), 3000);
+    const intervalID = setTimeout(() => onClose?.(), notificationInterval);
     return () => clearInterval(intervalID);
   }, [message]);
 
@@ -71,7 +76,7 @@ export const MessageBox: React.FC<IProps> = ({ message, onClose, type, position,
   }
 
   return (
-    <Container type={type}>
+    <Container type={type} fixed={fixed}>
       <Message type={type} position={position}>
         {isString ? message : <FormattedMessage id={message} />}
       </Message>
