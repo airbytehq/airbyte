@@ -24,6 +24,7 @@ extend-exclude = [
     "models",
     ".eggs",
     "airbyte-cdk/python/airbyte_cdk/models/__init__.py",
+    "airbyte-cdk/python/airbyte_cdk/sources/declarative/models/__init__.py",
     ".tox",
     "airbyte_api_client",
     "**/generated/*",
@@ -41,7 +42,7 @@ extend-ignore = [
 [tool.isort]
 profile = "black"
 color_output = false
-skip_gitignore = true
+# skip_gitignore = true
 line_length = 140
 multi_line_output = 3
 include_trailing_comma = true

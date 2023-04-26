@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -152,6 +152,12 @@ def test_parse_response_empty_content(applications_stream):
     records = [record for record in parsed_response]
 
     assert records == []
+
+
+def test_number_of_streams():
+    source = SourceGreenhouse()
+    streams = source.streams({})
+    assert len(streams) == 36
 
 
 def test_ignore_403(applications_stream):

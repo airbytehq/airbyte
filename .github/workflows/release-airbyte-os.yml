@@ -8,6 +8,7 @@ on:
         description: "Please choose the type of version upgrade : major|minor|patch"
         required: true
         default: "patch"
+
 jobs:
   # In case of self-hosted EC2 errors, remove this block.
   start-release-airbyte-runner:
@@ -20,13 +21,13 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
+
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -35,16 +36,16 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ env.PAT }}
 
-  releaseAirbyte:
+  release-airbyte-platform:
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
-    needs: start-release-airbyte-runner # required to start the main job when the runner is ready
+    needs:
+      - start-release-airbyte-runner
     runs-on: ${{ needs.start-release-airbyte-runner.outputs.label }} # run the job on the newly created runner
-    environment: more-secrets
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
-          fetch-depth: 0
+          python-version: "3.9"
+
       - uses: actions/setup-java@v3
         with:
           distribution: "zulu"
@@ -52,13 +53,20 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: "lts/gallium"
-      # necessary to install pip
-      - uses: actions/setup-python@v4
+          node-version: "lts/*"
+
+      - name: Checkout Airbyte Platform
+        uses: actions/checkout@v3
         with:
-          python-version: "3.9"
-      - name: Release Airbyte
-        id: release_airbyte
+          repository: airbytehq/airbyte-platform
+          ref: main
+          path: airbyte-platform
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+
+      - name: Release Airbyte Platform
+        id: release_airbyte_platform
+        working-directory: airbyte-platform
         env:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
@@ -66,29 +74,122 @@ jobs:
           CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
           CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
         run: |
-          ./tools/bin/release_version.sh
+          ./tools/bin/release_version.sh  # this script calls the bump_version.sh script
+
+      - name: Auto Commit Version for Airbyte Platform
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          repository: airbyte-platform
+          commit_message: Bump Airbyte version from ${{ steps.release_airbyte_platform.outputs.PREV_VERSION }} to ${{ steps.release_airbyte_platform.outputs.NEW_VERSION }}
+
+      - name: Generate Change Log for Airbyte Platform
+        working-directory: airbyte-platform
+        env:
+          PREV_VERSION: ${{ steps.release_airbyte_platform.outputs.PREV_VERSION }}
+          GIT_REVISION: ${{ steps.release_airbyte_platform.outputs.GIT_REVISION }}
+        run: |
+          CHANGELOG=`PAGER=cat git log v${PREV_VERSION}..${GIT_REVISION} --oneline --decorate=no`
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          echo -e "$CHANGELOG" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          echo $CHANGELOG
+
+      - name: Create Release for Airbyte Platform
+        id: create_release
+        uses: ncipollo/release-action@v1
+        env:
+          NEW_VERSION: ${{ steps.release_airbyte_platform.outputs.NEW_VERSION }}
+        with:
+          owner: airbytehq
+          repo: airbyte-platform
+          body: ${{ env.CHANGELOG }}
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          tag: v${{ env.NEW_VERSION }}
+
+  release-airbyte:
+    # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
+    needs:
+      - start-release-airbyte-runner
+      - release-airbyte-platform
+    runs-on: ${{ needs.start-release-airbyte-runner.outputs.label }} # run the job on the newly created runner
+    steps:
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: airbytehq/airbyte
+          ref: master
+          path: airbyte
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+
+      - name: Bump Version for Airbyte
+        id: bump_version
+        working-directory: airbyte
+        env:
+          PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
+        run: |
+          ./tools/bin/bump_version.sh
+
+      - name: Run run-ab-platform script to download artifacts from Airbyte Platform
+        working-directory: airbyte
+        run: |
+          ./run-ab-platform.sh --refresh
+          ./run-ab-platform.sh --download
+
+      - name: Auto Commit Version and Platform Artifacts into Airbyte
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          repository: airbyte
+          commit_message: Bump Airbyte version from ${{ steps.bump_version.outputs.PREV_VERSION }} to ${{ steps.bump_version.outputs.NEW_VERSION }}
+          push_options: --force
+
+      - name: Generate Change Log for Airbyte
+        working-directory: airbyte
+        env:
+          PREV_VERSION: ${{ steps.bump_version.outputs.PREV_VERSION }}
+          GIT_REVISION: ${{ steps.bump_version.outputs.GIT_REVISION }}
+        run: |
+          CHANGELOG=`PAGER=cat git log v${PREV_VERSION}..${GIT_REVISION} --oneline --decorate=no`
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          echo -e "$CHANGELOG" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          echo $CHANGELOG
+
+      - name: Create Release for Airbyte
+        id: create_release
+        uses: ncipollo/release-action@v1
+        env:
+          NEW_VERSION: ${{ steps.bump_version.outputs.NEW_VERSION }}
+        with:
+          owner: airbytehq
+          repo: airbyte
+          body: ${{ env.CHANGELOG }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: v${{ env.NEW_VERSION }}
 
   # We are releasing octavia from a separate job because:
   # - The self hosted runner used in releaseAirbyte does not have the docker buildx command to build multi-arch images
-  releaseOctavia:
+  release-octavia:
     runs-on: ubuntu-latest
-    environment: more-secrets
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
       - uses: actions/setup-java@v3
         with:
           distribution: "zulu"
           java-version: "17"
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "lts/gallium"
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+
       - name: Release Octavia
         id: release_octavia
         env:
@@ -97,53 +198,28 @@ jobs:
           PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
         run: ./tools/bin/release_version_octavia.sh
 
-  createPullRequest:
-    needs:
-      - releaseAirbyte
-      - releaseOctavia
-    runs-on: ubuntu-latest
-    environment: more-secrets
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Publish Python Package to test.pypi.org
+        if: github.event.inputs.skip-publish-test != 'true'
+        uses: mariamrf/py-package-publish-action@v1.1.0
         with:
-          fetch-depth: 0
-      # necessary to install pip
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-      - name: Bump version
-        id: bump_version
+          # specify the same version as in ~/.python-version
+          python_version: "3.9.11"
+          pip_version: "21.1"
+          subdir: "octavia-cli/"
         env:
-          PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
-        run: ./tools/bin/bump_version.sh
-      - name: Get PR Body
-        id: pr_body
-        env:
-          PREV_VERSION: ${{ steps.bump_version.outputs.PREV_VERSION }}
-          NEW_VERSION: ${{ steps.bump_version.outputs.NEW_VERSION }}
-          GIT_REVISION: ${{ steps.bump_version.outputs.GIT_REVISION }}
-        run: |
-          chmod +x tools/bin/pr_body.sh
-          body=$(./tools/bin/pr_body.sh)
-          echo "PR_BODY<<EOF" >> $GITHUB_ENV
-          echo "$body" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-      - name: Create Pull Request
-        id: cpr
-        uses: peter-evans/create-pull-request@v3
+          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+          TWINE_REPOSITORY_URL: "https://test.pypi.org/legacy/"
+      - name: Publish Python Package
+        uses: mariamrf/py-package-publish-action@v1.1.0
         with:
-          token: ${{ secrets.SLASH_COMMAND_PAT }}
-          branch: bump-version
-          branch-suffix: random
-          delete-branch: true
-          title: Bump Airbyte version from ${{ steps.bump_version.outputs.PREV_VERSION }} to ${{ steps.bump_version.outputs.NEW_VERSION }}
-          body: ${{ env.PR_BODY }}
-          commit-message: Bump Airbyte version from ${{ steps.bump_version.outputs.PREV_VERSION }} to ${{ steps.bump_version.outputs.NEW_VERSION }}
-      - name: PR Details
-        run: |
-          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
-          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+          # specify the same version as in ~/.python-version
+          python_version: "3.9.11"
+          pip_version: "21.1"
+          subdir: "octavia-cli/"
+        env:
+          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-release-airbyte-runner:
@@ -151,7 +227,7 @@ jobs:
     timeout-minutes: 10
     needs:
       - start-release-airbyte-runner # required to get output from the start-runner job
-      - releaseAirbyte # required to wait when the main job is done
+      - release-airbyte # required to wait when the main job is done
     runs-on: ubuntu-latest
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
     steps:
@@ -166,10 +242,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Stop EC2 runner
         uses: supertopher/ec2-github-runner@base64v1.0.10
         with:

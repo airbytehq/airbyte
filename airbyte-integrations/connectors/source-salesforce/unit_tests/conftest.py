@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -81,7 +81,7 @@ def _stream_api(stream_config, describe_response_data=None):
     sf_object.access_token = Mock()
     sf_object.instance_url = "https://fase-account.salesforce.com"
 
-    response_data = {"fields": [{"name": "LastModifiedDate", "type": "string"}]}
+    response_data = {"fields": [{"name": "LastModifiedDate", "type": "string"}, {"name": "Id", "type": "string"}]}
     if describe_response_data:
         response_data = describe_response_data
     sf_object.describe = Mock(return_value=response_data)
@@ -102,6 +102,26 @@ def stream_api_v2(stream_config):
 @pytest.fixture(scope="module")
 def stream_api_pk(stream_config):
     describe_response_data = {"fields": [{"name": "LastModifiedDate", "type": "string"}, {"name": "Id", "type": "string"}]}
+    return _stream_api(stream_config, describe_response_data=describe_response_data)
+
+
+@pytest.fixture(scope="module")
+def stream_api_v2_too_many_properties(stream_config):
+    describe_response_data = {
+        "fields": [{"name": f"Property{str(i)}", "type": "string"} for i in range(Salesforce.REQUEST_SIZE_LIMITS)]
+    }
+    describe_response_data["fields"].extend([{"name": "BillingAddress", "type": "address"}])
+    return _stream_api(stream_config, describe_response_data=describe_response_data)
+
+
+@pytest.fixture(scope="module")
+def stream_api_v2_pk_too_many_properties(stream_config):
+    describe_response_data = {
+        "fields": [{"name": f"Property{str(i)}", "type": "string"} for i in range(Salesforce.REQUEST_SIZE_LIMITS)]
+    }
+    describe_response_data["fields"].extend([
+        {"name": "BillingAddress", "type": "address"}, {"name": "Id", "type": "string"}
+    ])
     return _stream_api(stream_config, describe_response_data=describe_response_data)
 
 

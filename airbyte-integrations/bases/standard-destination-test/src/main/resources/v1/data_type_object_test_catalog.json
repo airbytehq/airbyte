@@ -20,9 +20,6 @@
           "property_number": {
             "$ref": "WellKnownTypes.json#/definitions/Number"
           },
-          "property_big_number": {
-            "$ref": "WellKnownTypes.json#/definitions/String"
-          },
           "property_integer": {
             "$ref": "WellKnownTypes.json#/definitions/Integer"
           },

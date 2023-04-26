@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "application_id": {
+      "type": ["null", "integer"]
+    },
+    "candidate_id": {
+      "type": ["null", "integer"]
+    },
+    "race": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "gender": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "veteran_status": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "message": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "disability_status": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "submitted_at": {
+      "type": ["null", "string"]
+    }
+  }
+}

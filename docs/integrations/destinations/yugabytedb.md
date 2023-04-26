@@ -56,4 +56,5 @@ For each major cloud provider we support, also add a follow-along guide for sett
 
 | Version | Date       | Pull Request                                                  | Subject                 |
 |:--------|:-----------|:--------------------------------------------------------------|:------------------------|
+| 0.1.1   | 2023-03-17 | [#24180](https://github.com/airbytehq/airbyte/pull/24180)     | Fix field order |
 | 0.1.0   | 2022-10-28 | [#18039](https://github.com/airbytehq/airbyte/pull/18039)     | New Destination YugabyteDB |

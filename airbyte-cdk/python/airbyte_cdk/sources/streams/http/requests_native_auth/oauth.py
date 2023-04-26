@@ -1,12 +1,12 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Sequence, Tuple
+from typing import Any, List, Mapping, Sequence, Tuple, Union
 
 import dpath
 import pendulum
-from airbyte_cdk.config_observation import observe_connector_config
+from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator
 
 
@@ -25,6 +25,7 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
         refresh_token: str,
         scopes: List[str] = None,
         token_expiry_date: pendulum.DateTime = None,
+        token_expiry_date_format: str = None,
         access_token_name: str = "access_token",
         expires_in_name: str = "expires_in",
         refresh_request_body: Mapping[str, Any] = None,
@@ -41,6 +42,7 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
         self._grant_type = grant_type
 
         self._token_expiry_date = token_expiry_date or pendulum.now().subtract(days=1)
+        self._token_expiry_date_format = token_expiry_date_format
         self._access_token = None
 
     def get_token_refresh_endpoint(self) -> str:
@@ -73,8 +75,11 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
     def get_token_expiry_date(self) -> pendulum.DateTime:
         return self._token_expiry_date
 
-    def set_token_expiry_date(self, value: pendulum.DateTime):
-        self._token_expiry_date = value
+    def set_token_expiry_date(self, value: Union[str, int]):
+        if self._token_expiry_date_format:
+            self._token_expiry_date = pendulum.from_format(value, self._token_expiry_date_format)
+        else:
+            self._token_expiry_date = pendulum.now().add(seconds=value)
 
     @property
     def access_token(self) -> str:
@@ -99,7 +104,6 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         connector_config: Mapping[str, Any],
         token_refresh_endpoint: str,
         scopes: List[str] = None,
-        token_expiry_date: pendulum.DateTime = None,
         access_token_name: str = "access_token",
         expires_in_name: str = "expires_in",
         refresh_token_name: str = "refresh_token",
@@ -107,7 +111,9 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         grant_type: str = "refresh_token",
         client_id_config_path: Sequence[str] = ("credentials", "client_id"),
         client_secret_config_path: Sequence[str] = ("credentials", "client_secret"),
+        access_token_config_path: Sequence[str] = ("credentials", "access_token"),
         refresh_token_config_path: Sequence[str] = ("credentials", "refresh_token"),
+        token_expiry_date_config_path: Sequence[str] = ("credentials", "token_expiry_date"),
     ):
         """
 
@@ -115,7 +121,6 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             connector_config (Mapping[str, Any]): The full connector configuration
             token_refresh_endpoint (str): Full URL to the token refresh endpoint
             scopes (List[str], optional): List of OAuth scopes to pass in the refresh token request body. Defaults to None.
-            token_expiry_date (pendulum.DateTime, optional): Datetime at which the current token will expire. Defaults to None.
             access_token_name (str, optional): Name of the access token field, used to parse the refresh token response. Defaults to "access_token".
             expires_in_name (str, optional): Name of the name of the field that characterizes when the current access token will expire, used to parse the refresh token response. Defaults to "expires_in".
             refresh_token_name (str, optional): Name of the name of the refresh token field, used to parse the refresh token response. Defaults to "refresh_token".
@@ -123,25 +128,29 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             grant_type (str, optional): OAuth grant type. Defaults to "refresh_token".
             client_id_config_path (Sequence[str]): Dpath to the client_id field in the connector configuration. Defaults to ("credentials", "client_id").
             client_secret_config_path (Sequence[str]): Dpath to the client_secret field in the connector configuration. Defaults to ("credentials", "client_secret").
+            access_token_config_path (Sequence[str]): Dpath to the access_token field in the connector configuration. Defaults to ("credentials", "access_token").
             refresh_token_config_path (Sequence[str]): Dpath to the refresh_token field in the connector configuration. Defaults to ("credentials", "refresh_token").
+            token_expiry_date_config_path (Sequence[str]): Dpath to the token_expiry_date field in the connector configuration. Defaults to ("credentials", "token_expiry_date").
         """
         self._client_id_config_path = client_id_config_path
         self._client_secret_config_path = client_secret_config_path
+        self._access_token_config_path = access_token_config_path
         self._refresh_token_config_path = refresh_token_config_path
+        self._token_expiry_date_config_path = token_expiry_date_config_path
         self._refresh_token_name = refresh_token_name
-        self._connector_config = observe_connector_config(connector_config)
+        self._connector_config = connector_config
         self._validate_connector_config()
         super().__init__(
             token_refresh_endpoint,
             self.get_client_id(),
             self.get_client_secret(),
             self.get_refresh_token(),
-            scopes,
-            token_expiry_date,
-            access_token_name,
-            expires_in_name,
-            refresh_request_body,
-            grant_type,
+            scopes=scopes,
+            token_expiry_date=self.get_token_expiry_date(),
+            access_token_name=access_token_name,
+            expires_in_name=expires_in_name,
+            refresh_request_body=refresh_request_body,
+            grant_type=grant_type,
         )
 
     def _validate_connector_config(self):
@@ -150,10 +159,17 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         Raises:
             ValueError: Raised if the defined getters are not returning a value.
         """
+        try:
+            assert self.access_token
+        except KeyError:
+            raise ValueError(
+                f"This authenticator expects a value under the {self._access_token_config_path} field path. Please check your configuration structure or change the access_token_config_path value at initialization of this authenticator."
+            )
         for field_path, getter, parameter_name in [
             (self._client_id_config_path, self.get_client_id, "client_id_config_path"),
             (self._client_secret_config_path, self.get_client_secret, "client_secret_config_path"),
             (self._refresh_token_config_path, self.get_refresh_token, "refresh_token_config_path"),
+            (self._token_expiry_date_config_path, self.get_token_expiry_date, "token_expiry_date_config_path"),
         ]:
             try:
                 assert getter()
@@ -171,16 +187,33 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
     def get_client_secret(self) -> str:
         return dpath.util.get(self._connector_config, self._client_secret_config_path)
 
+    @property
+    def access_token(self) -> str:
+        return dpath.util.get(self._connector_config, self._access_token_config_path)
+
+    @access_token.setter
+    def access_token(self, new_access_token: str):
+        dpath.util.set(self._connector_config, self._access_token_config_path, new_access_token)
+
     def get_refresh_token(self) -> str:
         return dpath.util.get(self._connector_config, self._refresh_token_config_path)
 
     def set_refresh_token(self, new_refresh_token: str):
-        """Set the new refresh token value. The mutation of the connector_config object will emit an Airbyte control message.
-
-        Args:
-            new_refresh_token (str): The new refresh token value.
-        """
         dpath.util.set(self._connector_config, self._refresh_token_config_path, new_refresh_token)
+
+    def get_token_expiry_date(self) -> pendulum.DateTime:
+        return pendulum.parse(dpath.util.get(self._connector_config, self._token_expiry_date_config_path))
+
+    def set_token_expiry_date(self, new_token_expiry_date):
+        dpath.util.set(self._connector_config, self._token_expiry_date_config_path, str(new_token_expiry_date))
+
+    def token_has_expired(self) -> bool:
+        """Returns True if the token is expired"""
+        return pendulum.now("UTC") > self.get_token_expiry_date()
+
+    @staticmethod
+    def get_new_token_expiry_date(access_token_expires_in: int):
+        return pendulum.now("UTC").add(seconds=access_token_expires_in)
 
     def get_access_token(self) -> str:
         """Retrieve new access and refresh token if the access token has expired.
@@ -189,20 +222,18 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             str: The current access_token, updated if it was previously expired.
         """
         if self.token_has_expired():
-            t0 = pendulum.now()
             new_access_token, access_token_expires_in, new_refresh_token = self.refresh_access_token()
+            new_token_expiry_date = self.get_new_token_expiry_date(access_token_expires_in)
             self.access_token = new_access_token
-            self.set_token_expiry_date(t0.add(seconds=access_token_expires_in))
             self.set_refresh_token(new_refresh_token)
+            self.set_token_expiry_date(new_token_expiry_date)
+            emit_configuration_as_airbyte_control_message(self._connector_config)
         return self.access_token
 
     def refresh_access_token(self) -> Tuple[str, int, str]:
-        try:
-            response_json = self._get_refresh_access_token_response()
-            return (
-                response_json[self.get_access_token_name()],
-                response_json[self.get_expires_in_name()],
-                response_json[self.get_refresh_token_name()],
-            )
-        except Exception as e:
-            raise Exception(f"Error while refreshing access token and refresh token: {e}") from e
+        response_json = self._get_refresh_access_token_response()
+        return (
+            response_json[self.get_access_token_name()],
+            int(response_json[self.get_expires_in_name()]),
+            response_json[self.get_refresh_token_name()],
+        )

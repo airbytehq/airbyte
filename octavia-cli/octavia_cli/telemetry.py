@@ -1,9 +1,8 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import os
-import uuid
 from typing import Optional
 
 import analytics
@@ -77,7 +76,7 @@ class TelemetryClient:
             extra_info_name (Optional[str], optional): Extra info name if the context was not built yet. Defaults to None.
         """
         user_id = ctx.obj.get("WORKSPACE_ID") if ctx.obj.get("ANONYMOUS_DATA_COLLECTION", True) is False else None
-        anonymous_id = None if user_id else str(uuid.uuid1())
+        anonymous_id = None if user_id else "anonymous"
         segment_context = {"app": {"name": "octavia-cli", "version": ctx.obj.get("OCTAVIA_VERSION")}}
         segment_properties = {
             "success": error is None,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -9,14 +9,14 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopyConfig;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
 import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -40,7 +40,7 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier implements Snowflake
                                  final AmazonS3 client,
                                  final JdbcDatabase db,
                                  final S3CopyConfig config,
-                                 final ExtendedNameTransformer nameTransformer,
+                                 final StandardNameTransformer nameTransformer,
                                  final SqlOperations sqlOperations,
                                  final ConfiguredAirbyteStream configuredAirbyteStream) {
     this(
@@ -61,7 +61,7 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier implements Snowflake
                           final AmazonS3 client,
                           final JdbcDatabase db,
                           final S3CopyConfig config,
-                          final ExtendedNameTransformer nameTransformer,
+                          final StandardNameTransformer nameTransformer,
                           final SqlOperations sqlOperations,
                           final Timestamp uploadTime,
                           final ConfiguredAirbyteStream configuredAirbyteStream) {

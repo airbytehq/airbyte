@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
@@ -14,6 +14,7 @@ import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedBiFunction;
@@ -39,13 +40,13 @@ import io.airbyte.integrations.destination.gcs.util.GcsUtils;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -100,7 +101,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .build();
 
       if (UploadingMethod.GCS.equals(uploadingMethod)) {
-        checkGcsPermission(config);
+        final AirbyteConnectionStatus status = checkGcsPermission(config);
+        if (!status.getStatus().equals(Status.SUCCEEDED)) {
+          return status;
+        }
       }
 
       final ImmutablePair<Job, String> result = BigQueryUtils.executeQuery(bigquery, queryConfig);
@@ -120,7 +124,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
    * and delete an actual file. The latter is important because even if the service account may have
    * the proper permissions, the HMAC keys can only be verified by running the actual GCS check.
    */
-  public AirbyteConnectionStatus checkGcsPermission(final JsonNode config) {
+  private AirbyteConnectionStatus checkGcsPermission(final JsonNode config) {
     final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
     final String bucketName = loadingMethod.get(BigQueryConsts.GCS_BUCKET_NAME).asText();
     final List<String> missingPermissions = new ArrayList<>();
@@ -174,7 +178,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  private static GoogleCredentials getServiceAccountCredentials(final JsonNode config) throws IOException {
+  public static GoogleCredentials getServiceAccountCredentials(final JsonNode config) throws IOException {
     if (!BigQueryUtils.isUsingJsonCredentials(config)) {
       LOGGER.info("No service account key json is provided. It is required if you are using Airbyte cloud.");
       LOGGER.info("Using the default service account credential from environment.");
@@ -189,6 +193,17 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
   }
 
+  /**
+   * Returns a {@link AirbyteMessageConsumer} based on whether the uploading mode is STANDARD INSERTS
+   * or using STAGING
+   *
+   * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
+   *        "password": "super secure" }
+   * @param catalog - schema of the incoming messages.
+   * @param outputRecordCollector
+   * @return
+   * @throws IOException
+   */
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
@@ -291,12 +306,22 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         keepStagingFiles);
     final S3AvroFormatConfig avroFormatConfig = (S3AvroFormatConfig) gcsConfig.getFormatConfig();
     final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator = getRecordFormatterCreator(namingResolver);
+    final int numberOfFileBuffers = getNumberOfFileBuffers(config);
+
+    if (numberOfFileBuffers > FileBuffer.SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER) {
+      LOGGER.warn("""
+                  Increasing the number of file buffers past {} can lead to increased performance but
+                  leads to increased memory usage. If the number of file buffers exceeds the number
+                  of streams {} this will create more buffers than necessary, leading to nonexistent gains
+                  """, FileBuffer.SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER, catalog.getStreams().size());
+    }
+
     final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer =
         BigQueryAvroSerializedBuffer.createFunction(
             avroFormatConfig,
             recordFormatterCreator,
             getAvroSchemaCreator(),
-            () -> new FileBuffer(S3AvroFormatConfig.DEFAULT_SUFFIX));
+            () -> new FileBuffer(S3AvroFormatConfig.DEFAULT_SUFFIX, numberOfFileBuffers));
 
     LOGGER.info("Creating BigQuery staging message consumer with staging ID {} at {}", stagingId, syncDatetime);
     return new BigQueryStagingConsumerFactory().create(
@@ -320,6 +345,26 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   protected Function<String, String> getTargetTableNameTransformer(final BigQuerySQLNameTransformer namingResolver) {
     return namingResolver::getRawTableName;
+  }
+
+  /**
+   * Retrieves user configured file buffer amount so as long it doesn't exceed the maximum number
+   * of file buffers and sets the minimum number to the default
+   *
+   * NOTE: If Out Of Memory Exceptions (OOME) occur, this can be a likely cause as this hard limit
+   * has not been thoroughly load tested across all instance sizes
+   *
+   * @param config user configurations
+   * @return number of file buffers if configured otherwise default
+   */
+  @VisibleForTesting
+  public int getNumberOfFileBuffers(final JsonNode config) {
+    int numOfFileBuffers = FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER;
+    if (config.has(FileBuffer.FILE_BUFFER_COUNT_KEY)) {
+      numOfFileBuffers = Math.min(config.get(FileBuffer.FILE_BUFFER_COUNT_KEY).asInt(), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
+    }
+    // Only allows for values 10 <= numOfFileBuffers <= 50
+    return Math.max(numOfFileBuffers, FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
   }
 
   public static void main(final String[] args) throws Exception {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.avro;
@@ -15,27 +15,48 @@ import org.apache.avro.Schema;
  */
 public enum JsonSchemaType {
 
-  STRING("string", true, null, Schema.Type.STRING),
-  NUMBER_INT("number", true, "integer", Schema.Type.INT),
-  NUMBER_BIGINT("string", true, "big_integer", Schema.Type.STRING),
-  NUMBER_FLOAT("number", true, "float", Schema.Type.FLOAT),
-  NUMBER("number", true, null, Schema.Type.DOUBLE),
-  INTEGER("integer", true, null, Schema.Type.INT),
-  BOOLEAN("boolean", true, null, Schema.Type.BOOLEAN),
-  NULL("null", true, null, Schema.Type.NULL),
-  OBJECT("object", false, null, Schema.Type.RECORD),
-  ARRAY("array", false, null, Schema.Type.ARRAY),
-  COMBINED("combined", false, null, Schema.Type.UNION);
+  STRING_V1("WellKnownTypes.json#/definitions/String", Schema.Type.STRING),
+  INTEGER_V1("WellKnownTypes.json#/definitions/Integer", Schema.Type.LONG),
+  NUMBER_V1("WellKnownTypes.json#/definitions/Number", Schema.Type.DOUBLE),
+  BOOLEAN_V1("WellKnownTypes.json#/definitions/Boolean", Schema.Type.BOOLEAN),
+  BINARY_DATA_V1("WellKnownTypes.json#/definitions/BinaryData", Schema.Type.BYTES),
+  DATE_V1("WellKnownTypes.json#/definitions/Date", Schema.Type.INT),
+  TIMESTAMP_WITH_TIMEZONE_V1("WellKnownTypes.json#/definitions/TimestampWithTimezone", Schema.Type.LONG),
+  TIMESTAMP_WITHOUT_TIMEZONE_V1("WellKnownTypes.json#/definitions/TimestampWithoutTimezone", Schema.Type.LONG),
+  TIME_WITH_TIMEZONE_V1("WellKnownTypes.json#/definitions/TimeWithTimezone", Schema.Type.STRING),
+  TIME_WITHOUT_TIMEZONE_V1("WellKnownTypes.json#/definitions/TimeWithoutTimezone", Schema.Type.LONG),
+  OBJECT("object", Schema.Type.RECORD),
+  ARRAY("array", Schema.Type.ARRAY),
+  COMBINED("combined", Schema.Type.UNION),
+  @Deprecated
+  STRING_V0("string", null, Schema.Type.STRING),
+  @Deprecated
+  NUMBER_INT_V0("number", "integer", Schema.Type.INT),
+  @Deprecated
+  NUMBER_BIGINT_V0("string", "big_integer", Schema.Type.STRING),
+  @Deprecated
+  NUMBER_FLOAT_V0("number", "float", Schema.Type.FLOAT),
+  @Deprecated
+  NUMBER_V0("number", null, Schema.Type.DOUBLE),
+  @Deprecated
+  INTEGER_V0("integer", null, Schema.Type.LONG),
+  @Deprecated
+  BOOLEAN_V0("boolean", null, Schema.Type.BOOLEAN),
+  @Deprecated
+  NULL("null", null, Schema.Type.NULL);
 
   private final String jsonSchemaType;
-  private final boolean isPrimitive;
   private final Schema.Type avroType;
-  private final String jsonSchemaAirbyteType;
+  private String jsonSchemaAirbyteType;
 
-  JsonSchemaType(final String jsonSchemaType, final boolean isPrimitive, final String jsonSchemaAirbyteType, final Schema.Type avroType) {
+  JsonSchemaType(final String jsonSchemaType, final String jsonSchemaAirbyteType, final Schema.Type avroType) {
     this.jsonSchemaType = jsonSchemaType;
     this.jsonSchemaAirbyteType = jsonSchemaAirbyteType;
-    this.isPrimitive = isPrimitive;
+    this.avroType = avroType;
+  }
+
+  JsonSchemaType(final String jsonSchemaType, final Schema.Type avroType) {
+    this.jsonSchemaType = jsonSchemaType;
     this.avroType = avroType;
   }
 
@@ -73,10 +94,6 @@ public enum JsonSchemaType {
 
   public String getJsonSchemaType() {
     return jsonSchemaType;
-  }
-
-  public boolean isPrimitive() {
-    return isPrimitive;
   }
 
   public Schema.Type getAvroType() {
