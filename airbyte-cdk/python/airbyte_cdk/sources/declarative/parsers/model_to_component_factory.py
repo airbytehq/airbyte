@@ -112,12 +112,17 @@ DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy
 
 class ModelToComponentFactory:
     def __init__(
-        self, limit_pages_fetched_per_slice: int = None, limit_slices_fetched: int = None, emit_connector_builder_messages: bool = False
+        self,
+        limit_pages_fetched_per_slice: int = None,
+        limit_slices_fetched: int = None,
+        emit_connector_builder_messages: bool = False,
+        disable_retries=False,
     ):
         self._init_mappings()
         self._limit_pages_fetched_per_slice = limit_pages_fetched_per_slice
         self._limit_slices_fetched = limit_slices_fetched
         self._emit_connector_builder_messages = emit_connector_builder_messages
+        self._disable_retries = disable_retries
 
     def _init_mappings(self):
         self.PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
@@ -779,6 +784,7 @@ class ModelToComponentFactory:
                 config=config,
                 maximum_number_of_slices=self._limit_slices_fetched,
                 parameters=model.parameters,
+                disable_retries=self._disable_retries,
             )
         return SimpleRetriever(
             name=name,
@@ -789,6 +795,7 @@ class ModelToComponentFactory:
             stream_slicer=stream_slicer or SinglePartitionRouter(parameters={}),
             config=config,
             parameters=model.parameters,
+            disable_retries=self._disable_retries,
         )
 
     @staticmethod
