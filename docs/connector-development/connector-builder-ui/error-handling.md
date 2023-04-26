@@ -1,10 +1,14 @@
 # Error Handling
 
+:::warning
+When using the "Test" button to run a test sync of the connector, the Connector Builder UI will not retry failed requests. This is done to reduce the amount of waiting time in between test syncs.
+:::
+
 Error handlers allow for the connector to decide how to continue fetching data according to the contents of the response from the partner API. Depending on attributes of the response such as status code, text body, or headers, the connector can continue making requests, retry unsuccessful attempts, or fail the sync.
 
 An error handler is made of two parts, "Backoff strategy" and "Response filter". When the conditions of the response filter are met, the connector will proceed with the sync according to behavior specified. See the [Response filter](#response-filter) section for a detailed breakdown of possible response filter actions. In the event of a failed request that needs to be retried, the backoff strategy determines how long the connector should wait before attempting the request again. 
 
-When an error handler is not configured for a stream, the connector will default to retrying requests that received a 429 and 5XX status code in the response 5 times using a 5-second exponential backoff. This default retry behavior is recommended if an API's documentation does not specify error handling or retry behavior.
+When an error handler is not configured for a stream, the connector will default to retrying requests that received a 429 and 5XX status code in the response 5 times using a 5-second exponential backoff. This default retry behavior is recommended if the API documentation does not specify error handling or retry behavior.
 
 Refer to the documentation of the API you are building a connector for to determine how to handle response errors. There can either be a dedicated section listing expected error responses (ex. [Delighted](https://app.delighted.com/docs/api#http-status-codes)) or API endpoints will list their error responses individually (ex. [Intercom](https://developers.intercom.com/intercom-api-reference/reference/listcompaniesforacontact)). There is also typically a section on rate limiting that summarizes how rate limits are communicated in the response and when to retry.
 
@@ -26,7 +30,9 @@ The [Intercom API](https://developers.intercom.com/intercom-api-reference/refere
 
 ### Exponential
 
-The exponential backoff strategy is similar to constant where the connector waits to retry a request based on a numeric value defined on the connector. When the API documentation recommends that requests be retried after waiting an exponentially increasing amount of time, the "Exponential" backoff strategy should be set on the error handler.
+When the API documentation recommends that requests be retried after waiting an exponentially increasing amount of time, the "Exponential" backoff strategy should be set on the error handler.
+
+The exponential backoff strategy is similar to constant where the connector waits to retry a request based on a numeric value "Multiplier" defined on the connector. For a backoff strategy with "Multiplier" set to 5 seconds, when the connector receives an API response that should be retried, it will wait 5 seconds before reattempting the request. Upon receiving subsequent failed responses, the connector will wait 10, 20, 40, and 80, permanently stopping after a total of 5 retries.
 
 Note: When no backoff strategy is defined, the connector defaults to using an exponential backoff to retry requests.
 
@@ -62,7 +68,7 @@ A response filter should be used when a connector needs to interpret an API resp
 
 ### Response conditions
 
-The following conditions can be specified on the "Response filter" and are used to determine if attributes of the response match the filter:
+The following conditions can be specified on the "Response filter" and are used to determine if attributes of the response match the filter. When more than one of condition is specified, the filter will take action if the response satisfies any of the conditions:
 * [If error message matches](#if-error-message-matches)
 * [and predicate is fulfilled](#and-predicate-is-fulfilled)
 * [and HTTP codes match](#and-http-codes-match)
