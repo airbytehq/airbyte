@@ -65,20 +65,13 @@ class MetadataUpload(PoetryRun):
         self.gcs_bucket_name = gcs_bucket_name
         super().__init__(context, title, METADATA_DIR, METADATA_LIB_MODULE_PATH)
 
-        docker_hub_username_secret: dagger.Secret = (
-            self.context.dagger_client.host().env_variable("DOCKER_HUB_USERNAME").secret()
-        )
+        docker_hub_username_secret: dagger.Secret = self.context.dagger_client.host().env_variable("DOCKER_HUB_USERNAME").secret()
 
-        docker_hub_password_secret: dagger.Secret = (
-            self.context.dagger_client.host().env_variable("DOCKER_HUB_PASSWORD").secret()
-        )
+        docker_hub_password_secret: dagger.Secret = self.context.dagger_client.host().env_variable("DOCKER_HUB_PASSWORD").secret()
 
         self.poetry_run_container = (
-            self.poetry_run_container
-            .with_file(METADATA_FILE_NAME, get_metadata_file_from_path(context, metadata_path))
-            .with_new_file(
-                self.GCS_CREDENTIALS_CONTAINER_PATH, gcs_credentials.replace("\n", "")
-            )
+            self.poetry_run_container.with_file(METADATA_FILE_NAME, get_metadata_file_from_path(context, metadata_path))
+            .with_new_file(self.GCS_CREDENTIALS_CONTAINER_PATH, gcs_credentials.replace("\n", ""))
             .with_secret_variable("DOCKER_HUB_USERNAME", docker_hub_username_secret)
             .with_secret_variable("DOCKER_HUB_PASSWORD", docker_hub_password_secret)
             # The cache buster ensures we always run the upload command (in case of remote bucket change)
@@ -125,9 +118,12 @@ class DeployOrchestrator(Step):
         )
 
         container_to_run = (
-            python_with_dependencies.with_mounted_directory("/src", parent_dir)
+            python_with_dependencies.with_directory("/src", parent_dir)
             .with_secret_variable("DAGSTER_CLOUD_API_TOKEN", dagster_cloud_api_token_secret)
             .with_workdir(f"/src/{METADATA_ORCHESTRATOR_MODULE_PATH}")
+            .with_exec(["ls", "."])
+            .with_exec(["cat", "dagster_cloud.yaml"])
+            .with_exec(["echo", "If you see this it means dagster_cloud.yaml file exists"])
             .with_exec(["/bin/sh", "-c", "poetry2setup >> setup.py"])
             .with_exec(self.deploy_dagster_command)
         )
