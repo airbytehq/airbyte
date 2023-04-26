@@ -18,7 +18,8 @@ class GenesysStream(HttpStream, ABC):
     page_size = 500
 
     def __init__(self, api_base_url, *args, **kwargs):
-        self.url_base = api_base_url + "/api/v2/"
+        if api_base_url is not None:
+            self.url_base = api_base_url + "/api/v2/"
         super().__init__(*args, **kwargs)
 
     def backoff_time(self, response: requests.Response) -> Optional[int]:
