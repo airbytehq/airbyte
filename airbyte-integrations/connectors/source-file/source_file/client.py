@@ -448,6 +448,7 @@ class Client:
         yield AirbyteStream(name=self.stream_name, json_schema=json_schema, supported_sync_modes=[SyncMode.full_refresh])
 
     def openpyxl_chunk_reader(self, file):
+        """Use openpyxl lazy loading feature to read excel files in chunks of 500 lines at a time"""
         work_book = load_workbook(filename=file, read_only=True)
         for sheetname in work_book.sheetnames:
             work_sheet = work_book[sheetname]
