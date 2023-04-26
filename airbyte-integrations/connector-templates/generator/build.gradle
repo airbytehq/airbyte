@@ -28,7 +28,7 @@ def addScaffoldTemplateTask(name, packageName, outputDirName, scaffoldParams=[])
             }
             exec {
                 workingDir rootDir
-                def cmd = ['./tools/integrations/manage.sh', 'scaffold', name, packageName]
+                def cmd = ['./tools/integrations/manage.sh', 'scaffold', name, packageName, 'uuid']
                 cmd.addAll(scaffoldParams)
                 commandLine cmd
             }
