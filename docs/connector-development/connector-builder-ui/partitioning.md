@@ -21,7 +21,7 @@ The first two options are a "static" form of partition routing (because the part
 ### List partition router
 
 To configure static partitioning, choose the "List" method for the partition router. The following fields have to be configured:
-* The "partition values" can either be set to a list of strings, making the partitions part of the connector itself or delegated to a user input so the end user configuring a Source based on the connector can control which partitions to fetch. When using "user input" mode for the partition values, create a user input of type array and reference it as the value using the placeholder value using `{{ config['<your chosen user input name>'] }}`
+* The "partition values" can either be set to a list of strings, making the partitions part of the connector itself or delegated to a user input so the end user configuring a Source based on the connector can control which partitions to fetch. When using "user input" mode for the partition values, create a user input of type array and reference it as the value using the [placeholder](/connector-development/config-based/understanding-the-yaml-file/reference#variables) value using `{{ config['<your chosen user input name>'] }}`
 * The "Current partition value identifier" can be freely choosen and is the identifier of the variable holding the current partition value. It can for example be used in the path of the stream using the `{{ stream_partition.<identifier> }}` syntax.
 * The "Inject partition value into outgoing HTTP request" option allows you to configure how to add the current partition value to the requests
 
@@ -62,7 +62,7 @@ To fetch the list of partitions (in this example surveys or orders) from the API
 The following fields have to be configured to use the substream partition router:
 * The "Parent stream" defines the records of which stream should be used as partitions
 * The "Parent key" is the property on the parent stream record that should become the partition value (in most cases this is some form of id)
-* The "Current partition value identifier" can be freely choosen and is the identifier of the variable holding the current partition value. It can for example be used in the path of the stream using the `{{ stream_partition.<identifier> }}` interpolation placeholder.
+* The "Current partition value identifier" can be freely choosen and is the identifier of the variable holding the current partition value. It can for example be used in the path of the stream using the `{{ stream_partition.<identifier> }}` [interpolation placeholder](/connector-development/config-based/understanding-the-yaml-file/reference#variables).
 
 #### Example
 
