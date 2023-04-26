@@ -1,5 +1,5 @@
 data:
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:

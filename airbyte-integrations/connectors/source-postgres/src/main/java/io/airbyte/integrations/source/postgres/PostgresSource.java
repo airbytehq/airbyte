@@ -203,6 +203,13 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   @Override
+  protected void logPreSyncDebugData(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog)
+      throws SQLException {
+    super.logPreSyncDebugData(database, catalog);
+    PostgresQueryUtils.logXminStatus(database);
+  }
+
+  @Override
   @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
     final AirbyteCatalog catalog = super.discover(config);
@@ -240,11 +247,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       // process explicitly selected (from UI) schemas
       final List<TableInfo<CommonField<PostgresType>>> internals = new ArrayList<>();
       for (final String schema : schemas) {
-        LOGGER.info("Checking schema: {}", schema);
+        LOGGER.debug("Checking schema: {}", schema);
         final List<TableInfo<CommonField<PostgresType>>> tables = super.discoverInternal(database, schema);
         internals.addAll(tables);
         for (final TableInfo<CommonField<PostgresType>> table : tables) {
-          LOGGER.info("Found table: {}.{}", table.getNameSpace(), table.getName());
+          LOGGER.debug("Found table: {}.{}", table.getNameSpace(), table.getName());
         }
       }
       return internals;

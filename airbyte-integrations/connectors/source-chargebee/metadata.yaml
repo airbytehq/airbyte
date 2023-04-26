@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - "*.chargebee.com"
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:

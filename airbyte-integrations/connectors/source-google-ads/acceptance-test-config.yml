@@ -36,6 +36,8 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+      - config_path: "secrets/config_with_gaql.json"
+        configured_catalog_path: "integration_tests/configured_catalog_with_gaql_only.json"
   incremental:
     tests:
       - config_path: "secrets/incremental_config.json"

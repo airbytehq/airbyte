@@ -5,7 +5,7 @@ data:
       - www.googleapis.com
       - analyticsdata.googleapis.com
       - analyticsreporting.googleapis.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:

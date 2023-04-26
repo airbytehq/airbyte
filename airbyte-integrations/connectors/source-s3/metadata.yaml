@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - "*.s3.amazonaws.com"
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:

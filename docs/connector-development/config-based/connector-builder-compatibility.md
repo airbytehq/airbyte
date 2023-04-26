@@ -5,7 +5,6 @@ Answer the following questions to determine whether the Connector Builder is the
     - [Basic HTTP](#basic-http)
     - [API key injected in request header or query parameter](#api-key)
     - [OAuth2.0 with long-lived refresh token](#is-the-oauth-refresh-token-long-lived)
-    - [Session authentication](#session)
 - [ ] [Is the data returned as JSON?](#is-the-data-returned-as-json)
 - [ ] [If records are paginated, are they using one of the following mechanism?](#how-are-records-paginated)
     - [Limit-offset](#limit-offset--offsetincrement-)
@@ -128,30 +127,6 @@ If the OAuth flow requires a single-use refresh token, use the [Python CDK](http
 If the refresh request requires custom query parameters or request headers, use the Python CDK.
 If the refresh request requires a [grant type](https://oauth.net/2/grant-types/) that is not "Refresh Token", such as an Authorization Code, or a PKCE, use the Python CDK. 
 If the authentication mechanism is OAuth flow 2.0 with refresh token and does not require refreshing the refresh token or custom query params, it is compatible with the Connector Builder.
-
-### Session
-Requests are authenticated using a session token.
-To get a session token, a request must first be submitted to the endpoint, generally with a username+password pair.
-
-Using [Metabase](https://www.metabase.com/learn/administration/metabase-api#authenticate-your-requests-with-a-session-token) as an example,
-Get a session token:
-
-```
-curl -X POST  -H "Content-Type: application/json"  -d '{"username": "person@metabase.com", "password": "fakepassword"}'    http://localhost:3000/api/session
-```
-
-Use the session token to fetch the data
-
-```
-curl -X GET \
--H "Content-Type: application/json" \
--H "X-Metabase-Session: 38f4939c-ad7f-4cbe-ae54-30946daf8593" \
-http://localhost:3000/api/user/current
-```
-
-Example: [Metabase](https://www.metabase.com/learn/administration/metabase-api#authenticate-your-requests-with-a-session-token)
-
-If the authentication mechanism uses a session token obtained using a username+password pair, it is compatible with the Connector Builder.
 
 ### Other
 AWS endpoints are examples of APIs requiring a non-standard authentication mechanism. You can tell from [the documentation](https://docs.aws.amazon.com/pdfs/awscloudtrail/latest/APIReference/awscloudtrail-api.pdf#Welcome) that requests need to be signed with a hash.
