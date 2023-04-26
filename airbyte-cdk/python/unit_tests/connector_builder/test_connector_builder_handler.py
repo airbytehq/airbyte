@@ -5,6 +5,7 @@
 import copy
 import dataclasses
 import json
+import logging
 from unittest import mock
 from unittest.mock import patch
 
@@ -30,6 +31,7 @@ from airbyte_cdk.models import (
     AirbyteStream,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
+    ConnectorSpecification,
     DestinationSyncMode,
     Level,
     SyncMode,
@@ -82,6 +84,16 @@ MANIFEST = {
         },
     ],
     "check": {"type": "CheckStream", "stream_names": ["lists"]},
+    "spec": {
+        "connection_specification": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "required": [],
+            "properties": {},
+            "additionalProperties": True
+        },
+        "type": "Spec"
+    }
 }
 
 RESOLVE_MANIFEST_CONFIG = {
@@ -300,6 +312,16 @@ def test_resolve_manifest(valid_resolve_manifest_config_file):
             },
         ],
         "check": {"type": "CheckStream", "stream_names": ["lists"]},
+        "spec": {
+            "connection_specification": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "required": [],
+                "properties": {},
+                "additionalProperties": True
+            },
+            "type": "Spec"
+        }
     }
     assert resolved_manifest.record.data["manifest"] == expected_resolved_manifest
     assert resolved_manifest.record.stream == "resolve_manifest"
@@ -363,6 +385,15 @@ def test_read_returns_error_response(mock_from_exception):
     class MockManifestDeclarativeSource:
         def read(self, logger, config, catalog, state):
             raise ValueError("error_message")
+
+        def spec(self, logger: logging.Logger) -> ConnectorSpecification:
+            connector_specification = mock.Mock()
+            connector_specification.connectionSpecification = {}
+            return connector_specification
+
+        @property
+        def check_config_against_spec(self):
+            return False
 
     stack_trace = "a stack trace"
     mock_from_exception.return_value = stack_trace
@@ -535,6 +566,7 @@ def test_create_source():
     assert isinstance(source, ManifestDeclarativeSource)
     assert source._constructor._limit_pages_fetched_per_slice == limits.max_pages_per_slice
     assert source._constructor._limit_slices_fetched == limits.max_slices
+    assert source.streams(config={})[0].retriever.max_retries == 0
 
 
 def request_log_message(request: dict) -> AirbyteMessage:
