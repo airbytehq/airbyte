@@ -116,3 +116,12 @@ Using this configuration, the notes record looks like this:
 ```
 { "id": 999, "author": "Jon Doe", "note": "Great product!", "order_id": 123 }
 ```
+## Custom parameter injection
+
+Using the "Inject partition value into outgoing HTTP request" option in the partitioning form works for most cases, but sometimes the API has special requirements that can't be handled this way:
+* The API requires to add a prefix or a suffix to the actual value
+* Multiple values need to be put together in a single parameter
+* The value needs to be injected into the URL path
+* Some conditional logic needs to be applied
+
+To handle these cases, disable injection in the partitioning form and use the generic parameter section at the bottom of the stream configuration form to freely configure query parameters, headers and properties of the JSON body, by using jinja expressions and [available variables](/connector-development/config-based/understanding-the-yaml-file/reference/#/variables). You can also use these variables (like `stream_partition`) as part of the URL path as shown in the Woocommerce example above.
