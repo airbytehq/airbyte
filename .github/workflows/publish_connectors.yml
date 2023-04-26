@@ -25,9 +25,13 @@ jobs:
       GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
       SPEC_CACHE_SERVICE_ACCOUNT_KEY: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY }}
       METADATA_SERVICE_ACCOUNT_KEY: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+      DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+      DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
+      - name: Login to DockerHub
+        run: "docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}"
       - name: Publish modified connectors
         id: publish-modified-connectors
         if: github.event_name == 'push'

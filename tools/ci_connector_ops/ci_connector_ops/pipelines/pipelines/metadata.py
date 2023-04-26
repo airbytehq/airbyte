@@ -64,10 +64,23 @@ class MetadataUpload(PoetryRun):
         title = f"Upload {metadata_path}"
         self.gcs_bucket_name = gcs_bucket_name
         super().__init__(context, title, METADATA_DIR, METADATA_LIB_MODULE_PATH)
+
+        docker_hub_username_secret: dagger.Secret = (
+            self.context.dagger_client.host().env_variable("DOCKER_HUB_USERNAME").secret()
+        )
+
+        docker_hub_password_secret: dagger.Secret = (
+            self.context.dagger_client.host().env_variable("DOCKER_HUB_PASSWORD").secret()
+        )
+
         self.poetry_run_container = (
-            self.poetry_run_container.with_file(METADATA_FILE_NAME, get_metadata_file_from_path(context, metadata_path)).with_new_file(
+            self.poetry_run_container
+            .with_file(METADATA_FILE_NAME, get_metadata_file_from_path(context, metadata_path))
+            .with_new_file(
                 self.GCS_CREDENTIALS_CONTAINER_PATH, gcs_credentials.replace("\n", "")
             )
+            .with_secret_variable("DOCKER_HUB_USERNAME", docker_hub_username_secret)
+            .with_secret_variable("DOCKER_HUB_PASSWORD", docker_hub_password_secret)
             # The cache buster ensures we always run the upload command (in case of remote bucket change)
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
         )
