@@ -1,0 +1,19 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*" # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: {{lowerCase definitionId}}
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-{{dashCase name}}
+  githubIssueLabel: source-{{dashCase name}}
+  icon: {{dashCase name}}.svg
+  license: MIT
+  name: {{capitalCase name}} 
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/{{dashCase name}}
+metadataSpecVersion: "1.0"
