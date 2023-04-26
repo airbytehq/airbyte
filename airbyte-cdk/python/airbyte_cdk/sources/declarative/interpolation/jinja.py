@@ -9,7 +9,7 @@ from airbyte_cdk.sources.declarative.interpolation.filters import filters
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
 from airbyte_cdk.sources.declarative.interpolation.macros import macros
 from airbyte_cdk.sources.declarative.types import Config
-from jinja2 import Environment
+from jinja2.sandbox import Environment
 from jinja2.exceptions import UndefinedError
 
 
@@ -37,10 +37,29 @@ class JinjaInterpolation(Interpolation):
         "stream_partition": "stream_slice",  # Use stream_partition to access partition router's values
     }
 
+    # These extensions are not installed so they're not currently a problem,
+    # but we're still explicitely removing them from the jinja context.
+    # At worst, this is documentation that we do NOT want to include these extensions because of the potential security risks
+    RESTRICTED_EXTENSIONS = [
+        'jinja2.ext.loopcontrols' # Adds support for break continue in loops
+    ]
+
+    # By default, these Python builtin functions are available in the Jinja context.
+    # We explicitely remove them because of the potential security risk.
+    # Please add a unit test to test_jinja.py when adding a restriction.
+    RESTRICTED_BUILTIN_FUNCTIONS = [
+        'range' #
+    ]
+
     def __init__(self):
         self._environment = Environment()
         self._environment.filters.update(**filters)
         self._environment.globals.update(**macros)
+
+        for extension in self.RESTRICTED_EXTENSIONS:
+            self._environment.extensions.pop(extension, None)
+        for builtin in self.RESTRICTED_BUILTIN_FUNCTIONS:
+            self._environment.globals.pop(builtin, None)
 
     def eval(self, input_str: str, config: Config, default: Optional[str] = None, **additional_parameters):
         context = {"config": config, **additional_parameters}
@@ -75,7 +94,7 @@ class JinjaInterpolation(Interpolation):
 
     def _eval(self, s: str, context):
         try:
-            return self._environment.from_string(s).render(context)
+            return self._environment.from_string(s).render(context, func=lambda: None)
         except TypeError:
             # The string is a static value, not a jinja template
             # It can be returned as is

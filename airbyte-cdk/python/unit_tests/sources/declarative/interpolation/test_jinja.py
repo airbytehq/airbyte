@@ -7,6 +7,7 @@ import datetime
 import pytest
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from freezegun import freeze_time
+from jinja2.exceptions import TemplateSyntaxError
 
 interpolation = JinjaInterpolation()
 
@@ -142,3 +143,41 @@ def test_macros(s, expected_value):
     config = {}
     val = interpolation.eval(s, config)
     assert val == expected_value
+
+@pytest.mark.parametrize(
+    "template_string", [
+        pytest.param("{{ import os) }}", id="test_jinja_with_import"),
+        pytest.param("{{ [a for a in range(1000000000)] }}", id="test_jinja_with_list_comprehension"),
+    ]
+)
+def test_invalid_jinja_statements(template_string):
+    interpolation = JinjaInterpolation()
+    config = {"key": JinjaInterpolation}
+    with pytest.raises(TemplateSyntaxError):
+        result = interpolation.eval(template_string, config=config)
+        raise ValueError(result)
+
+@pytest.mark.parametrize("template_string", [
+    pytest.param("""
+       {% set a = 1 %}
+       {% set b = 1 %}
+       {% for i in range(1000000000) %}
+           {% set c = a + b %}
+           {% set a = b %}
+           {% set b = c %}
+       {% endfor %}
+        {{ a }} 
+        """, id="test_jinja_with_very_long_running_compute"),
+    pytest.param("{{ eval ('2+2') }}", id="test_jinja_with_eval"),
+    pytest.param("{{ getattr(config, 'key') }}", id="test_getattr"),
+    pytest.param("{{ setattr(config, 'password', 'hunter2') }}", id="test_setattr"),
+    pytest.param("{{ globals()  }}", id="test_jinja_with_globals"),
+    pytest.param("{{ locals()  }}", id="test_jinja_with_globals"),
+    pytest.param("{{ eval ('2+2') }}", id="test_jinja_with_eval"),
+    pytest.param("{{ __builtins__ }}")
+])
+def test_restricted_builtin_functions_are_not_executed(template_string):
+    interpolation = JinjaInterpolation()
+    config = {"key": JinjaInterpolation}
+    result = interpolation.eval(template_string, config=config)
+    assert result is None
