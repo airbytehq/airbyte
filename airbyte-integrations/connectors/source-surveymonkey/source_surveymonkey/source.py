@@ -13,7 +13,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .streams import Collectors, Surveys, SurveyCollectors, SurveyPages, SurveyQuestions, SurveyResponses 
+from .streams import Collectors, SurveyCollectors, SurveyPages, SurveyQuestions, SurveyResponses, Surveys
 
 
 class SourceSurveymonkey(AbstractSource):
