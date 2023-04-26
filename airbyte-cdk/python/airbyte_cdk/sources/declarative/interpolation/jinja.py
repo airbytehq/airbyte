@@ -45,7 +45,7 @@ class JinjaInterpolation(Interpolation):
     # By default, these Python builtin functions are available in the Jinja context.
     # We explicitely remove them because of the potential security risk.
     # Please add a unit test to test_jinja.py when adding a restriction.
-    RESTRICTED_BUILTIN_FUNCTIONS = ["range"]  #
+    RESTRICTED_BUILTIN_FUNCTIONS = ["range"]  # The range function can cause very expensive computations
 
     def __init__(self):
         self._environment = Environment()

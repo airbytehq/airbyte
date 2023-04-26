@@ -159,13 +159,11 @@ def test_invalid_jinja_statements(template_string):
 
 
 @pytest.mark.parametrize("template_string", [
+    # This test stalls if range is removed from JinjaInterpolation.RESTRICTED_BUILTIN_FUNCTIONS
     pytest.param("""
        {% set a = 1 %}
        {% set b = 1 %}
        {% for i in range(1000000000) %}
-           {% set c = a + b %}
-           {% set a = b %}
-           {% set b = c %}
        {% endfor %}
         {{ a }}""", id="test_jinja_with_very_long_running_compute"),
     pytest.param("{{ eval ('2+2') }}", id="test_jinja_with_eval"),
