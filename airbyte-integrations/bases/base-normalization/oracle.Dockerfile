@@ -43,6 +43,7 @@ RUN pip install dbt-oracle==0.4.3
 
 WORKDIR /airbyte/normalization_code/dbt-template/
 # Download external dbt dependencies
+RUN pip install --force-reinstall MarkupSafe==2.0.1
 RUN dbt deps
 
 WORKDIR /airbyte
