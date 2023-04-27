@@ -131,3 +131,16 @@ Then when a sync is triggered for the same connection the next day, the followin
 <pre>
 curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=<b>2023-04-13T07:30:58Z</b>&to-date={`<now>`}'
 </pre>
+
+## Custom parameter injection
+
+Using the "Inject start time / end time into outgoing HTTP request" option in the incremental sync form works for most cases, but sometimes the API has special requirements that can't be handled this way:
+* The API requires adding a prefix or a suffix to the actual value
+* Multiple values need to be put together in a single parameter
+* The value needs to be injected into the URL path
+* Some conditional logic needs to be applied
+
+To handle these cases, disable injection in the incremental sync form and use the generic parameter section at the bottom of the stream configuration form to freely configure query parameters, headers and properties of the JSON body, by using jinja expressions and [available variables](/connector-development/config-based/understanding-the-yaml-file/reference/#/variables). You can also use these variables as part of the URL path.
+
+For example the [Sendgrid API](https://docs.sendgrid.com/api-reference/e-mail-activity/filter-all-messages) requires setting both start and end time in a `query` parameter.
+For this case, you can use the `stream_interval` variable to configure a request parameter with "key" `query` and "value" `last_event_time BETWEEN TIMESTAMP "{{stream_interval.start_time}}" AND TIMESTAMP "{{stream_interval.end_time}}"` to filter down to the right window in time.
