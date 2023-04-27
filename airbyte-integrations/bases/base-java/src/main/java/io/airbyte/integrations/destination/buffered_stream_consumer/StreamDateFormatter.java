@@ -11,6 +11,6 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
  */
 public interface StreamDateFormatter {
 
-  String getFormattedDate(AirbyteMessage airbyteMessage);
+  String getFormattedDate(AirbyteMessage message);
 
 }
