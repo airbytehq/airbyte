@@ -43,6 +43,8 @@ acceptance_tests:
         companies:
         - name: properties/hs_time_*
           bypass_reason: Hubspot time depend on current time
+        - name: properties/hs_all_*
+          bypass_reason: This property is floating from sync to sync
         contacts:
         - name: properties/hs_time_*
           bypass_reason: Hubspot time depend on current time
@@ -75,6 +77,8 @@ acceptance_tests:
         companies:
         - name: properties/hs_time_*
           bypass_reason: Hubspot time depend on current time
+        - name: properties/hs_all_*
+          bypass_reason: This property is floating from sync to sync
         contacts:
         - name: properties/hs_time_*
           bypass_reason: Hubspot time depend on current time
