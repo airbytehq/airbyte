@@ -11,6 +11,7 @@ import urllib
 from os import environ
 from typing import Iterable
 from urllib.parse import urlparse
+from zipfile import BadZipFile
 
 import backoff
 import boto3
@@ -20,15 +21,16 @@ import numpy as np
 import pandas as pd
 import smart_open
 from airbyte_cdk.entrypoint import logger
-from airbyte_cdk.models import AirbyteStream, SyncMode, FailureType
+from airbyte_cdk.models import AirbyteStream, FailureType, SyncMode
 from azure.storage.blob import BlobServiceClient
 from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
 from openpyxl import load_workbook
+from openpyxl.utils.exceptions import InvalidFileException
+from utils import AirbyteTracedException
 from yaml import safe_load
 
-from utils import AirbyteTracedException
 from .utils import backoff_handler
 
 SSH_TIMEOUT = 60
@@ -339,7 +341,11 @@ class Client:
                 reader_options["engine"] = "pyxlsb"
                 yield from reader(fp, **reader_options)
             elif self._reader_format == "excel":
-                yield from self.openpyxl_chunk_reader(fp, **reader_options)
+                # Use openpyxl to read new-style Excel (xlsx) file; return to pandas for others
+                try:
+                    yield from self.openpyxl_chunk_reader(fp, **reader_options)
+                except (InvalidFileException, BadZipFile):
+                    yield reader(fp, **reader_options)
             else:
                 yield reader(fp, **reader_options)
         except UnicodeDecodeError as err:
@@ -449,7 +455,7 @@ class Client:
         yield AirbyteStream(name=self.stream_name, json_schema=json_schema, supported_sync_modes=[SyncMode.full_refresh])
 
     def openpyxl_chunk_reader(self, file, **kwargs):
-        """Use openpyxl lazy loading feature to read excel files in chunks of 500 lines at a time"""
+        """Use openpyxl lazy loading feature to read excel files (xlsx only) in chunks of 500 lines at a time"""
         work_book = load_workbook(filename=file, read_only=True)
         user_provided_column_names = kwargs.get("names")
         for sheetname in work_book.sheetnames:
