@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.record_buffer;
@@ -33,14 +33,14 @@ public interface BufferingStrategy extends AutoCloseable {
   Optional<BufferFlushType> addRecord(AirbyteStreamNameNamespacePair stream, AirbyteMessage message) throws Exception;
 
   /**
-   * Flush buffered messages in a writer from a particular stream
+   * Flush buffered messages in a buffer from a particular stream
    */
-  void flushWriter(AirbyteStreamNameNamespacePair stream, SerializableBuffer writer) throws Exception;
+  void flushSingleBuffer(AirbyteStreamNameNamespacePair stream, SerializableBuffer buffer) throws Exception;
 
   /**
-   * Flush all writers that were buffering message data so far.
+   * Flush all buffers that were buffering message data so far.
    */
-  void flushAll() throws Exception;
+  void flushAllBuffers() throws Exception;
 
   /**
    * Removes all stream buffers.

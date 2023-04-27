@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.parquet;
@@ -14,6 +14,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -26,6 +27,7 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -40,6 +42,7 @@ public class ParquetSerializedBufferTest {
       "column2", "string value",
       "another field", true,
       "nested_column", Map.of("array_column", List.of(1, 2, 3)),
+      "string_array_column", Stream.of("test_string", null).toList(),
       "datetime_with_timezone", "2022-05-12T15:35:44.192950Z"));
   private static final String STREAM = "stream1";
   private static final AirbyteStreamNameNamespacePair streamPair = new AirbyteStreamNameNamespacePair(STREAM, null);
@@ -52,6 +55,8 @@ public class ParquetSerializedBufferTest {
       Field.of("column2", JsonSchemaType.STRING),
       Field.of("another field", JsonSchemaType.BOOLEAN),
       Field.of("nested_column", JsonSchemaType.OBJECT),
+      Field.of("string_array_column", JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+          .withItems(JsonSchemaType.STRING).build()),
       Field.of("datetime_with_timezone", JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE));
   private static final ConfiguredAirbyteCatalog catalog = CatalogHelpers.createConfiguredAirbyteCatalog(STREAM, null, FIELDS);
 
@@ -62,7 +67,7 @@ public class ParquetSerializedBufferTest {
             "format_type", "parquet"),
         "s3_bucket_name", "test",
         "s3_bucket_region", "us-east-2")));
-    runTest(195L, 215L, config, getExpectedString());
+    runTest(225L, 245L, config, getExpectedString());
   }
 
   @Test
@@ -74,7 +79,7 @@ public class ParquetSerializedBufferTest {
         "s3_bucket_name", "test",
         "s3_bucket_region", "us-east-2")));
     // TODO: Compressed parquet is the same size as uncompressed??
-    runTest(195L, 215L, config, getExpectedString());
+    runTest(225L, 245L, config, getExpectedString());
   }
 
   private static String resolveArchitecture() {
@@ -94,7 +99,7 @@ public class ParquetSerializedBufferTest {
       runProcess(currentDir, runtime, "/bin/sh", "-c", "apt-get update");
       runProcess(currentDir, runtime, "/bin/sh", "-c", "apt-get install lzop liblzo2-2 liblzo2-dev " +
           "wget curl unzip zip build-essential maven git -y");
-      runProcess(currentDir, runtime, "/bin/sh", "-c", "wget http://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz -P /usr/local/tmp");
+      runProcess(currentDir, runtime, "/bin/sh", "-c", "wget https://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz -P /usr/local/tmp");
       runProcess("/usr/local/tmp/", runtime, "/bin/sh", "-c", "tar xvfz lzo-2.10.tar.gz");
       runProcess("/usr/local/tmp/lzo-2.10/", runtime, "/bin/sh", "-c", "./configure --enable-shared --prefix /usr/local/lzo-2.10");
       runProcess("/usr/local/tmp/lzo-2.10/", runtime, "/bin/sh", "-c", "make && make install");
@@ -119,7 +124,7 @@ public class ParquetSerializedBufferTest {
             "compression_codec", "LZO"),
         "s3_bucket_name", "test",
         "s3_bucket_region", "us-east-2")));
-    runTest(195L, 215L, config, getExpectedString());
+    runTest(225L, 245L, config, getExpectedString());
   }
 
   private static String getExpectedString() {
@@ -127,6 +132,7 @@ public class ParquetSerializedBufferTest {
         + "\"field1\": 10000.0, \"another_field\": true, "
         + "\"nested_column\": {\"_airbyte_additional_properties\": {\"array_column\": \"[1,2,3]\"}}, "
         + "\"column2\": \"string value\", "
+        + "\"string_array_column\": [\"test_string\", null], "
         + "\"datetime_with_timezone\": 1652369744192000, "
         + "\"_airbyte_additional_properties\": null}";
   }

@@ -68,7 +68,7 @@ The version will be automatically replace with new version when releasing the OS
 
 ### New module
 
-This is trickier than handling the version of an exiting module.
+This is trickier than handling the version of an existing module.
 First your docker file generating an image need to be added to the `.bumpversion.cfg`. For each and every version you want to build with, the 
 docker image will need to be manually tag and push until the PR is merge. The reason is that the build has a check to know if all the potential 
 docker images are present in the docker repository. It is done the following way:

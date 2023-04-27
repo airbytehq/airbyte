@@ -1,12 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.base;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import org.junit.jupiter.api.Test;
@@ -35,10 +34,10 @@ class NameTransformerTest {
     assertEquals("_airbyte_raw_identifier_name", namingResolver.getRawTableName("identifier_name"));
   }
 
-  // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785)
+  // Temporarily disabling the behavior of the StandardNameTransformer, see (issue #1785)
   // @Test
   void testExtendedSQLNaming() {
-    final NamingConventionTransformer namingResolver = new ExtendedNameTransformer();
+    final NamingConventionTransformer namingResolver = new StandardNameTransformer();
     assertEquals("identifier_name", namingResolver.getIdentifier("identifier_name"));
     assertEquals("iDenTiFieR_name", namingResolver.getIdentifier("iDenTiFieR_name"));
     assertEquals("__identifier_name", namingResolver.getIdentifier("__identifier_name"));

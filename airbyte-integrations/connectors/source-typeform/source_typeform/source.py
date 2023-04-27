@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -145,6 +145,13 @@ class Responses(TrimFormsMixin, IncrementalTypeformStream):
         referer = record.get("metadata", {}).get("referer")
         return urlparse.urlparse(referer).path.split("/")[-1] if referer else None
 
+    def current_state_value_int(self, current_stream_state: MutableMapping[str, Any], form_id: str) -> int:
+        # state used to be stored as int, now we store it as str, so need to handle both cases
+        value = current_stream_state.get(form_id, {}).get(self.cursor_field, self.start_date.int_timestamp)
+        if isinstance(value, str):
+            value = pendulum.from_format(value, self.date_format).int_timestamp
+        return value
+
     def get_updated_state(
         self,
         current_stream_state: MutableMapping[str, Any],
@@ -155,10 +162,11 @@ class Responses(TrimFormsMixin, IncrementalTypeformStream):
             return current_stream_state
 
         current_stream_state[form_id] = current_stream_state.get(form_id, {})
-        current_stream_state[form_id][self.cursor_field] = max(
+        new_state_value = max(
             pendulum.from_format(latest_record[self.cursor_field], self.date_format).int_timestamp,
-            current_stream_state[form_id].get(self.cursor_field, 1),
+            self.current_state_value_int(current_stream_state, form_id),
         )
+        current_stream_state[form_id][self.cursor_field] = pendulum.from_timestamp(new_state_value).format(self.date_format)
         return current_stream_state
 
     def request_params(
@@ -174,7 +182,7 @@ class Responses(TrimFormsMixin, IncrementalTypeformStream):
             # use state for first request in incremental sync
             params["sort"] = "submitted_at,asc"
             # start from last state or from start date
-            since = max(self.start_date.int_timestamp, stream_state.get(stream_slice["form_id"], {}).get(self.cursor_field, 1))
+            since = max(self.start_date.int_timestamp, self.current_state_value_int(stream_state, stream_slice["form_id"]))
             if since:
                 params["since"] = pendulum.from_timestamp(since).format(self.date_format)
         else:

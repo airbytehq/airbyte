@@ -19,7 +19,13 @@ on:
       uuid:
         description: "Custom UUID of workflow run. Used because GitHub dispatches endpoint does not return workflow run id."
         required: false
-
+      connector-acceptance-test-version:
+        description: "Set a specific connector acceptance test version to use. Enter 'dev' to test, build and use a local version of Connector Acceptance Test."
+        required: false
+        default: "latest"
+      local_cdk:
+        description: "Run Connector Acceptance Tests against the CDK version on the current branch."
+        required: false
 jobs:
   uuid:
     name: "Custom UUID of workflow run"
@@ -36,7 +42,11 @@ jobs:
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+      pipeline-start-timestamp: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
     steps:
+      - name: Get start timestamp
+        id: get-start-timestamp
+        run: echo "::set-output name=start-timestamp::$(date +%s)"
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
@@ -58,7 +68,6 @@ jobs:
     timeout-minutes: 240
     needs: start-test-runner
     runs-on: ${{ needs.start-test-runner.outputs.label }}
-    environment: more-secrets
     steps:
       - name: Link comment to workflow run
         if: github.event.inputs.comment-id
@@ -112,9 +121,12 @@ jobs:
           ACTION_RUN_ID: ${{github.run_id}}
           # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
           TZ: UTC
+          ORG_GRADLE_PROJECT_connectorAcceptanceTestVersion: ${{github.event.inputs.connector-acceptance-test-version}}
+          S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
         uses: Wandalen/wretry.action@master
         with:
-          command: ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
+          command: ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }} ${{ github.event.inputs.local_cdk }}
           attempt_limit: 3
           attempt_delay: 10000 # in ms
       - name: Update Integration Test Credentials after test run for ${{ github.event.inputs.connector }}
@@ -156,8 +168,15 @@ jobs:
         run: |
           run-qa-checks ${{ github.event.inputs.connector }}
       - name: Report Status
-        if: github.ref == 'refs/heads/master' && always()
+        if: github.event.inputs.gitref == 'master' && always()
         run: ./tools/status/report.sh ${{ github.event.inputs.connector }} ${{github.repository}} ${{github.run_id}} ${{steps.test.outcome}} ${{steps.qa_checks.outcome}}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "us-east-2"
+      - name: Report Observability
+        if: always()
+        run: ./tools/status/report_observability.sh ${{ github.event.inputs.connector }} ${{github.run_id}} ${{ needs.start-test-runner.outputs.pipeline-start-timestamp }} ${{ github.event.inputs.gitref }} ${{ github.sha }} ${{steps.test.outcome}} ${{steps.qa_checks.outcome}}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}

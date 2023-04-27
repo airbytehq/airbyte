@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -105,7 +105,7 @@ def test_matches(requests_mock, action, http_codes, predicate, error_contains, b
     response_filter = HttpResponseFilter(
         action=action,
         config={},
-        options={},
+        parameters={},
         http_codes=http_codes,
         predicate=predicate,
         error_message_contains=error_contains,

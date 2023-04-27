@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -53,7 +53,7 @@ class SourceAirtable(AbstractSource):
                     {
                         "stream_path": f"{base_id}/{table.get('id')}",
                         "stream": SchemaHelpers.get_airbyte_stream(
-                            f"{base_name}/{SchemaHelpers.clean_name(table.get('name'))}",
+                            f"{base_name}/{SchemaHelpers.clean_name(table.get('name'))}/{table.get('id')}",
                             SchemaHelpers.get_json_schema(table),
                         ),
                     }

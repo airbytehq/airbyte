@@ -26,4 +26,5 @@ connectionSpecification:
       pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
       examples:
         - "2022-01-01"
+      format: date
       order: 2

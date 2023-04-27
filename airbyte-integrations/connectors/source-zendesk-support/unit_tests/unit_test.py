@@ -1,9 +1,10 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 import calendar
+import copy
 import re
 from datetime import datetime
 from unittest.mock import patch
@@ -117,17 +118,21 @@ def test_get_authenticator(config, expected):
 
 
 @pytest.mark.parametrize(
-    "response, check_passed",
+    "response, start_date, check_passed",
     [
-        ({"active_features": {"organization_access_enabled": True}}, (True, None)),
+        ({"active_features": {"organization_access_enabled": True}}, "2020-01-01T00:00:00Z", True),
+        ({}, "2020-01-00T00:00:00Z", False)
     ],
-    ids=["check_connection"],
+    ids=["check_successful", "invalid_start_date"],
 )
-def test_check(response, check_passed):
+def test_check(response, start_date, check_passed):
+    config = copy.deepcopy(TEST_CONFIG)
+    config["start_date"] = start_date
     with patch.object(UserSettingsStream, "get_settings", return_value=response) as mock_method:
-        result = SourceZendeskSupport().check_connection(logger=AirbyteLogger, config=TEST_CONFIG)
-        mock_method.assert_called()
-        assert check_passed == result
+        ok, _ = SourceZendeskSupport().check_connection(logger=AirbyteLogger, config=config)
+        assert check_passed == ok
+        if ok:
+            mock_method.assert_called()
 
 
 @pytest.mark.parametrize(
@@ -135,7 +140,7 @@ def test_check(response, check_passed):
     [
         ({"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}, 200, 18, []),
         ({"error": "Not sufficient permissions"}, 403, 17, [
-            "An exception occurred while trying to access TicketForms stream: 403 Client"
+            "Skipping stream ticket_forms: Check permissions, error message: Not sufficient permissions."
         ]),
     ],
     ids=["forms_accessible", "forms_inaccessible"],
@@ -144,7 +149,7 @@ def test_full_access_streams(caplog, requests_mock, ticket_forms_response, statu
     requests_mock.get("/api/v2/ticket_forms", status_code=status_code, json=ticket_forms_response)
     result = SourceZendeskSupport().streams(config=TEST_CONFIG)
     assert len(result) == expected_n_streams
-    logged_warnings = iter([record for record in caplog.records if record.levelname == "WARNING"])
+    logged_warnings = iter([record for record in caplog.records if record.levelname == "ERROR"])
     for msg in expected_warnings:
         assert msg in next(logged_warnings).message
 

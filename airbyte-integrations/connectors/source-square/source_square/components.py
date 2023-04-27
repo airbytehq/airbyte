@@ -1,23 +1,23 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
-from airbyte_cdk.sources.declarative.stream_slicers import DatetimeStreamSlicer
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class AuthenticatorSquare(DeclarativeAuthenticator, JsonSchemaMixin):
+class AuthenticatorSquare(DeclarativeAuthenticator):
     config: Mapping[str, Any]
     bearer: BearerAuthenticator
     oauth: DeclarativeOauth2Authenticator
@@ -30,7 +30,7 @@ class AuthenticatorSquare(DeclarativeAuthenticator, JsonSchemaMixin):
 
 
 @dataclass
-class SquareSubstreamSlicer(DatetimeStreamSlicer):
+class SquareSubstreamIncrementalSync(DatetimeBasedCursor):
     parent_stream: Stream = None
     parent_key: str = None
     parent_records_per_request: int = 10
@@ -54,7 +54,7 @@ class SquareSubstreamSlicer(DatetimeStreamSlicer):
             "filter": {
                 "date_time_filter": {
                     "updated_at": {
-                        "start_at": stream_state.get(self.cursor_field.eval(self.config), initial_start_time),
+                        "start_at": stream_slice.get(self.cursor_field.eval(self.config), initial_start_time),
                     }
                 }
             },
@@ -76,4 +76,16 @@ class SquareSubstreamSlicer(DatetimeStreamSlicer):
             location_ids[i : i + self.parent_records_per_request] for i in range(0, len(location_ids), self.parent_records_per_request)
         ]
         for location in separated_locations:
-            yield {"location_ids": location}
+            stream_slice = {"location_ids": location}
+            cursor_field = self.cursor_field.eval(self.config)
+            if cursor_field and cursor_field in stream_state:
+                # The Square API throws an error if when a datetime is greater than the current time
+                current_datetime = datetime.now(timezone.utc)
+                cursor_datetime = self.parse_date(stream_state[cursor_field])
+                slice_datetime = (
+                    current_datetime.strftime(self.datetime_format)
+                    if cursor_datetime > current_datetime
+                    else cursor_datetime.strftime(self.datetime_format)
+                )
+                stream_slice[cursor_field] = slice_datetime
+            yield stream_slice

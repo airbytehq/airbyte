@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.elasticsearch;
@@ -20,7 +20,7 @@ public abstract class SshElasticsearchDestinationAcceptanceTest extends Elastics
   private static final Network network = Network.newNetwork();
   private static final SshBastionContainer bastion = new SshBastionContainer();
   private static ElasticsearchContainer container;
-  private ObjectMapper mapper = new ObjectMapper();
+  private final ObjectMapper mapper = new ObjectMapper();
   private final static String ELASTIC_PASSWORD = "MagicWord";
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
@@ -39,7 +39,7 @@ public abstract class SshElasticsearchDestinationAcceptanceTest extends Elastics
         .put("upsert", false)
         .put("authenticationMethod", Jsons.jsonNode(ImmutableMap.builder().put("method", "basic")
             .put("username", "elastic")
-            .put("password", ELASTIC_PASSWORD).build())));
+            .put("password", ELASTIC_PASSWORD).build())), false);
   }
 
   @Override
@@ -49,7 +49,7 @@ public abstract class SshElasticsearchDestinationAcceptanceTest extends Elastics
         .put("upsert", true)
         .put("authenticationMethod", Jsons.jsonNode(ImmutableMap.builder().put("method", "basic")
             .put("username", "elastic")
-            .put("password", "wrongpassword").build())));
+            .put("password", "wrongpassword").build())), false);
   }
 
   @BeforeAll

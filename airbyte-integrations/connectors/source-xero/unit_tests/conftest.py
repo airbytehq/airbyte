@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from pytest import fixture
@@ -8,11 +8,14 @@ from pytest import fixture
 @fixture(name="config")
 def config_fixture():
     return {
-        "client_id": "client_id",
-        "client_secret": "client_secret",
+        "authentication": {
+            "client_id": "client_id",
+            "client_secret": "client_secret",
+            "refresh_token": "refresh_token",
+            "access_token": "access_token",
+            "token_expiry_date": "2099-01-01T12:00:00.000000+00:00"
+        },
         "tenant_id": "tenant_id",
-        "scopes": "scope1, scope2",
-        "authentication": {"auth_type": "custom_connection"},
         "start_date": "2020-01-01T00:00:00Z",
     }
 

@@ -42,7 +42,7 @@ extend-ignore = [
 [tool.isort]
 profile = "black"
 color_output = false
-skip_gitignore = true
+# skip_gitignore = true
 line_length = 140
 multi_line_output = 3
 include_trailing_comma = true

@@ -29,6 +29,7 @@ jobs:
             publish-external
             gke-kube-test
             run-specific-test
+            connector-performance
           static-args: |
             repo=${{ steps.getref.outputs.repo }}
             gitref=${{ steps.getref.outputs.ref }}

@@ -72,6 +72,9 @@
     "has_discounts": {
       "type": ["null", "boolean"]
     },
+    "has_gift_cards": {
+      "type": ["null", "boolean"]
+    },
     "has_storefront": {
       "type": ["null", "boolean"]
     },
@@ -86,6 +89,9 @@
     },
     "longitude": {
       "type": ["null", "number"]
+    },
+    "marketing_sms_consent_enabled_at_checkout": {
+      "type": ["null", "boolean"]
     },
     "money_format": {
       "type": ["null", "string"]
@@ -159,9 +165,15 @@
     "timezone": {
       "type": ["null", "string"]
     },
+    "transactional_sms_disabled": {
+      "type": ["null", "boolean"]
+    },
     "updated_at": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "visitor_tracking_consent_preference": {
+      "type": ["null", "string"]
     },
     "weight_unit": {
       "type": ["null", "string"]

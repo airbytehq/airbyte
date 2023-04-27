@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
@@ -17,6 +17,8 @@ import static java.sql.JDBCType.REAL;
 import static java.sql.JDBCType.SMALLINT;
 import static java.sql.JDBCType.TIME;
 import static java.sql.JDBCType.TIMESTAMP;
+import static java.sql.JDBCType.TIMESTAMP_WITH_TIMEZONE;
+import static java.sql.JDBCType.TIME_WITH_TIMEZONE;
 import static java.sql.JDBCType.TINYINT;
 import static java.sql.JDBCType.VARCHAR;
 
@@ -61,8 +63,9 @@ public class JdbcUtils {
   // Currently, this is used in the logic for emitting
   // estimate trace messages.
   public static final int PLATFORM_DATA_INCREASE_FACTOR = 2;
-  public static final Set<JDBCType> ALLOWED_CURSOR_TYPES = Set.of(TIMESTAMP, TIME, DATE, TINYINT, SMALLINT, INTEGER,
-      BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL, NVARCHAR, VARCHAR, LONGVARCHAR);
+  public static final Set<JDBCType> ALLOWED_CURSOR_TYPES =
+      Set.of(TIMESTAMP_WITH_TIMEZONE, TIMESTAMP, TIME_WITH_TIMEZONE, TIME, DATE, TINYINT, SMALLINT, INTEGER,
+          BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL, NVARCHAR, VARCHAR, LONGVARCHAR);
   private static final JdbcSourceOperations defaultSourceOperations = new JdbcSourceOperations();
 
   private static final JSONFormat defaultJSONFormat = new JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT);

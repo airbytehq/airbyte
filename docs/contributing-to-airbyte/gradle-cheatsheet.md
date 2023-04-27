@@ -65,6 +65,12 @@ SUB_BUILD=PLATFORM ./gradlew <gradle command>
 SUB_BUILD=CONNECTORS_BASE ./gradlew <gradle command>
 ```
 
+#### Build CDK
+
+```text
+SUB_BUILD=CDK ./gradlew <gradle command>
+```
+
 ### Build
 
 In order to "build" the project. This task includes producing all artifacts and running unit tests \(anything called in the `:test` task\). It does _not_ include integration tests \(anything called in the `:integrationTest` task\).
@@ -129,7 +135,7 @@ Unit Tests can be run using the `:test` task on any submodule. These test class-
 
 We split Acceptance Tests into 2 different test suites:
 
-* Platform Acceptance Tests: These tests are a coarse test to sanity check that each major feature in the platform. They are run with the following command: `SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests`. These tests expect to find a local version of Airbyte running. For testing the docker version start Airbyte locally. For an example, see the [acceptance_test script](../../tools/bin/acceptance_test.sh) that is used by the CI. For Kubernetes, see the [accetance_test_kube script](../../tools/bin/acceptance_test_kube.sh) that is used by the CI.
+* Platform Acceptance Tests: These tests are a coarse test to sanity check that each major feature in the platform. They are run with the following command: `SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests`. These tests expect to find a local version of Airbyte running. For testing the docker version start Airbyte locally. For an example, see the [acceptance_test script](../../tools/bin/acceptance_test.sh) that is used by the CI. For Kubernetes, see the [acceptance_test_helm script](../../tools/bin/acceptance_test_kube_helm.sh) that is used by the CI.
 * Migration Acceptance Tests: These tests make sure the end-to-end process of migrating from one version of Airbyte to the next works. These tests are run with the following command: `SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan`. These tests do not expect there to be a separate deployment of Airbyte running.
 
 These tests currently all live in [airbyte-tests](https://github.com/airbytehq/airbyte/airbyte-tests)

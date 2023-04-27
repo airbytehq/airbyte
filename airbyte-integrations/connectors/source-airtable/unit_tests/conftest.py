@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -38,7 +38,7 @@ def fake_tables_response():
 
 @pytest.fixture
 def expected_discovery_stream_name():
-    return ["test_base/test_table"]
+    return ["test_base/test_table/5678"]
 
 
 @pytest.fixture
@@ -103,7 +103,7 @@ def streams_processed_response():
 @pytest.fixture
 def expected_json_schema():
     return {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "additionalProperties": True,
         "properties": {
             "_airtable_created_time": {"type": ["null", "string"]},
@@ -121,7 +121,7 @@ def prepared_stream():
         "stream": AirbyteStream(
             name="test_base/test_table",
             json_schema={
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "additionalProperties": True,
                 "properties": {

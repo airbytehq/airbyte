@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.9.0
+Basic read test: add validation that fails if undeclared columns are present in records. Add `fail_on_extra_fields` input parameter to ignore this failure if desired.
+
+## 0.8.0
+Spec tests: Make sure grouping and ordering properties are used in a consistent way.
+
+## 0.7.2
+TestConnection: assert that a check with `exception` status emits a trace message.
+
+## 0.7.1
+Discovery backward compatibility tests: handle errors on previous connectors catalog retrieval. Return None when the discovery failed. It should unblock the situation when tests fails even if you bypassed backward compatibility tests.
+
+## 0.7.0
+Basic read test: add `ignored_fields`, change configuration format by adding optional `bypass_reason` [#22996](https://github.com/airbytehq/airbyte/pull/22996)
+
+## 0.6.1
+Fix docker API - "Error" is optional. [#22987](https://github.com/airbytehq/airbyte/pull/22987)
+
+## 0.6.0
+Allow passing custom environment variables to the connector under test. [#22937](https://github.com/airbytehq/airbyte/pull/22937).
+
+## 0.5.3
+Spec tests: Make `oneOf` checks work for nested `oneOf`s. [#22395](https://github.com/airbytehq/airbyte/pull/22395)
+
+## 0.5.2
+Check that `emitted_at` increases during subsequent reads. [#22291](https://github.com/airbytehq/airbyte/pull/22291)
+
 ## 0.5.1
 Fix discovered catalog caching for different configs. [#22301](https://github.com/airbytehq/airbyte/pull/22301)
 
@@ -231,7 +258,7 @@ Add validation of input config.json against spec.json.
 ## 0.1.9
 Add configurable validation of schema for all records in BasicRead test: [#4345](https://github.com/airbytehq/airbyte/pull/4345)
 
-The validation is ON by default. 
+The validation is ON by default.
 To disable validation for the source you need to set `validate_schema: off` in the config file.
 
 ## 0.1.8

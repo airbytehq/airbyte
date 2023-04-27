@@ -1,8 +1,13 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.databricks;
+
+import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_DATA_SOURCE_KEY;
+import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_SCHEMA_KEY;
+import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_ACCESS_KEY_ID;
+import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_SECRET_ACCESS_KEY;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
@@ -34,9 +39,9 @@ public class DatabricksS3DestinationAcceptanceTest extends DatabricksDestination
   protected JsonNode getFailCheckConfig() {
     final JsonNode failCheckJson = Jsons.clone(configJson);
     // set invalid credential
-    ((ObjectNode) failCheckJson.get("data_source"))
-        .put("s3_access_key_id", "fake-key")
-        .put("s3_secret_access_key", "fake-secret");
+    ((ObjectNode) failCheckJson.get(DATABRICKS_DATA_SOURCE_KEY))
+        .put(S_3_ACCESS_KEY_ID, "fake-key")
+        .put(S_3_SECRET_ACCESS_KEY, "fake-secret");
     return failCheckJson;
   }
 
@@ -47,13 +52,11 @@ public class DatabricksS3DestinationAcceptanceTest extends DatabricksDestination
     // Set a random s3 bucket path and database schema for each integration test
     final String randomString = RandomStringUtils.randomAlphanumeric(5);
     final JsonNode configJson = Jsons.clone(baseConfigJson);
-    ((ObjectNode) configJson).put("database_schema", "integration_test_" + randomString);
-    final JsonNode dataSource = configJson.get("data_source");
-    ((ObjectNode) dataSource).put("s3_bucket_path", "test_" + randomString);
+    ((ObjectNode) configJson).put(DATABRICKS_SCHEMA_KEY, "integration_test_" + randomString);
 
     this.configJson = configJson;
     this.databricksConfig = DatabricksDestinationConfig.get(configJson);
-    this.s3Config = databricksConfig.getStorageConfig().getS3DestinationConfigOrThrow();
+    this.s3Config = databricksConfig.storageConfig().getS3DestinationConfigOrThrow();
     LOGGER.info("Test full path: s3://{}/{}", s3Config.getBucketName(), s3Config.getBucketPath());
 
     this.s3Client = s3Config.getS3Client();

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -8,10 +8,10 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 
 
 class AClass:
-    def __init__(self, parameter, another_param, options):
+    def __init__(self, parameter, another_param, parameters):
         self.parameter = parameter
         self.another_param = another_param
-        self.options = options
+        self.parameters = parameters
 
 
 class OuterClass:
@@ -34,8 +34,8 @@ def test_pass_parameter_to_create_function():
     assert object.another_param == "B"
 
 
-def test_parameter_not_overwritten_by_options():
-    object = create(AClass, parameter="A", another_param="B", **{"$options": {"parameter": "C"}})()
+def test_parameter_not_overwritten_by_parameters():
+    object = create(AClass, parameter="A", another_param="B", **{"$parameters": {"parameter": "C"}})()
     assert object.parameter == "A"
     assert object.another_param == "B"
 
@@ -53,18 +53,18 @@ def test_string_interpolation():
     assert interpolated_string.string == s
 
 
-def test_string_interpolation_through_options():
-    s = "{{ options['name'] }}"
-    options = {"name": "airbyte"}
-    partial = create(InterpolatedString, string=s, **options)
+def test_string_interpolation_through_parameters():
+    s = "{{ parameters['name'] }}"
+    parameters = {"name": "airbyte"}
+    partial = create(InterpolatedString, string=s, **parameters)
     interpolated_string = partial()
     assert interpolated_string.eval({}) == "airbyte"
 
 
-def test_string_interpolation_through_options_keyword():
-    s = "{{ options['name'] }}"
-    options = {"$options": {"name": "airbyte"}}
-    partial = create(InterpolatedString, string=s, **options)
+def test_string_interpolation_through_parameters_keyword():
+    s = "{{ parameters['name'] }}"
+    parameters = {"$parameters": {"name": "airbyte"}}
+    partial = create(InterpolatedString, string=s, **parameters)
     interpolated_string = partial()
     assert interpolated_string.eval({}) == "airbyte"
 

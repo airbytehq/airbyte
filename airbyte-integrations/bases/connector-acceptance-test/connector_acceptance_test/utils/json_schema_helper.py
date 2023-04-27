@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -109,7 +109,7 @@ class JsonSchemaHelper:
         """
         return CatalogField(schema=self.get_property(path), path=path)
 
-    def get_node(self, path: List[str]) -> Any:
+    def get_node(self, path: List[Union[str, int]]) -> Any:
         """Return part of schema by specified path
 
         :param path: list of fields in the order of navigation
@@ -122,17 +122,24 @@ class JsonSchemaHelper:
             node = node[segment]
         return node
 
+    def get_parent_path(self, path: str) -> Any:
+        """
+        Returns the parent path of the supplied path
+        """
+        absolute_path = f"/{path}" if not path.startswith("/") else path
+        parent_path, _ = absolute_path.rsplit(sep="/", maxsplit=1)
+        return parent_path
+
     def get_parent(self, path: str) -> Any:
         """
         Returns the parent dict of a given path within the `obj` dict
         """
-        absolute_path = f"/{path}"
-        parent_path, _ = absolute_path.rsplit(sep="/", maxsplit=1)
+        parent_path = self.get_parent_path(path)
         if parent_path == "":
             return self._schema
         return dpath.util.get(self._schema, parent_path)
 
-    def find_nodes(self, keys: List[str]) -> List[List[str]]:
+    def find_nodes(self, keys: List[str]) -> List[List[Union[str, int]]]:
         """Find all paths that lead to nodes with the specified keys.
 
         :param keys: list of keys
