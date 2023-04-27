@@ -262,3 +262,37 @@ class SurveyResponses(SurveyIDSliceMixin, IncrementalSurveymonkeyStream):
             since_value = self._start_date
         params["start_modified_at"] = since_value.strftime("%Y-%m-%dT%H:%M:%S")
         return params
+
+
+class SurveyCollectors(SurveyIDSliceMixin, SurveymonkeyStream):
+    """
+    API Docs: https://www.surveymonkey.com/developer/api/v3/#api-endpoints-get-surveys-id-collectors
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"surveys/{ stream_slice['survey_id'] }/collectors"
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        data = super().parse_response(response=response, stream_state=stream_state, **kwargs)
+        for record in data:
+            record["survey_id"] = kwargs.get("stream_slice", {}).get("survey_id")
+            yield record
+
+
+class Collectors(SurveymonkeyStream):
+    """
+    API Docs: https://www.surveymonkey.com/developer/api/v3/#api-endpoints-get-collectors-id-
+    """
+
+    data_field = None
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"collectors/{stream_slice['collector_id']}"
+
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs):
+
+        survey_collectors = SurveyCollectors(start_date=self._start_date, survey_ids=self._survey_ids, authenticator=self.authenticator)
+        survey_ids = survey_collectors.stream_slices(stream_state, **kwargs)
+        for slice in survey_ids:
+            for collector in survey_collectors.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state, stream_slice=slice):
+                yield {"collector_id": collector["id"]}
