@@ -12,7 +12,11 @@
     },
     "values": {
       "type": ["null", "object"],
-      "properties": {}
+      "properties": {
+        "done": {
+          "type": ["null", "boolean"]
+        }
+      }
     }
   }
 }
