@@ -81,7 +81,10 @@ class UnitTests(PytestStep):
         Returns:
             StepResult: Failure or success of the unit tests with stdout and stdout.
         """
-        return await self._run_tests_in_directory(connector_under_test, "unit_tests")
+        connector_under_test_with_secrets = connector_under_test.with_directory(
+            f"{self.context.connector.code_directory}/secrets", self.context.secrets_dir
+        )
+        return await self._run_tests_in_directory(connector_under_test_with_secrets, "unit_tests")
 
 
 class IntegrationTests(PytestStep):
@@ -127,11 +130,11 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     connector_image_tar_file, _ = await export_container_to_tarball(context, build_connector_image_results.output_artifact)
     connector_container = connector_package_install_results.output_artifact
 
+    context.secrets_dir = await secrets.get_connector_secret_dir(context)
+
     unit_test_results = await UnitTests(context).run(connector_container)
     if unit_test_results.status is StepStatus.FAILURE:
         return step_results + [unit_test_results]
-
-    context.secrets_dir = await secrets.get_connector_secret_dir(context)
 
     async with asyncer.create_task_group() as task_group:
         tasks = [
