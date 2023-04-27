@@ -15,7 +15,7 @@ For more information about the grading system, see [Product Release Stages](http
 <iframe
     src="https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html"
     frameborder="0"
-    width="958" /* This is hte docusarus body width on desktop */
+    width="958" /* This is docusarus body width on desktop */
     height="2000"
     allowtransparency
 ></iframe>
