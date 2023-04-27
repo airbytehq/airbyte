@@ -12,22 +12,10 @@ Airbyte uses a grading system for connectors to help you understand what to expe
 
 For more information about the grading system, see [Product Release Stages](https://docs.airbyte.com/project-overview/product-release-stages)
 
-## Sources
-
 <iframe
-    src="https://airbyte.metabaseapp.com/public/question/9af21fd5-ff87-4809-8e04-966207490e0b#titled=false&hide_download_button=true"
+    src="https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html"
     frameborder="0"
-    width="600"
-    height="2000"
-    allowtransparency
-></iframe>
-
-## Destinations
-
-<iframe
-    src="https://airbyte.metabaseapp.com/public/question/263d737e-533a-4cc2-a1cf-4c8c7eca87d6#titled=false&hide_download_button=true"
-    frameborder="0"
-    width="600"
+    width="958" /* This is hte docusarus body width on desktop */
     height="2000"
     allowtransparency
 ></iframe>
