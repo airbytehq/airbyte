@@ -1,6 +1,6 @@
 {
-  "START_DATE": "2022-02-04T11:00:00",
-  "TIMEZONE": "Europe/London",
-  "AUTH_URL": "invalid url",
-  "API_KEY": "invalid api key"
+  "start_date": "2022-02-04T11:00:00",
+  "timezone": "Europe/London",
+  "auth_url": "invalid url",
+  "api_key": "invalid api key"
 }
