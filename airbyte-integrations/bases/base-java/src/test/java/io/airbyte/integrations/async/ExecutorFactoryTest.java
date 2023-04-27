@@ -36,7 +36,7 @@ public class ExecutorFactoryTest {
   }
 
   /**
-   * Test that the BlockingRejectedExecutionHandler we use blocks after the specified numbers of items
+   * Test that the Blocking RejectedExecutionHandler we use blocks after the specified numbers of items
    * is waiting in the queue
    */
   @Test
@@ -44,7 +44,7 @@ public class ExecutorFactoryTest {
     // single thread, single task queue slot
     final ThreadPoolExecutor executor = ExecutorFactory.getExecutor(1);
 
-    // submit a task that will take 1s to complete
+    // submit a task that will take >1s to complete
     executor.submit(() -> {
       try {
         Thread.sleep(1500);
@@ -60,10 +60,10 @@ public class ExecutorFactoryTest {
         // do nothing
       }
     });
+    // is there one item in the queue?
     assertEquals(executor.getQueue().size(), 1);
 
-    // start the timer and attempt to add another task, we expect this to block awaiting space in the
-    // queue
+    // start the timer and attempt to add another task, we expect this to block awaiting space in the queue
     long submitStartTime = System.currentTimeMillis();
     executor.submit(() -> {
       try {
@@ -75,7 +75,9 @@ public class ExecutorFactoryTest {
     long submitStopTime = System.currentTimeMillis();
 
     // verify that we waited at least 1s (based on the thread sleeps above
-    MatcherAssert.assertThat(submitStopTime - submitStartTime, Matchers.greaterThan(1000L));
+    final long totalWaitTime = submitStopTime - submitStartTime;
+    MatcherAssert.assertThat(totalWaitTime, Matchers.greaterThan(1000L));
+    MatcherAssert.assertThat(totalWaitTime, Matchers.lessThan(2000L));
   }
 
   /**
@@ -94,18 +96,24 @@ public class ExecutorFactoryTest {
     // shut down the executor, start a timer
     final long startShutdownTime = System.currentTimeMillis();
     ExecutorFactory.shutdown(executor);
+
     final long stopShutdownTime = System.currentTimeMillis();
-    MatcherAssert.assertThat(stopShutdownTime - startShutdownTime, Matchers.greaterThan(500L));
+    final long totalShutdownTime = stopShutdownTime - startShutdownTime;
+
+    // should be close to this but we cant guarantee a time across all envs.
+    MatcherAssert.assertThat(totalShutdownTime, Matchers.greaterThan(800L));
+    MatcherAssert.assertThat(totalShutdownTime, Matchers.lessThan(1500L));
 
     // the task should have completed
     assertTrue(future.isDone());
     assertFalse(future.isCancelled());
 
+    // is the return value as expected? just a sanity check
     assertEquals("done", future.get());
   }
 
   /**
-   * Submit a "long running" task and then shutdown with a short waiting time. We expect in that case
+   * Submit a "long running" task and then shutdown with a "short" waiting time. We expect in that case
    * that the task will be "interrupted" and not complete normally.
    */
   @Test
@@ -118,12 +126,12 @@ public class ExecutorFactoryTest {
       return "done";
     });
 
-    // shut down the executor, start a timer
+    // shut down the executor with a wait time of 1s and start a timer
     final long startShutdownTime = System.currentTimeMillis();
     ExecutorFactory.shutdown(executor, ONE_SECOND);
 
-    // the task should have completed
-    assertFalse(future.isCancelled());
+    // the task should not have completed
+    assertFalse(future.isCancelled()); // tasks dont get cancelled, per se, they get interrupted
     assertFalse(future.isDone());
 
     // we expect that this task was interrupted after the specified wait time
@@ -138,14 +146,20 @@ public class ExecutorFactoryTest {
 
     // verify that the time waiting was around the time we specified for timeout
     final long stopShutdownTime = System.currentTimeMillis();
-    MatcherAssert.assertThat(stopShutdownTime - startShutdownTime, Matchers.greaterThan(800L));
-    MatcherAssert.assertThat(stopShutdownTime - startShutdownTime, Matchers.lessThan(1500L));
+    final long totalShutdownTime = stopShutdownTime - startShutdownTime;
+    MatcherAssert.assertThat(totalShutdownTime, Matchers.greaterThan(800L));
+    MatcherAssert.assertThat(totalShutdownTime, Matchers.lessThan(1500L));
   }
 
+  /**
+   * Adding a Callable after shutdown should reject the addition with a RejectedExecutionException
+   */
   @Test
   public void testAddJobAfterShutdown() {
     final ThreadPoolExecutor executor = ExecutorFactory.getExecutor(1);
     assertNotNull(executor);
+
+    // we should accept no new Callables after this
     ExecutorFactory.shutdown(executor);
 
     boolean thrown = false;
@@ -153,13 +167,14 @@ public class ExecutorFactoryTest {
     // now try to add a task, we expect an exception
     try {
       executor.submit(() -> {
-        // should not run
+        // should not run or be accepted by the resource manager
         taskRun.set(true);
       });
     } catch (RejectedExecutionException ree) {
       thrown = true;
     }
 
+    // we expect the specific exception to have been thrown and the task to have not run
     assertTrue(thrown);
     assertFalse(taskRun.get());
   }
