@@ -25,8 +25,6 @@ import static java.sql.JDBCType.VARCHAR;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Maps;
 import java.sql.JDBCType;
-import java.text.CharacterIterator;
-import java.text.StringCharacterIterator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -137,43 +135,6 @@ public class JdbcUtils {
         return true;
     } else
       return config.get(SSL_KEY).asBoolean();
-  }
-
-  /**
-   * Helper method for logging bytes in a human-readable format. This method logs in SI units
-   * (B/kB/MB/GB)
-   */
-  public static String humanReadableByteCountSI(final long bytes) {
-    if (-1000 < bytes && bytes < 1000) {
-      return bytes + " B";
-    }
-    final CharacterIterator ci = new StringCharacterIterator("kMGTPE");
-    long formattedBytes = bytes;
-    while (bytes <= -999_950 || bytes >= 999_950) {
-      formattedBytes /= 1000;
-      ci.next();
-    }
-    return String.format("%.1f %cB", formattedBytes / 1000.0, ci.current());
-  }
-
-  /**
-   * Helper method for logging bytes in a human-readable format. This method logs in Binary units
-   * (B/KiB/MiB/GiB)
-   */
-  public static String humanReadableByteCountBin(final long bytes) {
-    final long absB = bytes == Long.MIN_VALUE ? Long.MAX_VALUE : Math.abs(bytes);
-    final int bytePrefixCount = 1024;
-    if (absB < bytePrefixCount) {
-      return bytes + " B";
-    }
-    long value = absB;
-    final CharacterIterator ci = new StringCharacterIterator("KMGTPE");
-    for (int i = 40; i >= 0 && absB > 0xfffccccccccccccL >> i; i -= 10) {
-      value >>= 10;
-      ci.next();
-    }
-    value *= Long.signum(bytes);
-    return String.format("%.1f %ciB", value / 1024.0, ci.current());
   }
 
 }
