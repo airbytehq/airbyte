@@ -232,25 +232,25 @@ Using the [Twitter API](https://developer.twitter.com/en/docs/twitter-api/pagina
 
 The `meta.next_token` value of that response can then be set as the `pagination_token` in the next request, causing the API to return the next 100 tweets.
 
-To integrate with such an API in the Connector Builder, you must configure how this "Cursor value" is obtained for each request. You will likely need to use a macro to accomplish this, since the cursor is usually obtained from the response of the previous request. For the above example, this would look like `{{ response.meta.next_token }}`, which accesses response body of the last request. However, you can access the `headers` object in this macro if your API places cursor tokens in the response headers instead of the response body.
+To integrate with such an API in the Connector Builder, you must configure how this "Next page cursor" is obtained for each request. In most cases, the next page cursor is either part of the response body or part of the HTTP headers. Select the respective type and define the property (or nested property) that holds the cursor value, for example "`meta`, `next_token`" for the twitter API.
 
 You can also configure how the cursor value is injected into the API Requests. In the above example, this would be set as a `request_parameter` with the field name `pagination_token`, but this is dependent on the API - check the docs to see if they describe how to set the cursor/token for subsequent requests. For cursor pagination, if `path` is selected as the `Inject into` option, then the entire request URL for the subsequent request will be replaced by the cursor value. This can be useful for APIs that return a full URL that should be requested for the next page of results, such as the [GitHub API](https://docs.github.com/en/rest/guides/using-pagination-in-the-rest-api?apiVersion=2022-11-28).
 
-The "Stop condition" tells the Connector Builder when to stop fetching more pages from the API. This will commonly look something like `{{ 'next_token' not in response.meta }}`, but this is also dependent on the API - check the docs to see if they describe when to stop fetching subsequent pages.
-
 The "Page size" can optionally be specified as well; if so, how this page size gets injected into the HTTP requests can be configured similar to the above pagination methods.
+
+When using the "response" or "headers" option for obtaining the next page cursor, the connector will stop requesting more pages as soon as no value can be found at the specified location. In some situations, this is not sufficient. If you need more control over how to obtain the cursor value and when to stop requesting pages, use the "custom" option and specify the "stop condition" using a jinja placeholder. For example if your API also has a boolean `more_results` property included in the response to indicate if there are more items to be retrieved, the stop condition should be `{{ response.more_results is false }}`
 
 :::info
 
 One potential variant of cursor pagination is an API that takes in some sort of record identifier to "start after". For example, the [PartnerStack API](https://docs.partnerstack.com/docs/partner-api#pagination) endpoints accept a `starting_after` parameter to which a record `key` is supposed to be passed.
 
-In order to configure cursor pagination for this API in the connector builder, you will need to extract the `key` off of the last record returned by the previous request.
+In order to configure cursor pagination for this API in the connector builder, you will need to extract the `key` off of the last record returned by the previous request, using a "custom" next page cursor.
 This can be done in a couple different ways:
 
 1. If you want to access fields on the records that you have defined through the record selector, you can use the `{{ last_records }}` object; so accessing the `key` field of the last record would look like `{{ last_records[-1]['key'] }}`. The `[-1]` syntax points to the last item in that `last_records` array.
 2. If you want to instead access a field on the raw API response body (e.g. your record selector filtered out the field you need), then you can use the `{{ response }}` object; so accessing the `key` field of the last item would look like `{{ response['data']['items'][-1]['key'] }}`.
 
-This API also has a boolean `has_more` property included in the response to indicate if there are more items to be retrieved, so the stop condition in this case should be `{{ response.data.has_more is false }}`
+This API also has a boolean `has_more` property included in the response to indicate if there are more items to be retrieved, so the stop condition in this case should be `{{ response.data.has_more is false }}`.
 
 :::
 
