@@ -1264,7 +1264,7 @@ class DealPipelines(ClientSideIncrementalStream):
     created_at_field = "createdAt"
     cursor_field_datetime_format = "x"
     primary_key = "pipelineId"
-    scopes = {"contacts", "tickets"}
+    scopes = {"crm.objects.contacts.read"}
 
 
 class TicketPipelines(ClientSideIncrementalStream):
