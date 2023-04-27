@@ -4,10 +4,9 @@
 
 package io.airbyte.integrations.destination.s3.avro;
 
-import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.integrations.destination.record_buffer.BaseSerializedBuffer;
+import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
 import io.airbyte.integrations.destination.record_buffer.BufferStorage;
-import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -42,15 +41,15 @@ public class AvroSerializedBuffer extends BaseSerializedBuffer {
   }
 
   @Override
-  protected void createWriter(final OutputStream outputStream) throws IOException {
+  protected void initWriter(final OutputStream outputStream) throws IOException {
     dataFileWriter = new DataFileWriter<>(new GenericDatumWriter<Record>())
         .setCodec(codecFactory)
         .create(schema, outputStream);
   }
 
   @Override
-  protected void writeRecord(final AirbyteRecordMessage recordMessage) throws IOException {
-    dataFileWriter.append(avroRecordFactory.getAvroRecord(UUID.randomUUID(), recordMessage));
+  protected void writeRecord(final AirbyteRecordMessage record) throws IOException {
+    dataFileWriter.append(avroRecordFactory.getAvroRecord(UUID.randomUUID(), record));
   }
 
   @Override
@@ -63,8 +62,8 @@ public class AvroSerializedBuffer extends BaseSerializedBuffer {
     dataFileWriter.close();
   }
 
-  public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> createFunction(final S3AvroFormatConfig config,
-                                                                                                                                          final Callable<BufferStorage> createStorageFunction) {
+  public static BufferCreateFunction createFunction(final S3AvroFormatConfig config,
+                                                    final Callable<BufferStorage> createStorageFunction) {
     final CodecFactory codecFactory = config.getCodecFactory();
     return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) -> {
       final JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();

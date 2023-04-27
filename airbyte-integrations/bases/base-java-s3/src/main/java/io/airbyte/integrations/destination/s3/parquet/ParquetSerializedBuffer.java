@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.s3.parquet;
 
 import static org.apache.parquet.avro.AvroWriteSupport.WRITE_OLD_LIST_STRUCTURE;
 
-import io.airbyte.commons.functional.CheckedBiFunction;
+import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
@@ -91,10 +91,10 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
   }
 
   @Override
-  public long accept(final AirbyteRecordMessage recordMessage) throws Exception {
+  public long accept(final AirbyteRecordMessage record) throws Exception {
     if (inputStream == null && !isClosed) {
       final long startCount = getByteCount();
-      parquetWriter.write(avroRecordFactory.getAvroRecord(UUID.randomUUID(), recordMessage));
+      parquetWriter.write(avroRecordFactory.getAvroRecord(UUID.randomUUID(), record));
       return getByteCount() - startCount;
     } else {
       throw new IllegalCallerException("Buffer is already closed, it cannot accept more messages");
@@ -161,7 +161,7 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
     }
   }
 
-  public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> createFunction(final S3DestinationConfig s3DestinationConfig) {
+  public static BufferCreateFunction createFunction(final S3DestinationConfig s3DestinationConfig) {
     return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) -> new ParquetSerializedBuffer(s3DestinationConfig,
         stream, catalog);
   }

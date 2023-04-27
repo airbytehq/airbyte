@@ -51,13 +51,13 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
   /**
    * Initializes the writer objects such that it can now write to the downstream @param outputStream
    */
-  protected abstract void createWriter(OutputStream outputStream) throws Exception;
+  protected abstract void initWriter(OutputStream outputStream) throws Exception;
 
   /**
-   * Transform the @param recordMessage into a serialized form of the data and writes it to the
-   * registered OutputStream provided when {@link BaseSerializedBuffer#createWriter} was called.
+   * Transform the @param record into a serialized form of the data and writes it to the registered
+   * OutputStream provided when {@link BaseSerializedBuffer#initWriter} was called.
    */
-  protected abstract void writeRecord(AirbyteRecordMessage recordMessage) throws IOException;
+  protected abstract void writeRecord(AirbyteRecordMessage record) throws IOException;
 
   /**
    * Stops the writer from receiving new data and prepares it for being finalized and converted into
@@ -77,19 +77,19 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
   }
 
   @Override
-  public long accept(final AirbyteRecordMessage recordMessage) throws Exception {
+  public long accept(final AirbyteRecordMessage record) throws Exception {
     if (!isStarted) {
       if (useCompression) {
         compressedBuffer = new GzipCompressorOutputStream(byteCounter);
-        createWriter(compressedBuffer);
+        initWriter(compressedBuffer);
       } else {
-        createWriter(byteCounter);
+        initWriter(byteCounter);
       }
       isStarted = true;
     }
     if (inputStream == null && !isClosed) {
       final long startCount = byteCounter.getCount();
-      writeRecord(recordMessage);
+      writeRecord(record);
       return byteCounter.getCount() - startCount;
     } else {
       throw new IllegalCallerException("Buffer is already closed, it cannot accept more messages");

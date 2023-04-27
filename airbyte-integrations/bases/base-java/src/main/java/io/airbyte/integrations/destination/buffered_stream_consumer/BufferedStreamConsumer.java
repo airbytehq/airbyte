@@ -7,8 +7,6 @@ package io.airbyte.integrations.destination.buffered_stream_consumer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.concurrency.VoidCallable;
-import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -79,8 +77,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BufferedStreamConsumer.class);
 
-  private final VoidCallable onStart;
-  private final CheckedConsumer<Boolean, Exception> onClose;
+  private final OnStartFunction onStart;
+  private final OnCloseFunction onClose;
   private final Set<AirbyteStreamNameNamespacePair> streamNames;
   private final ConfiguredAirbyteCatalog catalog;
   private final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
@@ -96,9 +94,9 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final Duration bufferFlushFrequency;
 
   public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
-                                final VoidCallable onStart,
+                                final OnStartFunction onStart,
                                 final BufferingStrategy bufferingStrategy,
-                                final CheckedConsumer<Boolean, Exception> onClose,
+                                final OnCloseFunction onClose,
                                 final ConfiguredAirbyteCatalog catalog,
                                 final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord) {
     this(outputRecordCollector,
@@ -116,9 +114,9 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
    */
   @VisibleForTesting
   BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
-                         final VoidCallable onStart,
+                         final OnStartFunction onStart,
                          final BufferingStrategy bufferingStrategy,
-                         final CheckedConsumer<Boolean, Exception> onClose,
+                         final OnCloseFunction onClose,
                          final ConfiguredAirbyteCatalog catalog,
                          final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
                          final Duration flushFrequency) {
@@ -158,15 +156,15 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   protected void acceptTracked(final AirbyteMessage message) throws Exception {
     Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started");
     if (message.getType() == Type.RECORD) {
-      final AirbyteRecordMessage recordMessage = message.getRecord();
-      final AirbyteStreamNameNamespacePair stream = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
+      final AirbyteRecordMessage record = message.getRecord();
+      final AirbyteStreamNameNamespacePair stream = AirbyteStreamNameNamespacePair.fromRecordMessage(record);
 
       // if stream is not part of list of streams to sync to then throw invalid stream exception
       if (!streamNames.contains(stream)) {
         throwUnrecognizedStream(catalog, message);
       }
 
-      if (!isValidRecord.apply(message.getRecord().getData())) {
+      if (!isValidRecord.apply(record.getData())) {
         streamToIgnoredRecordCount.put(stream, streamToIgnoredRecordCount.getOrDefault(stream, 0L) + 1L);
         return;
       }
@@ -219,7 +217,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     if (Instant.now().isAfter(nextFlushDeadline)) {
       LOGGER.info("Periodic buffer flush started");
       try {
-        bufferingStrategy.flushAll();
+        bufferingStrategy.flushAllBuffers();
         markStatesAsFlushedToDestination();
       } catch (final Exception e) {
         LOGGER.error("Periodic buffer flush failed", e);
@@ -257,7 +255,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       LOGGER.info("executing on success close procedure.");
       // When flushing the buffer, this will call the respective #flushBufferFunction which bundles
       // the flush and commit operation, so if successful then mark state as committed
-      bufferingStrategy.flushAll();
+      bufferingStrategy.flushAllBuffers();
       markStatesAsFlushedToDestination();
     }
     bufferingStrategy.close();
