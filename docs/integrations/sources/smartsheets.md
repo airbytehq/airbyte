@@ -88,6 +88,7 @@ The remaining column datatypes supported by Smartsheets are more complex types (
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
+| 1.0.1   | 2023-04-27 | [25562](https://github.com/airbytehq/airbyte/pull/25562)  | Update testing dependencies|
 | 1.0.0   | 2023-02-19 | [23237](https://github.com/airbytehq/airbyte/pull/23237) | Fix OAuth2.0 token refresh                                |
 | 0.1.14  | 2023-02-07 | [22419](https://github.com/airbytehq/airbyte/pull/22419) | OAuth2.0 support - enabled; add allowed hosts             |
 | 0.1.13  | 2022-12-02 | [20017](https://github.com/airbytehq/airbyte/pull/20017) | OAuth2.0 support - disabled                               |
