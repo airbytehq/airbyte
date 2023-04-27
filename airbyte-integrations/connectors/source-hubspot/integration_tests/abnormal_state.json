@@ -49,17 +49,22 @@
       "updatedAt": 7945393076000
     }
   }
-}, {
+},
+  {
   "type": "STREAM",
   "stream": {
-    "stream_descriptor": {
-      "name": "deals"
-    },
-    "stream_state": {
-      "updatedAt": "2221-10-12T13:37:56.412000+00:00"
-    }
+    "stream_descriptor": { "name": "deals" },
+    "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
   }
-}, {
+},
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "archivedAt": "2221-10-12T13:37:56.412000+00:00" },
+      "stream_descriptor": { "name": "deals_archived" }
+    }
+  },
+  {
   "type": "STREAM",
   "stream": {
     "stream_descriptor": {

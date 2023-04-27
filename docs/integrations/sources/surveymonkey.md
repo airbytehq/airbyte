@@ -65,6 +65,7 @@ To cover more data from this source we use caching.
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 |:--------| :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
+| 0.1.16  | 2023-04-13 | [25080](https://github.com/airbytehq/airbyte/pull/25080) |  Fix spec.json required fields and update schema for surveys and survey_responses                    |
 | 0.1.15  | 2023-02-11 | [22865](https://github.com/airbytehq/airbyte/pull/22865) | Specified date formatting in specification                                                     |
 | 0.1.14  | 2023-01-27 | [22024](https://github.com/airbytehq/airbyte/pull/22024) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
 | 0.1.13  | 2022-11-29 | [19868](https://github.com/airbytehq/airbyte/pull/19868) | Fix OAuth flow urls                                                    |

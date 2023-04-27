@@ -8,6 +8,10 @@ The connector builder UI is in alpha, which means it’s still in active develop
 **Developer updates will be announced via our #using-the-cdk Slack channel. If you are using the CDK, please join to stay up to date on changes and issues.**
 :::
 
+
+## Can I integrate with this API using the Connector Builder UI?
+[Follow this guide to determine whether the Connector Builder UI is the right tool to build the connector you need](./connector-builder-compatibility.md).
+
 ## Getting started
 
 The high level flow for using the connector builder is as follows:

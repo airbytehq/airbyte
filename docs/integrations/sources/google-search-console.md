@@ -8,6 +8,8 @@ This page contains the setup guide and reference information for the google sear
 * A verified property in Google Search Console
 * Enable Google Search Console API for GCP project at [GCP console](https://console.cloud.google.com/apis/library/searchconsole.googleapis.com)
 * Credentials to a Google Service Account \(or Google Service Account with delegated Domain Wide Authority\) or Google User Account
+* Enable Google Search Console API
+
 
 :::note
 

@@ -74,6 +74,18 @@
     },
     {
       "stream": {
+        "name": "deals_archived",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["archivedAt"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["archivedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "email_events",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
