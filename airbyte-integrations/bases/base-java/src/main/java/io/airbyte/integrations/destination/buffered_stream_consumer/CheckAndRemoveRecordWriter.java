@@ -14,6 +14,6 @@ public interface CheckAndRemoveRecordWriter {
    * different, then the staging writer corresponding to `stagingFileName` is closed and the name of
    * the new file where the record will be sent will be returned.
    */
-  String apply(AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair, String stagingFileName) throws Exception;
+  String apply(AirbyteStreamNameNamespacePair stream, String stagingFileName) throws Exception;
 
 }
