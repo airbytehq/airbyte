@@ -101,9 +101,45 @@ Sometimes, there is only one record returned per request from the API. In this c
 
 In this case, a record selector of `rates` will yield a single record which contains all the exchange rates in a single object.
 
+### Fields nested in arrays
+
+In some cases, records are selected in multiple branches of the response object (for example within each item of an array):
+
+```
+
+{
+  "data": [
+    {
+      "record": {
+        "id": "1"
+      }
+    },
+    {
+      "record": {
+        "id": "2"
+      }
+    }
+  ]
+}
+
+```
+
+In this case a record selector with a placeholder `*` selects all children at the current position in the path, in this case **`data`, `*`, `record`** will return the following records:
+
+```
+[
+  {
+    "id": 1
+  },
+  {
+    "id": 2
+  }
+]
+```
+
 ## Transformations
 
-It is recommended to not change records during the extraction process the connector is performing, but instead load them into the downstream warehouse unchanged and perform necessery transformations there in order to stay flexible in what data is required. However there are some reasons that require the modifying the fields of records before they are sent to the warehouse:
+It is recommended to not change records during the extraction process the connector is performing, but instead load them into the downstream warehouse unchanged and perform necessary transformations there in order to stay flexible in what data is required. However there are some reasons that require the modifying the fields of records before they are sent to the warehouse:
 * Remove personally identifiable information (PII) to ensure compliance with local legislation
 * Pseudonymise sensitive fields
 * Remove large fields that don't contain interesting information and significantly increase load on the system
