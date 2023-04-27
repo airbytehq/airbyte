@@ -34,14 +34,14 @@
 - name: AWS Datalake
   destinationDefinitionId: 99878c90-0fbd-46d3-9d98-ffde879d17fc
   dockerRepository: airbyte/destination-aws-datalake
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.com/integrations/destinations/aws-datalake
   icon: awsdatalake.svg
   releaseStage: alpha
 - name: BigQuery
   destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   dockerRepository: airbyte/destination-bigquery
-  dockerImageTag: 1.2.19
+  dockerImageTag: 1.3.1
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   icon: bigquery.svg
   normalizationConfig:
@@ -59,7 +59,7 @@
 - name: BigQuery (denormalized typed struct)
   destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-bigquery-denormalized
-  dockerImageTag: 1.2.19
+  dockerImageTag: 1.3.1
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   icon: bigquery.svg
   resourceRequirements:
@@ -75,6 +75,13 @@
   dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.com/integrations/destinations/cassandra
   icon: cassandra.svg
+  releaseStage: alpha
+- name: Cumul.io
+  destinationDefinitionId: e088acb6-9780-4568-880c-54c2dd7f431b
+  dockerRepository: airbyte/destination-cumulio
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/cumulio
+  icon: cumulio.svg
   releaseStage: alpha
 - name: Chargify (Keen)
   destinationDefinitionId: 81740ce8-d764-4ea7-94df-16bb41de36ae
@@ -109,10 +116,17 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/convex
   icon: convex.svg
   releaseStage: alpha
+- name: Starburst Galaxy
+  destinationDefinitionId: 4528e960-6f7b-4412-8555-7e0097e1da17
+  dockerRepository: airbyte/destination-starburst-galaxy
+  dockerImageTag: 0.0.1
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/starburst-galaxy
+  icon: starburst-galaxy.svg
+  releaseStage: alpha
 - name: Databricks Lakehouse
   destinationDefinitionId: 072d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-databricks
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.2
   documentationUrl: https://docs.airbyte.com/integrations/destinations/databricks
   icon: databricks.svg
   releaseStage: alpha
@@ -342,7 +356,7 @@
 - name: S3 Glue
   destinationDefinitionId: 471e5cab-8ed1-49f3-ba11-79c687784737
   dockerRepository: airbyte/destination-s3-glue
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3-glue
   icon: s3-glue.svg
   releaseStage: alpha

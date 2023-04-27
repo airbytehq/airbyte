@@ -314,6 +314,14 @@ cmd_publish() {
       docker buildx build -t airbyte/integration-base:dev --platform $arch --load airbyte-integrations/bases/base
       docker buildx build -t airbyte/integration-base-java:dev --platform $arch --load airbyte-integrations/bases/base-java
 
+      # For a short while (https://github.com/airbytehq/airbyte/pull/25034), destinations rely on the normalization image to build
+      # Thanks to gradle, destinstaions which need normalization will already have built base-normalization's "build" artifacts
+      if [[ "$image_name" == *"destination-"* ]]; then
+        if [ -f "airbyte-integrations/bases/base-normalization/build/sshtunneling.sh" ]; then
+          docker buildx build -t airbyte/normalization:dev --platform $arch --load airbyte-integrations/bases/base-normalization
+        fi
+      fi
+
       local arch_versioned_image=$image_name:`echo $arch | sed "s/\//-/g"`-$image_version
       echo "Publishing new version ($arch_versioned_image) from $path"
       docker buildx build -t $arch_versioned_image --platform $arch --push $path

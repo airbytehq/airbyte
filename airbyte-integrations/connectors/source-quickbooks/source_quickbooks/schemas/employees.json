@@ -1,0 +1,195 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": [
+    "null",
+    "object"
+  ],
+  "properties": {
+    "HiredDate": {
+      "format": "date",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "PrimaryPhone": {
+      "properties": {
+        "FreeFormNumber": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "SyncToken": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "BillableTime": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "DisplayName": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "GivenName": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "FamilyName": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "domain": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Active": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "BirthDate": {
+      "format": "date-time",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "PrintOnCheckName": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "MetaData": {
+      "properties": {
+        "CreateTime": {
+          "format": "date-time",
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "LastUpdatedTime": {
+          "format": "date-time",
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "PrimaryAddr": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {}
+    },
+    "PrimaryEmailAddr": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {}
+    },
+    "Title": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "MiddleName": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ReleasedDate": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "Mobile": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {}
+    },
+    "Gender": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "BillRate": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "Suffix": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "EmployeeNumber": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Organization": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "sparse": {
+      "type":  [
+        "null",
+        "boolean"
+      ]
+    },
+    "airbyte_cursor": {
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  }
+}

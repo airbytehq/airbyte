@@ -91,3 +91,6 @@ docker-compose.debug.yaml
 .env
 .env.dev
 flags.yml
+
+# Ignore generated credentials from google-github-actions/auth
+gha-creds-*.json
