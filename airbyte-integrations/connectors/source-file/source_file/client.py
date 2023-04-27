@@ -11,6 +11,7 @@ import urllib
 from os import environ
 from typing import Iterable
 from urllib.parse import urlparse
+from urllib3.exceptions import ProtocolError
 
 import backoff
 import boto3
@@ -396,6 +397,12 @@ class Client:
             except ConnectionResetError:
                 logger.info(f"Catched `connection reset error - 104`, stream: {self.stream_name} ({self.reader.full_url})")
                 raise ConnectionResetError
+            except ProtocolError as err:
+                error_msg = (
+                    f"File {fp} can not be opened due to connection issues on provider side. Please check provided links and options"
+                )
+                logger.error(f"{error_msg}\n{traceback.format_exc()}")
+                raise ConfigurationError(error_msg) from err
 
     def _cache_stream(self, fp):
         """cache stream to file"""
