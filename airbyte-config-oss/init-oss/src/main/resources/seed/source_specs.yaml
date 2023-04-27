@@ -3276,7 +3276,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-datadog:0.1.0"
+- dockerImage: "airbyte/source-datadog:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/datadog"
     connectionSpecification:
@@ -6638,7 +6638,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-greenhouse:0.3.1"
+- dockerImage: "airbyte/source-greenhouse:0.4.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/greenhouse"
     connectionSpecification:
@@ -8586,7 +8586,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-marketo:1.0.3"
+- dockerImage: "airbyte/source-marketo:1.0.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/marketo"
     connectionSpecification:
@@ -9277,7 +9277,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-monday:0.2.3"
+- dockerImage: "airbyte/source-monday:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/monday"
     connectionSpecification:
@@ -11465,7 +11465,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-paypal-transaction:0.1.12"
+- dockerImage: "airbyte/source-paypal-transaction:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/paypal-transactions"
     connectionSpecification:
@@ -11499,8 +11499,10 @@
             >ISO format</a>. Date must be in range from 3 years till 12 hrs before\
             \ present time."
           examples:
-          - "2021-06-11T23:59:59-00:00"
-          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[+-][0-9]{2}:[0-9]{2}$"
+          - "2021-06-11T23:59:59"
+          - "2021-06-11T23:59:59+00:00"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(|Z|[+-][0-9]{2}:[0-9]{2})$"
+          format: "date-time"
         is_sandbox:
           title: "Sandbox"
           description: "Determines whether to use the sandbox or production environment."
@@ -11651,7 +11653,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-pinterest:0.2.5"
+- dockerImage: "airbyte/source-pinterest:0.2.6"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pinterest"
     connectionSpecification:
@@ -12116,7 +12118,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-posthog:0.1.9"
+- dockerImage: "airbyte/source-posthog:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/posthog"
     connectionSpecification:
@@ -12152,7 +12154,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:2.0.25"
+- dockerImage: "airbyte/source-postgres:2.0.27"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -14478,7 +14480,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-smartsheets:1.0.0"
+- dockerImage: "airbyte/source-smartsheets:1.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/smartsheets"
     connectionSpecification:
@@ -15293,7 +15295,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-surveymonkey:0.1.16"
+- dockerImage: "airbyte/source-surveymonkey:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/surveymonkey"
     connectionSpecification:
