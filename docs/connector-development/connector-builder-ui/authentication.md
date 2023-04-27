@@ -91,7 +91,7 @@ Depending on how the refresh endpoint is implemented exactly, additional configu
 * **Token expire property date format** - if not specified, the expiry property is interpreted as the number of seconds the access token will be valid
 * **Access token property name** - the name of the property in the response that contains the access token to do requests. If not specified, it's set to `access_token`
 
-If the API uses a short-lived refresh token that expires after a short amount of time and needs to be refreshed as well or if other grant types like PKCE are required, it's not possible to use the connector builder with OAuth authentication - check out the [compatibility guide](/connector-development/config-based/connector-builder-compatibility#oauth) for more information.
+If the API uses a short-lived refresh token that expires after a short amount of time and needs to be refreshed as well or if other grant types like PKCE are required, it's not possible to use the connector builder with OAuth authentication - check out the [compatibility guide](/connector-development/connector-builder-ui/connector-builder-compatibility#oauth) for more information.
 
 Keep in mind that the OAuth authentication method does not implement a single-click authentication experience for the end user configuring the connector - it will still be necessary to obtain client id, client secret and refresh token from the API and manually enter them into the configuration form.
 
@@ -136,7 +136,7 @@ Some APIs require to include the access token in different parts of the request 
 * Add a user input as secret field on the "User inputs" page (e.g. named `api_key`)
 * On the stream page, add a new "Request parameter"
 * As key, configure the name of the query parameter the API requires (e.g. named `key`)
-* As value, configure a placeholder for the created user input (e.g. `{{ config['api_key'] }}`)
+* As value, configure a [placeholder](/connector-development/config-based/understanding-the-yaml-file/reference#variables) for the created user input (e.g. `{{ config['api_key'] }}`)
 
 The same approach can be used to add the token to the request body.
 
