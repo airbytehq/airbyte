@@ -38,11 +38,11 @@ This will enable our team to make sure your contribution does not overlap with e
 If you do not receive an update on the issue from our team, please ping us on [Slack](https://slack.airbyte.io)!
 
 #### 2. Code your contribution
-1. To contribute to a connector, fork the [Connector repository](https://github.com/airbytehq/airbyte). To contribute to the Airbyte platform, fork our [Platform repository](https://github.com/airbytehq/airbyte-platform).  
+1. To contribute to a connector, fork the [Connector repository](https://github.com/airbytehq/airbyte). To contribute to the Airbyte platform, fork our [Platform repository](https://github.com/airbytehq/airbyte-platform).
 2. If contributing a new connector, check out our [new connectors guide](#new-connectors).
 3. Open a branch for your work.
 4. Code, and please write **tests**.
-5. Ensure all tests pass. For connectors, this includes acceptance tests as well. 
+5. Ensure all tests pass. For connectors, this includes acceptance tests as well.
 6. For connectors, make sure to increment the connector's version according to our [Semantic Versioning](#semantic-versioning-for-connectors) guidelines.
 
 #### 3. Open a pull request
@@ -108,6 +108,36 @@ Trying to contribute, and don't see the change you want to make in this list? Ca
 ### Airbyte CI workflows
 * [Testing by SonarQube](sonar-qube-workflow.md)
 
+## Breaking Changes to Connectors
+
+Often times, changes to connectors can be made without impacting the user experience.  However, there are some changes that will require users to take action before they can continue to sync data.  These changes are considered **Breaking Changes** and require a
+
+1. A **Major Version** increase 
+2. An Airbyte Engineer to follow the  [Connector Breaking Change Release Playbook](https://docs.google.com/document/u/0/d/1VYQggHbL_PN0dDDu7rCyzBLGRtX-R3cpwXaY8QxEgzw/edit) before merging.
+
+
+### Types of Breaking Change(s):
+A breaking change is any change that will require users to take action before they can continue to sync data. The following are examples of breaking changes:
+
+- **Spec Change** - The configuration required by users of this connector have been changed and syncs will fail until users reconfigure or re-authenticate.  This change is not possible via a Config Migration 
+- **Schema Change** - The type of a property previously present within a record has changed
+- **Stream or Property Removal** - Data that was previously being synced is no longer going to be synced.
+- **Destination Format / Normalization Change** - The way the destination writes the final data or how normalization cleans that data is changing in a way that requires a full-refresh.**
+- **State Changes** - The format of the source’s state has changed, and the full dataset will need to be re-synced
+
+
+### Checklist for Contributors
+
+First, ask yourself does your change correspond to any of the breaking changes above?
+
+If so then follow this checklist below
+
+- [ ] Apply the label breaking-change to your PR
+- [ ] Apply a Major Version bump to your PR. See [Semantic Versioning for Connectors](#semantic-versioning-for-connectors) for more information.
+- [ ] Prepend your PR title with the 🚨🚨 emoji.
+- [ ] Add a section to the PR description titled Breaking Change that describes why this is a breaking change, and if possible how you can migrate users and/or rollback
+- [ ] Assign an Airbyte Engineer through the `airbytehq/connector-operations` group and have them start the [Connector Breaking Change Playbook](https://docs.google.com/document/d/1VYQggHbL_PN0dDDu7rCyzBLGRtX-R3cpwXaY8QxEgzw/edit#)
+
 ## Contributing to documentation
 
 Our goal is to keep our docs comprehensive and updated. If you would like to help us in doing so, we are grateful for any kind of contribution:
@@ -136,7 +166,7 @@ Feel free to submit a pull request in this repo, if you have something to add ev
 
 You are welcome to add your own reactions to the existing issues. We will take them in consideration in our prioritization efforts, especially for connectors.
 
-❤️ means that this task is CRITICAL to you.  
+❤️ means that this task is CRITICAL to you.
 👍 means it is important to you.
 
 ### Requesting new features
@@ -147,7 +177,7 @@ If you would like to suggest a new feature, we ask that you please use our issue
 
 To see what has already been proposed by the community, you can look [here](https://github.com/airbytehq/airbyte/labels/community).
 
-Watch out for duplicates! If you are creating a new platform issue, please check [open](https://github.com/airbytehq/airbyte-platform/issues), or [recently closed](https://github.com/airbytehq/airbyte-platform/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aclosed%20). 
+Watch out for duplicates! If you are creating a new platform issue, please check [open](https://github.com/airbytehq/airbyte-platform/issues), or [recently closed](https://github.com/airbytehq/airbyte-platform/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aclosed%20).
 
 ### Requesting new connectors
 

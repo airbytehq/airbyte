@@ -1,0 +1,12 @@
+paths:
+  "airbyte-integrations/connectors/**":
+    - PR name follows [PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/issues-and-pull-requests)
+    - "[Breaking changes are considered](https://docs.airbyte.com/contributing-to-airbyte/#breaking-changes-to-connectors). If a **Breaking Change** is being introduced, ensure an Airbyte engineer has created a Breaking Change Plan and you've followed all steps in the [Breaking Changes Checklist](https://docs.airbyte.com/contributing-to-airbyte/#checklist-for-contributors)"
+    - Connector version has been incremented in the Dockerfile and metadata.yaml according to our [Semantic Versioning for Connectors](https://docs.airbyte.com/contributing-to-airbyte/#semantic-versioning-for-connectors) guidelines
+    - Secrets in the connector's spec are annotated with `airbyte_secret`
+    - All documentation files are up to date. (README.md, bootstrap.md, docs.md, etc...)
+    - Changelog updated in `docs/integrations/<source or destination>/<name>.md` with an entry for the new version. See changelog [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
+    - You, or an Airbyter, have run `/test` successfully on this PR - or on a non-forked branch
+    - You, or an Airbyter, have run `/publish` successfully on this PR - or on a non-forked branch
+    - You've updated the connector's `metadata.yaml` file (new!)
+    - The Octavia bot updated the [source_definitions.yaml](https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml) or [destination_definitions.yaml](https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml), or you ran `processResources` manually (deprecated)
