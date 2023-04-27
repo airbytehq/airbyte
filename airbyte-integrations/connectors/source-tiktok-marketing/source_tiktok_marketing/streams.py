@@ -51,6 +51,7 @@ NOT_AUDIENCE_METRICS = [
     "real_time_app_install",
     "real_time_app_install_cost",
     "app_install",
+    "engagements",
 ]
 
 T = TypeVar("T")
@@ -612,6 +613,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
             "real_time_app_install",
             "real_time_app_install_cost",
             "app_install",
+            "engagements",
         ]
 
         if self.report_level == ReportLevel.ADVERTISER and self.report_granularity == ReportGranularity.DAY:

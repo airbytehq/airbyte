@@ -27,6 +27,9 @@
     "metrics": {
       "type": ["null", "object"],
       "properties": {
+        "engagements": {
+          "type": ["null", "integer"]
+        },
         "campaign_name": {
           "type": ["null", "string"]
         },
