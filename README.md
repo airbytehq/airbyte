@@ -104,6 +104,7 @@ See the [LICENSE](docs/project-overview/licenses/) file for licensing informatio
 
 ## Resources
 
+- [Connectors Registry Report](https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html) for a list of connectors available in Airbyte and Airbyte Cloud
 - [Weekly office hours](https://airbyte.io/weekly-office-hours/) for live informal sessions with the Airbyte team
 - [Slack](https://slack.airbyte.io) for quick discussion with the Community and Airbyte team
 - [Discourse](https://discuss.airbyte.io/) for deeper conversations about features, connectors, and problems

@@ -50,7 +50,7 @@ To do so, from the root of the `airbyte` repo, run `./airbyte-cdk/python/bin/run
   * When running or `./acceptance-test-docker.sh` in a connector project
 * When running `/test` command on a GitHub pull request.
 * When running `/publish` command on a GitHub pull request.
-* When running ` integration-test` GitHub action that is creating the JSON files linked to from [connector builds summary](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/builds.md).
+* When running ` integration-test` GitHub action. This is the same action that creates and uploads the test report JSON files that power the badges in the [connector registry summary report](https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html).
 
 ## Developing on the acceptance tests
 You may want to iterate on the acceptance test project itself: adding new tests, fixing a bug etc.
