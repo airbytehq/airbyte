@@ -461,7 +461,7 @@
 - name: Datadog
   sourceDefinitionId: 1cfc30c7-82db-43f4-9fd7-ac1b42312cda
   dockerRepository: airbyte/source-datadog
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/datadog
   icon: datadog.svg
   sourceType: api
@@ -1940,7 +1940,7 @@
 - name: Smartsheets
   sourceDefinitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
   dockerRepository: airbyte/source-smartsheets
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/smartsheets
   icon: smartsheet.svg
   sourceType: api
