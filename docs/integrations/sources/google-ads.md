@@ -139,6 +139,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| `0.2.15` | 2023-03-27 | TBD                                                      | Add `asset` Resource to full refresh custom tables (GAQL Queries)                                                                    |
 | `0.2.14` | 2023-03-21 | [24945](https://github.com/airbytehq/airbyte/pull/24945) | for custom google query fixed schema type for "data_type: ENUM" and "is_repeated: true" to array of strings                          |
 | `0.2.13` | 2023-03-21 | [24338](https://github.com/airbytehq/airbyte/pull/24338) | Migrate to v13                                                                                                                       |
 | `0.2.12` | 2023-03-17 | [22985](https://github.com/airbytehq/airbyte/pull/22985) | Specified date formatting in specification                                                                                           |
