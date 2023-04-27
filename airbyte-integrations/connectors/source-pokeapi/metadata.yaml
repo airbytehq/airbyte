@@ -12,7 +12,7 @@ data:
   githubIssueLabel: source-pokeapi
   icon: pokeapi.svg
   license: MIT
-  name: PokeAPI
+  name: PokeAPI (Alpha)
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/pokeapi
 metadataSpecVersion: "1.0"
