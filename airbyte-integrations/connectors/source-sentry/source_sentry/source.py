@@ -22,15 +22,14 @@ class SourceSentry(AbstractSource):
                 authenticator=TokenAuthenticator(token=config["auth_token"]),
                 hostname=config.get("hostname"),
                 organization=config.get("organization"),
-                project=config.get("project")
+                project=config.get("project"),
             )
             next(events_stream.read_records(sync_mode=SyncMode.full_refresh))
             return True, None
-        except HTTPError as e:
+        except HTTPError:
             return False, "Check failed: either project's or organization's name is invalid"
         except Exception as e:
             return False, e
-
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         stream_args = {
