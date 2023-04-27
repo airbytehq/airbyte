@@ -12,6 +12,8 @@ Airbyte uses a grading system for connectors to help you understand what to expe
 
 For more information about the grading system, see [Product Release Stages](https://docs.airbyte.com/project-overview/product-release-stages)
 
+_[View the connectors registries full screen](https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html)_
+
 <iframe
     src="https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html"
     frameborder="0"
