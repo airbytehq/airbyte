@@ -5,7 +5,7 @@
     "title": "Talkdesk Explore API Spec",
     "type": "object",
     "required": ["start_date", "auth_url", "api_key"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "start_date": {
         "type": "string",
