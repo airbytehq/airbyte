@@ -203,7 +203,7 @@ class InventorySnapshot(NetSuiteStream):
                     cleaned_itemLocations.append(cleaned_item_location)
                 
                 itemRecord_with_type = {
-                        "importId": currentImportId
+                      "importId": currentImportId
                     , "internalId": itemRecord.get("internalId")
                     , "id": itemRecord.get("internalId")
                     , "itemId": itemRecord.get("itemId")
@@ -216,6 +216,7 @@ class InventorySnapshot(NetSuiteStream):
                     , "totalValue": itemRecord.get("totalValue")
                     , "quantityOnHand": itemRecord.get("quantityOnHand")
                     , "quantityOnOrder": itemRecord.get("quantityOnOrder")
+                    , "quantityAvailable": itemRecord.get("quantityAvailable")
                     , "locations": cleaned_itemLocations
                     , "member": cleaned_itemMembers
                     , "price": cleaned_prices
