@@ -6,7 +6,6 @@
 
 from abc import ABC, abstractmethod
 from functools import cached_property
-from pathlib import Path
 from typing import ClassVar, Optional
 
 import asyncer
@@ -14,7 +13,7 @@ import requests
 import yaml
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.bases import PytestStep, Step, StepResult, StepStatus
-from ci_connector_ops.pipelines.contexts import CIContext, PipelineContext
+from ci_connector_ops.pipelines.contexts import CIContext
 from ci_connector_ops.pipelines.utils import METADATA_FILE_NAME
 from ci_connector_ops.utils import DESTINATION_DEFINITIONS_FILE_PATH, SOURCE_DEFINITIONS_FILE_PATH
 from dagger import File
@@ -27,14 +26,9 @@ class VersionCheck(Step, ABC):
     GITHUB_URL_PREFIX_FOR_CONNECTORS = "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors"
     failure_message: ClassVar
 
-    def __init__(self, context: PipelineContext, metadata_path: Path) -> None:
-        super().__init__(context)
-        self.current_metadata = yaml.safe_load(metadata_path.read_text())["data"]
-        self.connector_technical_name = self.metadata["dockerRepository"].split("/")[-1]
-
     @property
     def github_master_metadata_url(self):
-        return f"{self.GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.connector_technical_name}/{METADATA_FILE_NAME}"
+        return f"{self.GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/{METADATA_FILE_NAME}"
 
     @cached_property
     def master_metadata(self) -> dict:
@@ -49,7 +43,7 @@ class VersionCheck(Step, ABC):
 
     @property
     def current_connector_version(self) -> version.Version:
-        return version.parse(str(self.current_metadata["dockerImageTag"]))
+        return version.parse(str(self.context.metadata["dockerImageTag"]))
 
     @property
     def success_result(self) -> StepResult:
