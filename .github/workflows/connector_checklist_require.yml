@@ -1,0 +1,16 @@
+name: Require Connector Checklist
+on:
+  pull_request:
+    types: [opened, edited, synchronize, labeled, unlabeled, reopened, ready_for_review]
+    paths:
+      - "airbyte-integrations/connectors/source-**"
+      - "airbyte-integrations/connectors/destination-**"
+      - "airbyte-integrations/connectors/third-party/**"
+jobs:
+  check_for_required:
+    name: Require Connector Merge Checklist Job
+    runs-on: ubuntu-latest
+    steps:
+      - uses: mheap/require-checklist-action@v2
+        with:
+          requireChecklist: true # If this is true and there are no checklists detected, the action will fail
