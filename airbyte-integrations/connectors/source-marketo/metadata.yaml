@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9e0556f4-69df-4522-a3fb-03264d36b348
-  dockerImageTag: 1.0.2
+  dockerImageTag: 1.0.4
   dockerRepository: airbyte/source-marketo
   githubIssueLabel: source-marketo
   icon: marketo.svg
