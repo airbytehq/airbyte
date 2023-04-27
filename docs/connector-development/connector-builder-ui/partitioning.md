@@ -21,13 +21,13 @@ The first two options are a "static" form of partition routing (because the part
 ### List partition router
 
 To configure static partitioning, choose the "List" method for the partition router. The following fields have to be configured:
-* The "partition values" can either be set to a list of strings, making the partitions part of the connector itself or delegated to a user input so the end user configuring a Source based on the connector can control which partitions to fetch.
-* The "Current partition value identifier" can be freely choosen and is the identifier of the variable holding the current partition value. It can for example be used in the path of the stream using the `{{ stream_slice.<identifier> }}` syntax.
+* The "partition values" can either be set to a list of strings, making the partitions part of the connector itself or delegated to a user input so the end user configuring a Source based on the connector can control which partitions to fetch. When using "user input" mode for the partition values, create a user input of type array and reference it as the value using the [placeholder](/connector-development/config-based/understanding-the-yaml-file/reference#variables) value using `{{ config['<your chosen user input name>'] }}`
+* The "Current partition value identifier" can be freely choosen and is the identifier of the variable holding the current partition value. It can for example be used in the path of the stream using the `{{ stream_partition.<identifier> }}` syntax.
 * The "Inject partition value into outgoing HTTP request" option allows you to configure how to add the current partition value to the requests
 
 #### Example
 
-To enable static partition routing for the [SurveySparrow API](https://developers.surveysparrow.com/rest-apis/response#getV3Responses) responses, the list partition router needs to be configured as following:
+To enable static partition routing defined as part of the connector for the [SurveySparrow API](https://developers.surveysparrow.com/rest-apis/response#getV3Responses) responses, the list partition router needs to be configured as following:
 * "Partition values" are set to the list of survey ids to fetch
 * "Current partition value identifier" is set to `survey` (this is not used for this example)
 * "Inject partition value into outgoing HTTP request" is set to `request_parameter` for the field name `survey_id`
@@ -39,14 +39,16 @@ curl -X GET https://api.surveysparrow.com/v3/responses?survey_id=456
 curl -X GET https://api.surveysparrow.com/v3/responses?survey_id=789
 ```
 
-To enable static partitions for the [Woocommerce API](https://woocommerce.github.io/woocommerce-rest-api-docs/#order-notes) order notes, the configuration would look like this:
-* "Partition values" are set to the list of order ids to fetch
-* "Current partition value identifier" is set to `order`
+To enable user-configurable static partitions for the [Woocommerce API](https://woocommerce.github.io/woocommerce-rest-api-docs/#order-notes) order notes, the configuration would look like this:
+* Set "Partition values" to "User input"
+* In the "Value" input, click the blue user icon and create a new user input
+* Name it `Order IDs`, set type to `array` and click create
+* Set "Current partition value identifier" to `order`
 * "Inject partition value into outgoing HTTP request" is disabled, because the order id needs to be injected into the path
-* In the general section of the stream configuration, the "Path URL" is set to `/orders/{{ stream_slice.order }}/notes`
+* In the general section of the stream configuration, the "Path URL" is set to `/orders/{{ stream_partition.order }}/notes`
 
 
-When partition values were set to `123`, `456` and `789`, the following requests will be executed:
+When order IDs were set to `123`, `456` and `789` in the testing values, the following requests will be executed:
 ```
 curl -X GET https://example.com/wp-json/wc/v3/orders/123/notes
 curl -X GET https://example.com/wp-json/wc/v3/orders/456/notes
@@ -60,14 +62,14 @@ To fetch the list of partitions (in this example surveys or orders) from the API
 The following fields have to be configured to use the substream partition router:
 * The "Parent stream" defines the records of which stream should be used as partitions
 * The "Parent key" is the property on the parent stream record that should become the partition value (in most cases this is some form of id)
-* The "Current partition value identifier" can be freely choosen and is the identifier of the variable holding the current partition value. It can for example be used in the path of the stream using the `{{ stream_slice.<identifier> }}` interpolation placeholder.
+* The "Current partition value identifier" can be freely choosen and is the identifier of the variable holding the current partition value. It can for example be used in the path of the stream using the `{{ stream_partition.<identifier> }}` [interpolation placeholder](/connector-development/config-based/understanding-the-yaml-file/reference#variables).
 
 #### Example
 
 To enable dynamic partition routing for the [Woocommerce API](https://woocommerce.github.io/woocommerce-rest-api-docs/#order-notes) order notes, first an "orders" stream needs to be configured for the `/orders` endpoint to fetch a list of orders. Once this is done, the partition router for responses has be configured like this:
 * "Parent key" is set to `id`
 * "Current partition value identifier" is set to `order`
-* In the general section of the stream configuration, the "Path URL" is set to `/orders/{{ stream_slice.order }}/notes`
+* In the general section of the stream configuration, the "Path URL" is set to `/orders/{{ stream_partition.order }}/notes`
 
 When triggering a sync, the connector will first fetch all records of the orders stream. The records will look like this:
 ```
@@ -99,7 +101,7 @@ curl -X GET https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=examp
 
 ## Adding the partition value to the record
 
-Sometimes it's helpful to attach the partition a record belongs to to the record itself so it can be used during analysis in the destination. This can be done using a transformation to add a field and the `{{ stream_slice.<identifier> }}` interpolation placeholder.
+Sometimes it's helpful to attach the partition a record belongs to to the record itself so it can be used during analysis in the destination. This can be done using a transformation to add a field and the `{{ stream_partition.<identifier> }}` interpolation placeholder.
 
 For example when fetching the order notes via the [Woocommerce API](https://woocommerce.github.io/woocommerce-rest-api-docs/#order-notes), the order id itself is not included in the note record, which means it won't be possible to associate which note belongs to which order:
 ```
@@ -108,7 +110,7 @@ For example when fetching the order notes via the [Woocommerce API](https://wooc
 
 However the order id can be added by taking the following steps:
 * Making sure the "Current partition value identifier" is set to `order`
-* Add an "Add field" transformation with "Path" `order_id` and "Value" `{{ stream_slice.order }}`
+* Add an "Add field" transformation with "Path" `order_id` and "Value" `{{ stream_partition.order }}`
 
 Using this configuration, the notes record looks like this:
 ```
