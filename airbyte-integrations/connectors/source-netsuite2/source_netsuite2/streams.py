@@ -214,6 +214,8 @@ class InventorySnapshot(NetSuiteStream):
                     , "lastPurchasePrice": itemRecord.get("lastPurchasePrice")
                     , "manufacturer": itemRecord.get("manufacturer")
                     , "totalValue": itemRecord.get("totalValue")
+                    , "quantityOnHand": itemRecord.get("quantityOnHand")
+                    , "quantityOnOrder": itemRecord.get("quantityOnOrder")
                     , "locations": cleaned_itemLocations
                     , "member": cleaned_itemMembers
                     , "price": cleaned_prices
