@@ -3,7 +3,6 @@ const path = require('path');
 const uuid = require('uuid');
 const capitalCase = require('capital-case');
 const changeCase = require('change-case')
-   
 const getSuccessMessage = function(connectorName, outputPath, additionalMessage){
     return `
 🚀 🚀 🚀 🚀 🚀 🚀
@@ -95,6 +94,9 @@ module.exports = function (plop) {
         default: () => {
           return uuid.v4();
         },
+        validate: (uuidValue) => {
+          return uuid.validate(uuidValue)
+        },
         message: 'Connector definition ID (UUID v.4). Press enter to use the auto generated one.',
       },
     ],
@@ -115,8 +117,7 @@ module.exports = function (plop) {
       },
       {type: 'emitSuccess', outputPath: pythonDestinationOutputRoot}
     ]
-
-  })      
+  })
 
   plop.setGenerator('Python HTTP API Source', {
     description: 'Generate a Source that pulls data from a synchronous HTTP API.',
