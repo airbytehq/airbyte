@@ -531,6 +531,16 @@ BASE_DESTINATION_SPECIFIC_NORMALIZATION_ADAPTER_MAPPING = {
     "destination-bigquery": "dbt-bigquery==1.0.0",
 }
 
+BASE_DESTINATION_SPECIFIC_NORMALIZATION_INTEGRATION_MAPPING = {
+    "destination-clickhouse": "clickhouse",
+    "destination-duckdb": "duckdb",
+    "destination-mssql": "sqlserver",
+    "destination-mysql": "mysql",
+    "destination-oracle": "oracle",
+    "destination-tidb": "tidb",
+    "destination-bigquery": "bigquery",
+}
+
 DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING = {
     **BASE_DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING,
     **{f"{k}-strict-encrypt": v for k, v in BASE_DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING.items()},
@@ -539,6 +549,11 @@ DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING = {
 DESTINATION_SPECIFIC_NORMALIZATION_ADAPTER_MAPPING = {
     **BASE_DESTINATION_SPECIFIC_NORMALIZATION_ADAPTER_MAPPING,
     **{f"{k}-strict-encrypt": v for k, v in BASE_DESTINATION_SPECIFIC_NORMALIZATION_ADAPTER_MAPPING.items()},
+}
+
+DESTINATION_SPECIFIC_NORMALIZATION_INTEGRATION_MAPPING = {
+    **BASE_DESTINATION_SPECIFIC_NORMALIZATION_INTEGRATION_MAPPING,
+    **{f"{k}-strict-encrypt": v for k, v in BASE_DESTINATION_SPECIFIC_NORMALIZATION_INTEGRATION_MAPPING.items()},
 }
 
 
@@ -565,6 +580,7 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
     ]
 
     dbt_adapter_package = DESTINATION_SPECIFIC_NORMALIZATION_ADAPTER_MAPPING.get(context.connector.technical_name, "dbt-bigquery==1.0.0")
+    normalization_integration_name = DESTINATION_SPECIFIC_NORMALIZATION_INTEGRATION_MAPPING.get(context.connector.technical_name, "bigquery")
 
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
 
@@ -587,6 +603,9 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
         .with_workdir("/airbyte/normalization_code/dbt-template/")
         .with_exec(["dbt", "deps"])
         .with_workdir("/airbyte")
+        .with_file("run_with_normalization.sh", context.get_repo_dir("airbyte-integrations/bases/base-java", include=["run_with_normalization.sh"]).file("run_with_normalization.sh"))
+        .with_env_variable("AIRBYTE_NORMALIZATION_INTEGRATION", normalization_integration_name)
+        .with_env_variable("AIRBYTE_ENTRYPOINT", "/airbyte/run_with_normalization.sh")
     )
 
 
