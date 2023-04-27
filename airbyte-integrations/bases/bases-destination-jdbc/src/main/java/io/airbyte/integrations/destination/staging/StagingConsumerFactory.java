@@ -11,8 +11,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.commons.functional.CheckedBiConsumer;
-import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -21,7 +19,8 @@ import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStre
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
-import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
+import io.airbyte.integrations.destination.record_buffer.FlushBufferFunction;
 import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
@@ -67,7 +66,7 @@ public class StagingConsumerFactory {
                                        final JdbcDatabase database,
                                        final StagingOperations stagingOperations,
                                        final NamingConventionTransformer namingResolver,
-                                       final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
+                                       final BufferCreateFunction onCreateBuffer,
                                        final JsonNode config,
                                        final ConfiguredAirbyteCatalog catalog,
                                        final boolean purgeStagingData) {
@@ -183,11 +182,11 @@ public class StagingConsumerFactory {
    * @return
    */
   @VisibleForTesting
-  CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> flushBufferFunction(
-                                                                                                       final JdbcDatabase database,
-                                                                                                       final StagingOperations stagingOperations,
-                                                                                                       final List<WriteConfig> writeConfigs,
-                                                                                                       final ConfiguredAirbyteCatalog catalog) {
+  FlushBufferFunction flushBufferFunction(
+                                          final JdbcDatabase database,
+                                          final StagingOperations stagingOperations,
+                                          final List<WriteConfig> writeConfigs,
+                                          final ConfiguredAirbyteCatalog catalog) {
     // TODO: (ryankfu) move this block of code that executes before the lambda to #onStartFunction
     final Set<WriteConfig> conflictingStreams = new HashSet<>();
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig = new HashMap<>();
