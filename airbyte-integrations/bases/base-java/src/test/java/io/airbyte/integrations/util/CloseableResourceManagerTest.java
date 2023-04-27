@@ -20,7 +20,8 @@ public class CloseableResourceManagerTest {
     Assertions.assertNotNull(instance);
     Assertions.assertSame(instance, CloseableResourceManager.getInstance());
 
-    // we use an AtomicBoolean because it can be final here and still settable within the anonymous class
+    // we use an AtomicBoolean because it can be final here and still settable within the anonymous
+    // class
     final AtomicBoolean closed = new AtomicBoolean(false);
     instance.addCloseable(() -> closed.set(true));
 
@@ -30,7 +31,8 @@ public class CloseableResourceManagerTest {
   }
 
   /**
-   * Get an instance of the resource manager and then call closeAll. Are we prevented from adding new objects?
+   * Get an instance of the resource manager and then call closeAll. Are we prevented from adding new
+   * objects?
    */
   @Test
   public void testRejectedExecution() {

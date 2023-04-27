@@ -36,8 +36,8 @@ public class ExecutorFactoryTest {
   }
 
   /**
-   * Test that the Blocking RejectedExecutionHandler we use blocks after the specified numbers of items
-   * is waiting in the queue
+   * Test that the Blocking RejectedExecutionHandler we use blocks after the specified numbers of
+   * items is waiting in the queue
    */
   @Test
   public void testRejectedExecution() {
@@ -63,7 +63,8 @@ public class ExecutorFactoryTest {
     // is there one item in the queue?
     assertEquals(executor.getQueue().size(), 1);
 
-    // start the timer and attempt to add another task, we expect this to block awaiting space in the queue
+    // start the timer and attempt to add another task, we expect this to block awaiting space in the
+    // queue
     long submitStartTime = System.currentTimeMillis();
     executor.submit(() -> {
       try {
@@ -113,8 +114,8 @@ public class ExecutorFactoryTest {
   }
 
   /**
-   * Submit a "long running" task and then shutdown with a "short" waiting time. We expect in that case
-   * that the task will be "interrupted" and not complete normally.
+   * Submit a "long running" task and then shutdown with a "short" waiting time. We expect in that
+   * case that the task will be "interrupted" and not complete normally.
    */
   @Test
   public void testShutdownWithLongTask() {
