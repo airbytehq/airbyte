@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.36.1
+low-code: fix add field transformation when running from the connector builder
+
 ## 0.36.0
 Emit stream status messages
 
