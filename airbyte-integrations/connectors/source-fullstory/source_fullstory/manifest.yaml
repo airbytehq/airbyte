@@ -1,14 +1,8 @@
 version: "0.29.0"
 
 definitions:
-  selector:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path: []
   requester:
-    type: HttpRequester
-    url_base: "https://example.com"
+    url_base: "https://api.fullstory.com"
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
@@ -16,41 +10,110 @@ definitions:
   retriever:
     type: SimpleRetriever
     record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: NoPagination
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: ["{{ parameters.name }}"]
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "TokenBased"
+          token_field: "nextPaginationToken"
+          token_option:
+            type: "RequestOption"
+            inject_into: "request_parameter"
+            field_name: "pagination_token"
+
     requester:
       $ref: "#/definitions/requester"
+
   base_stream:
-    type: DeclarativeStream
     retriever:
       $ref: "#/definitions/retriever"
-  customers_stream:
-    $ref: "#/definitions/base_stream"
-    name: "customers"
-    primary_key: "id"
+
+  operations_stream:
+    type: DeclarativeStream
     $parameters:
-      path: "/example"
+      name: "operations"
+      path: "/operations/v1"
+    $ref: "#/definitions/base_stream"
+
+  sessions_stream:
+    type: DeclarativeStream
+    $parameters:
+      name: "sessions"
+      path: "/sessions/v2?{{ 'uid=' ~ config['uid'] }}"
+    $ref: "#/definitions/base_stream"
+
+  segments_stream:
+    type: DeclarativeStream
+    $parameters:
+      name: "segments"
+      path: "/segments/v1"
+    $ref: "#/definitions/base_stream"
+
+  blockrules_stream:
+    type: DeclarativeStream
+    $parameters:
+      name: "blockrules"
+      path: "/settings/recording/v1/blocking"
+    $ref: "#/definitions/base_stream"
+
+  domainsettings_stream:
+    type: DeclarativeStream
+    $parameters:
+      name: "domainsettings"
+      path: "/settings/recording/v1/domain"
+    $ref: "#/definitions/base_stream"
+
+  geosettings_stream:
+    type: DeclarativeStream
+    $parameters:
+      name: "geosettings"
+      path: "/settings/recording/v1/geo"
+    $ref: "#/definitions/base_stream"
+
+  recordingfeatures_stream:
+    type: DeclarativeStream
+    $parameters:
+      name: "recordingfeatures"
+      path: "/settings/recording/v1/features"
+    $ref: "#/definitions/base_stream"
+
+  targetrules_stream:
+    type: DeclarativeStream
+    $parameters:
+      name: "sessionTargetingRules"
+      path: "/settings/recording/v1/targeting"
+    $ref: "#/definitions/base_stream"
+
+  webhooks_stream:
+    type: DeclarativeStream
+    $parameters:
+      name: "webhooks"
+      path: "/webhooks/v1/endpoints"
+    $ref: "#/definitions/base_stream"
+
+  event-types_stream:
+    type: DeclarativeStream
+    $parameters:
+      name: "eventDefs"
+      path: "/webhooks/v1/event-types"
+    $ref: "#/definitions/base_stream"
 
 streams:
-  - "#/definitions/customers_stream"
+  - "#/definitions/sessions_stream"
+  - "#/definitions/segments_stream"
+  - "#/definitions/operations_stream"
+  - "#/definitions/blockrules_stream"
+  - "#/definitions/domainsettings_stream"
+  - "#/definitions/geosettings_stream"
+  - "#/definitions/recordingfeatures_stream"
+  - "#/definitions/targetrules_stream"
+  - "#/definitions/webhooks_stream"
+  - "#/definitions/event-types_stream"
 
 check:
   type: CheckStream
   stream_names:
-    - "customers"
-
-spec:
-  type: Spec
-  documentation_url: https://docs.airbyte.com/integrations/sources/harvest
-  connection_specification:
-    title: Harvest Spec
-    type: object
-    required:
-      - api_key
-    additionalProperties: true
-    properties:
-      # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-      api_key:
-        type: string
-        description: API Key
+    - "sessions"
