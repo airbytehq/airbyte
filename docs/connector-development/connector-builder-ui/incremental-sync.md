@@ -135,7 +135,7 @@ curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=<b>2023-
 ## Custom parameter injection
 
 Using the "Inject start time / end time into outgoing HTTP request" option in the incremental sync form works for most cases, but sometimes the API has special requirements that can't be handled this way:
-* The API requires to add a prefix or a suffix to the actual value
+* The API requires adding a prefix or a suffix to the actual value
 * Multiple values need to be put together in a single parameter
 * The value needs to be injected into the URL path
 * Some conditional logic needs to be applied
