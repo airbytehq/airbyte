@@ -1,6 +1,6 @@
 # Low-code connector development
 
-Airbyte’s low-code framework enables you to build source connectors for REST APIs via a [connector builder UI](https://docs.airbyte.com/connector-development/config-based/connector-builder-ui) or by modifying boilerplate YAML files via terminal or text editor.
+Airbyte’s low-code framework enables you to build source connectors for REST APIs via a [connector builder UI](https://docs.airbyte.com/connector-development/connector-builder-ui/overview) or by modifying boilerplate YAML files via terminal or text editor.
 
 :::info 
 Developer updates will be announced via our #using-the-cdk Slack channel. If you are using the CDK, please join to stay up to date on changes and issues. 
@@ -83,7 +83,7 @@ For a step-by-step tutorial, refer to the [Getting Started tutorial](./tutorial/
 ## Connector Builder UI
 The main concept powering the lowcode connector framework is the Connector Manifest, a YAML file which describes the features and functionality of the connector. The structure of this YAML file is described in more detail [here](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/yaml-overview). 
 
-We recommend iterating on this YAML file is via the [connector builder UI](https://docs.airbyte.com/connector-development/config-based/connector-builder-ui) as it makes it easy to inspect and debug your connector in greater detail than you would be able to through the commandline. While you can still iterate via the commandline (and the docs contain instructions for how to do it), we're investing heavily in making the UI give you iteration superpowers, so we recommend you check it out!
+We recommend iterating on this YAML file is via the [connector builder UI](https://docs.airbyte.com/connector-development/connector-builder-ui/overview) as it makes it easy to inspect and debug your connector in greater detail than you would be able to through the commandline. While you can still iterate via the commandline (and the docs contain instructions for how to do it), we're investing heavily in making the UI give you iteration superpowers, so we recommend you check it out!
 
 ## Configuring the YAML file
 
