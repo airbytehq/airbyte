@@ -155,7 +155,7 @@ def construct_registry_with_spec_from_registry(registry: dict, cached_specs: Out
             else:
                 registry_with_specs["destinations"].append(entry_with_spec)
         except KeyError:
-            raise MissingCachedSpecError(f"No cached spec found for {entry['dockerRepository']:{entry['dockerImageTag']}}")
+            raise MissingCachedSpecError(f"No cached spec found for {entry['dockerRepository']}:{entry['dockerImageTag']}")
     return registry_with_specs
 
 
