@@ -8,10 +8,10 @@ from typing import List
 
 import anyio
 import asyncer
-from ci_connector_ops.pipelines.bases import ConnectorReport, StepResult
+from ci_connector_ops.pipelines.bases import ConnectorReport, StepResult, StepStatus
 from ci_connector_ops.pipelines.contexts import ConnectorContext
 from ci_connector_ops.pipelines.tests import java_connectors, python_connectors
-from ci_connector_ops.pipelines.tests.common import QaChecks
+from ci_connector_ops.pipelines.tests.common import QaChecks, VersionFollowsSemverCheck, VersionIncrementCheck
 from ci_connector_ops.utils import ConnectorLanguage
 
 LANGUAGE_MAPPING = {
@@ -26,6 +26,19 @@ LANGUAGE_MAPPING = {
         # ConnectorLanguage.JAVA: java_connectors.run_code_format_checks
     },
 }
+
+
+async def run_version_checks(context: ConnectorContext) -> List[StepResult]:
+    """Run the version checks on a connector.
+
+    Args:
+        context (ConnectorContext): The current connector context.
+
+    Returns:
+        List[StepResult]: The results of the version checks steps.
+    """
+    context.logger.info("Run version checks.")
+    return [await VersionFollowsSemverCheck(context).run(), await VersionIncrementCheck(context).run()]
 
 
 async def run_qa_checks(context: ConnectorContext) -> List[StepResult]:
@@ -87,13 +100,18 @@ async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyi
     """
     async with semaphore:
         async with context:
+            version_checks_results = await run_version_checks(context)
+            # We want to fail tests early if a version check fails.
+            if any([result.status is StepStatus.FAILURE for result in version_checks_results]):
+                context.report = ConnectorReport(context, steps_results=version_checks_results, name="TEST RESULTS")
+                return context.report
             async with asyncer.create_task_group() as task_group:
                 tasks = [
                     task_group.soonify(run_qa_checks)(context),
                     task_group.soonify(run_code_format_checks)(context),
                     task_group.soonify(run_all_tests)(context),
                 ]
-            results = list(itertools.chain(*(task.value for task in tasks)))
+            results = version_checks_results + list(itertools.chain(*(task.value for task in tasks)))
             context.report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
 
         return context.report

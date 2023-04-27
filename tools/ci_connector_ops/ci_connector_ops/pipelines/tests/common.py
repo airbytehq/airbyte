@@ -4,13 +4,90 @@
 
 """This module groups steps made to run tests agnostic to a connector language."""
 
-from typing import Optional
+from abc import ABC, abstractmethod
+from functools import cached_property
+from typing import ClassVar, Optional
 
 import asyncer
+import requests
+import yaml
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.bases import PytestStep, Step, StepResult, StepStatus
+from ci_connector_ops.pipelines.contexts import CIContext
+from ci_connector_ops.pipelines.utils import METADATA_FILE_NAME
 from ci_connector_ops.utils import DESTINATION_DEFINITIONS_FILE_PATH, SOURCE_DEFINITIONS_FILE_PATH
 from dagger import File
+from packaging import version
+
+
+class VersionCheck(Step, ABC):
+    """A step to validate the connector version was bumped if files were modified"""
+
+    GITHUB_URL_PREFIX_FOR_CONNECTORS = "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors"
+    failure_message: ClassVar
+
+    @property
+    def github_master_metadata_url(self):
+        return f"{self.GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/{METADATA_FILE_NAME}"
+
+    @cached_property
+    def master_metadata(self) -> dict:
+        response = requests.get(self.github_master_metadata_url)
+        response.raise_for_status()
+        return yaml.safe_load(response.text)
+
+    @property
+    def master_connector_version(self) -> version.Version:
+        metadata = self.master_metadata
+        return version.parse(str(metadata["data"]["dockerImageTag"]))
+
+    @property
+    def current_connector_version(self) -> version.Version:
+        return version.parse(str(self.context.metadata["dockerImageTag"]))
+
+    @property
+    def success_result(self) -> StepResult:
+        return StepResult(self, status=StepStatus.SUCCESS)
+
+    @property
+    def failure_result(self) -> StepResult:
+        return StepResult(self, status=StepStatus.FAILURE, stderr=self.failure_message)
+
+    @abstractmethod
+    def validate(self) -> StepResult:
+        raise NotImplementedError()
+
+    async def _run(self) -> StepResult:
+        if not self.context.modified_files:
+            return StepResult(self, status=StepStatus.SKIPPED, stdout="No modified files.")
+        if self.context.ci_context is CIContext.MASTER:
+            return StepResult(self, status=StepStatus.SKIPPED, stdout="Version check are not running in master context.")
+        try:
+            return self.validate()
+        except (requests.HTTPError, version.InvalidVersion, TypeError) as e:
+            return StepResult(self, status=StepStatus.FAILURE, stderr=str(e))
+
+
+class VersionIncrementCheck(VersionCheck):
+
+    title = "Connector version increment check."
+    failure_message = f"The dockerImageTag in {METADATA_FILE_NAME} was not incremented."
+
+    def validate(self) -> StepResult:
+        if not self.current_connector_version > self.master_connector_version:
+            return self.failure_result
+        return self.success_result
+
+
+class VersionFollowsSemverCheck(VersionCheck):
+
+    title = "Connector version semver check."
+    failure_message = f"The dockerImageTag in {METADATA_FILE_NAME} is not following semantic versioning."
+
+    def validate(self) -> StepResult:
+        if not len(str(self.current_connector_version).split(".")) == 3:
+            return self.failure_result
+        return self.success_result
 
 
 class QaChecks(Step):
