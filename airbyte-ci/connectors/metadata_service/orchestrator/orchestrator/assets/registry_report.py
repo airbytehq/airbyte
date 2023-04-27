@@ -72,7 +72,7 @@ def test_summary_url(row: pd.DataFrame) -> str:
 
     connector = docker_repo_name.replace("airbyte/", "")
 
-    return f"{CONNECTORS_TEST_RESULT_BUCKET_URL}/tests/summary/connectors/{connector}/badge.json"
+    return f"{CONNECTORS_TEST_RESULT_BUCKET_URL}/tests/summary/connectors/{connector}"
 
 
 # 📊 Dataframe Augmentation
