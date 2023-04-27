@@ -40,7 +40,7 @@ const buildAConnector = {
     },
     {
       type: 'category',
-      label: 'Connector builder',
+      label: 'Connector Builder',
       items: [
         'connector-development/connector-builder-ui/overview',
         'connector-development/connector-builder-ui/connector-builder-compatibility',
@@ -49,6 +49,7 @@ const buildAConnector = {
           type: 'category',
           label: 'Concepts',
           items: [
+            'connector-development/connector-builder-ui/authentication',
             'connector-development/connector-builder-ui/record-processing',
             'connector-development/connector-builder-ui/pagination',
             'connector-development/connector-builder-ui/incremental-sync',
