@@ -52,6 +52,8 @@ As this fulfills the requirements for incremental syncs, we can configure the "I
 * "Inject start time into outgoing HTTP request" is set to `request_parameter` with "Field" set to `from-date`
 * "Inject end time into outgoing HTTP request" is set to `request_parameter` with "Field" set to `to-date`
 
+<iframe width="640" height="835" src="https://www.loom.com/embed/78eb5da26e2e4f4aa9c3a48573d9ed3b" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+
 This API orders records by default from new to old, which is not optimal for a reliable sync as the last encountered cursor value will be the most recent date even if some older records did not get synced (for example if a sync fails halfway through). It's better to start with the oldest records and work your way up to make sure that all older records are synced already once a certain date is encountered on a record. In this case the API can be configured to behave like this by setting an additional parameter:
 * At the bottom of the stream configuration page, add a new "Request parameter"
 * Set the key to `order-by`
