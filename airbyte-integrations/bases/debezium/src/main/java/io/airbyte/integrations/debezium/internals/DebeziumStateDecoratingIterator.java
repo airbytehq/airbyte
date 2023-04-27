@@ -10,7 +10,6 @@ import io.airbyte.integrations.debezium.CdcStateHandler;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
-import io.debezium.engine.ChangeEvent;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -33,7 +32,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumStateDecoratingIterator.class);
 
-  private final Iterator<ChangeEvent<String, String>> changeEventIterator;
+  private final Iterator<ChangeEventWithMetadata> changeEventIterator;
   private final CdcStateHandler cdcStateHandler;
   private final CdcTargetPosition<T> targetPosition;
   private final AirbyteFileOffsetBackingStore offsetManager;
@@ -89,7 +88,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
    * @param checkpointDuration Duration object with time between syncs
    * @param checkpointRecords Number of records between syncs
    */
-  public DebeziumStateDecoratingIterator(final Iterator<ChangeEvent<String, String>> changeEventIterator,
+  public DebeziumStateDecoratingIterator(final Iterator<ChangeEventWithMetadata> changeEventIterator,
                                          final CdcStateHandler cdcStateHandler,
                                          final CdcTargetPosition<T> targetPosition,
                                          final CdcMetadataInjector cdcMetadataInjector,
@@ -142,7 +141,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
     }
 
     if (changeEventIterator.hasNext()) {
-      final ChangeEvent<String, String> event = changeEventIterator.next();
+      final ChangeEventWithMetadata event = changeEventIterator.next();
 
       if (cdcStateHandler.isCdcCheckpointEnabled()) {
         if (checkpointOffsetToSend.size() == 0 &&
@@ -162,7 +161,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
 
         if (checkpointOffsetToSend.size() == 1
             && changeEventIterator.hasNext()
-            && !targetPosition.isSnapshotEvent(event)
+            && !event.isSnapshotEvent()
             && targetPosition.isRecordBehindOffset(checkpointOffsetToSend, event)) {
           sendCheckpointMessage = true;
         }

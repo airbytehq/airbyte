@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - graph.facebook.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:

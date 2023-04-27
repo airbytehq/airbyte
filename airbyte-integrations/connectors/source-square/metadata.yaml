@@ -3,7 +3,7 @@ data:
     hosts:
       - connect.squareupsandbox.com
       - connect.squareup.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:

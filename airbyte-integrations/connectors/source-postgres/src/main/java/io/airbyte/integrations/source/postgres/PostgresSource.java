@@ -203,6 +203,13 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   @Override
+  protected void logPreSyncDebugData(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog)
+      throws SQLException {
+    super.logPreSyncDebugData(database, catalog);
+    PostgresQueryUtils.logXminStatus(database);
+  }
+
+  @Override
   @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
     final AirbyteCatalog catalog = super.discover(config);
@@ -393,7 +400,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot), new PostgresCdcConnectorMetadataInjector(),
           PostgresCdcProperties.getSnapshotProperties(database), postgresCdcStateHandler, emittedAt);
       return Collections.singletonList(
-          AutoCloseableIterators.concatWithEagerClose(snapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier)));
+          AutoCloseableIterators.concatWithEagerClose(AirbyteTraceMessageUtility::emitStreamStatusTrace, snapshotIterator,
+              AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)));
 
     } else {
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);

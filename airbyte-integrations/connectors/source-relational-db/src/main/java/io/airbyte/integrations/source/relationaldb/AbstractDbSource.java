@@ -15,6 +15,7 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.AbstractDatabase;
@@ -143,6 +144,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
     final Database database = createDatabase(config);
 
+    logPreSyncDebugData(database, catalog);
+
     final Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo =
         discoverWithoutSystemTables(database)
             .stream()
@@ -166,7 +169,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         .collect(Collectors.toList());
 
     return AutoCloseableIterators
-        .appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList), () -> {
+        .appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList, AirbyteTraceMessageUtility::emitStreamStatusTrace), () -> {
           LOGGER.info("Closing database connection pool.");
           Exceptions.toRuntime(this::close);
           LOGGER.info("Closed database connection pool.");
@@ -408,7 +411,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
               cursorInfo.map(CursorInfo::getCursor).orElse(null),
               cursorType,
               getStateEmissionFrequency()),
-          airbyteMessageIterator);
+          airbyteMessageIterator,
+          AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()));
     } else if (airbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
       estimateFullRefreshSyncSize(database, airbyteStream);
       iterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields,
@@ -423,13 +427,15 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     }
 
     final AtomicLong recordCount = new AtomicLong();
-    return AutoCloseableIterators.transform(iterator, r -> {
-      final long count = recordCount.incrementAndGet();
-      if (count % 10000 == 0) {
-        LOGGER.info("Reading stream {}. Records read: {}", streamName, count);
-      }
-      return r;
-    });
+    return AutoCloseableIterators.transform(iterator,
+        AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()),
+        r -> {
+          final long count = recordCount.incrementAndGet();
+          if (count % 10000 == 0) {
+            LOGGER.info("Reading stream {}. Records read: {}", streamName, count);
+          }
+          return r;
+        });
   }
 
   /**
@@ -504,13 +510,15 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                           final String streamName,
                                                                           final String namespace,
                                                                           final long emittedAt) {
-    return AutoCloseableIterators.transform(recordIterator, r -> new AirbyteMessage()
-        .withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage()
-            .withStream(streamName)
-            .withNamespace(namespace)
-            .withEmittedAt(emittedAt)
-            .withData(r)));
+    return AutoCloseableIterators.transform(recordIterator,
+        new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(streamName, namespace),
+        r -> new AirbyteMessage()
+            .withType(Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream(streamName)
+                .withNamespace(namespace)
+                .withEmittedAt(emittedAt)
+                .withData(r)));
   }
 
   /**
@@ -546,6 +554,15 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    */
   @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
   protected abstract Database createDatabase(JsonNode config) throws Exception;
+
+  /**
+   * Gets and logs relevant and useful database metadata such as DB product/version, index names and definition. Called before syncing data.
+   * Any logged information should be scoped to the configured catalog and database.
+   *
+   * @param database given database instance.
+   * @param catalog configured catalog.
+   */
+  protected void logPreSyncDebugData(final Database database, final ConfiguredAirbyteCatalog catalog) throws Exception {}
 
   /**
    * Configures a list of operations that can be used to check the connection to the source.
