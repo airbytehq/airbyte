@@ -57,5 +57,6 @@ specify the target size of compacted Iceberg data file.
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 0.1.2   | 2023-04-28 | [25662](https://github.com/airbytehq/airbyte/pull/25662) | Bump Iceberg library to 1.2.1 |
 | 0.1.1   | 2023-02-27 | [23201](https://github.com/airbytehq/airbyte/pull/23301) | Bump Iceberg library to 1.1.0 |
 | 0.1.0   | 2022-11-01 | [18836](https://github.com/airbytehq/airbyte/pull/18836) | Initial Commit |
