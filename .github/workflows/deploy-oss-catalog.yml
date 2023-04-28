@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - airbyte-config/init/src/main/resources/seed/**
+      - airbyte-config-oss/init-oss/src/main/resources/seed/**
 
   workflow_dispatch:
 
@@ -29,12 +29,12 @@ jobs:
           distribution: "zulu"
           java-version: "17"
       - name: Generate catalog
-        run: SUB_BUILD=ALL_CONNECTORS ./gradlew :airbyte-config:specs:generateOssConnectorCatalog
+        run: SUB_BUILD=ALL_CONNECTORS ./gradlew :airbyte-config-oss:specs-oss:generateOssConnectorCatalog
       - name: Upload catalog to GCS
         shell: bash
         run: |
           gcs_bucket_name="prod-airbyte-cloud-connector-metadata-service"
-          catalog_path="airbyte-config/init/src/main/resources/seed/oss_catalog.json"
+          catalog_path="airbyte-config-oss/init-oss/src/main/resources/seed/oss_catalog.json"
           gsutil -h "Cache-Control:public, max-age=10" cp "$catalog_path" "gs://$gcs_bucket_name/oss_catalog.json"
       - name: Trigger Cloud catalog generation
         uses: peter-evans/repository-dispatch@v2

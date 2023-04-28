@@ -9,11 +9,11 @@ import co.elastic.clients.elasticsearch._core.bulk.IndexResponseItem;
 import co.elastic.clients.elasticsearch._types.ErrorCause;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.airbyte.commons.concurrency.VoidCallable;
-import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
+import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
+import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -62,7 +62,7 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
     return jsonNode -> true;
   }
 
-  private static CheckedConsumer<Boolean, Exception> onCloseFunction(final ElasticsearchConnection connection) {
+  private static OnCloseFunction onCloseFunction(final ElasticsearchConnection connection) {
 
     return (hasFailed) -> {
       if (!tempIndices.isEmpty() && !hasFailed) {
@@ -119,7 +119,7 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
     return errorReport;
   }
 
-  private static VoidCallable onStartFunction(final ElasticsearchConnection connection, final List<ElasticsearchWriteConfig> writeConfigs) {
+  private static OnStartFunction onStartFunction(final ElasticsearchConnection connection, final List<ElasticsearchWriteConfig> writeConfigs) {
     return () -> {
       for (final var config : writeConfigs) {
         if (config.useTempIndex()) {

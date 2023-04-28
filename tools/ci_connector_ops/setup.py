@@ -42,14 +42,10 @@ QA_ENGINE_REQUIREMENTS = [
     "pytablewriter~=0.64.2",
 ]
 
-PIPELINES_REQUIREMENTS = [
-    "dagger-io==0.4.2",
-    "asyncer",
-    "anyio",
-]
+PIPELINES_REQUIREMENTS = ["dagger-io==0.5.0", "asyncer", "anyio", "more-itertools", "docker", "requests", "semver"]
 
 setup(
-    version="0.2.0",
+    version="0.2.1",
     name="ci_connector_ops",
     description="Packaged maintained by the connector operations team to perform CI for connectors",
     author="Airbyte",

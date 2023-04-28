@@ -4,7 +4,6 @@
 
 import copy
 import json
-import logging
 from dataclasses import InitVar, dataclass, field
 from itertools import islice
 from json import JSONDecodeError
@@ -52,6 +51,8 @@ class SimpleRetriever(Retriever, HttpStream):
         parameters (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
     """
 
+    _DEFAULT_MAX_RETRY = 5
+
     requester: Requester
     record_selector: HttpSelector
     config: Config
@@ -62,6 +63,8 @@ class SimpleRetriever(Retriever, HttpStream):
     _primary_key: str = field(init=False, repr=False, default="")
     paginator: Optional[Paginator] = None
     stream_slicer: Optional[StreamSlicer] = SinglePartitionRouter(parameters={})
+    emit_connector_builder_messages: bool = False
+    disable_retries: bool = False
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self.paginator = self.paginator or NoPagination(parameters=parameters)
@@ -95,6 +98,14 @@ class SimpleRetriever(Retriever, HttpStream):
     def raise_on_http_errors(self) -> bool:
         # never raise on http_errors because this overrides the error handler logic...
         return False
+
+    @property
+    def max_retries(self) -> Union[int, None]:
+        if self.disable_retries:
+            return 0
+        if hasattr(self.requester.error_handler, "max_retries"):
+            return self.requester.error_handler.max_retries
+        return self._DEFAULT_MAX_RETRY
 
     def should_retry(self, response: requests.Response) -> bool:
         """
@@ -369,7 +380,7 @@ class SimpleRetriever(Retriever, HttpStream):
         stream_slice = stream_slice or {}  # None-check
         self.paginator.reset()
         records_generator = self._read_pages(
-            self._parse_records_and_emit_request_and_responses,
+            self.parse_records,
             stream_slice,
             stream_state,
         )
@@ -409,13 +420,13 @@ class SimpleRetriever(Retriever, HttpStream):
         """State setter, accept state serialized by state getter."""
         self.stream_slicer.update_cursor(value)
 
-    def _parse_records_and_emit_request_and_responses(self, request, response, stream_state, stream_slice) -> Iterable[StreamData]:
-        # Only emit requests and responses when running in debug mode
-        if self.logger.isEnabledFor(logging.DEBUG):
-            yield _prepared_request_to_airbyte_message(request)
-            yield _response_to_airbyte_message(response)
-        # Not great to need to call _read_pages which is a private method
-        # A better approach would be to extract the HTTP client from the HttpStream and call it directly from the HttpRequester
+    def parse_records(
+        self,
+        request: requests.PreparedRequest,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any],
+    ) -> Iterable[StreamData]:
         yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
 
 
@@ -439,6 +450,17 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Optional[StreamState] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         return islice(super().stream_slices(sync_mode=sync_mode, stream_state=stream_state), self.maximum_number_of_slices)
+
+    def parse_records(
+        self,
+        request: requests.PreparedRequest,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any],
+    ) -> Iterable[StreamData]:
+        yield _prepared_request_to_airbyte_message(request)
+        yield _response_to_airbyte_message(response)
+        yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
 
 
 def _prepared_request_to_airbyte_message(request: requests.PreparedRequest) -> AirbyteMessage:

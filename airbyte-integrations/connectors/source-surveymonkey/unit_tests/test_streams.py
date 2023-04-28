@@ -8,7 +8,7 @@ import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import NoAuth
-from source_surveymonkey.streams import SurveyIds, SurveyPages, SurveyQuestions, SurveyResponses, Surveys
+from source_surveymonkey.streams import SurveyCollectors, SurveyIds, SurveyPages, SurveyQuestions, SurveyResponses, Surveys
 
 args_mock = {"authenticator": NoAuth(), "start_date": pendulum.parse("2000-01-01"), "survey_ids": []}
 
@@ -326,10 +326,31 @@ def test_survey_questions(requests_mock):
     ]
 
 
+def test_survey_collectors(requests_mock):
+    requests_mock.get("https://api.surveymonkey.com/v3/surveys/307785415/collectors", json={
+        "data": [{"name": "Teams Poll", "id": "1", "href": "https://api.surveymonkey.com/v3/collectors/1"}],
+        "per_page": 50,
+        "page": 1,
+        "total": 1,
+        "links": {
+            "self": "https://api.surveymonkey.com/v3/surveys/307785415/collectors?page=1&per_page=50"
+        }
+    })
+    args = {**args_mock, **{"survey_ids": ["307785415"]}}
+    records = SurveyCollectors(**args).read_records(sync_mode=SyncMode.full_refresh, stream_slice={"survey_id": "307785415"})
+    assert list(records) == [
+        {
+            "name": "Teams Poll",
+            "id": "1",
+            "href": "https://api.surveymonkey.com/v3/collectors/1",
+            "survey_id": "307785415"
+        }
+    ]
+
+
 def test_surveys_next_page_token():
     args = {**args_mock, **{"survey_ids": ["307785415"]}}
     stream = SurveyIds(**args)
-
     mockresponse = Mock()
     mockresponse.json.return_value = {
         "links": {
@@ -375,11 +396,11 @@ def test_surveys_responses_get_updated_state(current_stream_state, latest_record
     [
         (
             {"307785415": {"date_modified": "2021-01-01T00:00:00+00:00"}},
-            {"start_modified_at": "2021-01-01T00:00:00"},
+            {"sort_order": "ASC", "sort_by": "date_modified", "per_page": 100, "start_modified_at": "2021-01-01T00:00:00"},
         ),
         (
             {},
-            {"start_modified_at": "2000-01-01T00:00:00"},  # return start_date
+            {"sort_order": "ASC", "sort_by": "date_modified", "per_page": 100, "start_modified_at": "2000-01-01T00:00:00"},  # return start_date
         ),
     ],
 )

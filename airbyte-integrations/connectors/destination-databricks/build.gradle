@@ -26,12 +26,12 @@ application {
 
 dependencies {
     implementation project(':airbyte-db:db-lib')
-    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:bases:base-java-s3')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    implementation project(':airbyte-integrations:connectors:destination-jdbc')
+    implementation project(':airbyte-integrations:bases:bases-destination-jdbc')
     implementation project(':airbyte-integrations:connectors:destination-s3')
     implementation project(':airbyte-integrations:connectors:destination-azure-blob-storage')
     implementation group: 'com.databricks', name: 'databricks-jdbc', version: '2.6.25'

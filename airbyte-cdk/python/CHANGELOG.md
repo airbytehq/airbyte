@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.36.1
+low-code: fix add field transformation when running from the connector builder
+
+## 0.36.0
+Emit stream status messages
+
+## 0.35.4
+low-code: remove now_local() macro because it's too unpredictable
+
+## 0.35.3
+low-code: alias stream_interval and stream_partition to stream_slice in jinja context
+
+## 0.35.2
+Connector builder scrubs secrets from raw request and response
+
+## 0.35.1
+low-code: Add title, description, and examples for all fields in the manifest schema
+
+## 0.35.0
+low-code: simplify session token authenticator interface
+
+## 0.34.3
+low-code: fix typo in ManifestDeclarativeSource
+
+## 0.34.2
+Emit slice log messages when running the connector builder
+
+## 0.34.1
+set slice and pages limit when reading from the connector builder module
+
+## 0.34.0
+Low-Code CDK: Enable use of SingleUseRefreshTokenAuthenticator
+
 ## 0.33.2
 low-code: fix duplicate stream slicer update
 

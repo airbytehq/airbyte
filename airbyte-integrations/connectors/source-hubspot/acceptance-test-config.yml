@@ -17,8 +17,6 @@ acceptance_tests:
   discovery:
     tests:
     - config_path: secrets/config_oauth.json
-      backward_compatibility_tests_config:
-        disable_for_version: 0.3.2
   basic_read:
     tests:
     - config_path: secrets/config_oauth.json
@@ -50,9 +48,18 @@ acceptance_tests:
           bypass_reason: Hubspot time depend on current time
         - name: properties/hs_latest_source_timestamp
           bypass_reason: Hubspot time depend on current time
+        - name: properties/hs_predictivescoringtier
+          bypass_reason: Hubspot prediction changes
+        - name: properties/lastmodifieddate
+          bypass_reason: Hubspot time depend on current time
+        - name: updatedAt
+          bypass_reason: Hubspot time depend on current time
         deals:
         - name: properties/hs_time_*
           bypass_reason: Hubspot time depend on current time
+        deals_archived:
+          - name: properties/hs_time_*
+            bypass_reason: Hubspot time depend on current time
         tickets:
         - name: properties/hs_time_*
           bypass_reason: Hubspot time depend on current time
