@@ -17,6 +17,15 @@
     "type_id": {
       "type": ["string", "null"]
     },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "created_at": {
+      "type": ["integer", "null"]
+    },
+    "updated_at": {
+      "type": ["integer", "null"]
+    },
     "_ab_extracted_at": {
       "type": "integer"
     }

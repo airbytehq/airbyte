@@ -105,6 +105,12 @@ class FiltersQueues(AssembledStream):
 class People(AssembledStream):
     data_field = "people"
 
+    def request_params(self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        return {
+            **super().request_params(stream_slice, next_page_token, **kwargs),
+            "included_deleted": True,
+        }
+
     def path(self, **kwargs) -> str:
         return "people"
 

@@ -25,6 +25,15 @@
     },
     "productive": {
       "type": "boolean"
+    },
+    "timeoff": {
+      "type": "boolean"
+    },
+    "background_color": {
+      "type": ["string", "null"]
+    },
+    "font_color": {
+      "type": ["string", "null"]
     }
   }
 }
