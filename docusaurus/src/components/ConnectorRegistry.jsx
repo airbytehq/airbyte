@@ -40,9 +40,9 @@ export default function ConnectorRegistry({ type }) {
   const [ossRegistry, setOssRegistry] = useState([]);
   const [cloudRegistry, setCloudRegistry] = useState([]);
 
-  useEffect(async () => {
-    await fetchCatalog(oss_registry_url, setOssRegistry);
-    await fetchCatalog(cloud_registry_url, setCloudRegistry);
+  useEffect(() => {
+    fetchCatalog(oss_registry_url, setOssRegistry);
+    fetchCatalog(cloud_registry_url, setCloudRegistry);
   }, []);
 
   if (ossRegistry.length === 0 || cloudRegistry.length === 0)
