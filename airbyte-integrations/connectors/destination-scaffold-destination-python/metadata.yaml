@@ -1,0 +1,19 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*" # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 02277fdd-35e6-4eda-8302-1ea07f801007
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-scaffold-destination-python
+  githubIssueLabel: destination-scaffold-destination-python
+  icon: scaffold-destination-python.svg
+  license: MIT
+  name: Scaffold Destination Python 
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/scaffold-destination-python
+metadataSpecVersion: "1.0"

@@ -1,0 +1,19 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*" # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 02277fdd-35e6-4eda-8302-1ea07f801007
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-scaffold-source-http
+  githubIssueLabel: source-scaffold-source-http
+  icon: scaffold-source-http.svg
+  license: MIT
+  name: Scaffold Source Http 
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/scaffold-source-http
+metadataSpecVersion: "1.0"

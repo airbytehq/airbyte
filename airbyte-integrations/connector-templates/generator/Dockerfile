@@ -10,7 +10,7 @@ RUN mkdir -p /airbyte
 WORKDIR /airbyte/airbyte-integrations/connector-templates/generator
 
 CMD npm install --silent --no-update-notifier && echo "INSTALL DONE" && \
-    npm run generate "$package_desc" "$package_name" && \
+    npm run generate "$package_desc" "$package_name" "$package_definition_id" && \
     LAST_CREATED_CONNECTOR=$(ls -td /airbyte/airbyte-integrations/connectors/* | head -n 1) && \
     echo "chowning generated directory: $LAST_CREATED_CONNECTOR" && \
     chown -R $ENV_UID:$ENV_GID $LAST_CREATED_CONNECTOR/* && \
