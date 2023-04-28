@@ -73,7 +73,7 @@ export default function ConnectorRegistry({ type }) {
               .replace("source-", "")
               .replace("destination-", "");
             const iconLink = `${iconBase}/${connector.icon}`;
-            const docsLink = `/integrations/${type}s/${codeName}`;
+            const docsLink = `/integrations/${type}s/${codeName}`; // not using documentationUrl so we can have relative links
             const sourceLink = `${sourceBase}/${baseName}`;
             const bugsLink = `${bugsBase}:connectors/${type}/${codeName}`;
             const isCloud = cloudRegistry[type + "s"].find(
