@@ -13,4 +13,4 @@ jobs:
     steps:
       - uses: mheap/require-checklist-action@v2
         with:
-          requireChecklist: true # If this is true and there are no checklists detected, the action will fail
+          requireChecklist: false # TODO (ben) reenable in one week once pull request templates have been updated
