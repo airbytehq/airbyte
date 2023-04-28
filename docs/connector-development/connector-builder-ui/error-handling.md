@@ -44,9 +44,9 @@ Although a lot of API documentation does not call out using an exponential backo
 
 ### Wait time from header
 
-<iframe width="640" height="545" src="https://www.loom.com/embed/84b65299b5cd4f83a8e3b6abdfa0ebd2" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
-
 The "Wait time from header" backoff strategy allows the connector to wait before retrying a request based on the value specified in the API response.
+
+<iframe width="640" height="545" src="https://www.loom.com/embed/84b65299b5cd4f83a8e3b6abdfa0ebd2" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
 #### Example
 
@@ -56,9 +56,9 @@ When running a sync, the connector receives from the Chargebee API a response wi
 
 ### Wait until time from header
 
-<iframe width="640" height="562" src="https://www.loom.com/embed/023bc8a5e5464b2fba125f9344e3f02f" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
-
 The "Wait until time from header" backoff strategy allows the connector to wait until a specific time before retrying a request according to the API response.
+
+<iframe width="640" height="562" src="https://www.loom.com/embed/023bc8a5e5464b2fba125f9344e3f02f" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
 #### Example
 
