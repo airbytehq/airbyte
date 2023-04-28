@@ -5,7 +5,6 @@
 
 import base64
 from abc import ABC
-from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
@@ -47,22 +46,19 @@ class SurveyStream(HttpStream, ABC):
 
 class SurveyctoStream(SurveyStream, IncrementalMixin):
     primary_key = "KEY"
-    date_format_scto = "%b %d, %Y %H:%M:%S %p"
-    dateformat = "%Y-%m-%dT%H:%M:%S+00:00"
-    cursor_field = "CompletionDate"
+    cursor_field = "SubmissionDate"
     _cursor_value = None
 
     @property
     def state(self) -> Mapping[str, Any]:
-        initial_date = datetime.strptime(self.start_date, self.date_format_scto)
         if self._cursor_value:
             return {self.cursor_field: self._cursor_value}
         else:
-            return {self.cursor_field: initial_date}
+            return {self.cursor_field: self.start_date}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = datetime.strptime(value[self.cursor_field], self.dateformat)
+        self._cursor_value = value[self.cursor_field]
 
     @property
     def name(self) -> str:
@@ -78,7 +74,7 @@ class SurveyctoStream(SurveyStream, IncrementalMixin):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         ix = self.state[self.cursor_field]
-        return {"date": ix.strftime(self.date_format_scto)}
+        return {"date": ix}
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -99,12 +95,6 @@ class SurveyctoStream(SurveyStream, IncrementalMixin):
 
         for data in self.response_json:
             try:
-                dateformat_in = "%b %d, %Y %I:%M:%S %p"
-                dateformat_out = "%Y-%m-%dT%H:%M:%S+00:00"
-                data["starttime"] = datetime.strptime(data["starttime"], dateformat_in).strftime(dateformat_out)
-                data["endtime"] = datetime.strptime(data["endtime"], dateformat_in).strftime(dateformat_out)
-                data["CompletionDate"] = datetime.strptime(data["CompletionDate"], dateformat_in).strftime(dateformat_out)
-                data["SubmissionDate"] = datetime.strptime(data["SubmissionDate"], dateformat_in).strftime(dateformat_out)
                 yield data
             except Exception as e:
                 msg = "Encountered an exception parsing schema"

@@ -39,7 +39,10 @@ class LoadContainerToLocalDockerHost(Step):
     async def _run(self) -> StepResult:
         _, exported_tarball_path = await export_container_to_tarball(self.context, self.container)
         client = docker.from_env()
-        with open(exported_tarball_path, "rb") as tarball_content:
-            new_image = client.images.load(tarball_content.read())[0]
-        new_image.tag(self.image_name, tag=self.IMAGE_TAG)
-        return StepResult(self, StepStatus.SUCCESS)
+        try:
+            with open(exported_tarball_path, "rb") as tarball_content:
+                new_image = client.images.load(tarball_content.read())[0]
+            new_image.tag(self.image_name, tag=self.IMAGE_TAG)
+            return StepResult(self, StepStatus.SUCCESS)
+        except ConnectionError:
+            return StepResult(self, StepStatus.FAILURE, stderr="The connection to the local docker host failed.")
