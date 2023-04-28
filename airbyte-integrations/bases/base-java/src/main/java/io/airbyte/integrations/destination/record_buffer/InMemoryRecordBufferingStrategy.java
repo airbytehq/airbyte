@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +31,7 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryRecordBufferingStrategy.class);
 
-  private Map<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> streamBuffer = new HashMap<>();
+  private Map<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> streamBuffer = new ConcurrentHashMap<>();
   private final RecordWriter<AirbyteRecordMessage> recordWriter;
   private final CheckAndRemoveRecordWriter checkAndRemoveRecordWriter;
   private String fileName;
@@ -73,7 +74,7 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
   }
 
   @Override
-  public void flushSingleBuffer(final AirbyteStreamNameNamespacePair stream, final SerializableBuffer buffer) throws Exception {
+  public void flushSingleBuffer(final AirbyteStreamNameNamespacePair stream) throws Exception {
     LOGGER.info("Flushing single stream {}: {} records", stream.getName(), streamBuffer.get(stream).size());
     recordWriter.accept(stream, streamBuffer.get(stream));
     LOGGER.info("Flushing completed for {}", stream.getName());

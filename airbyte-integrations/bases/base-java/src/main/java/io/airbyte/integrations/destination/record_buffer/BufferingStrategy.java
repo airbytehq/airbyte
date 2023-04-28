@@ -35,7 +35,7 @@ public interface BufferingStrategy extends AutoCloseable {
   /**
    * Flush buffered messages in a buffer from a particular stream
    */
-  void flushSingleBuffer(AirbyteStreamNameNamespacePair stream, SerializableBuffer buffer) throws Exception;
+  void flushSingleBuffer(AirbyteStreamNameNamespacePair stream) throws Exception;
 
   /**
    * Flush all buffers that were buffering message data so far.

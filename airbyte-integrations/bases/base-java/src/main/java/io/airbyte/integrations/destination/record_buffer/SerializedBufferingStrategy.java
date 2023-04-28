@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.record_buffer;
 
+import com.google.common.util.concurrent.MoreExecutors;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -14,6 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,9 +38,11 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   private final BufferCreateFunction onCreateBuffer;
   private final FlushBufferFunction onStreamFlush;
 
-  private Map<AirbyteStreamNameNamespacePair, SerializableBuffer> allBuffers = new HashMap<>();
+  private Map<AirbyteStreamNameNamespacePair, SerializableBuffer> allBuffers = new ConcurrentHashMap<>();
   private long totalBufferSizeInBytes;
   private final ConfiguredAirbyteCatalog catalog;
+
+  private final ExecutorService executorService;
 
   /**
    * Creates instance of Serialized Buffering Strategy used to handle the logic of flushing buffer
@@ -48,10 +55,26 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   public SerializedBufferingStrategy(final BufferCreateFunction onCreateBuffer,
                                      final ConfiguredAirbyteCatalog catalog,
                                      final FlushBufferFunction onStreamFlush) {
+    this(onCreateBuffer, catalog, onStreamFlush, MoreExecutors.newDirectExecutorService());
+  }
+
+  /**
+   * Creates instance of Serialized Buffering Strategy used to handle the logic of flushing buffer
+   * with an associated buffer type
+   *
+   * @param onCreateBuffer type of buffer used upon creation
+   * @param catalog collection of {@link io.airbyte.protocol.models.ConfiguredAirbyteStream}
+   * @param onStreamFlush buffer flush logic used throughout the streaming of messages
+   */
+  public SerializedBufferingStrategy(final BufferCreateFunction onCreateBuffer,
+                                     final ConfiguredAirbyteCatalog catalog,
+                                     final FlushBufferFunction onStreamFlush,
+                                     final ExecutorService executorService) {
     this.onCreateBuffer = onCreateBuffer;
     this.catalog = catalog;
     this.onStreamFlush = onStreamFlush;
     this.totalBufferSizeInBytes = 0;
+    this.executorService = executorService;
   }
 
   /**
@@ -79,7 +102,7 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
       flushAllBuffers();
       flushed = Optional.of(BufferFlushType.FLUSH_ALL);
     } else if (buffer.getByteCount() >= buffer.getMaxPerStreamBufferSizeInBytes()) {
-      flushSingleBuffer(stream, buffer);
+      flushSingleBuffer(stream);
       /*
        * Note: This branch is needed to indicate to the {@link DefaultDestStateLifeCycleManager} that an
        * individual stream was flushed, there is no guarantee that it will flush records in the same order
@@ -120,28 +143,43 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   }
 
   @Override
-  public void flushSingleBuffer(final AirbyteStreamNameNamespacePair stream, final SerializableBuffer buffer) throws Exception {
-    LOGGER.info("Flushing buffer of stream {} ({})", stream.getName(), FileUtils.byteCountToDisplaySize(buffer.getByteCount()));
-    onStreamFlush.accept(stream, buffer);
+  public void flushSingleBuffer(final AirbyteStreamNameNamespacePair stream) {
+    final SerializableBuffer buffer = allBuffers.remove(stream);
     totalBufferSizeInBytes -= buffer.getByteCount();
-    allBuffers.remove(stream);
-    LOGGER.info("Flushing completed for {}", stream.getName());
+    LOGGER.info("Flushing buffer of stream {} ({})", stream.getName(), FileUtils.byteCountToDisplaySize(buffer.getByteCount()));
+
+    final Future<Void> flushFuture = executorService.submit(new FlushTask(onStreamFlush, stream, buffer));
+
+    // todo: add flushFuture to async work tracker but for the direct executor, we will just check
+    // todo:    the future inline like this.
+    try {
+      flushFuture.get();
+    } catch (InterruptedException | ExecutionException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public void flushAllBuffers() throws Exception {
+  public void flushAllBuffers() {
     LOGGER.info("Flushing all {} current buffers ({} in total)", allBuffers.size(), FileUtils.byteCountToDisplaySize(totalBufferSizeInBytes));
+
     for (final Entry<AirbyteStreamNameNamespacePair, SerializableBuffer> entry : allBuffers.entrySet()) {
       final AirbyteStreamNameNamespacePair stream = entry.getKey();
-      final SerializableBuffer buffer = entry.getValue();
-      LOGGER.info("Flushing buffer of stream {} ({})", stream.getName(), FileUtils.byteCountToDisplaySize(buffer.getByteCount()));
-      onStreamFlush.accept(stream, buffer);
-      LOGGER.info("Flushing completed for {}", stream.getName());
+      final SerializableBuffer buffer = allBuffers.remove(stream);
+      final Future<Void> flushFuture = executorService.submit(new FlushTask(onStreamFlush, stream, buffer));
+
+      // todo: add flushFuture to async work tracker but for the direct executor, we will just check
+      // todo: the future inline like this.
+      try {
+        flushFuture.get();
+      } catch (InterruptedException | ExecutionException e) {
+        throw new RuntimeException(e);
+      }
     }
-    close();
-    clear();
+
     totalBufferSizeInBytes = 0;
   }
+
 
   @Override
   public void clear() throws Exception {
