@@ -151,7 +151,7 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
     final Future<Void> flushFuture = executorService.submit(new FlushTask(onStreamFlush, stream, buffer));
 
     // todo: add flushFuture to async work tracker but for the direct executor, we will just check
-    // todo:    the future inline like this.
+    // todo: the future inline like this.
     try {
       flushFuture.get();
     } catch (InterruptedException | ExecutionException e) {
@@ -179,7 +179,6 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
 
     totalBufferSizeInBytes = 0;
   }
-
 
   @Override
   public void clear() throws Exception {

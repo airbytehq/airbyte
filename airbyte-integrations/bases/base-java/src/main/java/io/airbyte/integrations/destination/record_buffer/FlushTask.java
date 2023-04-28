@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.record_buffer;
 
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -7,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class FlushTask implements Callable<Void> {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(FlushTask.class);
 
   private final FlushBufferFunction flushBufferFunction;
@@ -27,5 +32,5 @@ public class FlushTask implements Callable<Void> {
     LOGGER.info("Flushing completed for {}", stream.getName());
     return null;
   }
-}
 
+}
