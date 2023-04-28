@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.slf4j.MDC;
 
 @Slf4j
@@ -244,6 +245,11 @@ public class TestRunnable {
       }
     }
 
+  }
+
+  public static void main(String[] args) {
+    var logger = Configurator.initialize(null, "rando.xml");
+    System.out.println("Hi!");
   }
 
 }

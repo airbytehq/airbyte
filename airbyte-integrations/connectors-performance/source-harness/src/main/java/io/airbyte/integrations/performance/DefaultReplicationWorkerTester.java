@@ -1,10 +1,15 @@
 package io.airbyte.integrations.performance;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
+import datadog.trace.api.Trace;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.ReplicationAttemptSummary;
@@ -16,6 +21,7 @@ import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.protocol.models.AirbyteControlMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -127,7 +133,7 @@ public class DefaultReplicationWorkerTester {
    * @return output of the replication attempt (including state)
    * @throws WorkerException exception from worker
    */
-//  @Trace(operationName = WORKER_OPERATION_NAME)
+  @Trace(operationName = "TEST HARNESS")
 //  @Override
   public final ReplicationOutput run(WorkerSourceConfig srcConfig, WorkerDestinationConfig dstConfig, final Path jobRoot) throws WorkerException {
     LOGGER.info("start sync worker. job id: {} attempt id: {}", jobId, attempt);
@@ -155,7 +161,7 @@ public class DefaultReplicationWorkerTester {
       LOGGER.debug("field selection enabled: {}", fieldSelectionEnabled);
 //      final WorkerSourceConfig sourceConfig = WorkerUtils.syncToWorkerSourceConfig(syncInput);
 
-//      ApmTraceUtils.addTagsToTrace(generateTraceTags(destinationConfig, jobRoot));
+      ApmTraceUtils.addTagsToTrace(generateTraceTags(new WorkerDestinationConfig().withConnectionId(UUID.randomUUID()), jobRoot));
       replicate(jobRoot, dstConfig, timeTracker, replicationRunnableFailureRef, destinationRunnableFailureRef, srcConfig,
           UUID.randomUUID(), false);
       timeTracker.trackReplicationEndTime();
@@ -195,7 +201,7 @@ public class DefaultReplicationWorkerTester {
               executors)
           .whenComplete((msg, ex) -> {
             if (ex != null) {
-//              ApmTraceUtils.addExceptionToTrace(ex);
+              ApmTraceUtils.addExceptionToTrace(ex);
               if (ex.getCause() instanceof DestinationException) {
                 destinationRunnableFailureRef.set(FailureHelper.destinationFailure(ex, Long.valueOf(jobId), attempt));
               } else {
@@ -219,7 +225,7 @@ public class DefaultReplicationWorkerTester {
               fieldSelectionEnabled), executors)
           .whenComplete((msg, ex) -> {
             if (ex != null) {
-//              ApmTraceUtils.addExceptionToTrace(ex);
+              ApmTraceUtils.addExceptionToTrace(ex);
               replicationRunnableFailureRef.set(getFailureReason(ex.getCause(), Long.parseLong(jobId), attempt));
             }
           });
@@ -229,7 +235,7 @@ public class DefaultReplicationWorkerTester {
           srcHeartbeatTimeoutChaperone.runWithHeartbeatThread(readSrcAndWriteDstThread);
         }
       } catch (HeartbeatTimeoutChaperone.HeartbeatTimeoutException ex) {
-//        ApmTraceUtils.addExceptionToTrace(ex);
+        ApmTraceUtils.addExceptionToTrace(ex);
         replicationRunnableFailureRef.set(getFailureReason(ex, Long.parseLong(jobId), attempt));
       }
 
@@ -244,7 +250,7 @@ public class DefaultReplicationWorkerTester {
 
     } catch (final Exception e) {
       hasFailed.set(true);
-//      ApmTraceUtils.addExceptionToTrace(e);
+      ApmTraceUtils.addExceptionToTrace(e);
       LOGGER.error("Sync worker failed.", e);
     } finally {
       executors.shutdownNow();
@@ -327,6 +333,7 @@ public class DefaultReplicationWorkerTester {
   }
 
   @SuppressWarnings("PMD.AvoidInstanceofChecksInCatchClause")
+  @Trace(operationName = "TEST HARNESS")
   private static Runnable readFromSrcAndWriteToDstRunnable(final AirbyteSource source,
       final AirbyteDestination destination,
       final ConfiguredAirbyteCatalog catalog,
@@ -751,20 +758,20 @@ public class DefaultReplicationWorkerTester {
 //
 //  }
 //
-//  private Map<String, Object> generateTraceTags(final WorkerDestinationConfig destinationConfig, final Path jobRoot) {
-//    final Map<String, Object> tags = new HashMap<>();
-//
-//    tags.put(JOB_ID_KEY, jobId);
-//    tags.put(JOB_ROOT_KEY, jobRoot);
-//
-//    if (destinationConfig != null) {
-//      if (destinationConfig.getConnectionId() != null) {
-//        tags.put(CONNECTION_ID_KEY, destinationConfig.getConnectionId());
-//      }
-//    }
-//
-//    return tags;
-//  }
+  private Map<String, Object> generateTraceTags(final WorkerDestinationConfig destinationConfig, final Path jobRoot) {
+    final Map<String, Object> tags = new HashMap<>();
+
+    tags.put(JOB_ID_KEY, jobId);
+    tags.put(JOB_ROOT_KEY, jobRoot);
+
+    if (destinationConfig != null) {
+      if (destinationConfig.getConnectionId() != null) {
+        tags.put(CONNECTION_ID_KEY, destinationConfig.getConnectionId());
+      }
+    }
+
+    return tags;
+  }
 
   private static boolean shouldCommitStateAsap(final StandardSyncInput syncInput) {
     return syncInput.getCommitStateAsap() != null && syncInput.getCommitStateAsap();

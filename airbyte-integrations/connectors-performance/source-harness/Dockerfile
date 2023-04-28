@@ -1,13 +1,17 @@
 FROM airbyte/integration-base-java:dev AS build
 WORKDIR /airbyte
+
 ENV APPLICATION source-harness
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 RUN tar xf ${APPLICATION}.tar --strip-components=1 && rm -rf ${APPLICATION}.tar
 FROM airbyte/integration-base-java:dev
 WORKDIR /airbyte
+
 ENV APPLICATION source-harness
 COPY --from=build /airbyte /airbyte
 COPY base.sh .
+
+ADD https://dtdg.co/latest-java-tracer dd-java-agent.jar
 
 RUN curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.25.6/2023-01-30/bin/linux/amd64/kubectl
 RUN chmod +x ./kubectl

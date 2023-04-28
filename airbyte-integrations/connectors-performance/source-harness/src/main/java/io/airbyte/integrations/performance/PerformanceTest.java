@@ -235,8 +235,8 @@ public class PerformanceTest {
 //    }, executors);
 //
 //    CompletableFuture.anyOf(readSrcAndWriteDstThread, readFromDstThread).get();
-    LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.KUBERNETES, new EnvConfigs().getLogConfigs(), Path.of("/16-april/" +
-        new Timestamp(System.currentTimeMillis()).toInstant()));
+//    LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.KUBERNETES, new EnvConfigs().getLogConfigs(), Path.of("/16-april/" +
+//        new Timestamp(System.currentTimeMillis()).toInstant()));
     var worker = new DefaultReplicationWorkerTester(
         "1", 0, source, namespaceMapper, destination, tracker,  recordSchemaValidator,  true, false, null);
     var output = worker.run(sourceConfig, dstConfig, Path.of("/"));
