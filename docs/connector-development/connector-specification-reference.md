@@ -57,9 +57,9 @@ Additionally, `order` values cannot be duplicated within the same object or grou
 
 By default, all optional fields will be collapsed into an `Optional fields` section which can be expanded or collapsed by the user. This helps streamline the UI for setting up a connector by initially focusing attention on the required fields only.
 
-Optional fields can be ordered just like other fields by setting the `order` property on the field. If optional fields are ordered before required fields, an `Optional fields` section will be placed in the corresponding location in the form. Consecutive optional fields will be grouped into the same section in this situation. If an optional field does not have an `order` set, it will be placed below all other fields that either have an `order` or are required.
+These `Optional fields` sections are placed at the bottom of a field group, meaning that all required fields in the same group will be placed above it. To interleave optional fields with required fields, set `always_show: true` on the optional field along with an `order`, which will cause the field to no longer be collapsed in an `Optional fields` section and be ordered as normal. **Note:** `always_show` is only allowed on optional fields.
 
-Optional fields can also be configured to never be placed in a collapsed section, by setting `always_show: true` on the field. **Note:** `always_show` is only allowed on optional fields.
+Within a collapsed `Optional fields` section, the optional fields' `order` defines their position in the section; those without an `order` will be placed after fields with an `order`, and will themselves be ordered alphabetically by field name.
 
 For example, using the following spec:
 
@@ -77,7 +77,8 @@ For example, using the following spec:
       "password": {
         "type": "string",
         "title": "Password",
-        "order": 2
+        "order": 2,
+        "always_show": true
       },
       "namespace": {
         "type": "string",
@@ -87,8 +88,7 @@ For example, using the following spec:
       "region": {
         "type": "string",
         "title": "Region",
-        "order": 4,
-        "always_show": true
+        "order": 4
       },
       "account_id": {
         "type": "integer",
