@@ -3,11 +3,6 @@ data:
     hosts:
       - ${subdomain}.zendesk.com
       - zendesk.com
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
@@ -17,6 +12,11 @@ data:
   icon: zendesk-support.svg
   license: MIT
   name: Zendesk Support
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: generally_available
   supportUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
 metadataSpecVersion: "1.0"

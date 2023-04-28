@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorType: destination
   definitionId: 50a559a7-6323-4e33-8aa0-51dfd9dfadac
   dockerImageTag: 0.1.0
@@ -12,7 +7,11 @@ data:
   icon: select.db
   license: MIT
   name: SelectDB
-  connectorSubtype: database
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/destinations/selectdb
 metadataSpecVersion: "1.0"
