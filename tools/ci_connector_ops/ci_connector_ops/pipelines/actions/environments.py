@@ -556,6 +556,15 @@ DESTINATION_SPECIFIC_NORMALIZATION_INTEGRATION_MAPPING = {
     **{f"{k}-strict-encrypt": v for k, v in BASE_DESTINATION_SPECIFIC_NORMALIZATION_INTEGRATION_MAPPING.items()},
 }
 
+BASE_DESTINATIONS_SUPPORTING_IN_CONNECTOR_NORMALIZATION = {
+    "destination-bigquery"
+}
+
+DESTINATIONS_SUPPORTING_IN_CONNECTOR_NORMALIZATION = {
+    *BASE_DESTINATIONS_SUPPORTING_IN_CONNECTOR_NORMALIZATION,
+    *{f"{conn}-strict-encrypt" for conn in BASE_DESTINATIONS_SUPPORTING_IN_CONNECTOR_NORMALIZATION}
+}
+
 
 def with_normalization(context: ConnectorContext) -> Container:
     normalization_directory = context.get_repo_dir("airbyte-integrations/bases/base-normalization")
@@ -621,7 +630,7 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
         .with_exec(["rm", "-rf", f"{application}.tar"])
     )
 
-    if context.connector.supports_normalization:
+    if context.connector.supports_normalization and context.connector.technical_name in DESTINATIONS_SUPPORTING_IN_CONNECTOR_NORMALIZATION:
         base = with_integration_base_java_and_normalization(context, build_platform)
     else:
         base = with_integration_base_java(context, build_platform)
