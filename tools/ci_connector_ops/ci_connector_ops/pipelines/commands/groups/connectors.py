@@ -107,25 +107,40 @@ def connectors(
         logger=logger,
     )
 
-    selected_connectors = get_all_released_connectors()
-    modified_connectors = get_modified_connectors(ctx.obj["modified_files"])
-    if modified:
-        selected_connectors = modified_connectors
-    else:
-        selected_connectors.update(modified_connectors)
-    if names:
-        selected_connectors = {connector for connector in selected_connectors if connector.technical_name in names}
-    if languages:
-        selected_connectors = {connector for connector in selected_connectors if connector.language in languages}
-    if release_stages:
-        selected_connectors = {connector for connector in selected_connectors if connector.release_stage in release_stages}
+    all_connectors = get_all_released_connectors()
 
-    if not selected_connectors:
+    modified_connectors_and_files = get_modified_connectors(ctx.obj["modified_files"])
+    # We select all connectors by default
+    selected_connectors_and_files = {connector: modified_connectors_and_files.get(connector, []) for connector in all_connectors}
+
+    if names:
+        selected_connectors_and_files = {
+            connector: selected_connectors_and_files[connector]
+            for connector in selected_connectors_and_files
+            if connector.technical_name in names
+        }
+    if languages:
+        selected_connectors_and_files = {
+            connector: selected_connectors_and_files[connector]
+            for connector in selected_connectors_and_files
+            if connector.language in languages
+        }
+    if release_stages:
+        selected_connectors_and_files = {
+            connector: selected_connectors_and_files[connector]
+            for connector in selected_connectors_and_files
+            if connector.release_stage in release_stages
+        }
+    if modified:
+        selected_connectors_and_files = {
+            connector: modified_files for connector, modified_files in selected_connectors_and_files.items() if modified_files
+        }
+    if not selected_connectors_and_files:
         click.secho("No connector were selected according to your inputs. Please double check your filters.", fg="yellow")
         sys.exit(0)
 
-    ctx.obj["selected_connectors"] = selected_connectors
-    ctx.obj["selected_connectors_names"] = [c.technical_name for c in selected_connectors]
+    ctx.obj["selected_connectors_and_files"] = selected_connectors_and_files
+    ctx.obj["selected_connectors_names"] = [c.technical_name for c in selected_connectors_and_files.keys()]
 
 
 @connectors.command(cls=DaggerPipelineCommand, help="Test all the selected connectors.")
@@ -146,12 +161,13 @@ def test(
             ctx.obj["is_local"],
             ctx.obj["git_branch"],
             ctx.obj["git_revision"],
+            modified_files,
             ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
         )
-        for connector in ctx.obj["selected_connectors"]
+        for connector, modified_files in ctx.obj["selected_connectors_and_files"].items()
     ]
     try:
         anyio.run(run_connectors_pipelines, connectors_tests_contexts, run_connector_test_pipeline, "Test Pipeline", ctx.obj["concurrency"])
@@ -189,12 +205,13 @@ def build(ctx: click.Context) -> bool:
             ctx.obj["is_local"],
             ctx.obj["git_branch"],
             ctx.obj["git_revision"],
+            modified_files,
             ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
         )
-        for connector in ctx.obj["selected_connectors"]
+        for connector, modified_files in ctx.obj["selected_connectors_and_files"].items()
     ]
     anyio.run(run_connectors_pipelines, connectors_contexts, run_connector_build_pipeline, "Build Pipeline", ctx.obj["concurrency"])
 
@@ -246,10 +263,10 @@ def publish(
             abort=True,
         )
     if ctx.obj["modified"]:
-        selected_connectors = get_modified_connectors(get_modified_metadata_files(ctx.obj["modified_files"]))
-        selected_connectors_names = [connector.technical_name for connector in selected_connectors]
+        selected_connectors_and_files = get_modified_connectors(get_modified_metadata_files(ctx.obj["modified_files"]))
+        selected_connectors_names = [connector.technical_name for connector in selected_connectors_and_files.keys()]
     else:
-        selected_connectors = ctx.obj["selected_connectors"]
+        selected_connectors_and_files = ctx.obj["selected_connectors_and_files"]
         selected_connectors_names = ctx.obj["selected_connectors_names"]
 
     click.secho(f"Will publish the following connectors: {', '.join(selected_connectors_names)}.", fg="green")
@@ -263,12 +280,13 @@ def publish(
             ctx.obj["is_local"],
             ctx.obj["git_branch"],
             ctx.obj["git_revision"],
+            modified_files,
             ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
         )
-        for connector in selected_connectors
+        for connector, modified_files in selected_connectors_and_files.items()
     ]
     connectors_contexts = anyio.run(
         run_connectors_pipelines,

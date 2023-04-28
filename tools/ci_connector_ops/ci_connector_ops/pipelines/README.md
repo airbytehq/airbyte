@@ -16,6 +16,7 @@ This documentation should be helpful for both local and CI use of the CLI. We in
 ### Install
 ```bash
 # Make sure that the current Python version is >= 3.10
+pyenv shell 3.10
 pip install "ci-connector-ops[pipelines] @ git+https://github.com/airbytehq/airbyte.git@master#subdirectory=tools/ci_connector_ops"
 cd airbyte
 airbyte-ci
@@ -108,6 +109,11 @@ Test connectors changed on the current branch:
 ```mermaid
 flowchart TD
     entrypoint[[For each selected connector]]
+    subgraph version ["Connector version checks"]
+        sem["Check version follows semantic versionning"]
+        incr["Check version is incremented"]
+        sem --> incr
+    end
     subgraph static ["Static code analysis"]
       qa[Run QA checks]
       fmt[Run code format checks]
@@ -126,8 +132,9 @@ flowchart TD
         build-->integration
         build-->cat
     end
-    entrypoint-->static
-    entrypoint-->tests
+    entrypoint-->version
+    version-->static
+    version-->tests
     report["Build test report"]
     tests-->report
     static-->report
