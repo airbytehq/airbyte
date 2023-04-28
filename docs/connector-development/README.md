@@ -8,9 +8,13 @@ To build a new connector in Java or Python, we provide templates so you don't ne
 
 Airbyte provides some Connector Development Kits (CDKs) to help you build connectors.
 
+### Connector builder UI
+
+The [connector builder UI](connector-builder-ui/overview.md) is based on the low-code development framework below and allows to develop and use connectors without leaving the Airbyte UI (no local development environment required).
+
 ### Low-code Connector-Development Framework
 
-You can use the [low-code framework](config-based/low-code-cdk-overview.md) to build source connectors for REST APIs via a [connector builder UI](config-based/connector-builder-ui.md) or by modifying boilerplate YAML files.
+You can use the [low-code framework](config-based/low-code-cdk-overview.md) to build source connectors for REST APIs by modifying boilerplate YAML files.
 
 ### Python Connector-Development Kit \(CDK\)
 
