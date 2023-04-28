@@ -20,7 +20,7 @@ MAP_REGION_DOMAIN = {"US": ".com", "Europe": ".eu", "Canada": "ca.com"}
 class BaseStream(HttpStream):
     @property
     def url_base(self) -> str:
-        region_domain = MAP_REGION_DOMAIN.get(self.region)
+        region_domain = MAP_REGION_DOMAIN.get(self.region, ".com")
         return f"https://api.talkdeskapp{region_domain}/data/"
 
 
