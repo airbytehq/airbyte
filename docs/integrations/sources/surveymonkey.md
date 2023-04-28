@@ -66,6 +66,7 @@ To cover more data from this source we use caching.
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 |:--------| :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
+| 0.2.1   | 2023-04-27 | [25109](https://github.com/airbytehq/airbyte/pull/25109) | Fix add missing params to stream `SurveyResponses`                                |
 | 0.2.0   | 2023-04-18 | [23721](https://github.com/airbytehq/airbyte/pull/23721) |  Add `SurveyCollectors` and `Collectors` stream                                              |
 | 0.1.16  | 2023-04-13 | [25080](https://github.com/airbytehq/airbyte/pull/25080) |  Fix spec.json required fields and update schema for surveys and survey_responses                    |
 | 0.1.15  | 2023-02-11 | [22865](https://github.com/airbytehq/airbyte/pull/22865) | Specified date formatting in specification                                                     |
