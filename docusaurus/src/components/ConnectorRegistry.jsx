@@ -13,11 +13,10 @@ const sourceBase =
 const bugsBase =
   "https://github.com/airbytehq/airbyte/issues?q=is:open+is:issue+label"; // :connectors/source/activecampaign
 
-async function fetchCatalog(url, setter) {
+function fetchCatalog(url, setter) {
   const response = await fetch(url);
   const registry = await response.json();
   setter(registry);
-  return registry;
 }
 
 /*
