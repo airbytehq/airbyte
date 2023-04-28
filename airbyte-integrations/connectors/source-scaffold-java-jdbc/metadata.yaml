@@ -13,7 +13,7 @@ data:
   githubIssueLabel: source-scaffold-java-jdbc
   icon: scaffold-java-jdbc.svg
   license: MIT
-  name: Scaffold Java Jdbc
+  name: Scaffold Java Jdbc 
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/scaffold-java-jdbc
 metadataSpecVersion: "1.0"

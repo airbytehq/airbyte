@@ -13,7 +13,7 @@ data:
   githubIssueLabel: source-scaffold-source-python
   icon: scaffold-source-python.svg
   license: MIT
-  name: Scaffold Source Python
+  name: Scaffold Source Python 
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/scaffold-source-python
 metadataSpecVersion: "1.0"

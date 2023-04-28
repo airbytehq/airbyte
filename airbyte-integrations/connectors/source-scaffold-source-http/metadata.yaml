@@ -13,7 +13,7 @@ data:
   githubIssueLabel: source-scaffold-source-http
   icon: scaffold-source-http.svg
   license: MIT
-  name: Scaffold Source Http
+  name: Scaffold Source Http 
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/scaffold-source-http
 metadataSpecVersion: "1.0"

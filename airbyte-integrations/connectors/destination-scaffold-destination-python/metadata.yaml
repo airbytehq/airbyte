@@ -13,7 +13,7 @@ data:
   githubIssueLabel: destination-scaffold-destination-python
   icon: scaffold-destination-python.svg
   license: MIT
-  name: Scaffold Destination Python
+  name: Scaffold Destination Python 
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/destinations/scaffold-destination-python
 metadataSpecVersion: "1.0"
