@@ -8,16 +8,6 @@ on:
       - "docs/**"
       - "docusaurus/**"
 
-  pull_request:
-    types:
-      - closed
-      - opened
-      - reopened
-      - synchronize
-    paths:
-      - "docs/**"
-      - "docusaurus/**"
-
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
