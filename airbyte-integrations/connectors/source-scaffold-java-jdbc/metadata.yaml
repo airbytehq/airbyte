@@ -1,0 +1,19 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*" # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+  connectorSubtype: database
+  connectorType: source
+  definitionId: 02277fdd-35e6-4eda-8302-1ea07f801007
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-scaffold-java-jdbc
+  githubIssueLabel: source-scaffold-java-jdbc
+  icon: scaffold-java-jdbc.svg
+  license: MIT
+  name: Scaffold Java Jdbc 
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/scaffold-java-jdbc
+metadataSpecVersion: "1.0"
