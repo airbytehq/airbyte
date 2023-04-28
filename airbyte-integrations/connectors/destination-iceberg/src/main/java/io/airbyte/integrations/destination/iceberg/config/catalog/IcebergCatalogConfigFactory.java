@@ -38,7 +38,10 @@ public class IcebergCatalogConfigFactory {
     IcebergCatalogConfig icebergCatalogConfig = genIcebergCatalogConfig(catalogConfigJson);
     icebergCatalogConfig.formatConfig = formatConfig;
     icebergCatalogConfig.storageConfig = storageConfig;
-    icebergCatalogConfig.setDefaultOutputDatabase(catalogConfigJson.get(DEFAULT_DATABASE_CONFIG_KEY).asText());
+    JsonNode defaultDb = catalogConfigJson.get(DEFAULT_DATABASE_CONFIG_KEY);
+    if (null != defaultDb) {
+      icebergCatalogConfig.setDefaultOutputDatabase(defaultDb.asText());
+    }
 
     return icebergCatalogConfig;
   }
@@ -70,6 +73,7 @@ public class IcebergCatalogConfigFactory {
       case HIVE -> new HiveCatalogConfig(catalogConfigJson);
       case HADOOP -> new HadoopCatalogConfig(catalogConfigJson);
       case JDBC -> new JdbcCatalogConfig(catalogConfigJson);
+      case REST -> new RESTCatalogConfig(catalogConfigJson);
       default -> throw new RuntimeException("Unexpected catalog config: " + catalogTypeStr);
     };
   }

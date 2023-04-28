@@ -118,6 +118,40 @@
                 "order": 6
               }
             }
+          },
+          {
+            "title": "RESTCatalog",
+            "description": "The RESTCatalog connects to a REST server at the specified URI",
+            "required": ["catalog_type", "rest_uri"],
+            "properties": {
+              "catalog_type": {
+                "title": "Catalog Type",
+                "type": "string",
+                "default": "Rest",
+                "enum": ["Rest"],
+                "order": 0
+              },
+              "rest_uri": {
+                "title": "REST Server URI",
+                "type": "string",
+                "examples": ["http://localhost:12345"],
+                "order": 1
+              },
+              "rest_credential": {
+                "title": "A credential to exchange for a token in the OAuth2 client credentials flow.",
+                "type": "string",
+                "airbyte_secret": true,
+                "examples": ["username:password"],
+                "order": 2
+              },
+              "rest_token": {
+                "title": "A Bearer token which will be used for interaction with the server.",
+                "type": "string",
+                "airbyte_secret": true,
+                "examples": ["eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"],
+                "order": 3
+              }
+            }
           }
         ],
         "order": 0
