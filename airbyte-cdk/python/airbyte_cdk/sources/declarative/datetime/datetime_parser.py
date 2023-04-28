@@ -28,7 +28,7 @@ class DatetimeParser:
 
         parsed_datetime = datetime.datetime.strptime(str(date), format)
         if self._is_naive(parsed_datetime):
-            return datetime.datetime.strptime(str(date), format).replace(tzinfo=timezone)
+            return parsed_datetime.replace(tzinfo=timezone)
         return parsed_datetime
 
     def format(self, dt: datetime.datetime, format: str) -> str:
