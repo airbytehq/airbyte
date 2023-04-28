@@ -42,7 +42,7 @@ QA_ENGINE_REQUIREMENTS = [
     "pytablewriter~=0.64.2",
 ]
 
-PIPELINES_REQUIREMENTS = ["dagger-io==0.5.0", "asyncer", "anyio", "more-itertools", "docker"]
+PIPELINES_REQUIREMENTS = ["dagger-io==0.5.0", "asyncer", "anyio", "more-itertools", "docker", "requests", "semver"]
 
 setup(
     version="0.2.1",
