@@ -38,6 +38,7 @@ def registry_updated_sensor(job, resources_def) -> SensorDefinition:
 
             context.update_cursor(new_etag_cursor)
             context.log.info("New registries in GCS bucket")
-            return RunRequest(run_key="updated_registries")
+            run_key = f"updated_registries:{new_etag_cursor}"
+            return RunRequest(run_key=run_key)
 
     return registry_updated_sensor_definition
