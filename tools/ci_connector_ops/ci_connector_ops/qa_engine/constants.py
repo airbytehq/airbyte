@@ -26,6 +26,8 @@ INAPPROPRIATE_FOR_CLOUD_USE_CONNECTORS = [
     "445831eb-78db-4b1f-8f1f-0d96ad8739e2",  # source-drift, originally ignored in the source connector masks
     "d917a47b-8537-4d0d-8c10-36a9928d4265",  # source-kafka, originally ignored in the source connector masks
     "9f760101-60ae-462f-9ee6-b7a9dafd454d",  # destination-kafka, originally ignored in the destination connector masks
+    "4528e960-6f7b-4412-8555-7e0097e1da17",  # destination-starburst-galaxy, no strict-encrypt variant
+    "aa8ba6fd-4875-d94e-fc8d-4e1e09aa2503",  # source-teradata, no strict-encrypt variant
 ]
 
 GCS_QA_REPORT_PATH = "gs://airbyte-data-connectors-qa-engine/"
