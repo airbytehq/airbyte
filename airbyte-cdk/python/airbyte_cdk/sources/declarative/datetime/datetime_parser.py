@@ -25,8 +25,11 @@ class DatetimeParser:
         # See https://stackoverflow.com/a/4974930
         if format == "%s":
             return datetime.datetime.fromtimestamp(int(date), tz=timezone)
-        else:
+
+        parsed_datetime = datetime.datetime.strptime(str(date), format)
+        if self._is_naive(parsed_datetime):
             return datetime.datetime.strptime(str(date), format).replace(tzinfo=timezone)
+        return parsed_datetime
 
     def format(self, dt: datetime.datetime, format: str) -> str:
         # strftime("%s") is unreliable because it ignores the time zone information and assumes the time zone of the system it's running on
@@ -36,3 +39,6 @@ class DatetimeParser:
             return str(int(dt.timestamp()))
         else:
             return dt.strftime(format)
+
+    def _is_naive(self, dt: datetime.datetime) -> bool:
+        return dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None

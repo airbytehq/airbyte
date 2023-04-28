@@ -18,6 +18,12 @@ from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimePar
             datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
         ),
         (
+                "test_parse_date_iso_with_timezone_not_utc",
+                "2021-01-01T00:00:00.000000+0400",
+                "%Y-%m-%dT%H:%M:%S.%f%z",
+                datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone(datetime.timedelta(seconds=14400))),
+        ),
+        (
             "test_parse_timestamp",
             "1609459200",
             "%s",
