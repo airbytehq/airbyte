@@ -3,6 +3,7 @@ data:
   connectorType: source
   definitionId: 68b9c98e-0747-4c84-b05b-d30b47686725
   dockerImageTag: 0.1.3
+  icon: braze.svg
   dockerRepository: airbyte/source-braze
   githubIssueLabel: source-braze
   icon: braze.svg
