@@ -111,10 +111,18 @@ DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy
 
 
 class ModelToComponentFactory:
-    def __init__(self, limit_pages_fetched_per_slice: int = None, limit_slices_fetched: int = None):
+    def __init__(
+        self,
+        limit_pages_fetched_per_slice: int = None,
+        limit_slices_fetched: int = None,
+        emit_connector_builder_messages: bool = False,
+        disable_retries=False,
+    ):
         self._init_mappings()
         self._limit_pages_fetched_per_slice = limit_pages_fetched_per_slice
         self._limit_slices_fetched = limit_slices_fetched
+        self._emit_connector_builder_messages = emit_connector_builder_messages
+        self._disable_retries = disable_retries
 
     def _init_mappings(self):
         self.PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
@@ -551,7 +559,11 @@ class ModelToComponentFactory:
         return ExponentialBackoffStrategy(factor=model.factor, parameters=model.parameters, config=config)
 
     def create_http_requester(self, model: HttpRequesterModel, config: Config, *, name: str) -> HttpRequester:
-        authenticator = self._create_component_from_model(model=model.authenticator, config=config) if model.authenticator else None
+        authenticator = (
+            self._create_component_from_model(model=model.authenticator, config=config, url_base=model.url_base)
+            if model.authenticator
+            else None
+        )
         error_handler = (
             self._create_component_from_model(model=model.error_handler, config=config)
             if model.error_handler
@@ -727,9 +739,11 @@ class ModelToComponentFactory:
         return RemoveFields(field_pointers=model.field_pointers, parameters={})
 
     @staticmethod
-    def create_session_token_authenticator(model: SessionTokenAuthenticatorModel, config: Config, **kwargs) -> SessionTokenAuthenticator:
+    def create_session_token_authenticator(
+        model: SessionTokenAuthenticatorModel, config: Config, *, url_base: str, **kwargs
+    ) -> SessionTokenAuthenticator:
         return SessionTokenAuthenticator(
-            api_url=model.api_url,
+            api_url=url_base,
             header=model.header,
             login_url=model.login_url,
             password=model.password,
@@ -759,7 +773,7 @@ class ModelToComponentFactory:
             else NoPagination(parameters={})
         )
 
-        if self._limit_slices_fetched:
+        if self._limit_slices_fetched or self._emit_connector_builder_messages:
             return SimpleRetrieverTestReadDecorator(
                 name=name,
                 paginator=paginator,
@@ -770,6 +784,7 @@ class ModelToComponentFactory:
                 config=config,
                 maximum_number_of_slices=self._limit_slices_fetched,
                 parameters=model.parameters,
+                disable_retries=self._disable_retries,
             )
         return SimpleRetriever(
             name=name,
@@ -780,6 +795,7 @@ class ModelToComponentFactory:
             stream_slicer=stream_slicer or SinglePartitionRouter(parameters={}),
             config=config,
             parameters=model.parameters,
+            disable_retries=self._disable_retries,
         )
 
     @staticmethod

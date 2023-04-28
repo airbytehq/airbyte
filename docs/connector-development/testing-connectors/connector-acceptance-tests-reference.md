@@ -380,7 +380,7 @@ Generally Available Connectors must enable high-strictness testing for the Conne
 
 ### Allowed Hosts
 
-GA and Beta connectors are required to provide an entry for Allowed Hosts in the Actor Definition for the connector. Actor Definitions are stored in either [source_definitions.yaml](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/init/src/main/resources/seed/source_definitions.yaml) or [destination_definitions.yaml](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/init/src/main/resources/seed/destination_definitions.yaml) in the codebase. You can provide:
+GA and Beta connectors are required to provide an entry for Allowed Hosts in the Actor Definition for the connector. Actor Definitions are stored in either [source_definitions.yaml](https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml) or [destination_definitions.yaml](https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml) in the codebase. You can provide:
 
 A list of static hostnames or IP addresses. Wildcards are valid.
 

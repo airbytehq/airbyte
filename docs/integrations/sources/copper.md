@@ -40,4 +40,5 @@ The Copper source connector supports the following [sync modes](https://docs.air
 
 | Version | Date       | Pull Request                                              | Subject                            |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------- |
-| 0.1.0   | 2022-11-17 | [#18848](https://github.com/airbytehq/airbyte/pull/18848) | 🎉 New Source: Copper [python cdk] |
+| 0.2.0   | 2023-04-17 | [24824](https://github.com/airbytehq/airbyte/pull/24824) | Add `opportunities` stream |
+| 0.1.0   | 2022-11-17 | [18848](https://github.com/airbytehq/airbyte/pull/18848) | 🎉 New Source: Copper [python cdk] |

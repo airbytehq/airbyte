@@ -163,8 +163,11 @@ public class CursorManager<S> {
         if (stateOptional.map(cursorFieldFunction).equals(streamOptional.map(ConfiguredAirbyteStream::getCursorField))) {
           cursor = stateOptional.map(cursorFunction).orElse(null);
           cursorRecordCount = stateOptional.map(cursorRecordCountFunction).orElse(0L);
-          LOGGER.info("Found matching cursor in state. Stream: {}. Cursor Field: {} Value: {} Count: {}",
-              pair, cursorField, cursor, cursorRecordCount);
+          // If a matching cursor is found in the state, and it's value is null - this indicates a CDC stream and we shouldn't log anything.
+          if (cursor != null) {
+            LOGGER.info("Found matching cursor in state. Stream: {}. Cursor Field: {} Value: {} Count: {}",
+                pair, cursorField, cursor, cursorRecordCount);
+          }
           // if cursor field in catalog and state are different.
         } else {
           cursor = null;

@@ -8,9 +8,13 @@ To build a new connector in Java or Python, we provide templates so you don't ne
 
 Airbyte provides some Connector Development Kits (CDKs) to help you build connectors.
 
+### Connector builder UI
+
+The [connector builder UI](connector-builder-ui/overview.md) is based on the low-code development framework below and allows to develop and use connectors without leaving the Airbyte UI (no local development environment required).
+
 ### Low-code Connector-Development Framework
 
-You can use the [low-code framework](config-based/low-code-cdk-overview.md) to build source connectors for REST APIs via a [connector builder UI](config-based/connector-builder-ui.md) or by modifying boilerplate YAML files.
+You can use the [low-code framework](config-based/low-code-cdk-overview.md) to build source connectors for REST APIs by modifying boilerplate YAML files.
 
 ### Python Connector-Development Kit \(CDK\)
 
@@ -112,12 +116,12 @@ The steps for updating an existing connector are the same as for building a new 
 
 ## Adding normalization to a connector
 
-In order to enable normalization for a destination connector, you'll need to set some fields on the destination definitions entry for the connector. This is done in the `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml` file.
+In order to enable normalization for a destination connector, you'll need to set some fields on the destination definitions entry for the connector. This is done in the `airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml` file.
 
 ### New connectors
 If you're adding normalization to a new connector, you'll need to first add a destination definitions entry:
-1. Add a new connector definition in `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml`. You can copy an existing entry and modify it to match your connector, generating a new UUIDv4 for the `destinationDefinitionId`.
-2. Run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/master/airbyte-config/specs) for more information.
+1. Add a new connector definition in `airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml`. You can copy an existing entry and modify it to match your connector, generating a new UUIDv4 for the `destinationDefinitionId`.
+2. Run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/master/airbyte-config-oss/specs-oss) for more information.
 
 ### Add normalization fields
 
@@ -132,7 +136,7 @@ normalizationConfig:
     normalizationIntegrationType: postgres
 ```
 
-For more information about what these fields mean, see the [NormalizationDestinationDefinitionConfig](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/config-models/src/main/resources/types/NormalizationDestinationDefinitionConfig.yaml) schema.
+For more information about what these fields mean, see the [NormalizationDestinationDefinitionConfig](https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/config-models-oss/src/main/resources/types/NormalizationDestinationDefinitionConfig.yaml) schema.
 
 The presence of these fields will enable normalization for the connector, and determine which docker image will run.
 
@@ -156,10 +160,10 @@ Once you've finished iterating on the changes to a connector as specified in its
    
 4. OPTIONAL: Necessary if this is a new connector, or the automated connector version bump fails
    * Update/Add the connector definition in the Airbyte connector index to use the new version:
-        * `airbyte-config/init/src/main/resources/seed/source_definitions.yaml` if it is a source
-        * `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml` if it is a destination.
+        * `airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml` if it is a source
+        * `airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml` if it is a destination.
    
-   * Then run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/a534bb2a8f29b20e3cc7c52fef1bc3c34783695d/airbyte-config/specs) for more information.
+   * Then run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/master/airbyte-config-oss/specs-oss) for more information.
 
 5. The new version of the connector is now available for everyone who uses it. Thank you!
 
@@ -173,7 +177,7 @@ When a new (or updated version) of a connector is ready to be published, our aut
 
 If any of the above are failing, you won't be able to merge your PR or publish your connector.
 
-Connector icons should be square SVGs and be located in [this directory](https://github.com/airbytehq/airbyte/tree/master/airbyte-config/init/src/main/resources/icons).
+Connector icons should be square SVGs and be located in [this directory](https://github.com/airbytehq/airbyte/tree/master/airbyte-config-oss/init-oss/src/main/resources/icons).
 
 Connector documentation and changelogs are markdown files which live either [here for sources](https://github.com/airbytehq/airbyte/tree/master/docs/integrations/sources), or [here for destinations](https://github.com/airbytehq/airbyte/tree/master/docs/integrations/destinations).
 

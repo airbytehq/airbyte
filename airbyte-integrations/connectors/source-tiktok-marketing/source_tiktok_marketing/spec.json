@@ -91,13 +91,12 @@
         "type": "string",
         "format": "date"
       },
-      "report_granularity": {
-        "title": "Report Aggregation Granularity",
-        "description": "The granularity used for aggregating performance data in reports. See <a href=\"https://docs.airbyte.com/integrations/sources/tiktok-marketing/#report-aggregation\">the docs</a>.",
-        "enum": ["LIFETIME", "DAY", "HOUR"],
+      "attribution_window": {
+        "title": "Attribution Window",
+        "description": "The attribution window in days.",
+        "default": 0,
         "order": 3,
-        "airbyte_hidden": true,
-        "type": "string"
+        "type": "integer"
       }
     }
   },
