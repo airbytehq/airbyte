@@ -632,8 +632,10 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
 
     if context.connector.supports_normalization and context.connector.technical_name in DESTINATIONS_SUPPORTING_IN_CONNECTOR_NORMALIZATION:
         base = with_integration_base_java_and_normalization(context, build_platform)
+        entrypoint = ["/airbyte/run_with_normalization.sh"]
     else:
         base = with_integration_base_java(context, build_platform)
+        entrypoint = ["/airbyte/base.sh"]
 
     return (
         base.with_workdir("/airbyte")
@@ -643,7 +645,7 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
         .with_exec(["rm", "-rf", "builts_artifacts"])
         .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
-        .with_entrypoint(["/airbyte/base.sh"])
+        .with_entrypoint(entrypoint)
     )
 
 
