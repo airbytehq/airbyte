@@ -8,7 +8,7 @@ from typing import List
 
 import anyio
 import asyncer
-from ci_connector_ops.pipelines.bases import ConnectorReport, StepResult, StepStatus
+from ci_connector_ops.pipelines.bases import ConnectorReport, StepResult
 from ci_connector_ops.pipelines.contexts import ConnectorContext
 from ci_connector_ops.pipelines.tests import java_connectors, python_connectors
 from ci_connector_ops.pipelines.tests.common import QaChecks, VersionFollowsSemverCheck, VersionIncrementCheck
@@ -100,18 +100,14 @@ async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyi
     """
     async with semaphore:
         async with context:
-            version_checks_results = await run_version_checks(context)
-            # We want to fail tests early if a version check fails.
-            if any([result.status is StepStatus.FAILURE for result in version_checks_results]):
-                context.report = ConnectorReport(context, steps_results=version_checks_results, name="TEST RESULTS")
-                return context.report
             async with asyncer.create_task_group() as task_group:
                 tasks = [
+                    task_group.soonify(run_version_checks)(context),
                     task_group.soonify(run_qa_checks)(context),
                     task_group.soonify(run_code_format_checks)(context),
                     task_group.soonify(run_all_tests)(context),
                 ]
-            results = version_checks_results + list(itertools.chain(*(task.value for task in tasks)))
+            results = list(itertools.chain(*(task.value for task in tasks)))
             context.report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
 
         return context.report
