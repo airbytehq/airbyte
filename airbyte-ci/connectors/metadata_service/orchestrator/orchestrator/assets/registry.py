@@ -173,7 +173,8 @@ def persist_registry_to_json(
         OutputDataFrame: The registry directory manager.
     """
     registry_file_name = f"{registry_name}_registry"
-    registry_json = registry.json()
+    registry_json = registry.json(exclude_none=True)
+
     file_handle = registry_directory_manager.write_data(registry_json.encode("utf-8"), ext="json", key=registry_file_name)
     return file_handle
 
