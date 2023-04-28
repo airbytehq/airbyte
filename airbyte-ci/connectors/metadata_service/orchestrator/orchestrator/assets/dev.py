@@ -277,13 +277,14 @@ def metadata_directory_report(context: OpExecutionContext):
 @asset(required_resource_keys={"registry_report_directory_manager"}, group_name=GROUP_NAME)
 def oss_registry_diff_report(context: OpExecutionContext, oss_registry_diff_dataframe: pd.DataFrame):
     markdown = oss_registry_diff_dataframe.to_markdown()
+    html_table = oss_registry_diff_dataframe.to_html()
 
     registry_report_directory_manager = context.resources.registry_report_directory_manager
-    file_handle = registry_report_directory_manager.write_data(markdown.encode(), ext="md", key="dev/oss_registry_diff_report")
+    file_handle = registry_report_directory_manager.write_data(html_table.encode(), ext="html", key="dev/oss_registry_diff_report")
 
     metadata = {
         "preview": MetadataValue.md(markdown),
-        "gcs_path": MetadataValue.url(file_handle.gcs_path),
+        "link": MetadataValue.url(file_handle.public_url),
     }
     return Output(metadata=metadata, value=file_handle)
 
@@ -291,12 +292,12 @@ def oss_registry_diff_report(context: OpExecutionContext, oss_registry_diff_data
 @asset(required_resource_keys={"registry_report_directory_manager"}, group_name=GROUP_NAME)
 def cloud_registry_diff_report(context: OpExecutionContext, cloud_registry_diff_dataframe: pd.DataFrame):
     markdown = cloud_registry_diff_dataframe.to_markdown()
-
+    html_table = cloud_registry_diff_dataframe.to_html()
     registry_report_directory_manager = context.resources.registry_report_directory_manager
-    file_handle = registry_report_directory_manager.write_data(markdown.encode(), ext="md", key="dev/cloud_registry_diff_report")
+    file_handle = registry_report_directory_manager.write_data(html_table.encode(), ext="html", key="dev/cloud_registry_diff_report")
 
     metadata = {
         "preview": MetadataValue.md(markdown),
-        "gcs_path": MetadataValue.url(file_handle.gcs_path),
+        "link": MetadataValue.url(file_handle.public_url),
     }
     return Output(metadata=metadata, value=file_handle)
